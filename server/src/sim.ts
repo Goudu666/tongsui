@@ -174,6 +174,8 @@ function lifeApplySelf(p: Person, d: SelfDelta) {
   for (var k in d) {
     var v = (d as any)[k] as number;
     if (k === "body" || k === "mind" || k === "charm" || k === "luck") {
+      // 越往上越难长：4 以下照常，7 只长一半，9 以上只长一点点（不然一辈子下来人人都是满属性）
+      if (v > 0) v = v * lifeClamp((10 - p.stats[k]) / 6, 0.15, 1);
       p.stats[k] = lifeClamp(Math.round((p.stats[k] + v) * 100) / 100, 0, 10);
     } else if (k === "hunger" || k === "energy" || k === "mood" || k === "clean") {
       if (k === "mood" && v < 0 && lifeHasFlag(p, "tal_sunny")) v = v / 2;
@@ -202,24 +204,44 @@ function lifeHasNone(flags: string[], banned: string[] | undefined): boolean {
   return true;
 }
 
-function lifeSeenIds(s: LifeState): { [id: string]: boolean } {
+/** 已经遇到过的事件。传 role 时只算这个人遇到过的（solo 每个人一生各遇一次，比如两个人都要高考） */
+function lifeSeenIds(s: LifeState, role?: Role): { [id: string]: boolean } {
   var seen: { [id: string]: boolean } = {};
   for (var i = 0; i < s.log.length; i++) {
     var e = s.log[i].events;
-    if (e.qing) seen[e.qing] = true;
-    if (e.mei) seen[e.mei] = true;
+    if (e.qing && role !== "mei") seen[e.qing] = true;
+    if (e.mei && role !== "qing") seen[e.mei] = true;
   }
   return seen;
 }
 
-function lifeEligible(ev: LifeEvent, t: TimeInfo, flags: string[], seen: { [id: string]: boolean }): boolean {
+/** 数值在 [lo, hi] 里（没写的一边不限） */
+function lifeInRange(v: number, lo: number | undefined, hi: number | undefined): boolean {
+  return (lo === undefined || v >= lo) && (hi === undefined || v <= hi);
+}
+
+function lifeEligible(ev: LifeEvent, t: TimeInfo, flags: string[], seen: { [id: string]: boolean }, ctx?: EligibleCtx): boolean {
   if (ev.stage !== t.stage) return false;
   if (seen[ev.id]) return false;
   if (ev.seasons.length > 0 && (t.season === null || ev.seasons.indexOf(t.season) < 0)) return false;
   var rq = ev.requires || {};
-  if (rq.minAge !== undefined && t.age < rq.minAge) return false;
-  if (rq.maxAge !== undefined && t.age > rq.maxAge) return false;
+  if (!lifeInRange(t.age, rq.minAge, rq.maxAge)) return false;
+  if (ctx) {
+    var b = ctx.bond;
+    if (!lifeInRange(b.close, rq.minClose, rq.maxClose)) return false;
+    if (!lifeInRange(b.sync, rq.minSync, rq.maxSync)) return false;
+    if (!lifeInRange(b.distance, rq.minDistance, rq.maxDistance)) return false;
+    if (rq.alone !== undefined && rq.alone !== ctx.alone) return false;
+  } else if (rq.alone === true) {
+    return false;
+  }
   return lifeHasAll(flags, rq.flags) && lifeHasNone(flags, rq.notFlags);
+}
+
+/** 给人打标记（不重复） */
+function lifeAddFlags(p: Person, flags: string[] | undefined) {
+  if (!flags) return;
+  for (var i = 0; i < flags.length; i++) if (!lifeHasFlag(p, flags[i])) p.flags.push(flags[i]);
 }
 
 function lifeFindEvent(c: Content, id: string): LifeEvent {
@@ -270,7 +292,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
     var other = s.persons![lifeOther(role)];
     if (other.alive) lifeApplySelf(other, o.effects.other);
     lifeApplyBond(s, o.effects.bond);
-    for (var f = 0; f < o.effects.flags.length; f++) if (!lifeHasFlag(me, o.effects.flags[f])) me.flags.push(o.effects.flags[f]);
+    lifeAddFlags(me, o.effects.flags);
     if (pe.shadow.indexOf(role) < 0) {
       for (var j = 0; j < o.tags.length; j++) me.tags[o.tags[j]] = (me.tags[o.tags[j]] || 0) + 1;
     }
@@ -281,6 +303,8 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       var res = ev.resonance && ev.resonance[pe.choices.qing!];
       if (res) {
         lifeApplyBond(s, res.bond);
+        lifeAddFlags(s.persons!.qing, res.flags);
+        lifeAddFlags(s.persons!.mei, res.flags);
         entry.text = res.text;
         if (res.memory) s.memories.push({ title: res.memory, eventId: ev.id, turn: s.turn, age: entry.age, vivid: 3 });
       } else {
@@ -291,6 +315,8 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       entry.resonance = false;
       if (ev.dissonance) {
         lifeApplyBond(s, ev.dissonance.bond);
+        lifeAddFlags(s.persons!.qing, ev.dissonance.flags);
+        lifeAddFlags(s.persons!.mei, ev.dissonance.flags);
         entry.text = ev.dissonance.text;
       }
     }
@@ -347,7 +373,8 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
   if (!persons.qing.alive && !persons.mei.alive) {
     s.phase = "ended";
     s.world = null;
-    var end = lifeEntry(s, "end", lifeEpitaph(s));
+    s.ending = lifeEnding(s, c);
+    var end = lifeEntry(s, "end", lifeEndingText(s, c, s.ending) + lifeEpitaph(s));
     out.push(end);
     s.log.push(end);
   } else {
@@ -356,14 +383,71 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
   return out;
 }
 
-/** 人生长卷底部的题词 */
-function lifeEpitaph(s: LifeState): string {
+/** 一生的统计：默契事件数、共鸣数、默契率、同框次数 */
+function lifeStats(s: LifeState): { mirrors: number; hits: number; rate: number; together: number } {
   var mirrors = 0, hits = 0, together = 0;
   for (var i = 0; i < s.log.length; i++) {
     var e = s.log[i];
     if (e.kind === "mirror") { mirrors++; if (e.resonance) hits++; }
     if (e.kind === "together") together++;
   }
-  var rate = mirrors > 0 ? Math.round((hits / mirrors) * 100) : 0;
+  return { mirrors: mirrors, hits: hits, rate: mirrors > 0 ? Math.round((hits / mirrors) * 100) : 0, together: together };
+}
+
+// ---------- 结局 ----------
+
+function lifePairEndingOk(s: LifeState, e: PairEnding, st: { rate: number; together: number }): boolean {
+  var rq = e.requires || {};
+  var flags = s.persons!.qing.flags.concat(s.persons!.mei.flags);
+  if (!lifeHasAll(flags, rq.flags) || !lifeHasNone(flags, rq.notFlags)) return false;
+  if (!lifeInRange(s.bond.close, rq.minClose, rq.maxClose)) return false;
+  if (!lifeInRange(s.bond.sync, rq.minSync, rq.maxSync)) return false;
+  if (!lifeInRange(s.bond.distance, rq.minDistance, rq.maxDistance)) return false;
+  if (!lifeInRange(s.memories.length, rq.minMemories, rq.maxMemories)) return false;
+  if (!lifeInRange(st.rate, rq.minRate, rq.maxRate)) return false;
+  return rq.minTogether === undefined || st.together >= rq.minTogether;
+}
+
+function lifeLifeEndingOk(p: Person, e: LifeEnding): boolean {
+  var rq = e.requires || {};
+  if (!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) return false;
+  for (var k in rq.stats || {}) if (p.stats[k as StatKey] < ((rq.stats as any)[k] as number)) return false;
+  return lifeInRange(p.diedAtAge === null ? 0 : p.diedAtAge, rq.minDiedAge, rq.maxDiedAge);
+}
+
+/** 按顺序取第一个满足条件的结局（内容校验保证最后一条没有条件，必然兜底） */
+function lifeEnding(s: LifeState, c: Content): EndingResult {
+  var st = lifeStats(s);
+  var pair = c.endings.pair[c.endings.pair.length - 1].id;
+  for (var i = 0; i < c.endings.pair.length; i++) {
+    if (lifePairEndingOk(s, c.endings.pair[i], st)) { pair = c.endings.pair[i].id; break; }
+  }
+  var lives: { [R in Role]: string } = { qing: "", mei: "" };
+  for (var r = 0; r < ROLES.length; r++) {
+    var p = s.persons![ROLES[r]];
+    lives[ROLES[r]] = c.endings.lives[c.endings.lives.length - 1].id;
+    for (var j = 0; j < c.endings.lives.length; j++) {
+      if (lifeLifeEndingOk(p, c.endings.lives[j])) { lives[ROLES[r]] = c.endings.lives[j].id; break; }
+    }
+  }
+  return { pair: pair, lives: lives };
+}
+
+/** 长卷末尾的结局文字：两人的结局 + 各自的一生 */
+function lifeEndingText(s: LifeState, c: Content, e: EndingResult): string {
+  var pe = lifeFind(c.endings.pair, e.pair);
+  var out = "「" + pe.title + "」" + pe.text + "\n";
+  for (var r = 0; r < ROLES.length; r++) {
+    var p = s.persons![ROLES[r]];
+    var le = lifeFind(c.endings.lives, e.lives[ROLES[r]]);
+    out += p.name + " ·「" + le.title + "」" + le.text.split("{name}").join(p.name) + "\n";
+  }
+  return out;
+}
+
+/** 人生长卷底部的题词 */
+function lifeEpitaph(s: LifeState): string {
+  var st = lifeStats(s);
+  var together = st.together, rate = st.rate;
   return "你们一起过了 " + s.turn + " 个被记住的日子，同框 " + together + " 次，留下 " + s.memories.length + " 段共同回忆，默契率 " + rate + "%。";
 }

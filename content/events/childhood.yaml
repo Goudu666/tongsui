@@ -228,3 +228,1060 @@
       text: 早点睡，听天由命
       tags: [solitude]
       effects: { self: { mood: 5 } }
+
+# ===================== 以下为童年篇扩写：四季的轮回 =====================
+# 季节：spring 立春 / summer 立夏 / autumn 立秋 / winter 立冬
+# 年龄：3–5 岁的小事用 maxAge，6–8 岁上小学，9–11 岁快小升初
+
+# ---------- 不限季节 · 默契 ----------
+
+- id: c_first_name
+  kind: mirror
+  stage: childhood
+  where: hallway
+  hint: 对门的门缝里有一双眼睛。
+  weight: 3
+  requires: { maxAge: 4 }
+  title: 第一次叫名字
+  text: 午后的楼道里只有暖气片咔哒咔哒地响。对门的门开了一条缝，一双眼睛在看你。大人教过好几遍TA的名字，你还一回都没叫出口过。
+  options:
+    - id: call
+      text: 张嘴叫TA的名字
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 5 } }
+    - id: hide
+      text: 躲到大人腿后面
+      tags: [solitude]
+      effects: { self: { mood: 2 } }
+    - id: wave
+      text: 不出声，只招招手
+      tags: [patient]
+      effects: { self: { mood: 3 }, other: { mood: 3 } }
+  resonance:
+    call:
+      text: 两个人同时开了口，叫的都是对方的名字，都叫得不太对。两家大人在屋里笑出了声。
+      memory: 叫错的名字
+      bond: { sync: 3, close: 3 }
+    hide:
+      text: 两扇门后面各藏着一个小孩，各自从大人的腿缝里往外瞄。瞄了整整一下午。
+      memory: 腿缝里的眼睛
+      bond: { sync: 2, close: 2 }
+    wave:
+      text: 你们隔着窄窄的楼道招了一下午手，谁也没说一个字，招得胳膊都酸了。
+      memory: 一下午的招手
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 你这边刚出声，门缝「砰」地关上了。过了一会儿，那道缝又开了，比刚才宽一点。
+    bond: { close: 1 }
+
+- id: c_wall_names
+  kind: mirror
+  stage: childhood
+  where: hallway
+  when: [930, 1260]
+  hint: 楼道墙上有人用钉子划过。
+  weight: 3
+  requires: { minAge: 7, minClose: 20 }
+  title: 墙上的名字
+  text: 楼道里堆着各家过冬的白菜和煤球，墙皮蹭得发黑。你兜里揣着一根捡来的大铁钉，墙上已经有好几茬孩子划的道道了。
+  options:
+    - id: carve
+      text: 刻上两个人的名字
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: draw
+      text: 画一只歪脖子鸽子
+      tags: [gentle]
+      effects: { self: { mood: 5, charm: 1 } }
+    - id: skip
+      text: 楼长看见要骂的
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+  resonance:
+    carve:
+      text: 你们在暖气片上头、踮脚够得着的地方，一笔一笔刻下两个人的名字，中间刻了个「和」字。
+      memory: 墙上的名字
+      bond: { sync: 4, close: 4 }
+      flags: [p_wall_names]
+    draw:
+      text: 一个画了鸽子身子，一个画了鸽子脑袋，凑到一块儿是一只四条腿的鸽子。你们笑得蹲在了白菜堆上。
+      memory: 四条腿的鸽子
+      bond: { sync: 3, close: 2 }
+    skip:
+      text: 你们把钉子交给了楼长。楼长瞅了瞅满墙的道道，说：「我小时候也刻过。」
+      memory: 楼长也刻过
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 墙上只刻下了一个人的名字，旁边留着一块空。后来很多年，那块墙皮一直空着。
+    bond: { close: -1 }
+
+# ---------- 春 · 默契 ----------
+
+- id: c_spring_kite
+  kind: mirror
+  stage: childhood
+  where: river
+  when: [600, 1080]
+  hint: 海河边的天上挂着好几只风筝。
+  seasons: [spring]
+  weight: 3
+  title: 立春的风筝
+  text: 立春了，海河边的风还冻手。铁桥底下有人卖沙燕风筝，五块钱一只。你们俩兜里的钱凑一块儿，正好五块。
+  options:
+    - id: buy
+      text: 合买一只沙燕
+      tags: [gentle]
+      effects: { self: { mood: 8 } }
+    - id: make
+      text: 回家拿报纸自己糊
+      tags: [patient]
+      effects: { self: { mind: 1, mood: 3 } }
+    - id: watch
+      text: 看别人放就够了
+      tags: [solitude]
+      effects: { self: { mood: 3 } }
+  resonance:
+    buy:
+      text: 沙燕飞得比铁桥还高的时候，线在两个人手里攥着，谁也不肯先撒手。
+      memory: 两个人的线
+      bond: { sync: 3, close: 3 }
+    make:
+      text: 两只报纸风筝一只栽进了河里，一只挂在了柳树上。你们笑得一屁股坐在了地上。
+      memory: 报纸风筝
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个已经把两块五掏了出来，另一个转身往家跑，去拿浆糊。那天天上的风筝都是别人的。
+    bond: { close: 0 }
+
+- id: c_capsule
+  kind: mirror
+  stage: childhood
+  where: river
+  when: [900, 1140]
+  hint: 河边的柳树底下有人在挖土。
+  seasons: [spring]
+  weight: 3
+  requires: { minAge: 8 }
+  title: 铁皮盒子
+  text: 你们找到一个装过饼干的铁皮盒子，打算埋在海河边第三棵柳树底下。说好了，等长大了再一起挖出来。
+  options:
+    - id: letter
+      text: 写封信给长大的自己
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: treasure
+      text: 放进最好的弹球和画片
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: keep
+      text: 舍不得，揣回家去
+      tags: [solitude]
+      effects: { self: { mood: 2 } }
+  resonance:
+    letter:
+      text: 两封信都折成了小方块，谁也不许偷看谁的。土拍实了，你们在柳树皮上划了一道。
+      memory: 第三棵柳树
+      bond: { sync: 3, close: 3 }
+      flags: [p_capsule]
+    treasure:
+      text: 盒子里放进了一颗玻璃弹球、一张最亮的画片——不对，是两颗、两张。你们想到一块儿去了。
+      memory: 两颗弹球
+      bond: { sync: 3, close: 3 }
+      flags: [p_capsule]
+    keep:
+      text: 你们抱着空盒子蹲了半天，最后谁也没舍得往里放东西，又一路抱回了楼里。
+      memory: 空着的盒子
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 盒子最后还是埋下去了，只是里头好像少了点什么。谁也没问。
+    bond: { close: 0 }
+    flags: [p_capsule]
+
+- id: c_xiaohui
+  kind: mirror
+  stage: childhood
+  where: roof
+  when: [930, 1140]
+  hint: 楼顶的鸽子窝边掉了几根灰毛。
+  seasons: [spring]
+  weight: 3
+  requires: { minAge: 6 }
+  title: 一只灰鸽子
+  text: 楼顶养鸽子的刘大爷说，这只灰鸽子翅膀伤了，跟不上群了，谁要就给谁。它在纸箱里缩成一团，咕咕地叫。
+  options:
+    - id: raise
+      text: 我们俩一起养
+      tags: [responsible, gentle]
+      effects: { self: { mood: 5 } }
+    - id: free
+      text: 养好了就放它走
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+    - id: skip
+      text: 家里不让养
+      tags: [solitude]
+      effects: { self: { mood: -3 } }
+  resonance:
+    raise:
+      text: 你们给它起名叫「小灰」。一个管喂小米，一个管换水，鸽子笼的钥匙一人一把。
+      memory: 两把钥匙
+      bond: { sync: 3, close: 4 }
+      flags: [p_pigeon]
+    free:
+      text: 二十天后，你们一人托着一边把它往天上一送。它绕着楼顶飞了三圈，又落回你们脚边。那就叫它小灰吧。
+      memory: 绕了三圈
+      bond: { sync: 3, close: 3 }
+      flags: [p_pigeon]
+  dissonance:
+    text: 一个人已经抱起了纸箱，另一个往后退了半步。最后鸽子让刘大爷又收了回去。
+    bond: { close: -1 }
+
+- id: c_promise
+  kind: mirror
+  stage: childhood
+  where: hallway
+  when: [930, 1200]
+  hint: 楼道里堆满了搬家的纸箱。
+  seasons: [spring]
+  weight: 3
+  requires: { minAge: 8, minClose: 20 }
+  title: 拉钩
+  text: 二楼的王奶奶家要搬去新楼了。纸箱从楼道一直堆到楼梯口，王奶奶的小孙子坐在箱子上哭。你们俩看着看着，谁也没说话。
+  options:
+    - id: hook
+      text: 伸出小拇指
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: help
+      text: 帮着搬箱子
+      tags: [responsible]
+      effects: { self: { body: 1 } }
+    - id: away
+      text: 回屋，不想看
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+  resonance:
+    hook:
+      text: 「拉钩上吊，一百年不许变。」说好了，长大了也住对门。谁变谁是小狗。
+      memory: 一百年不许变
+      bond: { sync: 4, close: 4 }
+      flags: [p_promise]
+    help:
+      text: 你们一人一头抬着最后一个箱子下了楼。车开走了，楼道空出一大块，你们站在那儿，影子挨着影子。
+      memory: 空出来的一块
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一根小拇指伸在半空，另一个人已经抱着箱子下楼了。手指头慢慢地收了回去。
+    bond: { close: -1 }
+
+# ---------- 夏 · 默契 ----------
+
+- id: c_river_swim
+  kind: mirror
+  stage: childhood
+  where: river
+  when: [780, 1080]
+  hint: 河边有人「扑通」跳下去了。
+  seasons: [summer]
+  weight: 2
+  requires: { minAge: 8 }
+  title: 偷着下河
+  text: 三伏天，几个大孩子光着膀子从铁桥底下往海河里跳。大人说过一百遍不许下河，可那水看着倍儿凉快。
+  options:
+    - id: jump
+      text: 甩了鞋就跳
+      tags: [adventure]
+      effects: { self: { body: 1, mood: 10, clean: -10 } }
+    - id: guard
+      text: 在岸上看着衣服
+      tags: [responsible]
+      effects: { self: { mood: 3 } }
+    - id: tell
+      text: 跑回去喊大人
+      tags: [responsible]
+      effects: { self: { mind: 1 }, other: { mood: -5 } }
+  resonance:
+    jump:
+      text: 刚扑腾了两下，岸上就有人喊「谁家孩子！」你们湿着裤衩一路跑回楼里，鞋还在河边。
+      memory: 落在河边的鞋
+      bond: { sync: 3, close: 3 }
+    guard:
+      text: 两个人抱着一堆别人的衣服蹲在岸上，盯着水里的人，比水里的人还紧张。
+      memory: 一堆衣服
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个在水里喊「下来呀」，一个在岸上喊「快上来」。那天晚上，两家都传出了挨揍的动静。
+    bond: { close: 1 }
+
+- id: c_last_jianbing
+  kind: mirror
+  stage: childhood
+  where: breakfast
+  when: [390, 600]
+  hint: 早点铺前排起了长队。
+  seasons: [summer]
+  weight: 3
+  title: 最后一套
+  text: 早点铺前排着长队，鏊子上的面糊滋滋响。好不容易轮到你们俩，摊主一拍巴掌：「就剩最后一套的面了！」
+  options:
+    - id: give
+      text: 让给对门
+      tags: [gentle]
+      effects: { self: { hunger: -5 }, other: { hunger: 15, mood: 5 } }
+    - id: split
+      text: 一套掰两半
+      tags: [patient]
+      effects: { self: { hunger: 10 }, other: { hunger: 10 } }
+    - id: grab
+      text: 「我先来的！」
+      tags: [competitive]
+      effects: { self: { hunger: 20, mood: 5 }, other: { mood: -5 } }
+  resonance:
+    give:
+      text: 你们同时说「你吃吧」，又同时往后退了一步。摊主乐了，把那套切成两半，多搁了一个鸡蛋。
+      memory: 多搁的鸡蛋
+      bond: { sync: 3, close: 3 }
+    split:
+      text: 煎饼果子从中间一掰，果篦儿断成两截，一截大一截小。为了谁吃小的那截，你们又争了半天。
+      memory: 掰开的果篦儿
+      bond: { sync: 3, close: 3 }
+    grab:
+      text: 你们同时喊「我先来的！」摊主一人瞪了一眼，谁也没给，自己蹲在鏊子边上吃了。
+      memory: 谁也没吃上
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 最后一套落到了一个人手里，热乎乎的。另一个站在旁边，悄悄咽了一下口水。
+    bond: { close: 0 }
+
+- id: c_goldfish
+  kind: mirror
+  stage: childhood
+  where: alley
+  when: [600, 1080]
+  hint: 楼下老槐树底下很安静。
+  seasons: [summer]
+  weight: 2
+  requires: { minAge: 5 }
+  title: 金鱼死了
+  text: 两家都不让往屋里搁，你们的红金鱼一直养在楼下老槐树底下的罐头瓶里。昨天刚换过水。今天早上，它翻了白肚皮。
+  options:
+    - id: bury
+      text: 埋在老槐树底下
+      tags: [gentle]
+      effects: { self: { mood: -5 } }
+    - id: river
+      text: 送它回海河
+      tags: [adventure]
+      effects: { self: { mood: -3 } }
+    - id: blame
+      text: 「是不是你喂多了」
+      tags: [competitive]
+      effects: { self: { mood: -5 }, other: { mood: -10 } }
+  resonance:
+    bury:
+      text: 你们拿冰棍棍给它立了块碑，写着「金鱼之墓」。「墓」字少写了一笔，谁也没发现。
+      memory: 冰棍棍的碑
+      bond: { sync: 3, close: 3 }
+    river:
+      text: 你们跑到河边，把它轻轻倒进水里。它漂了一下，就看不见了。你们说好了，它是游走了。
+      memory: 它游走了
+      bond: { sync: 3, close: 3 }
+    blame:
+      text: 两个人同时说「都怪你」，然后同时哭了。哭完了，蹲在一块儿把罐头瓶刷得锃亮。
+      memory: 都怪你
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个人蹲着挖坑，一个人站得远远的不肯看。那个下午特别长。
+    bond: { close: -1 }
+
+- id: c_summer_storm
+  kind: mirror
+  stage: childhood
+  where: roof
+  when: [840, 1140]
+  hint: 天边在闷闷地打雷。
+  seasons: [summer]
+  weight: 2
+  title: 收床单
+  text: 下午天一下子黑了，雷在海河那边滚。楼顶晾着一整排床单，两家大人都不在家。
+  options:
+    - id: rush
+      text: 冲上去收床单
+      tags: [responsible]
+      effects: { self: { body: 1, clean: -10 } }
+    - id: watch
+      text: 躲在楼梯口看闪电
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+  resonance:
+    rush:
+      text: 雨砸下来的时候，你们抱着一大团床单缩在水箱底下，已经分不清哪条是哪家的了。
+      memory: 分不清的床单
+      bond: { sync: 3, close: 3 }
+    watch:
+      text: 你们挤在楼梯口，数闪电和雷声隔了几下。数到「三」的时候，两个人一起捂住了耳朵。
+      memory: 数到三
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个人抱着湿床单下来，看见另一个在楼梯口看闪电看得出神。床单还是湿了一半。
+    bond: { close: 0 }
+
+# ---------- 秋 · 默契 ----------
+
+- id: c_first_school
+  kind: mirror
+  stage: childhood
+  where: school
+  when: [420, 600]
+  hint: 校门口挤满了背新书包的孩子。
+  seasons: [autumn]
+  weight: 3
+  requires: { minAge: 6, maxAge: 6 }
+  title: 开学第一天
+  text: 新书包大了一号，一走一拍屁股。校门口有人推着车卖熟梨糕，蒸笼一揭，甜气直冒。送你来的大人，松开了手。
+  options:
+    - id: hand
+      text: 拉住对门的手
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: first
+      text: 自己先往里走
+      tags: [adventure]
+      effects: { self: { charm: 1 } }
+    - id: back
+      text: 回头找大人
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+  resonance:
+    hand:
+      text: 你们手拉着手进了校门，分进了同一个班。一个坐第三排，一个坐第四排。
+      memory: 第三排和第四排
+      bond: { sync: 3, close: 3 }
+    first:
+      text: 两个人都想当第一个进校门的，一路小跑，在台阶上撞了个满怀。
+      memory: 台阶上的满怀
+      bond: { sync: 3, close: 2 }
+    back:
+      text: 两个人都哭了。哭着哭着，看见对方也在哭，就不哭了。
+      memory: 一起哭鼻子
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个人回头去找大人的时候，另一个已经背着大书包走远了，书包一下一下拍着屁股。
+    bond: { close: 0 }
+
+- id: c_paper_cards
+  kind: mirror
+  stage: childhood
+  where: alley
+  when: [930, 1140]
+  hint: 楼下传来「啪、啪」的声音。
+  seasons: [autumn]
+  weight: 3
+  requires: { minAge: 6 }
+  title: 拍画片
+  text: 秋天风干，楼下的水泥地最适合拍画片。你们一人押上一张最好的。对面那张，你眼馋了一个礼拜。
+  options:
+    - id: hard
+      text: 使出吃奶的劲儿拍
+      tags: [competitive]
+      effects: { self: { body: 1, mood: 5 } }
+    - id: soft
+      text: 故意拍偏一点
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 5 } }
+  resonance:
+    hard:
+      text: 两个人都拍红了手，两张画片谁也没翻过来。天黑了，算平局，明儿接着拍。
+      memory: 拍红的手
+      bond: { sync: 3, close: 2 }
+    soft:
+      text: 两个人都故意拍偏，拍了一下午，两张画片原地没动。这事后来谁都不好意思提。
+      memory: 没翻过来的画片
+      bond: { sync: 4, close: 3 }
+  dissonance:
+    text: 「啪」的一声，画片翻了过来。赢的人愣了一下，才看出来，对门是让着自己的。
+    bond: { close: 1 }
+
+- id: c_moving_classmate
+  kind: mirror
+  stage: childhood
+  where: school
+  when: [930, 1080]
+  hint: 校门口有人在哭。
+  seasons: [autumn]
+  weight: 2
+  requires: { minAge: 8 }
+  title: 转学的同桌
+  text: 小胖要跟着爸妈去南方了，今天是最后一天来上学。他把一铁盒弹球搁在桌上，说谁要谁拿。
+  options:
+    - id: gift
+      text: 把画片送给他
+      tags: [gentle]
+      effects: { self: { mood: -3, charm: 1 } }
+    - id: address
+      text: 让他留个地址
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+    - id: nothing
+      text: 什么也不说
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+  resonance:
+    gift:
+      text: 你们一人塞给他一张画片。小胖说南方没人拍这个，攥在手里不撒开。
+      memory: 去南方的画片
+      bond: { sync: 3, close: 2 }
+    address:
+      text: 你们把地址抄在同一张作业纸上，撕开一人一半。后来写过两封信，第三封没有回。
+      memory: 半张作业纸
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 小胖走的时候回了三次头。一个人一直在招手，一个人一直低着头。
+    bond: { close: 0 }
+
+- id: c_ride_lesson
+  kind: mirror
+  stage: childhood
+  where: bikeshop
+  when: [930, 1140]
+  hint: 车铺门口立着一辆旧二八车。
+  seasons: [autumn]
+  weight: 2
+  requires: { minAge: 8 }
+  title: 掏裆骑
+  text: 修车爷爷推出一辆旧二八车：「个儿还够不着座儿，掏裆骑！」车比你们俩都高，只能一个骑，一个扶后座。
+  options:
+    - id: ride
+      text: 抢着先骑
+      tags: [adventure]
+      effects: { self: { body: 1 } }
+    - id: hold
+      text: 先给对门扶着
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 5 } }
+  resonance:
+    ride:
+      text: 两个人一齐扑上去抢车把，连人带车栽进了爷爷的旧轮胎堆里。爷爷在一边笑得直咳嗽。
+      memory: 轮胎堆
+      bond: { sync: 2, close: 3 }
+    hold:
+      text: 你们都说「你先骑」，推来让去。爷爷不耐烦了，自己扶着后座让你们轮流骑，一人摔了五回。
+      memory: 一人五回
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 扶后座的那个偷偷撒了手。骑车的那个一直骑到了街口，回头才发现身后没人，咣当就倒了。
+    bond: { close: 1 }
+
+# ---------- 冬 · 默契 ----------
+
+- id: c_xiaohui_gone
+  kind: mirror
+  stage: childhood
+  where: roof
+  when: [960, 1200]
+  hint: 楼顶的鸽子笼门开着。
+  seasons: [winter]
+  weight: 3
+  requires: { flags: [p_pigeon] }
+  title: 小灰没回来
+  text: 小灰跟着刘大爷的鸽群飞出去了。傍晚鸽子一只一只落回来，没有它。笼门开着，碗里的小米还剩一半。
+  options:
+    - id: wait
+      text: 在楼顶等到天黑
+      tags: [patient]
+      effects: { self: { mood: -5, energy: -10 } }
+    - id: search
+      text: 满街去找
+      tags: [adventure]
+      effects: { self: { body: 1, mood: -5 } }
+    - id: shut
+      text: 把笼门关上
+      tags: [solitude]
+      effects: { self: { mood: -10 } }
+  resonance:
+    wait:
+      text: 天黑透了，你们冻得直跺脚。远处忽然响了一声鸽哨，很轻，很远，不知道是不是它。
+      memory: 远处的鸽哨
+      bond: { sync: 3, close: 3 }
+    search:
+      text: 你们沿着海河喊了一路「小灰」，喊哑了嗓子。回来的路上，一只手塞进了另一个人的兜里。
+      memory: 塞进兜里的手
+      bond: { sync: 3, close: 4 }
+  dissonance:
+    text: 一个在楼顶等，一个在街上找。天黑以后你们在楼道里碰上了，谁也没找着。
+    bond: { close: 1 }
+
+- id: c_stove_bikeshop
+  kind: mirror
+  stage: childhood
+  where: bikeshop
+  when: [840, 1080]
+  hint: 车铺的烟囱在冒白烟。
+  seasons: [winter]
+  weight: 2
+  title: 车铺的炉子
+  text: 腊月，车铺里生着铁皮炉子，爷爷在炉盖上烤白薯，窗台上摆着一排冻得梆硬的柿子。他说，帮我补完这条胎，白薯归你们。
+  options:
+    - id: patch
+      text: 撸起袖子补胎
+      tags: [responsible]
+      effects: { self: { body: 1, clean: -10 } }
+    - id: steal
+      text: 趁爷爷不注意先掰一块
+      tags: [adventure]
+      effects: { self: { mood: 5, hunger: 5 } }
+    - id: persimmon
+      text: 把冻柿子泡进凉水
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+  resonance:
+    patch:
+      text: 胎补完了，你们的手黑得像炉钩子。白薯掰开一人一半，烫得在两只手之间来回倒。
+      memory: 烫手的白薯
+      bond: { sync: 3, close: 3 }
+    steal:
+      text: 两只手同时伸向炉盖，爷爷的炉钩子「当」地敲了一下：「俩小馋猫。」最大的那块还是给了你们。
+      memory: 俩小馋猫
+      bond: { sync: 3, close: 2 }
+    persimmon:
+      text: 冻柿子泡在凉水盆里，外头慢慢结了一层冰壳。你们守着盆等了半个钟头，一人嘬了一个。
+      memory: 冰壳柿子
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个在补胎，一个在偷吃。爷爷看着直乐，说你们俩凑一块儿，正好是一个学徒。
+    bond: { close: 1 }
+
+# ---------- 春 · 各自 ----------
+
+- id: c_learn_walk
+  kind: solo
+  stage: childhood
+  where: hallway
+  seasons: [spring]
+  weight: 3
+  requires: { maxAge: 3 }
+  title: 扶着暖气片
+  text: 你还走不太稳，扶着楼道里的暖气片一步一步往前挪。暖气片已经不那么烫了，春天快来了。对门的门开着，有人在里头喊你。
+  options:
+    - id: go
+      text: 松开手往前走
+      tags: [adventure]
+      effects: { self: { body: 1, mood: 5 }, bond: { close: 1 } }
+    - id: sit
+      text: 一屁股坐下
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+    - id: back
+      text: 扭头找家里人
+      tags: [solitude]
+      effects: { self: { mood: 2, energy: 5 } }
+
+- id: c_bite_spring
+  kind: solo
+  stage: childhood
+  seasons: [spring]
+  weight: 2
+  title: 咬春
+  text: 立春的早上，桌上摆着春饼和一盘切好的萝卜。大人说，咬一口萝卜，一年不犯困。萝卜倍儿辣。
+  options:
+    - id: bite
+      text: 闭着眼咬一大口
+      tags: [adventure]
+      effects: { self: { energy: 10, mood: -3 } }
+    - id: roll
+      text: 卷一张春饼慢慢吃
+      tags: [patient]
+      effects: { self: { hunger: 20, mood: 5 } }
+    - id: send
+      text: 端一盘给对门
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 5 }, bond: { close: 1 } }
+
+- id: c_wronged
+  kind: solo
+  stage: childhood
+  where: school
+  when: [600, 1080]
+  seasons: [spring]
+  weight: 2
+  requires: { minAge: 7 }
+  title: 不是我
+  text: 班里有人丢了一支带香味的铅笔，有人说课间只有你一个人在教室。老师把你叫到了讲台边上。
+  options:
+    - id: deny
+      text: 「不是我！」
+      tags: [competitive]
+      effects: { self: { mood: -10, charm: 1 } }
+    - id: silent
+      text: 憋着，不让眼泪掉
+      tags: [patient]
+      effects: { self: { mood: -15, mind: 1 } }
+    - id: search
+      text: 帮着一起找
+      tags: [responsible]
+      effects: { self: { mood: -5, mind: 1 } }
+
+- id: c_willow_whistle
+  kind: solo
+  stage: childhood
+  seasons: [spring]
+  weight: 2
+  requires: { minAge: 6 }
+  title: 柳哨
+  text: 海河边的柳条一夜之间绿了。隔壁楼的大哥哥教过你：掐一截嫩柳枝，拧松了把皮褪下来，就是一支柳哨。
+  options:
+    - id: blow
+      text: 拧一个，吹给对门听
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 5 } }
+    - id: many
+      text: 拧一把，挨个儿试音
+      tags: [patient]
+      effects: { self: { mind: 1, mood: 3 } }
+    - id: skip
+      text: 掐柳条要挨骂的
+      tags: [responsible]
+      effects: {}
+
+# ---------- 夏 · 各自 ----------
+
+- id: c_watermelon
+  kind: solo
+  stage: childhood
+  seasons: [summer]
+  weight: 2
+  title: 凉水盆里的西瓜
+  text: 大人抱回一个大西瓜，在凉水盆里镇了一宿。一刀下去「咔嚓」裂开，中间那一勺最甜。
+  options:
+    - id: spoon
+      text: 挖走中间那一勺
+      tags: [competitive]
+      effects: { self: { mood: 10, hunger: 10 } }
+    - id: share
+      text: 切一牙给对门送去
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 8, hunger: 5 }, bond: { close: 1 } }
+    - id: seeds
+      text: 把籽儿攒起来种
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+
+- id: c_crosstalk_radio
+  kind: solo
+  stage: childhood
+  where: alley
+  when: [1080, 1300]
+  seasons: [summer]
+  weight: 2
+  title: 收音机里的相声
+  text: 楼下乘凉的大爷把收音机搁在棋盘边上，里头正说一段贯口，一口气报了几十道菜名。大爷们摇着蒲扇，乐得直拍腿。
+  options:
+    - id: learn
+      text: 蹲在边上偷偷学
+      tags: [solitude]
+      effects: { self: { mind: 1, mood: 3 } }
+    - id: perform
+      text: 学两句给大爷们听
+      tags: [adventure]
+      effects: { self: { charm: 1, mood: 5 } }
+    - id: chess
+      text: 看下棋，憋着不支招
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+
+- id: c_cicada
+  kind: solo
+  stage: childhood
+  where: river
+  when: [1140, 1320]
+  seasons: [summer]
+  weight: 2
+  requires: { minAge: 6 }
+  title: 摸知了猴
+  text: 天擦黑，海河边柳树根底下全是小窟窿。大孩子们打着手电，一晚上能摸满一罐头瓶知了猴。
+  options:
+    - id: dig
+      text: 跟着去摸
+      tags: [adventure]
+      effects: { self: { body: 1, mood: 5, clean: -15 } }
+    - id: watch
+      text: 守着一只看它脱壳
+      tags: [patient]
+      effects: { self: { mind: 1, mood: 5 } }
+    - id: home
+      text: 怕黑，回家
+      tags: [solitude]
+      effects: { self: { energy: 10 } }
+
+- id: c_tongxuelu
+  kind: solo
+  stage: childhood
+  seasons: [summer]
+  weight: 3
+  requires: { minAge: 11 }
+  title: 同学录
+  text: "离小学毕业还有两个月，班里人人都在传同学录。你也有了一本带小锁的。第一页那一栏印着：「最想对我说的话」。"
+  options:
+    - id: first
+      text: 第一页留给对门
+      tags: [gentle]
+      effects: { self: { mood: 5 }, bond: { close: 1 } }
+    - id: all
+      text: 先给全班传一圈
+      tags: [adventure]
+      effects: { self: { charm: 1 } }
+    - id: lock
+      text: 锁起来，谁也不给
+      tags: [solitude]
+      effects: { self: { mood: -3 } }
+
+# ---------- 秋 · 各自 ----------
+
+- id: c_mooncake
+  kind: solo
+  stage: childhood
+  seasons: [autumn]
+  weight: 2
+  title: 五仁月饼
+  text: 中秋的早上，桌上摆着一盒月饼。豆沙馅儿的只有一块，剩下全是五仁。家里人都看着你。
+  options:
+    - id: take
+      text: 拿走豆沙的
+      tags: [competitive]
+      effects: { self: { mood: 8 } }
+    - id: wuren
+      text: 「我就爱吃五仁」
+      tags: [patient]
+      effects: { self: { mood: -2, charm: 1 } }
+    - id: door
+      text: 揣上豆沙的去对门
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 8 }, bond: { close: 1 } }
+
+- id: c_book_cover
+  kind: solo
+  stage: childhood
+  seasons: [autumn]
+  weight: 2
+  requires: { minAge: 6 }
+  title: 包书皮
+  text: 开学发了新课本，书页还带着油墨味儿。大人从墙上摘下去年的旧挂历铺在桌上，说：「包书皮儿！」
+  options:
+    - id: neat
+      text: 一角一角折板正
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: pretty
+      text: 挑挂历上最好看的
+      tags: [adventure]
+      effects: { self: { charm: 1 } }
+    - id: door
+      text: 多包一本给对门
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 5 }, bond: { close: 1 } }
+
+- id: c_erhu_downstairs
+  kind: solo
+  stage: childhood
+  where: alley
+  when: [1080, 1260]
+  seasons: [autumn]
+  weight: 3
+  requires: { minAge: 9, flags: [erhu] }
+  title: 楼下的二胡
+  text: 秋天傍晚，楼下乘凉的人还没散。修车爷爷把那把二胡递到你手里：「练了这么久了，拉一段给街坊听听。」
+  options:
+    - id: play
+      text: 拉学得最熟的那段
+      tags: [adventure]
+      effects: { self: { charm: 2, mood: 10 }, other: { mood: 5 } }
+    - id: old
+      text: 拉爷爷教的老曲子
+      tags: [patient]
+      effects: { self: { charm: 1, mood: 5 }, other: { mood: 5 } }
+    - id: shy
+      text: 摆摆手，不敢
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+
+- id: c_grandma_pigeon
+  kind: solo
+  stage: childhood
+  where: roof
+  when: [600, 1020]
+  seasons: [autumn]
+  weight: 3
+  requires: { maxAge: 4 }
+  title: 看鸽子
+  text: 姥姥把你抱上了楼顶。秋天的天又高又蓝，一群鸽子绕着楼飞，鸽哨「呜——」地响，你伸着小手去够。
+  options:
+    - id: reach
+      text: 一直伸手去够
+      tags: [adventure]
+      effects: { self: { mood: 8 } }
+    - id: count
+      text: 跟着姥姥数「一、二、三」
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: sleep
+      text: 趴在姥姥肩上睡着了
+      tags: [gentle]
+      effects: { self: { energy: 15, mood: 5 } }
+
+# ---------- 冬 · 各自 ----------
+
+- id: c_frozen_persimmon
+  kind: solo
+  stage: childhood
+  seasons: [winter]
+  weight: 2
+  title: 冻柿子
+  text: 窗台外头搁了一冬的柿子，冻得跟石头蛋子似的。大人说得泡凉水里缓，不能用热水，一烫就化成汤了。
+  options:
+    - id: wait
+      text: 泡凉水，等冰壳
+      tags: [patient]
+      effects: { self: { mood: 8 } }
+    - id: bite
+      text: 硬啃，牙都冰麻了
+      tags: [adventure]
+      effects: { self: { mood: 3, energy: 5 } }
+    - id: door
+      text: 给对门也拿一个
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 5 }, bond: { close: 1 } }
+
+- id: c_tanghulu
+  kind: solo
+  stage: childhood
+  where: alley
+  when: [900, 1140]
+  seasons: [winter]
+  weight: 3
+  title: 糖堆儿
+  text: 楼下来了卖糖堆儿的，草把子上插满了山里红，糖壳亮得能照见人。你兜里的钱，只够买一串。
+  options:
+    - id: one
+      text: 一个人慢慢吃
+      tags: [solitude]
+      effects: { self: { mood: 10, hunger: 5 } }
+    - id: half
+      text: 给对门留一半
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 8 }, bond: { close: 1 } }
+    - id: save
+      text: 不买了，攒着买炮
+      tags: [patient]
+      effects: { self: { mood: -3, mind: 1 } }
+
+- id: c_bingga
+  kind: solo
+  stage: childhood
+  where: river
+  when: [600, 1020]
+  seasons: [winter]
+  weight: 2
+  requires: { minAge: 5 }
+  title: 抽冰嘎
+  text: "海河冻上了。冬泳的老爷子刚从冰窟窿里爬上来，冲你喊：「小孩儿，冰嘎得这么抽！」鞭子在他手里甩得啪啪响。"
+  options:
+    - id: learn
+      text: 让老爷子教两手
+      tags: [patient]
+      effects: { self: { body: 1 } }
+    - id: spin
+      text: 自己瞎抽
+      tags: [adventure]
+      effects: { self: { mood: 8 } }
+    - id: ask
+      text: 问老爷子冷不冷
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+
+- id: c_diaoqian
+  kind: solo
+  stage: childhood
+  seasons: [winter]
+  weight: 2
+  requires: { minAge: 6 }
+  title: 贴吊钱儿
+  text: 腊月二十八，大人踩着凳子往门框上贴吊钱儿，让你在底下扶着。红纸剪的鲤鱼和元宝，叫楼道的风吹得哗啦啦响。
+  options:
+    - id: hold
+      text: 老老实实扶凳子
+      tags: [responsible]
+      effects: { self: { mood: 5 } }
+    - id: fu
+      text: 偷偷把福字倒着贴
+      tags: [adventure]
+      effects: { self: { mood: 8, luck: 1 } }
+    - id: door
+      text: 多拿几张给对门
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 5 }, bond: { close: 1 } }
+
+# ---------- 不限季节 · 各自 ----------
+
+- id: c_quarrel
+  kind: solo
+  stage: childhood
+  weight: 2
+  requires: { maxAge: 8 }
+  title: 摔碗的声音
+  text: 昨天夜里，你隔着门帘听见大人在吵架，后来有一只碗摔在了地上。今天早上谁都不说话，桌上的粥是凉的。
+  options:
+    - id: eat
+      text: 低头把凉粥喝完
+      tags: [patient]
+      effects: { self: { mood: -10, hunger: 15 } }
+    - id: ask
+      text: 「你们还好吗？」
+      tags: [responsible]
+      effects: { self: { mind: 1, mood: -5 } }
+    - id: door
+      text: 跑去对门待一天
+      tags: [gentle]
+      effects: { self: { mood: 3 }, bond: { close: 1 } }
+
+- id: c_nuannuan_kittens
+  kind: solo
+  stage: childhood
+  where: hallway
+  weight: 3
+  requires: { minAge: 6, flags: [cat_secret], notFlags: [cat_gone] }
+  title: 暖暖的小猫
+  text: 暖暖早就不是那只小猫了。今天你在暖气片后面的纸箱里，看见它身边挤着四个湿漉漉的小毛团，最小的那个眼睛还没睁开。
+  options:
+    - id: keep
+      text: 再偷偷养一阵
+      tags: [adventure]
+      effects: { self: { mood: 8 } }
+    - id: give
+      text: 挨家挨户问谁要
+      tags: [responsible]
+      effects: { self: { charm: 1 } }
+    - id: tell
+      text: 叫上对门一起想办法
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 5 }, bond: { close: 1 } }
+
+- id: c_nuannuan_gone
+  kind: solo
+  stage: childhood
+  weight: 2
+  requires: { minAge: 9, flags: [cat_secret], notFlags: [cat_gone] }
+  title: 空纸箱
+  text: 早上下楼，暖气片后面的纸箱空了，只剩几根猫毛和你上礼拜搁的半块馒头。楼道里谁也说不清它去了哪儿。
+  options:
+    - id: search
+      text: 一层一层去找
+      tags: [adventure]
+      effects: { self: { body: 1, mood: -5 }, flags: [cat_gone] }
+    - id: wait
+      text: 纸箱留着，等它回来
+      tags: [patient]
+      effects: { self: { mood: -5 }, flags: [cat_gone] }
+    - id: door
+      text: 去敲对门
+      tags: [gentle]
+      effects: { self: { mood: -3 }, bond: { close: 1 }, flags: [cat_gone] }

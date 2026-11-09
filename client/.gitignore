@@ -2,3 +2,6 @@
 /android/
 addons/com.heroiclabs.nakama/
 fonts/*.ttf
+
+# CI 按仓库变量 TONGSUI_SERVER 生成，或本地手写（见 docs/DEPLOY.md）
+data/server.json

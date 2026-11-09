@@ -46,7 +46,7 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 		add_child(actor)
 		actors[r] = actor
 	camera = Camera2D.new()
-	camera.zoom = Vector2.ONE * 1.25
+	camera.zoom = Vector2.ONE * 1.4
 	camera.limit_left = 0
 	camera.limit_top = 0
 	camera.limit_right = int(map.size[0])

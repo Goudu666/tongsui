@@ -1,0 +1,15 @@
+{
+  "name": "tongsui",
+  "private": true,
+  "type": "module",
+  "description": "同岁 · 双人联机人生模拟",
+  "scripts": {
+    "content": "node tools/build-content.mjs",
+    "server:build": "npm --prefix server install && npm --prefix server run build",
+    "server:test": "npm --prefix server run test",
+    "build": "npm run content && npm run server:build"
+  },
+  "devDependencies": {
+    "yaml": "2.9.1"
+  }
+}

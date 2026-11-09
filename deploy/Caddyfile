@@ -1,0 +1,5 @@
+# 自动申请 HTTPS 证书，反代 Nakama 的 HTTP API 与 WebSocket
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy nakama:7350
+}

@@ -1,0 +1,90 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  server:
+    name: 服务端 · 构建 / 单测 / 真 Nakama 冒烟
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: nakama
+          POSTGRES_PASSWORD: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 内容校验，并确认生成文件已提交
+        run: |
+          npm ci && npm run content
+          git diff --exit-code -- client/data server/src/content.generated.ts || (echo "请运行 npm run content 并提交生成的文件" && exit 1)
+      - name: 构建 + 单测
+        working-directory: server
+        run: npm install --no-audit --no-fund && npm test
+      - name: 在真实 Nakama 里加载模块并调用 RPC
+        run: |
+          docker run -d --name nakama --network host \
+            -v "$PWD/server/build:/nakama/data/modules:ro" \
+            -v "$PWD/deploy/nakama/local.yml:/nakama/data/local.yml:ro" \
+            --entrypoint /bin/sh heroiclabs/nakama:3.41.0 -ecx \
+            "/nakama/nakama migrate up --database.address postgres:ci@127.0.0.1:5432/nakama && exec /nakama/nakama --config /nakama/data/local.yml --database.address postgres:ci@127.0.0.1:5432/nakama"
+          for i in $(seq 1 30); do curl -fs http://127.0.0.1:7350/healthcheck && break; sleep 2; done
+          docker logs nakama 2>&1 | tee nakama.log | grep "server module loaded"
+          TOKEN=$(curl -fsS -u defaultkey: -H 'Content-Type: application/json' \
+            -d '{"id":"ci-device-000001"}' "http://127.0.0.1:7350/v2/account/authenticate/device?create=true" | jq -r .token)
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+            -d '"{\"name\":\"ci\"}"' http://127.0.0.1:7350/v2/rpc/lifeline_create | tee rpc.json
+          jq -e '.payload | fromjson | .code | length == 6' rpc.json
+      - name: Nakama 日志
+        if: failure()
+        run: docker logs nakama || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: server-module
+          path: server/build/index.js
+
+  android:
+    name: 客户端 · 导出 Android 调试 APK
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.7.2
+    env:
+      GODOT_VERSION: 4.7.2
+    steps:
+      - uses: actions/checkout@v4
+      - name: 准备导出模板与编辑器设置
+        run: |
+          # GitHub 容器里 HOME=/github/home，镜像把模板和设置放在 /root 下
+          mkdir -p ~/.local/share/godot/export_templates ~/.config
+          cp -r /root/.config/godot ~/.config/godot || true
+          cp -r /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/ || true
+          if [ ! -f /root/debug.keystore ]; then
+            keytool -genkeypair -v -keystore /root/debug.keystore -storepass android -alias androiddebugkey \
+              -keypass android -keyalg RSA -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          fi
+          ls ~/.config/godot ~/.local/share/godot/export_templates
+      - name: 导入资源
+        run: timeout 300 godot --headless --editor --quit --path client || true
+      - name: 导出 APK
+        env:
+          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /root/debug.keystore
+          GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
+          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
+        run: |
+          mkdir -p build
+          godot --headless --path client --export-debug "Android" "$PWD/build/tongsui-debug.apk"
+          ls -la build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tongsui-debug-apk
+          path: build/tongsui-debug.apk

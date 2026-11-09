@@ -1,0 +1,6 @@
+node_modules/
+server/build/
+build/
+deploy/.env
+*.keystore
+.DS_Store

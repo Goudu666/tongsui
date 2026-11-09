@@ -75,6 +75,12 @@ jobs:
           ls ~/.config/godot ~/.local/share/godot/export_templates
       - name: 导入资源
         run: timeout 300 godot --headless --editor --quit --path client || true
+      - name: 冒烟运行游戏（脚本有解析/运行错误就失败）
+        run: |
+          timeout 60 godot --headless --path client --quit-after 300 2>&1 | tee run.log || true
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script|Invalid call|Invalid access" run.log; then
+            echo "::error::GDScript 报错，见上方日志" && exit 1
+          fi
       - name: 导出 APK
         env:
           GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /root/debug.keystore

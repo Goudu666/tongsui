@@ -85,7 +85,7 @@ set +e
 timeout 120 godot --headless --path client res://tests/smoke.tscn 2>&1 | grep -v -e fontconfig -e "Nakama : DEBUG" | tee "$OUT_DIR/smoke.log"
 smoke=${PIPESTATUS[0]}
 set -e
-if [[ $smoke -ne 0 ]] || grep -qE "SCRIPT ERROR|Parse Error|Failed to load script" "$OUT_DIR/smoke.log"; then
+if [[ $smoke -ne 0 ]] || grep -qE "SCRIPT ERROR|Parse Error|Failed to load script|Invalid call|Invalid access" "$OUT_DIR/smoke.log"; then
   echo "冒烟测试失败（退出码 $smoke）" >&2
   exit 1
 fi

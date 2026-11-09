@@ -9,6 +9,8 @@ const P := preload("res://scripts/ui/palette.gd")
 const LifeTime := preload("res://scripts/ui/life_time.gd")
 const NetClient := preload("res://scripts/net/lifeline_client.gd")
 const WorldView := preload("res://scripts/world/world_view.gd")
+const ServerConfig := preload("res://scripts/net/config.gd")
+const ServerSettings := preload("res://scripts/ui/server_settings.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -395,6 +397,8 @@ func _show_online() -> void:
 		_label(body, "还没有安装 nakama-godot 插件。\n在仓库根目录运行 tools/fetch_addons.sh，然后用 Godot 重新打开项目。", 36, P.MEI)
 		_button(body, "返回", _show_title)
 		return
+	if net != null and (net.socket == null or not net.socket.is_connected_to_host()):
+		_drop_net()  # 没连上或者断线了（比如手机锁屏太久）：重新连
 	if net == null:
 		net = NetClient.new()
 		add_child(net)
@@ -407,10 +411,20 @@ func _show_online() -> void:
 		net.event_started.connect(_on_event_started)
 		net.log_entries.connect(_on_log_entries)
 		net.presence.connect(_on_presence)
+		_label(body, "服务器：%s" % ServerConfig.url(), 28, P.INK_SOFT)
+		_status(body)
+		_button(body, "服务器设置", _show_server_settings)
+		_button(body, "返回", _show_title)
+		var connecting := net
 		var ok: bool = await net.connect_server()
+		if net != connecting:
+			return  # 连接期间改了服务器设置，这次的结果作废
 		if not ok:
-			_button(body, "返回", _show_title)
+			_drop_net()  # 停在这一页，状态栏显示失败原因；可以去改服务器设置
 			return
+		if body.get_node_or_null("Status") != null:  # 还停在联机页才刷新
+			_show_online()
+		return
 
 	var name_edit := LineEdit.new()
 	name_edit.placeholder_text = "你的名字（最多 12 个字）"
@@ -425,7 +439,28 @@ func _show_online() -> void:
 	_button(body, "加入（我是梅）", func(): net.join_lifeline(code_edit.text.strip_edges(), name_edit.text))
 	_gap(body, 20)
 	_status(body)
+	_label(body, "服务器：%s" % ServerConfig.url(), 28, P.INK_SOFT)
+	_button(body, "服务器设置", _show_server_settings)
 	_button(body, "返回", _show_title)
+
+
+func _show_server_settings() -> void:
+	_show_screen()
+	_gap(body, 120)
+	var panel := ServerSettings.new()
+	panel.done.connect(func(changed: bool):
+		if changed:
+			_drop_net()
+		_show_online())
+	body.add_child(panel)
+
+
+func _drop_net() -> void:
+	if net != null:
+		if net.socket != null:
+			net.socket.close()
+		net.queue_free()
+		net = null
 
 
 func _on_net_failed(text: String) -> void:

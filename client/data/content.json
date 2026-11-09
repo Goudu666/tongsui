@@ -1,0 +1,1612 @@
+{
+ "events": [
+  {
+   "id": "c_roof_summer",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "summer"
+   ],
+   "weight": 3,
+   "where": "roof",
+   "when": [
+    1080,
+    1300
+   ],
+   "hint": "楼顶好像有人在收凉席。",
+   "requires": {},
+   "title": "楼顶的夏夜",
+   "text": "夏天晚上，楼顶比屋里凉快。远处海河对岸的灯一盏一盏亮起来，楼下有人在收音机里听相声。",
+   "options": [
+    {
+     "id": "stars",
+     "text": "躺在凉席上数星星",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "popsicle",
+     "text": "跑下楼买两根冰棍",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {
+       "mood": 5
+      },
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "太晚了，回屋吧",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "stars": {
+     "text": "你们并排躺着，数到第四十七颗的时候，谁也想不起来数到哪儿了。",
+     "memory": "第四十七颗星",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     }
+    },
+    "popsicle": {
+     "text": "你们在楼梯拐角撞上了，手里都攥着两根冰棍。最后一人吃了两根，第二天都闹肚子。",
+     "memory": "四根冰棍",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     }
+    },
+    "home": {
+     "text": "你们一前一后下了楼，在楼道里说了声\"明儿见\"。",
+     "memory": "明儿见",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     }
+    }
+   },
+   "dissonance": {
+    "text": "一个人在楼顶等了很久，另一个人已经在楼下了。",
+    "bond": {
+     "close": 1
+    }
+   }
+  },
+  {
+   "id": "c_stray_cat",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": null,
+   "hint": "楼道的暖气片后面有很细的叫声。",
+   "requires": {
+    "minAge": 5
+   },
+   "title": "暖气片后面的猫",
+   "text": "楼道的暖气片后面缩着一只受伤的小猫。楼长说过不许在楼道里养东西。",
+   "options": [
+    {
+     "id": "hide",
+     "text": "偷偷拿纸箱给它搭个窝",
+     "tags": [
+      "adventure",
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "cat_secret"
+      ]
+     }
+    },
+    {
+     "id": "tell",
+     "text": "去告诉大人",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "leave",
+     "text": "不敢管，绕开走",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "hide": {
+     "text": "从那天起，你们有了第一个只属于两个人的秘密。猫叫\"暖暖\"。",
+     "memory": "暖暖",
+     "bond": {
+      "sync": 3,
+      "close": 4
+     }
+    },
+    "tell": {
+     "text": "你们一起去敲了楼长的门。小猫后来被自行车铺的爷爷收养了。",
+     "memory": "车铺的猫",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     }
+    }
+   },
+   "dissonance": {
+    "text": "一个想留下它，一个想交给大人。你们第一次为一件事争了起来。",
+    "bond": {
+     "close": -1
+    }
+   }
+  },
+  {
+   "id": "c_new_year",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "winter"
+   ],
+   "weight": 2,
+   "where": "alley",
+   "when": [
+    1140,
+    1320
+   ],
+   "hint": "楼下飘着一股火药味。",
+   "requires": {},
+   "title": "除夕的鞭炮",
+   "text": "除夕夜，楼下满地红纸屑。你攥着一盒偷来的火柴，兜里揣着三个\"二踢脚\"。",
+   "options": [
+    {
+     "id": "together",
+     "text": "喊上对门一起放",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "save",
+     "text": "留到初一早上",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "together": {
+     "text": "「砰——啪！」你们的眉毛都被燎掉了一点，楼上有人推开窗户骂了一句，然后也乐了。",
+     "memory": "燎掉的眉毛",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     }
+    },
+    "save": {
+     "text": "大年初一的清晨，整条街只有你们两个人的鞭炮声。",
+     "memory": "初一的清晨",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     }
+    }
+   },
+   "dissonance": {
+    "text": "你在楼下喊了好几声，楼上那扇窗一直没开。那年的鞭炮是一个人听的。",
+    "bond": {
+     "close": 0
+    }
+   }
+  },
+  {
+   "id": "c_river_ice",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "winter"
+   ],
+   "weight": 2,
+   "where": "river",
+   "when": null,
+   "hint": "海河边有人在喊\"冻实了！\"",
+   "requires": {},
+   "title": "冻上的海河",
+   "text": "海河冻上了。冰面上有人抽冰嘎，有人推着冰车跑，岸边大人喊着\"别往中间去\"。",
+   "options": [
+    {
+     "id": "skate",
+     "text": "下去推冰车",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "shore",
+     "text": "在岸上看着",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "skate": {
+     "text": "一个人坐在冰车上，一个人在后面推。摔了七次，笑了七次。",
+     "memory": "冰车",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     }
+    },
+    "shore": {
+     "text": "你们靠着栏杆，看着别人在冰上转圈，哈出来的白气混在一起。",
+     "memory": "栏杆上的白气",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     }
+    }
+   },
+   "dissonance": {
+    "text": "一个在冰上喊\"快下来\"，一个在岸上喊\"快上来\"。",
+    "bond": {
+     "close": 1
+    }
+   }
+  },
+  {
+   "id": "c_first_fight",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "alley",
+   "when": [
+    900,
+    1140
+   ],
+   "hint": null,
+   "requires": {
+    "minAge": 7
+   },
+   "title": "第一次打架",
+   "text": "放学路上，隔壁楼的几个大孩子拦住你，说你\"天天跟对门那个玩，丢人\"。",
+   "options": [
+    {
+     "id": "fight",
+     "text": "冲上去",
+     "tags": [
+      "adventure",
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": -5
+      },
+      "other": {
+       "mood": 5
+      },
+      "bond": {
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "run",
+     "text": "跑回家",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "argue",
+     "text": "跟他们掰扯：「介有嘛丢人的？」",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "c_rainy_day",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {},
+   "title": "下雨天",
+   "text": "雨下了一整天，楼下的路成了河。",
+   "options": [
+    {
+     "id": "read",
+     "text": "翻出一本没看完的小人书",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "puddle",
+     "text": "穿上雨靴去踩水坑",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": 5,
+       "clean": -20
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "door",
+     "text": "去对门借一本小人书",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {
+       "mood": 5
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "c_guitar",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 1,
+   "where": "bikeshop",
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 8
+   },
+   "title": "车铺里的旧二胡",
+   "text": "修车爷爷的墙上挂着一把落满灰的二胡。他说，想学就来。",
+   "options": [
+    {
+     "id": "learn",
+     "text": "每天放学来学一会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "erhu"
+      ]
+     }
+    },
+    {
+     "id": "skip",
+     "text": "算了，太难听了",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "c_exam",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 9
+   },
+   "title": "期末考试",
+   "text": "明天期末考试，你的数学还有两个单元没看。",
+   "options": [
+    {
+     "id": "cram",
+     "text": "熬夜看书",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 2,
+       "energy": -20
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "去对门问题目",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "sleep",
+     "text": "早点睡，听天由命",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "t_note",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "school",
+   "when": null,
+   "hint": null,
+   "requires": {},
+   "title": "课本上的纸条",
+   "text": "上课时，一张纸条从后排传了过来，上面只有一个问号。",
+   "options": [
+    {
+     "id": "reply",
+     "text": "在问号后面画一个笑脸",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ignore",
+     "text": "认真听课，假装没看见",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "reply": {
+     "text": "那张纸条来回传了一整节课，最后变成一整页的小人。",
+     "memory": "一整页的小人",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     }
+    }
+   },
+   "dissonance": {
+    "text": "纸条在课桌角上躺了一节课。下课时，它不见了。",
+    "bond": {
+     "close": -1
+    }
+   }
+  },
+  {
+   "id": "t_choose_school",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 15
+   },
+   "title": "志愿",
+   "text": "中考志愿表发下来了。市里的重点高中要住校，离家很远。",
+   "options": [
+    {
+     "id": "far",
+     "text": "报市重点",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 2
+      },
+      "other": {},
+      "bond": {
+       "distance": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "near",
+     "text": "报家门口的学校",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "y_letter_city",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {},
+   "title": "另一座城市",
+   "text": "一家外地的公司给了你一份工作，工资是现在的两倍。",
+   "options": [
+    {
+     "id": "go",
+     "text": "去",
+     "tags": [
+      "adventure",
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": -5
+      },
+      "other": {},
+      "bond": {
+       "distance": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "stay",
+     "text": "留下",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "m_demolish",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 1,
+   "where": "alley",
+   "when": null,
+   "hint": "楼门口贴了一张红色的告示。",
+   "requires": {},
+   "title": "拆迁通知",
+   "text": "楼门口贴出了拆迁通知。这栋红砖楼也在红线里。",
+   "options": [
+    {
+     "id": "dig",
+     "text": "回去把楼道墙上刻的名字拍下来",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "let_go",
+     "text": "让它跟着楼一起没了吧",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "dig": {
+     "text": "你们隔了很多年，在同一个周末回到了楼里，在三楼的楼道里碰了面。墙上两个人的名字还在。",
+     "memory": "拆迁前的周末",
+     "bond": {
+      "sync": 4,
+      "close": 4,
+      "distance": -1
+     }
+    }
+   },
+   "dissonance": {
+    "text": "墙上的名字，只有一个人回来拍了。",
+    "bond": {
+     "close": 0
+    }
+   }
+  },
+  {
+   "id": "o_last_letter",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {},
+   "title": "最后一封信",
+   "text": "你翻出一叠旧信。有一封，当年写好了却没有寄出去。",
+   "options": [
+    {
+     "id": "send",
+     "text": "现在寄出去",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {
+       "mood": 10
+      },
+      "bond": {
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "keep",
+     "text": "放回抽屉",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  }
+ ],
+ "families": [
+  {
+   "id": "chen",
+   "name": "陈家 · 自行车铺",
+   "wealth": 1,
+   "weight": 3,
+   "money": 30,
+   "desc": "父亲在楼下修了二十年自行车，满手机油。母亲在纺织厂倒三班。",
+   "bonus": {
+    "body": 1
+   },
+   "traits": [
+    "fam_handy"
+   ]
+  },
+  {
+   "id": "lin",
+   "name": "林家 · 教书先生",
+   "wealth": 1,
+   "weight": 3,
+   "money": 25,
+   "desc": "父母都是小学老师。家里书比碗多，规矩也比别家多。",
+   "bonus": {
+    "mind": 2,
+    "charm": -1
+   },
+   "traits": [
+    "fam_strict"
+   ]
+  },
+  {
+   "id": "zhou",
+   "name": "周家 · 早点铺",
+   "wealth": 1,
+   "weight": 3,
+   "money": 35,
+   "desc": "楼下那家煎饼果子摊就是你家的。天不亮爸妈就起来和面，整栋楼都认识你。",
+   "bonus": {
+    "charm": 1
+   },
+   "traits": [
+    "fam_breakfast"
+   ]
+  },
+  {
+   "id": "xu",
+   "name": "许家 · 跑海运",
+   "wealth": 2,
+   "weight": 1,
+   "money": 90,
+   "desc": "父亲在港口上船跑远洋，一年回来两次，每次都带很贵的礼物。",
+   "bonus": {
+    "luck": 1
+   },
+   "traits": [
+    "fam_rich",
+    "fam_father_away"
+   ]
+  },
+  {
+   "id": "he",
+   "name": "何家 · 姥姥带大",
+   "wealth": 0,
+   "weight": 2,
+   "money": 5,
+   "desc": "爸妈在外地打工，你跟姥姥住。姥姥不识字，但会讲一百个故事。",
+   "bonus": {
+    "charm": 1,
+    "luck": 1
+   },
+   "traits": [
+    "fam_grandma",
+    "fam_poor"
+   ]
+  },
+  {
+   "id": "su",
+   "name": "苏家 · 裁缝铺",
+   "wealth": 1,
+   "weight": 2,
+   "money": 30,
+   "desc": "母亲的裁缝铺里总挂满别人的新衣裳。你的衣服永远是这片儿最合身的。",
+   "bonus": {
+    "charm": 1,
+    "luck": 1
+   },
+   "traits": [
+    "fam_tailor"
+   ]
+  },
+  {
+   "id": "tang",
+   "name": "唐家 · 南方搬来的",
+   "wealth": 2,
+   "weight": 1,
+   "money": 120,
+   "desc": "刚从南方搬来，说话没有天津味儿。楼里的孩子一开始都不太跟你玩。",
+   "bonus": {
+    "mind": 1,
+    "charm": -1
+   },
+   "traits": [
+    "fam_rich",
+    "fam_outsider"
+   ]
+  },
+  {
+   "id": "wu",
+   "name": "吴家 · 钢厂双职工",
+   "wealth": 0,
+   "weight": 2,
+   "money": 8,
+   "desc": "爸妈都在钢厂上班，晚上回来倒头就睡。你很早就学会自己热饭。",
+   "bonus": {
+    "body": 2
+   },
+   "traits": [
+    "fam_poor",
+    "fam_independent"
+   ]
+  },
+  {
+   "id": "gu",
+   "name": "顾家 · 说相声的",
+   "wealth": 1,
+   "weight": 2,
+   "money": 20,
+   "desc": "父亲晚上在茶馆说相声，白天在家对着墙练贯口。你从小就嘴皮子溜。",
+   "bonus": {
+    "charm": 2
+   },
+   "traits": [
+    "fam_crosstalk"
+   ]
+  },
+  {
+   "id": "jiang",
+   "name": "江家 · 四口挤一间",
+   "wealth": 0,
+   "weight": 2,
+   "money": 6,
+   "desc": "上面有个哥哥，下面有个妹妹。家里什么都得抢，但从来不冷清。",
+   "bonus": {
+    "luck": 2
+   },
+   "traits": [
+    "fam_poor",
+    "fam_siblings"
+   ]
+  }
+ ],
+ "talents": [
+  {
+   "id": "none",
+   "name": "普通的孩子",
+   "weight": 6,
+   "desc": "没有什么特别的。但普通也挺好的。",
+   "bonus": {},
+   "flags": []
+  },
+  {
+   "id": "memory",
+   "name": "过目不忘",
+   "weight": 1,
+   "desc": "看一遍就记住了，写作业的效率是别人的两倍。",
+   "bonus": {
+    "mind": 2
+   },
+   "flags": [
+    "tal_memory"
+   ]
+  },
+  {
+   "id": "strong",
+   "name": "天生神力",
+   "weight": 1,
+   "desc": "三岁就能把水桶从井里提上来。",
+   "bonus": {
+    "body": 2
+   },
+   "flags": [
+    "tal_strong"
+   ]
+  },
+  {
+   "id": "sunny",
+   "name": "倍儿哏儿",
+   "weight": 1,
+   "desc": "天生乐呵，谁见了都想笑。心情掉得比别人慢。",
+   "bonus": {
+    "charm": 2
+   },
+   "flags": [
+    "tal_sunny"
+   ]
+  },
+  {
+   "id": "koi",
+   "name": "锦鲤",
+   "weight": 1,
+   "desc": "运气好得离谱。",
+   "bonus": {
+    "luck": 3
+   },
+   "flags": [
+    "tal_koi"
+   ]
+  },
+  {
+   "id": "owl",
+   "name": "夜猫子",
+   "weight": 1,
+   "desc": "晚上精神特别好，早上起不来。",
+   "bonus": {},
+   "flags": [
+    "tal_owl"
+   ]
+  },
+  {
+   "id": "foodie",
+   "name": "小馋猫",
+   "weight": 1,
+   "desc": "饿得快，但每顿饭都吃得特别开心。",
+   "bonus": {
+    "charm": 1
+   },
+   "flags": [
+    "tal_foodie"
+   ]
+  }
+ ],
+ "map": {
+  "size": [
+   2400,
+   1600
+  ],
+  "spawn": {
+   "qing": [
+    300,
+    560
+   ],
+   "mei": [
+    1180,
+    560
+   ]
+  },
+  "zones": [
+   {
+    "id": "roof",
+    "name": "楼顶",
+    "rect": [
+     140,
+     40,
+     1200,
+     180
+    ]
+   },
+   {
+    "id": "home_qing",
+    "name": "青家",
+    "rect": [
+     140,
+     260,
+     540,
+     440
+    ],
+    "owner": "qing"
+   },
+   {
+    "id": "hallway",
+    "name": "楼道",
+    "rect": [
+     690,
+     260,
+     100,
+     440
+    ]
+   },
+   {
+    "id": "home_mei",
+    "name": "梅家",
+    "rect": [
+     800,
+     260,
+     540,
+     440
+    ],
+    "owner": "mei"
+   },
+   {
+    "id": "breakfast",
+    "name": "早点铺",
+    "rect": [
+     1460,
+     300,
+     340,
+     340
+    ]
+   },
+   {
+    "id": "river",
+    "name": "海河边",
+    "rect": [
+     1900,
+     140,
+     480,
+     1360
+    ]
+   },
+   {
+    "id": "alley",
+    "name": "河畔里",
+    "rect": [
+     0,
+     760,
+     1880,
+     240
+    ]
+   },
+   {
+    "id": "school",
+    "name": "小学",
+    "rect": [
+     40,
+     1080,
+     560,
+     420
+    ]
+   },
+   {
+    "id": "bikeshop",
+    "name": "自行车铺",
+    "rect": [
+     860,
+     1080,
+     520,
+     400
+    ]
+   }
+  ],
+  "spots": [
+   {
+    "id": "bed_qing",
+    "zone": "home_qing",
+    "at": [
+     260,
+     560
+    ],
+    "action": "sleep"
+   },
+   {
+    "id": "table_qing",
+    "zone": "home_qing",
+    "at": [
+     450,
+     380
+    ],
+    "action": "eat"
+   },
+   {
+    "id": "desk_qing",
+    "zone": "home_qing",
+    "at": [
+     250,
+     360
+    ],
+    "action": "study"
+   },
+   {
+    "id": "basin_qing",
+    "zone": "home_qing",
+    "at": [
+     560,
+     620
+    ],
+    "action": "wash"
+   },
+   {
+    "id": "bed_mei",
+    "zone": "home_mei",
+    "at": [
+     1220,
+     560
+    ],
+    "action": "sleep"
+   },
+   {
+    "id": "table_mei",
+    "zone": "home_mei",
+    "at": [
+     1030,
+     380
+    ],
+    "action": "eat"
+   },
+   {
+    "id": "desk_mei",
+    "zone": "home_mei",
+    "at": [
+     1230,
+     360
+    ],
+    "action": "study"
+   },
+   {
+    "id": "basin_mei",
+    "zone": "home_mei",
+    "at": [
+     920,
+     620
+    ],
+    "action": "wash"
+   },
+   {
+    "id": "door_qing",
+    "zone": "hallway",
+    "at": [
+     715,
+     470
+    ],
+    "action": "knock"
+   },
+   {
+    "id": "door_mei",
+    "zone": "hallway",
+    "at": [
+     765,
+     470
+    ],
+    "action": "knock"
+   },
+   {
+    "id": "roof_pigeon",
+    "zone": "roof",
+    "at": [
+     740,
+     130
+    ],
+    "action": "play_roof"
+   },
+   {
+    "id": "breakfast_stall",
+    "zone": "breakfast",
+    "at": [
+     1630,
+     470
+    ],
+    "action": "eat_out"
+   },
+   {
+    "id": "river_bank",
+    "zone": "river",
+    "at": [
+     2140,
+     820
+    ],
+    "action": "play_river"
+   },
+   {
+    "id": "alley_rope",
+    "zone": "alley",
+    "at": [
+     1260,
+     880
+    ],
+    "action": "play_alley"
+   },
+   {
+    "id": "bike_bench",
+    "zone": "bikeshop",
+    "at": [
+     1120,
+     1280
+    ],
+    "action": "work"
+   },
+   {
+    "id": "school_gate",
+    "zone": "school",
+    "at": [
+     320,
+     1200
+    ],
+    "action": "school"
+   }
+  ],
+  "actions": [
+   {
+    "id": "eat",
+    "label": "吃饭",
+    "minutes": 30,
+    "sleep": false,
+    "school": false,
+    "requires": {},
+    "needs": {
+     "hunger": 45,
+     "mood": 3
+    },
+    "stats": {},
+    "money": 0,
+    "together": null
+   },
+   {
+    "id": "eat_out",
+    "label": "买套煎饼果子",
+    "minutes": 20,
+    "sleep": false,
+    "school": false,
+    "requires": {
+     "hours": [
+      390,
+      600
+     ]
+    },
+    "needs": {
+     "hunger": 40,
+     "mood": 8
+    },
+    "stats": {},
+    "money": -2,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "「俩鸡蛋，多放葱花！」你们异口同声。"
+    }
+   },
+   {
+    "id": "sleep",
+    "label": "睡觉",
+    "minutes": 0,
+    "sleep": true,
+    "school": false,
+    "requires": {
+     "owner": true
+    },
+    "needs": {},
+    "stats": {},
+    "money": 0,
+    "together": null
+   },
+   {
+    "id": "study",
+    "label": "写作业",
+    "minutes": 60,
+    "sleep": false,
+    "school": false,
+    "requires": {
+     "minAge": 6
+    },
+    "needs": {
+     "energy": -8,
+     "mood": -4
+    },
+    "stats": {
+     "mind": 0.3
+    },
+    "money": 0,
+    "together": null
+   },
+   {
+    "id": "wash",
+    "label": "洗澡",
+    "minutes": 20,
+    "sleep": false,
+    "school": false,
+    "requires": {},
+    "needs": {
+     "clean": 60,
+     "mood": 2
+    },
+    "stats": {},
+    "money": 0,
+    "together": null
+   },
+   {
+    "id": "knock",
+    "label": "开门喊一声",
+    "minutes": 15,
+    "sleep": false,
+    "school": false,
+    "requires": {},
+    "needs": {
+     "mood": -1
+    },
+    "stats": {},
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 10
+     },
+     "bond": {
+      "close": 2,
+      "sync": 1
+     },
+     "text": "两扇门同时开了，你们在楼道里对着乐。"
+    }
+   },
+   {
+    "id": "play_roof",
+    "label": "楼顶放鸽子",
+    "minutes": 45,
+    "sleep": false,
+    "school": false,
+    "requires": {},
+    "needs": {
+     "mood": 10,
+     "energy": -6,
+     "clean": -6
+    },
+    "stats": {},
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "鸽子绕着楼顶飞了三圈，你们数的圈数不一样。"
+    }
+   },
+   {
+    "id": "play_river",
+    "label": "海河边放风筝",
+    "minutes": 45,
+    "sleep": false,
+    "school": false,
+    "requires": {},
+    "needs": {
+     "mood": 10,
+     "energy": -8,
+     "clean": -6
+    },
+    "stats": {
+     "body": 0.2
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个人拽线，一个人举着风筝跑。"
+    }
+   },
+   {
+    "id": "play_alley",
+    "label": "楼下跳皮筋",
+    "minutes": 45,
+    "sleep": false,
+    "school": false,
+    "requires": {},
+    "needs": {
+     "mood": 10,
+     "energy": -8,
+     "clean": -8
+    },
+    "stats": {
+     "body": 0.2
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "「小皮球，架脚踢……」你们俩跳得一样快。"
+    }
+   },
+   {
+    "id": "work",
+    "label": "帮爷爷修车",
+    "minutes": 90,
+    "sleep": false,
+    "school": false,
+    "requires": {
+     "minAge": 8
+    },
+    "needs": {
+     "energy": -12,
+     "clean": -15
+    },
+    "stats": {
+     "body": 0.2
+    },
+    "money": 5,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "爷爷说你们俩加一块儿顶半个学徒。"
+    }
+   },
+   {
+    "id": "school",
+    "label": "上学",
+    "minutes": 0,
+    "sleep": false,
+    "school": true,
+    "requires": {
+     "minAge": 6,
+     "maxAge": 17,
+     "hours": [
+      420,
+      540
+     ]
+    },
+    "needs": {
+     "hunger": 30,
+     "energy": -15
+    },
+    "stats": {
+     "mind": 0.5,
+     "charm": 0.1
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "你们一起走进了校门。"
+    }
+   }
+  ]
+ }
+}

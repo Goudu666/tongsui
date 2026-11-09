@@ -1,0 +1,94 @@
+# 河畔里的人家。开局两位玩家各抽一户，两户永远是对门（不会抽到同一户）。
+# wealth: 0 清贫 / 1 小康 / 2 殷实 —— 影响零花钱、饭菜带来的心情，以及部分事件
+# bonus: 先天属性加成（body 体魄 / mind 心智 / charm 魅力 / luck 运气）
+# traits: 家庭标记，事件可以用 requires.flags 读取
+
+- id: chen
+  name: 陈家 · 自行车铺
+  wealth: 1
+  weight: 3
+  money: 30
+  desc: 父亲在楼下修了二十年自行车，满手机油。母亲在纺织厂倒三班。
+  bonus: { body: 1 }
+  traits: [fam_handy]
+
+- id: lin
+  name: 林家 · 教书先生
+  wealth: 1
+  weight: 3
+  money: 25
+  desc: 父母都是小学老师。家里书比碗多，规矩也比别家多。
+  bonus: { mind: 2, charm: -1 }
+  traits: [fam_strict]
+
+- id: zhou
+  name: 周家 · 早点铺
+  wealth: 1
+  weight: 3
+  money: 35
+  desc: 楼下那家煎饼果子摊就是你家的。天不亮爸妈就起来和面，整栋楼都认识你。
+  bonus: { charm: 1 }
+  traits: [fam_breakfast]
+
+- id: xu
+  name: 许家 · 跑海运
+  wealth: 2
+  weight: 1
+  money: 90
+  desc: 父亲在港口上船跑远洋，一年回来两次，每次都带很贵的礼物。
+  bonus: { luck: 1 }
+  traits: [fam_rich, fam_father_away]
+
+- id: he
+  name: 何家 · 姥姥带大
+  wealth: 0
+  weight: 2
+  money: 5
+  desc: 爸妈在外地打工，你跟姥姥住。姥姥不识字，但会讲一百个故事。
+  bonus: { charm: 1, luck: 1 }
+  traits: [fam_grandma, fam_poor]
+
+- id: su
+  name: 苏家 · 裁缝铺
+  wealth: 1
+  weight: 2
+  money: 30
+  desc: 母亲的裁缝铺里总挂满别人的新衣裳。你的衣服永远是这片儿最合身的。
+  bonus: { charm: 1, luck: 1 }
+  traits: [fam_tailor]
+
+- id: tang
+  name: 唐家 · 南方搬来的
+  wealth: 2
+  weight: 1
+  money: 120
+  desc: 刚从南方搬来，说话没有天津味儿。楼里的孩子一开始都不太跟你玩。
+  bonus: { mind: 1, charm: -1 }
+  traits: [fam_rich, fam_outsider]
+
+- id: wu
+  name: 吴家 · 钢厂双职工
+  wealth: 0
+  weight: 2
+  money: 8
+  desc: 爸妈都在钢厂上班，晚上回来倒头就睡。你很早就学会自己热饭。
+  bonus: { body: 2 }
+  traits: [fam_poor, fam_independent]
+
+- id: gu
+  name: 顾家 · 说相声的
+  wealth: 1
+  weight: 2
+  money: 20
+  desc: 父亲晚上在茶馆说相声，白天在家对着墙练贯口。你从小就嘴皮子溜。
+  bonus: { charm: 2 }
+  traits: [fam_crosstalk]
+
+- id: jiang
+  name: 江家 · 四口挤一间
+  wealth: 0
+  weight: 2
+  money: 6
+  desc: 上面有个哥哥，下面有个妹妹。家里什么都得抢，但从来不冷清。
+  bonus: { luck: 2 }
+  traits: [fam_poor, fam_siblings]

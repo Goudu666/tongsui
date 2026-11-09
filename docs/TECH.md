@@ -5,15 +5,16 @@
 ```
  ┌──────────── Android 手机 A ────────────┐        ┌──────── 香港 / 东京 VPS ────────┐
  │ Godot 4.7（GDScript）                   │  WSS   │ Caddy  ── 自动 HTTPS             │
- │  ├ UI / 动画 / 套色 shader              │◀──────▶│  └ Nakama 3.41                  │
+ │  ├ 地图 / 角色 / 套色 shader            │◀──────▶│  └ Nakama 3.41                  │
  │  ├ 显影：XDoG shader（照片不出手机）    │  443   │     ├ 设备登录 / 会话           │
  │  └ nakama-godot 客户端                  │        │     ├ RPC：配对码、开房、列表   │
- └─────────────────────────────────────────┘        │     ├ 权威房间 lifeline          │
- ┌──────────── Android 手机 B ────────────┐        │     │  └ sim.ts 结算每一回合     │
+ └─────────────────────────────────────────┘        │     ├ 权威房间 lifeline（10Hz） │
+ ┌──────────── Android 手机 B ────────────┐        │     │  ├ sim.ts  投胎/事件/生死  │
+ │                                         │        │     │  └ world.ts 时钟/行动/同框 │
  │                同上                     │◀──────▶│     └ Storage：人生存档          │
  └─────────────────────────────────────────┘        │  PostgreSQL 16                   │
                                                      └──────────────────────────────────┘
-        content/events/*.yaml ──(tools/build-content.mjs)──▶ client/data/events.json
+        content/*.yaml ──(tools/build-content.mjs)──▶ client/data/content.json
                                                           └─▶ server/src/content.generated.ts
 ```
 
@@ -32,11 +33,11 @@
 
 ### 服务器：Nakama + TypeScript
 
-《同岁》的联机是**回合制**：两人各自选完，服务器结算一次。不需要帧同步，也不需要 UDP。真正需要的是：
+《同岁》的联机是**慢节奏实时**：两人在地图上走动（5 Hz 位置广播 + 客户端插值就够），共享一个时钟，事件时两人各自选择、服务器结算。不需要帧同步，也不需要 UDP。真正需要的是：
 
 - 账号（设备登录即可，不用注册）
 - 两人配对（配对码）
-- 一个**权威**的房间，保证结算只发生在服务器（防作弊，也防两边状态不一致）
+- 一个**权威**的房间：时钟、需求、行动、事件、结算都只在服务器上算（防作弊，也防两边状态不一致）
 - 存档（一生要玩好几个晚上）
 - 离线时的推送通知（M2）
 
@@ -47,9 +48,11 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 
 ### 规则只写一份（服务器为准）
 
-- 规则核心在 `server/src/sim.ts`：纯函数，不依赖 Nakama，Node 里可以直接单测。
-- 客户端的 `client/scripts/sim/local_life.gd` 是它的 GDScript 版本，**只用于同屏原型和离线体验**。联机时客户端不做任何结算，只显示服务器发来的结果。
-- 改规则时两边一起改；以后规则稳定了，可以考虑客户端也只做显示，把同屏模式也接到一个本地起的服务器上。
+- `server/src/sim.ts`：人生层，投胎、事件结算、一天结束、生老病死。
+- `server/src/world.ts`：一天之内的实时世界，共享时钟、走动限速、行动、需求衰减、同框、地点触发事件、影子。
+- 两个文件都是纯函数，不依赖 Nakama，Node 里可以直接单测（`server/test/life.test.mjs`）。
+- 客户端不做任何结算，只负责画、走、发指令。自己的角色走动由客户端预测，服务器限速后广播；对方的角色按广播插值。
+- 唯一在客户端重复的规则是「回合 → 年龄标签」（`client/scripts/ui/life_time.gd`，只用于显示）。
 
 ## 房间协议
 
@@ -58,47 +61,65 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | RPC | 谁调用 | 作用 |
 | --- | --- | --- |
 | `lifeline_create {name}` | 青 | 新建人生线，返回 6 位配对码 |
-| `lifeline_join {code, name}` | 梅 | 输入配对码加入，此时生成两人的初始人生 |
+| `lifeline_join {code, name}` | 梅 | 输入配对码加入，同时为两人各投一次胎 |
 | `lifeline_open {lifelineId}` | 任意一方 | 返回正在运行的房间 id，没有就从存档拉起 |
 | `lifeline_list` | 任意 | 我参与的人生线 |
 
-房间（`lifeline` 权威 match，1 tick/秒）消息：
+房间（`lifeline` 权威 match，10 tick/秒）的阶段：`roll`（投胎）→ `life`（河畔里）→ `ended`。
 
 | op | 方向 | 内容 |
 | --- | --- | --- |
-| 1 SNAPSHOT | s→c | `{lifelineId, names, life, you, progress}` 进房时发一次 |
-| 2 CHOOSE | c→s | `{optionId}` 可以在结算前改主意 |
-| 3 RESOLVED | s→c | `{entries, state}` 一回合结算完毕 |
-| 4 PROGRESS | s→c | `{chosen, online}` 对方是否选好、是否在线（**不包含对方选了什么**） |
+| 1 SNAPSHOT | s→c | `{lifelineId, names, life, you, online}` 进房、开局、每天结束时发 |
+| 2 ROLL | c→s | `{reroll: true}` 或 `{confirm: true}` |
+| 3 ROLL_STATE | s→c | `{rolls}` 两人当前抽到的家庭、天赋、属性、剩余次数 |
+| 4 MOVE | c→s | `{x, y}` 约 10 Hz，服务器限速（360 px/s）和边界 |
+| 5 ACT | c→s | `{spot}` 在某个点开始行动（距离、年龄、时间、家、钱都会校验） |
+| 6 CHOOSE | c→s | `{optionId}` 事件里的选择，结算前可以改 |
+| 7 WORLD | s→c | 5 Hz：`{minute, schoolDay, actors, needs, money, event, bond, hints}` |
+| 8 EVENT | s→c | `{event}` 有事件开始了（只告诉谁参与、是否已选，不告诉选了什么） |
 | 9 ERROR | s→c | `{message}` |
+| 10 LOG | s→c | `{entries}` 事件结算、同框、一天结束、死亡、终局 |
+| 11 PRESENCE | s→c | `{online}` |
 
-结算条件：本回合需要选择的人都选好了；或者已选的人在线、没选的人**离线超过 30 秒**，由影子代选。
-每回合结算后写一次存档，所以房间随时可以关，两人都下线 2 分钟后房间自动关闭。
+- 事件进行中时钟暂停；没选的人都离线时，等 30 秒后由影子代选。
+- 每天结束、有人掉线、每 30 秒各存一次档。两人都下线后世界停住，2 分钟后房间关闭。
 
 ## 内容格式
 
-剧情事件写在 `content/events/*.yaml`，运行 `npm run content` 校验并生成客户端/服务端数据（生成的文件需要提交）。
+内容都在 `content/` 下，运行 `npm run content` 校验并生成客户端/服务端数据（生成的文件需要提交）。
+
+| 文件 | 内容 |
+| --- | --- |
+| `events/*.yaml` | 剧情事件 |
+| `families.yaml` | 投胎能抽到的人家：家境、零花钱、属性加成、家庭标记 |
+| `talents.yaml` | 先天天赋 |
+| `map.yaml` | 地图：地点（矩形区域）、互动点、行动（时长、需求/属性变化、花钱挣钱、同框效果、条件） |
+
+事件格式：
 
 ```yaml
-- id: c_firefly          # 全局唯一
-  kind: mirror           # mirror 默契场景 / solo 各自场景
+- id: c_roof_summer      # 全局唯一
+  kind: mirror           # mirror 默契事件（两人都到场）/ solo 各自的事
   stage: childhood       # childhood / teen / young / middle / old
+  where: roof            # 地点，见 map.yaml 的 zones；solo 不写则早上醒来触发
+  when: [1080, 1300]     # 可选，游戏分钟（1080 = 18:00）
+  hint: 楼顶好像有人在收凉席。   # 可选，地图上飘着的提示
   seasons: [summer]      # 可选，仅童年有季节
   weight: 3              # 抽取权重
-  requires: { minAge: 6, flags: [guitar], notFlags: [] }   # 可选
-  title: 萤火虫
-  text: 傍晚，巷口的草丛里亮起了一点光。
+  requires: { minAge: 6, flags: [erhu], notFlags: [] }   # 可选，flags 可以是家庭/天赋/事件打的标记
+  title: 楼顶的夏夜
+  text: 夏天晚上，楼顶比屋里凉快……
   options:
-    - id: catch
-      text: 拿玻璃瓶去装
-      tags: [adventure]                  # 性格标签，训练影子
+    - id: stars
+      text: 躺在凉席上数星星
+      tags: [gentle]                     # 性格标签，训练影子
       effects:
-        self:  { heart: 1 }              # body 体魄 / mind 心智 / charm 魅力 / heart 心情
-        other: { heart: 1 }              # 对对方的影响
+        self:  { mood: 10, mind: 1 }     # 属性 body/mind/charm/luck（0~10）+ 需求 hunger/energy/mood/clean（0~100）
+        other: { mood: 5 }               # 对对方的影响
         bond:  { sync: 1, close: 1 }     # sync 默契 / close 亲近 / distance 距离
-        flags: [caught_firefly]          # 给自己打标记，供以后的事件 requires
+        flags: [saw_stars]
   resonance:                             # mirror 专用：两人选到同一项
-    catch: { text: ……, memory: 一瓶萤火虫, bond: { sync: 3 } }
+    stars: { text: ……, memory: 第四十七颗星, bond: { sync: 3 } }
   dissonance: { text: ……, bond: { close: 1 } }   # mirror 专用：选得不一样
 ```
 
@@ -106,7 +127,7 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 
 ```bash
 npm run content          # 内容校验
-npm run server:test      # 编译 + 跑 200 条完整人生 + 模拟一遍联机流程（配对、同房、校验、存档、影子、关房）
+npm run server:test      # 编译 + 投胎规则 + 60 条全影子人生 + 世界规则单点 + 模拟一遍联机流程
 ```
 
 CI（`.github/workflows/build.yml`）还会在真实的 Nakama 容器里加载模块并调用一次 `lifeline_create`，然后导出 Android 调试 APK。
@@ -122,7 +143,8 @@ CI（`.github/workflows/build.yml`）还会在真实的 Nakama 容器里加载�
 
 ## 已知待办
 
-- 客户端联机界面只是最小可用，还没处理断线重连、重新进入已有的人生线（`lifeline_list`）。
-- 书信、危机场景、回忆唤起、蝴蝶事件的规则还没进 `sim.ts`。
+- 客户端是最小可用：地图和角色是代码画的墨线占位，还没有手绘贴图、动画、音效；没处理断线重连、重新进入已有的人生线（`lifeline_list`）。
+- 地图没有碰撞（合作游戏，信任客户端走位），M1 加简单的墙体。
+- 少年以后的阶段还在用河畔里这一张地图；M2 加分开的城市地图、书信、危机场景、回忆唤起、蝴蝶事件。
 - 字体：霞鹜文楷完整版约 25 MB，正式打包前用 `pyftsubset` 裁成常用 3500 字 + 游戏里出现的字。
 - 正式发布需要自己的 release keystore（不要提交到仓库）。

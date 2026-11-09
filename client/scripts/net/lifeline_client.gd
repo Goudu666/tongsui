@@ -8,8 +8,11 @@ signal failed(text: String)
 signal created(code: String, lifeline_id: String)
 signal opened(info: Dictionary)
 signal snapshot(data: Dictionary)
-signal resolved(data: Dictionary)
-signal progress(data: Dictionary)
+signal roll_state(data: Dictionary)
+signal world_state(data: Dictionary)
+signal event_started(data: Dictionary)
+signal log_entries(data: Dictionary)
+signal presence(data: Dictionary)
 
 const Config := preload("res://scripts/net/config.gd")
 const Op := preload("res://scripts/net/protocol.gd")
@@ -95,9 +98,29 @@ func open_lifeline(lifeline_id: String) -> void:
 	match_id = r.matchId
 
 
-func choose(option_id: String) -> void:
+func _send(op: int, body: Dictionary) -> void:
 	if match_id != "":
-		socket.send_match_state_async(match_id, Op.CHOOSE, JSON.stringify({"optionId": option_id}))
+		socket.send_match_state_async(match_id, op, JSON.stringify(body))
+
+
+func reroll() -> void:
+	_send(Op.ROLL, {"reroll": true})
+
+
+func confirm_roll() -> void:
+	_send(Op.ROLL, {"confirm": true})
+
+
+func move(pos: Vector2) -> void:
+	_send(Op.MOVE, {"x": snappedf(pos.x, 1.0), "y": snappedf(pos.y, 1.0)})
+
+
+func act(spot_id: String) -> void:
+	_send(Op.ACT, {"spot": spot_id})
+
+
+func choose(option_id: String) -> void:
+	_send(Op.CHOOSE, {"optionId": option_id})
 
 
 func _on_match_state(state) -> void:
@@ -107,9 +130,15 @@ func _on_match_state(state) -> void:
 	var op := int(state.op_code)
 	if op == Op.SNAPSHOT:
 		snapshot.emit(data)
-	elif op == Op.RESOLVED:
-		resolved.emit(data)
-	elif op == Op.PROGRESS:
-		progress.emit(data)
+	elif op == Op.ROLL_STATE:
+		roll_state.emit(data)
+	elif op == Op.WORLD:
+		world_state.emit(data)
+	elif op == Op.EVENT:
+		event_started.emit(data)
+	elif op == Op.LOG:
+		log_entries.emit(data)
+	elif op == Op.PRESENCE:
+		presence.emit(data)
 	elif op == Op.ERROR:
 		failed.emit(str(data.get("message", "")))

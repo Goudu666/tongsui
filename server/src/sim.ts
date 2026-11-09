@@ -1,14 +1,13 @@
-// 人生结算核心：纯函数，不依赖 Nakama，可以在 Node 里单测。
-// 客户端 client/scripts/sim/local_life.gd 是它的 GDScript 版本（只用于同屏原型），改规则时两边一起改。
+// 人生层：抽卡、时间、事件结算、生老病死。纯函数，不依赖 Nakama，可在 Node 里单测。
+// 河畔里的实时部分（走动、吃饭睡觉、触发事件）在 world.ts。
 
 var ROLES: Role[] = ["qing", "mei"];
-var STAT_MIN = 0;
-var STAT_MAX = 10;
+var REROLLS = 3;
 var MEMORY_FADE_EVERY = 8;
 var SEASON_ORDER: Season[] = ["spring", "summer", "autumn", "winter"];
 var SEASON_LABEL = ["立春", "立夏", "立秋", "立冬"];
 
-/** 时间的密度：越长大，一回合越长 */
+/** 时间的密度：每个回合是人生里被「放大」的一天，回合之间的日子一笔带过。越长大，跳得越远。 */
 var STAGE_TABLE: { stage: Stage; fromAge: number; turnsPerYear: number; years: number }[] = [
   { stage: "childhood", fromAge: 3, turnsPerYear: 4, years: 9 },
   { stage: "teen", fromAge: 12, turnsPerYear: 2, years: 6 },
@@ -17,27 +16,9 @@ var STAGE_TABLE: { stage: Stage; fromAge: number; turnsPerYear: number; years: n
   { stage: "old", fromAge: 60, turnsPerYear: 1 / 5, years: 1000 },
 ];
 
-var ORDINARY_EVENT: LifeEvent = {
-  id: "_ordinary",
-  kind: "solo",
-  stage: "childhood",
-  seasons: [],
-  weight: 1,
-  requires: {},
-  title: "平淡的日子",
-  text: "这段日子没有什么特别的事。",
-  options: [
-    { id: "rest", text: "好好休息", tags: ["solitude"], effects: { self: { heart: 1 }, other: {}, bond: {}, flags: [] } },
-    { id: "work", text: "多做一点事", tags: ["competitive"], effects: { self: { mind: 1 }, other: {}, bond: {}, flags: [] } },
-    { id: "visit", text: "去看看 TA", tags: ["gentle"], effects: { self: {}, other: { heart: 1 }, bond: { close: 1 }, flags: [] } },
-  ],
-  resonance: null,
-  dissonance: null,
-};
-
 // ---------- 随机数（mulberry32，状态存进存档，保证可复现） ----------
 
-function lifeRand(s: LifeState): number {
+function lifeRand(s: { rng: number }): number {
   s.rng = (s.rng + 0x6d2b79f5) | 0;
   var t = s.rng;
   t = Math.imul(t ^ (t >>> 15), t | 1);
@@ -45,7 +26,7 @@ function lifeRand(s: LifeState): number {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 
-function lifePickWeighted<T>(s: LifeState, items: T[], weight: (x: T) => number): T | null {
+function lifePickWeighted<T>(s: { rng: number }, items: T[], weight: (x: T) => number): T | null {
   var total = 0;
   for (var i = 0; i < items.length; i++) total += weight(items[i]);
   if (total <= 0) return null;
@@ -55,6 +36,14 @@ function lifePickWeighted<T>(s: LifeState, items: T[], weight: (x: T) => number)
     if (r < 0) return items[j];
   }
   return items[items.length - 1];
+}
+
+function lifeClamp(v: number, lo: number, hi: number): number {
+  return v < lo ? lo : v > hi ? hi : v;
+}
+
+function lifeOther(r: Role): Role {
+  return r === "qing" ? "mei" : "qing";
 }
 
 // ---------- 时间 ----------
@@ -82,59 +71,124 @@ function lifeTimeAt(turn: number): TimeInfo {
   throw new Error("unreachable");
 }
 
-// ---------- 创建 ----------
+// ---------- 开局：抽家庭、天赋、属性 ----------
 
-function lifeNewPerson(s: LifeState, name: string): Person {
+function lifeFind<T extends { id: string }>(list: T[], id: string): T {
+  for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+  throw new Error("not found: " + id);
+}
+
+/** 抽一次。exceptFamily：两户人家是邻居，不能是同一家 */
+function lifeRollOnce(s: { rng: number }, c: Content, exceptFamily: string | null): { familyId: string; talentId: string; stats: Stats } {
+  var fams = c.families.filter(function (f) { return f.id !== exceptFamily; });
+  var fam = lifePickWeighted(s, fams, function (f) { return f.weight; })!;
+  var tal = lifePickWeighted(s, c.talents, function (t) { return t.weight; })!;
+  // 16 点随机分给四项，每项 1~7
+  var keys: StatKey[] = ["body", "mind", "charm", "luck"];
+  var stats: Stats = { body: 1, mind: 1, charm: 1, luck: 1 };
+  var pool = 12;
+  while (pool > 0) {
+    var k = keys[Math.floor(lifeRand(s) * 4)];
+    if (stats[k] < 7) { stats[k] += 1; pool -= 1; }
+  }
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    stats[key] = lifeClamp(stats[key] + (fam.bonus[key] || 0) + (tal.bonus[key] || 0), 0, 10);
+  }
+  return { familyId: fam.id, talentId: tal.id, stats: stats };
+}
+
+function lifeCreate(seed: number, c: Content): LifeState {
+  var s: LifeState = {
+    version: 2,
+    seed: seed,
+    rng: seed | 0,
+    phase: "roll",
+    turn: 0,
+    rolls: null as any,
+    persons: null,
+    bond: { sync: 0, close: 10, distance: 0 },
+    memories: [],
+    log: [],
+    world: null,
+  };
+  var q = lifeRollOnce(s, c, null);
+  var m = lifeRollOnce(s, c, q.familyId);
+  s.rolls = {
+    qing: { familyId: q.familyId, talentId: q.talentId, stats: q.stats, rerollsLeft: REROLLS, confirmed: false },
+    mei: { familyId: m.familyId, talentId: m.talentId, stats: m.stats, rerollsLeft: REROLLS, confirmed: false },
+  };
+  return s;
+}
+
+/** 重抽。返回错误信息或 null */
+function lifeReroll(s: LifeState, c: Content, role: Role): string | null {
+  if (s.phase !== "roll") return "已经开始了";
+  var r = s.rolls[role];
+  if (r.confirmed) return "已经确认了";
+  if (r.rerollsLeft <= 0) return "没有重抽次数了";
+  var next = lifeRollOnce(s, c, s.rolls[lifeOther(role)].familyId);
+  r.familyId = next.familyId;
+  r.talentId = next.talentId;
+  r.stats = next.stats;
+  r.rerollsLeft -= 1;
+  return null;
+}
+
+/** 确认抽卡。两人都确认后人生开始，返回 true */
+function lifeConfirm(s: LifeState, c: Content, role: Role, names: { [R in Role]: string }): boolean {
+  if (s.phase !== "roll") return false;
+  s.rolls[role].confirmed = true;
+  if (!s.rolls.qing.confirmed || !s.rolls.mei.confirmed) return false;
+  s.persons = { qing: lifeNewPerson(s, c, s.rolls.qing, names.qing), mei: lifeNewPerson(s, c, s.rolls.mei, names.mei) };
+  s.phase = "life";
+  worldStartDay(s, c);
+  return true;
+}
+
+function lifeNewPerson(s: LifeState, c: Content, r: Roll, name: string): Person {
+  var fam = lifeFind(c.families, r.familyId);
+  var tal = lifeFind(c.talents, r.talentId);
   return {
     name: name,
     alive: true,
     lifespan: 66 + Math.floor(lifeRand(s) * 24),
     diedAtAge: null,
-    stats: {
-      body: 3 + Math.floor(lifeRand(s) * 4),
-      mind: 3 + Math.floor(lifeRand(s) * 4),
-      charm: 3 + Math.floor(lifeRand(s) * 4),
-      heart: 5,
-    },
-    flags: [],
+    familyId: fam.id,
+    talentId: tal.id,
+    stats: { body: r.stats.body, mind: r.stats.mind, charm: r.stats.charm, luck: r.stats.luck },
+    needs: { hunger: 80, energy: 90, mood: 70, clean: 80 },
+    money: fam.money,
+    flags: fam.traits.concat(tal.flags),
     tags: {},
   };
 }
 
-function lifeCreate(seed: number, names: { [R in Role]: string }, events: LifeEvent[]): LifeState {
-  var s: LifeState = {
-    version: 1,
-    seed: seed,
-    rng: seed | 0,
-    turn: 0,
-    ended: false,
-    persons: { qing: null as any, mei: null as any },
-    bond: { sync: 0, close: 10, distance: 0 },
-    memories: [],
-    log: [],
-    scene: null,
-  };
-  s.persons.qing = lifeNewPerson(s, names.qing);
-  s.persons.mei = lifeNewPerson(s, names.mei);
-  s.scene = lifePickScene(s, events);
-  return s;
+// ---------- 效果 ----------
+
+function lifeHasFlag(p: Person, f: string): boolean {
+  return p.flags.indexOf(f) >= 0;
 }
 
-// ---------- 抽事件 ----------
-
-function lifeOther(r: Role): Role {
-  return r === "qing" ? "mei" : "qing";
-}
-
-function lifeSeenIds(s: LifeState): { [id: string]: boolean } {
-  var seen: { [id: string]: boolean } = {};
-  for (var i = 0; i < s.log.length; i++) {
-    var e = s.log[i].events;
-    if (e.qing) seen[e.qing] = true;
-    if (e.mei) seen[e.mei] = true;
+function lifeApplySelf(p: Person, d: SelfDelta) {
+  for (var k in d) {
+    var v = (d as any)[k] as number;
+    if (k === "body" || k === "mind" || k === "charm" || k === "luck") {
+      p.stats[k] = lifeClamp(Math.round((p.stats[k] + v) * 100) / 100, 0, 10);
+    } else if (k === "hunger" || k === "energy" || k === "mood" || k === "clean") {
+      if (k === "mood" && v < 0 && lifeHasFlag(p, "tal_sunny")) v = v / 2;
+      p.needs[k] = lifeClamp(p.needs[k] + v, 0, 100);
+    }
   }
-  return seen;
 }
+
+function lifeApplyBond(s: LifeState, d: Partial<Bond>) {
+  if (d.sync) s.bond.sync = lifeClamp(s.bond.sync + d.sync, 0, 100);
+  if (d.close) s.bond.close = lifeClamp(s.bond.close + d.close, -20, 100);
+  if (d.distance) s.bond.distance = lifeClamp(s.bond.distance + d.distance, 0, 5);
+}
+
+// ---------- 事件 ----------
 
 function lifeHasAll(flags: string[], need: string[] | undefined): boolean {
   if (!need) return true;
@@ -148,6 +202,16 @@ function lifeHasNone(flags: string[], banned: string[] | undefined): boolean {
   return true;
 }
 
+function lifeSeenIds(s: LifeState): { [id: string]: boolean } {
+  var seen: { [id: string]: boolean } = {};
+  for (var i = 0; i < s.log.length; i++) {
+    var e = s.log[i].events;
+    if (e.qing) seen[e.qing] = true;
+    if (e.mei) seen[e.mei] = true;
+  }
+  return seen;
+}
+
 function lifeEligible(ev: LifeEvent, t: TimeInfo, flags: string[], seen: { [id: string]: boolean }): boolean {
   if (ev.stage !== t.stage) return false;
   if (seen[ev.id]) return false;
@@ -158,41 +222,8 @@ function lifeEligible(ev: LifeEvent, t: TimeInfo, flags: string[], seen: { [id: 
   return lifeHasAll(flags, rq.flags) && lifeHasNone(flags, rq.notFlags);
 }
 
-function lifePickScene(s: LifeState, events: LifeEvent[]): Scene | null {
-  var t = lifeTimeAt(s.turn);
-  var seen = lifeSeenIds(s);
-  var alive = ROLES.filter(function (r) { return s.persons[r].alive; });
-  if (alive.length === 0) return null;
-
-  // 两人都在世时，有一定概率抽默契场景（童年更高）
-  if (alive.length === 2) {
-    var both = s.persons.qing.flags.concat(s.persons.mei.flags);
-    var mirrors = events.filter(function (e) { return e.kind === "mirror" && lifeEligible(e, t, both, seen); });
-    var chance = t.stage === "childhood" ? 0.55 : 0.4;
-    if (mirrors.length > 0 && lifeRand(s) < chance) {
-      var m = lifePickWeighted(s, mirrors, function (e) { return e.weight; })!;
-      return { kind: "mirror", events: { qing: m.id, mei: m.id } };
-    }
-  }
-
-  var scene: Scene = { kind: "solo", events: { qing: null, mei: null } };
-  for (var i = 0; i < alive.length; i++) {
-    var r = alive[i];
-    var flags = s.persons[r].flags;
-    var solos = events.filter(function (e) {
-      return e.kind === "solo" && lifeEligible(e, t, flags, seen);
-    });
-    var pick = lifePickWeighted(s, solos, function (e) { return e.weight; });
-    scene.events[r] = pick ? pick.id : ORDINARY_EVENT.id;
-    if (pick) seen[pick.id] = true; // 同一回合两人不抽到同一个各自事件
-  }
-  return scene;
-}
-
-function lifeFindEvent(events: LifeEvent[], id: string): LifeEvent {
-  if (id === ORDINARY_EVENT.id) return ORDINARY_EVENT;
-  for (var i = 0; i < events.length; i++) if (events[i].id === id) return events[i];
-  throw new Error("unknown event " + id);
+function lifeFindEvent(c: Content, id: string): LifeEvent {
+  return lifeFind(c.events, id);
 }
 
 function lifeFindOption(ev: LifeEvent, optionId: string): EventOption | null {
@@ -200,24 +231,10 @@ function lifeFindOption(ev: LifeEvent, optionId: string): EventOption | null {
   return null;
 }
 
-/** 本回合需要谁来做选择 */
-function lifeRequiredRoles(s: LifeState): Role[] {
-  if (!s.scene) return [];
-  return ROLES.filter(function (r) { return s.persons[r].alive && s.scene!.events[r] !== null; });
-}
-
-function lifeIsValidChoice(s: LifeState, events: LifeEvent[], role: Role, optionId: string): boolean {
-  if (!s.scene || s.ended) return false;
-  var id = s.scene.events[role];
-  if (!id || !s.persons[role].alive) return false;
-  return lifeFindOption(lifeFindEvent(events, id), optionId) !== null;
-}
-
-// ---------- 影子：按玩家过去的性格标签替他选择 ----------
-
-function lifeShadowChoose(s: LifeState, events: LifeEvent[], role: Role): string {
-  var ev = lifeFindEvent(events, s.scene!.events[role]!);
-  var tags = s.persons[role].tags;
+/** 影子：按玩家过去的性格标签替他选择 */
+function lifeShadowChoose(s: LifeState, c: Content, role: Role, eventId: string): string {
+  var ev = lifeFindEvent(c, eventId);
+  var tags = s.persons![role].tags;
   var best: EventOption[] = [];
   var bestScore = -1;
   for (var i = 0; i < ev.options.length; i++) {
@@ -230,140 +247,123 @@ function lifeShadowChoose(s: LifeState, events: LifeEvent[], role: Role): string
   return best[Math.floor(lifeRand(s) * best.length)].id;
 }
 
-// ---------- 结算 ----------
-
-function lifeClamp(v: number, lo: number, hi: number): number {
-  return v < lo ? lo : v > hi ? hi : v;
-}
-
-function lifeApplyStats(p: Person, d: Partial<Stats>) {
-  for (var k in d) {
-    var key = k as StatKey;
-    p.stats[key] = lifeClamp(p.stats[key] + (d[key] || 0), STAT_MIN, STAT_MAX);
-  }
-}
-
-function lifeApplyBond(s: LifeState, d: Partial<Bond>) {
-  if (d.sync) s.bond.sync = lifeClamp(s.bond.sync + d.sync, 0, 100);
-  if (d.close) s.bond.close = lifeClamp(s.bond.close + d.close, -20, 100);
-  if (d.distance) s.bond.distance = lifeClamp(s.bond.distance + d.distance, 0, 5);
-}
-
-function lifeApplyOption(s: LifeState, role: Role, o: EventOption, fromShadow: boolean) {
-  var me = s.persons[role];
-  lifeApplyStats(me, o.effects.self);
-  var other = s.persons[lifeOther(role)];
-  if (other.alive) lifeApplyStats(other, o.effects.other);
-  lifeApplyBond(s, o.effects.bond);
-  for (var i = 0; i < o.effects.flags.length; i++) {
-    if (me.flags.indexOf(o.effects.flags[i]) < 0) me.flags.push(o.effects.flags[i]);
-  }
-  if (!fromShadow) {
-    for (var j = 0; j < o.tags.length; j++) me.tags[o.tags[j]] = (me.tags[o.tags[j]] || 0) + 1;
-  }
-}
-
-/**
- * 结算一回合。choices 必须覆盖 lifeRequiredRoles 中的所有人（影子代选的也放进去，并列在 shadow 里）。
- * 返回本回合产生的日志（包括可能发生的死亡与终局）。
- */
-function lifeResolve(s: LifeState, events: LifeEvent[], choices: Choices, shadow: Role[]): LogEntry[] {
-  if (s.ended || !s.scene) throw new Error("life already ended");
-  var required = lifeRequiredRoles(s);
-  for (var i = 0; i < required.length; i++) {
-    var r = required[i];
-    if (!choices[r] || !lifeIsValidChoice(s, events, r, choices[r]!)) throw new Error("missing or invalid choice for " + r);
-  }
-
+function lifeEntry(s: LifeState, kind: LogEntry["kind"], text: string): LogEntry {
   var t = lifeTimeAt(s.turn);
-  var scene = s.scene;
-  var out: LogEntry[] = [];
-  var entry: LogEntry = {
-    turn: s.turn,
-    age: t.age,
-    label: t.label,
-    kind: scene.kind,
-    events: { qing: scene.events.qing, mei: scene.events.mei },
-    choices: { qing: choices.qing || null, mei: choices.mei || null },
-    shadow: shadow.slice(),
-    resonance: null,
-    text: "",
+  return {
+    turn: s.turn, age: t.age, label: t.label, kind: kind, minute: s.world ? s.world.minute : null,
+    events: { qing: null, mei: null }, choices: { qing: null, mei: null }, shadow: [], resonance: null, text: text,
   };
+}
 
-  for (var k = 0; k < required.length; k++) {
-    var role = required[k];
-    var ev = lifeFindEvent(events, scene.events[role]!);
-    lifeApplyOption(s, role, lifeFindOption(ev, choices[role]!)!, shadow.indexOf(role) >= 0);
+/** 结算一个事件（mirror 两人、solo 一人），返回日志 */
+function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry {
+  var ev = lifeFindEvent(c, pe.eventId);
+  var entry = lifeEntry(s, pe.kind, "");
+  entry.shadow = pe.shadow.slice();
+  for (var i = 0; i < pe.roles.length; i++) {
+    var role = pe.roles[i];
+    var o = lifeFindOption(ev, pe.choices[role]!)!;
+    entry.events[role] = ev.id;
+    entry.choices[role] = o.id;
+    var me = s.persons![role];
+    lifeApplySelf(me, o.effects.self);
+    var other = s.persons![lifeOther(role)];
+    if (other.alive) lifeApplySelf(other, o.effects.other);
+    lifeApplyBond(s, o.effects.bond);
+    for (var f = 0; f < o.effects.flags.length; f++) if (!lifeHasFlag(me, o.effects.flags[f])) me.flags.push(o.effects.flags[f]);
+    if (pe.shadow.indexOf(role) < 0) {
+      for (var j = 0; j < o.tags.length; j++) me.tags[o.tags[j]] = (me.tags[o.tags[j]] || 0) + 1;
+    }
   }
-
-  if (scene.kind === "mirror") {
-    var mev = lifeFindEvent(events, scene.events.qing!);
-    if (choices.qing === choices.mei) {
+  if (pe.kind === "mirror") {
+    if (pe.choices.qing === pe.choices.mei) {
       entry.resonance = true;
-      var res = mev.resonance && mev.resonance[choices.qing!];
+      var res = ev.resonance && ev.resonance[pe.choices.qing!];
       if (res) {
         lifeApplyBond(s, res.bond);
         entry.text = res.text;
-        if (res.memory) s.memories.push({ title: res.memory, eventId: mev.id, turn: s.turn, age: t.age, vivid: 3 });
+        if (res.memory) s.memories.push({ title: res.memory, eventId: ev.id, turn: s.turn, age: entry.age, vivid: 3 });
       } else {
         lifeApplyBond(s, { sync: 1 });
         entry.text = "你们选了同一个答案。";
       }
     } else {
       entry.resonance = false;
-      if (mev.dissonance) {
-        lifeApplyBond(s, mev.dissonance.bond);
-        entry.text = mev.dissonance.text;
+      if (ev.dissonance) {
+        lifeApplyBond(s, ev.dissonance.bond);
+        entry.text = ev.dissonance.text;
       }
     }
   }
-  out.push(entry);
+  s.log.push(entry);
+  return entry;
+}
 
-  // 回忆褪色
+// ---------- 一天结束 → 跳到人生的下一个「被放大的一天」 ----------
+
+function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
+  var out: LogEntry[] = [];
+  var persons = s.persons!;
+  var w = s.world!;
+  var summary = lifeEntry(s, "day", "");
+  var parts: string[] = [];
+  for (var i = 0; i < ROLES.length; i++) {
+    var p = persons[ROLES[i]];
+    if (!p.alive) continue;
+    var a = w.actors[ROLES[i]];
+    var slept = a !== null && a.asleep;
+    parts.push(p.name + (slept ? "睡得很香" : "困得趴在了桌上"));
+    // 回合之间的日子：需求回到日常水平，心情慢慢回归
+    p.needs.hunger = 75;
+    p.needs.energy = slept ? 90 : 65;
+    p.needs.clean = 75;
+    p.needs.mood = Math.round(p.needs.mood * 0.6 + 60 * 0.4);
+  }
+  summary.text = "这一天过去了。" + parts.join("，") + "。";
+  out.push(summary);
+  s.log.push(summary);
+
   s.turn += 1;
   for (var m = 0; m < s.memories.length; m++) {
     var mem = s.memories[m];
     if (mem.vivid > 0 && (s.turn - mem.turn) % MEMORY_FADE_EVERY === 0) mem.vivid -= 1;
   }
 
-  // 生老病死：体魄每高 1 点多活半年，心情太差会折寿
+  // 生老病死：体魄每高 1 点多活半年，长期心情差会折寿
   var nt = lifeTimeAt(s.turn);
   for (var d = 0; d < ROLES.length; d++) {
-    var p = s.persons[ROLES[d]];
-    if (!p.alive) continue;
-    var limit = p.lifespan + (p.stats.body - 5) * 0.5 + (p.stats.heart < 2 ? -3 : 0);
+    var pp = persons[ROLES[d]];
+    if (!pp.alive) continue;
+    var limit = pp.lifespan + (pp.stats.body - 5) * 0.5 + (pp.needs.mood < 30 ? -3 : 0);
     if (nt.age >= limit || nt.age >= 100) {
-      p.alive = false;
-      p.diedAtAge = nt.age;
-      out.push({
-        turn: s.turn, age: nt.age, label: nt.label, kind: "death",
-        events: { qing: null, mei: null }, choices: { qing: null, mei: null },
-        shadow: [], resonance: null, text: p.name + " 在 " + nt.age + " 岁那年离开了。",
-      });
+      pp.alive = false;
+      pp.diedAtAge = nt.age;
+      var de = lifeEntry(s, "death", pp.name + " 在 " + nt.age + " 岁那年离开了。");
+      out.push(de);
+      s.log.push(de);
     }
   }
 
-  if (!s.persons.qing.alive && !s.persons.mei.alive) {
-    s.ended = true;
-    s.scene = null;
-    out.push({
-      turn: s.turn, age: nt.age, label: nt.label, kind: "end",
-      events: { qing: null, mei: null }, choices: { qing: null, mei: null },
-      shadow: [], resonance: null, text: lifeEpitaph(s),
-    });
+  if (!persons.qing.alive && !persons.mei.alive) {
+    s.phase = "ended";
+    s.world = null;
+    var end = lifeEntry(s, "end", lifeEpitaph(s));
+    out.push(end);
+    s.log.push(end);
   } else {
-    s.scene = lifePickScene(s, events);
+    worldStartDay(s, c);
   }
-  s.log = s.log.concat(out);
   return out;
 }
 
 /** 人生长卷底部的题词 */
 function lifeEpitaph(s: LifeState): string {
-  var mirrors = 0, hits = 0;
+  var mirrors = 0, hits = 0, together = 0;
   for (var i = 0; i < s.log.length; i++) {
-    if (s.log[i].kind === "mirror") { mirrors++; if (s.log[i].resonance) hits++; }
+    var e = s.log[i];
+    if (e.kind === "mirror") { mirrors++; if (e.resonance) hits++; }
+    if (e.kind === "together") together++;
   }
   var rate = mirrors > 0 ? Math.round((hits / mirrors) * 100) : 0;
-  return "你们一起走过了 " + s.turn + " 个回合，留下 " + s.memories.length + " 段共同回忆，默契率 " + rate + "%。";
+  return "你们一起过了 " + s.turn + " 个被记住的日子，同框 " + together + " 次，留下 " + s.memories.length + " 段共同回忆，默契率 " + rate + "%。";
 }

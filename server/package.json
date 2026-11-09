@@ -4,10 +4,13 @@
   "description": "同岁 Nakama TypeScript 服务端模块",
   "scripts": {
     "build": "tsc",
-    "test": "tsc && node test/life.test.mjs"
+    "test": "tsc && node test/life.test.mjs",
+    "e2e": "node test/e2e.mjs"
   },
   "devDependencies": {
+    "@heroiclabs/nakama-js": "2.8.0",
     "nakama-runtime": "github:heroiclabs/nakama-common#v1.48.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "ws": "8.18.3"
   }
 }

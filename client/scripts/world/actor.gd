@@ -9,7 +9,8 @@ var role := "qing"
 var display_name := ""
 var is_local := false
 var walk_target := Vector2.ZERO  ## 本地：要走去的地方
-var net_target := Vector2.ZERO   ## 远端：服务器给的位置
+var net_target := Vector2.ZERO   ## 远端：插值缓冲算出的位置（已经是平滑的）
+var snap_remote := false         ## 下一帧直接跳到 net_target（重连快照）
 var action_label := ""
 var asleep := false
 var walking := false
@@ -34,8 +35,13 @@ func _process(delta: float) -> void:
 			position += to.limit_length(WALK_SPEED * delta)
 	else:
 		var before := position
-		position = position.lerp(net_target, 1.0 - exp(-8.0 * delta))
-		walking = before.distance_to(position) > 0.5
+		if snap_remote or position.distance_to(net_target) > 500.0:
+			position = net_target
+			snap_remote = false
+		else:
+			# 缓冲给出的已经是匀速轨迹，这里只做很轻的平滑，抹掉帧间的小抖动
+			position = position.lerp(net_target, 1.0 - exp(-25.0 * delta))
+		walking = before.distance_to(position) > 0.3
 	queue_redraw()
 
 

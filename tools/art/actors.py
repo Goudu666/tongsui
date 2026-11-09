@@ -304,6 +304,12 @@ class Fig:
 
     def leg(self, pts, view, foot_rot=0.0, shade=0.0, side=1):
         s, lk, lw = self.s, self.look, self.lw
+        ankle = pts[-1]
+        # 管子的圆头别从鞋底下冒出来：末端往回收一点
+        cut = max(0.0, (self.lgw + 1.2) / 2 + lw - 3.0)
+        a, b = pts[-2], pts[-1]
+        d = math.dist(a, b) or 1.0
+        pts = pts[:-1] + [(b[0] - (b[0] - a[0]) / d * cut, b[1] - (b[1] - a[1]) / d * cut)]
         if lk.pants_len < 1:
             tube(s, pts, self.lgw - 1.6, SKIN, lw, shade=shade)
             tube(s, slice_path(pts, 0, lk.pants_len), self.lgw + 1.2, lk.pants, lw, shade=shade)
@@ -312,7 +318,7 @@ class Fig:
             if self.stage == "teen":  # 校服裤的白杠
                 off = side * self.lgw * 0.28 if view in ("front", "back") else 0.0
                 stroke_clear(s, [(x + off, y) for x, y in pw[1:-1]] if len(pw) > 3 else [(x + off, y) for x, y in pw], 1.5, colors=(self.C,))
-        self.shoe(pts[-1], view, foot_rot)
+        self.shoe(ankle, view, foot_rot)
 
     def shoe(self, A, view, rot=0.0):
         s, lw = self.s, self.lw
@@ -1092,7 +1098,7 @@ class Fig:
             kn = (sd * lx * 1.15, hy + 3.0)
             ank = (sd * lx * 1.25, -4.0)
             spec = SKIN if lk.pants_len < 1 else lk.pants
-            tube(s, [kn, ank], self.lgw - (1.6 if lk.pants_len < 1 else 0), spec, lw)
+            tube(s, [kn, (ank[0], ank[1] - max(0.0, (self.lgw + 1.2) / 2 + lw - 3.0))], self.lgw - (1.6 if lk.pants_len < 1 else 0), spec, lw)
             if self.stage == "teen":
                 stroke_clear(s, [(kn[0] + sd * self.lgw * 0.28, kn[1] + 2), (ank[0] + sd * self.lgw * 0.28, ank[1] - 1)], 1.5, colors=(self.C,))
             self.shoe(ank, "front")

@@ -14,7 +14,7 @@ const ART_SCALE := 2.0
 const STAGES := ["childhood", "teen", "young", "middle", "old"]
 const STAGE_FILE := {"childhood": "child", "teen": "teen", "young": "young", "middle": "middle", "old": "old"}
 ## 做这些事的时候坐着，其它事是"在忙"的姿势
-const SIT_ACTIONS := ["吃饭", "写作业", "买套煎饼果子"]
+const SIT_ACTIONS := ["吃饭", "写作业"]
 const WAVE_ACTIONS := ["开门喊一声"]
 
 var role := "qing"

@@ -352,6 +352,7 @@ func _process(delta: float) -> void:
 	if offline_preview:
 		_preview_minute = fmod(_preview_minute + delta * 4.0 - 390.0, 930.0) + 390.0
 		hud_time.text = "%s · %s · 预览" % [LifeTime.at(0).label, P.clock(_preview_minute)]
+		world.set_minute(_preview_minute)
 	world.controllable = not modal.visible and not screen.visible
 	var spot := world.nearest_spot()
 	if spot.is_empty() or modal.visible:
@@ -465,6 +466,7 @@ func _on_snapshot(data: Dictionary) -> void:
 		"life":
 			if world == null:
 				_enter_world()
+			world.set_stage(LifeTime.at(int(life.get("turn", 0))).stage)
 			_refresh_hud()
 		"ended":
 			_show_ending()
@@ -528,6 +530,7 @@ func _enter_world() -> void:
 	world = WorldView.new()
 	add_child(world)
 	world.setup(content, my_role, names)
+	world.set_stage(LifeTime.at(int(life.get("turn", 0))).stage)
 	world.move_report.connect(_on_move_report)
 	_refresh_hud()
 

@@ -1,0 +1,628 @@
+# 中年篇事件（30–59 岁，一回合 = 三年里被记住的一天）
+
+- id: m_demolish
+  kind: mirror
+  stage: middle
+  where: alley
+  hint: 楼门口贴了一张红色的告示。
+  weight: 1
+  title: 拆迁通知
+  text: 楼门口贴出了拆迁通知。这栋红砖楼也在红线里。
+  options:
+    - id: dig
+      text: 回去把楼道墙上刻的名字拍下来
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: let_go
+      text: 让它跟着楼一起没了吧
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+  resonance:
+    dig:
+      text: 你们隔了很多年，在同一个周末回到了楼里，在三楼的楼道里碰了面。墙上两个人的名字还在。
+      memory: 拆迁前的周末
+      bond: { sync: 4, close: 4, distance: -1 }
+  dissonance:
+    text: 墙上的名字，只有一个人回来拍了。
+    bond: { close: 0 }
+
+# ---------- 重逢 ----------
+
+- id: m_reunion_far
+  kind: mirror
+  stage: middle
+  where: breakfast
+  when: [390, 600]
+  hint: 年三十，早点铺排起了长队。
+  weight: 3
+  requires: { minDistance: 2, notFlags: [p_reunited] }
+  title: 年三十的队
+  text: 年三十早上，早点铺门口排着长队。前头那个人拎着行李箱，背影你看了好一会儿，越看越眼熟。
+  options:
+    - id: name
+      text: 喊一声小时候的外号
+      tags: [adventure]
+      effects: { self: { mood: 10 } }
+    - id: wait
+      text: 等TA自己回头
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+    - id: phone
+      text: 认错了吧，低头看手机
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+  resonance:
+    name:
+      text: 两个人同时喊出了对方的外号，排队的人全回了头。轮到你们，还是那句：「俩鸡蛋，多放葱花。」
+      memory: 年三十的队
+      bond: { sync: 3, close: 4, distance: -2 }
+      flags: [p_reunited]
+    wait:
+      text: 你们都在等对方回头，等到前面没人了。摊主喊「下一位」，两个人一起往前迈了一步。
+      memory: 下一位
+      bond: { sync: 3, close: 3, distance: -2 }
+      flags: [p_reunited]
+    phone:
+      text: 两个人都低着头，买完各走各的。拐进楼门的时候，才同时停了一下脚。
+      memory: 楼门口那一下
+      bond: { sync: 2 }
+  dissonance:
+    text: 一个人回了头，一个人正好低下头。队伍往前挪了一步，你们就这么错开了。
+    bond: { close: -1 }
+
+- id: m_reunion_estranged
+  kind: mirror
+  stage: middle
+  where: hallway
+  when: [1020, 1320]
+  hint: 楼道黑着，有人在掏钥匙。
+  weight: 3
+  requires: { flags: [p_estranged], notFlags: [p_reunited] }
+  title: 黑着的楼道
+  text: 你回来看爸妈。楼道的声控灯坏了，黑地里有人在对门掏钥匙，半天没掏出来。那么多年没说话，你还认得那串钥匙的响声。
+  options:
+    - id: speak
+      text: 说一句「是我」
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: stand
+      text: 站着不动
+      tags: [patient]
+      effects: {}
+    - id: in
+      text: 赶紧进门
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+  resonance:
+    speak:
+      text: 「是我。」「我知道。」当年吵翻的到底是嘛事，两个人站在黑地里，谁也想不太起来了。
+      memory: 是我
+      bond: { sync: 4, close: 4, distance: -2 }
+      flags: [p_reunited]
+    stand:
+      text: 你们谁也没动，就在黑地里站着。过了好一会儿，不知道谁先笑了一声，另一个也笑了。
+      memory: 黑着灯
+      bond: { sync: 3, close: 3, distance: -2 }
+      flags: [p_reunited]
+    in:
+      text: 两扇门同时关上了。隔着一条楼道，两个人都在门后站了很久。
+      memory: 门后
+      bond: { sync: 2, close: -1 }
+  dissonance:
+    text: 黑地里有一句话说出了口，或者没有。等灯再亮起来，楼道里只剩一个人。
+    bond: { close: -1 }
+
+# ---------- 老街坊 ----------
+
+- id: m_grandpa_funeral
+  kind: mirror
+  stage: middle
+  where: bikeshop
+  when: [480, 900]
+  hint: 车铺门口摆着花圈。
+  weight: 2
+  requires: { minAge: 36 }
+  title: 车铺爷爷
+  text: 修车的爷爷走了。车铺门口摆着花圈，墙上那把二胡还挂着，门边停着一辆没修完的二八车。
+  options:
+    - id: fix
+      text: 把那辆车修完
+      tags: [responsible]
+      effects: { self: { mood: -5, body: 1 } }
+    - id: erhu
+      text: 摘下墙上的二胡
+      tags: [patient]
+      effects: { self: { mood: -5 }, flags: [grandpa_erhu] }
+    - id: back
+      text: 站在人群最后面
+      tags: [solitude]
+      effects: { self: { mood: -10 } }
+  resonance:
+    fix:
+      text: 一个扶车把，一个拧辐条，跟小时候给爷爷打下手一样。车修好了，不知道该还给谁。
+      memory: 最后一辆车
+      bond: { sync: 3, close: 3 }
+    erhu:
+      text: 两只手同时碰到那把二胡。爷爷的儿子说：「拿走吧，他说过，你们俩谁要都行。」
+      memory: 墙上的二胡
+      bond: { sync: 3, close: 3 }
+    back:
+      text: 你们站在最后面，谁也没往前挤。风从车铺里穿过去，挂着的车铃响了一下。
+      memory: 车铃响了一下
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 你在人群里找了一圈对门。找到的时候，TA 正低着头，忙着别的。
+    bond: { close: 0 }
+
+- id: m_breakfast_third
+  kind: mirror
+  stage: middle
+  where: breakfast
+  when: [390, 600]
+  hint: 早点铺的鏊子后面换了人。
+  weight: 2
+  requires: { minAge: 42 }
+  title: 第三代
+  text: 早点铺的鏊子后面换了个年轻人，是老板的孙子。面糊摊得太厚，鸡蛋磕了一手，后面排队的直嘬牙花子。
+  options:
+    - id: teach
+      text: 教他「刮子再斜点」
+      tags: [responsible]
+      effects: { self: { mood: 5 } }
+    - id: order
+      text: 俩鸡蛋，多放葱花
+      tags: [gentle]
+      effects: { self: { hunger: 20, mood: 5 } }
+    - id: wait
+      text: 不吭声，慢慢等
+      tags: [patient]
+      effects: { self: { hunger: 15 } }
+  resonance:
+    teach:
+      text: 你们一左一右在摊子边比划，说的全是他爷爷当年的话。年轻人憋红了脸，摊出来一张，倍儿圆。
+      memory: 倍儿圆
+      bond: { sync: 3, close: 2 }
+    order:
+      text: 两个人同时开口。年轻人愣了一下：「我爷爷说过，有两位老主顾，就这么点。」
+      memory: 两位老主顾
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个在边上指点，一个在后头催。年轻人手一抖，又磕破了一个鸡蛋。
+    bond: { close: 0 }
+
+# ---------- 共同标记的后来 ----------
+
+- id: m_two_mothers
+  kind: mirror
+  stage: middle
+  where: hallway
+  when: [1020, 1260]
+  hint: 楼道里飘着两股饺子味。
+  weight: 2
+  requires: { flags: [p_married] }
+  title: 两家的饺子
+  text: 过年回楼里。两扇门同时开了，两家老人各端着一盘饺子，都喊你们俩先上自己家吃。
+  options:
+    - id: mine
+      text: 先回自己爸妈那屋
+      tags: [responsible]
+      effects: { self: { hunger: 20 } }
+    - id: theirs
+      text: 先去对门那屋
+      tags: [gentle]
+      effects: { self: { hunger: 20 }, other: { mood: 5 } }
+    - id: hall
+      text: 把桌子搬到楼道里
+      tags: [adventure]
+      effects: { self: { mood: 10, energy: -10 } }
+  resonance:
+    mine:
+      text: 两个人同时往两扇门里走，在楼道中间撞了一下肩。两家老人在门口乐：「得，各回各家，跟小时候一样。」
+      memory: 各回各家
+      bond: { sync: 2, close: 2 }
+    theirs:
+      text: 你们都往对方家里走，又在楼道中间撞上。两家老人笑出了眼泪：「这回换着当孩子了。」
+      memory: 换着当孩子
+      bond: { sync: 3, close: 3 }
+    hall:
+      text: 两张桌子在楼道里拼成一张，暖气片上搁着醋碟。整栋楼都闻着味儿出来了。
+      memory: 楼道里的年夜饭
+      bond: { sync: 4, close: 3 }
+  dissonance:
+    text: 两个人进了同一扇门。另一扇门里，饺子慢慢凉了。
+    bond: { close: 0 }
+
+- id: m_partners_shop
+  kind: mirror
+  stage: middle
+  where: alley
+  when: [600, 1080]
+  hint: 小铺子的卷帘门拉了一半。
+  weight: 2
+  requires: { flags: [p_partners] }
+  title: 合伙的铺子
+  text: 年轻时一起盘下的小铺子，开了十几年。街口新开了一家大店，灯亮得晃眼。账本摊在柜台上，两个人谁也没翻。
+  options:
+    - id: hold
+      text: 再撑一年
+      tags: [patient]
+      effects: { self: { mood: -5, energy: -10 } }
+    - id: sell
+      text: 盘出去
+      tags: [responsible]
+      effects: { self: { mood: -10, luck: 1 } }
+    - id: change
+      text: 改卖别的
+      tags: [adventure]
+      effects: { self: { mind: 1, energy: -10 } }
+  resonance:
+    hold:
+      text: 你们同时说了句「再撑一年」。后来又撑了一年，又一年。
+      memory: 再撑一年
+      bond: { sync: 3, close: 3 }
+    sell:
+      text: 卸招牌那天，一个扶梯子，一个拧螺丝。招牌背面有两个人年轻时写的字，谁也没念出来。
+      memory: 卸招牌
+      bond: { sync: 3, close: 2 }
+    change:
+      text: 卖嘛还没想好，两个人已经趴在柜台上画起了新招牌。跟当年一模一样。
+      memory: 新招牌
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个想留，一个想撤。账本合上了。那天晚上谁也没提散伙，可谁都听见了。
+    bond: { close: -2 }
+
+- id: m_bridge_words
+  kind: mirror
+  stage: middle
+  where: river
+  when: [1020, 1260]
+  hint: 铁桥上的灯亮了。
+  weight: 2
+  requires: { flags: [p_missed] }
+  title: 铁桥上
+  text: 铁桥上的灯亮了，对岸的高楼一栋比一栋亮。你们靠着栏杆，像当年那样站着。当年没说出口的那句话，就在嘴边。
+  options:
+    - id: say
+      text: 说出来
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: not
+      text: 不说了
+      tags: [patient]
+      effects: {}
+  resonance:
+    say:
+      text: 两个人同时开口，又同时停下。谁也没说完，可都听懂了。河上的风很凉，你们笑出了声。
+      memory: 迟到的话
+      bond: { sync: 4, close: 3 }
+    not:
+      text: 你们谁也没提，只说今年的河蟹不肥。说了很久很久的河蟹。
+      memory: 不肥的河蟹
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个人说了，一个人假装被风吹得没听清。「嘛？」「没嘛。」
+    bond: { close: -1 }
+
+# ---------- 拆迁 ----------
+
+- id: m_moving_day
+  kind: mirror
+  stage: middle
+  where: hallway
+  when: [600, 1080]
+  hint: 楼道里堆满了纸箱。
+  weight: 3
+  requires: { flags: [demo_signed] }
+  title: 搬走那天
+  text: 搬家的车停在楼下。三楼楼道里堆满纸箱，暖气片拆下来靠在墙边。两扇门都敞着，屋里空得能听见回声。
+  options:
+    - id: plate
+      text: 把门牌拧下来带走
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: meal
+      text: 在楼道里最后吃顿饭
+      tags: [patient]
+      effects: { self: { hunger: 20, mood: 5 } }
+    - id: go
+      text: 头也不回地下楼
+      tags: [solitude]
+      effects: { self: { mood: -10 } }
+  resonance:
+    plate:
+      text: 你们蹲在各自门口拧螺丝，拧到一半抬头对看了一眼。两块门牌，后来都收在抽屉最里头。
+      memory: 两块门牌
+      bond: { sync: 3, close: 3 }
+    meal:
+      text: 纸箱当桌子，坐在台阶上吃了最后一套煎饼果子。煤气罐早搬走了，楼道里还是那股味儿。
+      memory: 台阶上的早饭
+      bond: { sync: 3, close: 3 }
+    go:
+      text: 谁也没回头。一个先下楼，一个后下楼，在楼门口撞上，眼睛都红着。
+      memory: 都没回头
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 你回头的时候，对门那间屋已经空了。
+    bond: { close: -1 }
+
+- id: m_sign
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minAge: 39, notFlags: [demo_signed] }
+  title: 签字
+  text: 拆迁办的人坐在你家饭桌边，把协议推过来，笔帽已经拔了。爸妈在旁边看着你，谁也没说话。
+  options:
+    - id: sign
+      text: 签
+      tags: [responsible]
+      effects: { self: { mood: -5 }, flags: [demo_signed] }
+    - id: haggle
+      text: 再掰扯掰扯
+      tags: [competitive]
+      effects: { self: { luck: 1, mood: -5, energy: -10 }, flags: [demo_signed] }
+    - id: wait
+      text: 等对门签了再说
+      tags: [patient]
+      effects: { bond: { sync: 1 }, flags: [demo_signed] }
+
+- id: m_new_building
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minAge: 48, flags: [demo_signed] }
+  title: 回迁新楼
+  text: 回迁的新楼十八层，有电梯，有物业。楼道白得发亮，没有暖气片，没有煤气罐，邻居家的门一年开不了几回。
+  options:
+    - id: knock
+      text: 挨家敲门送饺子
+      tags: [gentle]
+      effects: { self: { charm: 1, energy: -10 } }
+    - id: close
+      text: 关上门，挺清净
+      tags: [solitude]
+      effects: { self: { mood: 5 } }
+    - id: stairs
+      text: 不坐电梯，爬楼梯
+      tags: [patient]
+      effects: { self: { body: 1, energy: -15 } }
+
+# ---------- 爸妈 ----------
+
+- id: m_parent_ill
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 33, notFlags: [parent_gone, parent_sick] }
+  title: 半夜的电话
+  text: 半夜接到家里的电话，说老人住院了，让你别着急。越说别着急，你越睡不着。
+  options:
+    - id: back
+      text: 请假回去陪床
+      tags: [responsible]
+      effects: { self: { mood: -5, energy: -15 }, flags: [parent_sick] }
+    - id: pay
+      text: 打钱请个护工
+      tags: [competitive]
+      effects: { self: { mood: -10 }, flags: [parent_sick] }
+    - id: door
+      text: 托对门先去看一眼
+      tags: [gentle]
+      effects: { self: { mood: -5 }, other: { energy: -10 }, bond: { close: 2 }, flags: [parent_sick] }
+
+- id: m_parent_gone
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 39, notFlags: [parent_gone] }
+  title: 老屋
+  text: 事办完了，亲戚都走了。饭桌上还摆着半碗没喝完的粥，碗边搁着老花镜。
+  options:
+    - id: coat
+      text: 把那件旧棉袄留下
+      tags: [gentle]
+      effects: { self: { mood: -10 }, flags: [parent_gone] }
+    - id: clean
+      text: 把屋子收拾干净
+      tags: [responsible]
+      effects: { self: { mood: -10, energy: -15 }, flags: [parent_gone] }
+    - id: sit
+      text: 什么也不动，坐会儿
+      tags: [solitude]
+      effects: { self: { mood: -15 }, flags: [parent_gone] }
+
+- id: m_after_parent
+  kind: solo
+  stage: middle
+  where: hallway
+  weight: 2
+  requires: { flags: [parent_gone] }
+  title: 我回来了
+  text: 上楼的时候，你习惯地喊了一声「我回来了」。没人应。对门的门倒是开了一条缝。
+  options:
+    - id: in
+      text: 进对门坐坐
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 5 }, bond: { close: 1 } }
+    - id: nod
+      text: 点个头，回自己屋
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+    - id: again
+      text: 再喊一声
+      tags: [patient]
+      effects: { self: { mood: -10 } }
+
+# ---------- 自己的日子 ----------
+
+- id: m_kid_leaves
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minAge: 45, flags: [has_kid] }
+  title: 送站
+  text: 孩子考到外地去了。站台上一直嫌你絮叨，耳机塞得严严实实。车门关了，孩子隔着玻璃冲你比了个心。
+  options:
+    - id: wave
+      text: 挥手挥到看不见
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: turn
+      text: 先转身，别让孩子看见
+      tags: [patient]
+      effects: { self: { mood: -5 } }
+    - id: note
+      text: 发消息：兜里有东西
+      tags: [responsible]
+      effects: { self: { mood: 10 } }
+
+- id: m_layoff
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minAge: 39, maxAge: 51 }
+  title: 名单上
+  text: 单位一纸通知，名单上有你的名字。回家路上，你在早点铺门口站了很久，没进去，也没走。
+  options:
+    - id: stall
+      text: 在楼下支个摊
+      tags: [adventure]
+      effects: { self: { mood: -5, body: 1, charm: 1 } }
+    - id: south
+      text: 去南方再闯一回
+      tags: [competitive]
+      effects: { self: { mood: -5, luck: 1 }, bond: { distance: 1 } }
+    - id: rest
+      text: 先回家睡一觉
+      tags: [patient]
+      effects: { self: { mood: 5, energy: 20 } }
+
+- id: m_checkup
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minAge: 42 }
+  title: 体检单
+  text: 体检单上有三项打了向上的箭头。大夫说问题不大，就是得注意。你把单子对折，又对折。
+  options:
+    - id: walk
+      text: 每天去海河边走两圈
+      tags: [patient]
+      effects: { self: { body: 1, energy: -5 } }
+    - id: drawer
+      text: 塞进抽屉最底下
+      tags: [solitude]
+      effects: { self: { mood: 5, body: -1 } }
+    - id: send
+      text: 拍给对门看看
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: -5 }, bond: { close: 1 } }
+
+- id: m_class_reunion
+  kind: solo
+  stage: middle
+  where: school
+  when: [600, 1080]
+  weight: 2
+  requires: { minAge: 36 }
+  title: 同学聚会
+  text: 小学早搬走了，操场成了停车场。老同学在原来的校门口合影，有人问：「你对门那位，今年回来没？」
+  options:
+    - id: middle
+      text: 往中间站
+      tags: [adventure]
+      effects: { self: { charm: 1, mood: 5 } }
+    - id: side
+      text: 站到边上，替大家拍
+      tags: [solitude]
+      effects: { self: { mood: 5 } }
+    - id: forward
+      text: 把合影发给对门
+      tags: [gentle]
+      effects: { other: { mood: 10 }, bond: { close: 1 } }
+
+- id: m_stayed
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minAge: 33, minDistance: 2, flags: [stayed] }
+  title: 留下的人
+  text: 留在天津的这些年，对门家里换灯泡、通下水道、半夜上医院，打的都是你的电话。
+  options:
+    - id: go
+      text: 随叫随到
+      tags: [responsible]
+      effects: { self: { energy: -15 }, other: { mood: 10 }, bond: { close: 2 } }
+    - id: call
+      text: 给外地那位报个平安
+      tags: [gentle]
+      effects: { other: { mood: 5 }, bond: { close: 1 } }
+    - id: deaf
+      text: 偶尔装作没听见
+      tags: [solitude]
+      effects: { self: { mood: 5, energy: 10 }, bond: { close: -1 } }
+
+- id: m_far_call
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minDistance: 2, flags: [left_city], notFlags: [came_back] }
+  title: 在外地的人
+  text: 在外地十几年，口音淡了，吃嘛都不挑了。深夜加完班，忽然特别想喝一碗嘎巴菜。
+  options:
+    - id: back
+      text: 辞了工作回天津
+      tags: [gentle]
+      effects: { self: { mood: 10, luck: -1 }, bond: { distance: -2 }, flags: [came_back] }
+    - id: ticket
+      text: 订一张过年的票
+      tags: [patient]
+      effects: { self: { mood: 10 } }
+    - id: stay
+      text: 在这儿也挺好
+      tags: [competitive]
+      effects: { self: { charm: 1, mood: -5 } }
+
+- id: m_married_other
+  kind: solo
+  stage: middle
+  where: hallway
+  weight: 2
+  requires: { flags: [married_other] }
+  title: 带回来的人
+  text: 过年带爱人回楼里。上楼的时候，爱人指着对门那扇贴着旧福字的门问：「这家住的谁？」
+  options:
+    - id: story
+      text: 讲一晚上小时候的事
+      tags: [gentle]
+      effects: { self: { mood: 5, energy: -10 } }
+    - id: short
+      text: 「就一个邻居。」
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+    - id: knock
+      text: 干脆敲门进去坐坐
+      tags: [adventure]
+      effects: { other: { mood: 5 }, bond: { close: 1 } }
+
+- id: m_unanswered
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { flags: [p_unanswered] }
+  title: 那封信
+  text: 收拾旧屋，柜子底下掉出一个泛黄的信封。是那年那封信，后来谁也没再提起的那封。
+  options:
+    - id: write
+      text: 现在补一封回去
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 10 }, bond: { close: 2 } }
+    - id: photo
+      text: 拍下来发给对门
+      tags: [adventure]
+      effects: { other: { mood: 5 }, bond: { sync: 1, close: 1 } }
+    - id: box
+      text: 放回纸箱
+      tags: [solitude]
+      effects: { self: { mood: -5 } }

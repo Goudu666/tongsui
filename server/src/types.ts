@@ -39,12 +39,84 @@ interface LifeEvent {
   where: string | null;
   when: [number, number] | null;
   hint: string | null;
-  requires: { minAge?: number; maxAge?: number; flags?: string[]; notFlags?: string[] };
+  requires: EventRequires;
   title: string;
   text: string;
   options: EventOption[];
-  resonance: { [optionId: string]: { text: string; memory?: string; bond: Partial<Bond> } } | null;
-  dissonance: { text: string; bond: Partial<Bond> } | null;
+  /** flags：共同标记（p_ 开头），共鸣/错位时两个人都会得到 */
+  resonance: { [optionId: string]: { text: string; memory?: string; bond: Partial<Bond>; flags: string[] } } | null;
+  dissonance: { text: string; bond: Partial<Bond>; flags: string[] } | null;
+}
+
+interface EventRequires {
+  minAge?: number;
+  maxAge?: number;
+  flags?: string[];
+  notFlags?: string[];
+  minClose?: number;
+  maxClose?: number;
+  minSync?: number;
+  maxSync?: number;
+  minDistance?: number;
+  maxDistance?: number;
+  /** true：只在对方已经离开以后；false：只在两人都在世时 */
+  alone?: boolean;
+}
+
+/** 抽事件时除了年龄和标记以外还要看的东西 */
+interface EligibleCtx {
+  bond: Bond;
+  alone: boolean;
+}
+
+// ---------- 结局（content/endings.yaml） ----------
+
+/** 两个人一起走到的结局：按顺序取第一个满足条件的 */
+interface PairEnding {
+  id: string;
+  title: string;
+  text: string;
+  requires: {
+    flags?: string[];
+    notFlags?: string[];
+    minClose?: number;
+    maxClose?: number;
+    minSync?: number;
+    maxSync?: number;
+    minDistance?: number;
+    maxDistance?: number;
+    minMemories?: number;
+    maxMemories?: number;
+    /** 默契率（共鸣次数 / 默契事件次数，0~100） */
+    minRate?: number;
+    maxRate?: number;
+    minTogether?: number;
+  };
+}
+
+/** 每个人自己的一生小结：按顺序取第一个满足条件的。text 里的 {name} 换成名字 */
+interface LifeEnding {
+  id: string;
+  title: string;
+  text: string;
+  requires: {
+    flags?: string[];
+    notFlags?: string[];
+    /** 属性下限，如 { mind: 8 } */
+    stats?: Partial<Stats>;
+    minDiedAge?: number;
+    maxDiedAge?: number;
+  };
+}
+
+interface Endings {
+  pair: PairEnding[];
+  lives: LifeEnding[];
+}
+
+interface EndingResult {
+  pair: string;
+  lives: { [R in Role]: string };
 }
 
 interface Family {
@@ -107,6 +179,7 @@ interface Content {
   families: Family[];
   talents: Talent[];
   map: GameMap;
+  endings: Endings;
 }
 
 // ---------- 存档 ----------
@@ -200,6 +273,8 @@ interface LifeState {
   memories: Memory[];
   log: LogEntry[];
   world: WorldState | null;
+  /** 人生结束时算出的结局 */
+  ending?: EndingResult;
 }
 
 interface TimeInfo {

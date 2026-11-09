@@ -4,7 +4,7 @@
   "description": "同岁 Nakama TypeScript 服务端模块",
   "scripts": {
     "build": "tsc",
-    "test": "tsc && node test/life.test.mjs"
+    "test": "tsc && node test/life.test.mjs && node test/story.test.mjs"
   },
   "devDependencies": {
     "nakama-runtime": "github:heroiclabs/nakama-common#v1.48.0",

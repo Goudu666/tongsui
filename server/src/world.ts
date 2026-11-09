@@ -59,9 +59,10 @@ function worldStartDay(s: LifeState, c: Content) {
   // 命运给今天准备的事：mirror 一件（两人都在世时），每人 solo 一件。要走到对的地方才会发生。
   var seen = lifeSeenIds(s);
   var fate: WorldState["fate"] = { mirror: null, qing: null, mei: null };
+  var together: EligibleCtx = { bond: s.bond, alone: false };
   if (persons.qing.alive && persons.mei.alive) {
     var both = persons.qing.flags.concat(persons.mei.flags);
-    var mirrors = c.events.filter(function (e) { return e.kind === "mirror" && lifeEligible(e, t, both, seen); });
+    var mirrors = c.events.filter(function (e) { return e.kind === "mirror" && lifeEligible(e, t, both, seen, together); });
     if (mirrors.length > 0 && lifeRand(s) < (t.stage === "childhood" ? 0.6 : 0.45)) {
       fate.mirror = lifePickWeighted(s, mirrors, function (e) { return e.weight; })!.id;
     }
@@ -70,11 +71,14 @@ function worldStartDay(s: LifeState, c: Content) {
     var role = ROLES[j];
     if (!persons[role].alive) continue;
     var flags = persons[role].flags;
-    var solos = c.events.filter(function (e) { return e.kind === "solo" && lifeEligible(e, t, flags, seen); });
+    var ctx: EligibleCtx = { bond: s.bond, alone: !persons[lifeOther(role)].alive };
+    // solo 按人算：对门遇到过的事，你也可能遇到（但同一天两人不会是同一件）
+    var mine = lifeSeenIds(s, role);
+    if (fate.qing) mine[fate.qing] = true;
+    var solos = c.events.filter(function (e) { return e.kind === "solo" && lifeEligible(e, t, flags, mine, ctx); });
     if (solos.length > 0 && lifeRand(s) < 0.7) {
       var pick = lifePickWeighted(s, solos, function (e) { return e.weight; })!;
       fate[role] = pick.id;
-      seen[pick.id] = true;
     }
   }
 

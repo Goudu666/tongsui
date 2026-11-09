@@ -1,0 +1,13 @@
+name: tongsui-1
+logger:
+  level: INFO
+runtime:
+  js_entrypoint: index.js
+session:
+  token_expiry_sec: 604800        # 7 天，手游不想天天重新登录
+  refresh_token_expiry_sec: 2592000
+socket:
+  max_message_size_bytes: 65536   # 存档快照会随人生变长
+match:
+  input_queue_size: 128
+  call_queue_size: 128

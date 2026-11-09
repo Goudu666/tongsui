@@ -1,0 +1,99 @@
+# 少年 / 青年 / 中年 / 老年 篇的示例事件（M0 只放占位样例，M2/M3 扩写）
+# 某个阶段没有可抽的事件时，服务器会用「平淡的日子」兜底。
+
+- id: t_note
+  kind: mirror
+  stage: teen
+  weight: 2
+  title: 课本上的纸条
+  text: 上课时，一张纸条从后排传了过来，上面只有一个问号。
+  options:
+    - id: reply
+      text: 在问号后面画一个笑脸
+      tags: [gentle]
+      effects: { self: { heart: 1 } }
+    - id: ignore
+      text: 认真听课，假装没看见
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+  resonance:
+    reply:
+      text: 那张纸条来回传了一整节课，最后变成一整页的小人。
+      memory: 一整页的小人
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 纸条在课桌角上躺了一节课。下课时，它不见了。
+    bond: { close: -1 }
+
+- id: t_choose_school
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 15 }
+  title: 志愿
+  text: 中考志愿表发下来了。城里的重点高中要住校，离巷子很远。
+  options:
+    - id: far
+      text: 报城里的重点
+      tags: [competitive]
+      effects: { self: { mind: 2 }, bond: { distance: 1 } }
+    - id: near
+      text: 报家门口的学校
+      tags: [gentle]
+      effects: { self: { heart: 1 } }
+
+- id: y_letter_city
+  kind: solo
+  stage: young
+  weight: 2
+  title: 另一座城市
+  text: 一家外地的公司给了你一份工作，工资是现在的两倍。
+  options:
+    - id: go
+      text: 去
+      tags: [adventure, competitive]
+      effects: { self: { charm: 1, heart: -1 }, bond: { distance: 2 } }
+    - id: stay
+      text: 留下
+      tags: [gentle]
+      effects: { self: { heart: 1 } }
+
+- id: m_demolish
+  kind: mirror
+  stage: middle
+  weight: 1
+  title: 拆迁通知
+  text: 巷口贴出了拆迁通知。老梅树也在红线里。
+  options:
+    - id: dig
+      text: 回去把树下的东西挖出来
+      tags: [gentle]
+      effects: { self: { heart: 1 } }
+    - id: let_go
+      text: 让它留在那里吧
+      tags: [solitude]
+      effects: { self: { heart: -1 } }
+  resonance:
+    dig:
+      text: 你们隔了很多年，在同一个周末回到了巷子，在同一个树根下碰了面。
+      memory: 拆迁前的周末
+      bond: { sync: 4, close: 4, distance: -1 }
+  dissonance:
+    text: 树下只挖出了一样东西。另一样，大概永远留在了那里。
+    bond: { close: 0 }
+
+- id: o_last_letter
+  kind: solo
+  stage: old
+  weight: 1
+  title: 最后一封信
+  text: 你翻出一叠旧信。有一封，当年写好了却没有寄出去。
+  options:
+    - id: send
+      text: 现在寄出去
+      tags: [gentle]
+      effects: { self: { heart: 2 }, other: { heart: 2 }, bond: { close: 2 } }
+    - id: keep
+      text: 放回抽屉
+      tags: [solitude]
+      effects: { self: { heart: -1 } }

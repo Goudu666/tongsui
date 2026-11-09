@@ -31,10 +31,10 @@ if [[ "$HOME" != "/root" ]]; then
 fi
 ls ~/.local/share/godot/export_templates/
 
-step "依赖：python3-fonttools（裁字体用）"
-if ! python3 -c 'import fontTools' 2>/dev/null; then
+step "依赖：curl（下载字体）、python3-fonttools（裁字体）"
+if ! command -v curl >/dev/null || ! python3 -c 'import fontTools' 2>/dev/null; then
   export DEBIAN_FRONTEND=noninteractive
-  apt-get update -qq && apt-get install -y -qq --no-install-recommends python3-fonttools >/dev/null
+  apt-get update -qq && apt-get install -y -qq --no-install-recommends curl ca-certificates python3-fonttools >/dev/null
 fi
 
 step "nakama-godot 插件 + 霞鹜文楷"

@@ -121,92 +121,221 @@ const J = (x) => JSON.parse(JSON.stringify(x));
 }
 
 // ---------- 4. 联机流程（假 Nakama） ----------
-{
-  const store = new Map();
+// 假 Nakama 尽量贴近真的：存储带版本号（条件写入会冲突）、matchCreate 同步调用 matchInit 并带 ctx.matchId、
+// 房间关闭后 matchGet 返回 null、通知会被记下来。
+const logger = { info() {}, warn() {}, error() {}, debug() {} };
+function fakeNakama() {
+  const store = new Map(); // key -> { value, version, updateTime }
   const k = (c, key, u) => `${c}/${u}/${key}`;
-  let matchSeq = 0;
-  const matches = new Map();
+  let ver = 0, matchSeq = 0, clock = 1000;
+  const matches = new Map(); // id -> { state }
+  const notifications = [];
   const nk = {
+    store, matches, notifications, k,
     uuidv4: () => `uuid-${Math.random().toString(16).slice(2)}`,
-    storageRead: (reqs) => reqs.flatMap((r) => (store.has(k(r.collection, r.key, r.userId)) ? [{ key: r.key, value: structuredClone(store.get(k(r.collection, r.key, r.userId))) }] : [])),
-    storageWrite: (ws) => ws.forEach((w) => store.set(k(w.collection, w.key, w.userId), structuredClone(w.value))),
-    storageList: (u, c) => ({ objects: [...store.entries()].filter(([key]) => key.startsWith(`${c}/${u}/`)).map(([key, value]) => ({ key: key.split("/")[2], value })) }),
-    matchCreate: (name, params) => { const id = `m${++matchSeq}`; matches.set(id, params); return id; },
+    storageRead: (reqs) => reqs.flatMap((r) => {
+      const o = store.get(k(r.collection, r.key, r.userId));
+      return o ? [{ key: r.key, value: structuredClone(o.value), version: o.version, updateTime: o.updateTime }] : [];
+    }),
+    storageWrite: (ws) => {
+      for (const w of ws) {
+        const cur = store.get(k(w.collection, w.key, w.userId));
+        if (w.version !== undefined) {
+          const ok = w.version === "*" ? !cur : cur && cur.version === w.version;
+          if (!ok) throw new Error("Storage write rejected - version check failed.");
+        }
+      }
+      ws.forEach((w) => store.set(k(w.collection, w.key, w.userId), { value: structuredClone(w.value), version: `v${++ver}`, updateTime: ++clock }));
+    },
+    storageList: (u, c) => ({
+      objects: [...store.entries()].filter(([key]) => key.startsWith(`${c}/${u}/`)).map(([key, o]) => ({ key: key.split("/")[2], value: o.value, updateTime: o.updateTime })),
+    }),
+    matchCreate: (name, params) => {
+      const id = `m${++matchSeq}.node`;
+      const init = G("matchInit")({ matchId: id }, logger, nk, params); // 失败就抛出，和真的一样
+      matches.set(id, { state: init.state });
+      return id;
+    },
     matchGet: (id) => (matches.has(id) ? { matchId: id } : null),
+    notificationsSend: (ns) => notifications.push(...ns),
     binaryToString: (b) => Buffer.from(b).toString("utf8"),
   };
-  const logger = { info() {}, warn() {}, error() {}, debug() {} };
   const rpc = (name, userId, payload) => JSON.parse(G(name)({ userId }, logger, nk, JSON.stringify(payload)));
+  const record = (id) => store.get(k("lifelines", id, "00000000-0000-0000-0000-000000000000")).value;
+  return { nk, rpc, record };
+}
 
+/** 一个房间的驱动器：收发消息、推进 tick */
+function room(nk, matchId) {
+  const sent = [];
+  const dispatcher = { broadcastMessage: (op, data, to) => sent.push({ op, data: JSON.parse(data), to: to ? to.map((p) => p.sessionId) : null }) };
+  const m = nk.matches.get(matchId);
+  let tick = 1;
+  const msg = (p, op, body) => ({ sender: p, opCode: op, data: new TextEncoder().encode(JSON.stringify(body)) });
+  const r = {
+    sent, dispatcher, msg,
+    get state() { return m.state; },
+    life: () => m.state.record.life,
+    join: (ps) => { m.state = G("matchJoin")({}, logger, nk, dispatcher, tick, m.state, ps).state; },
+    leave: (ps) => { m.state = G("matchLeave")({}, logger, nk, dispatcher, tick, m.state, ps).state; },
+    attempt: (p) => G("matchJoinAttempt")({}, logger, nk, dispatcher, tick, m.state, p),
+    loop: (msgs = []) => {
+      const res = G("matchLoop")({}, logger, nk, dispatcher, tick++, m.state, msgs);
+      if (res === null) { nk.matches.delete(matchId); return false; }
+      m.state = res.state;
+      return true;
+    },
+    /** 发给某个连接的消息（含广播） */
+    to: (p, op) => sent.filter((x) => x.op === op && (x.to === null || x.to.includes(p.sessionId))),
+  };
+  return r;
+}
+
+{
+  const { nk, rpc, record } = fakeNakama();
   const a = rpc("rpcLifelineCreate", "user-a", { name: "小青" });
   assert.equal(a.code.length, 6);
+  assert.equal(rpc("rpcLifelineOpen", "user-a", { lifelineId: a.lifelineId }).waitingForPartner, true, "TA 还没来时不开房");
   assert.throws(() => rpc("rpcLifelineJoin", "user-b", { code: "NOPE00" }));
   const b = rpc("rpcLifelineJoin", "user-b", { code: a.code.toLowerCase(), name: "小梅" });
   assert.equal(b.role, "mei");
+  const joined = nk.notifications.find((n) => n.userId === "user-a" && n.subject === "partner_joined");
+  assert.ok(joined && joined.content.lifelineId === a.lifelineId && joined.content.name === "小梅", "梅加入后要通知青");
+  assert.equal(rpc("rpcLifelineJoin", "user-b", { code: a.code }).role, "mei", "重复输入配对码不报错");
   assert.throws(() => rpc("rpcLifelineJoin", "user-c", { code: a.code }), /两个人/);
-  const openA = rpc("rpcLifelineOpen", "user-a", { lifelineId: a.lifelineId });
+  assert.throws(() => rpc("rpcLifelineOpen", "user-c", { lifelineId: a.lifelineId }), /不是你的/);
+
+  // 打开：两个人进同一个房间；房间自己存档之后再打开，仍然是同一个（旧版这里会拉起第二个房间）
   const openB = rpc("rpcLifelineOpen", "user-b", { lifelineId: a.lifelineId });
-  assert.equal(openA.matchId, openB.matchId, "两人应进入同一个房间");
-  assert.equal(rpc("rpcLifelineList", "user-a", {}).lifelines.length, 1);
-
-  const sent = [];
-  const dispatcher = { broadcastMessage: (op, data, to) => sent.push({ op, data: JSON.parse(data), to: to?.map((p) => p.userId) }) };
-  let { state } = G("matchInit")({}, logger, nk, { lifelineId: a.lifelineId });
+  assert.equal(record(a.lifelineId).matchId, openB.matchId, "matchInit 要把 matchId 写进存档");
+  const R = room(nk, openB.matchId);
   const pa = { userId: "user-a", sessionId: "sa" }, pb = { userId: "user-b", sessionId: "sb" };
-  assert.equal(G("matchJoinAttempt")({}, logger, nk, dispatcher, 0, state, { userId: "intruder" }).accept, false);
-  state = G("matchJoin")({}, logger, nk, dispatcher, 0, state, [pa, pb]).state;
-  assert.equal(sent.filter((m) => m.op === 1).length, 2);
-  assert.equal(sent.find((m) => m.op === 1).data.life.phase, "roll");
+  assert.equal(R.attempt({ userId: "intruder", sessionId: "x" }).accept, false);
+  R.join([pb]);
+  assert.ok(nk.notifications.some((n) => n.userId === "user-a" && n.subject === "partner_online"), "梅进房、青不在时通知青");
+  R.leave([pb]); // 触发一次房间存档
+  R.join([pb]);
+  const openA = rpc("rpcLifelineOpen", "user-a", { lifelineId: a.lifelineId });
+  assert.equal(openA.matchId, openB.matchId, "两人应进入同一个房间");
+  // 同时拉起：第二个房间在 matchInit 里发现已有活房间，拒绝
+  assert.throws(() => nk.matchCreate("lifeline", { lifelineId: a.lifelineId }), /DUP_MATCH/);
+  assert.equal(nk.matches.size, 1);
 
-  const msg = (p, op, body) => ({ sender: p, opCode: op, data: new TextEncoder().encode(JSON.stringify(body)) });
-  let tick = 1;
-  const loop = (msgs = []) => (state = G("matchLoop")({}, logger, nk, dispatcher, tick++, state, msgs).state);
-  const life = () => state.record.life;
+  const list = rpc("rpcLifelineList", "user-a", {}).lifelines;
+  assert.equal(list.length, 1);
+  assert.equal(list[0].names.mei, "小梅");
+  assert.equal(list[0].phase, "roll");
+
+  R.join([pa]);
+  assert.equal(R.to(pa, 1).at(-1).data.life.phase, "roll");
+  assert.equal(R.to(pa, 1).at(-1).data.life.rng, undefined, "快照不带随机数状态");
+
+  // 心跳
+  R.loop([R.msg(pa, 12, { t: 1234 })]);
+  const pong = R.to(pa, 13).at(-1);
+  assert.ok(pong && pong.data.t === 1234 && pong.to[0] === "sa", "PING 只回给本人");
 
   // 抽卡
-  const before = J(life().rolls.qing);
-  loop([msg(pa, 2, { reroll: true })]);
-  assert.equal(life().rolls.qing.rerollsLeft, before.rerollsLeft - 1);
-  assert.ok(sent.some((m) => m.op === 3));
-  loop([msg(pa, 2, { confirm: true }), msg(pb, 2, { confirm: true })]);
-  assert.equal(life().phase, "life");
-  assert.equal(sent.filter((m) => m.op === 1 && m.data.life.phase === "life").length, 2, "开局后重发快照");
-  life().world.fate = { mirror: null, qing: null, mei: null };
+  const before = J(R.life().rolls.qing);
+  R.loop([R.msg(pa, 2, { reroll: true })]);
+  assert.equal(R.life().rolls.qing.rerollsLeft, before.rerollsLeft - 1);
+  assert.ok(R.sent.some((m) => m.op === 3));
+  R.loop([R.msg(pa, 2, { confirm: true }), R.msg(pb, 2, { confirm: true })]);
+  assert.equal(R.life().phase, "life");
+  assert.equal(R.sent.filter((m) => m.op === 1 && m.data.life.phase === "life").length, 2, "开局后重发快照");
+  R.life().world.fate = { mirror: null, qing: null, mei: null };
 
-  // 走动 + 世界广播
-  loop([msg(pa, 4, { x: 330, y: 600 })]);
-  loop();
-  const wv = sent.filter((m) => m.op === 7).at(-1).data;
-  assert.equal(wv.actors.qing.x, 330);
+  // 走动：带序号，乱序的旧包丢掉；世界广播带 tick 和已处理序号
+  R.loop([R.msg(pa, 4, { x: 330, y: 600, seq: 1 })]);
+  R.loop([R.msg(pa, 4, { x: 360, y: 600, seq: 3 }), R.msg(pa, 4, { x: 345, y: 600, seq: 2 })]);
+  R.loop();
+  const wv = R.sent.filter((m) => m.op === 7).at(-1).data;
+  assert.equal(wv.actors.qing.x, 360, "旧序号的 MOVE 不能把人拉回去");
+  assert.equal(wv.actors.qing.seq, 3);
+  assert.ok(typeof wv.tick === "number" && wv.tick > 0);
   assert.ok(wv.minute >= 390 && wv.needs.mei.hunger <= 80);
-  // 行动报错要回给本人
-  loop([msg(pb, 5, { spot: "river_bank" })]);
-  assert.ok(sent.at(-1).op === 9 || sent.some((m) => m.op === 9 && m.to?.includes("user-b")));
+  // 站了很久再走：限速按 1 秒算，不能一步跨半张地图
+  for (let i = 0; i < 50; i++) R.loop();
+  R.loop([R.msg(pa, 4, { x: 2000, y: 600, seq: 4 })]);
+  assert.ok(R.life().world.actors.qing.x < 360 + 700, "久站之后也要限速");
+  R.life().world.actors.qing.x = 360;
+  // 行动报错回给本人
+  R.loop([R.msg(pb, 5, { spot: "river_bank" })]);
+  assert.ok(R.to(pb, 9).length > 0 && R.to(pb, 9).at(-1).to[0] === "sb");
 
-  // 事件：梅掉线，青触发 mirror 并选好，30 秒后影子替梅选
-  life().world.fate.mirror = "c_stray_cat";
-  for (const r of ["qing", "mei"]) { life().world.actors[r].x = 740; life().world.actors[r].y = 470; }
-  state = G("matchLeave")({}, logger, nk, dispatcher, tick, state, [pb]).state;
-  loop(); // 梅的影子可能正要去做别的事，也会被叫住
-  assert.equal(life().world.event?.eventId, "c_stray_cat", "两人在楼道应触发");
-  assert.ok(sent.some((m) => m.op === 8));
-  loop([msg(pa, 6, { optionId: "hide" })]);
-  for (let i = 0; i < 29 * 10; i++) loop();
-  assert.ok(life().world.event, "还没到影子时间");
-  for (let i = 0; i < 15; i++) loop();
-  assert.equal(life().world.event, null, "影子应代选");
-  const ev = life().log.filter((e) => e.kind === "mirror").at(-1);
+  // 断线重连：梅换了一条新连接，旧连接的 leave 和消息都不算数
+  const pb2 = { userId: "user-b", sessionId: "sb2" };
+  R.join([pb2]);
+  const resnap = R.to(pb2, 1).at(-1).data;
+  assert.equal(resnap.you, "mei");
+  assert.equal(resnap.life.phase, "life");
+  assert.ok(resnap.life.world && resnap.life.world.actors.mei, "重连快照带上世界，客户端直接回到河畔里");
+  R.leave([pb]);
+  assert.equal(R.state.presences.mei.sessionId, "sb2", "旧连接的 leave 不能把新连接踢掉");
+  const meiX = R.life().world.actors.mei.x;
+  R.loop([R.msg(pb, 4, { x: meiX + 40, y: R.life().world.actors.mei.y, seq: 99 })]);
+  assert.equal(R.life().world.actors.mei.x, meiX, "旧连接发来的 MOVE 不算");
+  R.loop([R.msg(pb2, 4, { x: meiX + 40, y: R.life().world.actors.mei.y, seq: 1 })]);
+  assert.equal(R.life().world.actors.mei.x, meiX + 40, "重连后序号从 1 重新开始");
+
+  // 掉线宽限：10 秒内影子不接手；超过之后影子替他做事；回来时影子把身体还给他
+  R.leave([pb2]);
+  for (let i = 0; i < 50; i++) R.loop();
+  assert.equal(R.life().world.actors.mei.action, null, "刚掉线几秒，影子不接手");
+  for (let i = 0; i < 60 && !R.life().world.actors.mei.action; i++) R.loop();
+  assert.ok(R.life().world.actors.mei.action && R.life().world.actors.mei.shadow, "掉线超过宽限期，影子接手");
+  const pb2b = { userId: "user-b", sessionId: "sb2b" };
+  R.join([pb2b]);
+  assert.equal(R.life().world.actors.mei.action, null, "本人回来，影子停手");
+  assert.equal(R.to(pb2b, 1).at(-1).data.life.world.actors.mei.action, null);
+
+  // 事件：快照不能泄露 TA 的选择
+  R.life().world.fate.mirror = "c_stray_cat";
+  for (const r of ["qing", "mei"]) { R.life().world.actors[r].x = 740; R.life().world.actors[r].y = 470; }
+  R.loop();
+  assert.equal(R.life().world.event?.eventId, "c_stray_cat", "两人在楼道应触发");
+  assert.ok(R.sent.some((m) => m.op === 8));
+  R.loop([R.msg(pa, 6, { optionId: "hide" })]);
+  const pb3 = { userId: "user-b", sessionId: "sb3" };
+  R.join([pb3]);
+  const evSnap = R.to(pb3, 1).at(-1).data.life.world.event;
+  assert.equal(evSnap.eventId, "c_stray_cat", "重连时还在事件里，要能把选择框弹回来");
+  assert.equal(evSnap.chosen.qing, true);
+  assert.equal(evSnap.mine, null);
+  assert.ok(!JSON.stringify(R.to(pb3, 1).at(-1).data).includes('"hide"'), "快照里不能出现 TA 选的选项");
+  assert.equal(R.to(pb3, 1).at(-1).data.life.world.fate, undefined, "快照不剧透今天的命运");
+
+  // 梅掉线，30 秒后影子替梅选
+  R.leave([pb3]);
+  for (let i = 0; i < 29 * 10; i++) R.loop();
+  assert.ok(R.life().world.event, "还没到影子时间");
+  for (let i = 0; i < 15; i++) R.loop();
+  assert.equal(R.life().world.event, null, "影子应代选");
+  const ev = R.life().log.filter((e) => e.kind === "mirror").at(-1);
   assert.equal(JSON.stringify(ev.shadow), JSON.stringify(["mei"]));
-  assert.ok(sent.some((m) => m.op === 10));
-  const saved = store.get(k("lifelines", a.lifelineId, "00000000-0000-0000-0000-000000000000"));
-  assert.equal(saved.life.phase, "life", "掉线时要存档");
+  assert.ok(R.sent.some((m) => m.op === 10));
+  assert.equal(record(a.lifelineId).life.phase, "life", "掉线时要存档");
 
-  // 两人都离线：时间停住，120 秒后关房
-  state = G("matchLeave")({}, logger, nk, dispatcher, tick, state, [pa]).state;
-  const mStop = life().world.minute;
-  let closed = false;
-  for (let i = 0; i < 1300 && !closed; i++) closed = G("matchLoop")({}, logger, nk, dispatcher, tick++, state, []) === null;
-  assert.ok(closed, "空房间应关闭");
-  assert.equal(life().world.minute, mStop, "没人在线时世界不走");
-  console.log("✓ 联机流程：配对 / 同房 / 抽卡 / 开局快照 / 走动广播 / 报错 / 地点事件 / 影子代选 / 存档 / 关房");
+  // 两人都离线：时间停住，120 秒后关房，存档里的 matchId 清掉
+  R.leave([pa]);
+  const mStop = R.life().world.minute;
+  let alive = true;
+  for (let i = 0; i < 1300 && alive; i++) alive = R.loop();
+  assert.ok(!alive, "空房间应关闭");
+  assert.equal(R.life().world.minute, mStop, "没人在线时世界不走");
+  assert.equal(record(a.lifelineId).matchId, null, "关房后清掉 matchId");
+  // 再打开：从存档拉起新房间，人生接着过
+  const reopen = rpc("rpcLifelineOpen", "user-a", { lifelineId: a.lifelineId });
+  assert.notEqual(reopen.matchId, openA.matchId);
+  const R2 = room(nk, reopen.matchId);
+  R2.join([{ userId: "user-a", sessionId: "sa2" }]);
+  assert.equal(R2.life().world.minute, mStop, "存档恢复后接着过");
+  assert.equal(R2.life().turn, R.life().turn);
+  // 存档里 matchId 是陈旧的（比如 Nakama 重启过）也能重新拉起
+  nk.matches.clear();
+  nk.store.get(nk.k("lifelines", a.lifelineId, "00000000-0000-0000-0000-000000000000")).value.matchClaimedAt = Date.now() - 60000;
+  const afterRestart = rpc("rpcLifelineOpen", "user-b", { lifelineId: a.lifelineId });
+  assert.ok(nk.matches.has(afterRestart.matchId));
+  console.log("✓ 联机流程：配对通知 / 同房（含存档后、并发拉起）/ 心跳 / 抽卡 / 开局快照 / 走动序号与限速 / 报错只回本人");
+  console.log("✓ 断线重连：新连接顶掉旧连接 / 重连快照 / 10 秒宽限 / 回来收回影子 / 快照不泄露选择和命运 / 影子代选 / 存档 / 关房 / 从存档重开 / 服务器重启后重开");
 }

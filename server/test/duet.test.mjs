@@ -90,12 +90,14 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   assert.equal(e.duet.line, "青猜着了梅，梅没猜着青。");
   assert.deepEqual(J(s.duet.know), { qing: [2, 2], mei: [1, 2] });
   // 选得不一样，可谁也没猜错谁：亲近 +1
-  const close0 = s.bond.close, sync0 = s.bond.sync;
+  // （关系的涨幅有递减，不比具体数字：和一份「同样的选择、但没猜」的对照比）
+  const ctl = J(s);
+  play(ctl, "d_wheel_steps", { qing: "front", mei: "call" });
   e = play(s, "d_wheel_steps", { qing: "front", mei: "call" }, { guess: { qing: "call", mei: "front" } });
   assert.equal(e.resonance, false);
   assert.equal(e.duet.line, C.duet.lines.knew_both_diff);
-  assert.equal(s.bond.close - close0, (byId.get("d_wheel_steps").dissonance.bond.close ?? 0) + 1);
-  assert.equal(s.bond.sync - sync0, (byId.get("d_wheel_steps").dissonance.bond.sync ?? 0) + 2, "猜中一回默契 +1");
+  assert.ok(s.bond.close > ctl.bond.close, "都猜中但选得不一样：亲近多涨一点");
+  assert.ok(s.bond.sync > ctl.bond.sync, "猜中了默契多涨一点");
   // 都没猜中
   e = play(s, "d_teen_bike", { qing: "ride", mei: "seat" }, { guess: { qing: "walk", mei: "walk" } });
   assert.equal(e.duet.outcome, "catch");
@@ -145,6 +147,10 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   assert.match(G("duetEcho")(s, C, "qing", turn0, "hold").error, /接不上/, "不是你欠的话");
   assert.match(G("duetEcho")(s, C, "mei", turn0, "nope").error, /没有这个选项/);
   const tags0 = s.persons.mei.tags.gentle ?? 0, sync0 = s.bond.sync, rate0 = G("lifeStats")(s).rate, log0 = s.log.length;
+  // 对照：同样的回话，但青当时没猜
+  const noGuess = J(s);
+  noGuess.duet.owed.mei[0].guess = null;
+  assert.equal(G("duetEcho")(noGuess, C, "mei", turn0, "hold").entry.duet.partnerKnew, null);
   const r = G("duetEcho")(s, C, "mei", turn0, "hold");
   assert.equal(r.error, null);
   const d = r.entry.duet;
@@ -158,7 +164,8 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   assert.equal(s.memories.at(-1).title, "都接住了");
   assert.equal(s.memories.at(-1).vivid, 2, "补的回忆淡一级");
   assert.equal(s.memories.at(-1).turn, turn0, "回忆记在当年");
-  assert.equal(s.bond.sync - sync0, 3, "接上 +2，青其实猜中了 +1");
+  assert.ok(noGuess.bond.sync > sync0, "接上了默契涨");
+  assert.ok(s.bond.sync > noGuess.bond.sync, "青其实猜中了，再涨一点");
   assert.deepEqual(J(s.duet.know.qing), [1, 1]);
   assert.deepEqual(J(s.duet.like.mei), [0, 1]);
   assert.equal(s.persons.mei.tags.gentle, tags0 + 1, "本人的回答接着教影子");

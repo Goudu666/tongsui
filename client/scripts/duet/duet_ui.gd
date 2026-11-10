@@ -103,9 +103,13 @@ func show_result(e: Dictionary) -> void:
 	m._open_modal()
 	_head(box, outcome, "%s · %s" % [str(e.label), str(ev.get("title", ""))])
 	box.add_child(Resonance.new(outcome, d.get("knew")))
+	var checks: Dictionary = e.checks if e.get("checks") is Dictionary else {}
 	for r in ["qing", "mei"]:
 		var mark := "（影子）" if e.shadow.has(r) else ""
 		_pick_row(box, r, m._option_text(e.events[r], e.choices[r]) + mark)
+		# 这一项挂着检定（成长线的）：成没成，写在选择下面
+		if checks.get(r) is Dictionary:
+			m._label(box, "%s　%s" % [m._check_verdict(checks[r]), str(checks[r].get("text", ""))], 30, P.INK_SOFT)
 	Kit.rule(box, Color(P.INK, 0.25))
 	m._label(box, str(e.text), 44, P.INK if outcome == "miss" else P.OVERLAP)
 	var notes := []

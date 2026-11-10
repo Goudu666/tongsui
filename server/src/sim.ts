@@ -2,7 +2,6 @@
 // 河畔里的实时部分（走动、吃饭睡觉、触发事件）在 world.ts。
 
 var ROLES: Role[] = ["qing", "mei"];
-var REROLLS = 3;
 var MEMORY_FADE_EVERY = 8;
 var SEASON_ORDER: Season[] = ["spring", "summer", "autumn", "winter"];
 var SEASON_LABEL = ["立春", "立夏", "立秋", "立冬"];
@@ -78,23 +77,39 @@ function lifeFind<T extends { id: string }>(list: T[], id: string): T {
   throw new Error("not found: " + id);
 }
 
-/** 抽一次。exceptFamily：两户人家是邻居，不能是同一家 */
+/**
+ * 抽一次。exceptFamily：两户人家是邻居，不能是同一家。
+ * 四项属性的合计人人一样（rules.roll.budget，清贫人家多 1 点、殷实人家少 1 点）：
+ * 人家和天赋的加成先占掉一部分点数，剩下的随机分。所以没有「强」的出身，只有长得不一样的出身。
+ */
 function lifeRollOnce(s: { rng: number }, c: Content, exceptFamily: string | null): { familyId: string; talentId: string; stats: Stats } {
+  var rr = c.rules.roll;
   var fams = c.families.filter(function (f) { return f.id !== exceptFamily; });
   var fam = lifePickWeighted(s, fams, function (f) { return f.weight; })!;
   var tal = lifePickWeighted(s, c.talents, function (t) { return t.weight; })!;
-  // 16 点随机分给四项，每项 1~7
   var keys: StatKey[] = ["body", "mind", "charm", "luck"];
-  var stats: Stats = { body: 1, mind: 1, charm: 1, luck: 1 };
-  var pool = 12;
+  // 每项随机分到的底子在 [lo, hi] 里。加成大的那一项上限要让出来、加成是负的下限要垫上去，
+  // 这样加完以后还在 0~10 里，不用再夹（夹掉的点数就丢了，合计就不等了）
+  var bonus: Stats = { body: 0, mind: 0, charm: 0, luck: 0 };
+  var hi: Stats = { body: 0, mind: 0, charm: 0, luck: 0 };
+  var stats: Stats = { body: 0, mind: 0, charm: 0, luck: 0 };
+  var pool = rr.budget + rr.wealthAdjust[fam.wealth];
+  var room = 0;
+  for (var b = 0; b < keys.length; b++) {
+    var kb = keys[b];
+    bonus[kb] = (fam.bonus[kb] || 0) + (tal.bonus[kb] || 0);
+    stats[kb] = Math.max(rr.statMin, -bonus[kb]);
+    hi[kb] = Math.max(stats[kb], Math.min(rr.statMax, 10 - bonus[kb]));
+    pool -= stats[kb] + bonus[kb];
+    room += hi[kb] - stats[kb];
+  }
+  // 内容校验（build-content.mjs）保证每种人家 × 天赋都分得下去；这里再夹一次只是不让坏数据卡死循环
+  pool = lifeClamp(pool, 0, room);
   while (pool > 0) {
     var k = keys[Math.floor(lifeRand(s) * 4)];
-    if (stats[k] < 7) { stats[k] += 1; pool -= 1; }
+    if (stats[k] < hi[k]) { stats[k] += 1; pool -= 1; }
   }
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    stats[key] = lifeClamp(stats[key] + (fam.bonus[key] || 0) + (tal.bonus[key] || 0), 0, 10);
-  }
+  for (var i = 0; i < keys.length; i++) stats[keys[i]] = lifeClamp(stats[keys[i]] + bonus[keys[i]], 0, 10);
   return { familyId: fam.id, talentId: tal.id, stats: stats };
 }
 
@@ -116,8 +131,8 @@ function lifeCreate(seed: number, c: Content): LifeState {
   var q = lifeRollOnce(s, c, null);
   var m = lifeRollOnce(s, c, q.familyId);
   s.rolls = {
-    qing: { familyId: q.familyId, talentId: q.talentId, stats: q.stats, rerollsLeft: REROLLS, confirmed: false },
-    mei: { familyId: m.familyId, talentId: m.talentId, stats: m.stats, rerollsLeft: REROLLS, confirmed: false },
+    qing: { familyId: q.familyId, talentId: q.talentId, stats: q.stats, rerollsLeft: c.rules.roll.rerolls, confirmed: false },
+    mei: { familyId: m.familyId, talentId: m.talentId, stats: m.stats, rerollsLeft: c.rules.roll.rerolls, confirmed: false },
   };
   return s;
 }
@@ -153,13 +168,17 @@ function lifeNewPerson(s: LifeState, c: Content, r: Roll, name: string): Person 
   return {
     name: name,
     alive: true,
-    lifespan: 66 + Math.floor(lifeRand(s) * 24),
+    lifespan: growthBornLifespan(s, c),
     diedAtAge: null,
     familyId: fam.id,
     talentId: tal.id,
     stats: { body: r.stats.body, mind: r.stats.mind, charm: r.stats.charm, luck: r.stats.luck },
+    born: { body: r.stats.body, mind: r.stats.mind, charm: r.stats.charm, luck: r.stats.luck },
     needs: { hunger: 80, energy: 90, mood: 70, clean: 80 },
     money: fam.money,
+    moodSum: 0,
+    moodDays: 0,
+    active: { body: false, mind: false },
     flags: fam.traits.concat(tal.flags),
     tags: {},
   };
@@ -171,13 +190,13 @@ function lifeHasFlag(p: Person, f: string): boolean {
   return p.flags.indexOf(f) >= 0;
 }
 
-function lifeApplySelf(p: Person, d: SelfDelta) {
+/** g：长属性时的场合（见 growth.ts → growthCtx）。只改需求的调用可以不传 */
+function lifeApplySelf(p: Person, d: SelfDelta, g?: GrowCtx) {
   for (var k in d) {
     var v = (d as any)[k] as number;
     if (k === "body" || k === "mind" || k === "charm" || k === "luck") {
-      // 越往上越难长：4 以下照常，7 只长一半，9 以上只长一点点（不然一辈子下来人人都是满属性）
-      if (v > 0) v = v * lifeClamp((10 - p.stats[k]) / 6, 0.15, 1);
-      p.stats[k] = lifeClamp(Math.round((p.stats[k] + v) * 100) / 100, 0, 10);
+      if (g) growthApply(p, k, v, g);
+      else p.stats[k] = lifeClamp(Math.round((p.stats[k] + v) * 1000) / 1000, 0, 10);
     } else if (k === "hunger" || k === "energy" || k === "mood" || k === "clean") {
       if (k === "mood" && v < 0 && lifeHasFlag(p, "tal_sunny")) v = v / 2;
       p.needs[k] = lifeClamp(p.needs[k] + v, 0, 100);
@@ -185,10 +204,9 @@ function lifeApplySelf(p: Person, d: SelfDelta) {
   }
 }
 
-function lifeApplyBond(s: LifeState, d: Partial<Bond>) {
-  if (d.sync) s.bond.sync = lifeClamp(s.bond.sync + d.sync, 0, 100);
-  if (d.close) s.bond.close = lifeClamp(s.bond.close + d.close, -20, 100);
-  if (d.distance) s.bond.distance = lifeClamp(s.bond.distance + d.distance, 0, 5);
+/** 亲近和默契越高越难涨（见 growth.ts → growthBond） */
+function lifeApplyBond(s: LifeState, c: Content, d: Partial<Bond>) {
+  growthBond(s, c, d);
 }
 
 // ---------- 事件 ----------
@@ -282,6 +300,7 @@ function lifeEntry(s: LifeState, kind: LogEntry["kind"], text: string): LogEntry
 function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry {
   var ev = lifeFindEvent(c, pe.eventId);
   var entry = lifeEntry(s, pe.kind, "");
+  var grow = growthCtx(s, c, "event");
   entry.shadow = pe.shadow.slice();
   for (var i = 0; i < pe.roles.length; i++) {
     var role = pe.roles[i];
@@ -289,34 +308,37 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
     entry.events[role] = ev.id;
     entry.choices[role] = o.id;
     var me = s.persons![role];
-    lifeApplySelf(me, o.effects.self);
     var other = s.persons![lifeOther(role)];
-    if (other.alive) lifeApplySelf(other, o.effects.other);
-    lifeApplyBond(s, o.effects.bond);
-    lifeAddFlags(me, o.effects.flags);
+    // 检定：这个选项成不成，看本事也看运气（见 growth.ts → growthResolveCheck）
+    var out = growthResolveCheck(s, c, pe, ev, o, role, entry);
+    lifeApplySelf(me, out.self, grow);
+    if (other.alive) lifeApplySelf(other, o.effects.other, grow);
+    lifeApplyBond(s, c, o.effects.bond);
+    lifeAddFlags(me, out.flags);
     if (pe.shadow.indexOf(role) < 0) {
       for (var j = 0; j < o.tags.length; j++) me.tags[o.tags[j]] = (me.tags[o.tags[j]] || 0) + 1;
     }
   }
   // 选得不一样、但一个抛一个接：duet.ts 按「搭上了」结算，就不走下面的共鸣 / 错位了
-  if (pe.kind === "mirror" && !duetCatch(s, pe, ev, entry)) {
+  if (pe.kind === "mirror" && !duetCatch(s, c, pe, ev, entry)) {
     if (pe.choices.qing === pe.choices.mei) {
       entry.resonance = true;
+      if (s.world) s.world.warm = true;
       var res = ev.resonance && ev.resonance[pe.choices.qing!];
       if (res) {
-        lifeApplyBond(s, res.bond);
+        lifeApplyBond(s, c, res.bond);
         lifeAddFlags(s.persons!.qing, res.flags);
         lifeAddFlags(s.persons!.mei, res.flags);
         entry.text = res.text;
         if (res.memory) s.memories.push({ title: res.memory, eventId: ev.id, turn: s.turn, age: entry.age, vivid: 3 });
       } else {
-        lifeApplyBond(s, { sync: 1 });
+        lifeApplyBond(s, c, { sync: 1 });
         entry.text = "你们选了同一个答案。";
       }
     } else {
       entry.resonance = false;
       if (ev.dissonance) {
-        lifeApplyBond(s, ev.dissonance.bond);
+        lifeApplyBond(s, c, ev.dissonance.bond);
         lifeAddFlags(s.persons!.qing, ev.dissonance.flags);
         lifeAddFlags(s.persons!.mei, ev.dissonance.flags);
         entry.text = ev.dissonance.text;
@@ -335,6 +357,9 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
   var w = s.world!;
   var summary = lifeEntry(s, "day", "");
   var parts: string[] = [];
+  // 记下今天的心气，亲近变淡，岁数不饶人（要赶在下面「心情回归日常」之前）
+  growthDayEnd(s, c);
+  var prevAge = lifeTimeAt(s.turn).age;
   for (var i = 0; i < ROLES.length; i++) {
     var p = persons[ROLES[i]];
     if (!p.alive) continue;
@@ -357,19 +382,14 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
     if (mem.vivid > 0 && (s.turn - mem.turn) % MEMORY_FADE_EVERY === 0) mem.vivid -= 1;
   }
 
-  // 生老病死：体魄每高 1 点多活半年，长期心情差会折寿
-  var nt = lifeTimeAt(s.turn);
-  for (var d = 0; d < ROLES.length; d++) {
-    var pp = persons[ROLES[d]];
-    if (!pp.alive) continue;
-    var limit = pp.lifespan + (pp.stats.body - 5) * 0.5 + (pp.needs.mood < 30 ? -3 : 0);
-    if (nt.age >= limit || nt.age >= 100) {
-      pp.alive = false;
-      pp.diedAtAge = nt.age;
-      var de = lifeEntry(s, "death", pp.name + " 在 " + nt.age + " 岁那年离开了。");
-      out.push(de);
-      s.log.push(de);
-    }
+  // 生老病死：大限看命数、体魄、一辈子的心气，还有对门的那个人（见 growth.ts → growthLimit）
+  var gone = growthDeaths(s, c, prevAge);
+  for (var d = 0; d < gone.length; d++) {
+    var pp = persons[gone[d]];
+    var de = lifeEntry(s, "death", pp.name + " 在 " + pp.diedAtAge + " 岁那年离开了。");
+    de.age = pp.diedAtAge!;
+    out.push(de);
+    s.log.push(de);
   }
 
   if (!persons.qing.alive && !persons.mei.alive) {

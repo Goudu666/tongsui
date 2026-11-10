@@ -195,7 +195,7 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 
 关口和路线是核心玩法的骨架（设计见 [GDD.md](GDD.md) 第 4 节）。规则在 `server/src/sim.ts`（`lifeTrack` 路线、`lifeOptionLock` 上锁、`lifeGoal` 目标）
 和 `server/src/world.ts`（`worldPickAction` 点位上现在能做什么、`worldDuty` 日程、`worldFinish` 里的搭伴倍率和状态效率）。
-分数线调完要跑 `node tools/paths.mjs`：九种活法的机器人把人生过到三十岁，打印每条线有多少人够得着。
+分数线调完要跑 `node tools/paths.mjs`：十二种活法的机器人把人生过完（最后一道关在七十岁），打印每条线有多少人够得着。
 `server/test/paths.test.mjs` 把四件事钉成断言：不上心的够不着高线、活法比出身重要、搭伴比一个人强、一个人够不着所有的线。
 
 结局格式见 `content/endings.yaml` 文件头。服务器在两人都离开后调用 `lifeEnding` 算出结局，存进 `LifeState.ending`（`{ pair, lives: { qing, mei } }`），

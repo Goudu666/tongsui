@@ -189,7 +189,7 @@ interface Rules {
     flags?: { [flag: string]: number };
   };
   bond: {
-    closeSoft: number; closeFloor: number; closeScale: number; syncSoft: number; syncFloor: number;
+    closeSoft: number; closeFloor: number; closeScale: number; syncSoft: number; syncFloor: number; syncSteady: number;
     drift: { [S in Stage]: number }; driftDistance: number; driftFloor: number;
   };
 }
@@ -363,6 +363,8 @@ interface PendingEvent {
   shadow: Role[];
   /** 关口：每个人这次的发挥（加在得分上） */
   swing?: { [R in Role]?: number };
+  /** 关口：默契替这个人托住的分（已经算在 swing 里了，单拿出来是给他看的） */
+  steady?: { [R in Role]?: number };
 }
 
 interface WorldState {
@@ -394,7 +396,7 @@ interface LogEntry {
   resonance: boolean | null;
   text: string;
   /** 关口：每个人的得分（属性类按百分制，钱类按块）、成绩和走上的路 */
-  results?: { [R in Role]?: { score: number; unit: string; grade: string | null; option: string; track: string } };
+  results?: { [R in Role]?: { score: number | null; unit: string; grade: string | null; option: string; track: string } };
   /** 一天的小结：每个人今天涨了多少 */
   gains?: { [R in Role]?: Partial<Stats> };
   /** 这件事里做过的检定 */

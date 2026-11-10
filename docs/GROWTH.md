@@ -242,7 +242,7 @@ npm run build                 # 重新生成内容并编译服务端
 npm run balance               # 跑 1200 条人生，打印报告（不到一分钟）
 npm run balance -- --lives 4000 --json out.json   # 多跑一些，把原始统计写出来
 npm run balance -- --trace t_gaokao               # 看某个事件为什么碰不上
-node tools/paths.mjs          # 九种活法过到 30 岁，看每个关口各条线的到达率（约三分半）
+node tools/paths.mjs          # 十二种活法把人生过完，看每个关口各条线的到达率（约八分钟；UNTIL=31 只过到安家，约四分钟）
 npm test                      # 规则的形状（谁该比谁多、什么不该发生）
 ```
 

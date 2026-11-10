@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "66efa6216f20",
+ "version": "3e9f5285d742",
  "events": [
   {
    "id": "c_roof_summer",
@@ -10104,7 +10104,7 @@ var CONTENT: Content = {
    "when": null,
    "hint": null,
    "requires": {},
-   "title": "七十五",
+   "title": "七十",
    "text": "三楼的楼梯一共四十二级，数了一辈子。从今年起，上下一趟要在二楼歇一回了。",
    "options": [
     {
@@ -10113,7 +10113,7 @@ var CONTENT: Content = {
      "score": {
       "close": 1
      },
-     "min": 70,
+     "min": 55,
      "tags": [
       "gentle"
      ],
@@ -10232,7 +10232,7 @@ var CONTENT: Content = {
     },
     "flags": []
    },
-   "age": 75,
+   "age": 70,
    "score": {},
    "swing": false,
    "grades": [],
@@ -24784,6 +24784,7 @@ var CONTENT: Content = {
    "closeScale": 1,
    "syncSoft": 110,
    "syncFloor": 0.15,
+   "syncSteady": 0.8,
    "drift": {
     "childhood": 0.4,
     "teen": 0.9,

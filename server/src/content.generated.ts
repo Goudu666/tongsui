@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "be3cdc6b8725",
+ "version": "e38c3f147798",
  "events": [
   {
    "id": "c_roof_summer",
@@ -26738,7 +26738,7 @@ var CONTENT: Content = {
      },
      {
       "id": "egg",
-      "text": "把鸡蛋举过头顶",
+      "text": "把手里的举过头顶",
       "tags": [
        "gentle"
       ],
@@ -26826,8 +26826,8 @@ var CONTENT: Content = {
       "flags": []
      },
      "egg": {
-      "text": "两只小手一块儿把鸡蛋举过头顶。老板娘一手接一个，在鏊子边上磕了。",
-      "memory": "两个鸡蛋",
+      "text": "钱和鸡蛋一块儿举过了头顶。老板娘先接的鸡蛋，在鏊子边上磕了。",
+      "memory": "举过头顶",
       "bond": {
        "sync": 3,
        "close": 2
@@ -26954,7 +26954,7 @@ var CONTENT: Content = {
      }
     },
     "dissonance": {
-     "text": "一个伸着小拇指，一个在数灯。大人喊下楼了，那根小拇指才揣回兜里。",
+     "text": "那根小拇指在栏杆上伸了半天，旁边的人还在数灯。大人喊下楼了，才揣回兜里。",
      "bond": {
       "close": 0
      },
@@ -27110,7 +27110,7 @@ var CONTENT: Content = {
      }
     },
     "dissonance": {
-     "text": "一个先到了校门口，回头看来的路。另一个也在路上，只是慢了一个路口。",
+     "text": "校门口先到了一个，回头看来的路。另一个也在路上，只是慢了一个路口。",
      "bond": {
       "close": 0
      },
@@ -27138,7 +27138,7 @@ var CONTENT: Content = {
      "minAge": 7
     },
     "title": "墙上的名字",
-    "text": "暖气片上头那块墙，一层一层全是早先的孩子划的道道。白菜码到了楼梯口。你俩兜里各有一根钉子。",
+    "text": "暖气片上头那块墙，一层一层全是早先的孩子划的道道。楼道里堆着自行车。你俩兜里各有一根钉子。",
     "options": [
      {
       "id": "carve",
@@ -27528,7 +27528,9 @@ var CONTENT: Content = {
        "sync": 3,
        "close": 3
       },
-      "flags": []
+      "flags": [
+       "p_bridge"
+      ]
      },
      "walk": {
       "text": "两个人一路走回了河畔里，到楼门口腿都直了。谁也没说累，第二天谁也没起来。",
@@ -27537,7 +27539,9 @@ var CONTENT: Content = {
        "sync": 3,
        "close": 2
       },
-      "flags": []
+      "flags": [
+       "p_bridge"
+      ]
      },
      "mall": {
       "text": "商场里一样东西也没买，你俩把每一层的电梯都坐了一遍，下来的时候笑岔了气。",
@@ -27546,7 +27550,9 @@ var CONTENT: Content = {
        "sync": 3,
        "close": 2
       },
-      "flags": []
+      "flags": [
+       "p_bridge"
+      ]
      }
     },
     "dissonance": {
@@ -27554,7 +27560,9 @@ var CONTENT: Content = {
      "bond": {
       "close": 0
      },
-     "flags": []
+     "flags": [
+      "p_bridge"
+     ]
     }
    },
    {
@@ -27761,7 +27769,7 @@ var CONTENT: Content = {
     ],
     "resonance": {
      "knock": {
-      "text": "你敲了三下，那边也敲了三下，跟小时候一个样。然后两条光一块儿灭了。",
+      "text": "你敲了三下，那边也敲了三下。然后两条光一块儿灭了。",
       "memory": "又敲了三下",
       "bond": {
        "sync": 3,
@@ -27819,7 +27827,7 @@ var CONTENT: Content = {
      ]
     },
     "title": "后备箱",
-    "text": "楼门口停着车，后备箱开着。要走的那个，包里塞满了家里给的东西，拉链拉不上。早点铺刚出锅。",
+    "text": "楼门口停着车，后备箱开着。包里塞满了家里给的东西，拉链拉不上。早点铺刚出锅。",
     "options": [
      {
       "id": "write",
@@ -27892,7 +27900,7 @@ var CONTENT: Content = {
       "flags": []
      },
      "wave": {
-      "text": "都没说话。车开了，后窗里一只手，楼门口一只手，摆到看不见。",
+      "text": "都没说话。车开了，各摆了摆手，摆到看不见。",
       "memory": "两只手",
       "bond": {
        "sync": 3,
@@ -27902,7 +27910,7 @@ var CONTENT: Content = {
      }
     },
     "dissonance": {
-     "text": "一个要说的话还没想好，车已经开了。后座上的人回头看了一眼楼门口。",
+     "text": "一个要说的话还没想好，车已经开了。",
      "bond": {
       "close": 0
      },
@@ -27933,7 +27941,7 @@ var CONTENT: Content = {
      ]
     },
     "title": "后备箱",
-    "text": "楼门口停着车。要走的那个，这一走就不是放假能回来的了。箱子立在地上，比人还高。早点铺刚出锅。",
+    "text": "楼门口停着车。这一走，就不是放假能回来的了。箱子立在地上，比人还高。早点铺刚出锅。",
     "options": [
      {
       "id": "write",
@@ -28006,7 +28014,7 @@ var CONTENT: Content = {
       "flags": []
      },
      "wave": {
-      "text": "都没说话。车开了，后窗里一只手，楼门口一只手，摆到看不见。",
+      "text": "都没说话。车开了，各摆了摆手，摆到看不见。",
       "memory": "两只手",
       "bond": {
        "sync": 3,
@@ -28016,7 +28024,7 @@ var CONTENT: Content = {
      }
     },
     "dissonance": {
-     "text": "一个要说的话还没想好，车已经开了。后座上的人回头看了一眼楼门口。",
+     "text": "一个要说的话还没想好，车已经开了。",
      "bond": {
       "close": 0
      },
@@ -28713,7 +28721,7 @@ var CONTENT: Content = {
      }
     },
     "dissonance": {
-     "text": "一个在楼顶等着点炮，一个在屋里让亲戚拉着说话。炮响的时候，两个人都往窗外看。",
+     "text": "楼顶的炮响了。屋里让亲戚拉着说话的那个，也往窗外看了一眼。",
      "bond": {
       "close": 0
      },
@@ -28795,7 +28803,7 @@ var CONTENT: Content = {
     ],
     "resonance": {
      "both": {
-      "text": "两边各吃了一碗，下楼的时候都撑着了。在楼梯上坐了一会儿，跟小时候一个坐法。",
+      "text": "两边各吃了一碗，下楼的时候都撑着了。在楼梯上坐了一会儿，坐的还是那两级。",
       "memory": "两碗饭",
       "bond": {
        "sync": 3,
@@ -28907,7 +28915,7 @@ var CONTENT: Content = {
     ],
     "resonance": {
      "invite": {
-      "text": "一张饭桌坐了好几家人。说到谁三岁在楼道里敲门，满桌的人都看你俩。",
+      "text": "一张饭桌坐了好几家人。说到楼道里的那些年，满桌的人都看你俩。",
       "memory": "满桌的人",
       "bond": {
        "sync": 2,
@@ -29243,7 +29251,7 @@ var CONTENT: Content = {
      }
     },
     "dissonance": {
-     "text": "一个站着把告示看完了，一个只看了个标题就去上班了。那天晚上，两边的灯都亮到很晚。",
+     "text": "告示有人从头看到了尾，有人只看了个标题。那天晚上，两边的灯都亮到很晚。",
      "bond": {
       "close": 0
      },
@@ -29748,7 +29756,7 @@ var CONTENT: Content = {
      }
     },
     "dissonance": {
-     "text": "一个守在床边，一个出去办了别的事。天亮的时候，两个小板凳都还在原处。",
+     "text": "天亮的时候，两个小板凳都还在原处。一个守了一夜，一个出去办了别的事。",
      "bond": {
       "close": 0
      },
@@ -29922,7 +29930,7 @@ var CONTENT: Content = {
       ]
      },
      "yours": {
-      "text": "两句「你拿吧」撞在一块儿。都多少年了，说话还是一个点儿。",
+      "text": "「你拿吧。」「你拿吧。」都多少年了，说话还是一个点儿。",
       "memory": "你拿吧",
       "bond": {
        "sync": 4,
@@ -30050,7 +30058,7 @@ var CONTENT: Content = {
      }
     },
     "dissonance": {
-     "text": "一个说一人一半，一个已经松了手。白菜劈开了，一半拎走了，一半还在摊上。",
+     "text": "白菜劈开了，一半拎走了，一半还留在摊上。说一人一半的那个，回头看了一眼。",
      "bond": {
       "close": 0
      },
@@ -30202,8 +30210,8 @@ var CONTENT: Content = {
       "flags": []
      },
      "go": {
-      "text": "两个人都只看了一眼，转身往早点铺那边走。鏊子还在响。",
-      "memory": "鏊子还在响",
+      "text": "两个人都只看了一眼，转身往早点铺那边走。那边有人在排队。",
+      "memory": "有人在排队",
       "bond": {
        "sync": 2,
        "close": 2
@@ -30570,7 +30578,7 @@ var CONTENT: Content = {
      }
     },
     "dissonance": {
-     "text": "一个要开，一个要埋。盒子搁在两个人当间，晒了一上午太阳。",
+     "text": "盒子搁在两个人当间，晒了一上午太阳。一个要开，一个要埋。",
      "bond": {
       "close": 0
      },
@@ -30909,7 +30917,7 @@ var CONTENT: Content = {
       "flags": []
      },
      "count": {
-      "text": "数到一百多，对岸又亮了一片，只好从头数。跟小时候一样，数了三回。",
+      "text": "数到一百多，对岸又亮了一片。这回谁也没说从头数。",
       "memory": "又数了三回",
       "bond": {
        "sync": 3,

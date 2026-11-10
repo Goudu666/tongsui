@@ -20,7 +20,7 @@ catches:
       bond: { sync: 2, close: 1 }
   c_river_ice:
     - pair: [skate, shore]
-      text: 一个在冰上抽冰嘎，一个在岸上给抱着棉袄。棉袄捂热了，人也上来了。
+      text: 一个在冰上推冰车，一个在岸上给抱着棉袄。棉袄捂热了，人也上来了。
       memory: 捂热的棉袄
       bond: { sync: 2, close: 1 }
   d_kite_tree:

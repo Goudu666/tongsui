@@ -1,0 +1,47 @@
+{
+ "_": [
+  "河畔里的声景表：哪个声音在哪儿、几点钟、哪个年代响。手写的设计数据，改它不用动代码。",
+  "zones：声音在各个地点的分量（0~1）。人离一个地点越近，那里的声音越响；out = 所有室外地点，in = 室内。",
+  "hours：一天里响的时段，单位是游戏分钟（390 = 06:30，1320 = 22:00）。可以写多段。一天现实里只有四分钟，所以时段都很短。",
+  "stages：五个人生阶段的密度 [童年, 少年, 青年, 中年, 老年]。童年的声音密，老年的声音稀。",
+  "seasons：只在这些季节响。every：单发声大约隔几秒响一次。at：到点就响（游戏分钟）。db：音量微调。"
+ ],
+ "indoor": ["home_qing", "home_mei", "hallway"],
+ "reach": 420,
+ "beds": [
+  {"file": "air_day", "zones": {"out": 1.0, "in": 0.25}, "hours": [[390, 1140]], "stages": [1, 1, 0.7, 0.45, 0.35], "db": -9},
+  {"file": "traffic", "zones": {"out": 1.0, "in": 0.2}, "hours": [[420, 1200]], "stages": [0, 0.3, 0.7, 0.6, 0.4], "db": -12},
+  {"file": "air_night", "zones": {"out": 1.0, "in": 0.6}, "hours": [[1110, 1320], [0, 400]], "stages": [1, 1, 1, 1, 1], "db": -8},
+  {"file": "crickets", "zones": {"out": 1.0, "in": 0.2}, "hours": [[1150, 1320]], "seasons": ["summer", "autumn"], "stages": [1, 1, 0.8, 0.7, 0.6], "db": -15},
+  {"file": "cicada", "zones": {"alley": 1.0, "school": 0.8, "bikeshop": 0.7, "roof": 0.4, "river": 0.5, "breakfast": 0.7, "in": 0.12}, "hours": [[660, 990]], "seasons": ["summer"], "stages": [1, 1, 0.8, 0.6, 0.5], "db": -15},
+  {"file": "river", "zones": {"river": 1.0}, "reach": 700, "stages": [1, 1, 1, 1, 1], "db": -6},
+  {"file": "roof_wind", "zones": {"roof": 1.0}, "reach": 260, "stages": [1, 1, 1, 1, 1], "db": -9},
+  {"file": "sizzle", "zones": {"breakfast": 1.0}, "reach": 520, "hours": [[390, 610]], "stages": [1, 1, 1, 0.8, 0.6], "db": -10},
+  {"file": "hallway", "zones": {"hallway": 1.0, "home_qing": 0.3, "home_mei": 0.3}, "reach": 160, "stages": [1, 1, 1, 1, 1], "db": -10},
+  {"file": "clock", "zones": {"home_qing": 1.0, "home_mei": 1.0}, "reach": 120, "stages": [1, 1, 0.8, 0.6, 1], "db": -17},
+  {"file": "radio", "zones": {"hallway": 0.7, "roof": 0.55, "home_qing": 0.4, "home_mei": 0.4, "alley": 0.25}, "reach": 300, "hours": [[690, 810], [1080, 1230]], "stages": [1, 0.6, 0.25, 0, 0], "db": -13},
+  {"file": "school_din", "zones": {"school": 1.0}, "reach": 560, "hours": [[430, 480], [585, 600], [705, 810], [930, 990]], "stages": [1, 1, 0.7, 0.7, 0.5], "db": -11}
+ ],
+ "shots": [
+  {"files": ["bell_a", "bell_b", "bell_c"], "zones": {"alley": 1.0, "bikeshop": 0.8, "breakfast": 0.7, "school": 0.6, "river": 0.3, "roof": 0.3, "in": 0.15}, "hours": [[390, 1170]], "every": [4, 11], "stages": [1, 0.8, 0.4, 0.15, 0.08], "db": -15},
+  {"files": ["whistle_a", "whistle_b"], "zones": {"roof": 1.0, "alley": 0.7, "river": 0.5, "out": 0.5, "in": 0.35}, "hours": [[420, 1110]], "every": [24, 48], "stages": [1, 0.8, 0.5, 0.3, 0.45], "db": -12},
+  {"files": ["coo", "flap"], "zones": {"roof": 1.0}, "reach": 300, "hours": [[390, 1140]], "every": [9, 22], "stages": [1, 1, 0.6, 0.2, 0], "db": -14},
+  {"files": ["sparrow_a", "sparrow_b"], "zones": {"out": 1.0, "in": 0.3}, "hours": [[390, 620], [900, 1100]], "every": [5, 13], "stages": [1, 1, 0.8, 0.7, 0.7], "db": -18},
+  {"files": ["spatula_a", "spatula_b"], "zones": {"hallway": 1.0, "home_qing": 0.6, "home_mei": 0.6, "roof": 0.2}, "reach": 260, "hours": [[660, 750], [1050, 1150]], "every": [4, 9], "stages": [1, 1, 0.8, 0.5, 0.3], "db": -13},
+  {"files": ["keys", "door_far"], "zones": {"hallway": 1.0, "home_qing": 0.5, "home_mei": 0.5}, "reach": 220, "every": [22, 50], "stages": [1, 1, 1, 0.7, 0.4], "db": -15},
+  {"files": ["horn"], "zones": {"river": 1.0, "roof": 0.5, "alley": 0.4, "out": 0.3, "in": 0.15}, "every": [45, 100], "stages": [1, 1, 1, 1, 1], "db": -11},
+  {"files": ["plop"], "zones": {"river": 1.0}, "reach": 380, "every": [9, 22], "stages": [1, 1, 1, 1, 1], "db": -16},
+  {"files": ["gust"], "zones": {"river": 0.8, "roof": 1.0}, "reach": 380, "every": [16, 38], "stages": [1, 1, 1, 1, 1], "db": -15},
+  {"files": ["kuaiban_a", "kuaiban_b"], "zones": {"alley": 0.7, "hallway": 0.6, "home_qing": 0.5, "home_mei": 0.5, "roof": 0.5}, "hours": [[900, 1110]], "every": [12, 26], "stages": [1, 0.7, 0.3, 0.15, 0], "db": -15},
+  {"files": ["iron"], "zones": {"alley": 1.0, "in": 0.4, "out": 0.5}, "hours": [[540, 690], [870, 1020]], "every": [30, 70], "stages": [1, 0.5, 0.1, 0, 0], "db": -16},
+  {"files": ["popcorn"], "zones": {"alley": 1.0, "school": 0.7, "out": 0.5, "in": 0.3}, "hours": [[930, 1080]], "every": [35, 80], "stages": [1, 0.4, 0, 0, 0], "db": -12},
+  {"files": ["school_bell"], "zones": {"school": 1.0, "alley": 0.5, "out": 0.3, "in": 0.2}, "at": [480, 705, 810, 930], "school_day": true, "stages": [1, 1, 0.8, 0.8, 0.6], "db": -15},
+  {"files": ["pump", "ratchet", "rasp", "hammer"], "zones": {"bikeshop": 1.0, "alley": 0.3}, "reach": 420, "hours": [[480, 1080]], "every": [7, 17], "stages": [1, 1, 0.8, 0.7, 0.5], "db": -15},
+  {"files": ["erhu_a", "erhu_b", "erhu_c"], "zones": {"bikeshop": 1.0, "alley": 0.5, "school": 0.2, "in": 0.15}, "reach": 520, "hours": [[750, 840], [1050, 1170]], "every": [9, 18], "stages": [1, 1, 0.8, 0.6, 0], "db": -13},
+  {"files": ["beeper"], "zones": {"out": 0.6, "in": 0.5}, "every": [40, 90], "stages": [0, 1, 0.3, 0, 0], "db": -22},
+  {"files": ["keyboard"], "zones": {"alley": 0.8, "school": 0.3}, "hours": [[720, 1260]], "every": [22, 50], "stages": [0, 1, 0.4, 0, 0], "db": -19},
+  {"files": ["pile"], "zones": {"river": 1.0, "roof": 0.8, "alley": 0.5, "in": 0.3}, "hours": [[480, 1050]], "every": [35, 75], "stages": [0, 0, 1, 0.3, 0], "db": -12},
+  {"files": ["egg", "scrape", "bowl"], "zones": {"breakfast": 1.0}, "reach": 380, "hours": [[390, 610]], "every": [4, 10], "stages": [1, 1, 1, 0.8, 0.6], "db": -14},
+  {"files": ["tea_laugh", "tea_clap", "bowl", "kuaiban_a"], "zones": {"teahouse": 1.0, "alley": 0.2}, "reach": 420, "hours": [[540, 1260]], "every": [6, 14], "stages": [1, 1, 0.9, 0.8, 0.7], "db": -14}
+ ]
+}

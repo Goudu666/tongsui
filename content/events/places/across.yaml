@@ -1,0 +1,232 @@
+# 河对岸的支线（pl_ac_ 前缀）。where 用 content/maps/across.yaml 的 areas。写法见 places/building.yaml 文件头。
+# 第一次自己过桥看灯归主线。这张图是出身最看得出来的地方：
+#   殷实人家的孩子六岁就来学琴（还能把对门带来），厂里人家的孩子跟着大人来澡堂，别的孩子要等长大。
+
+- id: pl_ac_corridor
+  kind: mirror
+  stage: childhood
+  where: youth_palace
+  when: [480, 1080]
+  hint: 走廊里每扇门一首曲子。
+  weight: 2
+  requires: { minAge: 6 }
+  title: 琴房走廊
+  text: 少年宫的走廊长，两边全是琴房，每扇门里漏出一首曲子。等下课的大人坐满了长椅，手里织着毛衣。
+  options:
+    - id: listen
+      text: 挨个门听过去
+      tags: [adventure]
+      effects: { self: { mood: 4 } }
+    - id: wait
+      text: 坐在长椅上等
+      tags: [patient]
+      effects: { self: { energy: 3 } }
+    - id: hum
+      text: 跟着门里哼
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+  resonance:
+    listen:
+      text: 你们一扇门一扇门听过去。最后一扇门里弹错了一个音，你们同时缩了一下脖子。
+      memory: 最后一扇门
+      bond: { sync: 3, close: 2 }
+    wait:
+      text: 长椅上挤着坐，你们跟着门里的拍子数，数着数着都打起了瞌睡。
+      memory: 数拍子
+      bond: { sync: 3, close: 2 }
+    hum:
+      text: 你们跟着门里哼。门里停了，你们没停，屋里的老师探出头来看。
+      memory: 没停的那句
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个贴着门缝听，一个坐在长椅上等。下了课，两个人都说那首好听，说的不是同一首。
+    bond: { close: 0 }
+
+- id: pl_ac_knees
+  kind: solo
+  stage: childhood
+  where: youth_palace
+  weight: 2
+  requires: { minAge: 6, maxAge: 11, flags: [fam_rich] }
+  title: 膝盖上的琴
+  hint: 少年宫的窗户里有琴声。
+  text: 每个礼拜天过桥学琴。回来的车上，你把今天的曲子在膝盖上弹一遍，车一颠，就从头再来。
+  options:
+    - id: practice
+      text: 回家再练一个钟头
+      tags: [responsible]
+      effects: { self: { mind: 1, energy: -4 } }
+    - id: play
+      text: 弹给对门听
+      tags: [gentle]
+      effects: { self: { charm: 1 }, other: { mood: 3 } }
+    - id: skip
+      text: 下礼拜想去河边玩
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+
+- id: pl_ac_bath
+  kind: mirror
+  stage: childhood
+  where: factory
+  when: [780, 1110]
+  hint: 厂里的锅炉房冒着白气。
+  weight: 2
+  requires: { minAge: 4 }
+  title: 厂里的澡堂
+  text: 厂里澡堂下午开，凭票进。大人们下了班先洗，你们俩攥着一张票，在门口等水热。
+  options:
+    - id: soap
+      text: 抢先占个水龙头
+      tags: [competitive]
+      effects: { self: { clean: 20 } }
+    - id: wait
+      text: 等大人们洗完
+      tags: [patient]
+      effects: { self: { clean: 15, mood: 3 } }
+    - id: boiler
+      text: 去锅炉房看烧火
+      tags: [adventure]
+      effects: { self: { mood: 5, clean: -5 } }
+  resonance:
+    soap:
+      text: 你们占了挨着的两个龙头，一个热一个凉，轮着换，换到手指头都起了皱。
+      memory: 一热一凉
+      bond: { sync: 3, close: 2 }
+    wait:
+      text: 等到最后一拨，池子里就剩你们俩。烧锅炉的隔着墙喊：「洗够了没有？」
+      memory: 隔着墙那一嗓子
+      bond: { sync: 3, close: 2 }
+    boiler:
+      text: 锅炉房里热得睁不开眼。烧锅炉的让你们一人往炉膛里扔了一锹煤。
+      memory: 一锹煤
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个已经泡进了池子，一个还蹲在锅炉房门口。回去的车上，一个头发湿，一个头发干。
+    bond: { close: 0 }
+
+- id: pl_ac_escalator
+  kind: mirror
+  stage: teen
+  where: mall
+  when: [600, 1200]
+  hint: 商场门口有人在发气球。
+  weight: 2
+  requires: { minAge: 12 }
+  title: 滚梯
+  text: 对岸的商场有滚梯。头一回站上去，你们抓着扶手不敢动，后头的人一路说着「借过」。
+  options:
+    - id: up
+      text: 一直坐到顶楼
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: down
+      text: 逆着往下走
+      tags: [competitive]
+      effects: { self: { body: 1 } }
+    - id: stairs
+      text: 下来，走楼梯
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+  resonance:
+    up:
+      text: 一直坐到五楼。什么也没买，又坐着下来，又上去了一回。
+      memory: 上上下下
+      bond: { sync: 3, close: 2 }
+    down:
+      text: 你们逆着滚梯往下跑，跑了半天还在原地。保安来了，你们才跑下去。
+      memory: 原地跑
+      bond: { sync: 3, close: 2 }
+    stairs:
+      text: 你们走楼梯，在每层的拐角往滚梯上看，看那些人一点点升上去。
+      memory: 楼梯拐角
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个站上了滚梯，一个留在底下。上头那个回头，越升越高，底下那个一直在挥手。
+    bond: { close: 0 }
+
+- id: pl_ac_floor
+  kind: solo
+  stage: teen
+  where: bookstore
+  weight: 2
+  requires: { minAge: 12 }
+  title: 坐在地上
+  hint: 书店地上坐满了人。
+  text: 大书店的地上坐满了不买书的人。你蹲在最里头那排，一套书看了一个暑假，书签夹在第三本。
+  options:
+    - id: read
+      text: 接着往下看
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: save
+      text: 记下书名，攒钱买
+      tags: [responsible]
+      effects: { self: { mind: 1, mood: -2 } }
+    - id: ask
+      text: 问店员能不能借回去
+      tags: [adventure]
+      effects: { self: { charm: 1 } }
+
+- id: pl_ac_cutlery
+  kind: mirror
+  stage: young
+  where: mall
+  when: [1080, 1260]
+  hint: 有家店门口立着菜单。
+  weight: 2
+  title: 刀叉
+  text: 你们进了一家西餐馆。菜单上的数先看了一遍，刀叉摆了一排，不知道该先拿哪个。
+  options:
+    - id: ask
+      text: 叫服务员来问
+      tags: [adventure]
+      effects: { self: { charm: 1 } }
+    - id: peek
+      text: 偷看邻桌
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+    - id: sticks
+      text: 要两双筷子
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+  resonance:
+    ask:
+      text: 服务员说从外往里拿。你们同时拿起最外头那把，是汤勺。
+      memory: 最外头那把
+      bond: { sync: 3, close: 2 }
+    peek:
+      text: 邻桌也在偷看你们。四个人对着看了一眼，都笑了。
+      memory: 邻桌那一眼
+      bond: { sync: 3, close: 2 }
+    sticks:
+      text: 服务员愣了一下，真拿来了两双。牛排切好了夹着吃，吃得挺好。
+      memory: 两双筷子
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个举着刀叉比画，一个已经要了筷子。账单来了，两个人都抢着看，都没吭声。
+    bond: { close: 0 }
+
+- id: pl_ac_floor19
+  kind: solo
+  stage: young
+  where: office
+  when: [1110, 1320]
+  hint: 写字楼还亮着几层。
+  weight: 2
+  requires: { flags: [job_desk] }
+  title: 十九层
+  text: 加班到九点，十九层只剩你这一盏灯。窗外是河，河那边的老楼里，哪个窗户是家，数不出来。
+  options:
+    - id: count
+      text: 接着数
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+    - id: call
+      text: 给家里打个电话
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: work
+      text: 低头接着干
+      tags: [responsible]
+      effects: { self: { mind: 1, mood: -3 } }

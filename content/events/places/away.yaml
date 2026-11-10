@@ -1,0 +1,89 @@
+# 外地的支线（pl_aw_ 前缀）。where 用 content/maps/away.yaml 的 areas。写法见 places/building.yaml 文件头。
+# 这张图只有一个人在，所以全是 solo。站台、那封信、过年合图归主线；正宗煎饼、上铺的问题、新宿舍、没抢到票已经有了。
+
+- id: pl_aw_bowl
+  kind: solo
+  stage: young
+  where: market
+  when: [1080, 1320]
+  hint: 夜市的油烟飘过来。
+  weight: 2
+  title: 最辣的一碗
+  text: 夜市上什么吃的都有，没有一样是家里的味儿。你挑了最辣的一碗，吃出一身汗。
+  options:
+    - id: again
+      text: 明天还来
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: tell
+      text: 写进下一封信里
+      tags: [gentle]
+      effects: { self: { mood: 3 }, bond: { close: 1 } }
+    - id: learn
+      text: 问摊主怎么做
+      tags: [patient]
+      effects: { self: { charm: 1 } }
+
+- id: pl_aw_river
+  kind: solo
+  stage: young
+  where: worksite
+  when: [690, 810]
+  hint: 路边蹲着一排吃饭的人。
+  weight: 2
+  requires: { minAge: 22 }
+  title: 有条河
+  text: 中午蹲在路边吃盒饭。旁边的人问你是哪儿人，你说了。他说那地方他去过，有条河。
+  options:
+    - id: talk
+      text: 跟他多说几句
+      tags: [gentle]
+      effects: { self: { charm: 1, mood: 3 } }
+    - id: eat
+      text: 低头接着吃
+      tags: [solitude]
+      effects: { self: { hunger: 5 } }
+    - id: water
+      text: 递他一瓶水
+      tags: [responsible]
+      effects: { self: { mood: 4 } }
+
+- id: pl_aw_hours
+  kind: solo
+  stage: young
+  weight: 2
+  requires: { flags: [uni_abroad] }
+  title: 时差
+  text: 这边天刚亮，家里已经是晚饭的点。你算了三遍时差打过去，那头在炒菜，说话得喊。
+  options:
+    - id: listen
+      text: 让他们接着炒
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+    - id: tell
+      text: 说说这边的事
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+    - id: short
+      text: 报个平安就挂
+      tags: [solitude]
+      effects: { self: { mind: 1, mood: -2 } }
+
+- id: pl_aw_window
+  kind: solo
+  stage: young
+  where: campus
+  when: [1110, 1320]
+  hint: 宿舍楼的窗户一格一格亮着。
+  weight: 1
+  title: 一格窗户
+  text: 宿舍楼的窗户一格一格亮着。你数到自己那一格，灯是黑的，才想起人在楼下。
+  options:
+    - id: up
+      text: 上楼开灯
+      tags: [responsible]
+      effects: { self: { energy: 3 } }
+    - id: stay
+      text: 在楼下多站会儿
+      tags: [solitude]
+      effects: { self: { mood: 3 } }

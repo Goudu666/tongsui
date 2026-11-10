@@ -1,0 +1,66 @@
+# 医院的支线（pl_hp_ 前缀）。where 用 content/maps/hospital.yaml 的 areas。写法见 places/building.yaml 文件头。
+# 医院那一夜和同屋陪床的人归主线；这里只写排队、打水、窗户这些平常的事。中年正文 45 字、老年 30 字以内。
+
+- id: pl_hp_queue
+  kind: solo
+  stage: middle
+  where: lobby
+  when: [390, 600]
+  hint: 挂号的队排到了门外。
+  weight: 2
+  title: 天没亮
+  text: 天没亮来排队挂号，前头站了几十个人。你替家里老人站着，一手病历，一手早点。
+  options:
+    - id: wait
+      text: 站着等
+      tags: [patient]
+      effects: { self: { energy: -5, mood: -2 } }
+    - id: read
+      text: 翻翻病历
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+    - id: chat
+      text: 跟前后的人搭话
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+
+- id: pl_hp_water
+  kind: solo
+  stage: middle
+  where: ward_hall
+  when: [1110, 1320]
+  hint: 走廊尽头冒着白气。
+  weight: 2
+  title: 开水房
+  text: 晚上去开水房打水。排前头的人拎着四个暖壶，说一屋的都替着打了。
+  options:
+    - id: help
+      text: 也替别人打一壶
+      tags: [gentle]
+      effects: { self: { charm: 1, mood: 3 } }
+    - id: wait
+      text: 等他打完
+      tags: [patient]
+      effects: { self: { mood: 1 } }
+    - id: back
+      text: 打完就回
+      tags: [responsible]
+      effects: { self: { energy: 2 } }
+
+- id: pl_hp_window
+  kind: solo
+  stage: old
+  where: ward
+  weight: 2
+  title: 靠窗这一床
+  hint: 病房的窗户朝着河。
+  text: 病房的窗户朝着河。护士说你运气好，这一床看得见水。
+  options:
+    - id: look
+      text: 让她把帘子拉开
+      tags: [gentle]
+      effects: { self: { mood: 6 } }
+    - id: rest
+      text: 闭上眼歇着
+      tags: [patient]
+      effects: { self: { energy: 5 } }

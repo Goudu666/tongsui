@@ -203,6 +203,14 @@ function lifeOptionWeights(ev: LifeEvent, o: EventOption): ScoreWeights {
 }
 
 /** 「心智」「心智和魅力」：这条线看的是什么 */
+/**
+ * 给人看的分数：属性 × 10，往下取整（57.9 分不能显示成 58 分然后告诉他没过 58 的线）。
+ * 属性本身还是 0~10，只有显示在关口和目标上的时候才换成百分制，读起来像考分。
+ */
+function lifePoints(v: number): number {
+  return Math.floor(v * 10 + 1e-6);
+}
+
 function lifeWeightsLabel(w: ScoreWeights): string {
   var parts: string[] = [];
   for (var k in w) parts.push(STAT_LABEL[k] || k);
@@ -228,9 +236,13 @@ function lifeOptionLock(ev: LifeEvent, o: EventOption, p: Person, swing: number)
   if (o.min) {
     var w = lifeOptionWeights(ev, o);
     var have = lifeScore(p, w) + (w.money ? 0 : swing);
-    if (have < o.min) return lifeWeightsLabel(w) + " " + (w.money ? Math.floor(have) : lifeRound1(have)) + "，要 " + o.min;
+    if (have < o.min) {
+      return w.money
+        ? "积蓄 " + Math.floor(have) + " 块，要 " + o.min + " 块"
+        : lifeWeightsLabel(w) + " " + lifePoints(have) + " 分，线是 " + lifePoints(o.min) + " 分";
+    }
   }
-  if (o.cost && p.money < o.cost) return "积蓄 " + Math.floor(p.money) + "，要 " + o.cost;
+  if (o.cost && p.money < o.cost) return "积蓄 " + Math.floor(p.money) + " 块，要 " + o.cost + " 块";
   return null;
 }
 
@@ -258,7 +270,8 @@ function lifeTurnsUntilAge(turn: number, age: number): number {
   return 400;
 }
 
-interface GoalLine { id: string; text: string; by: string; have: number; need: number; ok: boolean }
+/** have / need：给人看的数。属性类的线按「分」算（属性 × 10，满分 100），钱类的按块 */
+interface GoalLine { id: string; text: string; by: string; unit: string; have: number; need: number; ok: boolean }
 interface GoalView { id: string; title: string; age: number; turns: number; lines: GoalLine[] }
 
 /**
@@ -285,7 +298,7 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
     if (!o.min) continue;
     var w = lifeOptionWeights(best, o);
     var have = lifeScore(p, w);
-    lines.push({ id: o.id, text: o.text, by: lifeWeightsLabel(w), have: w.money ? Math.floor(have) : lifeRound1(have), need: o.min, ok: have >= o.min });
+    lines.push({ id: o.id, text: o.text, by: lifeWeightsLabel(w), unit: w.money ? "块" : "分", have: w.money ? Math.floor(have) : lifePoints(have), need: w.money ? o.min : lifePoints(o.min), ok: have >= o.min });
   }
   return { id: best.id, title: best.title, age: best.age!, turns: lifeTurnsUntilAge(s.turn, best.age!), lines: lines };
 }
@@ -437,6 +450,9 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       var gscore = lifeScore(me, gw) + (gw.money ? 0 : swing);
       var grade: Grade | null = null;
       for (var g = 0; g < (ev.grades || []).length; g++) if (gscore >= ev.grades![g].min) { grade = ev.grades![g]; break; }
+      // 成绩单上的数要在扣钱、长属性之前算：那是走进考场那一刻的本事
+      var sw = o.min ? w : gw;
+      var shown = sw.money ? Math.floor(lifeScore(me, sw)) : lifePoints(lifeScore(me, sw) + swing);
       if (grade) lifeAddFlags(me, grade.flags);
       if (o.cost) me.money = Math.max(0, me.money - o.cost);
       lifeApplySelf(me, o.effects.self);
@@ -445,7 +461,8 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       lifeAddFlags(me, o.effects.flags);
       if (!entry.results) entry.results = {};
       entry.results[role] = {
-        score: lifeRound1(lifeScore(me, o.min ? w : gw) + ((o.min ? w : gw).money ? 0 : swing)),
+        score: shown,
+        unit: sw.money ? "块" : "分",
         grade: grade ? grade.label : null,
         option: o.id,
         track: lifeTrack(c, me, entry.age).id,

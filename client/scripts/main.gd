@@ -863,9 +863,6 @@ func _refresh_goal(my_track: Dictionary) -> void:
 	goal_panel.eff = float(_dict(last_world.get("eff")).get(my_role, 1.0))
 	goal_panel.track = str(my_track.get("label", ""))
 	goal_panel.stats = _dict(_dict(last_world.get("stats")).get(my_role))
-	# 弹窗开着的时候（事件、日结）不抢注意力
-	goal_panel.modulate.a = 0.0 if modal.visible else 1.0
-	goal_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE if modal.visible else Control.MOUSE_FILTER_STOP
 
 
 ## 点开目标纸带：这一关所有的线，两个人各在哪；下面是三项属性和「怎么长得快」

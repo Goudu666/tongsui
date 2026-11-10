@@ -15,6 +15,8 @@ zones:
   - { id: alley, name: 河畔里, rect: [0, 760, 1880, 240] }
   - { id: school, name: 小学, rect: [40, 1080, 560, 420] }
   - { id: bikeshop, name: 自行车铺, rect: [860, 1080, 520, 400] }
+  # 街坊的去处（街上的人、车、摊子随年代变化，见 content/street.yaml）
+  - { id: teahouse, name: 河畔茶社, rect: [1456, 0, 430, 284] }
 
 # 可以互动的点：走到附近（110 像素内）会出现按钮。
 # action 写一个，或者 actions 写几个：同一个物件不同年纪做不同的事，取第一个年龄合适的。
@@ -37,6 +39,10 @@ spots:
   - { id: bike_bench, zone: bikeshop, at: [1120, 1280], actions: [duty, work] }
   - { id: school_gate, zone: school, at: [320, 1200], action: duty }
   - { id: school_yard, zone: school, at: [470, 1400], action: ball }
+  # 街坊的去处：茶社长魅力，河边钓鱼歇心
+  - { id: tea_seat, zone: teahouse, at: [1716, 236], action: listen }
+  - { id: tea_stage, zone: teahouse, at: [1668, 104], action: perform }
+  - { id: river_fish, zone: river, at: [2096, 1134], action: fish }
 
 # 行动。needs：hunger 饱腹 / energy 精力 / mood 心情 / clean 清洁（0~100）
 #       stats：body / mind / charm（0~10，一次涨零点几；运气是天生的，行动不给）
@@ -159,3 +165,27 @@ actions:
     minutes: 60
     needs: { mood: 12, energy: -4, clean: -4 }
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: 鸽子绕着楼顶飞了三圈，你们数的圈数不一样。 }
+
+  # ---------- 街坊的去处 ----------
+  - id: listen
+    label: 喝茶听一段
+    minutes: 40
+    money: -1
+    requires: { minAge: 6, hours: [540, 1260] }
+    needs: { mood: 12, energy: 2 }
+    stats: { charm: 0.1 }
+    together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 台上讲到最要紧的地方停了一下。你们俩同时笑出了声，又同时捂住了嘴。 }
+  - id: perform
+    label: 上台来一段
+    minutes: 45
+    requires: { minAge: 10, hours: [540, 1260] }
+    needs: { mood: 6, energy: -10 }
+    stats: { charm: 0.4 }
+    together: { needs: { mood: 8 }, bond: { close: 1, sync: 2 }, text: 你忘了词，TA 在旁边接了下去，像排练过一样。台下有人叫了声好。 }
+  - id: fish
+    label: 跟大爷钓鱼
+    minutes: 60
+    requires: { minAge: 6, hours: [390, 1140] }
+    needs: { mood: 10, energy: -4 }
+    stats: { mind: 0.1 }
+    together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 漂动了。你们俩同时喊「上钩了！」鱼吓跑了。大爷没恼，笑了笑，又挂了一条蚯蚓。 }

@@ -8,7 +8,14 @@ var MIN_PER_SEC = 4; // 现实 1 秒 = 游戏 4 分钟，一天约 4 分钟
 var FAST_FORWARD = 10; // 两人都在忙（上学、睡觉、长行动）时时间快进
 var WALK_SPEED = 360; // 像素/秒
 var SPOT_RADIUS = 110;
-var PLAY_ACTIONS = ["play_roof", "play_river", "play_alley"];
+var REST_DAY_CHANCE = 0.3; // 歇着的日子：不上学也不上班，两个人都有一整天
+var MILESTONE_AT = DAY_START + 10; // 关口在早上醒来不久发生
+/** 搭伴：两个人同时在同一个点做同一件事，这次的成长乘这个数 */
+var TOGETHER_BOOST = 1.5;
+var MEMORY_BOOST = 2;
+/** 带：TA 这项属性每比你高 1 点，你再多 LEAD_PER_POINT，最多 LEAD_MAX */
+var LEAD_PER_POINT = 0.1;
+var LEAD_MAX = 0.5;
 
 function worldFindAction(c: Content, id: string): Action {
   return lifeFind(c.map.actions, id);
@@ -54,6 +61,8 @@ function worldStartDay(s: LifeState, c: Content) {
     if (!persons[r].alive) continue;
     var sp = c.map.spawn[r];
     actors[r] = { x: sp[0], y: sp[1], action: null, spot: null, until: null, asleep: false };
+    var st = persons[r].stats;
+    persons[r].dayStart = { body: st.body, mind: st.mind, charm: st.charm, luck: st.luck };
   }
 
   // 命运给今天准备的事：mirror 一件（两人都在世时），每人 solo 一件。要走到对的地方才会发生。
@@ -84,9 +93,18 @@ function worldStartDay(s: LifeState, c: Content) {
     }
   }
 
+  // 关口：到了年纪的第一天。还有人没过、而且轮得到他，今天早上就发生
+  var ms = lifeMilestoneAt(c, t.age);
+  if (ms) {
+    var due = ROLES.some(function (r) { return lifeMilestoneFor(ms!, persons[r]) && !lifeSeenIds(s, r)[ms!.id]; });
+    if (due) fate.milestone = ms.id;
+  }
+
   s.world = {
     minute: DAY_START,
-    schoolDay: t.age >= 6 && t.age <= 17 && lifeRand(s) < 0.7,
+    // 关口那天不歇：考试、报到都在今天
+    rest: lifeRand(s) < REST_DAY_CHANCE && !fate.milestone,
+    dutyDone: {},
     actors: actors,
     event: null,
     fate: fate,
@@ -119,7 +137,53 @@ function worldMove(s: LifeState, c: Content, role: Role, x: number, y: number, d
 
 // ---------- 行动 ----------
 
-function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string): string | null {
+/** 这个人今天的日程。没有（还没上学、退休了、今天歇着）返回 null */
+function worldDuty(s: LifeState, c: Content, role: Role): Duty | null {
+  if (s.world!.rest) return null;
+  return lifeTrack(c, s.persons![role], lifeTimeAt(s.turn).age).duty;
+}
+
+/** 日程现在还去不去得了：今天有、还没去过、没迟到 */
+function worldDutyOpen(s: LifeState, c: Content, role: Role): Duty | null {
+  var d = worldDuty(s, c, role);
+  if (!d || s.world!.dutyDone[role] || s.world!.minute > d.arrive[1]) return null;
+  return d;
+}
+
+/**
+ * 这个点位现在给这个人做什么。同一个物件不同年纪做不同的事（书桌：翻小人书 → 写作业 → 看书），
+ * 取第一个轮得到他的；日程行动只对今天要来这儿报到的人出现。都不合适时返回原因。
+ */
+function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot): { act: Action | null; why: string } {
+  var age = lifeTimeAt(s.turn).age;
+  var why = "这儿现在没什么可做的";
+  for (var i = 0; i < sp.actions.length; i++) {
+    var act = worldFindAction(c, sp.actions[i]);
+    if (act.duty) {
+      var d = worldDutyOpen(s, c, role);
+      if (d && d.spot === sp.id) return { act: act, why: "" };
+      continue;
+    }
+    var rq = act.requires || {};
+    if (rq.minAge !== undefined && age < rq.minAge) { why = "还太小了"; continue; }
+    if (rq.maxAge !== undefined && age > rq.maxAge) { why = "已经过了那个年纪"; continue; }
+    return { act: act, why: "" };
+  }
+  return { act: null, why: why };
+}
+
+/**
+ * 现在的状态做事有多少效率：心情越好学得越快（心情 100 → 1.2，50 → 0.9，0 → 0.6），饿着、困着再打折。
+ * 所以玩不是浪费时间：玩够了再念书，比闷着头念一天划算。
+ */
+function worldEfficiency(p: Person): number {
+  var e = 0.6 + (p.needs.mood / 100) * 0.6;
+  if (p.needs.hunger < 30) e *= 0.6;
+  if (p.needs.energy < 25) e *= 0.6;
+  return Math.round(e * 100) / 100;
+}
+
+function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywhere?: boolean): string | null {
   if (s.phase !== "life") return "人生还没开始";
   var w = s.world!;
   var a = w.actors[role];
@@ -129,59 +193,70 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string): stri
   var sp: Spot;
   try { sp = lifeFind(c.map.spots, spotId); } catch (e) { return "没有这个地方"; }
   var dx = sp.at[0] - a.x, dy = sp.at[1] - a.y;
-  if (dx * dx + dy * dy > SPOT_RADIUS * SPOT_RADIUS) return "走近一点";
-  var act = worldFindAction(c, sp.action);
+  if (!anywhere && dx * dx + dy * dy > SPOT_RADIUS * SPOT_RADIUS) return "走近一点";
+  var pick = worldPickAction(s, c, role, sp);
+  if (!pick.act) return pick.why;
+  var act = pick.act;
   var rq = act.requires || {};
-  var age = lifeTimeAt(s.turn).age;
-  if (rq.minAge !== undefined && age < rq.minAge) return "还太小了";
-  if (rq.maxAge !== undefined && age > rq.maxAge) return "已经过了那个年纪";
   if (rq.owner && lifeFind(c.map.zones, sp.zone).owner !== role) return "这不是你的家";
   if (rq.hours && (w.minute < rq.hours[0] || w.minute > rq.hours[1])) return "现在不是时候";
-  if (act.school && !w.schoolDay) return "今天不上学";
+  if (act.duty && w.minute < worldDuty(s, c, role)!.arrive[0]) return "还没到点";
   if (act.money < 0 && s.persons![role].money < -act.money) return "兜里的钱不够";
   return null;
 }
 
-/** 开始一个行动。返回 [错误, 同框日志] */
+/** 开始一个行动。返回 [错误, 搭伴日志] */
 function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error: string | null; together: LogEntry | null } {
   var err = worldCanAct(s, c, role, spotId);
   if (err) return { error: err, together: null };
   var w = s.world!;
   var a = w.actors[role]!;
   var sp = lifeFind(c.map.spots, spotId);
-  var act = worldFindAction(c, sp.action);
+  var act = worldPickAction(s, c, role, sp).act!;
   a.x = sp.at[0];
   a.y = sp.at[1];
   a.action = act.id;
   a.spot = sp.id;
   a.shadow = false;
+  a.eff = worldEfficiency(s.persons![role]);
+  a.together = false;
   delete a.boost; // 上一件事没用掉的搭伴倍率不带过来（见 games.ts）
   if (act.sleep) {
     a.asleep = true;
     a.until = null;
-  } else if (act.school) {
-    a.until = SCHOOL_END;
+  } else if (act.duty) {
+    a.until = worldDuty(s, c, role)!.until;
+    w.dutyDone[role] = true;
   } else {
     a.until = w.minute + act.minutes;
   }
 
-  // 同框：对方正在做同一件事
+  // 搭伴：TA 正在同一个点做同一件事（日程还要走的是同一条路：同一所学校、同一个行当）
   var together: LogEntry | null = null;
   var b = w.actors[lifeOther(role)];
-  var key = "together:" + act.id;
-  if (act.together && b && b.action === act.id && !act.sleep && w.done.indexOf(key) < 0) {
-    w.done.push(key); // 每种同框每天只算一次
-    // 讨人喜欢的两个人凑一块儿更开心
-    var charm = s.persons!.qing.stats.charm + s.persons!.mei.stats.charm - 10;
-    var lift = Math.max(0.5, 1 + charm * c.rules.daily.charmTogether);
-    var needs: SelfDelta = {};
-    for (var nk in act.together.needs) (needs as any)[nk] = ((act.together.needs as any)[nk] as number) * (nk === "mood" ? lift : 1);
-    lifeApplySelf(s.persons!.qing, needs);
-    lifeApplySelf(s.persons!.mei, needs);
-    lifeApplyBond(s, c, act.together.bond);
-    w.warm = true;
-    together = lifeEntry(s, "together", act.together.text || "你们一起" + act.label + "。");
-    s.log.push(together);
+  var same = !!b && b.action === act.id && b.spot === sp.id && !act.sleep;
+  if (same && act.duty) {
+    var age = lifeTimeAt(s.turn).age;
+    same = lifeTrack(c, s.persons!.qing, age).id === lifeTrack(c, s.persons!.mei, age).id;
+  }
+  if (same) {
+    a.together = true;
+    b!.together = true;
+    w.warm = true; // 今天走动过了：亲近不会淡（growth.ts）
+    var key = "together:" + act.id;
+    if (act.together && w.done.indexOf(key) < 0) {
+      w.done.push(key); // 心情、亲近和这句话每种每天只给一次；成长的倍率每次都有
+      // 讨人喜欢的两个人凑一块儿更开心
+      var charm = s.persons!.qing.stats.charm + s.persons!.mei.stats.charm - 10;
+      var lift = Math.max(0.5, 1 + charm * c.rules.daily.charmTogether);
+      var needs: SelfDelta = {};
+      for (var nk in act.together.needs) (needs as any)[nk] = ((act.together.needs as any)[nk] as number) * (nk === "mood" ? lift : 1);
+      lifeApplySelf(s.persons!.qing, needs);
+      lifeApplySelf(s.persons!.mei, needs);
+      lifeApplyBond(s, c, act.together.bond);
+      together = lifeEntry(s, "together", act.together.text || "你们一起" + act.label + "。");
+      s.log.push(together);
+    }
   }
   return { error: null, together: together };
 }
@@ -190,50 +265,128 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   var a = s.world!.actors[role]!;
   var act = worldFindAction(c, a.action!);
   var p = s.persons![role];
-  var wealth = 1; // 这户人家在新内容里没了（见 save.ts）就按普通家境算
-  for (var fi = 0; fi < c.families.length; fi++) if (c.families[fi].id === p.familyId) wealth = c.families[fi].wealth;
+  var other = s.persons![lifeOther(role)];
+  // 日程的结果写在路上（tracks.yaml），别的行动写在行动自己身上
+  var duty = act.duty ? lifeTrack(c, p, lifeTimeAt(s.turn).age).duty : null;
+  var gains: Partial<Stats> = duty ? duty.stats : act.duty ? {} : act.stats;
+  var needs: Partial<Needs> = duty ? duty.needs : act.duty ? {} : act.needs;
+  var money = duty ? duty.money : act.duty ? 0 : act.money;
+  var eff = a.eff === undefined ? 1 : a.eff;
   var stats: SelfDelta = {};
-  var boost = a.boost || 1; // 搭伴小游戏打出来的倍率，只乘这一次行动长的属性（见 games.ts）
-  delete a.boost;
-  for (var k in act.stats) (stats as any)[k] = ((act.stats as any)[k] as number) * (act.id === "study" && lifeHasFlag(p, "tal_memory") ? 2 : 1) * boost;
+  for (var k in gains) {
+    var v = ((gains as any)[k] as number) * eff;
+    if (a.together) {
+      var lead = other.alive ? lifeClamp((other.stats[k as StatKey] - p.stats[k as StatKey]) * LEAD_PER_POINT, 0, LEAD_MAX) : 0;
+      // 搭伴的倍率：默认 TOGETHER_BOOST；一起玩了小游戏（games.ts）就用打出来的那个，但不会比默认的低
+      v *= Math.max(TOGETHER_BOOST, a.boost || 0) + lead;
+    }
+    if (k === "mind" && !act.duty && lifeHasFlag(p, "tal_memory")) v *= MEMORY_BOOST; // 过目不忘：自己坐下来念的时候快一倍
+    (stats as any)[k] = v;
+  }
+  // 状态、搭伴、天赋先乘好，再交给成长规则按年纪和底子折算（growth.ts → growthApply）
   lifeApplySelf(p, stats, growthCtx(s, c, "action"));
-  lifeApplySelf(p, act.needs);
-  if (act.id === "eat") lifeApplySelf(p, { mood: wealth * 3 + (lifeHasFlag(p, "tal_foodie") ? 6 : 0) });
-  p.money += act.money;
+  lifeApplySelf(p, needs);
+  if (act.id === "eat") {
+    var wealth = 1; // 这户人家在新内容里没了（见 save.ts）就按普通家境算
+    for (var fi = 0; fi < c.families.length; fi++) if (c.families[fi].id === p.familyId) wealth = c.families[fi].wealth;
+    lifeApplySelf(p, { mood: wealth * 3 + (lifeHasFlag(p, "tal_foodie") ? 6 : 0) });
+  }
+  p.money += money;
   a.action = null;
   a.spot = null;
   a.until = null;
+  delete a.eff;
+  delete a.together;
+  delete a.boost;
 }
 
 // ---------- 影子：离线时按需求和习惯自己过日子 ----------
 
+/** 影子去一个点位做事（它不用走路）。做不了返回 false */
+function worldShadowGo(s: LifeState, c: Content, role: Role, spot: Spot | null): boolean {
+  if (!spot || worldCanAct(s, c, role, spot.id, true)) return false;
+  var a = s.world!.actors[role]!;
+  a.x = spot.at[0];
+  a.y = spot.at[1];
+  if (worldAct(s, c, role, spot.id).error) return false;
+  a.shadow = true;
+  return true;
+}
+
+/** 现在能去的点位里，第一个行动符合条件的 */
+function worldShadowFind(s: LifeState, c: Content, role: Role, want: (act: Action, sp: Spot) => boolean): Spot | null {
+  var found: Spot[] = [];
+  for (var i = 0; i < c.map.spots.length; i++) {
+    var sp = c.map.spots[i];
+    var z = lifeFind(c.map.zones, sp.zone);
+    if (z.owner && z.owner !== role) continue; // 影子不上别人家
+    var pick = worldPickAction(s, c, role, sp);
+    if (pick.act && want(pick.act, sp) && !worldCanAct(s, c, role, sp.id, true)) found.push(sp);
+  }
+  return found.length ? found[Math.floor(lifeRand(s) * found.length)] : null;
+}
+
+/** 下一个关口最缺的那项属性（没有关口了返回 null） */
+function worldShadowNeed(s: LifeState, c: Content, role: Role): StatKey | null {
+  var goal = lifeGoal(s, c, role);
+  if (!goal) return null;
+  var ev = lifeFindEvent(c, goal.id);
+  var p = s.persons![role];
+  // 盯着还没够着的线里最低的那条；都够着了就盯最高的那条
+  var target: EventOption | null = null;
+  for (var i = 0; i < ev.options.length; i++) {
+    var o = ev.options[i];
+    if (!o.min) continue;
+    var short = lifeScore(p, lifeOptionWeights(ev, o)) < o.min;
+    if (!target) { target = o; continue; }
+    var tShort = lifeScore(p, lifeOptionWeights(ev, target)) < target.min!;
+    if (short && (!tShort || o.min < target.min!)) target = o;
+    else if (!short && !tShort && o.min > target.min!) target = o;
+  }
+  if (!target) return null;
+  var w = lifeOptionWeights(ev, target);
+  var best: StatKey | null = null;
+  for (var k = 0; k < STAT_KEYS.length; k++) {
+    var key = STAT_KEYS[k];
+    if (key === "luck" || !w[key]) continue;
+    if (!best || w[key]! > w[best]!) best = key;
+  }
+  return best;
+}
+
 function worldShadowAct(s: LifeState, c: Content, role: Role) {
   var w = s.world!;
   var p = s.persons![role];
-  var age = lifeTimeAt(s.turn).age;
-  var want: string;
-  if (p.needs.hunger < 45) want = w.minute < 600 && p.money >= 2 && lifeRand(s) < 0.3 ? "eat_out" : "eat";
-  else if (p.needs.energy < 25 || w.minute >= 1230) want = "sleep";
-  else if (w.schoolDay && age >= 6 && age <= 17 && w.minute >= 420 && w.minute <= 540) want = "school";
-  else if (p.needs.clean < 30) want = "wash";
-  else {
-    // 影子会去 TA 在的地方
-    var partner = w.actors[lifeOther(role)];
-    var zone = partner ? worldZoneAt(c, partner.x, partner.y) : null;
-    var there = c.map.spots.filter(function (sp) { return sp.zone === zone && PLAY_ACTIONS.indexOf(sp.action) >= 0; });
-    want = there.length > 0 ? there[0].action : PLAY_ACTIONS[Math.floor(lifeRand(s) * PLAY_ACTIONS.length)];
+  var by = function (id: string) { return function (act: Action) { return act.id === id; }; };
+  // 1. 过日子：饿了吃，困了睡，该上学上班就去，脏了洗
+  if (p.needs.hunger < 45) {
+    var out = w.minute < 600 && p.money >= 2 && lifeRand(s) < 0.3;
+    if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, by(out ? "eat_out" : "eat")))) return;
   }
-  var spot = worldSpotFor(c, want, role);
-  if (!spot) return;
-  var a = w.actors[role]!;
-  a.x = spot.at[0];
-  a.y = spot.at[1];
-  if (worldAct(s, c, role, spot.id).error) {
-    // 做不了（比如不在上学时间）就回家写作业或发呆
-    var fallback = worldSpotFor(c, age >= 6 ? "study" : "knock", role);
-    if (fallback) { a.x = fallback.at[0]; a.y = fallback.at[1]; worldAct(s, c, role, fallback.id); }
+  if (p.needs.energy < 25 || w.minute >= 1230) {
+    if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("sleep")))) return;
   }
-  if (a.action) a.shadow = true;
+  var duty = worldDutyOpen(s, c, role);
+  if (duty && w.minute >= duty.arrive[0]) {
+    if (worldShadowGo(s, c, role, lifeFind(c.map.spots, duty.spot))) return;
+  }
+  if (p.needs.clean < 30 && worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("wash")))) return;
+  // 2. TA 正在做一件我也能做的事：过去搭伴
+  var partner = w.actors[lifeOther(role)];
+  if (partner && partner.action && partner.spot && !partner.asleep && lifeRand(s) < 0.6) {
+    var there = lifeFind(c.map.spots, partner.spot);
+    var mine = worldPickAction(s, c, role, there).act;
+    if (mine && mine.id === partner.action && !mine.duty && worldShadowGo(s, c, role, there)) return;
+  }
+  // 3. 心情差就去玩；不然朝下一个关口使劲；没有关口了就随便转转
+  var need = p.needs.mood < 40 ? null : worldShadowNeed(s, c, role);
+  if (need && lifeRand(s) < 0.75) {
+    var k = need;
+    if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, function (act) { return !act.duty && (act.stats[k] || 0) > 0; }))) return;
+  }
+  if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, function (act) { return !act.duty && !act.sleep && act.money >= 0 && (act.needs.mood || 0) >= 8; }))) return;
+  // 4. 实在没事做：在楼道里站一会儿
+  worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("knock")));
 }
 
 /** 本人回来了：影子正在做的事（睡觉、上学除外）停下，把身体还给他 */
@@ -242,7 +395,11 @@ function worldReclaim(s: LifeState, role: Role): boolean {
   var a = s.world.actors[role];
   if (!a || !a.shadow) return false;
   a.shadow = false;
-  if (!a.action || a.asleep || a.action === "school") return false;
+  // 睡着了、已经在学校或班上了，就让它过完（半路叫回来这一天的日程就白去了）
+  if (!a.action || a.asleep || a.action === "duty") return false;
+  delete a.eff;
+  delete a.together;
+  delete a.boost;
   a.action = null;
   a.spot = null;
   a.until = null;
@@ -283,6 +440,51 @@ function worldInWindow(ev: LifeEvent, minute: number): boolean {
   return !ev.when || (minute >= ev.when[0] && minute <= ev.when[1]);
 }
 
+/** 今天有关口，而且还没过 */
+function worldMilestoneDue(s: LifeState): boolean {
+  var w = s.world!;
+  return !!w.fate.milestone && w.done.indexOf(w.fate.milestone) < 0;
+}
+
+/**
+ * 过今天的关口。轮得到的人放下手里的事（睡着的叫醒）一起面对：
+ * 两人都只剩一条路可走时不弹窗，直接记进长卷（out.entries）；否则开始事件（out.started）。
+ * 返回 false：今天的关口没有人轮得到，记成过了，这一跳照常往下走。
+ */
+function worldMilestone(s: LifeState, c: Content, out: WorldTick): boolean {
+  var w = s.world!;
+  var ms = lifeFindEvent(c, w.fate.milestone!);
+  var due = worldAliveRoles(s).filter(function (r) { return lifeMilestoneFor(ms, s.persons![r]) && !lifeSeenIds(s, r)[ms.id]; });
+  if (due.length === 0) {
+    w.done.push(ms.id);
+    return false;
+  }
+  var pe: PendingEvent = { eventId: ms.id, kind: "milestone", roles: due, choices: {}, shadow: [], swing: {} };
+  var forced = true;
+  for (var i = 0; i < due.length; i++) {
+    var r = due[i];
+    var a = w.actors[r]!;
+    if (a.action || a.asleep) { a.action = null; a.spot = null; a.until = null; a.asleep = false; delete a.eff; delete a.together; delete a.boost; }
+    var luck = s.persons![r].stats.luck;
+    var swing = ms.swing ? Math.round(((lifeRand(s) - 0.5) * SWING_RANGE + (luck - 5) * SWING_LUCK) * 100) / 100 : 0;
+    pe.swing![r] = swing;
+    var open = ms.options.filter(function (o) { return !lifeOptionLock(ms, o, s.persons![r], swing); });
+    // 一条都走不通（内容写漏了兜底的路）：走线最低的那条，不让这条人生卡在这里
+    if (open.length === 0) pe.choices[r] = lifeMilestoneFallback(ms).id;
+    else if (open.length === 1) pe.choices[r] = open[0].id;
+    else forced = false;
+  }
+  if (forced) {
+    out.entries.push(lifeResolveEvent(s, c, pe));
+    w.done.push(ms.id);
+  } else {
+    // 只有一条路的人不用选，但要等另一个人选完一起揭晓
+    w.event = pe;
+    out.started = pe;
+  }
+  return true;
+}
+
 function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in Role]: boolean }): WorldTick {
   var out: WorldTick = { entries: [], started: null, dayEnded: false };
   if (s.phase !== "life") return out;
@@ -296,6 +498,8 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
   }
 
   var allAsleep = roles.every(function (r) { return w.actors[r]!.asleep; });
+  // 关口躲不掉：一大早就都躺下了，也得先起来把这一关过了，这一天才能翻过去（青年以后一岁只有一天，错过就没有了）
+  if (allAsleep && worldMilestoneDue(s) && worldMilestone(s, c, out)) return out;
   if (allAsleep) {
     out.entries = lifeEndDay(s, c);
     out.dayEnded = true;
@@ -316,6 +520,9 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
     out.dayEnded = true;
     return out;
   }
+
+  // 关口：早上醒来不久，轮得到的人一起面对
+  if (worldMilestoneDue(s) && w.minute >= MILESTONE_AT && worldMilestone(s, c, out)) return out;
 
   // 触发命运：mirror 需要两人都空闲、都在 where
   if (w.fate.mirror && w.done.indexOf(w.fate.mirror) < 0) {
@@ -361,7 +568,12 @@ function worldChoose(s: LifeState, c: Content, role: Role, optionId: string, fro
   var w = s.world;
   if (!w || !w.event || w.event.roles.indexOf(role) < 0) return { error: "现在没有要你选的事", entry: null };
   var ev = lifeFindEvent(c, w.event.eventId);
-  if (!lifeFindOption(ev, optionId)) return { error: "没有这个选项", entry: null };
+  var opt = lifeFindOption(ev, optionId);
+  if (!opt) return { error: "没有这个选项", entry: null };
+  if (w.event.kind === "milestone") {
+    var lock = lifeOptionLock(ev, opt, s.persons![role], (w.event.swing && w.event.swing[role]) || 0);
+    if (lock) return { error: "这条路现在走不了（" + lock + "）", entry: null };
+  }
   w.event.choices[role] = optionId; // 结算前可以改主意
   if (fromShadow && w.event.shadow.indexOf(role) < 0) w.event.shadow.push(role);
   var pe = w.event;

@@ -27,8 +27,8 @@ var SHADOW_GRACE_SECONDS = 10; // 掉线这么久之内不交给影子：切网�
  * - 旧客户端没法再用了：把 MIN_CLIENT_PROTOCOL 提到能用的最低版本，旧包会看到「请装新版」，而不是卡在看不懂的界面里
  * 剧情内容不走这个：内容有自己的指纹 CONTENT.version，客户端发现不一样会自己下载（content_get）。
  */
-var PROTOCOL_VERSION = 1;
-var MIN_CLIENT_PROTOCOL = 1;
+var PROTOCOL_VERSION = 2; // 2：关口（上锁的选项）、日程、目标、属性进了 WORLD；schoolDay 没了
+var MIN_CLIENT_PROTOCOL = 2;
 var CONTENT_CHUNK = 48000; // content_get 一次回多少个字符：整份内容约 17 万字符，分几次取，不撞单条消息的大小上限
 
 /** 客户端 ↔ 服务端消息号，client/scripts/net/protocol.gd 里保持一致 */
@@ -367,9 +367,10 @@ function snapshot(s: LifelineMatch, role: Role) {
         roles: w.event.roles,
         chosen: { qing: !!w.event.choices.qing, mei: !!w.event.choices.mei },
         mine: w.event.choices[role] || null,
+        locks: lifeMilestoneLocks(life, CONTENT),
       };
     }
-    view.world = { minute: Math.floor(w.minute), schoolDay: w.schoolDay, actors: w.actors, event: ev };
+    view.world = { minute: Math.floor(w.minute), rest: w.rest, actors: w.actors, event: ev };
   } else {
     view.world = null;
   }
@@ -384,14 +385,28 @@ function worldView(s: LifelineMatch) {
   var actors: any = {};
   var needs: any = {};
   var money: any = {};
+  var stats: any = {};
+  var eff: any = {};
+  var goals: any = {};
+  var tracks: any = {};
+  var age = lifeTimeAt(life.turn).age;
   for (var i = 0; i < ROLES.length; i++) {
     var r = ROLES[i];
     var a = w.actors[r];
     // seq：服务器已处理到这个人的第几条 MOVE，本地玩家拿它对照自己的历史位置做校正
-    actors[r] = a ? { x: r1(a.x), y: r1(a.y), act: a.action, spot: a.spot, sleep: a.asleep, seq: s.moveSeq[r] || 0 } : null;
+    // tg：这次是搭伴做的；label：日程行动的名字跟着路走（上学 / 出摊 / 过桥上班）
+    actors[r] = a ? { x: r1(a.x), y: r1(a.y), act: a.action, spot: a.spot, sleep: a.asleep, seq: s.moveSeq[r] || 0, tg: !!a.together } : null;
     var p = life.persons![r];
     needs[r] = { hunger: r1(p.needs.hunger), energy: r1(p.needs.energy), mood: r1(p.needs.mood), clean: r1(p.needs.clean) };
     money[r] = p.money;
+    if (!p.alive || !a) continue;
+    stats[r] = { body: lifeRound1(p.stats.body), mind: lifeRound1(p.stats.mind), charm: lifeRound1(p.stats.charm), luck: lifeRound1(p.stats.luck) };
+    eff[r] = worldEfficiency(p);
+    goals[r] = lifeGoal(life, CONTENT, r);
+    var track = lifeTrack(CONTENT, p, age);
+    var d = worldDuty(life, CONTENT, r);
+    // open：现在还去不去得了（今天有、还没去、没迟到）。客户端靠它决定报到的点位上显示什么
+    tracks[r] = { id: track.id, label: track.label, duty: d ? { label: d.label, spot: d.spot, arrive: d.arrive, until: d.until, done: !!w.dutyDone[r], open: !!worldDutyOpen(life, CONTENT, r) } : null };
   }
   // 今天命运的「提示」：画在地图上，走近了才知道是什么事
   var hints: { zone: string; text: string }[] = [];
@@ -404,7 +419,10 @@ function worldView(s: LifelineMatch) {
   }
   var ev = w.event ? { eventId: w.event.eventId, kind: w.event.kind, roles: w.event.roles, chosen: { qing: !!w.event.choices.qing, mei: !!w.event.choices.mei } } : null;
   // tick：服务器时间轴（每秒 TICK_RATE 跳），客户端按它做插值缓冲
-  return { tick: s.tick, minute: Math.floor(w.minute), schoolDay: w.schoolDay, actors: actors, needs: needs, money: money, event: ev, bond: life.bond, hints: hints };
+  return {
+    tick: s.tick, minute: Math.floor(w.minute), rest: w.rest, actors: actors, needs: needs, money: money, event: ev, bond: life.bond, hints: hints,
+    stats: stats, eff: eff, goals: goals, tracks: tracks,
+  };
 }
 
 /**
@@ -659,7 +677,7 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
     gameLoop(life, state, dispatcher, tick);
     if (state.presences.qing || state.presences.mei) {
       var t = worldAdvance(life, CONTENT, 1 / TICK_RATE, steering(state));
-      if (t.started) send(dispatcher, OP.EVENT, { event: t.started });
+      if (t.started) send(dispatcher, OP.EVENT, { event: t.started, locks: lifeMilestoneLocks(life, CONTENT) });
       broadcastLog(dispatcher, t.entries);
       if (t.dayEnded) {
         save(nk, logger, state, tick);

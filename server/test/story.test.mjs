@@ -19,6 +19,7 @@ const lifeResolveEvent = G("lifeResolveEvent"), lifeEndDay = G("lifeEndDay"), li
 const lifeApplyBond = G("lifeApplyBond"), lifeApplySelf = G("lifeApplySelf"), growthCtx = G("growthCtx");
 const DAILY = C.map.actions.filter((a) => Object.keys(a.stats).length > 0);
 const lifeEligible = G("lifeEligible"), lifeTimeAt = G("lifeTimeAt"), lifeEnding = G("lifeEnding");
+const lifeMilestoneFor = G("lifeMilestoneFor"), lifeSeenIds = G("lifeSeenIds"), lifeOptionLock = G("lifeOptionLock"), lifeTrack = G("lifeTrack");
 
 const byId = new Map(C.events.map((e) => [e.id, e]));
 
@@ -32,12 +33,31 @@ function story(seed, choose, rerolls = 0, near = 0.5) {
   for (let i = 0; i < rerolls; i++) { lifeReroll(s, C, "qing"); lifeReroll(s, C, "mei"); }
   lifeConfirm(s, C, "qing", { qing: "青", mei: "梅" });
   lifeConfirm(s, C, "mei", { qing: "青", mei: "梅" });
+  // 这里不走地图，没人写作业也没人踢球，属性不会自己长。按种子把属性铺开，
+  // 好让每条分数线都有人够得着、有人够不着（考上的和没考上的剧情都要有人走到）
+  for (const r of ["qing", "mei"]) for (const k of ["body", "mind", "charm"]) s.persons[r].stats[k] = 3 + Math.floor(lifeRand(s) * 71) / 10;
   const seen = [];
   let guard = 0;
   while (s.phase !== "ended") {
     const w = s.world;
     const fate = w.fate;
     const alive = ["qing", "mei"].filter((r) => s.persons[r].alive);
+    if (fate.milestone) {
+      // 关口：轮得到的人从够得着的路里选
+      const ev = byId.get(fate.milestone);
+      const due = alive.filter((r) => lifeMilestoneFor(ev, s.persons[r]) && !lifeSeenIds(s, r)[ev.id]);
+      if (due.length > 0) {
+        const choices = {};
+        for (const r of due) {
+          const open = ev.options.filter((o) => !lifeOptionLock(ev, o, s.persons[r], 0));
+          assert.ok(open.length >= 1, `${ev.id}: ${r} 没有任何一条路可走`);
+          choices[r] = choose(s, r, { ...ev, options: open });
+          assert.ok(open.some((o) => o.id === choices[r]), `${ev.id}: 选了一条走不了的路 ${choices[r]}`);
+        }
+        const entry = lifeResolveEvent(s, C, { eventId: ev.id, kind: "milestone", roles: due, choices, shadow: [], swing: {} });
+        for (const r of due) { seen.push(r + ":" + ev.id); assert.ok(entry.results[r].track, "关口之后每个人都要落在一条路上"); }
+      }
+    }
     if (fate.mirror && alive.length === 2) {
       const ev = byId.get(fate.mirror);
       const choices = { qing: choose(s, "qing", ev), mei: choose(s, "mei", ev) };
@@ -88,7 +108,8 @@ const steadyChoice = (s, role, ev) => G("lifeShadowChoose")(s, C, role, ev.id);
     assert.ok(own.length >= 1, `${t.name} 没有专属剧情`);
   }
   for (const ev of C.events) {
-    for (const o of ev.options) assert.ok(o.tags.length > 0, `${ev.id}.${o.id} 没有性格标签，影子不会学`);
+    // 关口里只有一条路的（上小学、退休）不用选，也就不用标性格
+    for (const o of ev.options) assert.ok(o.tags.length > 0 || (ev.kind === "milestone" && ev.options.length === 1), `${ev.id}.${o.id} 没有性格标签，影子不会学`);
     if (ev.kind === "mirror") assert.ok(Object.keys(ev.resonance).length >= 1, `${ev.id} 没有任何共鸣`);
   }
   console.log(`✓ 规模：${C.events.length} 个事件 / 每季都有默契事件 / 七个地点都有 / ${C.families.length} 户人家各有专属线 / ${C.talents.length - 1} 种天赋各有专属剧情`);
@@ -132,11 +153,13 @@ const hit = new Map(C.events.map((e) => [e.id, 0]));
 const pairEnd = new Map(C.endings.pair.map((e) => [e.id, 0]));
 const lifeEnd = new Map(C.endings.lives.map((e) => [e.id, 0]));
 const flagsSeen = new Map();
+const trackSeen = new Set(); // 40 岁时走在哪条路上
 let turns = 0, evs = 0, mems = 0;
 for (let seed = 1; seed <= LIVES; seed++) {
   const { s, seen } = story(seed * 2654435761, seed % 2 ? randomChoice : steadyChoice, seed % 4, NEAR[Math.floor(seed / 4) % NEAR.length]);
   for (const k of seen) { const id = k.split(":")[1]; hit.set(id, hit.get(id) + 1); }
-  assert.equal(new Set(seen).size, seen.length, "默契事件一生只出现一次，各自的事每人一生只遇一次");
+  assert.equal(new Set(seen).size, seen.length, "默契事件一生只出现一次，各自的事和关口每人一生只遇一次");
+  for (const r of ["qing", "mei"]) trackSeen.add(lifeTrack(C, s.persons[r], 40).id);
   assert.ok(s.ending, "人生结束时要有结局");
   pairEnd.set(s.ending.pair, pairEnd.get(s.ending.pair) + 1);
   for (const r of ["qing", "mei"]) {
@@ -167,6 +190,8 @@ for (let seed = 1; seed <= LIVES; seed++) {
   console.log("  一生分布：" + [...lifeEnd].sort((a, b) => b[1] - a[1]).map(([id, n]) => `${C.endings.lives.find((e) => e.id === id).title} ${pct(n, LIVES * 2)}`).join("  "));
   const rare = [...hit].sort((a, b) => a[1] - b[1]).slice(0, 8).map(([id, n]) => `${id}×${n}`);
   console.log("  最难遇到的事件：" + rare.join("  "));
+  // 每一种行当都有人干上了
+  for (const t of C.tracks.filter((x) => x.duty && (x.requires.minAge ?? 0) <= 40 && (x.requires.maxAge ?? 99) >= 40)) assert.ok(trackSeen.has(t.id), `没有人走上「${t.label}」这条路`);
   for (const f of ["p_wall_names", "p_capsule", "p_pigeon", "p_promise", "p_seaside", "p_lovers", "p_married", "p_partners", "p_reunited", "took_over"]) {
     assert.ok((flagsSeen.get(f) ?? 0) > 0, `故事线索 ${f} 从来没被打上`);
   }

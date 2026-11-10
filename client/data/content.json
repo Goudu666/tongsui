@@ -1,5 +1,5 @@
 {
- "version": "71e0e5e1e3e8",
+ "version": "baa88200fd05",
  "events": [
   {
    "id": "c_roof_summer",
@@ -8973,6 +8973,740 @@
    "catches": []
   },
   {
+   "id": "m_school",
+   "kind": "milestone",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {},
+   "title": "上小学",
+   "text": "新书包比你的背还宽。从今天起，白天有一大半不归你了。",
+   "options": [
+    {
+     "id": "go",
+     "text": "背上书包",
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "in_school"
+      ]
+     },
+     "tags": []
+    }
+   ],
+   "resonance": {
+    "go": {
+     "text": "两扇门是同时开的。两个新书包，一前一后下了楼。",
+     "memory": "两个新书包",
+     "bond": {
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "",
+    "bond": {},
+    "flags": []
+   },
+   "age": 6,
+   "score": {},
+   "swing": false,
+   "grades": [],
+   "catches": []
+  },
+  {
+   "id": "m_junior",
+   "kind": "milestone",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "notFlags": [
+     "dropout"
+    ]
+   },
+   "title": "小升初",
+   "text": "分班的名单贴在校门口的红纸上。重点班在最上面一栏，放学比别的班晚一个半钟头。",
+   "options": [
+    {
+     "id": "key",
+     "text": "去重点班",
+     "min": 6.4,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "junior_key"
+      ]
+     }
+    },
+    {
+     "id": "normal",
+     "text": "去普通班",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "key": {
+     "text": "两个名字都在最上面那一栏，中间隔着三个人。放学晚了，可是一块儿晚。",
+     "memory": "最上面那一栏",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "normal": {
+     "text": "三点半，校门口，还是你们俩。",
+     "memory": "三点半的校门口",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个三点半放学，一个要上到五点。先出来的那个，在校门口的台阶上多坐了一会儿。",
+    "bond": {
+     "close": -3
+    },
+    "flags": []
+   },
+   "age": 12,
+   "score": {
+    "mind": 1
+   },
+   "swing": true,
+   "grades": [],
+   "catches": []
+  },
+  {
+   "id": "m_senior",
+   "kind": "milestone",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "notFlags": [
+     "dropout"
+    ]
+   },
+   "title": "中考",
+   "text": "志愿表发下来了。市里的重点高中在河对岸，天不亮就得过桥；家门口的高中走路十分钟；职专下午三点就放学。",
+   "options": [
+    {
+     "id": "far",
+     "text": "过桥去念重点高中",
+     "min": 7.2,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "distance": 1
+      },
+      "flags": [
+       "school_far"
+      ]
+     }
+    },
+    {
+     "id": "near",
+     "text": "念家门口的高中",
+     "min": 5.8,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "school_near"
+      ]
+     }
+    },
+    {
+     "id": "vocational",
+     "text": "念职专，早点学本事",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "vocational"
+      ]
+     }
+    }
+   ],
+   "resonance": {
+    "far": {
+     "text": "天不亮，桥上只有两辆自行车。风大，谁也没说话，蹬得一样快。",
+     "memory": "桥上两辆车",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "near": {
+     "text": "还是那条路，还是十分钟。校服换了个颜色，别的没换。",
+     "memory": "还是那条路",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "vocational": {
+     "text": "三点钟放学，太阳还高。你们推着车往回走，说以后合伙开个铺子。",
+     "memory": "三点钟的太阳",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个往桥那边去，一个往胡同里拐。早上出门的钟点不一样了，楼道里碰不上了。",
+    "bond": {
+     "close": -3
+    },
+    "flags": []
+   },
+   "age": 15,
+   "score": {
+    "mind": 1
+   },
+   "swing": true,
+   "grades": [],
+   "catches": []
+  },
+  {
+   "id": "m_gaokao",
+   "kind": "milestone",
+   "stage": "young",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "notFlags": [
+     "dropout",
+     "vocational"
+    ]
+   },
+   "title": "高考",
+   "text": "分数出来了，志愿表摊在饭桌上。最远的那所学校，坐火车要一天一夜。",
+   "options": [
+    {
+     "id": "away",
+     "text": "去外地念大学",
+     "min": 8,
+     "tags": [
+      "adventure",
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "distance": 2
+      },
+      "flags": [
+       "uni_away"
+      ]
+     }
+    },
+    {
+     "id": "local",
+     "text": "念本市的大学",
+     "min": 6.8,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "uni_near"
+      ]
+     }
+    },
+    {
+     "id": "work",
+     "text": "不念了，找活干",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "work_early"
+      ]
+     }
+    }
+   ],
+   "resonance": {
+    "away": {
+     "text": "两张火车票，两个方向。你们在站台上对了对表，说好寒假同一天回来。",
+     "memory": "对过的表",
+     "bond": {
+      "sync": 3,
+      "close": 1
+     },
+     "flags": []
+    },
+    "local": {
+     "text": "两所学校隔着四站地。周末回河畔里，还是从同一个楼门进去。",
+     "memory": "四站地",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "work": {
+     "text": "第一个月的工钱，你们一人买了一双新鞋，在楼下比了比谁的贵。",
+     "memory": "两双新鞋",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个去车站，一个去上工。同一个早上出的门，往两头走的。",
+    "bond": {
+     "close": -3
+    },
+    "flags": []
+   },
+   "age": 18,
+   "score": {
+    "mind": 1
+   },
+   "swing": true,
+   "grades": [
+    {
+     "min": 6.8,
+     "label": "过了本科线",
+     "flags": [
+      "gaokao_good"
+     ]
+    },
+    {
+     "min": 0,
+     "label": "没过线",
+     "flags": [
+      "gaokao_bad"
+     ]
+    }
+   ],
+   "catches": []
+  },
+  {
+   "id": "m_job",
+   "kind": "milestone",
+   "stage": "young",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "notFlags": [
+     "left_city"
+    ]
+   },
+   "title": "找个正经事由",
+   "text": "该定下来了。干哪一行，往后几十年每天几点出门、几点回来，就都跟着定了。",
+   "options": [
+    {
+     "id": "desk",
+     "text": "过桥去坐办公室",
+     "score": {
+      "mind": 1
+     },
+     "min": 8.2,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_desk"
+      ]
+     }
+    },
+    {
+     "id": "teach",
+     "text": "回小学教书",
+     "score": {
+      "mind": 0.6,
+      "charm": 0.4
+     },
+     "min": 6.8,
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_teach"
+      ]
+     }
+    },
+    {
+     "id": "trade",
+     "text": "在街口支个摊，做买卖",
+     "score": {
+      "charm": 0.7,
+      "luck": 0.3
+     },
+     "min": 6,
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_trade"
+      ]
+     }
+    },
+    {
+     "id": "craft",
+     "text": "学一门手艺",
+     "score": {
+      "body": 0.5,
+      "mind": 0.5
+     },
+     "min": 6.4,
+     "tags": [
+      "patient",
+      "responsible"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_craft"
+      ]
+     }
+    },
+    {
+     "id": "labor",
+     "text": "去码头卖力气",
+     "score": {
+      "body": 1
+     },
+     "min": 6,
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_labor"
+      ]
+     }
+    },
+    {
+     "id": "odd",
+     "text": "先打零工",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_odd"
+      ]
+     }
+    }
+   ],
+   "resonance": {
+    "desk": {
+     "text": "同一趟早班车，一个在第三站下，一个在第五站下。",
+     "memory": "同一趟早班车",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "teach": {
+     "text": "当年你们坐过的那间教室，现在一人教一个班。",
+     "memory": "一人一个班",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "trade": {
+     "text": "两个摊子挨着，一把遮阳伞底下，谁先卖完谁帮另一个吆喝。",
+     "memory": "一把遮阳伞",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "craft": {
+     "text": "一个铺子，两条板凳，师傅说你们俩一个手稳一个手快。",
+     "memory": "两条板凳",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "labor": {
+     "text": "一根杠子两头抬，走了一天，步子是一样的。",
+     "memory": "一根杠子",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "odd": {
+     "text": "今天有活，明天没活。没活的那天，你们在河边坐一下午。",
+     "memory": "没活的下午",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个出门早，一个回来晚。对门的灯，各亮各的钟点。",
+    "bond": {
+     "close": -3
+    },
+    "flags": []
+   },
+   "age": 22,
+   "score": {},
+   "swing": false,
+   "grades": [],
+   "catches": []
+  },
+  {
+   "id": "m_settle",
+   "kind": "milestone",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {},
+   "title": "安家",
+   "text": "三十了。这些年攒下的钱都在存折上，够不够给自己安一个地方？",
+   "options": [
+    {
+     "id": "buy",
+     "text": "买下一套自己的房",
+     "min": 140,
+     "cost": 140,
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 15
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "home_own"
+      ]
+     }
+    },
+    {
+     "id": "rent",
+     "text": "在附近租一间",
+     "min": 60,
+     "cost": 60,
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "home_rent"
+      ]
+     }
+    },
+    {
+     "id": "stay",
+     "text": "还住老屋",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "home_old"
+      ]
+     }
+    }
+   ],
+   "resonance": {
+    "buy": {
+     "text": "钥匙是同一天拿的。新楼没有楼道灯，你们各自在门口装了一盏。",
+     "memory": "两盏门灯",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "rent": {
+     "text": "搬家那天互相搭了把手。东西都不多，一趟就完了。",
+     "memory": "一趟就搬完",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "stay": {
+     "text": "还是三楼，还是对门。暖气片还是那么烫手。",
+     "memory": "还是对门",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个搬走了，一个留下了。留下的那个，有时候还会朝对面那扇门看一眼。",
+    "bond": {
+     "close": -3
+    },
+    "flags": []
+   },
+   "age": 30,
+   "score": {
+    "money": 1
+   },
+   "swing": false,
+   "grades": [],
+   "catches": []
+  },
+  {
+   "id": "m_retire",
+   "kind": "milestone",
+   "stage": "old",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {},
+   "title": "退休",
+   "text": "最后一天的活干完了。从明天起，一整天又都是自己的了。",
+   "options": [
+    {
+     "id": "rest",
+     "text": "把闹钟收起来",
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "retired"
+      ]
+     },
+     "tags": []
+    }
+   ],
+   "resonance": {
+    "rest": {
+     "text": "早上醒得还是那么早。你们在楼下碰见了，都不知道该往哪走，就一块儿往河边走。",
+     "memory": "不知道往哪走的早晨",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "",
+    "bond": {},
+    "flags": []
+   },
+   "age": 60,
+   "score": {},
+   "swing": false,
+   "grades": [],
+   "catches": []
+  },
+  {
    "id": "j_ear",
    "kind": "mirror",
    "stage": "childhood",
@@ -15907,65 +16641,6 @@
    "catches": []
   },
   {
-   "id": "t_choose_school",
-   "kind": "solo",
-   "stage": "teen",
-   "seasons": [],
-   "weight": 2,
-   "where": null,
-   "when": null,
-   "hint": null,
-   "requires": {
-    "minAge": 15,
-    "notFlags": [
-     "dropout"
-    ]
-   },
-   "title": "志愿",
-   "text": "中考志愿表发下来了。市重点得住校，离家隔着大半个城。街坊都说孩子还是守着家好，可那是重点啊。",
-   "options": [
-    {
-     "id": "far",
-     "text": "报市重点",
-     "tags": [
-      "competitive"
-     ],
-     "effects": {
-      "self": {
-       "mind": 2
-      },
-      "other": {},
-      "bond": {
-       "distance": 1
-      },
-      "flags": [
-       "school_far"
-      ]
-     }
-    },
-    {
-     "id": "near",
-     "text": "报家门口的学校",
-     "tags": [
-      "gentle"
-     ],
-     "effects": {
-      "self": {
-       "mood": 5
-      },
-      "other": {},
-      "bond": {},
-      "flags": [
-       "school_near"
-      ]
-     }
-    }
-   ],
-   "resonance": null,
-   "dissonance": null,
-   "catches": []
-  },
-  {
    "id": "t_new_class",
    "kind": "mirror",
    "stage": "teen",
@@ -18087,9 +18762,7 @@
    "requires": {
     "minAge": 16,
     "notFlags": [
-     "dropout",
-     "gaokao_good",
-     "gaokao_bad"
+     "dropout"
     ]
    },
    "title": "家里出事了",
@@ -18345,12 +19018,11 @@
     "minAge": 17,
     "notFlags": [
      "dropout",
-     "gaokao_good",
-     "gaokao_bad"
+     "vocational"
     ]
    },
    "title": "最后一门",
-   "text": "高考最后一门，离交卷还有二十分钟，你忽然发现前面一道大题从第一步就错了。窗外的知了叫得人心慌。",
+   "text": "模拟考最后一门，离交卷还有二十分钟，你忽然发现前面一道大题从第一步就错了。窗外的知了叫得人心慌。",
    "options": [
     {
      "id": "redo",
@@ -18366,9 +19038,7 @@
       },
       "other": {},
       "bond": {},
-      "flags": [
-       "gaokao_good"
-      ]
+      "flags": []
      }
     },
     {
@@ -18384,9 +19054,7 @@
       },
       "other": {},
       "bond": {},
-      "flags": [
-       "gaokao_bad"
-      ]
+      "flags": []
      }
     },
     {
@@ -18397,14 +19065,11 @@
      ],
      "effects": {
       "self": {
-       "mood": 10,
-       "luck": 1
+       "mood": 10
       },
       "other": {},
       "bond": {},
-      "flags": [
-       "gaokao_bad"
-      ]
+      "flags": []
      }
     }
    ],
@@ -18466,88 +19131,6 @@
       "bond": {},
       "flags": [
        "stayed"
-      ]
-     }
-    }
-   ],
-   "resonance": null,
-   "dissonance": null,
-   "catches": []
-  },
-  {
-   "id": "y_zhiyuan",
-   "kind": "solo",
-   "stage": "young",
-   "seasons": [],
-   "weight": 3,
-   "where": null,
-   "when": null,
-   "hint": null,
-   "requires": {
-    "maxAge": 18,
-    "notFlags": [
-     "dropout"
-    ]
-   },
-   "title": "填志愿",
-   "text": "志愿表摊在饭桌上，你爸戴着老花镜翻那本厚厚的招生目录。最远的那所学校，坐火车要一天一夜。",
-   "options": [
-    {
-     "id": "far",
-     "text": "往最远的那格填",
-     "tags": [
-      "adventure"
-     ],
-     "effects": {
-      "self": {
-       "mind": 1,
-       "mood": 5
-      },
-      "other": {},
-      "bond": {
-       "distance": 2
-      },
-      "flags": [
-       "uni_away"
-      ]
-     }
-    },
-    {
-     "id": "mid",
-     "text": "填隔壁省城的",
-     "tags": [
-      "competitive"
-     ],
-     "effects": {
-      "self": {
-       "mind": 1
-      },
-      "other": {},
-      "bond": {
-       "distance": 1
-      },
-      "flags": [
-       "uni_away"
-      ]
-     }
-    },
-    {
-     "id": "near",
-     "text": "就填本市的",
-     "tags": [
-      "gentle",
-      "responsible"
-     ],
-     "effects": {
-      "self": {
-       "mood": 5
-      },
-      "other": {
-       "mood": 5
-      },
-      "bond": {},
-      "flags": [
-       "uni_near"
       ]
      }
     }
@@ -18744,9 +19327,9 @@
    "hint": null,
    "requires": {
     "minAge": 19,
-    "maxAge": 22,
+    "maxAge": 21,
     "flags": [
-     "gaokao_good"
+     "uni_away"
     ]
    },
    "title": "上铺的问题",
@@ -18821,6 +19404,10 @@
     "maxAge": 20,
     "flags": [
      "gaokao_bad"
+    ],
+    "notFlags": [
+     "uni_near",
+     "uni_away"
     ]
    },
    "title": "暖气片上的纸",
@@ -21365,7 +21952,7 @@
   },
   {
    "id": "sunny",
-   "name": "倍儿哏儿",
+   "name": "乐天派",
    "weight": 1,
    "desc": "天生的乐呵人，谁见了都想笑。心情掉得比别人慢。",
    "bonus": {
@@ -21601,7 +22188,10 @@
      260,
      560
     ],
-    "action": "sleep"
+    "action": "sleep",
+    "actions": [
+     "sleep"
+    ]
    },
    {
     "id": "table_qing",
@@ -21610,7 +22200,10 @@
      450,
      380
     ],
-    "action": "eat"
+    "action": "eat",
+    "actions": [
+     "eat"
+    ]
    },
    {
     "id": "desk_qing",
@@ -21619,7 +22212,12 @@
      250,
      360
     ],
-    "action": "study"
+    "actions": [
+     "picture_book",
+     "study",
+     "read"
+    ],
+    "action": "picture_book"
    },
    {
     "id": "basin_qing",
@@ -21628,7 +22226,10 @@
      560,
      620
     ],
-    "action": "wash"
+    "action": "wash",
+    "actions": [
+     "wash"
+    ]
    },
    {
     "id": "bed_mei",
@@ -21637,7 +22238,10 @@
      1220,
      560
     ],
-    "action": "sleep"
+    "action": "sleep",
+    "actions": [
+     "sleep"
+    ]
    },
    {
     "id": "table_mei",
@@ -21646,7 +22250,10 @@
      1030,
      380
     ],
-    "action": "eat"
+    "action": "eat",
+    "actions": [
+     "eat"
+    ]
    },
    {
     "id": "desk_mei",
@@ -21655,7 +22262,12 @@
      1230,
      360
     ],
-    "action": "study"
+    "actions": [
+     "picture_book",
+     "study",
+     "read"
+    ],
+    "action": "picture_book"
    },
    {
     "id": "basin_mei",
@@ -21664,7 +22276,10 @@
      920,
      620
     ],
-    "action": "wash"
+    "action": "wash",
+    "actions": [
+     "wash"
+    ]
    },
    {
     "id": "door_qing",
@@ -21673,7 +22288,10 @@
      715,
      470
     ],
-    "action": "knock"
+    "action": "knock",
+    "actions": [
+     "knock"
+    ]
    },
    {
     "id": "door_mei",
@@ -21682,7 +22300,10 @@
      765,
      470
     ],
-    "action": "knock"
+    "action": "knock",
+    "actions": [
+     "knock"
+    ]
    },
    {
     "id": "roof_pigeon",
@@ -21691,7 +22312,10 @@
      740,
      130
     ],
-    "action": "play_roof"
+    "action": "play_roof",
+    "actions": [
+     "play_roof"
+    ]
    },
    {
     "id": "breakfast_stall",
@@ -21700,7 +22324,12 @@
      1630,
      470
     ],
-    "action": "eat_out"
+    "actions": [
+     "duty",
+     "eat_out",
+     "dine"
+    ],
+    "action": "duty"
    },
    {
     "id": "river_bank",
@@ -21709,7 +22338,23 @@
      2140,
      820
     ],
+    "actions": [
+     "play_river",
+     "walk_river"
+    ],
     "action": "play_river"
+   },
+   {
+    "id": "river_bridge",
+    "zone": "river",
+    "at": [
+     2360,
+     690
+    ],
+    "action": "duty",
+    "actions": [
+     "duty"
+    ]
    },
    {
     "id": "alley_rope",
@@ -21717,6 +22362,10 @@
     "at": [
      1260,
      880
+    ],
+    "actions": [
+     "play_alley",
+     "chat"
     ],
     "action": "play_alley"
    },
@@ -21727,7 +22376,11 @@
      1120,
      1280
     ],
-    "action": "work"
+    "actions": [
+     "duty",
+     "work"
+    ],
+    "action": "duty"
    },
    {
     "id": "school_gate",
@@ -21736,7 +22389,22 @@
      320,
      1200
     ],
-    "action": "school"
+    "action": "duty",
+    "actions": [
+     "duty"
+    ]
+   },
+   {
+    "id": "school_yard",
+    "zone": "school",
+    "at": [
+     470,
+     1400
+    ],
+    "action": "ball",
+    "actions": [
+     "ball"
+    ]
    },
    {
     "id": "tea_seat",
@@ -21745,7 +22413,10 @@
      1716,
      236
     ],
-    "action": "listen"
+    "action": "listen",
+    "actions": [
+     "listen"
+    ]
    },
    {
     "id": "tea_stage",
@@ -21754,7 +22425,10 @@
      1668,
      104
     ],
-    "action": "perform"
+    "action": "perform",
+    "actions": [
+     "perform"
+    ]
    },
    {
     "id": "river_fish",
@@ -21763,7 +22437,10 @@
      2096,
      1134
     ],
-    "action": "fish"
+    "action": "fish",
+    "actions": [
+     "fish"
+    ]
    }
   ],
   "actions": [
@@ -21772,7 +22449,7 @@
     "label": "吃饭",
     "minutes": 30,
     "sleep": false,
-    "school": false,
+    "duty": false,
     "requires": {},
     "needs": {
      "hunger": 45,
@@ -21787,7 +22464,7 @@
     "label": "买套煎饼果子",
     "minutes": 20,
     "sleep": false,
-    "school": false,
+    "duty": false,
     "requires": {
      "hours": [
       390,
@@ -21807,7 +22484,36 @@
      "bond": {
       "close": 1
      },
-     "text": "「俩鸡蛋，多放葱花！」你们异口同声。"
+     "text": "「俩鸡蛋，多放葱花。」你们说的是同一句。"
+    }
+   },
+   {
+    "id": "dine",
+    "label": "下馆子",
+    "minutes": 60,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 18,
+     "hours": [
+      1020,
+      1260
+     ]
+    },
+    "needs": {
+     "hunger": 55,
+     "mood": 12
+    },
+    "stats": {},
+    "money": -8,
+    "together": {
+     "needs": {
+      "mood": 8
+     },
+     "bond": {
+      "close": 2
+     },
+     "text": "一张小桌，两瓶汽水，说到人家收摊。"
     }
    },
    {
@@ -21815,7 +22521,7 @@
     "label": "睡觉",
     "minutes": 0,
     "sleep": true,
-    "school": false,
+    "duty": false,
     "requires": {
      "owner": true
     },
@@ -21825,30 +22531,11 @@
     "together": null
    },
    {
-    "id": "study",
-    "label": "写作业",
-    "minutes": 60,
-    "sleep": false,
-    "school": false,
-    "requires": {
-     "minAge": 6
-    },
-    "needs": {
-     "energy": -8,
-     "mood": -4
-    },
-    "stats": {
-     "mind": 0.3
-    },
-    "money": 0,
-    "together": null
-   },
-   {
     "id": "wash",
     "label": "洗澡",
     "minutes": 20,
     "sleep": false,
-    "school": false,
+    "duty": false,
     "requires": {},
     "needs": {
      "clean": 60,
@@ -21859,11 +22546,281 @@
     "together": null
    },
    {
+    "id": "duty",
+    "label": "上学",
+    "minutes": 0,
+    "sleep": false,
+    "duty": true,
+    "requires": {},
+    "needs": {},
+    "stats": {},
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "你们是一路去的。"
+    }
+   },
+   {
+    "id": "picture_book",
+    "label": "翻小人书",
+    "minutes": 60,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "maxAge": 5
+    },
+    "needs": {
+     "energy": -4,
+     "mood": 2
+    },
+    "stats": {
+     "mind": 0.3
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两个脑袋凑在一本书上，谁也不让谁翻页。"
+    }
+   },
+   {
+    "id": "study",
+    "label": "写作业",
+    "minutes": 90,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 6,
+     "maxAge": 17
+    },
+    "needs": {
+     "energy": -10,
+     "mood": -6
+    },
+    "stats": {
+     "mind": 0.4
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一张桌子两头坐，写一会儿，抬头看一眼对面写到哪了。"
+    }
+   },
+   {
+    "id": "read",
+    "label": "看书",
+    "minutes": 90,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 18
+    },
+    "needs": {
+     "energy": -8,
+     "mood": -2
+    },
+    "stats": {
+     "mind": 0.35
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "各看各的，半天没人说话，也不觉得闷。"
+    }
+   },
+   {
+    "id": "play_alley",
+    "label": "楼下跳皮筋",
+    "minutes": 60,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "maxAge": 14
+    },
+    "needs": {
+     "mood": 10,
+     "energy": -8,
+     "clean": -8
+    },
+    "stats": {
+     "body": 0.25,
+     "charm": 0.2
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "「小皮球，架脚踢……」你们俩跳得一样快。"
+    }
+   },
+   {
+    "id": "play_river",
+    "label": "海河边放风筝",
+    "minutes": 60,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "maxAge": 17
+    },
+    "needs": {
+     "mood": 10,
+     "energy": -8,
+     "clean": -6
+    },
+    "stats": {
+     "body": 0.3
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个人拽线，一个人举着风筝跑。"
+    }
+   },
+   {
+    "id": "walk_river",
+    "label": "沿河走一圈",
+    "minutes": 60,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 18
+    },
+    "needs": {
+     "mood": 8,
+     "energy": -6
+    },
+    "stats": {
+     "body": 0.3
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "从桥这头走到那头，话说了一半，又走回来。"
+    }
+   },
+   {
+    "id": "ball",
+    "label": "操场踢球",
+    "minutes": 90,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 6,
+     "maxAge": 40
+    },
+    "needs": {
+     "mood": 6,
+     "energy": -14,
+     "clean": -10
+    },
+    "stats": {
+     "body": 0.45
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两个人，一个球，书包摆成门。"
+    }
+   },
+   {
+    "id": "work",
+    "label": "帮爷爷修车",
+    "minutes": 120,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 8,
+     "maxAge": 17
+    },
+    "needs": {
+     "energy": -12,
+     "clean": -15
+    },
+    "stats": {
+     "body": 0.3,
+     "mind": 0.15
+    },
+    "money": 5,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "爷爷说你们俩加一块儿顶半个学徒。"
+    }
+   },
+   {
+    "id": "chat",
+    "label": "跟街坊聊会儿",
+    "minutes": 60,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 15
+    },
+    "needs": {
+     "mood": 4
+    },
+    "stats": {
+     "charm": 0.4
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "街坊问你们俩怎么老在一块儿，你们同时说「顺路」。"
+    }
+   },
+   {
     "id": "knock",
     "label": "开门喊一声",
     "minutes": 15,
     "sleep": false,
-    "school": false,
+    "duty": false,
     "requires": {},
     "needs": {
      "mood": -1
@@ -21884,14 +22841,14 @@
    {
     "id": "play_roof",
     "label": "楼顶放鸽子",
-    "minutes": 45,
+    "minutes": 60,
     "sleep": false,
-    "school": false,
+    "duty": false,
     "requires": {},
     "needs": {
-     "mood": 10,
-     "energy": -6,
-     "clean": -6
+     "mood": 12,
+     "energy": -4,
+     "clean": -4
     },
     "stats": {},
     "money": 0,
@@ -21906,123 +22863,11 @@
     }
    },
    {
-    "id": "play_river",
-    "label": "海河边放风筝",
-    "minutes": 45,
-    "sleep": false,
-    "school": false,
-    "requires": {},
-    "needs": {
-     "mood": 10,
-     "energy": -8,
-     "clean": -6
-    },
-    "stats": {
-     "body": 0.2
-    },
-    "money": 0,
-    "together": {
-     "needs": {
-      "mood": 6
-     },
-     "bond": {
-      "close": 1
-     },
-     "text": "一个人拽线，一个人举着风筝跑。"
-    }
-   },
-   {
-    "id": "play_alley",
-    "label": "楼下跳皮筋",
-    "minutes": 45,
-    "sleep": false,
-    "school": false,
-    "requires": {},
-    "needs": {
-     "mood": 10,
-     "energy": -8,
-     "clean": -8
-    },
-    "stats": {
-     "body": 0.2
-    },
-    "money": 0,
-    "together": {
-     "needs": {
-      "mood": 6
-     },
-     "bond": {
-      "close": 1
-     },
-     "text": "「小皮球，架脚踢……」你们俩跳得一样快。"
-    }
-   },
-   {
-    "id": "work",
-    "label": "帮爷爷修车",
-    "minutes": 90,
-    "sleep": false,
-    "school": false,
-    "requires": {
-     "minAge": 8
-    },
-    "needs": {
-     "energy": -12,
-     "clean": -15
-    },
-    "stats": {
-     "body": 0.2
-    },
-    "money": 5,
-    "together": {
-     "needs": {
-      "mood": 5
-     },
-     "bond": {
-      "close": 1
-     },
-     "text": "爷爷说你们俩加一块儿顶半个学徒。"
-    }
-   },
-   {
-    "id": "school",
-    "label": "上学",
-    "minutes": 0,
-    "sleep": false,
-    "school": true,
-    "requires": {
-     "minAge": 6,
-     "maxAge": 17,
-     "hours": [
-      420,
-      540
-     ]
-    },
-    "needs": {
-     "hunger": 30,
-     "energy": -15
-    },
-    "stats": {
-     "mind": 0.5,
-     "charm": 0.1
-    },
-    "money": 0,
-    "together": {
-     "needs": {
-      "mood": 4
-     },
-     "bond": {
-      "close": 1
-     },
-     "text": "你们一起走进了校门。"
-    }
-   },
-   {
     "id": "listen",
     "label": "喝茶听一段",
     "minutes": 40,
     "sleep": false,
-    "school": false,
+    "duty": false,
     "requires": {
      "minAge": 6,
      "hours": [
@@ -22054,7 +22899,7 @@
     "label": "上台来一段",
     "minutes": 45,
     "sleep": false,
-    "school": false,
+    "duty": false,
     "requires": {
      "minAge": 10,
      "hours": [
@@ -22086,7 +22931,7 @@
     "label": "跟大爷钓鱼",
     "minutes": 60,
     "sleep": false,
-    "school": false,
+    "duty": false,
     "requires": {
      "minAge": 6,
      "hours": [
@@ -22115,6 +22960,501 @@
    }
   ]
  },
+ "tracks": [
+  {
+   "id": "preschool",
+   "label": "还没上学",
+   "requires": {
+    "maxAge": 5
+   },
+   "duty": null
+  },
+  {
+   "id": "primary",
+   "label": "上小学",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11
+   },
+   "duty": {
+    "label": "上学",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 930,
+    "needs": {
+     "hunger": 30,
+     "energy": -15
+    },
+    "stats": {
+     "mind": 0.29,
+     "charm": 0.07
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "dropout",
+   "label": "不念了，打零工",
+   "requires": {
+    "minAge": 12,
+    "maxAge": 21,
+    "flags": [
+     "dropout"
+    ]
+   },
+   "duty": {
+    "label": "打零工",
+    "spot": "bike_bench",
+    "arrive": [
+     450,
+     600
+    ],
+    "until": 900,
+    "needs": {
+     "energy": -20,
+     "clean": -15
+    },
+    "stats": {
+     "body": 0.24
+    },
+    "money": 6
+   }
+  },
+  {
+   "id": "junior_key",
+   "label": "初中 · 重点班",
+   "requires": {
+    "minAge": 12,
+    "maxAge": 14,
+    "flags": [
+     "junior_key"
+    ]
+   },
+   "duty": {
+    "label": "上学",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     510
+    ],
+    "until": 1020,
+    "needs": {
+     "hunger": 30,
+     "energy": -22,
+     "mood": -3
+    },
+    "stats": {
+     "mind": 0.48,
+     "charm": 0.05
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "junior",
+   "label": "初中 · 普通班",
+   "requires": {
+    "minAge": 12,
+    "maxAge": 14
+   },
+   "duty": {
+    "label": "上学",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 930,
+    "needs": {
+     "hunger": 30,
+     "energy": -15
+    },
+    "stats": {
+     "mind": 0.31,
+     "charm": 0.1
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "senior_key",
+   "label": "重点高中",
+   "requires": {
+    "minAge": 15,
+    "maxAge": 17,
+    "flags": [
+     "school_far"
+    ]
+   },
+   "duty": {
+    "label": "过桥上学",
+    "spot": "river_bridge",
+    "arrive": [
+     390,
+     480
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -25,
+     "mood": -4
+    },
+    "stats": {
+     "mind": 0.58,
+     "charm": 0.05
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "senior",
+   "label": "高中",
+   "requires": {
+    "minAge": 15,
+    "maxAge": 17,
+    "flags": [
+     "school_near"
+    ]
+   },
+   "duty": {
+    "label": "上学",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     510
+    ],
+    "until": 1020,
+    "needs": {
+     "hunger": 30,
+     "energy": -20,
+     "mood": -2
+    },
+    "stats": {
+     "mind": 0.38,
+     "charm": 0.1
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "vocational",
+   "label": "职专",
+   "requires": {
+    "minAge": 15,
+    "maxAge": 17
+   },
+   "duty": {
+    "label": "上学",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 900,
+    "needs": {
+     "hunger": 30,
+     "energy": -15
+    },
+    "stats": {
+     "mind": 0.14,
+     "body": 0.19,
+     "charm": 0.12
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "uni_away",
+   "label": "在外地念大学",
+   "requires": {
+    "minAge": 18,
+    "maxAge": 21,
+    "flags": [
+     "uni_away"
+    ]
+   },
+   "duty": {
+    "label": "回学校",
+    "spot": "river_bridge",
+    "arrive": [
+     390,
+     480
+    ],
+    "until": 1140,
+    "needs": {
+     "hunger": 30,
+     "energy": -20
+    },
+    "stats": {
+     "mind": 0.53,
+     "charm": 0.14
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "uni_near",
+   "label": "在本市念大学",
+   "requires": {
+    "minAge": 18,
+    "maxAge": 21,
+    "flags": [
+     "uni_near"
+    ]
+   },
+   "duty": {
+    "label": "去上课",
+    "spot": "river_bridge",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 960,
+    "needs": {
+     "hunger": 30,
+     "energy": -15
+    },
+    "stats": {
+     "mind": 0.38,
+     "charm": 0.14
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "first_job",
+   "label": "先干着",
+   "requires": {
+    "minAge": 18,
+    "maxAge": 21
+   },
+   "duty": {
+    "label": "上班",
+    "spot": "bike_bench",
+    "arrive": [
+     450,
+     570
+    ],
+    "until": 1020,
+    "needs": {
+     "energy": -22,
+     "clean": -15
+    },
+    "stats": {
+     "body": 0.19
+    },
+    "money": 8
+   }
+  },
+  {
+   "id": "job_away",
+   "label": "在外地工作",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "left_city"
+    ],
+    "notFlags": [
+     "came_back"
+    ]
+   },
+   "duty": {
+    "label": "过桥上班",
+    "spot": "river_bridge",
+    "arrive": [
+     390,
+     480
+    ],
+    "until": 1170,
+    "needs": {
+     "hunger": 25,
+     "energy": -28,
+     "mood": -3
+    },
+    "stats": {},
+    "money": 18
+   }
+  },
+  {
+   "id": "job_desk",
+   "label": "坐办公室",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_desk"
+    ]
+   },
+   "duty": {
+    "label": "过桥上班",
+    "spot": "river_bridge",
+    "arrive": [
+     420,
+     510
+    ],
+    "until": 1080,
+    "needs": {
+     "hunger": 25,
+     "energy": -22,
+     "mood": -2
+    },
+    "stats": {
+     "mind": 0.1
+    },
+    "money": 14
+   }
+  },
+  {
+   "id": "job_teach",
+   "label": "教书",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_teach"
+    ]
+   },
+   "duty": {
+    "label": "去上课",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     510
+    ],
+    "until": 990,
+    "needs": {
+     "hunger": 25,
+     "energy": -20
+    },
+    "stats": {
+     "mind": 0.07,
+     "charm": 0.07
+    },
+    "money": 10
+   }
+  },
+  {
+   "id": "job_trade",
+   "label": "做买卖",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_trade"
+    ]
+   },
+   "duty": {
+    "label": "出摊",
+    "spot": "breakfast_stall",
+    "arrive": [
+     390,
+     450
+    ],
+    "until": 840,
+    "needs": {
+     "energy": -25,
+     "clean": -10
+    },
+    "stats": {
+     "charm": 0.12
+    },
+    "money": 11
+   }
+  },
+  {
+   "id": "job_craft",
+   "label": "靠手艺吃饭",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_craft"
+    ]
+   },
+   "duty": {
+    "label": "上工",
+    "spot": "bike_bench",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 1020,
+    "needs": {
+     "energy": -22,
+     "clean": -15
+    },
+    "stats": {
+     "body": 0.07,
+     "mind": 0.05
+    },
+    "money": 10
+   }
+  },
+  {
+   "id": "job_labor",
+   "label": "卖力气",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_labor"
+    ]
+   },
+   "duty": {
+    "label": "过桥上工",
+    "spot": "river_bridge",
+    "arrive": [
+     390,
+     450
+    ],
+    "until": 1050,
+    "needs": {
+     "hunger": 15,
+     "energy": -32,
+     "clean": -20
+    },
+    "stats": {
+     "body": 0.14
+    },
+    "money": 11
+   }
+  },
+  {
+   "id": "job_odd",
+   "label": "打零工",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59
+   },
+   "duty": {
+    "label": "打零工",
+    "spot": "bike_bench",
+    "arrive": [
+     450,
+     600
+    ],
+    "until": 900,
+    "needs": {
+     "energy": -20,
+     "clean": -15
+    },
+    "stats": {
+     "body": 0.07
+    },
+    "money": 6
+   }
+  },
+  {
+   "id": "retired",
+   "label": "退休了",
+   "requires": {},
+   "duty": null
+  }
+ ],
  "endings": {
   "pair": [
    {
@@ -22253,7 +23593,7 @@
     "title": "点头之交",
     "text": "后来在街上碰见，你们都愣了一下，然后点点头，各自走了。那一下愣，是一整个童年。",
     "requires": {
-     "maxClose": 25
+     "maxClose": 30
     }
    },
    {
@@ -22836,9 +24176,7 @@
      "energy": -20,
      "mood": -10
     },
-    "flags": [
-     "gaokao_bad"
-    ]
+    "flags": null
    }
   },
   {

@@ -80,10 +80,10 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | 4 MOVE | c→s | `{x, y, seq}` 约 10 Hz，seq 递增；服务器丢掉乱序旧包，限速（360 px/s，间隔最多按 1 秒算）和边界 |
 | 5 ACT | c→s | `{spot}` 在某个点开始行动（距离、年龄、时间、家、钱都会校验） |
 | 6 CHOOSE | c→s | `{optionId, guess?}` 事件里的选择，结算前可以改。`guess`：默契事件里猜 TA 选了哪一项，可以不带（见 [DUET.md](DUET.md)） |
-| 7 WORLD | s→c | 5 Hz：`{tick, minute, schoolDay, actors{x,y,act,spot,sleep,seq}, needs, money, event, bond, hints}`；`actors[r].seq` 是服务器处理到的最后一条 MOVE |
-| 8 EVENT | s→c | `{event}` 有事件开始了（只告诉谁参与、是否已选，不告诉选了什么） |
+| 7 WORLD | s→c | 5 Hz：`{tick, minute, rest, actors{x,y,act,spot,sleep,seq,tg}, needs, money, event, bond, hints, stats, eff, goals, tracks}`；`actors[r].seq` 是服务器处理到的最后一条 MOVE，`tg` 是这次行动在搭伴；`goals[r]` 是下一个关口和每条线离得多远，`tracks[r]` 是现在走的路和今天的日程，`eff[r]` 是现在做事的效率 |
+| 8 EVENT | s→c | `{event, locks}` 有事件开始了（只告诉谁参与、是否已选，不告诉选了什么）。关口（`kind: milestone`）带 `locks: {role: {optionId: 原因}}`，够不着的路客户端画成灰的 |
 | 9 ERROR | s→c | `{message}` |
-| 10 LOG | s→c | `{entries}` 事件结算、同框、一天结束、死亡、终局 |
+| 10 LOG | s→c | `{entries}` 事件结算、搭伴、一天结束、死亡、终局。关口的结算带 `results: {role: {score, unit, grade, option, track}}`，一天结束带 `gains`（每人今天长了多少） |
 | 11 PRESENCE | s→c | `{online}` |
 | 12 PING | c→s | `{t}` 每 2 秒，测延迟 |
 | 13 PONG | s→c | `{t, tick}` 只回给发的人 |
@@ -145,7 +145,9 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | `events/*.yaml` | 剧情事件 |
 | `families.yaml` | 投胎能抽到的人家：家境、零花钱、属性加成、家庭标记 |
 | `talents.yaml` | 先天天赋 |
-| `map.yaml` | 地图：地点（矩形区域）、互动点、行动（时长、需求/属性变化、花钱挣钱、同框效果、条件） |
+| `map.yaml` | 地图：地点（矩形区域）、互动点、行动（时长、需求/属性变化、花钱挣钱、搭伴效果、条件）。一个互动点可以用 `actions` 挂几个行动，按年纪取第一个合适的 |
+| `events/milestones.yaml` | 人生关口：`kind: milestone` 的事件，按 `age` 到来，选项上的 `min` 是分数线。格式见文件头 |
+| `tracks.yaml` | 人生路线：由标记推出来的日程（白天去哪、去多久、长什么、挣多少）。按顺序匹配，最后一条兜底 |
 | `endings.yaml` | 结局：两个人的结局（pair）和每个人的一生小结（lives），按顺序匹配，最后一条兜底 |
 | `rules.yaml` | 数值规则：投胎预算、成长、衰老、检定、寿命、亲近（规则代码在 `server/src/growth.ts`，说明见 [GROWTH.md](GROWTH.md)） |
 | `checks.yaml` | 检定：挂在已有事件的选项上，成不成看属性和运气 |
@@ -184,6 +186,11 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 
 `npm run content` 的校验除了格式，还会检查：性格标签只能是 gentle / adventure / solitude / responsible / competitive / patient；
 只有童年能写 seasons；mirror 不能放在某一家屋里；要求了某个标记却没有任何地方会打上它时给出警告（多半是拼错了）。
+
+关口和路线是核心玩法的骨架（设计见 [GDD.md](GDD.md) 第 4 节）。规则在 `server/src/sim.ts`（`lifeTrack` 路线、`lifeOptionLock` 上锁、`lifeGoal` 目标）
+和 `server/src/world.ts`（`worldPickAction` 点位上现在能做什么、`worldDuty` 日程、`worldFinish` 里的搭伴倍率和状态效率）。
+分数线调完要跑 `node tools/paths.mjs`：九种活法的机器人把人生过到三十岁，打印每条线有多少人够得着。
+`server/test/paths.test.mjs` 把四件事钉成断言：不上心的够不着高线、活法比出身重要、搭伴比一个人强、一个人够不着所有的线。
 
 结局格式见 `content/endings.yaml` 文件头。服务器在两人都离开后调用 `lifeEnding` 算出结局，存进 `LifeState.ending`（`{ pair, lives: { qing, mei } }`），
 并把结局文字写进最后一条 `end` 日志，客户端的长卷直接显示。

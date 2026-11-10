@@ -73,7 +73,8 @@ function gameBoostOf(score: number): number {
 function gamePairing(s: LifeState): string | null {
   var w = s.world!;
   var a = w.actors.qing, b = w.actors.mei;
-  if (!a || !b || !a.action || a.action !== b.action || a.asleep || b.asleep) return null;
+  // 和世界规则里的「搭伴」是同一个判定（world.ts → worldAct）：同一个点、同一件事，两人身上都有 together
+  if (!a || !b || !a.action || a.action !== b.action || a.spot !== b.spot || !a.together || !b.together || a.asleep || b.asleep) return null;
   if (!s.persons!.qing.alive || !s.persons!.mei.alive) return null;
   return GAME_ACTIONS[a.action] || null;
 }

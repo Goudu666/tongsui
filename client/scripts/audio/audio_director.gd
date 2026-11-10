@@ -29,7 +29,7 @@ const CUE_DB := {"tap": -7.0, "page": -9.0, "toast": -9.0, "type": -12.0, "xingm
 const STRIDE := {"child": 44.0, "teen": 54.0, "young": 60.0, "middle": 60.0, "old": 48.0}
 const STEP_PITCH := {"child": 1.18, "teen": 1.06, "young": 1.0, "middle": 0.96, "old": 0.92}
 ## 没有专门音效的行动，借用相近的
-const ACT_ALIAS := {"read": "study", "walk_river": "play_river", "dine": "eat_out", "ball": "play_alley"}
+const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "play_river", "dine": "eat_out", "ball": "play_alley", "chat": "listen"}
 ## 设置按钮的三档：全开 → 只关音乐 → 静音
 const LEVELS := ["乐", "响", "静"]
 ## 按钮和 HUD 右上角「亲近 / 默契」卡片（ui/hud.gd 的 _bond：宽 128，y 64~220）一样宽，在河畔里排在它下面
@@ -236,13 +236,19 @@ func cue(cue_name: String, db := 0.0, pitch := 1.0) -> void:
 
 ## 开始做一件事（吃饭、写作业、放鸽子……）。mine=false 是对方在做，轻一点
 func act(action_id: String, mine := true, near := 1.0) -> void:
-	if action_id == "duty":  # 「该干的事」：小时候是上学，长大了是上班
-		action_id = "school" if _stage in ["child", "teen"] else "work"
-	action_id = ACT_ALIAS.get(action_id, action_id)
+	var cue_name := act_cue(action_id, _stage)
 	if mine:
-		cue("act_" + action_id, -4.0)
+		cue(cue_name, -4.0)
 	elif near > 0.15:
-		cue("act_" + action_id, -10.0 + linear_to_db(near))
+		cue(cue_name, -10.0 + linear_to_db(near))
+
+
+## 一个行动在这个阶段（STAGE_FILE 的值）用哪条音效。还没有自己声音的行动借一条近的（ACT_ALIAS）。
+## 单测按这张映射查素材（tests/unit_audio.gd），所以新加行动要么有 sfx/act_<id>.ogg，要么在这里有去处
+static func act_cue(action_id: String, stage_file: String) -> String:
+	if action_id == "duty":  # 「该干的事」：小时候是上学，长大了是上班
+		action_id = "school" if stage_file in ["child", "teen"] else "work"
+	return "act_" + str(ACT_ALIAS.get(action_id, action_id))
 
 
 func sting(kind: String, db := 0.0) -> void:

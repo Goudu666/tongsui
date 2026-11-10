@@ -59,10 +59,16 @@ function rng(seed) {
 
 const zoneOf = new Map(C.map.zones.map((z) => [z.id, z]));
 const eventOf = new Map(C.events.map((e) => [e.id, e]));
-const spotFor = (action, role) => {
+// 一个点位上挂着几件事，按年纪取第一件合适的（world.ts → worldPickAction），所以要带着存档去问「现在这儿能做什么」
+const worldPickAction = G("worldPickAction"), worldDutyOpen = G("worldDutyOpen"), lifeOptionLock = G("lifeOptionLock");
+// 机器人想做的事是按「哪一类」说的：念书在小时候是翻小人书、长大了是看书；河边小时候放风筝、大了是走一圈
+const KIN = { study: ["study", "picture_book", "read"], play_river: ["play_river", "walk_river", "ball"], play_alley: ["play_alley", "chat"] };
+const spotFor = (s, action, role) => {
+  const ids = KIN[action] || [action];
   let any = null;
   for (const sp of C.map.spots) {
-    if (sp.action !== action) continue;
+    const act = worldPickAction(s, C, role, sp).act;
+    if (!act || !ids.includes(act.id)) continue;
     const z = zoneOf.get(sp.zone);
     if (z.owner === role) return sp;
     if (!z.owner && !any) any = sp;
@@ -73,7 +79,7 @@ const PLAY = ["play_roof", "play_river", "play_alley"];
 const center = (zone) => { const r = zoneOf.get(zone).rect; return [r[0] + r[2] / 2, r[1] + r[3] / 2]; };
 
 function tryAct(s, role, action) {
-  const sp = spotFor(action, role);
+  const sp = spotFor(s, action, role);
   if (!sp) return false;
   const a = s.world.actors[role];
   const [ox, oy] = [a.x, a.y];
@@ -124,17 +130,19 @@ function botStep(s, role, bot, pairing, R, day) {
   if (p.needs.energy < 12 || w.minute >= bedtime) { if (tryAct(s, role, "sleep")) return true; }
   // 晚上还有事要去，白天就省着点劲儿：累了先歇着，不再折腾
   if (pending.length && p.needs.energy < 40) return true;
-  if (w.schoolDay && age >= 6 && age <= 17 && w.minute >= 420 && w.minute <= 540) {
-    const truant = bot === "wild" ? 0.25 : bot === "earner" ? 0.15 : 0.03;
+  // 今天该去的地方（上学、上班、出摊，跟着人生路线走）：到点了就去，野孩子和小财迷小时候偶尔逃学
+  const duty = worldDutyOpen(s, C, role);
+  if (duty && w.minute >= duty.arrive[0]) {
+    const truant = age > 17 ? 0 : bot === "wild" ? 0.25 : bot === "earner" ? 0.15 : 0.03;
     if (!day.truant[role] && R() < truant) day.truant[role] = true;
-    if (!day.truant[role] && tryAct(s, role, "school")) return true;
+    if (!day.truant[role] && tryAct(s, role, "duty")) return true;
   }
   if (p.needs.clean < 30 && tryAct(s, role, "wash")) return true;
 
   // 相处：形影不离的会凑过去做同一件事
   if (b && b.action && pairing !== "apart") {
     const act = C.map.actions.find((x) => x.id === b.action);
-    if (act && act.together && !act.school && !w.done.includes("together:" + act.id) && R() < (pairing === "glued" ? 0.9 : 0.35)) {
+    if (act && act.together && !act.duty && !w.done.includes("together:" + act.id) && R() < (pairing === "glued" ? 0.9 : 0.35)) {
       if (tryAct(s, role, act.id)) return true;
     }
   }
@@ -156,7 +164,10 @@ function botStep(s, role, bot, pairing, R, day) {
 /** 选项：agree 的概率下跟对方选一样（默契好的两个人），否则按性格（和影子一样）或乱选 */
 function botChoose(s, role, ev, style, R) {
   if (style === "steady") return lifeShadowChoose(s, C, role, ev.id);
-  return ev.options[Math.floor(R() * ev.options.length)].id;
+  // 人生关口上够不着的路选不了
+  const swing = (s.world.event && s.world.event.swing && s.world.event.swing[role]) || 0;
+  const open = ev.kind === "milestone" ? ev.options.filter((o) => !lifeOptionLock(ev, o, s.persons[role], swing)) : ev.options;
+  return open[Math.floor(R() * open.length)].id;
 }
 
 function simulate(seed, cfg) {

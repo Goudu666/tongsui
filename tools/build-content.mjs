@@ -217,12 +217,23 @@ const rules = load("rules.yaml");
     if (typeof rules?.bond?.drift?.[st] !== "number") errors.push(`rules.yaml: bond.drift.${st} 必须是数字`);
   }
   if (rules?.roll && rules.roll.wealthAdjust?.length !== 3) errors.push("rules.yaml: roll.wealthAdjust 需要三个数（清贫 / 小康 / 殷实）");
-  // 投胎的点数要分得下去：最极端的人家 + 天赋也得落在 [4 × statMin, 4 × statMax] 里
+  // 投胎的点数要分得下去：每种人家 × 天赋，按单项算。
+  // 一项的底子在 [max(statMin, −加成), min(statMax, 10 − 加成)] 里（加完以后还得在 0~10），
+  // 四项的下限加起来不能超过预算，上限加起来不能不够预算。和 server/src/sim.ts → lifeRollOnce 是同一套算法
   if (rules?.roll) {
-    const sum = (o) => Object.values(o ?? {}).reduce((a, b) => a + b, 0);
+    const { budget, wealthAdjust, statMin, statMax } = rules.roll;
     for (const f of families) for (const t of talents) {
-      const pool = rules.roll.budget + rules.roll.wealthAdjust[f.wealth] - sum(f.bonus) - sum(t.bonus);
-      if (pool < 4 * rules.roll.statMin || pool > 4 * rules.roll.statMax) errors.push(`rules.yaml: ${f.id} + ${t.id} 的点数 ${pool} 分不下去`);
+      const target = budget + wealthAdjust[f.wealth];
+      let least = 0, most = 0;
+      for (const k of STAT_KEYS) {
+        const bonus = (f.bonus?.[k] ?? 0) + (t.bonus?.[k] ?? 0);
+        const lo = Math.max(statMin, -bonus);
+        const hi = Math.min(statMax, 10 - bonus);
+        if (hi < lo) errors.push(`rules.yaml: ${f.id} + ${t.id} 的 ${k} 加成 ${bonus} 太大，放不进 0~10`);
+        least += lo + bonus;
+        most += Math.max(lo, hi) + bonus;
+      }
+      if (target < least || target > most) errors.push(`rules.yaml: ${f.id} + ${t.id} 的合计应该是 ${target}，但四项加起来只能在 ${least}~${most} 之间，分不下去`);
     }
   }
 }

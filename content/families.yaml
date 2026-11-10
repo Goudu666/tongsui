@@ -2,13 +2,14 @@
 # wealth: 0 清贫 / 1 小康 / 2 殷实 —— 影响零花钱、饭菜带来的心情，以及部分事件
 # bonus: 先天属性加成（body 体魄 / mind 心智 / charm 魅力 / luck 运气）
 # traits: 家庭标记，事件可以用 requires.flags 读取
+# desc: 每户写一个日常细节，再写一样摸得着的东西
 
 - id: chen
   name: 陈家 · 自行车铺
   wealth: 1
   weight: 3
   money: 30
-  desc: 父亲在楼下修了二十年自行车，满手机油。母亲在纺织厂倒三班。
+  desc: 你爸在楼下修了二十年车，一手机油洗不出来了。车有毛病，他先拿耳朵听。你妈在纺织厂倒三班。
   bonus: { body: 1 }
   traits: [fam_handy]
 
@@ -17,7 +18,7 @@
   wealth: 1
   weight: 3
   money: 25
-  desc: 父母都是小学老师。家里书比碗多，规矩也比别家多。
+  desc: 爸妈都是小学老师。家里书比碗多，规矩比书多。楼里的孩子路过你家门口，嗓门自动小一半。
   bonus: { mind: 2, charm: -1 }
   traits: [fam_strict]
 
@@ -26,7 +27,7 @@
   wealth: 1
   weight: 3
   money: 35
-  desc: 楼下那家煎饼果子摊就是你家的。天不亮爸妈就起来和面，整栋楼都认识你。
+  desc: 楼下的煎饼果子摊是你家的。天不亮爸妈就起来磨绿豆面，全楼都是闻着你家的味儿醒的。
   bonus: { charm: 1 }
   traits: [fam_breakfast]
 
@@ -35,7 +36,7 @@
   wealth: 2
   weight: 1
   money: 90
-  desc: 父亲在港口上船跑远洋，一年回来两次，每次都带很贵的礼物。
+  desc: 你爸在船上跑远洋，一年回来两趟，带回些街坊叫不上名儿的洋玩意儿。挂历上的红圈是你画的。
   bonus: { luck: 1 }
   traits: [fam_rich, fam_father_away]
 
@@ -44,7 +45,7 @@
   wealth: 0
   weight: 2
   money: 5
-  desc: 爸妈在外地打工，你跟姥姥住。姥姥不识字，但会讲一百个故事。
+  desc: 爸妈在外地打工，你跟着姥姥过。姥姥不识字，肚子里有一百个故事，讲一个，择完一把韭菜。
   bonus: { charm: 1, luck: 1 }
   traits: [fam_grandma, fam_poor]
 
@@ -53,7 +54,7 @@
   wealth: 1
   weight: 2
   money: 30
-  desc: 母亲的裁缝铺里总挂满别人的新衣裳。你的衣服永远是这片儿最合身的。
+  desc: 你妈的裁缝铺里挂满别人的新衣裳。她量人不用尺，搭一眼就有数。你的衣裳是这片儿最合身的。
   bonus: { charm: 1, luck: 1 }
   traits: [fam_tailor]
 
@@ -62,7 +63,7 @@
   wealth: 2
   weight: 1
   money: 120
-  desc: 刚从南方搬来，说话没有天津味儿。楼里的孩子一开始都不太跟你玩。
+  desc: 刚从南方搬来，口音跟全楼都不一样。楼里的孩子起先不大跟你玩。
   bonus: { mind: 1, charm: -1 }
   traits: [fam_rich, fam_outsider]
 
@@ -71,7 +72,7 @@
   wealth: 0
   weight: 2
   money: 8
-  desc: 爸妈都在钢厂上班，晚上回来倒头就睡。你很早就学会自己热饭。
+  desc: 爸妈都在钢厂三班倒，回家倒头就睡。你脖子上挂着钥匙，很早就会自己热饭，也很早就不爱吭声。
   bonus: { body: 2 }
   traits: [fam_poor, fam_independent]
 
@@ -80,7 +81,7 @@
   wealth: 1
   weight: 2
   money: 20
-  desc: 父亲晚上在茶馆说相声，白天在家对着墙练贯口。你从小就嘴皮子溜。
+  desc: 你爸晚上在茶馆说相声，白天对着墙练贯口。你是听着包袱长大的，三岁就会接下茬。
   bonus: { charm: 2 }
   traits: [fam_crosstalk]
 
@@ -89,7 +90,7 @@
   wealth: 0
   weight: 2
   money: 6
-  desc: 上面有个哥哥，下面有个妹妹。家里什么都得抢，但从来不冷清。
+  desc: 上头一个哥，下头一个妹，一间屋四张嘴。什么都得抢，抢慢了就没了。可你家从来不冷清。
   bonus: { luck: 2 }
   traits: [fam_poor, fam_siblings]
 
@@ -98,7 +99,7 @@
   wealth: 1
   weight: 2
   money: 25
-  desc: 父亲是这栋楼的楼长，腰上挂着全楼的钥匙。谁家漏水、谁家欠电费、楼道里谁堆了白菜，他都知道。
+  desc: 你爸是楼长，腰上挂着全楼的钥匙。谁家漏水，谁家欠电费，谁在楼道多码了两棵白菜，他都有数。
   bonus: { mind: 1, charm: 1, luck: -1 }
   traits: [fam_head]
 
@@ -107,7 +108,7 @@
   wealth: 0
   weight: 2
   money: 6
-  desc: 爷爷在楼顶搭了个鸽子棚，三十多只鸽子，每只都有名字。家里的钱一半买了鸽粮。
+  desc: 你爷爷在楼顶搭了个鸽子棚，三十多只，个个有名字。家里的钱一半买了鸽粮，他说值。
   bonus: { luck: 1, body: 1 }
   traits: [fam_pigeon, fam_poor]
 
@@ -116,7 +117,7 @@
   wealth: 1
   weight: 2
   money: 28
-  desc: 爸爸一个人带你，白天黑夜都在开出租。车后座是你的另一张床，收音机里的相声你都会背。
+  desc: 就你爸一个人带你，白天黑夜地开出租。车后座是你的另一张床，收音机里的相声你比他背得熟。
   bonus: { charm: 1, body: 1, mind: -1 }
   traits: [fam_taxi, fam_single]
 
@@ -125,6 +126,44 @@
   wealth: 1
   weight: 2
   money: 40
-  desc: 楼下的小卖部是你家开的。冰柜、汽水、泡泡糖、五毛钱的画片，全楼的孩子都想跟你好。
+  desc: 楼下的小卖部是你家的。冰柜、汽水、泡泡糖、五毛钱的画片。全楼的孩子都想跟你好，真假得自己分。
   bonus: { luck: 1, mind: 1, body: -1 }
   traits: [fam_shop]
+
+# ---- 街坊篇新增的四户（专属剧情见 events/neighbors.yaml） ----
+
+- id: bai
+  name: 白家 · 管红白事的
+  wealth: 1
+  weight: 2
+  money: 25
+  desc: 这片儿谁家娶媳妇、送老人，都请你爸张罗。他说红事白事一个理儿：把人好好送进门，好好送出门。
+  bonus: { mind: 1, charm: 1 }
+  traits: [fam_dale]
+
+- id: jin
+  name: 金家 · 老城里搬来的
+  wealth: 0
+  weight: 2
+  money: 6
+  desc: 祖上在老城里阔过，如今三代挤一间半。爷爷的规矩一样没丢：吃饭不许吧唧嘴，冬天怀里揣着蝈蝈葫芦。
+  bonus: { mind: 1, charm: 1, body: -1 }
+  traits: [fam_oldmoney, fam_poor]
+
+- id: tong
+  name: 佟家 · 摔跤的
+  wealth: 0
+  weight: 2
+  money: 8
+  desc: 你爸年轻时摔过跤，有点名气，如今在厂里看大门。当年的跤衣还挂在门后头。他的规矩就一条：倒了地的人，不许再碰。
+  bonus: { body: 2 }
+  traits: [fam_wrestle, fam_poor]
+
+- id: fu
+  name: 傅家 · 扎风筝的
+  wealth: 1
+  weight: 2
+  money: 20
+  desc: 你家房梁上挂满没糊纸的风筝骨架，一屋子竹篾和浆糊味儿。爷爷说：扎是手艺，放是能耐，起不起得来看老天爷。
+  bonus: { mind: 1, luck: 1 }
+  traits: [fam_kite]

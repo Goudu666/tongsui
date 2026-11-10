@@ -25,22 +25,34 @@ const sum = (st) => st.body + st.mind + st.charm + st.luck;
 // ---------- 1. 投胎：人人一样多，只是长的地方不一样 ----------
 {
   const totals = new Map();
-  for (let i = 0; i < 3000; i++) {
-    const r = G("lifeRollOnce")({ rng: i * 7919 + 1 }, C, null);
+  const combos = new Set();
+  const check = (r) => {
     const fam = C.families.find((f) => f.id === r.familyId);
     const tal = C.talents.find((t) => t.id === r.talentId);
     for (const v of Object.values(r.stats)) assert.ok(v >= 0 && v <= 10 && Number.isInteger(v), "先天属性是 0~10 的整数");
-    // 天赋带负加成的（犟脾气 魅力 −1）不会被夹掉，所以合计严格等于预算
-    assert.equal(sum(r.stats), R.roll.budget + R.roll.wealthAdjust[fam.wealth], `${fam.name}+${tal.name} 的合计不对`);
+    // 加成再大（底子 7 再 +2 +2）、再是负的（犟脾气 魅力 −1），也不会被夹掉一部分：合计严格等于预算
+    assert.equal(sum(r.stats), R.roll.budget + R.roll.wealthAdjust[fam.wealth], `${fam.name}+${tal.name} 的合计不对：${JSON.stringify(r.stats)}`);
+    for (const k of Object.keys(r.stats)) {
+      const bonus = (fam.bonus[k] ?? 0) + (tal.bonus[k] ?? 0);
+      assert.ok(r.stats[k] - bonus >= Math.min(R.roll.statMin, r.stats[k]) && r.stats[k] - bonus <= R.roll.statMax, `${fam.name}+${tal.name} 的 ${k} 底子出了 ${R.roll.statMin}~${R.roll.statMax}`);
+    }
     totals.set(fam.wealth, sum(r.stats));
+    combos.add(fam.id + "+" + tal.id);
+  };
+  for (let i = 0; i < 20000; i++) check(G("lifeRollOnce")({ rng: i * 7919 + 1 }, C, null));
+  // 随机抽不一定撞得上最极端的组合，所以每种人家 × 天赋再各抽 200 次
+  for (const fam of C.families) for (const tal of C.talents) {
+    const only = { ...C, families: [fam], talents: [tal] };
+    for (let i = 0; i < 200; i++) check(G("lifeRollOnce")({ rng: i * 104729 + 3 }, only, null));
   }
+  assert.equal(combos.size, C.families.length * C.talents.length);
   assert.ok(totals.get(0) > totals.get(2), "清贫人家的孩子先天多一点（钱和饭桌上少的，这里补上）");
   const s = newLife();
   for (const r of ["qing", "mei"]) {
     assert.deepEqual(J(s.persons[r].born), J(s.persons[r].stats), "出生时的属性记作底子");
     assert.ok(s.persons[r].lifespan >= R.lifespan.base - R.lifespan.spread && s.persons[r].lifespan <= R.lifespan.base + R.lifespan.spread);
   }
-  console.log(`✓ 投胎：四项合计人人是 ${R.roll.budget}（清贫 +${R.roll.wealthAdjust[0]}、殷实 ${R.roll.wealthAdjust[2]}）/ 出生属性记作底子 / 命数在 ${R.lifespan.base}±${R.lifespan.spread}`);
+  console.log(`✓ 投胎：两万次随机 + ${combos.size} 种人家×天赋各 200 次，四项合计人人是 ${R.roll.budget}（清贫 +${R.roll.wealthAdjust[0]}、殷实 ${R.roll.wealthAdjust[2]}）/ 出生属性记作底子 / 命数在 ${R.lifespan.base}±${R.lifespan.spread}`);
 }
 
 // ---------- 2. 成长：经历 × 年纪 × 底子 ----------
@@ -286,6 +298,9 @@ const sum = (st) => st.body + st.mind + st.charm + st.luck;
   s.version = 3;
   s.persons.qing.stats.mind = 8.5;
   for (const r of ["qing", "mei"]) { delete s.persons[r].born; delete s.persons[r].moodSum; delete s.persons[r].moodDays; delete s.persons[r].active; }
+  // 老存档里「普通的孩子」没有标记
+  s.persons.qing.talentId = "none"; s.persons.qing.flags = s.persons.qing.flags.filter((f) => !f.startsWith("tal_"));
+  s.persons.mei.talentId = "memory"; s.persons.mei.flags = s.persons.mei.flags.filter((f) => !f.startsWith("tal_")).concat("tal_memory");
   delete s.world.warm;
   const notes = G("lifeUpgrade")(s);
   assert.ok(notes.includes("v3→v4"));
@@ -293,9 +308,12 @@ const sum = (st) => st.body + st.mind + st.charm + st.luck;
   assert.equal(s.persons.qing.born.mind, 8.5, "没记过出生属性的老存档，拿现在的当底子");
   assert.deepEqual(J(s.persons.mei.active), { body: false, mind: false });
   assert.equal(s.world.warm, false);
+  assert.ok(s.persons.qing.flags.includes("tal_plain") && !s.persons.mei.flags.includes("tal_plain"), "普通的孩子补上标记，别人不补");
+  G("lifeUpgrade")(Object.assign(s, { version: 3 }));
+  assert.equal(s.persons.qing.flags.filter((f) => f === "tal_plain").length, 1, "升两次也只补一个");
   // 升级完能接着过
   for (const r of ["qing", "mei"]) s.world.actors[r].asleep = true;
   G("lifeEndDay")(s, C);
   assert.equal(s.persons.qing.moodDays, 1);
-  console.log("✓ 老存档：v3 升 v4 补上底子、心气、当天活动、见没见过面，升完接着过");
+  console.log("✓ 老存档：v3 升 v4 补上底子、心气、当天活动、见没见过面、普通的孩子的标记，升完接着过");
 }

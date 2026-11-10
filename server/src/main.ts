@@ -29,8 +29,9 @@ var SHADOW_GRACE_SECONDS = 10; // 掉线这么久之内不交给影子：切网�
  * - 旧客户端没法再用了：把 MIN_CLIENT_PROTOCOL 提到能用的最低版本，旧包会看到「请装新版」，而不是卡在看不懂的界面里
  * 剧情内容不走这个：内容有自己的指纹 CONTENT.version，客户端发现不一样会自己下载（content_get）。
  */
-var PROTOCOL_VERSION = 3; // 2：关口（上锁的选项）、日程、目标、属性进了 WORLD；schoolDay 没了  3：传承（老物件、再来一世），旧包可以忽略
-var MIN_CLIENT_PROTOCOL = 2;
+var PROTOCOL_VERSION = 4; // 2：关口（上锁的选项）、日程、目标、属性进了 WORLD；schoolDay 没了  3：传承（老物件、再来一世），旧包可以忽略
+// 4：一天五段（WORLD 多了 slot / ready / playing，新消息 PASS / CANCEL）；放风筝小游戏（20 / 21）拿掉。旧包不会按「就这么过」，一段都过不去
+var MIN_CLIENT_PROTOCOL = 4;
 /** 从这个协议版本起，安装包才认识传承的消息（31 AGAIN）。和 protocol.gd 的 LEGACY_SINCE 是同一个数 */
 var LEGACY_SINCE_PROTOCOL = 3;
 var CONTENT_CHUNK = 48000; // content_get 一次回多少个字符：整份内容约 17 万字符，分几次取，不撞单条消息的大小上限
@@ -50,13 +51,13 @@ var OP = {
   PRESENCE: 11, // s→c { online }
   PING: 12, // c→s { t } 心跳，客户端用来测延迟、发现死连接
   PONG: 13, // s→c { t, tick } 原样带回 t，附上服务器 tick
-  GAME: 20, // s→c { game: 视图 | null, result? } 搭伴小游戏的状态（games.ts）
-  GAME_INPUT: 21, // c→s { k: "ready" | "pass" | "quit" | 小游戏自己的输入 }
+  PASS: 22, // c→s {} 这一段歇着（不做正经事，等这一段过去）
+  CANCEL: 23, // c→s {} 改主意：撤回这一段定下的事（还没开始过的）
   ECHO: 30, // c→s { turn, optionId } 回话：补答影子替我选过的默契事件；optionId 为 null 是「不提了」
   AGAIN: 31, // c→s { yes } 一世走完以后：再来一世（false 是收回）  s→c { again: { qing, mei } } 谁点了；两人都点了改发 SNAPSHOT
 };
 /** c→s 的消息号：只有这些会被处理，其余的回一个 ERROR */
-var CLIENT_OPS = [OP.ROLL, OP.MOVE, OP.ACT, OP.CHOOSE, OP.PING, OP.GAME_INPUT, OP.ECHO, OP.AGAIN];
+var CLIENT_OPS = [OP.ROLL, OP.MOVE, OP.ACT, OP.CHOOSE, OP.PING, OP.PASS, OP.CANCEL, OP.ECHO, OP.AGAIN];
 
 interface LifelineRecord {
   id: string;
@@ -436,11 +437,16 @@ function snapshot(s: LifelineMatch, role: Role) {
         locks: lifeMilestoneLocks(life, CONTENT),
       };
     }
-    view.world = { minute: Math.floor(w.minute), rest: w.rest, actors: w.actors, event: ev };
+    view.world = { minute: Math.floor(w.minute), slot: w.slot, ready: worldReadyView(life), playing: w.playing, rest: w.rest, actors: w.actors, event: ev };
   } else {
     view.world = null;
   }
   return { lifelineId: s.lifelineId, names: s.record.names, life: view, you: role, online: online(s), protocols: protocols(s), tick: s.tick };
+}
+
+/** 两个人这一段定了没有（客户端画在对门的牌子上：「定了」） */
+function worldReadyView(life: LifeState): { [R in Role]: boolean } {
+  return { qing: worldReady(life, "qing"), mei: worldReady(life, "mei") };
 }
 
 function worldView(s: LifelineMatch) {
@@ -460,8 +466,8 @@ function worldView(s: LifelineMatch) {
     var r = ROLES[i];
     var a = w.actors[r];
     // seq：服务器已处理到这个人的第几条 MOVE，本地玩家拿它对照自己的历史位置做校正
-    // tg：这次是搭伴做的；label：日程行动的名字跟着路走（上学 / 出摊 / 过桥上班）
-    actors[r] = a ? { x: r1(a.x), y: r1(a.y), act: a.action, spot: a.spot, sleep: a.asleep, seq: s.moveSeq[r] || 0, tg: !!a.together } : null;
+    // tg：这次是搭伴做的；fr：这件事从第几段开始（比这一段早就撤不回了）
+    actors[r] = a ? { x: r1(a.x), y: r1(a.y), act: a.action, spot: a.spot, sleep: a.asleep, seq: s.moveSeq[r] || 0, tg: !!a.together, fr: a.from } : null;
     var p = life.persons![r];
     needs[r] = { hunger: r1(p.needs.hunger), energy: r1(p.needs.energy), mood: r1(p.needs.mood), clean: r1(p.needs.clean) };
     money[r] = p.money;
@@ -478,7 +484,7 @@ function worldView(s: LifelineMatch) {
       var arq = CONTENT.map.actions[ai].requires || {};
       if ((arq.flags || arq.notFlags) && lifeHasAll(p.flags, arq.flags) && lifeHasNone(p.flags, arq.notFlags)) unlocks.push(CONTENT.map.actions[ai].id);
     }
-    tracks[r] = { id: track.id, label: track.label, unlocks: unlocks, duty: d ? { label: d.label, spot: d.spot, arrive: d.arrive, until: d.until, done: !!w.dutyDone[r], open: !!worldDutyOpen(life, CONTENT, r) } : null };
+    tracks[r] = { id: track.id, label: track.label, unlocks: unlocks, duty: d ? { label: d.label, spot: d.spot, arrive: d.arrive, until: d.until, slots: worldDutySlots(d), done: !!w.dutyDone[r], open: !!worldDutyOpen(life, CONTENT, r) } : null };
   }
   // 今天命运的「提示」：画在地图上，走近了才知道是什么事
   var hints: { zone: string; text: string }[] = [];
@@ -492,7 +498,7 @@ function worldView(s: LifelineMatch) {
   var ev = w.event ? { eventId: w.event.eventId, kind: w.event.kind, roles: w.event.roles, chosen: { qing: !!w.event.choices.qing, mei: !!w.event.choices.mei } } : null;
   // tick：服务器时间轴（每秒 TICK_RATE 跳），客户端按它做插值缓冲
   return {
-    tick: s.tick, minute: Math.floor(w.minute), rest: w.rest, actors: actors, needs: needs, money: money, event: ev, bond: life.bond, hints: hints,
+    tick: s.tick, minute: Math.floor(w.minute), slot: w.slot, ready: worldReadyView(life), playing: w.playing, wait: Math.floor(w.wait), rest: w.rest, actors: actors, needs: needs, money: money, event: ev, bond: life.bond, hints: hints,
     stats: stats, eff: eff, goals: goals, tracks: tracks,
   };
 }
@@ -721,8 +727,12 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
         state.eventWaitSince = null;
         broadcastLog(dispatcher, [ch.entry]);
       }
-    } else if (msg.opCode === OP.GAME_INPUT) {
-      gameOnMessage(life, dispatcher, role, body);
+    } else if (msg.opCode === OP.PASS) {
+      var pe1 = worldPass(life, CONTENT, role);
+      if (pe1) sendError(dispatcher, msg.sender, pe1);
+    } else if (msg.opCode === OP.CANCEL) {
+      var ce = worldCancel(life, CONTENT, role);
+      if (ce) sendError(dispatcher, msg.sender, ce);
     } else if (msg.opCode === OP.ECHO) {
       var echo = duetEcho(life, CONTENT, role, Number(body.turn), body.optionId);
       if (echo.error) sendError(dispatcher, msg.sender, echo.error);
@@ -772,7 +782,6 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
       }
     }
 
-    gameLoop(life, state, dispatcher, tick);
     if (state.presences.qing || state.presences.mei) {
       var t = worldAdvance(life, CONTENT, 1 / TICK_RATE, steering(state));
       if (t.started) send(dispatcher, OP.EVENT, { event: t.started, locks: lifeMilestoneLocks(life, CONTENT) });

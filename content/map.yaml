@@ -56,10 +56,12 @@ actions:
   # ---- 过日子 ----
   - id: eat
     label: 吃饭
+    quick: true
     minutes: 30
     needs: { hunger: 45, mood: 3 }
   - id: eat_out
     label: 买套煎饼果子
+    quick: true
     minutes: 20
     money: -2
     requires: { hours: [390, 600] }
@@ -67,6 +69,7 @@ actions:
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: "「俩鸡蛋，多放葱花。」你们说的是同一句。" }
   - id: dine
     label: 下馆子
+    quick: true
     minutes: 60
     money: -8
     requires: { minAge: 18, hours: [1020, 1260] }
@@ -78,6 +81,7 @@ actions:
     requires: { owner: true }
   - id: wash
     label: 洗澡
+    quick: true
     minutes: 20
     needs: { clean: 60, mood: 2 }
   - id: duty
@@ -182,6 +186,7 @@ actions:
   # ---- 彼此 ----
   - id: knock
     label: 开门喊一声
+    quick: true
     minutes: 15
     needs: { mood: -1 }
     together: { needs: { mood: 10 }, bond: { close: 2, sync: 1 }, text: 两扇门同时开了，你们在楼道里对着乐。 }

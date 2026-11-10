@@ -39,15 +39,18 @@ function options(s, role, visit) {
   return out;
 }
 
-/** 过日子的部分所有活法都一样：饿了吃、困了睡、该去的去、脏了洗 */
+/**
+ * 过日子的部分所有活法都一样：饿了吃、脏了洗（顺手的事，做完这一段还接着定）、累垮了睡、该去的去。
+ * 一天五段：返回 true 表示这一回合动过了（吃了一口、定了这一段），下一回合接着看
+ */
 function upkeep(s, role) {
   const p = s.persons[role], w = s.world;
   const pick = (id) => options(s, role).find((o) => o.act.id === id);
   if (p.needs.hunger < 40) { const o = pick("eat"); if (o && go(s, role, o.spot)) return true; }
-  if (p.needs.energy < 20 || w.minute >= 1260) { const o = pick("sleep"); if (o && go(s, role, o.spot)) return true; }
-  const d = G("worldDutyOpen")(s, C, role);
-  if (d && w.minute >= d.arrive[0] && go(s, role, d.spot)) return true;
   if (p.needs.clean < 25) { const o = pick("wash"); if (o && go(s, role, o.spot)) return true; }
+  if (p.needs.energy < 20) { const o = pick("sleep"); if (o && go(s, role, o.spot)) return true; }
+  const d = G("worldDutyOpen")(s, C, role);
+  if (d && w.slot >= G("worldDutySlots")(d)[0] && go(s, role, d.spot)) return true;
   return false;
 }
 
@@ -107,7 +110,7 @@ export function live(seed, way, untilAge, pickOption, setup) {
     if (++guard > 2e6) throw new Error("人生没有往前走");
     const w = s.world;
     // 关口那天一早，记下每个人够得着哪几条线（不算发挥）
-    if (w.fate.milestone && w.minute === 390 && !marks[w.fate.milestone]) {
+    if (w.fate.milestone && w.slot === 0 && !w.playing && !marks[w.fate.milestone]) {
       const ms = C.events.find((e) => e.id === w.fate.milestone);
       marks[ms.id] = {};
       for (const r of ROLES) {
@@ -131,16 +134,17 @@ export function live(seed, way, untilAge, pickOption, setup) {
     }
     for (const r of ROLES) {
       const a = w.actors[r];
-      if (!a || a.action || a.asleep || !s.persons[r].alive || !online[r]) continue;
+      if (!a || w.playing || G("worldReady")(s, r) || !s.persons[r].alive || !online[r]) continue;
       if (upkeep(s, r)) continue;
       const want = way.each(s, r);
       if (way.together && r === "mei") {
-        // 梅跟着青：青在做事就去同一个点搭伴，青闲着就等
+        // 梅跟着青：青这一段定了一件事就去同一个点搭伴，青还没定就等
         const q = w.actors.qing;
         if (q && q.action && q.spot && !q.asleep && G("worldPickAction")(s, C, r, spotOf.get(q.spot)).act?.id === q.action && go(s, r, q.spot)) continue;
-        if (q && !q.action && !q.asleep) continue;
+        if (q && s.persons.qing.alive && !G("worldReady")(s, "qing")) continue;
       }
-      free(s, r, want, way.together);
+      // 没有想做的事：这一段歇着
+      if (!free(s, r, want, way.together)) G("worldPass")(s, C, r);
     }
     G("worldAdvance")(s, C, 0.5, online);
   }

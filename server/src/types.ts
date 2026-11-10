@@ -178,7 +178,7 @@ interface Rules {
   };
   /** [从几岁起, 每年掉多少] */
   aging: { body: number[][]; mind: number[][]; activeFactor: number };
-  daily: { bodyEnergy: number; charmTogether: number; luckFate: number; wageFlags?: { [flag: string]: number } };
+  daily: { bodyEnergy: number; charmTogether: number; luckFate: number; slotUse: number; wageFlags?: { [flag: string]: number } };
   check: { base: number; perPoint: number; luck: number; min: number; max: number; help: number };
   lifespan: {
     base: number; spread: number; body: number;
@@ -235,6 +235,8 @@ interface Action {
   id: string;
   label: string;
   minutes: number;
+  /** 顺手的事：当场做完，不占这一段（吃饭、洗澡、买早点、敲门） */
+  quick: boolean;
   sleep: boolean;
   /** 日程：上学、上班。做多久、涨什么、挣多少由这个人走的路（Track.duty）决定 */
   duty: boolean;
@@ -351,8 +353,10 @@ interface Actor {
   eff?: number;
   /** 这次是和 TA 搭伴做的 */
   together?: boolean;
-  /** 搭伴倍率，不写用默认值。小游戏之类的手感层可以改它 */
-  boost?: number;
+  /** 从第几段开始做的（日程会一直占到下班） */
+  from?: number;
+  /** 这一段里这件事做了几遍：一段的分钟 × slotUse ÷ 行动的分钟。成长、需求、工钱都乘它 */
+  scale?: number;
 }
 
 interface PendingEvent {
@@ -368,8 +372,18 @@ interface PendingEvent {
 }
 
 interface WorldState {
-  /** 当天的游戏分钟，390 = 06:30 */
+  /** 当天的游戏分钟，390 = 06:30。定这一段的时候停在这一段的开头，过的时候一路走到结尾 */
   minute: number;
+  /** 现在是第几段（world.ts 的 SLOTS：早上 / 上午 / 下午 / 傍晚 / 晚上） */
+  slot: number;
+  /** 这一段按了「歇着」的人（做事的、睡了的不用按，见 worldReady） */
+  ready: { [R in Role]?: boolean };
+  /** 两个人都定了，这一段正在过 */
+  playing: boolean;
+  /** 一个人定了、另一个人还没定，已经等了几秒（到 SLOT_PATIENCE 影子替他定） */
+  wait: number;
+  /** 这一段做过的顺手的事（"qing:eat"），同一件一段只做一回 */
+  quick: string[];
   /** 今天歇着：不上学也不上班 */
   rest: boolean;
   /** 今天的日程去过了没有 */

@@ -8,7 +8,7 @@
 //
 // 纯函数，不依赖 Nakama。
 
-var LIFE_VERSION = 7;
+var LIFE_VERSION = 8;
 
 /** 结构升级。返回做了什么（写服务器日志用）；存档比服务器还新时抛错（服务器被回滚了，不能硬读） */
 function lifeUpgrade(s: any): string[] {
@@ -60,6 +60,26 @@ function lifeUpgrade(s: any): string[] {
     legacyUpgrade2(s);
     v = 7;
     notes.push("v6→v7");
+  }
+  if (v === 7) {
+    // v8：一天切成五段（world.ts 的 SLOTS）。存在半路的那一天从当时所在的那一段接着定；
+    // 正在做的事照旧做到原来的钟点（没有 scale 就是做一遍）。放风筝小游戏拿掉了，问到一半的作废
+    var w = s.world;
+    if (w) {
+      w.slot = worldSlotAt(Number(w.minute) || DAY_START);
+      w.minute = Math.max(Number(w.minute) || DAY_START, SLOTS[w.slot][0]);
+      w.ready = {};
+      w.playing = false;
+      w.wait = 0;
+      w.quick = [];
+      delete w.game;
+      for (var ai = 0; ai < ROLES.length; ai++) {
+        var actor = w.actors ? w.actors[ROLES[ai]] : null;
+        if (actor) delete actor.boost;
+      }
+    }
+    v = 8;
+    notes.push("v7→v8");
   }
   s.version = v;
   return notes;
@@ -119,23 +139,13 @@ function lifeRepair(s: LifeState, c: Content): string[] {
         }
       }
     }
-    if (w.game && !GAME_RULES[w.game.gameId]) {
-      notes.push("game " + w.game.gameId + " 已不存在，取消");
-      w.game = null;
-    }
     for (var j = 0; j < ROLES.length; j++) {
       var a = w.actors[ROLES[j]];
       if (!a) continue;
       if (a.action && !lifeHasId(c.map.actions, a.action)) {
         notes.push("actor." + ROLES[j] + " 的行动 " + a.action + " 已不存在，停下");
-        a.action = null;
-        a.spot = null;
-        a.until = null;
-        a.asleep = false;
+        worldClearAction(a);
         a.shadow = false;
-        delete a.eff;
-        delete a.together;
-        delete a.boost;
       }
       if (a.spot && !lifeHasId(c.map.spots, a.spot)) a.spot = null;
       // 地图变小了：人不能留在地图外面

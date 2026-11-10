@@ -141,7 +141,8 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
   const replaced = new Set(S.events.flatMap((e) => e.replaces));
   const SLOT_AT = [[390, 480], [480, 720], [720, 930], [930, 1110], [1110, 1320]], SLOT_IDS = ["morning", "am", "pm", "evening", "night"];
   let lives = 0, beats = 0, there = 0;
-  const forced = S.chapters.map(() => [0, 0]); // 每章 [强制的, 一共]
+  const forced = S.chapters.map(() => [0, 0]); // 每章 [硬塞的, 一共]：有人被叫醒、撤下手上的事、被挪过去
+  const due = S.chapters.map(() => 0); // 每章躲不过的（fate.force），其中人本来就在那儿的不算硬塞
   for (let seed = 1; seed <= 12; seed++) {
     const s = G("lifeCreate")(seed * 7919, C);
     G("lifeConfirm")(s, C, "qing", NAMES);
@@ -151,7 +152,7 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
       if (s.world && s.world.event) {
         const pe = s.world.event;
         const sev = byId.get(pe.eventId);
-        if (sev && !pe.counted) { pe.counted = true; forced[sev.chapter - 1][1]++; if ((s.world.fate.force || []).includes(sev.id)) forced[sev.chapter - 1][0]++; }
+        if (sev && !pe.counted) { pe.counted = true; forced[sev.chapter - 1][1]++; if (pe.forced) forced[sev.chapter - 1][0]++; if ((s.world.fate.force || []).includes(sev.id)) due[sev.chapter - 1]++; }
         for (const r of pe.roles) if (!pe.choices[r] && s.world.event === pe) assert.equal(G("worldChoose")(s, C, r, G("lifeShadowChoose")(s, C, r, pe.eventId), true).error, null, `${pe.eventId}: 影子选了一条走不了的路`);
       }
       assert.ok(t < 900000);
@@ -181,12 +182,11 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
   }
   // 强制的也是到了它自己那一段才发生：写好的晚饭、天黑和时候对得上
   assert.ok(there / beats > 0.97, `只有 ${Math.round((there / beats) * 100)}% 的主线发生在它写的那一段`);
-  // 按章看强制的比例。童年到青年日子多，影子多半是自己走到那儿碰上的；第一章三到五岁的孩子傍晚就困了，楼顶那一晚常常是被叫起来的。
+  // 按章看强制的比例。童年到青年日子多，影子多半是自己走到那儿碰上的；第一章楼顶那一件原来写在晚上，三到五岁的孩子回回是被叫起来的，挪到了傍晚。
   // 中年以后一个日子是三五年（第五、六章各四个空日子，第七章只有一个），事是找上门来的：这是认下的，但也是在它写的那一段
   const rate = forced.map(([f, n]) => f / Math.max(n, 1));
-  for (const i of [1, 2, 3]) assert.ok(rate[i] <= 0.15, `第${i + 1}章强制的有 ${Math.round(rate[i] * 100)}%：日子够多的章，主线该是走到那儿碰上的`);
-  assert.ok(rate[0] <= 0.4, `第一章强制的有 ${Math.round(rate[0] * 100)}%`);
-  console.log(`  各章强制的比例：${rate.map((x, i) => `${i + 1} ${Math.round(x * 100)}%`).join(" / ")}`);
+  for (const i of [0, 1, 2, 3]) assert.ok(rate[i] <= 0.15, `第${i + 1}章强制的有 ${Math.round(rate[i] * 100)}%：日子够多的章，主线该是走到那儿碰上的`);
+  console.log(`  各章硬塞的比例：${rate.map((x, i) => `${i + 1} ${Math.round(x * 100)}%`).join(" / ")}（章末躲不过的：${due.map((d, i) => `${i + 1} ${Math.round((d / Math.max(forced[i][1], 1)) * 100)}%`).join(" / ")}，人本来就在那儿的照常发生、不算）`);
   console.log(`✓ 引擎：${lives} 条全影子人生、${beats} 件主线，每章三件按顺序都过到，没有一件在关口那天，${Math.round((there / beats) * 100)}% 发生在它写的那一段 / 被顶替的旧事件一次没出`);
 }
 

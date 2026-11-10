@@ -55,6 +55,12 @@ pair:
     text: 拆了，迁了，换了新楼。抓阄分房那天，你们又抓到了对门的两套。街坊说是缘分，你们说，这叫赖上了。
     requires: { flags: [p_promise], maxDistance: 1, minClose: 45 }
 
+  # 同一年走、到老还亲：比没说出口的话、没回的信都少见，排在它们前面（排在后头的时候 1500 世里常常一次也轮不到）
+  - id: e_same_death
+    title: 搭个伴
+    text: 同一年来的，同一年走的。楼里人说，这俩连走都得搭个伴，怕路上没人说话。
+    requires: { flags: [x_same_year], minClose: 60, notFlags: [p_estranged] }
+
   - id: e_unsaid
     title: 那句话
     text: 有一句话，两个人里只有一个说出了口。后来的几十年，谁也没再提，谁也没忘。
@@ -77,11 +83,6 @@ pair:
     requires: { flags: [x_many_mirrors], maxRate: 30, minClose: 60 }
 
   # 藏着：同一年走的
-  - id: e_same_death
-    title: 搭个伴
-    text: 同一年来的，同一年走的。楼里人说，这俩连走都得搭个伴，怕路上没人说话。
-    requires: { flags: [x_same_year], minClose: 60, notFlags: [p_estranged] }
-
   - id: e_lifelong
     title: 一辈子的发小
     text: 从穿开裆裤到拄拐棍，楼下的人换了好几茬，只有你们俩，还是那两个从三楼跑下来的孩子。

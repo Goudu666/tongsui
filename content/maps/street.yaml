@@ -17,6 +17,8 @@ areas:
 
 exits:
   - { id: to_primary, at: 60, to: primary, arrive: 60, label: 去小学 }
+  # 车站：在外地念书、上班的人放假坐车回来，从这儿下车，也从这儿走（锁跟着外地那张图：没走那条路的人去不了）
+  - { id: to_away, at: 330, to: away, arrive: 200, label: 坐车去外地, ride: 240 }
   - { id: to_middle, at: 2540, to: middle, arrive: 60, label: 去中学 }
   - { id: upstairs, at: 1700, to: building, arrive: 1500, arriveFloor: 1, label: 上楼 }
   - { id: to_park, at: 2300, to: park, arrive: 60, label: 去公园 }
@@ -25,6 +27,8 @@ exits:
 spots:
   - { id: breakfast_stall, at: 530, area: breakfast, actions: [ duty, eat_out, dine, help_out ] }
   - { id: shop_counter, at: 1080, area: shop, actions: [ help_out ] }
+  # 小卖部门口的邮筒：留在河畔里的人给外地写信
+  - { id: mailbox, at: 1250, area: shop, actions: [ letter ] }
   - { id: alley_rope, at: 1530, area: alley, actions: [ play_alley, chat ] }
   - { id: chess_table, at: 2010, area: alley, actions: [ chess ] }
   - { id: bike_bench, at: 2710, area: bikeshop, actions: [ duty, work ] }

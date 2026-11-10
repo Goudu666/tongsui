@@ -12,7 +12,7 @@ areas:
 
 exits:
   - { id: to_street, at: 60, to: street, arrive: 3940, label: 回楼下 }
-  - { id: to_across, at: 3560, to: across, arrive: 60, label: 过桥 }
+  - { id: to_across, at: 3560, to: across, arrive: 60, label: 过桥, ride: 60 }
 
 spots:
   - { id: river_bank, at: 560, area: river, actions: [ play_river, walk_river ] }

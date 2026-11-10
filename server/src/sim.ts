@@ -626,6 +626,9 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
     s.log.push(de);
   }
 
+  // 路上的信：今天早上该到的送到（post.ts），挂在「这一天过去了」那条上
+  postDeliver(s, c, summary);
+
   if (!persons.qing.alive && !persons.mei.alive) {
     s.phase = "ended";
     s.world = null;

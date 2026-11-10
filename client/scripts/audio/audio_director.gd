@@ -29,7 +29,7 @@ const CUE_DB := {"tap": -7.0, "page": -9.0, "toast": -9.0, "type": -12.0, "xingm
 const STRIDE := {"child": 44.0, "teen": 54.0, "young": 60.0, "middle": 60.0, "old": 48.0}
 const STEP_PITCH := {"child": 1.18, "teen": 1.06, "young": 1.0, "middle": 0.96, "old": 0.92}
 ## 没有专门音效的行动，借用相近的
-const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "play_river", "dine": "eat_out", "ball": "play_alley", "chat": "listen"}
+const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "play_river", "dine": "eat_out", "ball": "play_alley", "chat": "listen", "club_math": "study", "club_sport": "play_alley", "club_art": "perform"}
 ## 设置按钮的三档：全开 → 只关音乐 → 静音
 const LEVELS := ["乐", "响", "静"]
 ## 按钮和 HUD 右上角「亲近 / 默契」卡片（ui/hud.gd 的 _bond：宽 128，y 64~220）一样宽，在河畔里排在它下面

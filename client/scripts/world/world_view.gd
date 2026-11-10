@@ -22,6 +22,8 @@ var actions: Dictionary = {}
 var my_role := "qing"
 var age := 3                 ## 现在几岁（main 喂）：一个点位上挂着几件事，按年纪取第一件合适的
 var duties: Dictionary = {}  ## role -> 今天该去的地方 { label, spot, arrive, until, done, open }，没有是 null（服务器 WORLD 里的 tracks）
+var unlocks: Dictionary = {} ## role -> 关口上挣来的去处（带 requires.flags 的行动 id，服务器 WORLD 里的 tracks[role].unlocks）
+var minute := 0.0            ## 现在几点（一天里的第几分钟）：有的去处只在一段钟点里开
 var actors: Dictionary = {}  ## role -> Actor
 var hints: Array = []
 var controllable := true
@@ -102,6 +104,7 @@ func set_stage(stage: String) -> void:
 
 ## 时钟：决定昼夜（联机时 apply_world 自动调用；离线预览由 main 喂）
 func set_minute(m: float) -> void:
+	minute = m
 	if art != null:
 		art.set_minute(m)
 	if street != null:
@@ -189,6 +192,7 @@ func apply_world(view: Dictionary) -> void:
 	if tracks is Dictionary:
 		for r in tracks:
 			duties[r] = tracks[r].get("duty") if tracks[r] is Dictionary else null
+			unlocks[r] = tracks[r].get("unlocks", []) if tracks[r] is Dictionary else []
 	if view.has("minute"):
 		set_minute(float(view.minute))
 	var t := float(view.get("tick", 0)) / TICK_RATE
@@ -294,7 +298,7 @@ func my_duty() -> Dictionary:
 
 
 ## 我现在在这个点位上能做的事。和服务器 world.ts 的 worldPickAction 一个规则：
-## 点位上的行动按顺序看，日程只给今天该来这儿、还来得及的人，其余按年纪取第一件合适的。没有就是 {}
+## 点位上的行动按顺序看，日程只给今天该来这儿、还来得及的人，其余按年纪、关口上挣来的资格、钟点取第一件合适的。没有就是 {}
 func action_of(spot: Dictionary) -> Dictionary:
 	var ids: Array = spot.get("actions", [])
 	if ids.is_empty() and spot.has("action"):
@@ -315,6 +319,11 @@ func action_of(spot: Dictionary) -> Dictionary:
 		if rq.has("minAge") and age < int(rq.minAge):
 			continue
 		if rq.has("maxAge") and age > int(rq.maxAge):
+			continue
+		# 标记在服务器手里，客户端只认它发来的那张单子
+		if (rq.has("flags") or rq.has("notFlags")) and not (unlocks.get(my_role, []) as Array).has(str(id)):
+			continue
+		if rq.has("hours") and (minute < float(rq.hours[0]) or minute > float(rq.hours[1])):
 			continue
 		return act
 	return {}

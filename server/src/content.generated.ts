@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "8b3b3bc4fc10",
+ "version": "6156d21bf14c",
  "events": [
   {
    "id": "c_roof_summer",
@@ -8984,11 +8984,74 @@ var CONTENT: Content = {
    "hint": null,
    "requires": {},
    "title": "上小学",
-   "text": "新书包比你的背还宽。从今天起，白天有一大半不归你了。",
+   "text": "新书包比你的背还宽。头一天，老师让每个人上讲台站一会儿：念黑板上的字，绕操场跑一圈，再唱两句。她要挑三个小干部。",
    "options": [
     {
+     "id": "study",
+     "text": "当学习委员，收作业本",
+     "score": {
+      "mind": 1
+     },
+     "min": 5.5,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "in_school",
+       "lead_study"
+      ]
+     }
+    },
+    {
+     "id": "sport",
+     "text": "当体育委员，喊队",
+     "score": {
+      "body": 1
+     },
+     "min": 5.5,
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "in_school",
+       "lead_sport"
+      ]
+     }
+    },
+    {
+     "id": "art",
+     "text": "当文艺委员，起头唱歌",
+     "score": {
+      "charm": 1
+     },
+     "min": 5.3,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "in_school",
+       "lead_art"
+      ]
+     }
+    },
+    {
      "id": "go",
-     "text": "背上书包",
+     "text": "坐回自己的座位",
+     "tags": [
+      "patient"
+     ],
      "effects": {
       "self": {},
       "other": {},
@@ -8996,26 +9059,192 @@ var CONTENT: Content = {
       "flags": [
        "in_school"
       ]
-     },
-     "tags": []
+     }
     }
    ],
    "resonance": {
+    "study": {
+     "text": "两个人都举了手，老师想了想，一个管收，一个管发。作业本从你手里出去，从 TA 手里回来。",
+     "memory": "一个收一个发",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "sport": {
+     "text": "一个喊「立正」，一个喊「稍息」。全班站得乱七八糟，你们俩站得最直。",
+     "memory": "立正，稍息",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "art": {
+     "text": "起头的是你们俩，起的不是一个调。全班跟着唱成了两截，老师笑得直不起腰。",
+     "memory": "起了两个调",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
     "go": {
-     "text": "两扇门是同时开的。两个新书包，一前一后下了楼。",
+     "text": "两扇门是同时开的。两个新书包，一前一后下了楼，坐进了前后桌。",
      "memory": "两个新书包",
      "bond": {
+      "sync": 1,
       "close": 2
      },
      "flags": []
     }
    },
    "dissonance": {
-    "text": "",
-    "bond": {},
+    "text": "一个站在讲台边上，一个坐在底下。放学的时候，底下的那个等在门口，替讲台上的那个拿着书包。",
+    "bond": {
+     "close": 1
+    },
     "flags": []
    },
    "age": 6,
+   "score": {},
+   "swing": false,
+   "grades": [],
+   "catches": []
+  },
+  {
+   "id": "m_club",
+   "kind": "milestone",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {},
+   "title": "三年级",
+   "text": "少年宫的老师来学校挑人，体校的教练在操场边上站了一下午，数学老师在黑板上留了一道没人会的题。放学以后的那两个钟头，要交给一个地方了。",
+   "options": [
+    {
+     "id": "math",
+     "text": "进数学小组",
+     "score": {
+      "mind": 1
+     },
+     "min": 6.6,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "club_math"
+      ]
+     }
+    },
+    {
+     "id": "sport",
+     "text": "进体校的少年班",
+     "score": {
+      "body": 1
+     },
+     "min": 6.4,
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "club_sport"
+      ]
+     }
+    },
+    {
+     "id": "art",
+     "text": "进少年宫的曲艺队",
+     "score": {
+      "charm": 1
+     },
+     "min": 6,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "club_art"
+      ]
+     }
+    },
+    {
+     "id": "none",
+     "text": "哪儿也不去，放了学就回家",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "math": {
+     "text": "那道没人会的题，你们俩在一张草稿纸上算了三天。算出来那天，纸的正反面都写满了。",
+     "memory": "写满正反面的草稿纸",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "sport": {
+     "text": "教练让新来的先跑十圈。跑到第七圈，谁也没先停。",
+     "memory": "第七圈",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "art": {
+     "text": "一副快板拆成两半，一人一片。两片合起来才打得响。",
+     "memory": "一人一片快板",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "none": {
+     "text": "三点半，校门口，你们俩是头一拨出来的。太阳还高，哪儿都来得及去。",
+     "memory": "头一拨出校门",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "放了学，一个往操场走，一个往校门外走。走到一半都回了一下头。",
+    "bond": {
+     "close": -2
+    },
+    "flags": []
+   },
+   "age": 9,
    "score": {},
    "swing": false,
    "grades": [],
@@ -9657,6 +9886,128 @@ var CONTENT: Content = {
    "catches": []
   },
   {
+   "id": "m_midlife",
+   "kind": "milestone",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {},
+   "title": "四十五",
+   "text": "体检单上多了两个箭头，单位里空出来一个位子，家里的老人要住院。三件事是同一个礼拜到的，力气只够顾好一头。",
+   "options": [
+    {
+     "id": "post",
+     "text": "去争那个位子",
+     "score": {
+      "mind": 0.5,
+      "charm": 0.5
+     },
+     "min": 7.4,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "mid_post"
+      ]
+     }
+    },
+    {
+     "id": "home",
+     "text": "把钱和工夫都花在家里",
+     "score": {
+      "money": 1
+     },
+     "min": 110,
+     "cost": 110,
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {
+       "mood": 4
+      },
+      "bond": {
+       "close": 8
+      },
+      "flags": [
+       "mid_home"
+      ]
+     }
+    },
+    {
+     "id": "fit",
+     "text": "先把身体捡起来",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 2,
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "mid_fit"
+      ]
+     }
+    }
+   ],
+   "resonance": {
+    "post": {
+     "text": "两个人都升了一级，都搬进了有窗户的那间屋。晚上回来得更晚了，可是楼道里的灯，后回来的那个总看见还亮着。",
+     "memory": "留着的楼道灯",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    },
+    "home": {
+     "text": "医院的走廊里，你们一人守上半夜，一人守下半夜。交班的时候谁也不说话，把暖壶递过去。",
+     "memory": "递过去的暖壶",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "fit": {
+     "text": "早上六点，河边多了两个跑不动的人。跑一段，走一段，一个月以后，能一口气到桥头了。",
+     "memory": "一口气到桥头",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个天天加班，一个天天往医院跑，一个天不亮就去河边。三样里你们各顾了各的，碰面只剩下点点头。",
+    "bond": {
+     "close": -3
+    },
+    "flags": []
+   },
+   "age": 45,
+   "score": {},
+   "swing": false,
+   "grades": [],
+   "catches": []
+  },
+  {
    "id": "m_retire",
    "kind": "milestone",
    "stage": "old",
@@ -9667,11 +10018,37 @@ var CONTENT: Content = {
    "hint": null,
    "requires": {},
    "title": "退休",
-   "text": "最后一天的活干完了。从明天起，一整天又都是自己的了。",
+   "text": "最后一天的活干完了。从明天起，一整天又都是自己的了。也有人来问：手上的本事，还愿不愿意往下传？",
    "options": [
+    {
+     "id": "mentor",
+     "text": "带个徒弟，再干几年",
+     "score": {
+      "mind": 0.5,
+      "charm": 0.5
+     },
+     "min": 7,
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "retired",
+       "retire_mentor"
+      ]
+     }
+    },
     {
      "id": "rest",
      "text": "把闹钟收起来",
+     "tags": [
+      "gentle"
+     ],
      "effects": {
       "self": {
        "mood": 8
@@ -9681,11 +10058,19 @@ var CONTENT: Content = {
       "flags": [
        "retired"
       ]
-     },
-     "tags": []
+     }
     }
    ],
    "resonance": {
+    "mentor": {
+     "text": "你们各带了一个徒弟。两个年轻人在楼下碰见了，互相打听：你师父也这么爱说「我们那时候」吗？",
+     "memory": "两个徒弟",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
     "rest": {
      "text": "早上醒得还是那么早。你们在楼下碰见了，都不知道该往哪走，就一块儿往河边走。",
      "memory": "不知道往哪走的早晨",
@@ -9697,11 +10082,157 @@ var CONTENT: Content = {
     }
    },
    "dissonance": {
-    "text": "",
-    "bond": {},
+    "text": "一个还是天天按点出门，一个坐在楼下看人下棋。出门的那个走过去，看棋的那个抬头说：早点回来。",
+    "bond": {
+     "close": 1
+    },
     "flags": []
    },
    "age": 60,
+   "score": {},
+   "swing": false,
+   "grades": [],
+   "catches": []
+  },
+  {
+   "id": "m_evening",
+   "kind": "milestone",
+   "stage": "old",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {},
+   "title": "七十五",
+   "text": "三楼的楼梯一共四十二级，数了一辈子。从今年起，上下一趟要在二楼歇一回了。",
+   "options": [
+    {
+     "id": "pair",
+     "text": "两家并一家，搭伙过",
+     "score": {
+      "close": 1
+     },
+     "min": 70,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "close": 3
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "walk",
+     "text": "每天自己下楼走一圈",
+     "score": {
+      "body": 1
+     },
+     "min": 5,
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "old_spry"
+      ]
+     }
+    },
+    {
+     "id": "care",
+     "text": "请个人来照应",
+     "score": {
+      "money": 1
+     },
+     "min": 160,
+     "cost": 160,
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "old_care"
+      ]
+     }
+    },
+    {
+     "id": "sit",
+     "text": "搬把椅子坐在阳台上",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "pair": {
+     "text": "对门的那扇门不锁了。两家的碗筷放进了一个柜子，分不出哪只是谁家的。",
+     "memory": "一个柜子里的碗",
+     "bond": {
+      "sync": 3,
+      "close": 4
+     },
+     "flags": [
+      "p_old_pair"
+     ]
+    },
+    "walk": {
+     "text": "下楼的时候一个扶着左边的栏杆，一个扶着右边的。在二楼歇的那一回，正好说上两句话。",
+     "memory": "二楼歇一回",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "care": {
+     "text": "请来的两个人是同乡。她们在楼道里说家乡话，你们在各自屋里听着，一句也听不懂，听着挺热闹。",
+     "memory": "楼道里的家乡话",
+     "bond": {
+      "sync": 1,
+      "close": 1
+     },
+     "flags": []
+    },
+    "sit": {
+     "text": "两个阳台挨着。两把椅子，中间隔着一道矮墙，茶缸子就搁在墙头上。",
+     "memory": "墙头上的茶缸子",
+     "bond": {
+      "sync": 2,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个还天天下楼，一个下不去了。下楼的那个回来，总在对门的门口站一会儿，说说今天河边有什么。",
+    "bond": {
+     "close": 1
+    },
+    "flags": []
+   },
+   "age": 75,
    "score": {},
    "swing": false,
    "grades": [],
@@ -22390,10 +22921,11 @@ var CONTENT: Content = {
      320,
      1200
     ],
-    "action": "duty",
     "actions": [
-     "duty"
-    ]
+     "duty",
+     "club_math"
+    ],
+    "action": "duty"
    },
    {
     "id": "school_yard",
@@ -22402,10 +22934,11 @@ var CONTENT: Content = {
      470,
      1400
     ],
-    "action": "ball",
     "actions": [
+     "club_sport",
      "ball"
-    ]
+    ],
+    "action": "club_sport"
    },
    {
     "id": "tea_seat",
@@ -22426,10 +22959,11 @@ var CONTENT: Content = {
      1668,
      104
     ],
-    "action": "perform",
     "actions": [
+     "club_art",
      "perform"
-    ]
+    ],
+    "action": "club_art"
    },
    {
     "id": "river_fish",
@@ -22791,6 +23325,112 @@ var CONTENT: Content = {
     }
    },
    {
+    "id": "club_math",
+    "label": "数学小组",
+    "minutes": 90,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 9,
+     "maxAge": 11,
+     "flags": [
+      "club_math"
+     ],
+     "hours": [
+      930,
+      1080
+     ]
+    },
+    "needs": {
+     "energy": -10,
+     "mood": -2
+    },
+    "stats": {
+     "mind": 0.52
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一道题两种解法，你们各讲各的，讲到传达室的大爷来锁门。"
+    }
+   },
+   {
+    "id": "club_sport",
+    "label": "体校训练",
+    "minutes": 90,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 9,
+     "maxAge": 11,
+     "flags": [
+      "club_sport"
+     ],
+     "hours": [
+      930,
+      1080
+     ]
+    },
+    "needs": {
+     "energy": -18,
+     "hunger": -8,
+     "mood": 2
+    },
+    "stats": {
+     "body": 0.58
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "压腿的时候背靠着背，谁也不敢先喊疼。"
+    }
+   },
+   {
+    "id": "club_art",
+    "label": "跟曲艺队排练",
+    "minutes": 60,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 9,
+     "maxAge": 11,
+     "flags": [
+      "club_art"
+     ],
+     "hours": [
+      930,
+      1080
+     ]
+    },
+    "needs": {
+     "energy": -8,
+     "mood": 6
+    },
+    "stats": {
+     "charm": 0.5
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "茶社下午没有客人，台子借给孩子们。你们一个打板，一个数拍子。"
+    }
+   },
+   {
     "id": "chat",
     "label": "跟街坊聊会儿",
     "minutes": 60,
@@ -22968,7 +23608,99 @@ var CONTENT: Content = {
    "requires": {
     "maxAge": 5
    },
+   "group": null,
    "duty": null
+  },
+  {
+   "id": "primary_study",
+   "label": "上小学 · 学习委员",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11,
+    "flags": [
+     "lead_study"
+    ]
+   },
+   "group": "primary",
+   "duty": {
+    "label": "上学",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 930,
+    "needs": {
+     "hunger": 30,
+     "energy": -15
+    },
+    "stats": {
+     "mind": 0.34,
+     "charm": 0.07
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "primary_sport",
+   "label": "上小学 · 体育委员",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11,
+    "flags": [
+     "lead_sport"
+    ]
+   },
+   "group": "primary",
+   "duty": {
+    "label": "上学",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 930,
+    "needs": {
+     "hunger": 30,
+     "energy": -17
+    },
+    "stats": {
+     "mind": 0.29,
+     "body": 0.12,
+     "charm": 0.07
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "primary_art",
+   "label": "上小学 · 文艺委员",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11,
+    "flags": [
+     "lead_art"
+    ]
+   },
+   "group": "primary",
+   "duty": {
+    "label": "上学",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 930,
+    "needs": {
+     "hunger": 30,
+     "energy": -15
+    },
+    "stats": {
+     "mind": 0.29,
+     "charm": 0.17
+    },
+    "money": 0
+   }
   },
   {
    "id": "primary",
@@ -22977,6 +23709,7 @@ var CONTENT: Content = {
     "minAge": 6,
     "maxAge": 11
    },
+   "group": "primary",
    "duty": {
     "label": "上学",
     "spot": "school_gate",
@@ -23006,6 +23739,7 @@ var CONTENT: Content = {
      "dropout"
     ]
    },
+   "group": null,
    "duty": {
     "label": "打零工",
     "spot": "bike_bench",
@@ -23034,6 +23768,7 @@ var CONTENT: Content = {
      "junior_key"
     ]
    },
+   "group": null,
    "duty": {
     "label": "上学",
     "spot": "school_gate",
@@ -23061,6 +23796,7 @@ var CONTENT: Content = {
     "minAge": 12,
     "maxAge": 14
    },
+   "group": null,
    "duty": {
     "label": "上学",
     "spot": "school_gate",
@@ -23090,6 +23826,7 @@ var CONTENT: Content = {
      "school_far"
     ]
    },
+   "group": null,
    "duty": {
     "label": "过桥上学",
     "spot": "river_bridge",
@@ -23120,6 +23857,7 @@ var CONTENT: Content = {
      "school_near"
     ]
    },
+   "group": null,
    "duty": {
     "label": "上学",
     "spot": "school_gate",
@@ -23147,6 +23885,7 @@ var CONTENT: Content = {
     "minAge": 15,
     "maxAge": 17
    },
+   "group": null,
    "duty": {
     "label": "上学",
     "spot": "school_gate",
@@ -23177,6 +23916,7 @@ var CONTENT: Content = {
      "uni_away"
     ]
    },
+   "group": null,
    "duty": {
     "label": "回学校",
     "spot": "river_bridge",
@@ -23206,6 +23946,7 @@ var CONTENT: Content = {
      "uni_near"
     ]
    },
+   "group": null,
    "duty": {
     "label": "去上课",
     "spot": "river_bridge",
@@ -23232,6 +23973,7 @@ var CONTENT: Content = {
     "minAge": 18,
     "maxAge": 21
    },
+   "group": null,
    "duty": {
     "label": "上班",
     "spot": "bike_bench",
@@ -23263,6 +24005,7 @@ var CONTENT: Content = {
      "came_back"
     ]
    },
+   "group": null,
    "duty": {
     "label": "过桥上班",
     "spot": "river_bridge",
@@ -23290,6 +24033,7 @@ var CONTENT: Content = {
      "job_desk"
     ]
    },
+   "group": null,
    "duty": {
     "label": "过桥上班",
     "spot": "river_bridge",
@@ -23319,6 +24063,7 @@ var CONTENT: Content = {
      "job_teach"
     ]
    },
+   "group": null,
    "duty": {
     "label": "去上课",
     "spot": "school_gate",
@@ -23348,6 +24093,7 @@ var CONTENT: Content = {
      "job_trade"
     ]
    },
+   "group": null,
    "duty": {
     "label": "出摊",
     "spot": "breakfast_stall",
@@ -23376,6 +24122,7 @@ var CONTENT: Content = {
      "job_craft"
     ]
    },
+   "group": null,
    "duty": {
     "label": "上工",
     "spot": "bike_bench",
@@ -23405,6 +24152,7 @@ var CONTENT: Content = {
      "job_labor"
     ]
    },
+   "group": null,
    "duty": {
     "label": "过桥上工",
     "spot": "river_bridge",
@@ -23431,6 +24179,7 @@ var CONTENT: Content = {
     "minAge": 22,
     "maxAge": 59
    },
+   "group": null,
    "duty": {
     "label": "打零工",
     "spot": "bike_bench",
@@ -23453,6 +24202,7 @@ var CONTENT: Content = {
    "id": "retired",
    "label": "退休了",
    "requires": {},
+   "group": null,
    "duty": null
   }
  ],
@@ -23993,7 +24743,10 @@ var CONTENT: Content = {
   "daily": {
    "bodyEnergy": 0.04,
    "charmTogether": 0.04,
-   "luckFate": 0.02
+   "luckFate": 0.02,
+   "wageFlags": {
+    "mid_post": 1.5
+   }
   },
   "check": {
    "base": 0.55,
@@ -24016,7 +24769,14 @@ var CONTENT: Content = {
    "widowClose": 85,
    "widow": 1.5,
    "min": 56,
-   "max": 104
+   "max": 104,
+   "flags": {
+    "mid_fit": 2,
+    "retire_mentor": 1,
+    "p_old_pair": 2,
+    "old_spry": 1.5,
+    "old_care": 1
+   }
   },
   "bond": {
    "closeSoft": 100,

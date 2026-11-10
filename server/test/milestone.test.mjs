@@ -80,7 +80,7 @@ function sleep(s, r) {
     assert.ok(!o.dayEnded, `${ms.id}: 睡过去了`);
     assert.ok(t.world.event ? t.world.event.eventId === ms.id : t.log.at(-1).events[due[0]] === ms.id, `${ms.id}: 没有发生`);
   }
-  console.log("✓ 关口躲不掉：一早睡下（一个人 / 两个人）照样来 / 睡着的叫醒、做事的放下 / 过了不来第二遍 / 七个关口都一样");
+  console.log("✓ 关口躲不掉：一早睡下（一个人 / 两个人）照样来 / 睡着的叫醒、做事的放下 / 过了不来第二遍 / 每个关口都一样");
 }
 
 // ---------- 2. 一条路都走不通：不抛错，走线最低的那条 ----------
@@ -96,7 +96,7 @@ function sleep(s, r) {
 
   const s = lifeAt(21, 12, c2);
   assert.equal(s.world.fate.milestone, "m_junior");
-  for (const r of ROLES) assert.ok(ms.options.every((o) => G("lifeOptionLock")(ms, o, s.persons[r], 0)), "这里要的是每条路都锁着");
+  for (const r of ROLES) assert.ok(ms.options.every((o) => G("lifeOptionLock")(ms, o, s.persons[r], 0, G("lifePairBond")(s, r))), "这里要的是每条路都锁着");
   const out = untilMilestone(s, c2);
   assert.ok(!out.started, "没得选就不弹窗");
   const entry = out.entries.find((e) => e.kind === "milestone");
@@ -117,7 +117,7 @@ function sleep(s, r) {
   // 现在的内容：每个关口都有一条谁都走得了的路（build-content 也拦着）
   const none = (x) => !x || Object.values(x).every((v) => v == null || (Array.isArray(v) && v.length === 0));
   for (const m of MILESTONES) assert.ok(m.options.some((o) => !o.min && !o.cost && none(o.requires)), `${m.id} 没有兜底的路`);
-  console.log("✓ 关口无路可走：不抛错不回滚，走线最低的那条 / 影子同一个兜底 / 一人无路一人有得选 / 现有七个关口都有兜底的路");
+  console.log("✓ 关口无路可走：不抛错不回滚，走线最低的那条 / 影子同一个兜底 / 一人无路一人有得选 / 每个关口都有兜底的路");
 }
 
 // ---------- 3. 每个关口的年纪都到得了 ----------
@@ -168,7 +168,7 @@ function sleep(s, r) {
   let guard = 0, met = false;
   while (s.phase === "life" && G("lifeTimeAt")(s.turn).age <= 12 && !met) {
     const out = G("worldAdvance")(s, C, 0.5, { qing: false, mei: false });
-    if (s.world.event) for (const r of s.world.event.roles) if (!s.world.event.choices[r]) G("worldChoose")(s, C, r, G("lifeShadowChoose")(s, C, r, s.world.event.eventId), true);
+    if (s.world.event) for (const r of [...s.world.event.roles]) if (s.world.event && !s.world.event.choices[r]) G("worldChoose")(s, C, r, G("lifeShadowChoose")(s, C, r, s.world.event.eventId), true);
     met = s.log.some((e) => e.kind === "milestone" && (e.events.qing === "m_junior" || e.events.mei === "m_junior"));
     assert.ok(++guard < 200000 && out, "升上来的存档没走到小升初");
   }

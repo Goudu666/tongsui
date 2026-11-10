@@ -94,20 +94,21 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | 4 MOVE | c→s | `{x, y, seq}` 约 10 Hz，seq 递增；服务器丢掉乱序旧包，限速（360 px/s，间隔最多按 1 秒算）和边界 |
 | 5 ACT | c→s | `{spot}` 在某个点开始行动（距离、年龄、时间、家、钱都会校验） |
 | 6 CHOOSE | c→s | `{optionId, guess?}` 事件里的选择，结算前可以改。`guess`：默契事件里猜 TA 选了哪一项，可以不带（见 [DUET.md](DUET.md)） |
-| 7 WORLD | s→c | 5 Hz：`{tick, minute, rest, actors{x,y,act,spot,sleep,seq,tg}, needs, money, event, bond, hints, stats, eff, goals, tracks}`；`actors[r].seq` 是服务器处理到的最后一条 MOVE，`tg` 是这次行动在搭伴；`goals[r]` 是下一个关口和每条线离得多远，`tracks[r]` 是现在走的路和今天的日程，`eff[r]` 是现在做事的效率 |
+| 7 WORLD | s→c | 5 Hz：`{tick, minute, slot, ready, playing, wait, rest, actors{x,y,act,spot,sleep,seq,tg,fr}, needs, money, event, bond, hints, stats, eff, goals, tracks}`；`actors[r].seq` 是服务器处理到的最后一条 MOVE，`tg` 是这次行动在搭伴，`fr` 是这件事从第几段开始（比现在早就撤不回）；`slot` 是一天五段里的第几段，`ready` 是两人这一段定了没有，`playing` 是这一段正在过；`goals[r]` 是下一个关口和每条线离得多远，`tracks[r]` 是现在走的路和今天的日程，`eff[r]` 是现在做事的效率 |
 | 8 EVENT | s→c | `{event, locks}` 有事件开始了（只告诉谁参与、是否已选，不告诉选了什么）。关口（`kind: milestone`）带 `locks: {role: {optionId: 原因}}`，够不着的路客户端画成灰的 |
 | 9 ERROR | s→c | `{message}` |
 | 10 LOG | s→c | `{entries}` 事件结算、搭伴、一天结束、死亡、终局。关口的结算带 `results: {role: {score, unit, grade, option, track}}`，一天结束带 `gains`（每人今天长了多少） |
 | 11 PRESENCE | s→c | `{online, protocols}` |
 | 12 PING | c→s | `{t}` 每 2 秒，测延迟 |
 | 13 PONG | s→c | `{t, tick}` 只回给发的人 |
-| 20 GAME | s→c | `{game}` 搭伴小游戏的状态：`{gameId, phase: offer/play, left, ready, t, d}`；局关掉时发 `{game: null, result}`，打完了 `result = {gameId, score, boost}`，没玩成是 `null` |
-| 21 GAME_INPUT | c→s | `{k}`：问的时候 `ready` / `pass`；玩的时候 `quit`，或各款自己的输入（放风筝：`{k: "line", v}` 攥线的人报线长，`{k: "run", v}` 另一个人报跑到哪，都是 0~1） |
+| 22 PASS | c→s | `{}` 这一段就这么过（不做正经事） |
+| 23 CANCEL | c→s | `{}` 改主意：撤回这一段定下的事（「就这么过」、行动、睡觉；前几段就开始的上学上班撤不了），进门的钱退回来 |
 | 30 ECHO | c→s | `{turn, optionId}` 回话：补答影子替我选过的默契事件（`turn` 是那天的序号，`optionId` 为 null 是「不提了」）。结算作为一条 LOG 发给两个人 |
 | 31 AGAIN | 双向 | c→s `{yes}` 一世走完以后点「再来一世」（`false` 是收回），票记在存档里；s→c `{again: {qing, mei}}` 谁点了，只发给协议 3 以上的连接。两人都点了，服务器把这一世归档、换成新的一世，改发 SNAPSHOT（见 docs/LEGACY.md） |
 
 - 事件进行中时钟暂停；没选的人都离线时，等 30 秒后由影子代选。
-- 搭伴小游戏（`games.ts`）问和玩的时候时钟也暂停。它只在两人都真在线、同时做 `GAME_ACTIONS` 里的行动时问一次（每天一次），结果只写成这一次行动的成长倍率 `Actor.boost`，`worldFinish` 用掉就清；没玩成（不了、没理、掉线、中途退出）什么都不留。物理在服务器上跑，客户端只报手指位置；`client/scripts/games/kite_sim.gd` 是照抄的一份，只给离线试玩用，改规则先改服务器。
+- 时钟只在两个人都定下这一段以后才走（`worldPlay`，现实 1 秒 = 90 分钟），过完一段停在下一段的开头。一段里的行动按 `Actor.scale = 段长 × daily.slotUse ÷ 行动分钟数` 一次结算；顺手的事（`quick: true`）当场结算，不占这一段。
+- 一个人定了，另一个在线的人 90 秒还不定，影子替他定；不在线的人由影子在在线的人定了以后定。
 - 掉线 10 秒之内影子不接手（切网络、进电梯）；超过 10 秒影子替他过日子；本人回来时影子手上的事（睡觉、上学除外）停下，把身体还给他。
 - 每天结束、有人掉线、每 30 秒各存一次档。两人都下线后世界停住，2 分钟后房间关闭，存档里的 matchId 清空，下次打开从存档重新拉起。
 

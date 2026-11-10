@@ -69,8 +69,8 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   // 限速：一次上报 2000 像素会被截断
   G("worldMove")(s, C, "qing", 2300, 560, 0.1);
   assert.ok(w.actors.qing.x < 400, "瞬移要被限速");
-  // 两人都去楼下早点铺买煎饼果子 → 同框；钱不够买不了
-  for (const r of ["qing", "mei"]) { w.actors[r].x = 1630; w.actors[r].y = 470; s.persons[r].money = 10; }
+  // 顺手的事：两人都去楼下早点铺买煎饼果子 → 同框，当场做完，不占这一段；钱不够买不了，一段里只买一回
+  for (const r of ["qing", "mei"]) { w.actors[r].x = 1630; w.actors[r].y = 470; s.persons[r].money = 10; s.persons[r].needs.hunger = 40; }
   s.persons.mei.money = 1;
   assert.match(G("worldAct")(s, C, "mei", "breakfast_stall").error, /钱/);
   s.persons.mei.money = 10;
@@ -78,25 +78,59 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   const both = G("worldAct")(s, C, "mei", "breakfast_stall");
   assert.equal(both.error, null);
   assert.ok(both.together, "一起买煎饼果子应触发同框");
+  assert.equal(s.persons.qing.money, 8);
+  assert.equal(w.actors.qing.action, null, "顺手的事当场做完");
+  assert.match(G("worldAct")(s, C, "qing", "breakfast_stall").error, /过/, "一段里同一件顺手的事只做一回");
+  assert.equal(w.minute, 390, "顺手的事不花时间");
+  // 一段：两个人都定了才过。坐在同一张书桌前翻小人书 = 搭伴
+  for (const r of ["qing", "mei"]) { w.actors[r].x = 250; w.actors[r].y = 360; }
+  const mind0 = s.persons.qing.stats.mind;
+  assert.equal(G("worldAct")(s, C, "qing", "desk_qing").error, null);
+  for (let i = 0; i < 20; i++) G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
+  assert.equal(w.minute, 390, "对门没定，钟不走");
+  assert.equal(w.playing, false);
+  assert.equal(G("worldAct")(s, C, "mei", "desk_qing").error, null);
+  assert.ok(w.actors.qing.together && w.actors.mei.together, "后定的也算搭伴");
   const closeBefore = s.bond.close;
-  // 两人都忙时时间快进
-  const m0 = w.minute;
-  G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
-  assert.ok(w.minute - m0 > 3, "两人都忙时应快进");
-  for (let i = 0; i < 200 && w.actors.qing.action; i++) G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
-  assert.equal(w.actors.qing.action, null, "行动应结束");
+  const st0 = G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
+  assert.ok(w.playing && st0.entries.some((e) => e.kind === "together"), "开始过的时候给搭伴的那一句");
+  assert.match(G("worldAct")(s, C, "qing", "table_qing").error, /正在过/);
+  for (let i = 0; i < 100 && w.slot === 0; i++) G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
+  assert.equal(w.slot, 1, "早上过完是上午");
+  assert.equal(w.minute, 480);
+  assert.equal(w.actors.qing.action, null, "这一段的事做完了");
+  assert.ok(s.persons.qing.stats.mind > mind0, "翻了一早上小人书，心智长了");
   assert.ok(s.bond.close >= closeBefore);
+  // 改主意：定了还能撤；歇着也能撤
+  assert.equal(G("worldAct")(s, C, "qing", "desk_qing").error, null);
+  assert.equal(G("worldCancel")(s, C, "qing"), null);
+  assert.equal(w.actors.qing.action, null);
+  assert.equal(G("worldPass")(s, C, "qing"), null);
+  assert.equal(G("worldReady")(s, "qing"), true);
+  assert.equal(G("worldCancel")(s, C, "qing"), null);
+  assert.equal(G("worldReady")(s, "qing"), false);
+  // 等人：青歇着，梅在线一直不定，等够了影子替梅定这一段
+  assert.equal(G("worldPass")(s, C, "qing"), null);
+  for (let i = 0; i < 10 * G("SLOT_PATIENCE") - 5; i++) G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
+  assert.equal(w.playing, false, "还没等够");
+  for (let i = 0; i < 10; i++) G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
+  assert.ok(w.playing || w.slot === 2, "等够了，影子替他定");
+  for (let i = 0; i < 100 && w.playing; i++) G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
   // 两人都去睡觉 → 一天结束，进入下一天
   for (const r of ["qing", "mei"]) { const sp = C.map.spawn[r]; w.actors[r].x = sp[0]; w.actors[r].y = sp[1]; }
   assert.equal(G("worldAct")(s, C, "qing", "bed_qing").error, null);
   assert.equal(G("worldAct")(s, C, "mei", "bed_mei").error, null);
   const t = G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
-  assert.ok(t.dayEnded && s.turn === 1 && s.world.minute === 390);
-  // mirror 事件：两人都在 where 才触发
+  assert.ok(t.dayEnded && s.turn === 1 && s.world.minute === 390 && s.world.slot === 0);
+  // mirror 事件：两人都在 where、这一段碰得上它的钟点才触发
   const mev = C.events.find((e) => e.id === "c_roof_summer");
   s.world.fate = { mirror: mev.id, qing: null, mei: null };
-  s.world.minute = 1100;
   s.world.actors.qing.x = 600; s.world.actors.qing.y = 130;
+  s.world.actors.mei.x = 900; s.world.actors.mei.y = 120;
+  G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
+  assert.equal(s.world.event, null, "早上不是楼顶乘凉的时候");
+  s.world.slot = 3; s.world.minute = 930;
+  s.world.actors.mei.x = 1180; s.world.actors.mei.y = 560;
   G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
   assert.equal(s.world.event, null, "只有一个人到了不触发");
   s.world.actors.mei.x = 900; s.world.actors.mei.y = 120;
@@ -109,7 +143,34 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   const res = G("worldChoose")(s, C, "mei", "stars", false).entry;
   assert.equal(res.resonance, true);
   assert.equal(s.memories.at(-1).title, "第四十七颗星");
-  console.log("✓ 世界：距离判定 / 不能睡别人家 / 限速 / 同框 / 快进 / 行动结算 / 睡觉换天 / 地点触发 / 选择时停表 / 共鸣回忆");
+  // 本人回来：影子替他定的这一段还没开始过，撤回来让他自己定
+  {
+    const z = G("lifeCreate")(11, C);
+    G("lifeConfirm")(z, C, "qing", { qing: "青", mei: "梅" });
+    G("lifeConfirm")(z, C, "mei", { qing: "青", mei: "梅" });
+    z.world.fate = { mirror: null, qing: null, mei: null, milestone: null };
+    G("worldShadowAct")(z, C, "mei");
+    assert.equal(G("worldReady")(z, "mei"), true);
+    z.world.wait = 85;
+    assert.equal(G("worldReclaim")(z, "mei"), true);
+    assert.equal(G("worldReady")(z, "mei"), false);
+    assert.equal(z.world.wait, 0, "本人回来，重新开始等他");
+    z.world.wait = 85;
+    G("worldReclaim")(z, "qing");
+    assert.equal(z.world.wait, 0, "宽限期里断了又回来、影子没接过手的，也重新等");
+    // v7 的存档：做到一半的事（这里是睡下了）是前面那段开始的，升上来撤不回
+    const old = JSON.parse(JSON.stringify(z));
+    old.version = 7;
+    for (const k of ["slot", "ready", "playing", "wait", "quick"]) delete old.world[k];
+    const bed = C.map.spots.find((sp) => sp.id === "bed_qing");
+    Object.assign(old.world.actors.qing, { x: bed.at[0], y: bed.at[1], action: "sleep", spot: "bed_qing", until: null, asleep: true });
+    old.world.minute = 800;
+    G("lifeUpgrade")(old);
+    assert.equal(old.world.slot, 2);
+    assert.equal(old.world.actors.qing.from, -1);
+    assert.match(G("worldCancel")(old, C, "qing"), /已经/, "升上来之前就开始的事撤不回");
+  }
+  console.log("✓ 世界：距离判定 / 不能睡别人家 / 限速 / 顺手的事不花时间 / 两人都定了才过 / 搭伴 / 改主意和歇着 / 等人 / 睡觉换天 / 地点和那一段 / 选择时停表 / 共鸣回忆");
 }
 
 // ---------- 4. 联机流程（假 Nakama，见 harness.mjs） ----------
@@ -133,6 +194,7 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   const R = room(nk, openB.matchId);
   const pa = { userId: "user-a", sessionId: "sa" }, pb = { userId: "user-b", sessionId: "sb" };
   assert.equal(R.attempt({ userId: "intruder", sessionId: "x" }).accept, false);
+  assert.equal(R.attempt({ userId: "user-a", sessionId: "sa" }, { protocol: "3" }).accept, false, "报了版本又太旧的挡在门外");
   R.join([pb]);
   assert.ok(nk.notifications.some((n) => n.userId === "user-a" && n.subject === "partner_online"), "梅进房、青不在时通知青");
   R.leave([pb]); // 触发一次房间存档
@@ -201,15 +263,25 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   assert.equal(R.life().world.actors.mei.x, meiX + 40, "重连后序号从 1 重新开始");
 
   // 掉线宽限：10 秒内影子不接手；超过之后影子替他做事；回来时影子把身体还给他
+  // 影子等在线的人先定：青这一段歇着（今天的命运先清掉，免得半路弹出事来）
+  R.life().world.fate = { mirror: null, qing: null, mei: null, milestone: null };
+  R.life().world.event = null;
   R.leave([pb2]);
+  R.loop([R.msg(pa, 22, {})]);
+  assert.equal(G("worldReady")(R.life(), "qing"), true, "PASS：这一段歇着");
   for (let i = 0; i < 50; i++) R.loop();
-  assert.equal(R.life().world.actors.mei.action, null, "刚掉线几秒，影子不接手");
-  for (let i = 0; i < 60 && !R.life().world.actors.mei.action; i++) R.loop();
-  assert.ok(R.life().world.actors.mei.action && R.life().world.actors.mei.shadow, "掉线超过宽限期，影子接手");
+  assert.equal(G("worldReady")(R.life(), "mei"), false, "刚掉线几秒，影子不接手");
+  const slotBefore = R.life().world.slot;
+  for (let i = 0; i < 60 && !R.life().world.actors.mei.shadow; i++) R.loop();
+  assert.ok(R.life().world.actors.mei.shadow && (R.life().world.playing || R.life().world.slot > slotBefore), "掉线超过宽限期，影子替他定了这一段");
+  for (let i = 0; i < 100 && R.life().world.playing; i++) R.loop();
   const pb2b = { userId: "user-b", sessionId: "sb2b" };
   R.join([pb2b]);
-  assert.equal(R.life().world.actors.mei.action, null, "本人回来，影子停手");
-  assert.equal(R.to(pb2b, 1).at(-1).data.life.world.actors.mei.action, null);
+  assert.equal(R.life().world.actors.mei.shadow, false, "本人回来，影子把身体还给他");
+  assert.equal(G("worldReady")(R.life(), "mei"), false, "新的一段由本人自己定");
+  // 改主意的消息
+  R.loop([R.msg(pa, 23, {})]);
+  assert.equal(G("worldReady")(R.life(), "qing"), false);
 
   // 事件：快照不能泄露 TA 的选择
   R.life().world.fate.mirror = "c_stray_cat";

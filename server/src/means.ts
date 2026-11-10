@@ -8,7 +8,8 @@
 //   两份钱都记在带的那个人头上。家里有的东西能分给对门一半，但得是两个人凑到一块儿的时候。
 //
 // 影子不带人（人不在不替人花钱），也不被带（worldShadowGo 跳过要人带的事）。
-// 被带的那份钱在开始时就从带的人兜里扣（worldAct），带的人自己那份照旧做完才扣：所以开始时要拿得出两份。
+// 进门的钱都是定下这一段时付的（worldAct）：被带的那份从带的人兜里扣，改主意退回给带的人（worldCancel）。
+// 带的人改了主意，跟着来的那个一起撤（meansHostLeft），不然对门要替一件不存在的事付钱。
 
 /** role 现在能不能被对门带着做 act（在 sp 这个点）。只看「带」这一条：年纪、钟点照常由调用方判 */
 function meansGuestOk(s: LifeState, c: Content, role: Role, sp: Spot, act: Action): boolean {
@@ -30,12 +31,23 @@ function meansNeedsHost(p: Person, act: Action): boolean {
   return !lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags);
 }
 
-/** 钱够不够：带人的要连对门那份一起出得起。够返回 null */
+/** 钱够不够：被带着做的，看对门兜里还有没有这一份（对门自己那份定的时候已经付了）。够返回 null */
 function meansCantPay(s: LifeState, role: Role, act: Action, guest: boolean): string | null {
   if (act.money >= 0) return null;
   if (!guest) return s.persons![role].money < -act.money ? "兜里的钱不够" : null;
-  // 带的人自己那份结束时才扣，所以这里要看两份
-  return s.persons![lifeOther(role)].money < -act.money * 2 ? "对门这回也掏不起了" : null;
+  return s.persons![lifeOther(role)].money < -act.money ? "对门这回也掏不起了" : null;
+}
+
+/** role 刚撤了这一段的打算：对门要是被 role 带着做这件事，也撤回来，那份钱退给 role */
+function meansHostLeft(s: LifeState, c: Content, role: Role) {
+  var w = s.world;
+  if (!w) return;
+  var other = lifeOther(role);
+  var b = w.actors[other];
+  if (!b || !b.guest || !b.action || b.from !== w.slot) return;
+  var act = worldFindAction(c, b.action);
+  if (act.money < 0) s.persons![role].money -= act.money;
+  worldClearAction(b);
 }
 
 /** 客户端那张「走得进去的」单子里，加上对门这会儿带得了你的事（对门正在做、你自己没那个标记） */

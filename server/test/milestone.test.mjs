@@ -225,6 +225,9 @@ function sleep(s, r) {
     assert.fail("没抽到要的日子");
   };
   const spot = (id) => C.map.spots.find((sp) => sp.id === id);
+  // 一天五段：把这一天拨到某一段的开头（钟点只停在段的开头）
+  const setSlot = (s, i) => { s.world.slot = i; s.world.minute = G("SLOTS")[i][0]; };
+  const setMin = (s, m) => setSlot(s, G("worldSlotAt")(m));
   const pick = (s, r, id) => G("worldPickAction")(s, C, r, spot(id)).act?.id ?? null;
   const at = (s, r, id) => { const a = s.world.actors[r]; a.x = spot(id).at[0]; a.y = spot(id).at[1]; };
 
@@ -233,7 +236,7 @@ function sleep(s, r) {
     const s = plain(8, { qing: ["lead_study"] });
     assert.equal(G("lifeTrack")(C, s.persons.qing, 8).id, "primary_study");
     assert.equal(G("lifeTrack")(C, s.persons.mei, 8).id, "primary");
-    s.world.minute = G("worldDuty")(s, C, "qing").arrive[0];
+    setSlot(s, G("worldDutySlots")(G("worldDuty")(s, C, "qing"))[0]);
     for (const r of ROLES) { at(s, r, "school_gate"); assert.equal(G("worldAct")(s, C, r, "school_gate").error, null); }
     const before = { qing: s.persons.qing.stats.mind, mei: s.persons.mei.stats.mind };
     for (let i = 0; i < 4000 && s.world.actors.qing.action; i++) G("worldAdvance")(s, C, 0.5, ON);
@@ -245,27 +248,27 @@ function sleep(s, r) {
   {
     const s = plain(10, { qing: ["club_math", "club_sport"] });
     const club = C.map.actions.find((a) => a.id === "club_math");
-    s.world.minute = club.requires.hours[0] - 30;
+    setMin(s, club.requires.hours[0] - 30);
     s.world.dutyDone = { qing: true, mei: true };
     assert.equal(pick(s, "qing", "school_gate"), "club_math", "还没到钟点：点位上有名字");
     at(s, "qing", "school_gate");
     assert.equal(G("worldAct")(s, C, "qing", "school_gate").error, "现在不是时候", "但做不了");
     assert.equal(pick(s, "qing", "school_yard"), "ball", "体校没开练，操场照样能踢球");
-    s.world.minute = club.requires.hours[0] + 10;
+    setMin(s, club.requires.hours[0] + 10);
     assert.equal(pick(s, "qing", "school_gate"), "club_math");
     assert.equal(pick(s, "qing", "school_yard"), "club_sport");
     assert.equal(pick(s, "mei", "school_gate"), null, "没进小组的人看不见它");
     assert.equal(pick(s, "mei", "school_yard"), "ball");
     at(s, "mei", "school_gate");
     assert.ok(G("worldAct")(s, C, "mei", "school_gate").error, "也做不了");
-    s.world.minute = club.requires.hours[1] + 10;
+    setMin(s, club.requires.hours[1] + 100);
     assert.equal(G("worldAct")(s, C, "qing", "school_gate").error, "现在不是时候", "锁门以后也做不了");
     assert.equal(pick(s, "qing", "school_yard"), "ball", "操场又只能踢球了");
     // 小组比自己写作业长得快，但没有快到非进不可
     const study = C.map.actions.find((a) => a.id === "study");
     assert.ok(club.stats.mind > study.stats.mind && club.stats.mind <= study.stats.mind * 1.4);
     const older = plain(13, { qing: ["club_math"] });
-    older.world.minute = club.requires.hours[0] + 10;
+    setMin(older, club.requires.hours[0] + 10);
     older.world.dutyDone = { qing: true, mei: true };
     assert.notEqual(pick(older, "qing", "school_gate"), "club_math", "小学毕业以后小组就散了");
     // 客户端不知道标记：WORLD 里带一张「我挣来的去处」的单子

@@ -32,7 +32,6 @@ function lifeAt(seed, age, qf, mf, stat = null) {
 const spot = (id) => C.map.spots.find((sp) => sp.id === id);
 function at(s, r, id) { const a = s.world.actors[r]; a.x = spot(id).at[0]; a.y = spot(id).at[1]; }
 const pick = (s, r, id) => G("worldPickAction")(s, C, r, spot(id)).act?.id ?? null;
-function finish(s) { for (let i = 0; i < 4000 && (s.world.actors.qing.action || s.world.actors.mei.action); i++) G("worldAdvance")(s, C, 0.5, ON); }
 
 // ---------- 0. 内容：家境和标记对得上，每种人家都有自己的路 ----------
 {
@@ -54,37 +53,56 @@ function finish(s) { for (let i = 0; i < 4000 && (s.world.actors.qing.action || 
 }
 
 // ---------- 1. 带上对门 ----------
+// 一段做一件事：进门的钱定下这一段时就付（worldAct），改主意退回（worldCancel）
 {
-  // 董家（殷实）的青去学琴，吴家（清贫）的梅自己进不去，青在里头就能跟着进；两份钱都是青出
+  const SLOTS = G("SLOTS");
+  const setSlot = (s, i) => { s.world.slot = i; s.world.minute = SLOTS[i][0]; s.world.dutyDone = { qing: true, mei: true }; };
+  const fee = (id) => -C.map.actions.find((a) => a.id === id).money;
+  const view = (st) => G("worldView")({ record: { life: st }, moveSeq: {}, tick: 0 });
+  const pass = (s, online = ON) => { const from = s.world.slot, turn = s.turn; for (let i = 0; i < 4000 && s.world.slot === from && s.turn === turn; i++) G("worldAdvance")(s, C, 0.5, online); };
+
+  // 董家（殷实）的青去学琴，吴家（清贫）的梅自己进不去，青定了学琴，梅走过去就能跟着学；两份钱都是青出
   const s = lifeAt(11, 8, "dong", "wu");
-  s.world.minute = 960;
-  s.world.dutyDone = { qing: true, mei: true };
+  setSlot(s, 3);
   for (const r of ROLES) at(s, r, "palace_piano");
   assert.equal(pick(s, "mei", "palace_piano"), null, "梅自己看不见学琴");
   assert.ok(G("worldAct")(s, C, "mei", "palace_piano").error, "也做不了");
   assert.equal(pick(s, "qing", "palace_piano"), "piano");
   // 钱：青只够自己那份的时候带不了人
-  s.persons.qing.money = 3;
+  s.persons.qing.money = fee("piano");
   assert.equal(G("worldAct")(s, C, "qing", "palace_piano").error, null);
-  assert.equal(pick(s, "mei", "palace_piano"), "piano", "青在弹，梅走过去就能跟着学");
+  assert.equal(pick(s, "mei", "palace_piano"), "piano", "青定了学琴，梅走过去就能跟着学");
   assert.equal(G("worldAct")(s, C, "mei", "palace_piano").error, "对门这回也掏不起了");
   s.persons.qing.money = 50;
-  const view = (st) => G("worldView")({ record: { life: st }, moveSeq: {}, tick: 0 });
   assert.ok(J(view(s).tracks.mei.unlocks).includes("piano"), "客户端的单子里有它，点位上才显示");
   const mm = s.persons.mei.money;
   assert.equal(G("worldAct")(s, C, "mei", "palace_piano").error, null);
-  assert.equal(s.persons.qing.money, 50 - -C.map.actions.find((a) => a.id === "piano").money, "梅那份开始时就记在青头上，青中途花钱也赖不掉");
+  assert.equal(s.persons.qing.money, 50 - fee("piano"), "梅那份定的时候就记在青头上");
   assert.ok(s.world.actors.mei.guest && s.world.actors.mei.together && s.world.actors.qing.together, "跟着学也算搭伴");
-  finish(s);
-  const cost = -C.map.actions.find((a) => a.id === "piano").money;
-  assert.equal(s.persons.qing.money, 50 - cost * 2, "两份学费都记在青头上");
+  // 梅改主意：钱退给青；再定回来
+  assert.equal(G("worldCancel")(s, C, "mei"), null);
+  assert.equal(s.persons.qing.money, 50, "梅不去了，那份钱退给青");
+  assert.ok(!s.world.actors.mei.guest);
+  assert.equal(G("worldAct")(s, C, "mei", "palace_piano").error, null);
+  pass(s);
+  assert.equal(s.persons.qing.money, 50 - fee("piano"), "这一段过完不再多扣");
   assert.equal(s.persons.mei.money, mm, "梅一分钱没花");
   assert.ok(!s.world.actors.mei.guest, "做完就不再是被带着的");
 
+  // 青改主意：跟着来的梅一起撤，两份钱都退给青
+  const q = lifeAt(13, 8, "dong", "wu");
+  setSlot(q, 3);
+  for (const r of ROLES) at(q, r, "palace_piano");
+  q.persons.qing.money = 50;
+  assert.equal(G("worldAct")(q, C, "qing", "palace_piano").error, null);
+  assert.equal(G("worldAct")(q, C, "mei", "palace_piano").error, null);
+  assert.equal(G("worldCancel")(q, C, "qing"), null);
+  assert.equal(q.world.actors.mei.action, null, "带的人不去了，跟着的也撤回来");
+  assert.equal(q.persons.qing.money, 50, "两份钱都退给青");
+
   // 影子不带人：青不在线，梅跟不进去
   const t = lifeAt(11, 8, "dong", "wu");
-  t.world.minute = 960;
-  t.world.dutyDone = { qing: true, mei: true };
+  setSlot(t, 3);
   for (const r of ROLES) at(t, r, "palace_piano");
   assert.equal(G("worldAct")(t, C, "qing", "palace_piano").error, null);
   t.world.actors.qing.shadow = true;
@@ -93,36 +111,34 @@ function finish(s) { for (let i = 0; i < 4000 && (s.world.actors.qing.action || 
   // 也不被带：青在线学琴，梅不在线，梅的影子不跟过去（不然两份学费都从青兜里出）
   for (let seed = 1; seed <= 40; seed++) {
     const v = lifeAt(seed, 8, "dong", "wu");
-    v.world.minute = 960;
-    v.world.dutyDone = { qing: true, mei: true };
+    setSlot(v, 3);
     at(v, "qing", "palace_piano");
     v.persons.qing.money = 50;
     assert.equal(G("worldAct")(v, C, "qing", "palace_piano").error, null);
     assert.equal(G("worldShadowGo")(v, C, "mei", spot("palace_piano")), false, "影子不跟着学琴");
-    for (let i = 0; i < 200 && v.world.actors.qing.action === "piano"; i++) {
+    for (let i = 0; i < 400 && v.world.slot === 3; i++) {
       G("worldAdvance")(v, C, 0.5, { qing: true, mei: false });
       assert.ok(!v.world.actors.mei.guest, "影子被带着做了事");
     }
-    assert.ok(v.persons.qing.money >= 50 - 2 - 1e-9, "青替影子付了学费");
+    assert.ok(v.persons.qing.money >= 50 - fee("piano") - 1e-9, "青替影子付了学费");
   }
 
   // 反过来：吴家（爸妈在厂里）的梅带董家的青去厂里的澡堂，澡票梅出
   const u = lifeAt(12, 8, "dong", "wu");
-  u.world.minute = 1000;
-  u.world.dutyDone = { qing: true, mei: true };
+  setSlot(u, 3);
   for (const r of ROLES) at(u, r, "factory_bath");
   assert.equal(pick(u, "qing", "factory_bath"), null, "厂长家的孩子进不了工人澡堂");
   u.persons.mei.money = 10;
   const qm = u.persons.qing.money;
   assert.equal(G("worldAct")(u, C, "mei", "factory_bath").error, null);
   assert.equal(G("worldAct")(u, C, "qing", "factory_bath").error, null, "梅带着就进得去");
-  finish(u);
+  pass(u);
   assert.equal(u.persons.qing.money, qm);
-  assert.equal(u.persons.mei.money, 10 - 2 * -C.map.actions.find((a) => a.id === "factory_bath").money);
+  assert.equal(u.persons.mei.money, 10 - 2 * fee("factory_bath"));
 
   // 清贫人家自己的活不带人：那是你家的活
   assert.ok(!C.map.actions.find((a) => a.id === "help_out").bring);
-  console.log("✓ 带上对门：自己进不去 / 对门在做就能跟着做、算搭伴、两份钱对门出、钱不够带不了 / 影子不带人 / 清贫人家也能带殷实的 / 自家的活不带人");
+  console.log("✓ 带上对门：自己进不去 / 对门定了就能跟着做、算搭伴、两份钱对门出、钱不够带不了 / 改主意退给带的人，带的人不去了跟着的也撤 / 影子不带人也不被带 / 清贫人家也能带殷实的 / 自家的活不带人");
 }
 
 // ---------- 2. 关口：锁着的路看得见、说得清；交钱进的和考进的是同路 ----------

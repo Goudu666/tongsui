@@ -1,15 +1,23 @@
-// 河畔里的实时世界：共享时钟、走动、行动（吃饭/睡觉/上学/玩）、生存需求、同框、按地点触发事件。
+// 河畔里的世界：一天五段、走动、行动（吃饭/睡觉/上学/玩）、生存需求、同框、按地点触发事件。
 // 纯函数，由 main.ts 的房间每 tick 调用；Node 单测里可以直接驱动。
+//
+// 时间怎么走（2026-11 重做，见 docs/GDD.md「时间」）：
+//   一天切成五段（SLOTS）。走路、看、顺手的事（吃饭、洗澡、买早点、敲门）不花时间。
+//   每一段两个人各自挑一件正经事（或者「歇着」），两个人都定了，这一段才在眼前过去（PLAY_MIN_PER_SEC），
+//   一段做一件事 = 那件事按分钟做了几遍（Actor.scale），所以内部还是按分钟算，成长数值不用推倒。
+//   钟点仍然是一天里的第几分钟（w.minute）：定的时候停在这一段的开头，过的时候一路走到这一段的结尾。
 
 var DAY_START = 390; // 06:30 醒来
-var DAY_END = 1320; // 22:00 撑不住了
-var SCHOOL_END = 930; // 15:30 放学
-var MIN_PER_SEC = 4; // 现实 1 秒 = 游戏 4 分钟，一天约 4 分钟
-var FAST_FORWARD = 10; // 两人都在忙（上学、睡觉、长行动）时时间快进
+var DAY_END = 1320; // 22:00
+/** 一天的五段：[从, 到, 名字]。上学上班占中间几段，见 worldDutySlots */
+var SLOTS: [number, number, string][] = [[390, 480, "早上"], [480, 720, "上午"], [720, 930, "下午"], [930, 1110, "傍晚"], [1110, 1320, "晚上"]];
+/** 两个人都定了以后，这一段在眼前过去有多快：游戏分钟 / 现实秒（三个半钟头约两秒半） */
+var PLAY_MIN_PER_SEC = 90;
+/** 对门早就定了，你还在转悠：等这么多秒，影子替你定这一段（不设倒计时，只防一个人走开了把另一个人晾着） */
+var SLOT_PATIENCE = 90;
 var WALK_SPEED = 360; // 像素/秒
 var SPOT_RADIUS = 110;
 var REST_DAY_CHANCE = 0.3; // 歇着的日子：不上学也不上班，两个人都有一整天
-var MILESTONE_AT = DAY_START + 10; // 关口在早上醒来不久发生
 /**
  * 影子（不在线的人）替人过日子，不替人拼：吃饭睡觉、上学上班一样不落，
  * 可空下来的时间只有一部分会跟着对门搭伴（FOLLOW）、一部分会朝下一个关口使劲（STRIVE），不挣外快也不花钱。
@@ -55,6 +63,40 @@ function worldSpotFor(c: Content, action: string, role: Role): Spot | null {
     if (!z.owner && !any) any = sp;
   }
   return any;
+}
+
+// ---------- 一天五段 ----------
+
+/** 这个钟点在第几段（22:00 以后算最后一段） */
+function worldSlotAt(minute: number): number {
+  for (var i = 0; i < SLOTS.length; i++) if (minute < SLOTS[i][1]) return i;
+  return SLOTS.length - 1;
+}
+
+/** 一段钟点 [从, 到] 和第 i 段碰不碰得上。没写钟点的算碰得上 */
+function worldOverlaps(win: [number, number] | null | undefined, i: number): boolean {
+  if (!win) return true;
+  return win[0] < SLOTS[i][1] && win[1] > SLOTS[i][0];
+}
+
+/**
+ * 日程占哪几段 [第一段, 最后一段]：最晚报到的那一刻所在的段起，到下班那一刻所在的段止。
+ * 下班时那一段还剩一大半（上到 16:00 的大学），那一段就还给自己。
+ */
+function worldDutySlots(d: Duty): [number, number] {
+  var from = worldSlotAt(d.arrive[1] - 1);
+  var to = worldSlotAt(d.until - 1);
+  if (to > from && d.until - SLOTS[to][0] < (SLOTS[to][1] - SLOTS[to][0]) / 2) to -= 1;
+  return [from, to];
+}
+
+/** 这个人这一段定了没有：按了「就这么过」、在做一件这一段还没完的事、睡了，或者已经不在了 */
+function worldReady(s: LifeState, role: Role): boolean {
+  var w = s.world!;
+  var a = w.actors[role];
+  if (!a || !s.persons![role].alive) return true;
+  if (w.ready[role] || a.asleep) return true;
+  return a.action !== null && a.until !== null && a.until > SLOTS[w.slot][0];
 }
 
 // ---------- 新的一天 ----------
@@ -120,6 +162,11 @@ function worldStartDay(s: LifeState, c: Content) {
 
   s.world = {
     minute: DAY_START,
+    slot: 0,
+    ready: {},
+    playing: false,
+    wait: 0,
+    quick: [],
     rest: rest,
     dutyDone: {},
     actors: actors,
@@ -168,10 +215,10 @@ function worldWage(c: Content, p: Person, duty: Duty): number {
   return Math.round(m * 10) / 10;
 }
 
-/** 日程现在还去不去得了：今天有、还没去过、没迟到 */
+/** 日程现在还去不去得了：今天有、还没去过、没迟到（日程的第一段过去了就是迟到，那一段拿去干别的了） */
 function worldDutyOpen(s: LifeState, c: Content, role: Role): Duty | null {
   var d = worldDuty(s, c, role);
-  if (!d || s.world!.dutyDone[role] || s.world!.minute > d.arrive[1]) return null;
+  if (!d || s.world!.dutyDone[role] || s.world!.slot > worldDutySlots(d)[0]) return null;
   return d;
 }
 
@@ -182,7 +229,7 @@ function worldDutyOpen(s: LifeState, c: Content, role: Role): Duty | null {
 function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot): { act: Action | null; why: string } {
   var age = lifeTimeAt(s.turn).age;
   var p = s.persons![role];
-  var minute = s.world!.minute;
+  var slot = s.world!.slot;
   var why = "这儿现在没什么可做的";
   var late: Action | null = null;
   for (var i = 0; i < sp.actions.length; i++) {
@@ -200,7 +247,7 @@ function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot): { act:
     if ((!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) && !meansGuestOk(s, c, role, sp, act)) continue;
     // 不在钟点上先轮到下一个：体校四点开练，四点以前操场照样能踢球。
     // 后面没有别的事可做，还是把它给出去：点位上有名字，点了回「现在不是时候」（worldCanAct），不会变成没反应
-    if (rq.hours && (minute < rq.hours[0] || minute > rq.hours[1])) { if (!late) late = act; continue; }
+    if (rq.hours && !worldOverlaps(rq.hours, slot)) { if (!late) late = act; continue; }
     return { act: act, why: "" };
   }
   return { act: late, why: late ? "" : why };
@@ -222,8 +269,10 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
   var w = s.world!;
   var a = w.actors[role];
   if (!s.persons![role].alive || a === null) return "你已经不在了";
-  if (!worldIdle(a)) return "正在忙";
+  if (w.playing) return "这一段正在过";
   if (w.event && w.event.roles.indexOf(role) >= 0) return "先做完眼前的选择";
+  if (!worldIdle(a)) return a.asleep ? "已经睡下了" : "这一段已经定了";
+  if (w.ready[role]) return "这一段已经定了";
   var sp: Spot;
   try { sp = lifeFind(c.map.spots, spotId); } catch (e) { return "没有这个地方"; }
   var dx = sp.at[0] - a.x, dy = sp.at[1] - a.y;
@@ -232,70 +281,165 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
   if (!pick.act) return pick.why;
   var act = pick.act;
   var rq = act.requires || {};
+  var p = s.persons![role];
   if (rq.owner && lifeFind(c.map.zones, sp.zone).owner !== role) return "这不是你的家";
-  if (rq.hours && (w.minute < rq.hours[0] || w.minute > rq.hours[1])) return "现在不是时候";
-  if (act.duty && w.minute < worldDuty(s, c, role)!.arrive[0]) return "还没到点";
-  var broke = meansCantPay(s, role, act, meansNeedsHost(s.persons![role], act));
+  if (rq.hours && !worldOverlaps(rq.hours, w.slot)) return "现在不是时候";
+  if (act.duty && w.slot < worldDutySlots(worldDuty(s, c, role)!)[0]) return "还没到点";
+  var broke = meansCantPay(s, role, act, meansNeedsHost(p, act)); // 被带着做的看对门兜里（means.ts）
   if (broke) return broke;
+  if (act.quick) {
+    // 顺手的事不花时间，可也不能一直做：一段里同一件只做一回，吃饱了、洗干净了就不用了
+    if (w.quick.indexOf(role + ":" + act.id) >= 0) return "刚" + act.label + "过";
+    if ((act.needs.hunger || 0) > 0 && p.needs.hunger >= 90) return "还不饿";
+    if ((act.needs.clean || 0) > 0 && p.needs.clean >= 90) return "挺干净的";
+  }
   return null;
 }
 
-/** 开始一个行动。返回 [错误, 搭伴日志] */
+/**
+ * 两个人这一段做同一件事（同一个点、同一个行动；日程还要走的是同一条路）。
+ * 只看两边的计划，谁先定谁后定都一样，改了主意也跟着变。
+ */
+function worldSameThing(s: LifeState, c: Content, a: Actor | null, b: Actor | null): boolean {
+  if (!a || !b || !a.action || a.action !== b.action || a.spot !== b.spot || a.asleep || b.asleep) return false;
+  if (worldFindAction(c, a.action).duty) {
+    var age = lifeTimeAt(s.turn).age;
+    var tq = lifeTrack(c, s.persons!.qing, age), tm = lifeTrack(c, s.persons!.mei, age);
+    return (tq.group || tq.id) === (tm.group || tm.id);
+  }
+  return true;
+}
+
+/** 搭伴的心情、亲近和那一句话：每种每天只给一次（成长的倍率每次都有）。给了返回日志 */
+function worldTogetherBonus(s: LifeState, c: Content, act: Action): LogEntry | null {
+  var w = s.world!;
+  w.warm = true; // 今天走动过了：亲近不会淡（growth.ts）
+  var key = "together:" + act.id;
+  if (!act.together || w.done.indexOf(key) >= 0) return null;
+  w.done.push(key);
+  // 讨人喜欢的两个人凑一块儿更开心
+  var charm = s.persons!.qing.stats.charm + s.persons!.mei.stats.charm - 10;
+  var lift = Math.max(0.5, 1 + charm * c.rules.daily.charmTogether);
+  var needs: SelfDelta = {};
+  for (var nk in act.together.needs) (needs as any)[nk] = ((act.together.needs as any)[nk] as number) * (nk === "mood" ? lift : 1);
+  lifeApplySelf(s.persons!.qing, needs);
+  lifeApplySelf(s.persons!.mei, needs);
+  var tb: any = {};
+  var tk = act.quick ? 1 : c.rules.bond.slotTogether || 1;
+  for (var bk in act.together.bond) tb[bk] = bk === "close" || bk === "sync" ? (act.together.bond as any)[bk] * tk : (act.together.bond as any)[bk];
+  lifeApplyBond(s, c, tb);
+  var entry = lifeEntry(s, "together", act.together.text || "你们一起" + act.label + "。");
+  s.log.push(entry);
+  return entry;
+}
+
+/** 吃饭：家里的饭桌，殷实人家吃得更开心 */
+function worldMealMood(c: Content, p: Person) {
+  var wealth = 1; // 这户人家在新内容里没了（见 save.ts）就按普通家境算
+  for (var fi = 0; fi < c.families.length; fi++) if (c.families[fi].id === p.familyId) wealth = c.families[fi].wealth;
+  lifeApplySelf(p, { mood: wealth * 3 + (lifeHasFlag(p, "tal_foodie") ? 6 : 0) });
+}
+
+/**
+ * 在一个点位上做事。顺手的事当场就做完；正经事就是这一段的打算（日程从今天该去的那段一直占到下班），
+ * 定了这一段就等对门，两个人都定了才过去（worldAdvance）。返回 [错误, 搭伴日志]
+ */
 function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error: string | null; together: LogEntry | null } {
   var err = worldCanAct(s, c, role, spotId);
   if (err) return { error: err, together: null };
   var w = s.world!;
   var a = w.actors[role]!;
+  var p = s.persons![role];
   var sp = lifeFind(c.map.spots, spotId);
   var act = worldPickAction(s, c, role, sp).act!;
   a.x = sp.at[0];
   a.y = sp.at[1];
+  a.shadow = false;
+  if (act.quick) {
+    lifeApplySelf(p, act.needs);
+    p.money += act.money;
+    if (act.id === "eat") worldMealMood(c, p);
+    w.quick.push(role + ":" + act.id);
+    // 顺手的事也能搭伴：这一段里对门在同一个点也做过这件事（两扇门同时开了）
+    var partner = lifeOther(role);
+    var pa = w.actors[partner];
+    var near = !!pa && Math.abs(pa.x - sp.at[0]) + Math.abs(pa.y - sp.at[1]) < SPOT_RADIUS * 2;
+    var mates = w.quick.indexOf(partner + ":" + act.id) >= 0 && near;
+    return { error: null, together: mates ? worldTogetherBonus(s, c, act) : null };
+  }
   a.action = act.id;
   a.spot = sp.id;
-  a.shadow = false;
-  a.eff = worldEfficiency(s.persons![role]);
-  a.together = false;
-  delete a.boost; // 上一件事没用掉的搭伴倍率不带过来（见 games.ts）
-  if (meansNeedsHost(s.persons![role], act)) { a.guest = true; s.persons![lifeOther(role)].money += act.money; } else delete a.guest; // 对门带着做的：这份钱现在就记在对门头上（means.ts）
+  a.from = w.slot;
+  a.eff = worldEfficiency(p);
   if (act.sleep) {
     a.asleep = true;
     a.until = null;
   } else if (act.duty) {
-    a.until = worldDuty(s, c, role)!.until;
+    a.until = SLOTS[worldDutySlots(worldDuty(s, c, role)!)[1]][1];
     w.dutyDone[role] = true;
   } else {
-    a.until = w.minute + act.minutes;
+    // 一段做一件事，就是这件事做了几遍。use：一段里真花在这件事上的那一份（路上、吃饭、发呆占掉的不算）
+    var len = SLOTS[w.slot][1] - SLOTS[w.slot][0];
+    a.until = SLOTS[w.slot][1];
+    a.scale = Math.round((len * c.rules.daily.slotUse / act.minutes) * 100) / 100;
+    a.guest = meansNeedsHost(p, act) || undefined; // 对门带着做的（means.ts）
+    s.persons![a.guest ? lifeOther(role) : role].money += act.money < 0 ? act.money : 0; // 花的钱是进门的钱，坐一下午也只付一回；被带的那份对门出
   }
-
-  // 搭伴：TA 正在同一个点做同一件事（日程还要走的是同一条路：同一所学校、同一个行当）
-  var together: LogEntry | null = null;
+  // 搭伴：先定后定都算，两个人这一段做的是同一件事
   var b = w.actors[lifeOther(role)];
-  var same = !!b && b.action === act.id && b.spot === sp.id && !act.sleep;
-  if (same && act.duty) {
-    var age = lifeTimeAt(s.turn).age;
-    var tq = lifeTrack(c, s.persons!.qing, age), tm = lifeTrack(c, s.persons!.mei, age);
-    same = (tq.group || tq.id) === (tm.group || tm.id);
+  var same = worldSameThing(s, c, a, b);
+  a.together = same;
+  if (b && b.from === w.slot) b.together = same;
+  return { error: null, together: null };
+}
+
+/** 这一段先歇着：不做正经事，等这一段过去 */
+function worldPass(s: LifeState, c: Content, role: Role): string | null {
+  if (s.phase !== "life" || !s.world) return "人生还没开始";
+  var w = s.world;
+  var a = w.actors[role];
+  if (!a || !s.persons![role].alive) return "你已经不在了";
+  if (w.playing) return "这一段正在过";
+  if (w.event && w.event.roles.indexOf(role) >= 0) return "先做完眼前的选择";
+  if (worldReady(s, role)) return "这一段已经定了";
+  w.ready[role] = true;
+  return null;
+}
+
+/** 改主意：这一段还没过，定下的打算（连睡觉、去上学）可以撤回来。前几段就开始了的日程撤不了 */
+function worldCancel(s: LifeState, c: Content, role: Role): string | null {
+  if (s.phase !== "life" || !s.world) return "人生还没开始";
+  var w = s.world;
+  var a = w.actors[role];
+  if (!a || !s.persons![role].alive) return "你已经不在了";
+  if (w.playing) return "这一段正在过";
+  if (w.event && w.event.roles.indexOf(role) >= 0) return "先做完眼前的选择";
+  if (w.ready[role]) {
+    delete w.ready[role];
+    return null;
   }
-  if (same) {
-    a.together = true;
-    b!.together = true;
-    w.warm = true; // 今天走动过了：亲近不会淡（growth.ts）
-    var key = "together:" + act.id;
-    if (act.together && w.done.indexOf(key) < 0) {
-      w.done.push(key); // 心情、亲近和这句话每种每天只给一次；成长的倍率每次都有
-      // 讨人喜欢的两个人凑一块儿更开心
-      var charm = s.persons!.qing.stats.charm + s.persons!.mei.stats.charm - 10;
-      var lift = Math.max(0.5, 1 + charm * c.rules.daily.charmTogether);
-      var needs: SelfDelta = {};
-      for (var nk in act.together.needs) (needs as any)[nk] = ((act.together.needs as any)[nk] as number) * (nk === "mood" ? lift : 1);
-      lifeApplySelf(s.persons!.qing, needs);
-      lifeApplySelf(s.persons!.mei, needs);
-      lifeApplyBond(s, c, act.together.bond);
-      together = lifeEntry(s, "together", act.together.text || "你们一起" + act.label + "。");
-      s.log.push(together);
-    }
-  }
-  return { error: null, together: together };
+  if (!a.action) return "这一段还没定";
+  if (a.from !== undefined && a.from < w.slot) return "已经在" + worldFindAction(c, a.action).label + "了";
+  var act = worldFindAction(c, a.action);
+  if (act.duty) w.dutyDone[role] = false;
+  if (!act.duty && !act.sleep && act.money < 0) s.persons![a.guest ? lifeOther(role) : role].money -= act.money; // 进门的钱退回来（被带的退给对门）
+  worldClearAction(a);
+  meansHostLeft(s, c, role); // 带人的改了主意，跟着来的那个也撤回来
+  var b = w.actors[lifeOther(role)];
+  if (b && b.from === w.slot) b.together = false;
+  return null;
+}
+
+function worldClearAction(a: Actor) {
+  a.action = null;
+  a.spot = null;
+  a.until = null;
+  a.asleep = false;
+  delete a.from;
+  delete a.eff;
+  delete a.together;
+  delete a.scale;
+  delete a.guest;
 }
 
 function worldFinish(s: LifeState, c: Content, role: Role) {
@@ -303,39 +447,31 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   var act = worldFindAction(c, a.action!);
   var p = s.persons![role];
   var other = s.persons![lifeOther(role)];
-  // 日程的结果写在路上（tracks.yaml），别的行动写在行动自己身上
+  // 日程的结果写在路上（tracks.yaml），别的行动写在行动自己身上，按这一段里做了几遍放大
   var duty = act.duty ? lifeTrack(c, p, lifeTimeAt(s.turn).age).duty : null;
+  var times = duty || act.duty ? 1 : a.scale === undefined ? 1 : a.scale;
   var gains: Partial<Stats> = duty ? duty.stats : act.duty ? {} : act.stats;
   var needs: Partial<Needs> = duty ? duty.needs : act.duty ? {} : act.needs;
-  var money = duty ? worldWage(c, p, duty) : act.duty ? 0 : act.money;
+  var money = duty ? worldWage(c, p, duty) : act.duty ? 0 : Math.max(0, act.money) * times;
   var eff = a.eff === undefined ? 1 : a.eff;
   var stats: SelfDelta = {};
   for (var k in gains) {
-    var v = ((gains as any)[k] as number) * eff;
+    var v = ((gains as any)[k] as number) * eff * times;
     if (a.together) {
       var lead = other.alive ? lifeClamp((other.stats[k as StatKey] - p.stats[k as StatKey]) * LEAD_PER_POINT, 0, LEAD_MAX) : 0;
-      // 搭伴的倍率：默认 TOGETHER_BOOST；一起玩了小游戏（games.ts）就用打出来的那个，但不会比默认的低
-      v *= Math.max(TOGETHER_BOOST, a.boost || 0) + lead;
+      v *= TOGETHER_BOOST + lead;
     }
     if (k === "mind" && !act.duty && lifeHasFlag(p, "tal_memory")) v *= MEMORY_BOOST; // 过目不忘：自己坐下来念的时候快一倍
     (stats as any)[k] = v;
   }
+  var scaled: SelfDelta = {};
+  for (var nk in needs) (scaled as any)[nk] = ((needs as any)[nk] as number) * times;
   // 状态、搭伴、天赋先乘好，再交给成长规则按年纪和底子折算（growth.ts → growthApply）
   lifeApplySelf(p, stats, growthCtx(s, c, "action"));
-  lifeApplySelf(p, needs);
-  if (act.id === "eat") {
-    var wealth = 1; // 这户人家在新内容里没了（见 save.ts）就按普通家境算
-    for (var fi = 0; fi < c.families.length; fi++) if (c.families[fi].id === p.familyId) wealth = c.families[fi].wealth;
-    lifeApplySelf(p, { mood: wealth * 3 + (lifeHasFlag(p, "tal_foodie") ? 6 : 0) });
-  }
-  if (!a.guest) p.money += money; // 对门带着做的，钱开始时已经记在对门头上了（means.ts）
-  a.action = null;
-  a.spot = null;
-  a.until = null;
-  delete a.eff;
-  delete a.together;
-  delete a.boost;
-  delete a.guest;
+  lifeApplySelf(p, scaled);
+  if (act.id === "eat") worldMealMood(c, p); // 老存档里还在吃的那一顿
+  p.money += Math.round(money * 10) / 10;
+  worldClearAction(a);
 }
 
 // ---------- 影子：离线时按需求和习惯自己过日子 ----------
@@ -394,24 +530,32 @@ function worldShadowNeed(s: LifeState, c: Content, role: Role): StatKey | null {
   return best;
 }
 
+/** 影子替不在的人过这一段：先把顺手的事做了（饿了吃、脏了洗），再定一件正经事；实在没有就歇着 */
 function worldShadowAct(s: LifeState, c: Content, role: Role) {
+  for (var i = 0; i < 4 && !worldReady(s, role); i++) worldShadowStep(s, c, role);
+  if (!worldReady(s, role)) s.world!.ready[role] = true;
+  s.world!.actors[role]!.shadow = true;
+}
+
+function worldShadowStep(s: LifeState, c: Content, role: Role) {
   var w = s.world!;
   var p = s.persons![role];
   var by = function (id: string) { return function (act: Action) { return act.id === id; }; };
-  // 1. 过日子：饿了吃，困了睡，该上学上班就去，脏了洗
+  // 1. 过日子：饿了吃，脏了洗（顺手的事，做完还接着定这一段），困了睡，该上学上班就去
   if (p.needs.hunger < 45) {
-    var out = w.minute < 600 && p.money >= 2 && lifeRand(s) < 0.3;
+    var out = w.slot <= 1 && p.money >= 2 && lifeRand(s) < 0.3;
     if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, by(out ? "eat_out" : "eat")))) return;
+    if (out && worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("eat")))) return;
   }
-  if (p.needs.energy < 25 || w.minute >= 1230) {
+  if (p.needs.clean < 30 && worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("wash")))) return;
+  if (p.needs.energy < 25 || w.slot >= SLOTS.length - 1) {
     if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("sleep")))) return;
   }
   var duty = worldDutyOpen(s, c, role);
-  if (duty && w.minute >= duty.arrive[0]) {
+  if (duty && w.slot === worldDutySlots(duty)[0]) {
     if (worldShadowGo(s, c, role, lifeFind(c.map.spots, duty.spot))) return;
   }
-  if (p.needs.clean < 30 && worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("wash")))) return;
-  // 2. TA 正在做一件我也能做的事：过去搭伴
+  // 2. TA 这一段定了一件我也能做的事：过去搭伴
   var partner = w.actors[lifeOther(role)];
   if (partner && partner.action && partner.spot && !partner.asleep && lifeRand(s) < SHADOW_FOLLOW) {
     var there = lifeFind(c.map.spots, partner.spot);
@@ -422,28 +566,30 @@ function worldShadowAct(s: LifeState, c: Content, role: Role) {
   var need = p.needs.mood < 40 ? null : worldShadowNeed(s, c, role);
   if (need && lifeRand(s) < SHADOW_STRIVE) {
     var k = need;
-    if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, function (act) { return !act.duty && act.money === 0 && (act.stats[k] || 0) > 0; }))) return;
+    if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, function (act) { return !act.duty && !act.quick && act.money === 0 && (act.stats[k] || 0) > 0; }))) return;
   }
-  if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, function (act) { return !act.duty && !act.sleep && act.money >= 0 && (act.needs.mood || 0) >= 8; }))) return;
-  // 4. 实在没事做：在楼道里站一会儿
-  worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("knock")));
+  if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, function (act) { return !act.duty && !act.sleep && !act.quick && act.money >= 0 && (act.needs.mood || 0) >= 8; }))) return;
+  // 4. 实在没事做：这一段歇着
+  w.ready[role] = true;
 }
 
-/** 本人回来了：影子正在做的事（睡觉、上学除外）停下，把身体还给他 */
+/** 本人回来了：影子替他定的这一段（还没开始过的）撤回来，让他自己定。睡着了、日程上了一半的不动 */
 function worldReclaim(s: LifeState, role: Role): boolean {
   if (s.phase !== "life" || !s.world) return false;
-  var a = s.world.actors[role];
+  var w = s.world;
+  var a = w.actors[role];
+  w.wait = 0; // 本人回来了（影子接没接过手都一样）：重新开始等他，不接着掉线前的钟算
   if (!a || !a.shadow) return false;
   a.shadow = false;
-  // 睡着了、已经在学校或班上了，就让它过完（半路叫回来这一天的日程就白去了）
-  if (!a.action || a.asleep || a.action === "duty") return false;
-  delete a.eff;
-  delete a.together;
-  delete a.boost;
-  delete a.guest;
-  a.action = null;
-  a.spot = null;
-  a.until = null;
+  if (w.playing) return false;
+  if (w.ready[role] && !a.action) {
+    delete w.ready[role];
+    return true;
+  }
+  if (!a.action || a.asleep || a.action === "duty" || a.from !== w.slot) return false;
+  worldClearAction(a);
+  var b = w.actors[lifeOther(role)];
+  if (b && b.from === w.slot) b.together = false;
   return true;
 }
 
@@ -477,10 +623,6 @@ function worldInZone(c: Content, a: Actor | null, zone: string | null): boolean 
   return a !== null && (zone === null || worldZoneAt(c, a.x, a.y) === zone);
 }
 
-function worldInWindow(ev: LifeEvent, minute: number): boolean {
-  return !ev.when || (minute >= ev.when[0] && minute <= ev.when[1]);
-}
-
 /** 今天有关口，而且还没过 */
 function worldMilestoneDue(s: LifeState): boolean {
   var w = s.world!;
@@ -505,7 +647,13 @@ function worldMilestone(s: LifeState, c: Content, out: WorldTick): boolean {
   for (var i = 0; i < due.length; i++) {
     var r = due[i];
     var a = w.actors[r]!;
-    if (a.action || a.asleep) { a.action = null; a.spot = null; a.until = null; a.asleep = false; delete a.eff; delete a.together; delete a.boost; delete a.guest; }
+    if (a.action || a.asleep) {
+      // 前几段就在做的事（日程）照常结算到这儿；这一段才定的撤回来，进门的钱退回去
+      if (a.action && a.from !== undefined && a.from < w.slot) worldFinish(s, c, r);
+      else if (a.action) worldCancel(s, c, r);
+      worldClearAction(a);
+    }
+    delete w.ready[r];
     var luck = s.persons![r].stats.luck;
     var swing = 0;
     if (ms.swing) {
@@ -533,46 +681,58 @@ function worldMilestone(s: LifeState, c: Content, out: WorldTick): boolean {
   return true;
 }
 
+/** 两个人都定了：这一段开始在眼前过去。搭伴的那一句话、心情和亲近在这时候给（定了又改主意的不算） */
+function worldStartPlay(s: LifeState, c: Content, out: WorldTick) {
+  var w = s.world!;
+  var q = w.actors.qing, m = w.actors.mei;
+  if (q && m && s.persons!.qing.alive && s.persons!.mei.alive && q.together && m.together && worldSameThing(s, c, q, m) && q.from === w.slot) {
+    var e = worldTogetherBonus(s, c, worldFindAction(c, q.action!));
+    if (e) out.entries.push(e);
+  }
+  w.playing = true;
+  w.wait = 0;
+}
+
+/** 这一段在过：钟点往前走，需求跟着变，到点的事结算。走完这一段进下一段，晚上过完这一天就结束 */
+function worldPlay(s: LifeState, c: Content, dtSec: number, out: WorldTick): WorldTick {
+  var w = s.world!;
+  var roles = worldAliveRoles(s);
+  var end = SLOTS[w.slot][1];
+  var dm = Math.min(Math.max(dtSec, 0) * PLAY_MIN_PER_SEC, end - w.minute);
+  w.minute += dm;
+  for (var j = 0; j < roles.length; j++) {
+    var a = w.actors[roles[j]]!;
+    worldDecay(c, s.persons![roles[j]], a, w.minute, dm);
+    if (a.action && a.until !== null && w.minute >= a.until - 1e-6) worldFinish(s, c, roles[j]);
+  }
+  if (w.minute < end - 1e-6) return out;
+  w.minute = end;
+  w.playing = false;
+  w.ready = {};
+  w.quick = [];
+  w.wait = 0;
+  var allAsleep = roles.every(function (r) { return w.actors[r]!.asleep; });
+  if (w.slot >= SLOTS.length - 1 || allAsleep) {
+    out.entries = lifeEndDay(s, c);
+    out.dayEnded = true;
+    return out;
+  }
+  w.slot += 1;
+  return out;
+}
+
 function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in Role]: boolean }): WorldTick {
   var out: WorldTick = { entries: [], started: null, dayEnded: false };
   if (s.phase !== "life") return out;
   var w = s.world!;
-  if (w.event) return out; // 有人在做选择时，时间停住
-  if (w.game) return out; // 搭伴小游戏（问 / 玩）的时候也停住，见 games.ts
+  if (w.event) return out; // 有人在做选择时，什么都停住
+  if (w.playing) return worldPlay(s, c, dtSec, out);
   var roles = worldAliveRoles(s);
 
-  for (var i = 0; i < roles.length; i++) {
-    if (!online[roles[i]] && worldIdle(w.actors[roles[i]])) worldShadowAct(s, c, roles[i]);
-  }
+  // 关口躲不掉：一天一开头，轮得到的人放下手里的事（睡着的叫起来）一起面对
+  if (worldMilestoneDue(s) && worldMilestone(s, c, out)) return out;
 
-  var allAsleep = roles.every(function (r) { return w.actors[r]!.asleep; });
-  // 关口躲不掉：一大早就都躺下了，也得先起来把这一关过了，这一天才能翻过去（青年以后一岁只有一天，错过就没有了）
-  if (allAsleep && worldMilestoneDue(s) && worldMilestone(s, c, out)) return out;
-  if (allAsleep) {
-    out.entries = lifeEndDay(s, c);
-    out.dayEnded = true;
-    return out;
-  }
-  var allBusy = roles.every(function (r) { return !worldIdle(w.actors[r]); });
-  var dm = dtSec * MIN_PER_SEC * (allBusy ? FAST_FORWARD : 1);
-  w.minute += dm;
-
-  for (var j = 0; j < roles.length; j++) {
-    var a = w.actors[roles[j]]!;
-    worldDecay(c, s.persons![roles[j]], a, w.minute, dm);
-    if (a.until !== null && w.minute >= a.until) worldFinish(s, c, roles[j]);
-  }
-
-  if (w.minute >= DAY_END) {
-    out.entries = lifeEndDay(s, c);
-    out.dayEnded = true;
-    return out;
-  }
-
-  // 关口：早上醒来不久，轮得到的人一起面对
-  if (worldMilestoneDue(s) && w.minute >= MILESTONE_AT && worldMilestone(s, c, out)) return out;
-
-  // 触发命运：mirror 需要两人都空闲、都在 where
+  // 触发命运（先于影子定这一段：影子一定下来就不空闲了）：mirror 需要两人都空闲、都在 where、这一段碰得上它的钟点
   if (w.fate.mirror && w.done.indexOf(w.fate.mirror) < 0) {
     var mev = lifeFindEvent(c, w.fate.mirror);
     // 在线的人要自己走到那里；离线的影子只要没睡着，就会被「叫过来」
@@ -580,16 +740,16 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
     var available = function (r: Role) {
       var x = w.actors[r]!;
       if (online[r]) return worldIdle(x) && worldInZone(c, x, mev.where);
-      if (anyOnline) return !x.asleep;
+      if (anyOnline) return !x.asleep && (x.from === undefined || x.from === w.slot);
       return !x.asleep && worldInZone(c, x, mev.where);
     };
-    if (roles.length === 2 && worldInWindow(mev, w.minute) && roles.every(available)) {
+    if (roles.length === 2 && worldOverlaps(mev.when, w.slot) && roles.every(available)) {
       var anchor: Actor | null = null;
       for (var q0 = 0; q0 < roles.length; q0++) if (online[roles[q0]]) anchor = w.actors[roles[q0]];
       for (var q = 0; q < roles.length; q++) {
         var ax = w.actors[roles[q]]!;
-        if (ax.action) { ax.action = null; ax.spot = null; ax.until = null; }
-        if (!online[roles[q]] && anchor) { ax.x = anchor.x + 50; ax.y = anchor.y; }
+        if (ax.action) worldCancel(s, c, roles[q]);
+        if (!online[roles[q]] && anchor) { ax.x = anchor.x + 50; ax.y = anchor.y; delete w.ready[roles[q]]; }
       }
       w.event = { eventId: mev.id, kind: "mirror", roles: roles.slice(), choices: {}, shadow: [] };
       out.started = w.event;
@@ -601,13 +761,37 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
     var id = w.fate[role];
     if (!id || w.done.indexOf(id) >= 0) continue;
     var sev = lifeFindEvent(c, id);
-    var ok = sev.where ? worldInZone(c, w.actors[role], sev.where) : w.minute >= DAY_START + 15;
-    if (ok && worldIdle(w.actors[role]) && worldInWindow(sev, w.minute)) {
+    var ok = sev.where ? worldInZone(c, w.actors[role], sev.where) : true;
+    if (ok && worldIdle(w.actors[role]) && worldOverlaps(sev.when, w.slot)) {
       w.event = { eventId: sev.id, kind: "solo", roles: [role], choices: {}, shadow: [] };
       out.started = w.event;
       return out;
     }
   }
+
+  // 影子：等在线的那个人定了再替不在的人定，这样才跟得上去搭伴；两个人都不在就直接定
+  for (var i = 0; i < roles.length; i++) {
+    var r = roles[i];
+    if (online[r] || worldReady(s, r)) continue;
+    var o = lifeOther(r);
+    if (roles.indexOf(o) < 0 || !online[o] || worldReady(s, o)) worldShadowAct(s, c, r);
+  }
+  // 等人：对门在线却一直不定，等够了影子替他定这一段（人可能走开了）
+  var waiting = roles.filter(function (r) { return !worldReady(s, r); });
+  if (waiting.length > 0 && waiting.length < roles.length) {
+    w.wait += Math.max(dtSec, 0);
+    if (w.wait >= SLOT_PATIENCE) for (var wi = 0; wi < waiting.length; wi++) worldShadowAct(s, c, waiting[wi]);
+  } else {
+    w.wait = 0;
+  }
+
+  // 都睡了：这一天到头了（晚上没过完也一样）
+  if (roles.every(function (r) { return w.actors[r]!.asleep; })) {
+    out.entries = lifeEndDay(s, c);
+    out.dayEnded = true;
+    return out;
+  }
+  if (roles.every(function (r) { return worldReady(s, r); })) worldStartPlay(s, c, out);
   return out;
 }
 

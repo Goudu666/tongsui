@@ -68,7 +68,7 @@ const ENDING_KEYS = ["id", "title", "text", "requires"];
 const MAP_KEYS = ["size", "spawn", "zones", "spots", "actions"];
 const ZONE_KEYS = ["id", "name", "rect", "owner"];
 const SPOT_KEYS = ["id", "zone", "at", "action", "actions"];
-const ACTION_KEYS = ["id", "label", "minutes", "sleep", "duty", "requires", "needs", "stats", "money", "together", "bring"];
+const ACTION_KEYS = ["id", "label", "minutes", "quick", "sleep", "duty", "requires", "needs", "stats", "money", "together", "bring"];
 const ACTION_REQ_KEYS = ["minAge", "maxAge", "owner", "hours", "flags", "notFlags"];
 const TOGETHER_KEYS = ["needs", "bond", "text"];
 // 规则代码（server/src/sim.ts、world.ts）里按名字写死的行动和标记：影子靠这些行动过日子，天赋效果靠这些标记生效。
@@ -425,10 +425,10 @@ const rules = load("rules.yaml");
     roll: ["budget", "wealthAdjust", "statMin", "statMax", "rerolls"],
     growth: ["eventScale", "actionScale", "room", "floor", "bornWeight", "plasticity", "plainBonus"],
     aging: ["body", "mind", "activeFactor"],
-    daily: ["bodyEnergy", "charmTogether", "luckFate", "wageFlags"],
+    daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "wageFlags"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],
     lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max", "flags"],
-    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "drift", "driftDistance", "driftFloor"],
+    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "slotTogether", "drift", "driftDistance", "driftFloor"],
     legacy: ["pastKept", "heirloomOffer", "houseMax", "houseMoney", "lateEarly", "lateAfter", "lateRoom", "linkedDrift", "linkedMood", "oldSoul", "oldSoulCharm"],
   };
   checkKeys("rules", rules, Object.keys(need));
@@ -437,6 +437,7 @@ const rules = load("rules.yaml");
     checkKeys(`rules.${sec}`, rules[sec], keys);
     for (const k of keys) if (rules[sec][k] === undefined) errors.push(`rules.yaml: 缺少 ${sec}.${k}`);
   }
+  if (rules?.daily && !(typeof rules.daily.slotUse === "number" && rules.daily.slotUse > 0 && rules.daily.slotUse <= 1)) errors.push("rules.yaml: daily.slotUse 是一段里真花在那件事上的一份，要在 0 到 1 之间");
   if (rules?.bond && (typeof rules.bond.syncSteady !== "number" || rules.bond.syncSteady < 0 || rules.bond.syncSteady > 1)) errors.push("rules.yaml: bond.syncSteady 是默契替考场托住的那一份，要在 0 到 1 之间");
   for (const [f, mul] of Object.entries(rules?.daily?.wageFlags ?? {})) {
     consumed.push(["rules.daily.wageFlags", f]);
@@ -575,8 +576,11 @@ map.actions = map.actions.map((a) => {
   if ((a.requires?.flags || a.requires?.notFlags) && (a.sleep || a.duty)) errors.push(`map.actions#${a.id}: 睡觉和日程不能挂标记条件`);
   // bring：标记够的人正在做，对门跟过去也能做，钱由带的人出（server/src/means.ts）
   if (a.bring !== undefined && (a.bring !== true || !a.requires?.flags?.length)) errors.push(`map.actions#${a.id}.bring: 只能写 true，而且要挂 requires.flags（谁带谁）`);
+  // 顺手的事当场做完、不占一段：不能是睡觉和日程，也不长属性（长属性的事要花一段时间）
+  if (a.quick && (a.sleep || a.duty)) errors.push(`map.actions#${a.id}: 睡觉和日程不能是顺手的事`);
+  if (a.quick && Object.keys(a.stats ?? {}).length > 0) errors.push(`map.actions#${a.id}: 顺手的事不长属性，要长属性就去掉 quick`);
   return {
-    id: a.id, label: a.label, minutes: a.minutes ?? 0, sleep: !!a.sleep, duty: !!a.duty,
+    id: a.id, label: a.label, minutes: a.minutes ?? 0, quick: !!a.quick, sleep: !!a.sleep, duty: !!a.duty,
     requires: a.requires ?? {}, needs: a.needs ?? {}, stats: a.stats ?? {}, money: a.money ?? 0,
     together: a.together ? { needs: a.together.needs ?? {}, bond: a.together.bond ?? {}, text: a.together.text ?? "" } : null,
     bring: !!a.bring,

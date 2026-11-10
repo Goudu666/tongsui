@@ -214,8 +214,8 @@ for (let seed = 1; seed <= LIVES; seed++) {
   // 隔世：每一种痕迹都有人带着出生过；藏着的天赋出过事以后抽得到；街坊记住的事每条都有人被记住过
   for (const f of ["leg_any", "leg_house", ...C.legacy.traces.map((t) => "leg_" + t)]) assert.ok((flagsSeen.get(f) ?? 0) > 0, `痕迹 ${f} 从来没人带着出生`);
   for (const t of C.talents.filter((t) => t.unlock)) assert.ok((talentSeen.get(t.id) ?? 0) > 0, `藏着的天赋 ${t.name} 出过事以后也没人抽到`);
-  // 活过九十要一辈子吃好睡好，这里不模拟过日子（同上面高寿的小结）；隔着好几世才数得出来的放在 legacy.test.mjs 里测
-  const slow = new Set(C.remembered.filter((a) => (a.requires.minDiedAge ?? 0) >= 85 || a.requires.minJobs || a.requires.minFamilies).map((a) => a.id));
+  // 活过九十要一辈子吃好睡好，这里不模拟过日子（同上面高寿的小结）
+  const slow = new Set(C.remembered.filter((a) => (a.requires.minDiedAge ?? 0) >= 85).map((a) => a.id));
   const deadNote = [...noted].filter(([id, n]) => n === 0 && !slow.has(id)).map(([id]) => id);
   assert.deepEqual(deadNote, [], `街坊从来没记住过的事：${deadNote.join(", ")}`);
   console.log("  街坊记住的事（每 100 世）：" + [...noted].sort((a, b) => b[1] - a[1]).map(([id, n]) => `${C.remembered.find((a) => a.id === id).title} ${((n / LIVES) * 100).toFixed(1)}`).join("  "));

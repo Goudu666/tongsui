@@ -32,8 +32,6 @@ type LegacyPersonReq = LifeEnding["requires"] & {
 type LegacyPairReq = PairEnding["requires"] & {
   /** 两个人一起才办成的事有几回（搭把手的检定） */
   minHelps?: number;
-  /** 前前后后干过几种营生（打零工不算） */
-  minJobs?: number;
 };
 
 /** 街坊记住的事（content/remembered.yaml）：长卷上的一枚章，没有奖励 */
@@ -101,8 +99,6 @@ interface Legacy {
   marks: string[];
   /** 街坊记住的事：id → 第几世记住的 */
   remembered: { [id: string]: number };
-  /** 前前后后干过的营生（job_ 标记，打零工不算） */
-  jobs: string[];
 }
 
 interface LegacyRules {
@@ -164,7 +160,7 @@ var LEGACY_MANY_MIRRORS = 20;
 var LEGACY_TEMPER = 8;
 
 function legacyNew(): Legacy {
-  return { lives: 0, families: {}, heirlooms: [], past: [], traces: [], marks: [], remembered: {}, jobs: [] };
+  return { lives: 0, families: {}, heirlooms: [], past: [], traces: [], marks: [], remembered: {} };
 }
 
 /** 内容里那两张表（热更新的旧内容包里可能没有，当空的） */
@@ -353,19 +349,18 @@ function legacyHelps(s: LifeState): number {
   return n;
 }
 
-function legacyRememberedOk(s: LifeState, lg: Legacy, a: Remembered): boolean {
+function legacyRememberedOk(s: LifeState, a: Remembered): boolean {
   var rq = a.requires || {};
   if (a.who !== "pair") {
     var q = legacyPersonOk(s.persons!.qing, rq), m = legacyPersonOk(s.persons!.mei, rq);
     return a.who === "both" ? q && m : q || m;
   }
   if (!lifePairEndingOk(s, { id: "", title: "", text: "", requires: rq }, lifeStats(s))) return false;
-  if (rq.minHelps !== undefined && legacyHelps(s) < rq.minHelps) return false;
-  return rq.minJobs === undefined || lg.jobs.length >= rq.minJobs;
+  return rq.minHelps === undefined || legacyHelps(s) >= rq.minHelps;
 }
 
 /**
- * 一世走完，往河畔里记的第二批东西：留下的痕迹、出过的事、干过的营生、街坊新记住的事。
+ * 一世走完，往河畔里记的第二批东西：留下的痕迹、出过的事、街坊新记住的事。
  * 在 legacyAbsorb 里调用；有这些之前就走完的一世由 legacyRepair 补记一回（靠 s.noted 有没有来判断，不会记两遍）。
  */
 function legacyNote(s: LifeState, c: Content) {
@@ -379,15 +374,11 @@ function legacyNote(s: LifeState, c: Content) {
   for (var k = 0; k < tables.marks.length; k++) {
     if (has(tables.marks[k]) && lg.marks.indexOf(tables.marks[k]) < 0) lg.marks.push(tables.marks[k]);
   }
-  for (var i = 0; i < ROLES.length; i++) {
-    var job = legacyJob(s.persons![ROLES[i]]);
-    if (job && job !== "job_odd" && lg.jobs.indexOf(job) < 0) lg.jobs.push(job);
-  }
   var noted: string[] = [];
   var list = c.remembered || [];
   for (var a = 0; a < list.length; a++) {
     if (lg.remembered[list[a].id] !== undefined) continue;
-    if (legacyRememberedOk(s, lg, list[a])) { lg.remembered[list[a].id] = s.life || lg.lives; noted.push(list[a].id); }
+    if (legacyRememberedOk(s, list[a])) { lg.remembered[list[a].id] = s.life || lg.lives; noted.push(list[a].id); }
   }
   s.noted = noted;
   var last = lg.past[lg.past.length - 1];
@@ -540,21 +531,12 @@ function legacyUpgrade(s: any) {
   }
 }
 
-/** v6 → v7：痕迹、出过的事、街坊记住的事、干过的营生。干过的营生从小传里补得回来，别的从这一世起记 */
+/** v6 → v7：痕迹、出过的事、街坊记住的事，都从这一世起记 */
 function legacyUpgrade2(s: any) {
   var lg = s.legacy || (s.legacy = legacyNew());
   if (!lg.traces) lg.traces = [];
   if (!lg.marks) lg.marks = [];
   if (!lg.remembered) lg.remembered = {};
-  if (!lg.jobs) {
-    lg.jobs = [];
-    for (var i = 0; i < (lg.past || []).length; i++) {
-      for (var r = 0; r < ROLES.length; r++) {
-        var pp = lg.past[i].persons ? lg.past[i].persons[ROLES[r]] : null;
-        if (pp && pp.job && pp.job !== "job_odd" && lg.jobs.indexOf(pp.job) < 0) lg.jobs.push(pp.job);
-      }
-    }
-  }
 }
 
 /** 内容变了以后摘掉悬空的引用（save.ts 的 lifeRepair）：老物件被删了，攒下的、摆着的、挑中的都放下 */

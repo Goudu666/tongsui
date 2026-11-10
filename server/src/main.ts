@@ -359,9 +359,11 @@ var rpcLifelinePast: nkruntime.RpcFunction = function (ctx, logger, nk, payload)
     src = rec.life;
   } else {
     var found = nk.storageRead([{ collection: COL_PAST, key: rec.id + "." + n, userId: SYSTEM_USER }]);
-    if (!found.length) throw new Error("没有这一世");
-    src = found[0].value.past;
-    names = found[0].value.names || names;
+    // 归档坏了（读出来不是一世）和没有这一世一样回话，不把运行时的报错原样给出去
+    var kept: any = found.length ? found[0].value : null;
+    if (!kept || !kept.past || typeof kept.past !== "object") throw new Error("没有这一世");
+    src = kept.past;
+    names = kept.names || names;
   }
   return JSON.stringify({ lifelineId: rec.id, names: names, past: legacyPastView(src) });
 };

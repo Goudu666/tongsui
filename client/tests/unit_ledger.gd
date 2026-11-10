@@ -71,7 +71,7 @@ func _run() -> void:
 	past2.noted = [rem[1].id, "r_gone"]
 	past2.persons.qing.name = "立冬"
 	var legacy := {"lives": 2, "families": {}, "heirlooms": [hs[0].id, hs[1].id, "h_gone"], "past": [past1, past2],
-		"remembered": {rem[0].id: 1, rem[1].id: 2, "r_gone": 2}, "traces": [], "marks": [], "jobs": ["job_teach", "job_craft"]}
+		"remembered": {rem[0].id: 1, rem[1].id: 2, "r_gone": 2}, "traces": [], "marks": []}
 	var ended := {"names": {"qing": "立冬", "mei": "阿蘅"}, "you": "qing", "online": {"qing": true, "mei": true}, "protocols": {"qing": Op.VERSION, "mei": Op.VERSION},
 		"life": {"phase": "ended", "turn": 200, "life": 2, "log": [{"kind": "end", "text": "两个人前后脚走了。"}], "memories": [],
 			"left": {"qing": hs[0].id, "mei": hs[1].id}, "noted": [rem[1].id, "r_gone"], "legacy": legacy}}

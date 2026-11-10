@@ -1,10 +1,11 @@
 # 街坊记住的事：一世走完，河畔里的人会记住这两扇门里出过什么事。按人生线（两个人）记，跨世留着，记过的不记第二回。
 # 只是长卷上的一枚章、住户本里的一行：没有奖励，不解开任何东西，没记住的哪儿都不显示，也不提「还差多少」。
 # 记的是怎么过的，不是数值攒到了多少。规则在 server/src/legacy.ts → legacyNote。
+# 每一条都得是一世之内的事，最多隔着上一世（leg_）。不写「好几世攒齐几样」的：那是给人一张要填满的表。
 #
 #   who       pair 看两个人一起（默认） / each 两个人里有一个做到就算 / both 两个人都得做到
 #   requires  pair：写法同 endings.yaml 的 pair.requires，另有
-#               minHelps 两个人一起才办成的事有几回   minJobs 前前后后干过几种营生（打零工不算）
+#               minHelps 两个人一起才办成的事有几回
 #             each / both：写法同 endings.yaml 的 lives.requires
 #   title 七个字以内，desc 一句话，只说事。
 #
@@ -89,9 +90,3 @@
   title: 四个名字
   desc: 墙上的旧名字旁边，又添了两个。
   requires: { flags: [p_four_names] }
-
-# ---- 好几世 ----
-- id: r_trades
-  title: 五行八作
-  desc: 教书、买卖、手艺、力气活、坐办公室，前前后后都有人干过。
-  requires: { minJobs: 5 }

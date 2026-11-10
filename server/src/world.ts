@@ -161,8 +161,10 @@ function worldStartDay(s: LifeState, c: Content) {
   // 命运给今天准备的事：mirror 一件（两人都在世时），每人 solo 一件。要走到对的地方才会发生。
   var seen = lifeSeenIds(s);
   var fate: WorldState["fate"] = { mirror: null, qing: null, mei: null };
-  // 主线（story.ts）：今天排上的那一件占掉命运的那一格。先算它，不吃随机数
-  var story = storyToday(s, c, t);
+  // 主线（story.ts）：今天排上的那一件占掉命运的那一格。先算它，不吃随机数。关口那天不排
+  var msToday = lifeMilestoneAt(c, t.age);
+  var msDue = !!msToday && ROLES.some(function (r) { return lifeMilestoneFor(msToday!, persons[r]) && !lifeSeenIds(s, r)[msToday!.id]; });
+  var story = storyToday(s, c, t, msDue);
   var storyScene = function (r: Role): string | null {
     var id = story[r] || story.mirror;
     return id ? storyFindEvent(c, id)!.scene : null;
@@ -806,6 +808,8 @@ function worldPlay(s: LifeState, c: Content, dtSec: number, out: WorldTick): Wor
   w.quick = [];
   w.wait = 0;
   var allAsleep = roles.every(function (r) { return w.actors[r]!.asleep; });
+  // 都睡下了、今天却还有躲不过的主线：先不收这一天，下一跳 worldStoryForce 把人叫起来
+  if (allAsleep && w.slot < SLOTS.length - 1 && worldStoryPending(s, c)) allAsleep = false;
   if (w.slot >= SLOTS.length - 1 || allAsleep) {
     out.entries = lifeEndDay(s, c);
     out.dayEnded = true;
@@ -849,8 +853,9 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
     w.wait = 0;
   }
 
-  // 都睡了：这一天到头了（晚上没过完也一样）
+  // 都睡了：这一天到头了（晚上没过完也一样）。今天还有躲不过的主线，先把人叫起来过了它
   if (roles.every(function (r) { return w.actors[r]!.asleep; })) {
+    if (worldStoryForce(s, c, out)) return out;
     out.entries = lifeEndDay(s, c);
     out.dayEnded = true;
     return out;
@@ -859,23 +864,51 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
   return out;
 }
 
-/** 章末强制发生的主线：放下手里的事（同关口），在一早就开始。一次一件 */
+/** 今天还有没发生的、躲不过的主线 */
+function worldStoryPending(s: LifeState, c: Content): boolean {
+  var w = s.world!;
+  var list = w.fate.force || [];
+  for (var i = 0; i < list.length; i++) if (w.done.indexOf(list[i]) < 0 && storyFindEvent(c, list[i])) return true;
+  return false;
+}
+
+/**
+ * 章末躲不过的主线：到了它自己那一段，放下手里的事（同关口；上学上班的那一段让出来），人放到那张图上，开始。
+ * 那一段已经过去了、或者人都睡下了（今天就要到头了），马上开始。一次一件
+ */
 function worldStoryForce(s: LifeState, c: Content, out: WorldTick): boolean {
   var w = s.world!;
   var list = w.fate.force || [];
+  var sleeping = worldAliveRoles(s).every(function (r) { return w.actors[r]!.asleep; });
   for (var i = 0; i < list.length; i++) {
     var id = list[i];
     if (w.done.indexOf(id) >= 0) continue;
     var ev = storyFindEvent(c, id);
     if (!ev) continue;
+    if (storySlotIndex(ev) > w.slot) {
+      if (!sleeping) continue; // 还没到它那一段
+      // 人都早早睡下了：钟往后拨到它那一段（这中间睡着的人照睡，什么也不做），再把人叫起来
+      w.slot = storySlotIndex(ev);
+      w.minute = SLOTS[w.slot][0];
+      w.ready = {};
+      w.quick = [];
+      w.wait = 0;
+    }
     var roles = ev.kind === "mirror" ? worldAliveRoles(s) : ROLES.filter(function (r) { return w.fate[r] === id && s.persons![r].alive; });
     if (roles.length === 0 || (ev.kind === "mirror" && roles.length < 2)) { w.done.push(id); continue; }
+    var spot0: Spot | null = null;
     for (var k = 0; k < roles.length; k++) {
       var a = w.actors[roles[k]]!;
       if (a.action && a.from !== undefined && a.from < w.slot) worldFinish(s, c, roles[k]);
-      else if (a.action) worldCancel(s, c, roles[k]);
+      else if (a.action) { delete w.ready[roles[k]]; worldCancel(s, c, roles[k]); }
       worldClearAction(a);
       delete w.ready[roles[k]];
+      // 不在那张图上的，放过去（两个人挨着站）
+      var here = worldSceneAt(c, a.y);
+      if (!here || here.id !== ev.scene) {
+        var sp: Spot | null = spot0 || storyPlace(c, ev.scene, roles[k]);
+        if (sp) { a.x = sp.at[0] + (spot0 ? 50 : 0); a.y = sp.at[1]; spot0 = spot0 || sp; }
+      }
     }
     w.event = { eventId: id, kind: ev.kind, roles: roles, choices: {}, shadow: [] };
     out.started = w.event;
@@ -958,5 +991,6 @@ function worldChoose(s: LifeState, c: Content, role: Role, optionId: string, fro
   duetAfterEvent(s, c, pe, entry); // 猜 TA 的对错；影子替选的记一笔，等本人回话
   w.done.push(pe.eventId);
   w.event = null;
+  storyAfter(s, c, pe.eventId); // 过完一件主线，同一天后面的段还能接着排下一件
   return { error: null, entry: entry };
 }

@@ -14,6 +14,7 @@ var kind := ""            ## 现在下的是什么：catkin / rain / leaf / snow
 var _scene := ""
 var _p: CPUParticles2D
 var _tex := {}
+var restarts := 0         ## 粒子重撒过几回（单测看：同一天反复设不该重撒）
 
 
 func _ready() -> void:
@@ -23,14 +24,20 @@ func _ready() -> void:
 	_p.emitting = false
 	_p.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
 	add_child(_p)
+	_apply()  # 进树之前就设过季节和图的，这会儿补上
 
 
+## 换图、换季节、换回合都可能每秒被调好几次（WORLD 5Hz 刷 HUD），没变就不动
 func set_scene(id: String) -> void:
+	if id == _scene:
+		return
 	_scene = id
 	_apply()
 
 
 func set_season(s: String, p_day := -1) -> void:
+	if s == season and (p_day < 0 or p_day == day):
+		return
 	season = s
 	if p_day >= 0:
 		day = p_day
@@ -56,9 +63,13 @@ func _pick() -> String:
 func _apply() -> void:
 	if _p == null:
 		return
-	kind = "" if _scene in INDOOR else _pick()
+	var k := "" if _scene in INDOOR else _pick()
 	if art != null:
-		art.set_overcast(1.0 if kind in ["rain", "snow"] else 0.0)
+		art.set_overcast(1.0 if k in ["rain", "snow"] else 0.0)
+	# 下的东西没变（比如冬天两天都下雪），接着下，不重撒
+	if k == kind and (k == "" or _p.emitting):
+		return
+	kind = k
 	_p.emitting = kind != ""
 	if kind == "":
 		return
@@ -126,8 +137,10 @@ func _apply() -> void:
 			_p.scale_amount_max = 1.2
 			_p.tangential_accel_min = -20.0
 			_p.tangential_accel_max = 20.0
-	_p.restart()
+	# 先空跑一整轮再开始，第一次进图就是满屏的
 	_p.preprocess = _p.lifetime
+	_p.restart()
+	restarts += 1
 
 
 func _process(_delta: float) -> void:

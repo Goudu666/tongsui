@@ -16,47 +16,47 @@
 - id: primary
   label: 上小学
   requires: { minAge: 6, maxAge: 11 }
-  duty: { label: 上学, spot: school_gate, arrive: [420, 540], until: 930, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.029, charm: 0.007 } }
+  duty: { label: 上学, spot: school_gate, arrive: [420, 540], until: 930, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.29, charm: 0.07 } }
 
 # ---- 12~17 中学 ----
 - id: dropout
   label: 不念了，打零工
   requires: { minAge: 12, maxAge: 21, flags: [dropout] }
-  duty: { label: 打零工, spot: bike_bench, arrive: [450, 600], until: 900, needs: { energy: -20, clean: -15 }, stats: { body: 0.024 }, money: 6 }
+  duty: { label: 打零工, spot: bike_bench, arrive: [450, 600], until: 900, needs: { energy: -20, clean: -15 }, stats: { body: 0.24 }, money: 6 }
 - id: junior_key
   label: 初中 · 重点班
   requires: { minAge: 12, maxAge: 14, flags: [junior_key] }
-  duty: { label: 上学, spot: school_gate, arrive: [420, 510], until: 1020, needs: { hunger: 30, energy: -22, mood: -3 }, stats: { mind: 0.048, charm: 0.005 } }
+  duty: { label: 上学, spot: school_gate, arrive: [420, 510], until: 1020, needs: { hunger: 30, energy: -22, mood: -3 }, stats: { mind: 0.48, charm: 0.05 } }
 - id: junior
   label: 初中 · 普通班
   requires: { minAge: 12, maxAge: 14 }
-  duty: { label: 上学, spot: school_gate, arrive: [420, 540], until: 930, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.031, charm: 0.01 } }
+  duty: { label: 上学, spot: school_gate, arrive: [420, 540], until: 930, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.31, charm: 0.1 } }
 - id: senior_key
   label: 重点高中
   requires: { minAge: 15, maxAge: 17, flags: [school_far] }
-  duty: { label: 过桥上学, spot: river_bridge, arrive: [390, 480], until: 1110, needs: { hunger: 30, energy: -25, mood: -4 }, stats: { mind: 0.058, charm: 0.005 } }
+  duty: { label: 过桥上学, spot: river_bridge, arrive: [390, 480], until: 1110, needs: { hunger: 30, energy: -25, mood: -4 }, stats: { mind: 0.58, charm: 0.05 } }
 - id: senior
   label: 高中
   requires: { minAge: 15, maxAge: 17, flags: [school_near] }
-  duty: { label: 上学, spot: school_gate, arrive: [420, 510], until: 1020, needs: { hunger: 30, energy: -20, mood: -2 }, stats: { mind: 0.038, charm: 0.01 } }
+  duty: { label: 上学, spot: school_gate, arrive: [420, 510], until: 1020, needs: { hunger: 30, energy: -20, mood: -2 }, stats: { mind: 0.38, charm: 0.1 } }
 - id: vocational
   label: 职专
   requires: { minAge: 15, maxAge: 17 }
-  duty: { label: 上学, spot: school_gate, arrive: [420, 540], until: 900, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.014, body: 0.019, charm: 0.012 } }
+  duty: { label: 上学, spot: school_gate, arrive: [420, 540], until: 900, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.14, body: 0.19, charm: 0.12 } }
 
 # ---- 18~21 大学，或者先干着 ----
 - id: uni_away
   label: 在外地念大学
   requires: { minAge: 18, maxAge: 21, flags: [uni_away] }
-  duty: { label: 回学校, spot: river_bridge, arrive: [390, 480], until: 1140, needs: { hunger: 30, energy: -20 }, stats: { mind: 0.053, charm: 0.014 } }
+  duty: { label: 回学校, spot: river_bridge, arrive: [390, 480], until: 1140, needs: { hunger: 30, energy: -20 }, stats: { mind: 0.53, charm: 0.14 } }
 - id: uni_near
   label: 在本市念大学
   requires: { minAge: 18, maxAge: 21, flags: [uni_near] }
-  duty: { label: 去上课, spot: river_bridge, arrive: [420, 540], until: 960, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.038, charm: 0.014 } }
+  duty: { label: 去上课, spot: river_bridge, arrive: [420, 540], until: 960, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.38, charm: 0.14 } }
 - id: first_job
   label: 先干着
   requires: { minAge: 18, maxAge: 21 }
-  duty: { label: 上班, spot: bike_bench, arrive: [450, 570], until: 1020, needs: { energy: -22, clean: -15 }, stats: { body: 0.019 }, money: 8 }
+  duty: { label: 上班, spot: bike_bench, arrive: [450, 570], until: 1020, needs: { energy: -22, clean: -15 }, stats: { body: 0.19 }, money: 8 }
 
 # ---- 22~59 工作 ----
 - id: job_away
@@ -66,27 +66,27 @@
 - id: job_desk
   label: 坐办公室
   requires: { minAge: 22, maxAge: 59, flags: [job_desk] }
-  duty: { label: 过桥上班, spot: river_bridge, arrive: [420, 510], until: 1080, needs: { hunger: 25, energy: -22, mood: -2 }, stats: { mind: 0.01 }, money: 14 }
+  duty: { label: 过桥上班, spot: river_bridge, arrive: [420, 510], until: 1080, needs: { hunger: 25, energy: -22, mood: -2 }, stats: { mind: 0.1 }, money: 14 }
 - id: job_teach
   label: 教书
   requires: { minAge: 22, maxAge: 59, flags: [job_teach] }
-  duty: { label: 去上课, spot: school_gate, arrive: [420, 510], until: 990, needs: { hunger: 25, energy: -20 }, stats: { mind: 0.007, charm: 0.007 }, money: 10 }
+  duty: { label: 去上课, spot: school_gate, arrive: [420, 510], until: 990, needs: { hunger: 25, energy: -20 }, stats: { mind: 0.07, charm: 0.07 }, money: 10 }
 - id: job_trade
   label: 做买卖
   requires: { minAge: 22, maxAge: 59, flags: [job_trade] }
-  duty: { label: 出摊, spot: breakfast_stall, arrive: [390, 450], until: 840, needs: { energy: -25, clean: -10 }, stats: { charm: 0.012 }, money: 11 }
+  duty: { label: 出摊, spot: breakfast_stall, arrive: [390, 450], until: 840, needs: { energy: -25, clean: -10 }, stats: { charm: 0.12 }, money: 11 }
 - id: job_craft
   label: 靠手艺吃饭
   requires: { minAge: 22, maxAge: 59, flags: [job_craft] }
-  duty: { label: 上工, spot: bike_bench, arrive: [450, 540], until: 1020, needs: { energy: -22, clean: -15 }, stats: { body: 0.007, mind: 0.005 }, money: 10 }
+  duty: { label: 上工, spot: bike_bench, arrive: [450, 540], until: 1020, needs: { energy: -22, clean: -15 }, stats: { body: 0.07, mind: 0.05 }, money: 10 }
 - id: job_labor
   label: 卖力气
   requires: { minAge: 22, maxAge: 59, flags: [job_labor] }
-  duty: { label: 过桥上工, spot: river_bridge, arrive: [390, 450], until: 1050, needs: { hunger: 15, energy: -32, clean: -20 }, stats: { body: 0.014 }, money: 11 }
+  duty: { label: 过桥上工, spot: river_bridge, arrive: [390, 450], until: 1050, needs: { hunger: 15, energy: -32, clean: -20 }, stats: { body: 0.14 }, money: 11 }
 - id: job_odd
   label: 打零工
   requires: { minAge: 22, maxAge: 59 }
-  duty: { label: 打零工, spot: bike_bench, arrive: [450, 600], until: 900, needs: { energy: -20, clean: -15 }, stats: { body: 0.007 }, money: 6 }
+  duty: { label: 打零工, spot: bike_bench, arrive: [450, 600], until: 900, needs: { energy: -20, clean: -15 }, stats: { body: 0.07 }, money: 6 }
 
 # ---- 60~ 退休：时间回来了 ----
 - id: retired

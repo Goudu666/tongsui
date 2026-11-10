@@ -6,7 +6,7 @@
 //   - 「不上心」的活法应该够不着高线；「专心」的应该大多够得着；
 //   - 「搭伴专心」应该比「一个人专心」明显好，这是两个人一起玩的理由；
 //   - 一个人不该同时够着所有的线，不然就没有取舍了。
-// server/test/life.test.mjs 里有同一套机器人的精简版，把上面几条钉成断言。
+// server/test/paths.test.mjs 用同一套机器人把上面几条钉成断言。
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 

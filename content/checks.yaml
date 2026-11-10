@@ -1,0 +1,130 @@
+# 检定表：给已有事件的某个选项挂上一次「成不成」。
+# 单独放一个文件，是为了不和写剧情的人抢同一份 YAML：事件照常写，哪些选项要看本事，在这里登记。
+#
+#   event / option  挂在哪个事件的哪个选项上（id 写错了 npm run content 会报错）
+#   stat            看哪项属性：body 体魄 / mind 心智 / charm 魅力 / luck 运气
+#   dc              难度。属性等于难度时大约五成半把握，每高 1 点多一成二（见 rules.yaml → check）
+#   pass            成了以后多显示的一句（选项原来的效果照常生效）
+#   fail.text       没成的一句
+#   fail.self       没成时改用的效果。不写的话：原来的效果里去掉长属性的部分，其余照旧
+#   fail.flags      没成时改打的标记。不写的话照旧打选项原来的标记
+#
+# 默契事件里两个人选了同一项，是「搭把手」：按两人里本事大的那个算，还多一点把握。
+# 写法：说事不说情，成了不夸，没成拿自己开涮。方言点到为止，每句 30 字以内。
+
+# ---------- 童年 ----------
+- event: c_first_fight
+  option: fight
+  stat: body
+  dc: 5
+  pass: 你一头把领头的撞了个屁股蹲儿。书包带断了一根。
+  fail: { text: 没打过。鼻血抹在袖口上，回家说是磕的。, self: { mood: -8 } }
+
+- event: c_exam
+  option: cram
+  stat: mind
+  dc: 5
+  pass: 卷子发下来，最后一道大题全班就你一个人对了。
+  fail: { text: 熬到后半夜。考场上困得把名字写串了行。, self: { energy: -10, mood: -5 } }
+
+- event: c_river_swim
+  option: jump
+  stat: body
+  dc: 5.5
+  pass: 一个猛子扎下去，从桥墩那头冒出来。
+  fail: { text: 呛了两口海河水，扑腾上岸，嘴唇都紫了。, self: { mood: -5, energy: -10 } }
+
+- event: c_ride_lesson
+  option: ride
+  stat: body
+  dc: 4.5
+  pass: 歪歪扭扭骑出去半条街，愣是没倒。
+  fail: { text: 连人带车拍进白菜堆，楼长的白菜碎了三棵。, self: { mood: -3, clean: -10 } }
+
+- event: c_paper_cards
+  option: hard
+  stat: luck
+  dc: 5
+  pass: 啪的一声，一摞全翻了个儿。
+  fail: { text: 劲儿使大了。画片没翻，手心拍红了。, self: { mood: -3 } }
+
+- event: c_cicada
+  option: dig
+  stat: luck
+  dc: 5
+  pass: 一晚上摸了十一只，罐头瓶都装不下。
+  fail: { text: 摸了一晚上，就摸着一手泥。, self: { clean: -10 } }
+
+# ---------- 少年 ----------
+- event: t_misjudged
+  option: stand
+  stat: charm
+  dc: 6
+  pass: 老师把那张卷子又看了一遍，没言语，把罚抄划了。
+  fail: { text: 越说越急，自己先结巴了。罚抄翻了一倍。, self: { mood: -8, energy: -5 } }
+
+- event: t_seaside
+  option: go
+  stat: body
+  dc: 5.5
+  pass: 蹬了四个钟头，先闻见的咸味儿。
+  fail: { text: 半道上腿肚子转筋，后半程是推着走的。, self: { energy: -15 } }
+
+- event: f_gu_first_stage
+  option: steady
+  stat: charm
+  dc: 6
+  pass: 绷住了。台下的笑是冲着包袱来的。
+  fail: { text: 没绷住，自己先乐了。台下笑得比包袱还响。, self: { mood: 3 } }
+
+- event: t_gaokao
+  option: redo
+  stat: mind
+  dc: 6.5
+  pass: 收卷铃响的时候，你刚写完最后一个等号。
+  fail: { text: 算到一半，铃响了。那道题留了半页白。, self: { energy: -20, mood: -10 } }
+
+# ---------- 青年 ----------
+- event: y_dorm_good
+  option: guankou
+  stat: charm
+  dc: 6
+  pass: 一口气没换。上铺的鼓掌，床板直往下掉灰。
+  fail: { text: 背到第七道菜卡了壳，上铺的替你接了下半句。, self: { mood: -3 } }
+
+- event: y_crossroad
+  option: quit
+  stat: luck
+  dc: 5.5
+  pass: 头一个月就开了张。
+  fail: { text: 铺子撑了半年。关门那天，你把招牌扛回了家。, self: { mood: -10 }, flags: [] }
+
+# ---------- 中年 ----------
+- event: m_layoff
+  option: stall
+  stat: charm
+  dc: 5.5
+  pass: 摊子支了三个月，楼里人下班都绕过来看一眼。
+  fail: { text: 头一天一样没卖出去。你把东西一件件码回车上。, self: { mood: -8 } }
+
+- event: m_layoff
+  option: south
+  stat: luck
+  dc: 6
+  pass: 南边的活儿成了。过年回来，行李比走时沉。
+  fail: { text: 转了一圈回来，兜里就剩一张站台票。, self: { mood: -10 } }
+
+# ---------- 老年 ----------
+- event: o_winter_swim
+  option: jump
+  stat: body
+  dc: 6.5
+  pass: 下去了。上来的时候浑身冒白气。
+  fail: { text: 水刚没脚脖子就蹿回来了。岸上的老爷子直拍栏杆。, self: { mood: 5 } }
+
+- event: o_chess
+  option: fight
+  stat: mind
+  dc: 6
+  pass: 一步不让，赢了半个子儿。
+  fail: { text: 一步不让，让人将死在角上。, self: { mood: -3 } }

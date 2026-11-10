@@ -32,7 +32,7 @@ spots:
   - { id: roof_pigeon, zone: roof, at: [740, 130], action: play_roof }
   - { id: breakfast_stall, zone: breakfast, at: [1630, 470], actions: [duty, eat_out, dine] }
   - { id: river_bank, zone: river, at: [2140, 820], actions: [play_river, walk_river] }
-  - { id: river_bridge, zone: river, at: [2290, 670], action: duty }
+  - { id: river_bridge, zone: river, at: [2360, 690], action: duty }
   - { id: alley_rope, zone: alley, at: [1260, 880], actions: [play_alley, chat] }
   - { id: bike_bench, zone: bikeshop, at: [1120, 1280], actions: [duty, work] }
   - { id: school_gate, zone: school, at: [320, 1200], action: duty }
@@ -84,21 +84,21 @@ actions:
     minutes: 60
     requires: { maxAge: 5 }
     needs: { energy: -4, mood: 2 }
-    stats: { mind: 0.03 }
+    stats: { mind: 0.3 }
     together: { needs: { mood: 4 }, bond: { close: 1 }, text: 两个脑袋凑在一本书上，谁也不让谁翻页。 }
   - id: study
     label: 写作业
     minutes: 90
     requires: { minAge: 6, maxAge: 17 }
     needs: { energy: -10, mood: -6 }
-    stats: { mind: 0.04 }
+    stats: { mind: 0.4 }
     together: { needs: { mood: 5 }, bond: { close: 1 }, text: 一张桌子两头坐，写一会儿，抬头看一眼对面写到哪了。 }
   - id: read
     label: 看书
     minutes: 90
     requires: { minAge: 18 }
     needs: { energy: -8, mood: -2 }
-    stats: { mind: 0.035 }
+    stats: { mind: 0.35 }
     together: { needs: { mood: 4 }, bond: { close: 1 }, text: 各看各的，半天没人说话，也不觉得闷。 }
 
   # ---- 体魄 ----
@@ -107,28 +107,28 @@ actions:
     minutes: 60
     requires: { maxAge: 14 }
     needs: { mood: 10, energy: -8, clean: -8 }
-    stats: { body: 0.025, charm: 0.02 }
+    stats: { body: 0.25, charm: 0.2 }
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: "「小皮球，架脚踢……」你们俩跳得一样快。" }
   - id: play_river
     label: 海河边放风筝
     minutes: 60
     requires: { maxAge: 17 }
     needs: { mood: 10, energy: -8, clean: -6 }
-    stats: { body: 0.03 }
+    stats: { body: 0.3 }
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: 一个人拽线，一个人举着风筝跑。 }
   - id: walk_river
     label: 沿河走一圈
     minutes: 60
     requires: { minAge: 18 }
     needs: { mood: 8, energy: -6 }
-    stats: { body: 0.03 }
+    stats: { body: 0.3 }
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: 从桥这头走到那头，话说了一半，又走回来。 }
   - id: ball
     label: 操场踢球
     minutes: 90
     requires: { minAge: 6, maxAge: 40 }
     needs: { mood: 6, energy: -14, clean: -10 }
-    stats: { body: 0.045 }
+    stats: { body: 0.45 }
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: 两个人，一个球，书包摆成门。 }
   - id: work
     label: 帮爷爷修车
@@ -136,7 +136,7 @@ actions:
     requires: { minAge: 8, maxAge: 17 }
     money: 5
     needs: { energy: -12, clean: -15 }
-    stats: { body: 0.03, mind: 0.015 }
+    stats: { body: 0.3, mind: 0.15 }
     together: { needs: { mood: 5 }, bond: { close: 1 }, text: 爷爷说你们俩加一块儿顶半个学徒。 }
 
   # ---- 魅力 ----
@@ -145,7 +145,7 @@ actions:
     minutes: 60
     requires: { minAge: 15 }
     needs: { mood: 4 }
-    stats: { charm: 0.04 }
+    stats: { charm: 0.4 }
     together: { needs: { mood: 4 }, bond: { close: 1 }, text: 街坊问你们俩怎么老在一块儿，你们同时说「顺路」。 }
 
   # ---- 彼此 ----

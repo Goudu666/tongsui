@@ -221,7 +221,7 @@ const STORY_OPTION_KEYS = ["id", "text", "tags", "effects", "requires", "cost"];
 const STORY_TEXT_MAX = { childhood: 60, teen: 55, young: 50, middle: 45, old: 30 };
 const STORY_MAX = { title: 7, next: 15, option: 15, resonance: 48, memory: 8, dissonance: 47, intro: 24 };
 // 「让出身体现资源差异」那边在关口上新加、还没合进 main 的路线标记。主线只读它们；那边合了以后从这里删掉
-const STORY_PENDING_FLAGS = ["uni_abroad"];
+const STORY_PENDING_FLAGS = ["uni_abroad", "army"];
 const storyLen = (s) => [...String(s ?? "")].length;
 const story = { chapters: [], events: [] };
 {

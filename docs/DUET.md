@@ -125,6 +125,8 @@ catches:
 - `LifeState.duet`：`know`（两个方向各 [猜中, 猜过]）、`like`（影子 [选得一样, 回过话]）、`owed`（欠着的话）、`epitaph`（结局多出来的几句，每次变化时重算）。
   可选字段，旧存档用到时自动补上，不需要升存档版本。
 - `PendingEvent.guess`：当下的猜测，不进快照。
+- 快照：`life.duet` 只走 `duetView()`（自己欠的话，不带「对门当年猜我会选什么」）；日志尾巴走 `duetLogView()`，我还欠着话的那几天先摘掉 `guess / knew / line`，回完话再给。
+  对门当年**选了什么**仍在日志的 `choices` 里，盲答这一点只靠界面不显示：两个人合作的游戏，不值得为它改日志的形状。
 - `LogEntry.duet`：结算附带的数据（`outcome` / `guess` / `knew` / `line` / `owed`；回话是 `echo: true` 加上 `lines` 等）。旧客户端不认识也不影响。
 
 兼容：协议版本不变。老客户端不带 `guess`、不发 `ECHO`，一切照旧（只是看不到新卡片）；新客户端连老服务器，日志里没有 `duet` 字段，按 `resonance` 画。

@@ -197,7 +197,9 @@ function duetEcho(s: LifeState, c: Content, role: Role, turn: number, optionId: 
   for (var i = 0; i < list.length; i++) if (list[i].turn === turn) idx = i;
   if (idx < 0) return { error: "这句话已经接不上了", entry: null };
   var o = list[idx];
-  if (typeof optionId !== "string") { list.splice(idx, 1); return { error: null, entry: null }; }
+  // 「不提了」只认 null / 不带；别的类型是发错了，不能把这句话就这么丢掉
+  if (optionId === null || optionId === undefined) { list.splice(idx, 1); return { error: null, entry: null }; }
+  if (typeof optionId !== "string") return { error: "没有这个选项", entry: null };
   var ev: LifeEvent;
   try { ev = lifeFindEvent(c, o.eventId); } catch (e) { list.splice(idx, 1); return { error: "那件事已经记不清了", entry: null }; }
   var opt = lifeFindOption(ev, optionId);
@@ -309,6 +311,25 @@ function duetView(s: LifeState, role: Role): any {
     return { turn: o.turn, age: o.age, label: o.label, eventId: o.eventId, shadow: o.shadow, partner: o.partner, outcome: o.outcome };
   });
   return { know: d.know, like: d.like, owed: owed, epitaph: d.epitaph, keep: DUET_ECHO_KEEP };
+}
+
+/**
+ * 快照里的日志：我还欠着话的那几天，把那条默契事件的猜测（guess / knew / line）摘掉。
+ * 不改存档里的日志，只在要摘的那几条上做一份浅拷贝。
+ */
+function duetLogView(s: LifeState, role: Role, log: LogEntry[]): LogEntry[] {
+  var owed = s.duet ? s.duet.owed[role] : [];
+  if (!owed || owed.length === 0) return log;
+  return log.map(function (e) {
+    if (e.kind !== "mirror" || !e.duet) return e;
+    var mine = false;
+    for (var i = 0; i < owed.length; i++) if (owed[i].turn === e.turn && owed[i].eventId === e.events.qing) mine = true;
+    if (!mine) return e;
+    var copy: any = {};
+    for (var k in e) copy[k] = (e as any)[k];
+    copy.duet = { outcome: e.duet.outcome, owed: e.duet.owed };
+    return copy;
+  });
 }
 
 // ---------- 存档修复 ----------

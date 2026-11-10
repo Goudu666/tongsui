@@ -347,11 +347,13 @@ function snapshot(s: LifelineMatch, role: Role) {
   var life = s.record.life!;
   var view: any = {};
   for (var k in life) {
-    if (k === "rng" || k === "seed" || k === "world") continue;
+    // duet 不原样给：里面有「对门当年猜我会选什么」，只走 duetView()
+    if (k === "rng" || k === "seed" || k === "world" || k === "duet") continue;
     view[k] = (life as any)[k];
   }
   if (life.phase !== "roll") view.duet = duetView(life, role);
-  view.log = life.phase === "ended" ? life.log : life.log.slice(-SNAPSHOT_LOG_TAIL);
+  // 还欠着话的那几天，日志里的猜测也先摘掉，等回完话再揭晓
+  view.log = duetLogView(life, role, life.phase === "ended" ? life.log : life.log.slice(-SNAPSHOT_LOG_TAIL));
   view.logTotal = life.log.length;
   var w = life.world;
   if (w) {

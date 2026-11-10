@@ -188,3 +188,24 @@ function finish(s) { for (let i = 0; i < 4000 && (s.world.actors.qing.action || 
   assert.ok(rs >= ps, `殷实人家专心念书 ${Math.round(rs * 100)}%，比清贫人家专心念书 ${Math.round(ps * 100)}% 还低`);
   console.log(`✓ 出身不压过活法：市重点（含交钱）殷实不上心 ${Math.round(rl * 100)}%（小康不上心 ${Math.round(ml * 100)}%）/ 清贫专心 ${Math.round(ps * 100)}% / 殷实专心 ${Math.round(rs * 100)}%`);
 }
+
+// ---------- 4. 托关系管一辈子：每种活法下，殷实人家比同活法的小康多够得着的不超过 15 个点 ----------
+// 二十二岁那条路一天的工钱管到 59 岁，后面三道要钱的关都跟着它走，所以单独钉一条（玩法评审 #26）
+{
+  const RICH = ["xu", "tang", "dong", "zheng"], MID = ["lin", "zhou", "su", "gu"];
+  const job = (way, fams, opts) => {
+    const ps = [];
+    for (let seed = 1; seed <= 16; seed++) {
+      const { marks } = live(seed * 7919, WAYS[way], 23, climb, (s) => { s.rolls.qing.familyId = fams[seed % 4]; s.rolls.mei.familyId = fams[(seed + 1) % 4]; });
+      ps.push(...Object.values(marks.m_job || {}));
+    }
+    return ps.filter((p) => opts.some((o) => p.open.includes(o))).length / ps.length;
+  };
+  const out = [];
+  for (const way of ["嘴甜人缘好", "混着来"]) {
+    const r = job(way, RICH, ["desk", "pull"]), m = job(way, MID, ["desk"]);
+    assert.ok(r - m <= 0.15, `${way}：殷实 ${Math.round(r * 100)}% 进得了单位（含托关系），小康 ${Math.round(m * 100)}%：出身压过了活法`);
+    out.push(`${way} 殷实 ${Math.round(r * 100)}% / 小康 ${Math.round(m * 100)}%`);
+  }
+  console.log(`✓ 托关系不压过活法：${out.join("，")}`);
+}

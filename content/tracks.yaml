@@ -93,6 +93,11 @@
   label: 坐办公室
   requires: { minAge: 22, maxAge: 59, flags: [job_desk] }
   duty: { label: 过桥上班, spot: river_bridge, arrive: [420, 510], until: 1080, needs: { hunger: 25, energy: -22, mood: -2 }, stats: { mind: 0.1 }, money: 24 }
+# 托家里的关系进的单位（m_job 的 pull，殷实人家）：和考进去的坐办公室不是一回事，钱少几块，也不长本事
+- id: job_pull
+  label: 托关系进的单位
+  requires: { minAge: 22, maxAge: 59, flags: [job_pull] }
+  duty: { label: 过桥上班, spot: river_bridge, arrive: [450, 540], until: 1050, needs: { hunger: 25, energy: -18, mood: -2 }, money: 18 }
 - id: job_teach
   label: 教书
   requires: { minAge: 22, maxAge: 59, flags: [job_teach] }

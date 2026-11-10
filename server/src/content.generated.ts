@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "17040c2109b1",
+ "version": "bf8c86504ee0",
  "events": [
   {
    "id": "c_roof_summer",
@@ -10984,7 +10984,7 @@ var CONTENT: Content = {
     {
      "id": "abroad",
      "text": "家里送你出国念书",
-     "min": 6.3,
+     "min": 7.7,
      "cost": 60,
      "requires": {
       "flags": [
@@ -11183,10 +11183,10 @@ var CONTENT: Content = {
      "id": "pull",
      "text": "托家里的关系进单位",
      "score": {
-      "charm": 0.6,
-      "mind": 0.4
+      "mind": 0.6,
+      "charm": 0.4
      },
-     "min": 6.7,
+     "min": 7.8,
      "cost": 15,
      "requires": {
       "flags": [
@@ -11194,7 +11194,6 @@ var CONTENT: Content = {
       ]
      },
      "lock": "家里没有这层关系",
-     "joins": "desk",
      "tags": [
       "competitive"
      ],
@@ -11205,7 +11204,6 @@ var CONTENT: Content = {
       "other": {},
       "bond": {},
       "flags": [
-       "job_desk",
        "job_pull"
       ]
      }
@@ -11393,6 +11391,15 @@ var CONTENT: Content = {
      "bond": {
       "sync": 3,
       "close": 2
+     },
+     "flags": []
+    },
+    "pull": {
+     "text": "两家托的是同一个人。报到那天在传达室碰上了，谁也没问对方是怎么进来的。",
+     "memory": "传达室",
+     "bond": {
+      "sync": 2,
+      "close": 1
      },
      "flags": []
     },
@@ -26099,6 +26106,34 @@ var CONTENT: Content = {
      "mind": 0.1
     },
     "money": 24
+   }
+  },
+  {
+   "id": "job_pull",
+   "label": "托关系进的单位",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_pull"
+    ]
+   },
+   "group": null,
+   "duty": {
+    "label": "过桥上班",
+    "spot": "river_bridge",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 1050,
+    "needs": {
+     "hunger": 25,
+     "energy": -18,
+     "mood": -2
+    },
+    "stats": {},
+    "money": 18
    }
   },
   {

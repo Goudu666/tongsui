@@ -18,7 +18,7 @@
   seasons: [summer]
   weight: 3
   title: 楼顶的夏夜
-  text: 三伏天，屋里待不住人。楼顶上凉席挨着凉席，不知谁家的收音机正说着相声，半个楼顶都等着乐。
+  text: 三伏天，屋里待不住人。楼顶上凉席挨着凉席，谁家的收音机开着，没人认真听。
   options:
     - id: stars
       text: 躺在凉席上数星星
@@ -34,7 +34,7 @@
       effects: { self: { energy: 10 } }
   resonance:
     stars:
-      text: 数到第四十七颗，收音机里抖了个包袱，楼顶全乐了。再数，谁也不记得数到哪儿了。
+      text: 你们并排躺着，数到第四十七颗的时候，谁也想不起来数到哪儿了。
       memory: 第四十七颗星
       bond: { sync: 3, close: 3 }
     popsicle:

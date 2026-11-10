@@ -15,8 +15,8 @@ var MILESTONE_AT = DAY_START + 10; // 关口在早上醒来不久发生
  * 可空下来的时间只有一部分会跟着对门搭伴（FOLLOW）、一部分会朝下一个关口使劲（STRIVE），不挣外快也不花钱。
  * 这两个数定的是「人不在的时候落下多少」：影子该落在不上心和一半一半之间，不能比本人在的时候还强（tools/paths.mjs 里有影子的活法）
  */
-var SHADOW_FOLLOW = 0.25;
-var SHADOW_STRIVE = 0.3;
+var SHADOW_FOLLOW = 0.2;
+var SHADOW_STRIVE = 0.2;
 /** 搭伴：两个人同时在同一个点做同一件事，这次的成长乘这个数 */
 var TOGETHER_BOOST = 1.5;
 var MEMORY_BOOST = 2;

@@ -286,7 +286,7 @@ function playLife(seed) {
         if (gap > 180) rep.gaps.push({ sec: Math.round(gap), age: t.age });
         lastEventAt = seconds();
         if (st) {
-          const forced = (w.fate.force || []).includes(pe.eventId);
+          const forced = !!pe.forced; // 硬塞的：被叫醒、撤下手上的事、被挪过去（人本来就在那儿的躲不过的不算）
           if (forced) rep.forced++;
           rep.story.push({ id: pe.eventId, chapter: st.chapter, beat: st.beat, turn: s.turn, age: t.age, slot: SLOT_ZH[w.slot], want: SLOT_ZH[SLOTS.indexOf(st.slot)], forced, atSec: Math.round(seconds()) });
         }
@@ -395,7 +395,7 @@ for (let i = 0; i < LIVES; i++) {
   const total = rep.ticks / TICK;
   console.log(`\n=== 第 ${i + 1} 世（seed ${rep.seed}，${rep.persona}）：现实 ${fmt(total)}，${rep.days.length} 个日子，结局 ${JSON.stringify(rep.end)}，再来一世 → ${rep.again}`);
   console.log(`  人家：青 ${rep.families.qing}  梅 ${rep.families.mei}`);
-  console.log(`  事件：${JSON.stringify(rep.events)}  搭伴 ${rep.together} 回  主线 ${rep.story.length}/21 件（章末躲不过的 ${rep.forced} 件）`);
+  console.log(`  事件：${JSON.stringify(rep.events)}  搭伴 ${rep.together} 回  主线 ${rep.story.length}/21 件（章末硬塞的 ${rep.forced} 件）`);
   if (rep.firstHour) console.log(`  第一个钟头：过到 ${rep.firstHour.age}（第 ${rep.firstHour.turn} 个日子），主线 ${rep.firstHour.story} 件，事件 ${JSON.stringify(rep.firstHour.events)}`);
   for (const [ch, v] of Object.entries(rep.chapters)) console.log(`  第 ${ch} 章：${v.days} 个日子，${fmt(v.sec)}（一天 ${fmt(v.sec / v.days)}）`);
   const idle = rep.days.flatMap((d) => d.slots.flatMap((x) => Object.values(x.did))).reduce((m, k) => { const kk = String(k).split(":")[0]; m[kk] = (m[kk] || 0) + 1; return m; }, {});
@@ -407,7 +407,7 @@ for (let i = 0; i < LIVES; i++) {
   console.log(`  各阶段平均一天几段：${Object.entries(byStage).map(([k, v]) => k + " " + (v.reduce((a, b) => a + b, 0) / v.length).toFixed(1)).join("  ")}`);
   console.log(`  一天过了几段（1~5 段的日子数）：${hist.join(" / ")}；睡前的精力平均 ${Math.round(rep.days.reduce((n, d) => n + (d.endEnergy ?? 0), 0) / rep.days.length)}`);
   console.log(`  每段干了什么：${JSON.stringify(idle)}`);
-  for (const st of rep.story) console.log(`    ${st.chapter}-${st.beat} ${st.id.padEnd(18)} ${String(st.age).padStart(2)} 岁 ${st.slot}${st.slot !== st.want ? `（写的是${st.want}）` : ""}${st.forced ? " · 章末躲不过" : ""}  @${fmt(st.atSec)}`);
+  for (const st of rep.story) console.log(`    ${st.chapter}-${st.beat} ${st.id.padEnd(18)} ${String(st.age).padStart(2)} 岁 ${st.slot}${st.slot !== st.want ? `（写的是${st.want}）` : ""}${st.forced ? " · 章末硬塞" : ""}  @${fmt(st.atSec)}`);
   if (process.env.DEBUG) for (const m of rep.misses) console.log("  排上了没碰上", m.age, m.miss.join(","), "\n      ", m.slots);
   if (Object.keys(rep.errors).length) console.log(`  服务器回的错：${JSON.stringify(rep.errors)}`);
   if (rep.stalls.length) console.log(`  卡住：${JSON.stringify(rep.stalls).slice(0, 1500)}`);

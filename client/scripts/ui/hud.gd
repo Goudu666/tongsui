@@ -198,14 +198,18 @@ func _money(f: Font, at: Vector2) -> float:
 
 
 ## 主线的小签：左边一块色印着「第几章」，右边是章名和今天的下一件事（没排上就只写章名）。
-## 章末躲不过去的那一件，签头换成梅红，写「今天」：到了它那一段，人在哪儿都会被叫过去
+## 章末躲不过去的那一件，签头换成梅红，一早就写明「今天傍晚，河边的长椅 · 到点一定会去」：
+## 到了它那一段，人在哪儿都会被叫过去。先说好，玩家有准备，不是被拽过去的（人本来就在那儿就照常发生）
 static func story_text(st: Dictionary) -> Array:
 	var n := int(st.get("chapter", 0))
 	var head := "第%s章" % (CHAPTER_NUM[n] if n > 0 and n < CHAPTER_NUM.size() else str(n))
 	var next: Variant = st.get("next")
 	var body := str(st.get("title", ""))
 	if next is String and next != "":
-		body += " · 下一件事 " + ("今天" if bool(st.get("force", false)) else "") + next
+		if bool(st.get("force", false)):
+			body += " · 今天%s · 到点一定会去" % next
+		else:
+			body += " · 下一件事 " + next
 	return [head, body]
 
 

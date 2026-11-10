@@ -160,7 +160,7 @@ func _run() -> void:
 	junior_mei.lines[0].have = 66
 	junior_mei.lines[0].ok = true
 	var duty := {"label": "上学", "spot": "school_gate", "arrive": [420, 540], "until": 930, "done": false, "open": true}
-	main.last_world = {"minute": 462.0, "rest": false, "needs": {"qing": {"hunger": 22, "energy": 81, "mood": 64, "clean": 47}},
+	main.last_world = {"minute": 390.0, "slot": 0, "ready": {"qing": false, "mei": true}, "playing": false, "rest": false, "needs": {"qing": {"hunger": 22, "energy": 81, "mood": 64, "clean": 47}},
 		"money": {"qing": 12}, "bond": {"sync": 14, "close": 46},
 		"goals": {"qing": junior, "mei": junior_mei},
 		"stats": {"qing": {"body": 6.2, "mind": 5.8, "charm": 4.1, "luck": 5.0}, "mei": {"body": 4.4, "mind": 6.6, "charm": 6.9, "luck": 3.0}},

@@ -16,6 +16,8 @@ const SnapshotBuffer := preload("res://scripts/net/snapshot_buffer.gd")
 const TICK_RATE := 10.0
 const CORRECT_DEADZONE := 6.0   ## 服务器和本地差这么点就不管
 const SNAP_DIST := 220.0        ## 差太多（换天回家、被叫去事件）直接到位
+## 一天五段 [从, 到, 名字]：和服务器 world.ts 的 SLOTS 一样（server/test/arch.test.mjs 对着查）
+const SLOTS := [[390, 480, "早上"], [480, 720, "上午"], [720, 930, "下午"], [930, 1110, "傍晚"], [1110, 1320, "晚上"]]
 const ZOOM := 1.4               ## 镜头：1080 高的屏幕上看到 771 高的一段河畔里
 const HUD_SHIFT := 56.0         ## 人在屏幕上比正中低这么多（界面坐标）
 
@@ -26,6 +28,8 @@ var age := 3                 ## 现在几岁（main 喂）：一个点位上挂�
 var duties: Dictionary = {}  ## role -> 今天该去的地方 { label, spot, arrive, until, done, open }，没有是 null（服务器 WORLD 里的 tracks）
 var unlocks: Dictionary = {} ## role -> 关口上挣来的去处（带 requires.flags 的行动 id，服务器 WORLD 里的 tracks[role].unlocks）
 var minute := 0.0            ## 现在几点（一天里的第几分钟）：有的去处只在一段钟点里开
+var slot := 0                ## 现在是一天里的第几段（SLOTS）。离线预览跟着 minute 算
+var playing := false         ## 两个人都定了，这一段正在眼前过：这时候不能走、不能做事
 var actors: Dictionary = {}  ## role -> Actor
 var hints: Array = []
 var controllable := true
@@ -109,6 +113,7 @@ func set_stage(stage: String) -> void:
 ## 时钟：决定昼夜（联机时 apply_world 自动调用；离线预览由 main 喂）
 func set_minute(m: float) -> void:
 	minute = m
+	slot = slot_at(m)
 	if art != null:
 		art.set_minute(m)
 	if street != null:
@@ -199,6 +204,9 @@ func apply_world(view: Dictionary) -> void:
 			unlocks[r] = tracks[r].get("unlocks", []) if tracks[r] is Dictionary else []
 	if view.has("minute"):
 		set_minute(float(view.minute))
+	if view.has("slot"):
+		slot = int(view.slot)
+	playing = bool(view.get("playing", false))
 	var t := float(view.get("tick", 0)) / TICK_RATE
 	var busy: Array = []
 	var qs: Variant = view.actors.get("qing")
@@ -340,12 +348,25 @@ func action_of(spot: Dictionary) -> Dictionary:
 			continue
 		# 不在钟点上先看后面还有没有别的事；都没有就还是它（点了服务器回「现在不是时候」）
 		var hours: Variant = rq.get("hours")
-		if hours is Array and hours.size() == 2 and (minute < float(hours[0]) or minute > float(hours[1])):
+		if hours is Array and hours.size() == 2 and not overlaps(hours, slot):
 			if late.is_empty():
 				late = act
 			continue
 		return act
 	return late
+
+
+## 这一分钟在第几段
+static func slot_at(m: float) -> int:
+	for i in SLOTS.size():
+		if m < float(SLOTS[i][1]):
+			return i
+	return SLOTS.size() - 1
+
+
+## 钟点窗 [从, 到] 和第 i 段有没有重叠（服务器 worldOverlaps）
+static func overlaps(win: Array, i: int) -> bool:
+	return float(win[0]) < float(SLOTS[i][1]) and float(win[1]) > float(SLOTS[i][0])
 
 
 ## 对门正在这个点位上做同一件事：现在过去就是搭伴
@@ -390,7 +411,8 @@ func draw_marks(c: CanvasItem) -> void:
 			continue  # 走近了由底部按钮显示，不重复
 		var label := str(act.get("label", ""))
 		if is_duty:
-			label += " · %s 前到" % P.clock(float(duty.arrive[1]))
+			var from: int = int((duty.get("slots", [slot]) as Array)[0])
+			label += " · %s" % ("现在" if from <= slot else str(SLOTS[from][2]))
 		var dup := false
 		for l in labeled:
 			if l[0] == label and (l[1] as Vector2).distance_to(at) < 120.0:

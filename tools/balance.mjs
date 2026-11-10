@@ -92,8 +92,8 @@ function tryAct(s, role, action) {
   return true;
 }
 
-// 真人不会瞬移：两件事之间要走一段路（大约二十分钟游戏时间，现实里五秒）
-const WALK_MINUTES = 20;
+// 一天五段（world.ts 的 SLOTS）：走路不花时间，机器人每段定一件事；顺手的事（吃、洗、敲门）做完接着定
+const worldOverlaps = G("worldOverlaps"), worldDutySlots = G("worldDutySlots"), worldReady = G("worldReady"), worldPass = G("worldPass");
 
 /** 机器人在空闲时决定做什么。返回 true 表示开始了一个行动（或原地等事件） */
 function botStep(s, role, bot, pairing, R, day) {
@@ -102,41 +102,37 @@ function botStep(s, role, bot, pairing, R, day) {
   const other = role === "qing" ? "mei" : "qing";
   const b = w.actors[other];
 
-  // 上一件事刚做完，还在路上
-  if (w.minute < day.idleSince[role] + WALK_MINUTES) return true;
-
-  // 命运：今天打算去的话，到点就去那个地方等着
-  if (day.attendMirror && w.fate.mirror && !w.done.includes(w.fate.mirror) && b && !b.asleep) {
+  // 命运：今天打算去的话，到了那一段就去那个地方等着（对门这一段已经定了别处就不等了）
+  if (day.attendMirror && w.fate.mirror && !w.done.includes(w.fate.mirror) && b && !b.asleep && !worldReady(s, other)) {
     const ev = eventOf.get(w.fate.mirror);
-    if (!ev.when || (w.minute >= ev.when[0] && w.minute <= ev.when[1])) {
+    if (worldOverlaps(ev.when, w.slot) && !day.waited[role + w.slot]) {
       [a.x, a.y] = center(ev.where);
+      day.waited[role + w.slot] = true;
       return true; // 站着等对方
     }
   }
   const mine = w.fate[role];
   if (day.attendSolo[role] && mine && !w.done.includes(mine)) {
     const ev = eventOf.get(mine);
-    if (ev.where && (!ev.when || (w.minute >= ev.when[0] && w.minute <= ev.when[1]))) {
+    if (ev.where && worldOverlaps(ev.when, w.slot) && !day.waited["s" + role + w.slot]) {
       [a.x, a.y] = center(ev.where);
+      day.waited["s" + role + w.slot] = true;
       return true;
     }
   }
 
   if (p.needs.hunger < 45) {
-    if (w.minute < 600 && p.money >= 2 && R() < 0.4 && tryAct(s, role, "eat_out")) return true;
+    if (w.slot <= 1 && p.money >= 2 && R() < 0.4 && tryAct(s, role, "eat_out")) return true;
     if (tryAct(s, role, "eat")) return true;
   }
-  // 今天打算去的事还没到点（比如夜里楼顶的事），就先不睡
-  let bedtime = bot === "homebody" ? 1140 : bot === "bookworm" ? 1260 : 1230;
+  // 宅的人晚上那一段直接睡；今天打算去的事还在后面几段，就先不睡
   const pending = [day.attendMirror ? w.fate.mirror : null, day.attendSolo[role] ? w.fate[role] : null]
-    .filter((id) => id && !w.done.includes(id)).map((id) => eventOf.get(id)).filter((ev) => ev.where && ev.when && ev.when[1] > w.minute);
-  if (pending.length) bedtime = Math.max(bedtime, ...pending.map((ev) => ev.when[0] + 30));
-  if (p.needs.energy < 12 || w.minute >= bedtime) { if (tryAct(s, role, "sleep")) return true; }
-  // 晚上还有事要去，白天就省着点劲儿：累了先歇着，不再折腾
-  if (pending.length && p.needs.energy < 40) return true;
-  // 今天该去的地方（上学、上班、出摊，跟着人生路线走）：到点了就去，野孩子和小财迷小时候偶尔逃学
+    .filter((id) => id && !w.done.includes(id)).map((id) => eventOf.get(id)).filter((ev) => ev.where && ev.when && ev.when[1] > G("SLOTS")[w.slot][1]);
+  const bedtime = bot === "homebody" && !pending.length ? 4 : 99;
+  if (p.needs.energy < 12 || w.slot >= bedtime) { if (tryAct(s, role, "sleep")) return true; }
+  // 今天该去的地方（上学、上班、出摊，跟着人生路线走）：到了那一段就去，野孩子和小财迷小时候偶尔逃学
   const duty = worldDutyOpen(s, C, role);
-  if (duty && w.minute >= duty.arrive[0]) {
+  if (duty && w.slot >= worldDutySlots(duty)[0]) {
     const truant = age > 17 ? 0 : bot === "wild" ? 0.25 : bot === "earner" ? 0.15 : 0.03;
     if (!day.truant[role] && R() < truant) day.truant[role] = true;
     if (!day.truant[role] && tryAct(s, role, "duty")) return true;
@@ -162,7 +158,8 @@ function botStep(s, role, bot, pairing, R, day) {
   else want = r < 0.3 ? "study" : r < 0.7 ? PLAY[Math.floor(R() * 3)] : r < 0.85 ? "work" : "knock";
   if (tryAct(s, role, want)) return true;
   if (tryAct(s, role, PLAY[Math.floor(R() * 3)])) return true;
-  return tryAct(s, role, "knock");
+  if (tryAct(s, role, "knock")) return true;
+  return !worldPass(s, C, role); // 实在没事做：这一段歇着
 }
 
 /** 选项：agree 的概率下跟对方选一样（默契好的两个人），否则按性格（和影子一样）或乱选 */
@@ -186,11 +183,11 @@ function simulate(seed, cfg) {
   const moodSum = { qing: 0, mei: 0 }, moodN = { qing: 0, mei: 0 };
   const bondTrack = [];
   const online = { qing: true, mei: true };
-  let day = null, lastTurn = -1, guard = 0;
+  let day = null, lastTurn = -1, guard = 0, lastSlot = null;
   while (s.phase !== "ended") {
     if (s.turn !== lastTurn) {
       lastTurn = s.turn;
-      day = { attendMirror: R() < cfg.attend, attendSolo: { qing: R() < 0.85, mei: R() < 0.85 }, truant: {}, idleSince: {}, wasIdle: {} };
+      day = { attendMirror: R() < cfg.attend, attendSolo: { qing: R() < 0.85, mei: R() < 0.85 }, truant: {}, waited: {} };
       if (TRACE && s.world.fate.mirror === TRACE) traceLog.push({ seed, turn: s.turn, attend: day.attendMirror, close: s.bond.close });
     }
     const w = s.world;
@@ -206,11 +203,12 @@ function simulate(seed, cfg) {
       }
       continue;
     }
+    // 每一段开头先让世界看一眼（真人也是先站在那儿再定）：命运给的事这时候才碰得上
+    const slotKey = s.turn + ":" + w.slot;
+    if (!w.playing && slotKey !== lastSlot) { lastSlot = slotKey; worldAdvance(s, C, 0, online); continue; }
     for (const r of ROLES) {
       const a = w.actors[r];
-      const idle = a && s.persons[r].alive && a.action === null && !a.asleep;
-      if (idle && !day.wasIdle[r]) day.idleSince[r] = w.minute;
-      day.wasIdle[r] = !!idle;
+      const idle = a && s.persons[r].alive && !w.playing && !worldReady(s, r);
       if (idle) botStep(s, r, cfg.bots[r], cfg.pairing, R, day);
     }
     const turnBefore = s.turn;

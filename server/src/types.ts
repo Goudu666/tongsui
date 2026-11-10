@@ -35,7 +35,7 @@ interface EventOption {
 }
 
 /** 关口怎么算分：各项属性乘权重相加；money 表示积蓄 */
-type ScoreWeights = Partial<Stats> & { money?: number };
+type ScoreWeights = Partial<Stats> & { money?: number; close?: number };
 
 /** 关口的成绩档：从高到低，取第一个够得着的。和「选了哪条路」分开记：成绩是事实，路是选择 */
 interface Grade {
@@ -178,16 +178,18 @@ interface Rules {
   };
   /** [从几岁起, 每年掉多少] */
   aging: { body: number[][]; mind: number[][]; activeFactor: number };
-  daily: { bodyEnergy: number; charmTogether: number; luckFate: number };
+  daily: { bodyEnergy: number; charmTogether: number; luckFate: number; wageFlags?: { [flag: string]: number } };
   check: { base: number; perPoint: number; luck: number; min: number; max: number; help: number };
   lifespan: {
     base: number; spread: number; body: number;
     moodMid: number; moodStep: number; moodMin: number; moodMax: number;
     bondClose: number; bond: number; widowClose: number; widow: number;
     min: number; max: number;
+    /** 关口上走的路折成的寿数：带着这个标记的人多（或少）活几年 */
+    flags?: { [flag: string]: number };
   };
   bond: {
-    closeSoft: number; closeFloor: number; closeScale: number; syncSoft: number; syncFloor: number;
+    closeSoft: number; closeFloor: number; closeScale: number; syncSoft: number; syncFloor: number; syncSteady: number;
     drift: { [S in Stage]: number }; driftDistance: number; driftFloor: number;
   };
 }
@@ -236,7 +238,7 @@ interface Action {
   sleep: boolean;
   /** 日程：上学、上班。做多久、涨什么、挣多少由这个人走的路（Track.duty）决定 */
   duty: boolean;
-  requires: { minAge?: number; maxAge?: number; owner?: boolean; hours?: [number, number] };
+  requires: { minAge?: number; maxAge?: number; owner?: boolean; hours?: [number, number]; flags?: string[]; notFlags?: string[] };
   needs: Partial<Needs>;
   stats: Partial<Stats>;
   money: number;
@@ -272,6 +274,8 @@ interface Track {
   id: string;
   label: string;
   requires: { minAge?: number; maxAge?: number; flags?: string[]; notFlags?: string[] };
+  /** 同一所学校、同一个行当里的不同位置（学习委员和体育委员还是同班）：group 一样就算同路，日程照样搭伴 */
+  group: string | null;
   duty: Duty | null;
 }
 
@@ -359,6 +363,8 @@ interface PendingEvent {
   shadow: Role[];
   /** 关口：每个人这次的发挥（加在得分上） */
   swing?: { [R in Role]?: number };
+  /** 关口：默契替这个人托住的分（已经算在 swing 里了，单拿出来是给他看的） */
+  steady?: { [R in Role]?: number };
 }
 
 interface WorldState {
@@ -390,7 +396,7 @@ interface LogEntry {
   resonance: boolean | null;
   text: string;
   /** 关口：每个人的得分（属性类按百分制，钱类按块）、成绩和走上的路 */
-  results?: { [R in Role]?: { score: number; unit: string; grade: string | null; option: string; track: string } };
+  results?: { [R in Role]?: { score: number; scored?: boolean; unit: string; grade: string | null; option: string; track: string } };
   /** 一天的小结：每个人今天涨了多少 */
   gains?: { [R in Role]?: Partial<Stats> };
   /** 这件事里做过的检定 */

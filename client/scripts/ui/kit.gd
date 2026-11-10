@@ -14,7 +14,8 @@ const BASE := Vector2(1920, 1080)
 static var safe_override: Variant = null  ## 截图和测试用：假装有刘海，Vector2(左, 右)
 
 
-## 横屏时刘海和圆角在左右两边：返回 (左, 右) 要让开的宽度，单位是界面坐标。电脑上是 0
+## 横屏时刘海和圆角在左右两边：返回 (左, 右) 要让开的宽度，单位是界面坐标。电脑上是 0。
+## 真机上两边一样宽（见 even_sides）
 static func safe_sides(c: CanvasItem) -> Vector2:
 	if safe_override is Vector2:
 		return safe_override
@@ -25,7 +26,14 @@ static func safe_sides(c: CanvasItem) -> Vector2:
 	if win.x <= 0.0 or safe.size.x <= 0:
 		return Vector2.ZERO
 	var k := c.get_viewport_rect().size.x / win.x
-	return Vector2(clampf(safe.position.x * k, 0.0, 160.0), clampf((win.x - safe.end.x) * k, 0.0, 160.0))
+	return even_sides(safe.position.x * k, (win.x - safe.end.x) * k)
+
+
+## 左右都取两边里大的那个。方向锁的是 sensor_landscape：手机翻 180 度时窗口大小不变，界面不会重排，
+## 刘海却换了边。两边让得一样宽，翻过来也不会被挡，版面还是对称的
+static func even_sides(left: float, right: float) -> Vector2:
+	var side := clampf(maxf(left, right), 0.0, 160.0)
+	return Vector2(side, side)
 
 
 static func set_accent(c: Color) -> void:

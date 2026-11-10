@@ -2,8 +2,8 @@
 #
 # 和普通事件不同的地方：
 #   age     到这个年纪的第一天发生
-#   score   怎么算分：各项属性乘权重相加（money = 积蓄）。界面上常驻显示离每条线还差多少
-#   swing   考试有发挥：得分随手气和运气上下浮动一点（约 ±0.3）
+#   score   怎么算分：各项属性乘权重相加（money = 积蓄，close = 两个人的亲近；这两样按原数显示，不算发挥）。界面上常驻显示离每条线还差多少
+#   swing   考试有发挥：得分随手气和运气上下浮动一点（约 ±0.3）。手气差的那一半按默契托住一些（rules.yaml 的 bond.syncSteady）
 #   grades  成绩档（事实）：从高到低取第一个够得着的，给标记
 #   options 能走的路（选择）：min 是这条路的分数线，不够的选项是灰的；score 可以单独写这条路看什么；
 #           cost 是选了以后花掉的积蓄。只剩一条路可走时不弹窗，直接记进长卷
@@ -18,16 +18,102 @@
   stage: childhood
   age: 6
   title: 上小学
-  text: 新书包比你的背还宽。从今天起，白天有一大半不归你了。
+  text: 新书包比你的背还宽。头一天，老师让每个人上讲台站一会儿：念黑板上的字，绕操场跑一圈，再唱两句。她要挑三个小干部。
   options:
+    - id: study
+      text: 当学习委员，收作业本
+      score: { mind: 1 }
+      min: 5.5
+      tags: [competitive]
+      effects: { flags: [in_school, lead_study] }
+    - id: sport
+      text: 当体育委员，喊队
+      score: { body: 1 }
+      min: 5.5
+      tags: [adventure]
+      effects: { flags: [in_school, lead_sport] }
+    - id: art
+      text: 当文艺委员，起头唱歌
+      score: { charm: 1 }
+      min: 5.3
+      tags: [gentle]
+      effects: { flags: [in_school, lead_art] }
     - id: go
-      text: 背上书包
+      text: 坐回自己的座位
+      tags: [patient]
       effects: { flags: [in_school] }
   resonance:
+    study:
+      text: 两个人都举了手，老师想了想，一个管收，一个管发。作业本从你手里出去，从 TA 手里回来。
+      memory: 一个收一个发
+      bond: { sync: 2, close: 2 }
+    sport:
+      text: 一个喊「立正」，一个喊「稍息」。全班站得乱七八糟，你们俩站得最直。
+      memory: 立正，稍息
+      bond: { sync: 2, close: 2 }
+    art:
+      text: 起头的是你们俩，起的不是一个调。全班跟着唱成了两截，老师笑得直不起腰。
+      memory: 起了两个调
+      bond: { sync: 2, close: 2 }
     go:
-      text: 两扇门是同时开的。两个新书包，一前一后下了楼。
+      text: 两扇门是同时开的。两个新书包，一前一后下了楼，坐进了前后桌。
       memory: 两个新书包
-      bond: { close: 2 }
+      bond: { sync: 1, close: 2 }
+  dissonance:
+    text: 一个站在讲台边上，一个坐在底下。放学的时候，底下的那个等在门口，替讲台上的那个拿着书包。
+    bond: { close: 1 }
+
+# 三年级：放学以后的那两个钟头交给谁。选了哪个，哪个地方下午就多一件只有你们能做的事（content/map.yaml 的 club_*），
+# 长得比自己练快；两个人进同一个，下午就能搭伴。只能进一个。
+- id: m_club
+  kind: milestone
+  stage: childhood
+  age: 9
+  title: 三年级
+  text: 少年宫的老师来学校挑人，体校的教练在操场边上站了一下午，数学老师在黑板上留了一道没人会的题。放学以后的那两个钟头，要交给一个地方了。
+  options:
+    - id: math
+      text: 进数学小组
+      score: { mind: 1 }
+      min: 6.6
+      tags: [competitive]
+      effects: { flags: [club_math] }
+    - id: sport
+      text: 进体校的少年班
+      score: { body: 1 }
+      min: 6.4
+      tags: [adventure]
+      effects: { flags: [club_sport] }
+    - id: art
+      text: 进少年宫的曲艺队
+      score: { charm: 1 }
+      min: 6.0
+      tags: [gentle]
+      effects: { flags: [club_art] }
+    - id: none
+      text: 哪儿也不去，放了学就回家
+      tags: [solitude]
+      effects: { self: { mood: 5 } }
+  resonance:
+    math:
+      text: 那道没人会的题，你们俩在一张草稿纸上算了三天。算出来那天，纸的正反面都写满了。
+      memory: 写满正反面的草稿纸
+      bond: { sync: 3, close: 2 }
+    sport:
+      text: 教练让新来的先跑十圈。跑到第七圈，谁也没先停。
+      memory: 第七圈
+      bond: { sync: 3, close: 2 }
+    art:
+      text: 一副快板拆成两半，一人一片。两片合起来才打得响。
+      memory: 一人一片快板
+      bond: { sync: 3, close: 2 }
+    none:
+      text: 三点半，校门口，你们俩是头一拨出来的。太阳还高，哪儿都来得及去。
+      memory: 头一拨出校门
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 放了学，一个往操场走，一个往校门外走。走到一半都回了一下头。
+    bond: { close: -2 }
 
 - id: m_junior
   kind: milestone
@@ -259,18 +345,129 @@
     text: 一个搬走了，一个留下了。留下的那个，有时候还会朝对面那扇门看一眼。
     bond: { close: -3 }
 
+# 四十五岁：前半辈子攒下的三样东西（身体、本事、钱）各能换一样。只够顾好一头。
+# 三条路都接着七十岁那一关：身体接「自己下楼」，位子多挣的钱接「请人照应」，花在家里的接「搭伙过」。
+- id: m_midlife
+  kind: milestone
+  stage: middle
+  age: 45
+  title: 四十五
+  text: 体检单上多了两个箭头，单位里空出来一个位子，家里的老人要住院。三件事是同一个礼拜到的，力气只够顾好一头。
+  options:
+    - id: post
+      text: 去争那个位子
+      score: { mind: 0.5, charm: 0.5 }
+      min: 7.4
+      tags: [competitive]
+      effects: { self: { mood: 6 }, flags: [mid_post] }
+    - id: home
+      text: 把钱和工夫都花在家里
+      score: { money: 1 }
+      min: 110
+      cost: 110
+      tags: [responsible]
+      effects: { self: { mood: 10 }, other: { mood: 4 }, bond: { close: 8 }, flags: [mid_home] }
+    - id: fit
+      text: 先把身体捡起来
+      tags: [patient]
+      effects: { self: { body: 2, mood: 4 }, flags: [mid_fit] }
+  resonance:
+    post:
+      text: 两个人都升了一级，都搬进了有窗户的那间屋。晚上回来得更晚了，可是楼道里的灯，后回来的那个总看见还亮着。
+      memory: 留着的楼道灯
+      bond: { sync: 2, close: 1 }
+    home:
+      text: 医院的走廊里，你们一人守上半夜，一人守下半夜。交班的时候谁也不说话，把暖壶递过去。
+      memory: 递过去的暖壶
+      bond: { sync: 3, close: 3 }
+    fit:
+      text: 早上六点，河边多了两个跑不动的人。跑一段，走一段，一个月以后，能一口气到桥头了。
+      memory: 一口气到桥头
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个天天加班，一个天天往医院跑，一个天不亮就去河边。三样里你们各顾了各的，碰面只剩下点点头。
+    bond: { close: -3 }
+
 - id: m_retire
   kind: milestone
   stage: old
   age: 60
   title: 退休
-  text: 最后一天的活干完了。从明天起，一整天又都是自己的了。
+  text: 最后一天的活干完了。从明天起，一整天又都是自己的了。也有人来问：手上的本事，还愿不愿意往下传？
   options:
+    - id: mentor
+      text: 带个徒弟，再干几年
+      score: { mind: 0.5, charm: 0.5 }
+      min: 7.0
+      tags: [responsible]
+      effects: { self: { mood: 6 }, flags: [retired, retire_mentor] }
     - id: rest
       text: 把闹钟收起来
+      tags: [gentle]
       effects: { self: { mood: 8 }, flags: [retired] }
   resonance:
+    mentor:
+      text: 你们各带了一个徒弟。两个年轻人在楼下碰见了，互相打听：你师父也这么爱说「我们那时候」吗？
+      memory: 两个徒弟
+      bond: { sync: 2, close: 2 }
     rest:
       text: 早上醒得还是那么早。你们在楼下碰见了，都不知道该往哪走，就一块儿往河边走。
       memory: 不知道往哪走的早晨
       bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个还是天天按点出门，一个坐在楼下看人下棋。出门的那个走过去，看棋的那个抬头说：早点回来。
+    bond: { close: 1 }
+
+# 七十岁：一辈子的三样东西各接着一条路。亲近够，两家并一家（要两个人都这么选才并得成）；
+# 身体够，自己下楼；钱够，请人照应。走哪条都多活几年（rules.yaml → lifespan.flags），坐在阳台上的不多也不少。
+- id: m_evening
+  kind: milestone
+  stage: old
+  age: 70
+  title: 七十
+  text: 三楼的楼梯一共四十二级，数了一辈子。从今年起，上下一趟要在二楼歇一回了。
+  options:
+    - id: pair
+      text: 两家并一家，搭伙过
+      score: { close: 1 }
+      min: 55
+      tags: [gentle]
+      effects: { bond: { close: 3 } }
+    - id: walk
+      text: 每天自己下楼走一圈
+      score: { body: 1 }
+      min: 5.0
+      tags: [patient]
+      effects: { self: { mood: 4 }, flags: [old_spry] }
+    - id: care
+      text: 请个人来照应
+      score: { money: 1 }
+      min: 160
+      cost: 160
+      tags: [responsible]
+      effects: { self: { mood: 4 }, flags: [old_care] }
+    - id: sit
+      text: 搬把椅子坐在阳台上
+      tags: [solitude]
+      effects: { self: { mood: 2 } }
+  resonance:
+    pair:
+      text: 对门的那扇门不锁了。两家的碗筷放进了一个柜子，分不出哪只是谁家的。
+      memory: 一个柜子里的碗
+      bond: { sync: 3, close: 4 }
+      flags: [p_old_pair]
+    walk:
+      text: 下楼的时候一个扶着左边的栏杆，一个扶着右边的。在二楼歇的那一回，正好说上两句话。
+      memory: 二楼歇一回
+      bond: { sync: 2, close: 2 }
+    care:
+      text: 请来的两个人是同乡。她们在楼道里说家乡话，你们在各自屋里听着，一句也听不懂，听着挺热闹。
+      memory: 楼道里的家乡话
+      bond: { sync: 1, close: 1 }
+    sit:
+      text: 两个阳台挨着。两把椅子，中间隔着一道矮墙，茶缸子就搁在墙头上。
+      memory: 墙头上的茶缸子
+      bond: { sync: 2, close: 3 }
+  dissonance:
+    text: 一个还天天下楼，一个下不去了。下楼的那个回来，总在对门的门口站一会儿，说说今天河边有什么。
+    bond: { close: 1 }

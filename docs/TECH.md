@@ -35,7 +35,7 @@
 
 游戏锁横屏（`window/handheld/orientation=4`，横着拿，哪边朝上都行）。设计稿 1920×1080，`canvas_items` + `expand`：**高恒为 1080，手机越长越宽**（20:9 是 2400×1080），平板是变高。所以：
 
-- 贴左右边的东西用锚点或 `hud.left()` / `hud.right()` 算，不写死 1920。刘海和圆角在左右两侧，让开的宽度用 `Kit.safe_sides()` 取（电脑上是 0）。
+- 贴左右边的东西用锚点或 `hud.left()` / `hud.right()` 算，不写死 1920。刘海和圆角在左右两侧，让开的宽度用 `Kit.safe_sides()` 取（电脑上是 0）；真机上左右取两边里大的那个，手机翻 180 度（窗口大小不变，不会重排）刘海换了边也不会被挡。
 - 河畔里的 HUD（`ui/hud.gd`）是「对门」构图：顶上一条横带（y 40~196），左边是我的（日历牌、四个圆表、零花钱），右边是对门的（两个圆、对门的牌：TA 在哪、在做什么），中间是常驻的关口纸带（`ui/goal_panel.gd`：我的分在左、尺在中间、对门的分在右）。右下角是行动按钮。对门走出画面时屏幕边上有个箭头指着 TA。
 - 菜单页：`_show_screen()` 之后用 `_columns(body)` 拿左右两栏，左边写「这是什么」，右边放「要你做什么」。
 - 传承（`legacy_ui.gd`）跟着两栏走：投胎页对门的老物件在右栏，我面前的三件在两栏下面通栏并排（`my_offer(body)`），定下来的按钮跟到它下面；结局页「留给河畔里」在右栏（`left_behind`），「再来一世」在左栏（`again`）。
@@ -207,7 +207,7 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 
 关口和路线是核心玩法的骨架（设计见 [GDD.md](GDD.md) 第 4 节）。规则在 `server/src/sim.ts`（`lifeTrack` 路线、`lifeOptionLock` 上锁、`lifeGoal` 目标）
 和 `server/src/world.ts`（`worldPickAction` 点位上现在能做什么、`worldDuty` 日程、`worldFinish` 里的搭伴倍率和状态效率）。
-分数线调完要跑 `node tools/paths.mjs`：九种活法的机器人把人生过到三十岁，打印每条线有多少人够得着。
+分数线调完要跑 `node tools/paths.mjs`：十二种活法的机器人把人生过完（最后一道关在七十岁），打印每条线有多少人够得着。
 `server/test/paths.test.mjs` 把四件事钉成断言：不上心的够不着高线、活法比出身重要、搭伴比一个人强、一个人够不着所有的线。
 
 结局格式见 `content/endings.yaml` 文件头。服务器在两人都离开后调用 `lifeEnding` 算出结局，存进 `LifeState.ending`（`{ pair, lives: { qing, mei } }`），

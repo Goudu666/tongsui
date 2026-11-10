@@ -444,7 +444,13 @@ function worldView(s: LifelineMatch) {
     var track = lifeTrack(CONTENT, p, age);
     var d = worldDuty(life, CONTENT, r);
     // open：现在还去不去得了（今天有、还没去、没迟到）。客户端靠它决定报到的点位上显示什么
-    tracks[r] = { id: track.id, label: track.label, duty: d ? { label: d.label, spot: d.spot, arrive: d.arrive, until: d.until, done: !!w.dutyDone[r], open: !!worldDutyOpen(life, CONTENT, r) } : null };
+    // unlocks：这个人在关口上挣来的去处（带 requires.flags 的行动里他走得进去的）。客户端不知道标记，靠这张单子决定点位上显示什么
+    var unlocks: string[] = [];
+    for (var ai = 0; ai < CONTENT.map.actions.length; ai++) {
+      var arq = CONTENT.map.actions[ai].requires || {};
+      if ((arq.flags || arq.notFlags) && lifeHasAll(p.flags, arq.flags) && lifeHasNone(p.flags, arq.notFlags)) unlocks.push(CONTENT.map.actions[ai].id);
+    }
+    tracks[r] = { id: track.id, label: track.label, unlocks: unlocks, duty: d ? { label: d.label, spot: d.spot, arrive: d.arrive, until: d.until, done: !!w.dutyDone[r], open: !!worldDutyOpen(life, CONTENT, r) } : null };
   }
   // 今天命运的「提示」：画在地图上，走近了才知道是什么事
   var hints: { zone: string; text: string }[] = [];

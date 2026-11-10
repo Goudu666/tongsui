@@ -3,7 +3,8 @@ extends Control
 ## 构图是「对门」：我的东西靠左，对门的靠右，中间留给河畔里。
 ##   左上：日历牌（节气 / 年纪 / 钟点，白天一个太阳，夜里一弯月亮），下面一排四个圆表
 ##         （饱腹、精力、心情、清洁），低了变梅红并且抖一下；旁边是零花钱
-##   中上：下一个关口的纸带（goal_panel.gd，main.gd 按 strip_rect() 摆）
+##   中上：下一个关口的纸带（goal_panel.gd，main.gd 按 strip_rect() 摆）；
+##         纸带底下，零花钱旁边是主线的一张小签：第几章，今天的「下一件事」在哪张图、哪一段
 ##   右上：两个圆，越亲近叠得越多；再往右是对门的牌：TA 在哪、在做什么
 ##   屏幕边上：对门走出画面时，一个 TA 颜色的小箭头指着方向
 ## 刘海和圆角在左右两边，inset 是要让开的宽度（Kit.safe_sides）。
@@ -21,6 +22,7 @@ const BOND_W := 128.0
 const GAP := 16.0
 const STRIP_H := 96.0      ## 关口纸带的高
 const STRIP_MAX := 1280.0  ## 关口纸带最宽这么多（再长尺子就空了）
+const CHAPTER_NUM := ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"]
 
 var time_label := ""    ## LifeTime.at().label，例如 "7 岁 · 立夏"
 var stage := "childhood"
@@ -35,6 +37,7 @@ var bond: Dictionary = {}
 var partner: Dictionary = {}  ## 对门的牌 { name, color, online, big, small }；空的不画（离线逛逛）
 var pointer: Dictionary = {}  ## 对门走出画面了 { at: 屏幕上贴边的位置, dir: 方向, color, name }；在画面里是空的
 var inset := Vector2.ZERO     ## (左, 右) 给刘海让开的宽度
+var story: Dictionary = {}    ## 主线 { chapter, title, next, force }（WORLD 的 story，next 是我这一句）；空的不画
 var _shown: Dictionary = {}   ## 圆表上正在显示的值（慢慢追上真实值）
 var _t := 0.0
 var _idle := 0.0
@@ -63,7 +66,7 @@ func _process(delta: float) -> void:
 		_shown[k] = cur
 		if target < LOW:
 			moving = true
-	var sig := [time_label, stage, int(minute), slot_name, playing, tag, note, money, bond.hash(), partner.hash(), pointer.hash(), inset, size]
+	var sig := [time_label, stage, int(minute), slot_name, playing, tag, note, money, bond.hash(), partner.hash(), pointer.hash(), story.hash(), inset, size]
 	if moving or _idle >= 0.1 or sig != _sig:
 		_sig = sig
 		_idle = 0.0
@@ -103,6 +106,8 @@ func _draw() -> void:
 	var y := TOP + STRIP_H + 14.0
 	if money >= 0:
 		x += _money(f, Vector2(x, y)) + 12.0
+	if not story.is_empty():
+		x += _story(f, Vector2(x, y)) + 12.0
 	if note != "":
 		var nw := f.get_string_size(note, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x
 		draw_rect(Rect2(x, y + 5, nw + 20, 32), Color(P.PAPER, 0.85))
@@ -188,6 +193,32 @@ func _money(f: Font, at: Vector2) -> float:
 	draw_arc(at + Vector2(22, 21), 11.0, 0, TAU, 20, P.INK, 2.0, true)
 	draw_arc(at + Vector2(22, 21), 6.0, 0, TAU, 14, P.INK, 1.2, true)
 	draw_string(f, at + Vector2(44, 31), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, P.INK)
+	return r.size.x
+
+
+## 主线的小签：左边一块色印着「第几章」，右边是章名和今天的下一件事（没排上就只写章名）。
+## 章末躲不过去的那一件，签头换成梅红，写「今天」：到了它那一段，人在哪儿都会被叫过去
+static func story_text(st: Dictionary) -> Array:
+	var n := int(st.get("chapter", 0))
+	var head := "第%s章" % (CHAPTER_NUM[n] if n > 0 and n < CHAPTER_NUM.size() else str(n))
+	var next: Variant = st.get("next")
+	var body := str(st.get("title", ""))
+	if next is String and next != "":
+		body += " · 下一件事 " + ("今天" if bool(st.get("force", false)) else "") + next
+	return [head, body]
+
+
+func _story(f: Font, at: Vector2) -> float:
+	var parts := story_text(story)
+	var hw := f.get_string_size(parts[0], HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x + 24.0
+	var bw := f.get_string_size(parts[1], HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x + 28.0
+	var r := Rect2(at, Vector2(hw + bw, 42))
+	draw_rect(Rect2(r.position + Vector2(4, 4), r.size), Color(P.INK, 0.25))
+	draw_rect(r, P.PAPER)
+	draw_rect(Rect2(at, Vector2(hw, 42)), P.MEI if bool(story.get("force", false)) else P.INK)
+	draw_rect(r, P.INK, false, 2.0)
+	draw_string(f, at + Vector2(12, 30), parts[0], HORIZONTAL_ALIGNMENT_LEFT, -1, 24, P.PAPER)
+	draw_string(f, at + Vector2(hw + 14, 31), parts[1], HORIZONTAL_ALIGNMENT_LEFT, -1, 26, P.INK)
 	return r.size.x
 
 

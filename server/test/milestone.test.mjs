@@ -152,7 +152,7 @@ function sleep(s, r) {
   s.world.event = { eventId: "t_choose_school", kind: "mirror", roles: ["qing", "mei"], choices: { qing: "key" }, shadow: [] };
   s.world.fate.mirror = "t_choose_school";
   const up = G("lifeUpgrade")(s);
-  assert.deepEqual(J(up), ["v4→v5"]);
+  assert.equal(J(up)[0], "v4→v5"); // 后面还会接着往上升（v5→v6 ……），这里只看这一段
   assert.equal(s.version, G("LIFE_VERSION"));
   assert.equal(s.world.rest, false, "上学日不是歇着的日子");
   assert.ok(!("schoolDay" in s.world));

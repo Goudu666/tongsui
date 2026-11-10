@@ -299,13 +299,15 @@ function restart(env, id) {
   const gd = repo("client/scripts/net/protocol.gd");
   const consts = Object.fromEntries([...gd.matchAll(/^const (\w+) := (-?\d+)/gm)].map((m) => [m[1], Number(m[2])]));
   for (const [name, code] of Object.entries(J(OP))) assert.equal(consts[name], code, `protocol.gd 的 ${name} 应为 ${code}（main.ts 的 OP）`);
-  const extra = Object.keys(consts).filter((k) => !(k in OP) && !["NOTIFY_PARTNER_JOINED", "NOTIFY_PARTNER_ONLINE", "VERSION", "MIN_SERVER"].includes(k));
+  const extra = Object.keys(consts).filter((k) => !(k in OP) && !["NOTIFY_PARTNER_JOINED", "NOTIFY_PARTNER_ONLINE", "VERSION", "MIN_SERVER", "LEGACY_SINCE"].includes(k));
   assert.deepEqual(extra, [], "protocol.gd 里有服务端没有的消息号");
   assert.equal(consts.NOTIFY_PARTNER_JOINED, G("NOTIFY_PARTNER_JOINED"));
   assert.equal(consts.NOTIFY_PARTNER_ONLINE, G("NOTIFY_PARTNER_ONLINE"));
   assert.equal(consts.VERSION, G("PROTOCOL_VERSION"), "protocol.gd 的 VERSION 要和 main.ts 的 PROTOCOL_VERSION 一起改");
   assert.ok(consts.MIN_SERVER <= G("PROTOCOL_VERSION"), "仓库里的客户端连不上仓库里的服务端");
   assert.ok(G("MIN_CLIENT_PROTOCOL") <= consts.VERSION, "仓库里的服务端不让仓库里的客户端进");
+  assert.ok(consts.LEGACY_SINCE > consts.MIN_SERVER && consts.LEGACY_SINCE <= G("PROTOCOL_VERSION"), "传承是协议 3 加的：比它旧的服务器和安装包都不懂「再来一世」");
+  assert.equal(consts.LEGACY_SINCE, G("LEGACY_SINCE_PROTOCOL"), "protocol.gd 的 LEGACY_SINCE 要和 main.ts 的 LEGACY_SINCE_PROTOCOL 是同一个数");
   // 测试机器人用的消息号
   const bot = repo("server/test/e2e.mjs").match(/const OP = (\{[^}]+\})/);
   assert.deepEqual(new Function(`return ${bot[1]}`)(), J(OP), "server/test/e2e.mjs 的 OP 和 main.ts 不一致");

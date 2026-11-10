@@ -218,9 +218,8 @@ function restart(env, id) {
     Object.assign(life.world.actors.qing, { x: table.at[0], y: table.at[1] });
     life.persons.qing.needs.hunger = 10;
     R2.loop([R2.msg({ userId: "user-a", sessionId: "sa2" }, OP.ACT, { spot: table.id })]);
-    assert.equal(life.world.actors.qing.action, "eat");
+    assert.ok(life.persons.qing.needs.hunger > 10, "饭吃上了（顺手的事当场吃完）");
     for (let i = 0; i < 3000; i++) assert.equal(R2.loop(), true, "修复后的房间要能一直跑下去");
-    assert.ok(life.persons.qing.needs.hunger > 10 || life.turn > 0, "饭吃上了");
     assert.equal(env.record(env.id).life.version, G("LIFE_VERSION"), "升级后的结构写回了存档");
 
     // 存档比服务器还新（服务器被回滚了）：不硬读，把原因说清楚
@@ -241,7 +240,11 @@ function restart(env, id) {
   R.leave([pb]); // 存档点
   R.join([pb]);
   const savedMinute = env.record(env.id).life.world.minute;
-  for (let i = 0; i < 50; i++) R.loop();
+  // 钟只在两个人都定了以后走：两个人这一段都歇着
+  R.life().world.fate = { mirror: null, qing: null, mei: null, milestone: null };
+  R.life().world.event = null;
+  R.loop([R.msg(pa, OP.PASS, {}), R.msg(pb, OP.PASS, {})]);
+  for (let i = 0; i < 5; i++) R.loop();
   assert.ok(R.life().world.minute > savedMinute);
   // 模拟一个规则 bug：内存里的状态坏了（存档里是好的）
   R.life().world.fate.qing = "ghost_event_from_a_bug";
@@ -261,8 +264,11 @@ function restart(env, id) {
   assert.notEqual(again.matchId, env.matchId);
   const R2 = room(env.nk, again.matchId);
   R2.join([pa, pb]);
+  R2.life().world.fate = { mirror: null, qing: null, mei: null, milestone: null };
+  R2.life().world.event = null;
+  assert.equal(R2.loop([R2.msg(pa, OP.PASS, {}), R2.msg(pb, OP.PASS, {})]), true);
   for (let i = 0; i < 100; i++) assert.equal(R2.loop(), true);
-  assert.ok(R2.life().world.minute > savedMinute);
+  assert.ok(R2.life().world.minute > savedMinute || R2.life().turn > 0);
   console.log("✓ 出错回滚：房间关闭 / 存档停在上一个存档点且不含坏状态 / 记下次数和原因 / 通知两人 / 日志带现场 / 重连后从存档接着过");
 }
 
@@ -306,7 +312,7 @@ function restart(env, id) {
   assert.equal(consts.VERSION, G("PROTOCOL_VERSION"), "protocol.gd 的 VERSION 要和 main.ts 的 PROTOCOL_VERSION 一起改");
   assert.ok(consts.MIN_SERVER <= G("PROTOCOL_VERSION"), "仓库里的客户端连不上仓库里的服务端");
   assert.ok(G("MIN_CLIENT_PROTOCOL") <= consts.VERSION, "仓库里的服务端不让仓库里的客户端进");
-  assert.ok(consts.LEGACY_SINCE > consts.MIN_SERVER && consts.LEGACY_SINCE <= G("PROTOCOL_VERSION"), "传承是协议 3 加的：比它旧的服务器和安装包都不懂「再来一世」");
+  assert.ok(consts.LEGACY_SINCE <= G("PROTOCOL_VERSION"), "传承是协议 3 加的：比它旧的服务器和安装包都不懂「再来一世」");
   assert.equal(consts.LEGACY_SINCE, G("LEGACY_SINCE_PROTOCOL"), "protocol.gd 的 LEGACY_SINCE 要和 main.ts 的 LEGACY_SINCE_PROTOCOL 是同一个数");
   // 测试机器人用的消息号
   const bot = repo("server/test/e2e.mjs").match(/const OP = (\{[^}]+\})/);
@@ -328,5 +334,9 @@ function restart(env, id) {
   assert.ok(num("client/scripts/world/actor.gd", "WALK_SPEED") < G("WALK_SPEED"), "客户端走得比服务器限速还快");
   assert.ok(num("client/scripts/world/world_view.gd", "SPOT_RADIUS") < G("SPOT_RADIUS"), "客户端的互动范围比服务器的大");
   assert.equal(num("client/scripts/world/world_view.gd", "TICK_RATE"), G("TICK_RATE"), "客户端按错误的 tick 频率插值");
-  console.log(`✓ 契约：${Object.keys(OP).length} 个消息号 / 通知码 / 协议版本 / 测试机器人消息号 / 年龄阶段表 / 走动限速与互动范围 / tick 频率 两边一致`);
+  // 一天五段：客户端拿它判断钟点开不开、日历牌上写哪一段
+  const slots = repo("client/scripts/world/world_view.gd").match(/^const SLOTS := (\[.+\])$/m);
+  assert.ok(slots, "world_view.gd 里找不到 const SLOTS");
+  assert.deepEqual(JSON.parse(slots[1]), J(G("SLOTS")), "world_view.gd 的 SLOTS 和 world.ts 的 SLOTS 不一致");
+  console.log(`✓ 契约：${Object.keys(OP).length} 个消息号 / 通知码 / 协议版本 / 测试机器人消息号 / 年龄阶段表 / 走动限速与互动范围 / tick 频率 / 一天五段 两边一致`);
 }

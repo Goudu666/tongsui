@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "d39045616476",
+ "version": "ae68da27affe",
  "events": [
   {
    "id": "c_roof_summer",
@@ -23766,6 +23766,7 @@ var CONTENT: Content = {
     "id": "eat",
     "label": "吃饭",
     "minutes": 30,
+    "quick": true,
     "sleep": false,
     "duty": false,
     "requires": {},
@@ -23781,6 +23782,7 @@ var CONTENT: Content = {
     "id": "eat_out",
     "label": "买套煎饼果子",
     "minutes": 20,
+    "quick": true,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -23809,6 +23811,7 @@ var CONTENT: Content = {
     "id": "dine",
     "label": "下馆子",
     "minutes": 60,
+    "quick": true,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -23838,6 +23841,7 @@ var CONTENT: Content = {
     "id": "sleep",
     "label": "睡觉",
     "minutes": 0,
+    "quick": false,
     "sleep": true,
     "duty": false,
     "requires": {
@@ -23852,6 +23856,7 @@ var CONTENT: Content = {
     "id": "wash",
     "label": "洗澡",
     "minutes": 20,
+    "quick": true,
     "sleep": false,
     "duty": false,
     "requires": {},
@@ -23867,6 +23872,7 @@ var CONTENT: Content = {
     "id": "duty",
     "label": "上学",
     "minutes": 0,
+    "quick": false,
     "sleep": false,
     "duty": true,
     "requires": {},
@@ -23887,6 +23893,7 @@ var CONTENT: Content = {
     "id": "picture_book",
     "label": "翻小人书",
     "minutes": 60,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -23914,6 +23921,7 @@ var CONTENT: Content = {
     "id": "study",
     "label": "写作业",
     "minutes": 90,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -23942,6 +23950,7 @@ var CONTENT: Content = {
     "id": "read",
     "label": "看书",
     "minutes": 90,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -23969,6 +23978,7 @@ var CONTENT: Content = {
     "id": "play_alley",
     "label": "楼下跳皮筋",
     "minutes": 60,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -23998,6 +24008,7 @@ var CONTENT: Content = {
     "id": "play_river",
     "label": "海河边放风筝",
     "minutes": 60,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -24026,6 +24037,7 @@ var CONTENT: Content = {
     "id": "walk_river",
     "label": "沿河走一圈",
     "minutes": 60,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -24053,6 +24065,7 @@ var CONTENT: Content = {
     "id": "ball",
     "label": "操场踢球",
     "minutes": 90,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -24082,6 +24095,7 @@ var CONTENT: Content = {
     "id": "work",
     "label": "帮爷爷修车",
     "minutes": 120,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -24111,6 +24125,7 @@ var CONTENT: Content = {
     "id": "club_math",
     "label": "数学小组",
     "minutes": 90,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -24146,6 +24161,7 @@ var CONTENT: Content = {
     "id": "club_sport",
     "label": "体校训练",
     "minutes": 90,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -24182,6 +24198,7 @@ var CONTENT: Content = {
     "id": "club_art",
     "label": "跟曲艺队排练",
     "minutes": 60,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -24217,6 +24234,7 @@ var CONTENT: Content = {
     "id": "chat",
     "label": "跟街坊聊会儿",
     "minutes": 60,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -24243,6 +24261,7 @@ var CONTENT: Content = {
     "id": "knock",
     "label": "开门喊一声",
     "minutes": 15,
+    "quick": true,
     "sleep": false,
     "duty": false,
     "requires": {},
@@ -24266,6 +24285,7 @@ var CONTENT: Content = {
     "id": "play_roof",
     "label": "楼顶放鸽子",
     "minutes": 60,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {},
@@ -24290,6 +24310,7 @@ var CONTENT: Content = {
     "id": "listen",
     "label": "喝茶听一段",
     "minutes": 40,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -24322,6 +24343,7 @@ var CONTENT: Content = {
     "id": "perform",
     "label": "上台来一段",
     "minutes": 45,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -24354,6 +24376,7 @@ var CONTENT: Content = {
     "id": "fish",
     "label": "跟大爷钓鱼",
     "minutes": 60,
+    "quick": false,
     "sleep": false,
     "duty": false,
     "requires": {
@@ -25587,6 +25610,7 @@ var CONTENT: Content = {
    "bodyEnergy": 0.04,
    "charmTogether": 0.04,
    "luckFate": 0.02,
+   "slotUse": 0.9,
    "wageFlags": {
     "mid_post": 1.5
    }

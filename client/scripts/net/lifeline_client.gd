@@ -27,7 +27,6 @@ signal world_state(data: Dictionary)
 signal event_started(data: Dictionary)
 signal log_entries(data: Dictionary)
 signal presence(data: Dictionary)
-signal game_state(data: Dictionary)  ## 搭伴小游戏：{game: 视图 | null, result?}
 signal again_state(data: Dictionary)  ## 再来一世：{again: {qing, mei}} 谁点了
 signal past_life(life_no: int, page: Variant)  ## 住户本：某一世那一页（lifeline_past 给的）；读不到是 null
 
@@ -580,8 +579,14 @@ func echo(turn: int, option_id := "") -> void:
 	_send(Op.ECHO, {"turn": turn, "optionId": option_id if option_id != "" else null})
 
 
-func game_input(body: Dictionary) -> void:
-	_send(Op.GAME_INPUT, body)
+## 这一段歇着：不做正经事，等这一段过去
+func pass_slot() -> void:
+	_send(Op.PASS, {})
+
+
+## 改主意：撤回这一段定下的事（还没开始过的）
+func cancel_slot() -> void:
+	_send(Op.CANCEL, {})
 
 
 ## 投胎时挑一件老物件带上；留空是放下不带
@@ -638,8 +643,6 @@ func _on_match_state(state) -> void:
 		log_entries.emit(data)
 	elif op == Op.PRESENCE:
 		presence.emit(data)
-	elif op == Op.GAME:
-		game_state.emit(data)
 	elif op == Op.AGAIN:
 		again_state.emit(data)
 	elif op == Op.ERROR:

@@ -23,7 +23,6 @@ const ServerConfig := preload("res://scripts/net/config.gd")
 const ServerSettings := preload("res://scripts/ui/server_settings.gd")
 const ContentStore := preload("res://scripts/net/content_store.gd")
 const DuetUI := preload("res://scripts/duet/duet_ui.gd")
-const GameLayer := preload("res://scripts/games/game_layer.gd")
 const LegacyUI := preload("res://scripts/ui/legacy_ui.gd")
 
 var content: Dictionary = {}
@@ -40,6 +39,9 @@ var goal_panel: GoalPanel  ## 下一个人生关口（HUD 里日历牌下面那�
 var action_btn: Button
 var action_title: Label    ## 行动按钮上的大字：做什么
 var action_sub: Label      ## 下面一行小字：多久、多少钱、搭不搭伴
+var slot_btn: Button       ## 行动按钮左边的「就这么过」：这一段不做正经事
+var slot_title: Label
+var slot_sub: Label
 var _action_dim: Variant = null  ## 行动按钮上的字现在是不是灰的（null：还没设过）
 var modal: ColorRect
 var modal_card: PanelContainer
@@ -58,7 +60,6 @@ var _stage_shown := ""   ## 河畔里现在显示的人生阶段
 var banner: Label        ## 顶部「连接断了，正在重连」
 var lobby_list: VBoxContainer  ## 大厅里「继续」的人生线列表
 
-var games: GameLayer     ## 搭伴小游戏（放风筝）的界面层
 var world: WorldView
 var net: NetClient
 var names: Dictionary = {"qing": "青", "mei": "梅"}
@@ -69,14 +70,13 @@ var offline_preview := false
 var duet: DuetUI  ## 「接话」的界面：猜 TA / 搭上了 / 回话（见 docs/DUET.md）
 var legacy: LegacyUI  ## 传承的界面：投胎页的老物件、结局页的再来一世（见 docs/LEGACY.md）
 var _preview_minute := 390.0
-const PRACTICE_ACTION := "play_river"
 const PAGE_WIDTH := 1560.0    ## 菜单页内容最宽这么多，再宽就居中（两栏）
 const COLUMN_WIDTH := 1040.0  ## 只有一栏的页面
 const MODAL_WIDTH := 1040.0   ## 普通弹窗
 const MODAL_WIDE := 1500.0    ## 选项并排、左右分栏的弹窗
 const ACTION_SIZE := Vector2(640, 128)
+const SLOT_SIZE := Vector2(300, 128)
 const TOAST_ANCHOR := 0.72  ## 提示条平时在屏高这么多的地方；开着弹窗时贴到顶上
-var _practice_count := 0
 
 
 func _ready() -> void:
@@ -84,10 +84,6 @@ func _ready() -> void:
 	legacy = LegacyUI.new(self)
 	_load_content()
 	_build_layers()
-	games = GameLayer.new()
-	add_child(games)
-	games.set_theme(ui.theme)
-	games.send.connect(_on_game_send)
 	_show_title()
 
 
@@ -181,6 +177,26 @@ func _build_layers() -> void:
 	action_title = Kit.label(lines, "", 40, P.PAPER, HORIZONTAL_ALIGNMENT_CENTER)
 	action_sub = Kit.label(lines, "", 26, Color(P.PAPER, 0.8), HORIZONTAL_ALIGNMENT_CENTER)
 	for l in [action_title, action_sub]:
+		l.autowrap_mode = TextServer.AUTOWRAP_OFF
+		l.clip_text = true
+	# 「就这么过」：纸色的次要按钮，贴在行动按钮左边
+	slot_btn = Button.new()
+	slot_btn.anchor_left = 1.0
+	slot_btn.anchor_right = 1.0
+	slot_btn.anchor_top = 1.0
+	slot_btn.anchor_bottom = 1.0
+	slot_btn.visible = false
+	slot_btn.pressed.connect(_on_slot_pressed)
+	hud.add_child(slot_btn)
+	var slot_lines := VBoxContainer.new()
+	slot_lines.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	slot_lines.alignment = BoxContainer.ALIGNMENT_CENTER
+	slot_lines.add_theme_constant_override("separation", 0)
+	slot_lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	slot_btn.add_child(slot_lines)
+	slot_title = Kit.label(slot_lines, "", 36, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
+	slot_sub = Kit.label(slot_lines, "", 24, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
+	for l in [slot_title, slot_sub]:
 		l.autowrap_mode = TextServer.AUTOWRAP_OFF
 		l.clip_text = true
 
@@ -334,6 +350,10 @@ func _layout_hud() -> void:
 	action_btn.offset_left = action_btn.offset_right - ACTION_SIZE.x
 	action_btn.offset_bottom = -44
 	action_btn.offset_top = action_btn.offset_bottom - ACTION_SIZE.y
+	slot_btn.offset_right = action_btn.offset_left - 28
+	slot_btn.offset_left = slot_btn.offset_right - SLOT_SIZE.x
+	slot_btn.offset_bottom = action_btn.offset_bottom
+	slot_btn.offset_top = action_btn.offset_top
 	banner.offset_left = 40 + inset.x
 	banner.offset_right = banner.offset_left + 740
 
@@ -507,44 +527,111 @@ func _process(delta: float) -> void:
 		_preview_minute = fmod(_preview_minute + delta * 4.0 - 390.0, 930.0) + 390.0
 		hud.minute = _preview_minute
 		world.set_minute(_preview_minute)
-	world.controllable = not modal.visible and not screen.visible and not games.busy()
+	world.controllable = not modal.visible and not screen.visible and not world.playing
 	_refresh_partner()
-	var spot := world.nearest_spot()
-	if spot.is_empty() or modal.visible or games.busy():
+	if modal.visible:
 		action_btn.visible = false
+		slot_btn.visible = false
 		return
-	var act := world.action_of(spot)
-	var cost: Array = []
-	if bool(act.get("sleep", false)):
-		cost.append("结束这一天")
-	elif bool(act.get("duty", false)):
-		cost.append("到 %s" % P.clock(float(act.get("until", 930))))
-	elif int(act.get("minutes", 0)) > 0:
-		cost.append("%d 分钟" % int(act.minutes))
-	if int(act.get("money", 0)) < 0:
-		cost.append("%d 块" % -int(act.money))
-	# TA 正在这儿做同一件事：现在坐下就是搭伴，两个人都长得快
-	if world.partner_doing(spot, act):
-		cost.append("和 TA 搭伴")
-	var title := str(act.get("label", ""))
-	action_btn.set_meta("spot", spot.id)
-	action_btn.disabled = offline_preview
+	match _slot_state():
+		"playing":
+			# 这一段正在眼前过：什么都不用点
+			action_btn.visible = false
+			slot_btn.visible = false
+		"decided":
+			# 定下了还能改：按钮变成「改主意」，底下写定了什么、在等谁
+			_set_action("cancel", "改主意", _decided_text(), false)
+			slot_btn.visible = false
+		"busy":
+			# 前几段就开始的事（上学、上班）：撤不回，只等这一段过去
+			_set_action("", _decided_text(), "等 TA 定这一段" if not _ready_of(_other()) else "", true)
+			slot_btn.visible = false
+		_:
+			_show_spot_action()
+			_set_slot_btn()
+
+
+## 这一段我这边的状态："preview" 离线逛逛 / "playing" 正在过 / "decided" 定了还能改 / "busy" 定了撤不回 / "open" 还没定
+func _slot_state() -> String:
 	if offline_preview:
-		cost = ["联网之后才能做"]
-		if str(act.get("id", "")) == PRACTICE_ACTION:
-			# 不联网也能试一局放风筝（跟陪练放，不算数）
-			title = "试玩放风筝"
-			cost = ["跟陪练放，不算数"]
-			action_btn.disabled = false
+		return "preview"
+	if bool(last_world.get("playing", false)):
+		return "playing"
+	if not _ready_of(my_role):
+		return "open"
+	var me: Dictionary = _dict(_dict(last_world.get("actors")).get(my_role))
+	var fr: Variant = me.get("fr")
+	if me.get("act") != null and not bool(me.get("sleep", false)) and fr != null and int(fr) < int(last_world.get("slot", 0)):
+		return "busy"
+	return "decided"
+
+
+func _ready_of(role: String) -> bool:
+	return bool(_dict(last_world.get("ready")).get(role, false))
+
+
+## 我这一段定了什么：「这一段：念书」/「这一段歇着」/「睡下了」
+func _decided_text() -> String:
+	var a = world.me()
+	if a == null:
+		return ""
+	if a.asleep:
+		return "睡下了"
+	if a.action_label != "":
+		return a.action_label + ("，和 TA 一起" if a.together else "")
+	return "这一段歇着"
+
+
+## 行动按钮：mode 是按下去做什么（act / cancel / ""），sub 是底下那行小字
+func _set_action(mode: String, title: String, sub: String, dim: bool) -> void:
+	action_btn.set_meta("mode", mode)
 	action_title.text = title
-	action_sub.text = " · ".join(cost)
-	action_sub.visible = not cost.is_empty()
+	action_sub.text = sub
+	action_sub.visible = sub != ""
+	action_btn.disabled = dim
 	# 字的颜色跟着按钮灰不灰走。只在变的时候设：同一个颜色再设一遍也会触发主题变更和重排，这里每帧都跑
 	if _action_dim != action_btn.disabled:
 		_action_dim = action_btn.disabled
 		action_title.add_theme_color_override("font_color", P.INK_SOFT if _action_dim else P.PAPER)
 		action_sub.add_theme_color_override("font_color", P.INK_SOFT if _action_dim else Color(P.PAPER, 0.8))
 	action_btn.visible = true
+
+
+## 还没定的时候：走近一个点位，按钮上写在这儿能做什么、占多久
+func _show_spot_action() -> void:
+	var spot := world.nearest_spot()
+	if spot.is_empty():
+		action_btn.visible = false
+		return
+	var act := world.action_of(spot)
+	var cost: Array = []
+	if bool(act.get("sleep", false)):
+		cost.append("睡到明天")
+	elif bool(act.get("duty", false)):
+		cost.append("到 %s" % P.clock(float(act.get("until", 930))))
+	elif bool(act.get("quick", false)):
+		cost.append("顺手的事")
+	else:
+		cost.append("做到 %s" % P.clock(float(WorldView.SLOTS[world.slot][1])))
+	if int(act.get("money", 0)) < 0:
+		cost.append("%d 块" % -int(act.money))
+	# TA 这一段也定了在这儿做同一件事：现在定下就是搭伴，两个人都长得快
+	if world.partner_doing(spot, act):
+		cost.append("和 TA 搭伴")
+	action_btn.set_meta("spot", spot.id)
+	if offline_preview:
+		cost = ["联网之后才能做"]
+	_set_action("act", str(act.get("label", "")), " · ".join(cost), offline_preview)
+
+
+## 「就这么过」：这一段不做正经事。TA 已经定了的话写一句，别让人干等
+func _set_slot_btn() -> void:
+	if offline_preview or world.me() == null or not world.me().visible:
+		slot_btn.visible = false
+		return
+	slot_title.text = "就这么过"
+	slot_sub.text = "TA 定了，在等你" if _ready_of(_other()) else "这一段歇着"
+	slot_btn.visible = true
 
 
 func _ping_text() -> String:
@@ -554,14 +641,19 @@ func _ping_text() -> String:
 
 
 func _on_action_pressed() -> void:
-	if offline_preview:
-		_practice_count += 1
-		games.my_role = my_role
-		games.names = names
-		games.start_practice(_practice_count % 2 == 1)  # 两头轮着试
+	if net == null or offline_preview:
 		return
-	if net != null and action_btn.has_meta("spot"):
-		net.act(str(action_btn.get_meta("spot")))
+	match str(action_btn.get_meta("mode", "")):
+		"act":
+			if action_btn.has_meta("spot"):
+				net.act(str(action_btn.get_meta("spot")))
+		"cancel":
+			net.cancel_slot()
+
+
+func _on_slot_pressed() -> void:
+	if net != null and not offline_preview:
+		net.pass_slot()
 
 
 func _on_move_report(pos: Vector2) -> void:
@@ -599,7 +691,6 @@ func _show_online() -> void:
 		net.event_started.connect(_on_event_started)
 		net.log_entries.connect(_on_log_entries)
 		net.presence.connect(_on_presence)
-		net.game_state.connect(_on_game_state)
 		net.again_state.connect(legacy.on_again)
 	_status(body)
 	var ok: bool = await net.connect_server()
@@ -980,8 +1071,6 @@ func _enter_world() -> void:
 
 func _leave_world() -> void:
 	offline_preview = false
-	if games != null:
-		games.close()
 	if world != null:
 		world.queue_free()
 		world = null
@@ -1037,6 +1126,8 @@ func _refresh_hud() -> void:
 		goal_panel.visible = false
 		return
 	hud.minute = float(last_world.get("minute", 390))
+	hud.slot_name = str(WorldView.SLOTS[world.slot][2]) if world != null else ""
+	hud.playing = bool(last_world.get("playing", false))
 	# 日历牌色条上的那个词：今天要去哪（上学 / 上班 / 出摊），不用去就是休息
 	var my_track: Dictionary = _dict(_dict(last_world.get("tracks")).get(my_role))
 	var duty: Dictionary = _dict(my_track.get("duty"))
@@ -1062,12 +1153,18 @@ func _refresh_partner() -> void:
 	var where := world.place_name(other.position, _other())
 	var big := where
 	var small := "闲着" if online else "影子替 TA 过着"
-	if other.asleep:
+	var decided := _ready_of(_other()) and not world.playing
+	if decided and other.action_label == "" and not other.asleep:
+		big = "这一段歇着"
+		small = where
+	elif other.asleep:
 		big = "睡着了"
 		small = where
 	elif other.action_label != "":
 		big = other.action_label
 		small = ("和你搭伴 · " if other.together else "") + where
+	if decided:
+		small = "定了 · " + small
 	var color := P.role_color(_other())
 	var their_name := str(names.get(_other(), "TA"))
 	hud.partner = {"name": their_name, "color": color, "online": online, "big": big, "small": small}
@@ -1087,7 +1184,8 @@ func _refresh_partner() -> void:
 		k = minf(k, ((box.end.y if d.y > 0.0 else box.position.y) - c.y) / d.y)
 	var edge := c + d * k
 	# 别钻到行动按钮底下
-	if action_btn.visible and edge.x > action_btn.position.x - 70.0 and edge.y > action_btn.position.y - 70.0:
+	var corner_x := slot_btn.position.x if slot_btn.visible else action_btn.position.x
+	if action_btn.visible and edge.x > corner_x - 70.0 and edge.y > action_btn.position.y - 70.0:
 		edge.y = action_btn.position.y - 70.0
 	hud.pointer = {"at": edge.round(), "dir": d.normalized().snappedf(0.02), "color": color, "name": their_name}
 
@@ -1171,19 +1269,6 @@ func _on_world_state(data: Dictionary) -> void:
 		var s := modal_body.get_node_or_null("Status") as Label
 		if s != null and ev.roles.has(_other()):
 			s.text = "TA 已经选好了" if ev.chosen[_other()] else "TA 还在想……"
-
-
-func _on_game_send(body: Dictionary) -> void:
-	if net != null:
-		net.game_input(body)
-
-
-func _on_game_state(data: Dictionary) -> void:
-	if world == null:
-		return
-	games.my_role = my_role
-	games.names = names
-	games.on_state(data)
 
 
 # ======================================================================
@@ -1309,6 +1394,7 @@ func _open_modal(width := MODAL_WIDTH) -> void:
 		modal.remove_meta("waiting_event")
 	modal.visible = true
 	action_btn.visible = false
+	slot_btn.visible = false
 	if not _toast_over:  # 还挂着的提示条让到顶上去，别压住这张卡的按钮
 		_toast_over = true
 		_toast_place(_toast_drop)

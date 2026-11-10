@@ -1134,6 +1134,7 @@ func _refresh_hud() -> void:
 	hud.stage = str(t.stage)
 	if world != null:
 		world.age = int(t.age)
+		world.set_season(LifeTime.season_of(int(life.get("turn", 0))), int(life.get("turn", 0)))
 	if offline_preview:
 		hud.tag = "预览"
 		hud.needs = {}

@@ -37,6 +37,7 @@ BOTTOM = 1000
 ART_SCALE = 1.25
 MARGIN = 16
 GROUND = 760
+MASK_STEP = 4
 OUT = os.path.join(ROOT, "client", "art", "scenes")
 
 
@@ -68,6 +69,13 @@ def load_scenes():
 # ----------------------------------------------------------------------
 
 ANCHORS: dict | None = None
+SPLIT = True  ## 分层：天、远处的楼、树不画进底图（见 tools/art/layers.py）
+
+
+def layer_note(key, value):
+    """记下这张图给分层用的参数（地平线、远处楼脚的高度）：第一次记的算数。"""
+    if ANCHORS is not None:
+        ANCHORS.setdefault("layer", {}).setdefault(key, value)
 
 
 def mark(kind, x, y):
@@ -199,7 +207,10 @@ def knock(g, color, text, x, y, size, vertical=False, layer="solid"):
 # ----------------------------------------------------------------------
 
 def sky(g, w, seed=3, horizon=GROUND, clouds=5):
-    """天：纸本身就是天。几道横着的淡青云，靠下一抹浅青。"""
+    """天：分层以后天归引擎画（shaders/sky.gdshader，跟着钟点变色、云会走），这里只记一笔地平线在哪。"""
+    if SPLIT:
+        layer_note("horizon", horizon)
+        return
     rnd = random.Random(seed)
     # 越靠近地平线越青：六层很淡的网点叠出来，没有硬边
     for k in range(6):
@@ -215,7 +226,12 @@ def sky(g, w, seed=3, horizon=GROUND, clouds=5):
 
 
 def skyline(g, x0, x1, base, seed=1, hmin=60, hmax=220, color="qing", d=0.16, chimneys=(), towers=()):
-    """远处一排楼：一层淡色的剪影，窗是更淡的点。"""
+    """远处一排楼：一层淡色的剪影，窗是更淡的点。
+    分层以后远处的楼归远景层（tools/art/layers.py，按年代长高），这里只记一笔它们的楼脚在哪。"""
+    if SPLIT:
+        layer_note("far_base", base)
+        layer_note("far_color", color)
+        return
     rnd = random.Random(seed)
     x = x0
     while x < x1:
@@ -304,6 +320,83 @@ def facade(g, x0, x1, top, base, color="mei", d=0.5, rows=3, win=(70, 92), gap=5
     return n
 
 
+def roof_clutter(g, x0, x1, top, seed=1, pigeons=False):
+    """屋顶上的零碎：女儿墙、水箱、通风帽、晾衣架、几盆花，我们那栋还有鸽子笼。不带年代（年代的东西在中景层）。"""
+    rnd = random.Random(seed)
+    w = x1 - x0
+    # 女儿墙
+    g.clear(rect_pts(x0 - 4, top - 26, w + 8, 26))
+    g.pen("ink", 0.16).fill(rect_pts(x0 - 4, top - 26, w + 8, 26))
+    fbricks(g, x0 - 4, top - 26, w + 8, 26, 24, 9, seed=seed)
+    g.ink.rect(x0 - 4, top - 26, w + 8, 26, lw=2.4, amp=0.3)
+    base = top - 26
+    x = x0 + rnd.uniform(30, 80)
+    racks = 0
+    while x < x1 - 90:
+        k = rnd.random()
+        if 0.4 <= k < 0.62 and racks >= 1:
+            k = 0.7
+        racks += 1 if 0.4 <= k < 0.62 else 0
+        if k < 0.22:
+            # 水箱：架子上一只铁皮桶
+            g.ink.line([(x + 6, base), (x + 6, base - 30)], 3)
+            g.ink.line([(x + 74, base), (x + 74, base - 30)], 3)
+            g.ink.line([(x + 6, base - 14), (x + 74, base - 30)], 1.6)
+            pts = rect_pts(x, base - 82, 80, 52)
+            g.clear(pts)
+            g.pen("qing", 0.32).fill(pts)
+            g.ink.rect(x, base - 82, 80, 52, lw=2.6)
+            for j in range(1, 4):
+                g.ink.line([(x, base - 82 + j * 13), (x + 80, base - 82 + j * 13)], 1.0, density=0.5)
+            x += 120
+        elif k < 0.4:
+            # 通风帽
+            g.ink.line([(x + 10, base), (x + 10, base - 40)], 6)
+            g.pen("ink").fill([(x - 8, base - 40), (x + 28, base - 40), (x + 10, base - 56)])
+            x += 60
+        elif k < 0.62:
+            # 晾衣架：两根杆、一根绳、几件衣裳
+            L = rnd.uniform(110, 170)
+            g.ink.line([(x, base), (x, base - 70)], 2.6)
+            g.ink.line([(x + L, base), (x + L, base - 70)], 2.6)
+            g.ink.line([(x, base - 66), (x + L / 2, base - 58), (x + L, base - 66)], 1.4, amp=0.3)
+            cx = x + 12
+            while cx < x + L - 24:
+                cw, ch = rnd.uniform(16, 30), rnd.uniform(26, 44)
+                pts = rect_pts(cx, base - 62, cw, ch)
+                g.clear(pts)
+                g.pen(rnd.choice(["qing", "mei", "mei", "ink"]), rnd.choice([0.3, 0.5, 0.7])).fill(pts)
+                g.ink.rect(cx, base - 62, cw, ch, lw=1.3, amp=0.3)
+                cx += cw + rnd.uniform(4, 12)
+            x += L + 40
+        elif k < 0.8:
+            # 几盆花草
+            for j in range(rnd.randint(2, 4)):
+                px = x + j * 30
+                pts = [(px, base), (px + 22, base), (px + 25, base - 22), (px - 3, base - 22)]
+                g.clear(pts)
+                g.pen("mei", 0.55).fill(pts)
+                g.ink.poly(pts, w=1.6, amp=0.2)
+                g.qing.line([(px + 11, base - 22), (px + 4, base - 44)], 2.2)
+                g.qing.line([(px + 11, base - 22), (px + 20, base - 48)], 2.2)
+                g.pen("qing", 0.5).fill(circle_pts(px + 12, base - 44, 9))
+            x += 140
+        else:
+            x += rnd.uniform(40, 120)
+    if pigeons:
+        # 鸽子笼：木条钉的小房子
+        cx = x0 + w * 0.68
+        pts = rect_pts(cx, base - 96, 130, 96)
+        g.clear(pts)
+        g.pen("ink", 0.12).fill(pts)
+        g.ink.rect(cx, base - 96, 130, 96, lw=2.6)
+        g.pen("ink", 0.4).fill([(cx - 12, base - 96), (cx + 142, base - 96), (cx + 65, base - 128)])
+        g.ink.poly([(cx - 12, base - 96), (cx + 142, base - 96), (cx + 65, base - 128)], w=2.4, amp=0.2)
+        for j in range(5):
+            g.ink.line([(cx + 10 + j * 26, base - 90), (cx + 10 + j * 26, base - 6)], 1.4)
+        g.ink.line([(cx, base - 48), (cx + 130, base - 48)], 1.6)
+
+
 def door(g, x, base, w=100, h=210, color="ink", d=0.35, open_=0.0, glass=False, plate=None, plate_color="qing"):
     """一扇门。open_ 0~1：门洞里露出多少黑。"""
     pts = rect_pts(x - w / 2, base - h, w, h)
@@ -366,10 +459,15 @@ def awning(g, x0, x1, y, drop=46, color="mei", stripes=True):
 
 
 def tree(g, x, base, h=420, r=130, kind="huai", seed=0, color="qing"):
-    """树：墨色树干，青色网点树冠，冠子外圈一道深一点的弧。"""
+    """树：墨色树干，青色网点树冠，冠子外圈一道深一点的弧。
+    分层以后树单独印成精灵（tools/art/layers.py 一年四季各一张，引擎里会随风晃），底图上只留树坑。"""
     rnd = random.Random(seed or int(x * 7))
     # 树坑
     g.ink.line([(x - 40, base), (x + 40, base)], 4)
+    if SPLIT:
+        if ANCHORS is not None:
+            ANCHORS.setdefault("trees", []).append([round(x), round(base), round(h), round(r), kind, seed])
+        return
     g.ink.line([(x - 6, base), (x - 10, base - h * 0.55)], 10, amp=1.5)
     g.ink.line([(x + 6, base), (x + 2, base - h * 0.5)], 3, amp=1.0)
     if kind != "willow":
@@ -966,15 +1064,17 @@ def draw_street(g, sc):
     skyline(g, -40, W + 40, 60, seed=9, hmin=40, hmax=160, d=0.10)
     shop_top = GROUND - 300
     # 楼：一层门脸，上头两三层住家
+    # 楼压低一截：屋顶在镜头里，后面的天、中景的屋顶、远处的城透出来
     blocks = [
-        (-40, 820, -40, "mei", 0.5, 3),
-        (820, 1330, 40, "ink", 0.18, 2),
-        (1330, 2440, -110, "mei", 0.58, 3),
-        (2440, 3070, 20, "mei", 0.42, 2),
-        (3070, 3830, 60, "ink", 0.14, 2),
+        (-40, 820, 290, "mei", 0.5, 1),
+        (820, 1330, 330, "ink", 0.18, 1),
+        (1330, 2440, 262, "mei", 0.58, 1),
+        (2440, 3070, 318, "mei", 0.42, 1),
+        (3070, 3830, 350, "ink", 0.14, 1),
     ]
     for i, (x0, x1, top, col, d, rows) in enumerate(blocks):
         facade(g, x0, x1, top, shop_top, col, d, rows, (66, 86), 64, brick=col == "mei", seed=40 + i)
+        roof_clutter(g, x0, x1, top - 14, seed=60 + i, pigeons=i == 2)
     # 街尾：往河那边去，楼没了，一排柳
     g.pen("qing", 0.10).fill(rect_pts(3830, 300, W - 3790, GROUND - 300))
     tree(g, 3930, GROUND, 560, 140, "willow", seed=3)
@@ -2086,16 +2186,56 @@ DRAW = {
 # 输出
 # ----------------------------------------------------------------------
 
-def render(sc, x, w, scale):
-    g = Sheet(w + 2 * MARGIN, (BOTTOM - TOP) + 2 * MARGIN, scale, origin=(x - MARGIN, TOP - MARGIN), seed=7)
+class OSheet(Sheet):
+    """底图的印张：凡是「先挖空再画」的东西（楼、墙、地面、家具）都是实的，挖空的同时记进纸版，
+    这样合成出来天的地方是透明的，后面的天色、远景、中景能透出来。"""
+
+    def clear(self, pts, colors=None, layers=("solid", "tint")):
+        super().clear(pts, colors, layers)
+        if colors is None and SPLIT:
+            ctx = self.plates["paper"]["solid"]
+            ctx.save()
+            ctx.new_path()
+            ctx.move_to(*pts[0])
+            for p in pts[1:]:
+                ctx.line_to(*p)
+            ctx.close_path()
+            ctx.set_source_rgba(0, 0, 0, 1)
+            ctx.fill()
+            ctx.restore()
+
+
+def solid(g, pts):
+    """只记进纸版（这块是实的），不印墨：网点铺的墙、水面这类没先挖空的面用。"""
+    if not SPLIT:
+        return
+    ctx = g.plates["paper"]["solid"]
+    ctx.save()
+    ctx.new_path()
+    ctx.move_to(*pts[0])
+    for p in pts[1:]:
+        ctx.line_to(*p)
+    ctx.close_path()
+    ctx.set_source_rgba(0, 0, 0, 1)
+    ctx.fill()
+    ctx.restore()
+
+
+def render(sc, x, w, scale, rgba=True):
+    g = OSheet(w + 2 * MARGIN, (BOTTOM - TOP) + 2 * MARGIN, scale, origin=(x - MARGIN, TOP - MARGIN), seed=7)
     DRAW[sc["id"]](g, sc)
     m = int(MARGIN * scale)
-    return g.composite(True)[m:-m, m:-m]
+    rgb = g.composite(True)[m:-m, m:-m]
+    if not rgba:
+        return rgb
+    a = np.clip(g.alpha()[m:-m, m:-m] * 255.0 + 0.5, 0, 255).astype(np.uint8)
+    return np.dstack([rgb, a])
 
 
 def save_png(arr, path):
-    """三块墨叠出来的颜色本来就少：量化成 64 色调色板 PNG。"""
-    img = Image.fromarray(arr, "RGB").quantize(colors=64, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+    """三块墨叠出来的颜色本来就少：量化成 64 色调色板 PNG（带透明）。"""
+    img = Image.fromarray(arr, "RGBA" if arr.shape[2] == 4 else "RGB")
+    img = img.quantize(colors=64, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
     img.save(path, optimize=True)
 
 
@@ -2105,7 +2245,15 @@ def collect_anchors(sc):
     ANCHORS = {}
     DRAW[sc["id"]](Sheet(8, 8, 1.0, origin=(-9000, -9000)), sc)
     out, ANCHORS = ANCHORS, None
-    return {k: sorted({tuple(p) for p in v}) for k, v in out.items()}
+    res = {}
+    for k, v in out.items():
+        if k == "layer":
+            res[k] = v
+        elif k == "trees":
+            res[k] = v
+        else:
+            res[k] = sorted({tuple(p) for p in v})
+    return res
 
 
 def build(ids, scale=ART_SCALE):
@@ -2123,12 +2271,20 @@ def build(ids, scale=ART_SCALE):
     for sid in ids:
         sc = scenes[sid]
         for f in os.listdir(OUT):
-            if f.startswith(sid + "_") and f.endswith(".png"):
+            if f.startswith(sid + "_") and (f.endswith(".png") or f.endswith(".png.import")):
+                if f.endswith(".import") and os.path.exists(os.path.join(OUT, f[: -len(".import")])):
+                    continue
                 os.remove(os.path.join(OUT, f))
         n = math.ceil(sc["width"] / SLICE)
+        masks = []
         for k in range(n):
             arr = render(sc, k * SLICE, SLICE, scale)
             save_png(arr, os.path.join(OUT, f"{sid}_{k}.png"))
+            masks.append(arr[:, :, 3])
+        # 哪儿是天：不透明度缩成 1/MASK_STEP，夜版按它在天上少印一点（scene_art.scene_mask）
+        full = np.concatenate(masks, axis=1)[:, : int(round(sc["width"] * scale))]
+        mw, mh = int(math.ceil(sc["width"] / MASK_STEP)), int((BOTTOM - TOP) / MASK_STEP)
+        Image.fromarray(full, "L").resize((mw, mh), Image.BOX).save(os.path.join(OUT, f"{sid}_mask.png"), optimize=True)
         size = sum(os.path.getsize(os.path.join(OUT, f)) for f in os.listdir(OUT) if f.startswith(sid + "_") and f.endswith(".png"))
         print(f"  {sid}（{sc['name']}）{n} 片 ✓  {size / 1e6:.1f} MB")
 
@@ -2141,11 +2297,19 @@ def main():
     ap.add_argument("--w", type=float, default=0)
     ap.add_argument("--scale", type=float, default=0.5)
     ap.add_argument("--out", default="/tmp/scene_preview.png")
+    ap.add_argument("--bg", action="store_true", help="预览时垫一块蓝底，看哪儿是透明的")
     a = ap.parse_args()
     if a.preview:
         sc = load_scenes()[a.preview]
         w = a.w or sc["width"] - a.x
-        Image.fromarray(render(sc, a.x, w, a.scale), "RGB").save(a.out)
+        arr = render(sc, a.x, w, a.scale)
+        img = Image.fromarray(arr, "RGBA")
+        if a.bg:
+            # 垫一块看透明的底：棋盘格 + 一点青，一眼看出哪儿是空的
+            bg = Image.new("RGBA", img.size, (120, 170, 200, 255))
+            bg.alpha_composite(img)
+            img = bg
+        img.save(a.out)
         print("预览：", a.out)
         return
     build(a.ids or list(DRAW))

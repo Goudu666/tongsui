@@ -195,10 +195,14 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   const pastCatch = s.log.find((x) => x.kind === "mirror" && x.events.qing === "d_wheel_steps");
   assert.equal(pastCatch.resonance, true, "当时搭上的不因为回话收回：那天确实接住了");
 
-  // 「不提了」：放下，不留日志
+  // 「不提了」：放下，不留日志。只认 null / 不带；别的类型是发错了，话还欠着
   const t3 = s.turn;
   play(s, "d_teen_bike", { qing: "ride", mei: "walk" }, { shadow: ["mei"] });
   const log3 = s.log.length;
+  for (const bad of [123, {}, [], true, 0]) {
+    assert.match(G("duetEcho")(s, C, "mei", t3, bad).error, /没有这个选项/);
+    assert.equal(s.duet.owed.mei.length, 1, "发错了不能把话丢掉");
+  }
   const r4 = G("duetEcho")(s, C, "mei", t3, null);
   assert.equal(r4.error, null);
   assert.equal(r4.entry, null);
@@ -240,18 +244,40 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   c2.events = c2.events.filter((x) => x.id !== "d_teen_bike");
   c2.events.find((x) => x.id === "d_old_bench").options.find((o) => o.id === "quiet").id = "hush";
   back.world.event = { eventId: "d_kite_tree", kind: "mirror", roles: ["qing", "mei"], choices: {}, shadow: [], guess: { qing: "gone", mei: "hold" } };
-  const notes = [];
-  G("duetRepair")(back, c2, notes);
+  // 走存档修复的正门（save.ts 的 lifeRepair），不直接调 duetRepair：那根线断了这里要能发现
+  const notes = G("lifeRepair")(back, c2);
   assert.equal(back.duet.owed.mei.length, 1);
   assert.equal(back.duet.owed.mei[0].eventId, "d_old_bench");
   assert.equal(back.duet.owed.mei[0].guess, null, "猜的选项没了，当没猜");
   assert.deepEqual(back.world.event.guess, { mei: "hold" });
-  assert.ok(notes.some((n) => n.includes("d_teen_bike")));
+  assert.ok(notes.some((n) => n.includes("duet.owed.mei") && n.includes("d_teen_bike")), notes.join(" / "));
+  assert.equal(G("lifeRepair")(back, c2).length, 0, "修过一次就干净了");
   console.log("✓ 存档：旧存档自动补上 duet / JSON 往返不丢 / 事件或选项被删后欠着的话放下并记一笔");
 }
 
 // ---------- 5. 联机：CHOOSE 带猜测、影子代选、重连后 ECHO ----------
 {
+  // 发快照不能改存档：一条还没有 duet 的人生，连发两次快照，存档里不多出 duet，快照里也不漏原始的
+  {
+    const { nk, rpc } = fakeNakama();
+    const a = rpc("rpcLifelineCreate", "user-a", { name: "小青" });
+    rpc("rpcLifelineJoin", "user-b", { code: a.code, name: "小梅" });
+    const R = room(nk, rpc("rpcLifelineOpen", "user-a", { lifelineId: a.lifelineId }).matchId);
+    const pa = { userId: "user-a", sessionId: "sa" }, pb = { userId: "user-b", sessionId: "sb" };
+    R.join([pa, pb]);
+    assert.equal(R.to(pa, 1).at(-1).data.life.duet, undefined, "抽卡阶段没有 duet");
+    R.loop([R.msg(pa, 2, { confirm: true }), R.msg(pb, 2, { confirm: true })]);
+    assert.equal(R.life().duet, undefined);
+    R.join([pa]); R.join([pa]);
+    assert.equal(R.life().duet, undefined, "发快照不写状态");
+    assert.deepEqual(R.to(pa, 1).at(-1).data.life.duet.owed, { qing: [], mei: [] });
+    // 就算抽卡阶段的存档里已经有 duet（以后的版本、手改的存档），原始的 owed.guess 也出不去
+    R.life().duet = { know: { qing: [0, 0], mei: [0, 0] }, like: { qing: [0, 0], mei: [0, 0] }, epitaph: [], owed: { qing: [], mei: [{ turn: 0, age: 3, label: "x", eventId: "d_kite_tree", shadow: "wait", partner: "climb", guess: "hold", outcome: "miss" }] } };
+    R.life().phase = "roll";
+    R.join([pb]);
+    assert.equal(JSON.stringify(R.to(pb, 1).at(-1).data).includes('"guess"'), false, "原始的 duet 不进快照");
+  }
+
   const OP = { SNAPSHOT: 1, ROLL: 2, CHOOSE: 6, ERROR: 9, LOG: 10, ECHO: 30 };
   const { nk, rpc } = fakeNakama();
   const a = rpc("rpcLifelineCreate", "user-a", { name: "小青" });
@@ -311,6 +337,13 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   assert.equal(snapB.life.duet.owed.mei[0].eventId, "d_wheel_steps");
   assert.equal(snapB.life.duet.owed.mei[0].guess, undefined);
   assert.equal(snapB.life.duet.keep, DUET_ECHO_KEEP);
+  // 日志尾巴里那天的记录也不带青的猜测：等梅回完话才揭晓。青自己的快照里照常有
+  const dayB = snapB.life.log.find((x) => x.kind === "mirror" && x.turn === turn && x.events.qing === "d_wheel_steps");
+  assert.deepEqual(dayB.duet, { outcome: e.duet.outcome, owed: "mei" });
+  R.join([pa]);
+  const dayA = R.to(pa, OP.SNAPSHOT).at(-1).data.life.log.find((x) => x.kind === "mirror" && x.turn === turn && x.events.qing === "d_wheel_steps");
+  assert.equal(dayA.duet.guess.qing, "back");
+  assert.equal(L.log.find((x) => x.kind === "mirror" && x.turn === turn && x.events.qing === "d_wheel_steps").duet.guess.qing, "back", "存档里的日志不动");
   // 青不能替梅回
   R.loop([R.msg(pa, OP.ECHO, { turn, optionId: "back" })]);
   assert.ok(R.to(pa, OP.ERROR).at(-1).to[0] === "sa");
@@ -324,6 +357,10 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   assert.equal(e.duet.partnerKnew, true);
   assert.equal(R.sent.filter((m) => m.op === OP.LOG).at(-1).to, null, "回话的结果两个人都看得到");
   assert.equal(L.duet.owed.mei.length, 0);
+  // 回完话，那天的猜测就可以看了
+  R.join([pb2]);
+  const after = R.to(pb2, OP.SNAPSHOT).at(-1).data.life.log.find((x) => x.kind === "mirror" && x.turn === turn && x.events.qing === "d_wheel_steps");
+  assert.equal(after.duet.guess.qing, "back");
   // 乱发：不崩，只回错误
   const errs = R.to(pb2, OP.ERROR).length;
   R.loop([R.msg(pb2, OP.ECHO, { turn: "x", optionId: {} }), R.msg(pb2, OP.ECHO, {})]);

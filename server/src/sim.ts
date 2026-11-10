@@ -263,6 +263,15 @@ function lifeOptionLock(ev: LifeEvent, o: EventOption, p: Person, swing: number)
   return null;
 }
 
+/** 关口一条路都走不通时走的那条：线最低的（一样低取写在后面的，内容里兜底的路习惯写在最后） */
+function lifeMilestoneFallback(ev: LifeEvent): EventOption {
+  var best = ev.options[0];
+  for (var i = 1; i < ev.options.length; i++) {
+    if ((ev.options[i].min || 0) <= (best.min || 0)) best = ev.options[i];
+  }
+  return best;
+}
+
 /** 正在进行的关口里，每个人哪些路是锁着的：{ role: { optionId: 原因 } }。不在关口里返回 null */
 function lifeMilestoneLocks(s: LifeState, c: Content): { [R in Role]?: { [optionId: string]: string } } | null {
   var pe = s.world && s.world.event;
@@ -425,6 +434,8 @@ function lifeShadowChoose(s: LifeState, c: Content, role: Role, eventId: string)
     if (score > bestScore) { bestScore = score; best = [o]; }
     else if (score === bestScore) best.push(o);
   }
+  // 一条都走不通（内容写漏了兜底的路）：走线最低的那条。build-content 会拦，这里是热更新内容时的最后一道
+  if (best.length === 0) return lifeMilestoneFallback(ev).id;
   return best[Math.floor(lifeRand(s) * best.length)].id;
 }
 

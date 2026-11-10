@@ -1,0 +1,161 @@
+# 楼下的支线（pl_st_ 前缀）。where 用 content/maps/street.yaml 的 areas。写法见 places/building.yaml 文件头。
+# 二月二剃头和煎饼果子的规矩已经有了（neighbors.yaml），这里不重复。
+
+- id: pl_st_icebox
+  kind: mirror
+  stage: childhood
+  where: shop
+  when: [780, 1110]
+  hint: 小卖部的冰柜嗡嗡响。
+  seasons: [summer]
+  weight: 2
+  requires: { minAge: 4 }
+  title: 一根冰棍
+  text: 你们俩的钱凑一块儿，只够一根冰棍。小卖部的阿姨把冰柜盖子掀开，等你们挑。
+  options:
+    - id: split
+      text: 买一根掰两半
+      tags: [gentle]
+      effects: { self: { mood: 6 } }
+    - id: rps
+      text: 剪子包袱锤，赢的先咬
+      tags: [competitive]
+      effects: { self: { mood: 5 } }
+    - id: wait
+      text: 攒着明天再来
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+  resonance:
+    split:
+      text: 冰棍掰得一长一短。你们都伸手去拿短的，又同时缩了回去。
+      memory: 一长一短
+      bond: { sync: 3, close: 3 }
+    rps:
+      text: 你们连出了五回一样的。阿姨看不下去，又从柜里拿了一根：「算我的。」
+      memory: 五回平局
+      bond: { sync: 3, close: 2 }
+    wait:
+      text: 第二天再来，冰柜里正好剩一根，就是昨天那个味儿。
+      memory: 剩下的那根
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个已经把冰棍掰开了，一个说留着明天。半根冰棍化在手里，滴了一路。
+    bond: { close: 0 }
+
+- id: pl_st_chess
+  kind: mirror
+  stage: teen
+  where: alley
+  when: [780, 1140]
+  hint: 棋摊那边围了一圈人。
+  weight: 2
+  requires: { minAge: 12 }
+  title: 观棋不语
+  text: 楼下的棋摊围了一圈人。下棋的大爷举着马不落，回头问：「你俩谁看出来了？说一个。」
+  options:
+    - id: point
+      text: 指一步
+      tags: [competitive]
+      effects: { self: { mind: 1 } }
+    - id: hush
+      text: 摇头，不说
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+    - id: look
+      text: 先看对门的眼色
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+  resonance:
+    point:
+      text: 你们伸出手指，指的是同一个格子。大爷把马落下去，对面认了输。
+      memory: 同一个格子
+      bond: { sync: 3, close: 2 }
+    hush:
+      text: 你们一起摇头。大爷乐了：「对，观棋不语。」这盘他输了，也没怪你们。
+      memory: 一起摇头
+      bond: { sync: 3, close: 2 }
+    look:
+      text: 你们看了对方一眼，又一齐看向大爷。大爷说：「行，俩人一个心思。」
+      memory: 一个眼色
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个张嘴要说，一个在底下踩了他一脚。大爷全看见了，假装没看见。
+    bond: { close: 0 }
+
+- id: pl_st_cloth
+  kind: solo
+  stage: teen
+  where: alley
+  when: [930, 1110]
+  hint: 路口有人在铺塑料布。
+  weight: 2
+  requires: { minAge: 12, flags: [fam_poor] }
+  title: 一块塑料布
+  text: 放学先不回家。路口铺开一块塑料布，袜子鞋垫码整齐，你坐马扎上，作业本搁在膝盖上。
+  options:
+    - id: call
+      text: 抬头吆喝一声
+      tags: [responsible]
+      effects: { self: { charm: 1, mood: -2 } }
+    - id: write
+      text: 低头写作业
+      tags: [solitude]
+      effects: { self: { mind: 1, mood: -3 } }
+    - id: wave
+      text: 冲路过的同学招手
+      tags: [gentle]
+      effects: { self: { charm: 1, mood: 3 } }
+
+- id: pl_st_newbike
+  kind: solo
+  stage: teen
+  where: alley
+  weight: 1
+  requires: { minAge: 12, maxAge: 15, flags: [fam_rich] }
+  title: 新车
+  hint: 楼门口停着辆新车。
+  text: 家里给你买了辆变速山地车。楼下几个孩子围着看。旧的那辆二八靠在墙边，链子是你俩一块儿上的油。
+  options:
+    - id: lend
+      text: 让对门先骑一圈
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 5 }, bond: { close: 1 } }
+    - id: ride
+      text: 骑去河边兜一圈
+      tags: [adventure]
+      effects: { self: { body: 1, mood: 5 } }
+    - id: teach
+      text: 教那几个孩子换挡
+      tags: [responsible]
+      effects: { self: { charm: 1 } }
+
+- id: pl_st_bench
+  kind: mirror
+  stage: old
+  where: shop
+  when: [780, 1110]
+  hint: 便利店门口的长凳空着。
+  weight: 2
+  title: 门口的长凳
+  text: 小卖部改成了便利店，门口那条长凳没撤。你们一人坐一头。
+  options:
+    - id: soda
+      text: 买两瓶汽水
+      tags: [gentle]
+      effects: { self: { mood: 6 } }
+    - id: sit
+      text: 就这么坐着
+      tags: [patient]
+      effects: { self: { energy: 4 } }
+  resonance:
+    soda:
+      text: 汽水换了瓶子，还是那个甜。你们喝得很慢。
+      memory: 两瓶汽水
+      bond: { sync: 2, close: 1 }
+    sit:
+      text: 坐了一下午。过去的人，有一半认得你们。
+      memory: 一下午
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个进去买汽水，出来时另一个靠着长凳打起了盹。汽水就搁在他手边。
+    bond: { close: 0 }

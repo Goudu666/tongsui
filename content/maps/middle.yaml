@@ -1,0 +1,68 @@
+# 中学：家门口的初中、高中和职专共用一个院（市重点在河对岸，见 across.yaml）。
+# 校门、教室、操场、车棚，楼顶有个广播站。写法见 building.yaml 文件头。
+# 日程：tracks.yaml 里 junior / senior / vocational 现在报到点是 school_gate，换图以后改成 middle_gate（地图线程接）。
+
+id: middle
+name: 中学
+width: 2800
+unlock: { minAge: 12 }
+
+areas:
+  - { id: middle_front, name: 校门口, span: [ 0, 660 ], floor: 0 }
+  - { id: middle_class, name: 教室, span: [ 660, 1530 ], floor: 0 }
+  - { id: radio_room, name: 广播站, span: [ 1530, 1820 ], floor: 0 }
+  - { id: middle_field, name: 操场, span: [ 1820, 2330 ], floor: 0 }
+  - { id: shed, name: 车棚, span: [ 2330, 2800 ], floor: 0 }
+
+exits:
+  - { id: to_street, at: 60, to: street, arrive: 160, label: 回楼下 }
+
+spots:
+  - { id: middle_gate, at: 310, area: middle_front, actions: [ duty ] }
+  - { id: middle_desk, at: 1090, area: middle_class, actions: [ study ] }
+  - { id: radio_mic, at: 1680, area: radio_room, actions: [ broadcast ] }
+  - { id: middle_yard, at: 2080, area: middle_field, actions: [ ball ] }
+
+npcs:
+  - id: shed_ayi
+    name: 看车棚的阿姨
+    at: 2550
+    eras: [ teen ]
+    lines:
+      default:
+        - 车锁好了没有？丢了别找我。
+        - 打气筒在这儿，自己打，别弄坏了。
+        - 天天最后走的就你们俩。
+  - id: stationery
+    name: 文具店的老板
+    at: 510
+    eras: [ teen ]
+    slots: [ morning, evening ]
+    lines:
+      default:
+        - 修正带两块，涂卡笔三块。
+        - 考试用的就这种，别买错了。
+  - id: dean
+    name: 教导主任
+    at: 880
+    eras: [ teen ]
+    slots: [ morning, am ]
+    lines:
+      default:
+        - 校服拉链拉上。
+        - 你们两个，几班的？
+
+props:
+  - id: rank_board
+    name: 红榜
+    at: 600
+    eras: [ teen ]
+    lines:
+      default:
+        - 期中考试前五十名，红纸黑字。
+        - 有人拿指甲在名字底下划了一道。
+
+art: |
+  三层的教学楼剖开一层，走廊挂着值日表；楼顶一间小屋是广播站，屋顶一个大喇叭。
+  车棚是石棉瓦顶，一排排自行车挤着，最里头总有一辆没人认领的。
+  校门口一家小文具店。操场比小学大一圈，跑道是塑胶的了。

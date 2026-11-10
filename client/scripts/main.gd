@@ -854,6 +854,9 @@ func _on_log_entries(data: Dictionary) -> void:
 		elif kind == "solo":
 			if e.events[my_role] != null:
 				_close_modal()
+				var mine: Variant = e.get("checks", {}).get(my_role)
+				if mine != null:
+					_show_check_result(e, mine)
 			else:
 				var other := _other()
 				var ev: Dictionary = events_by_id.get(e.events[other], {})
@@ -880,6 +883,33 @@ func _show_mirror_result(e: Dictionary) -> void:
 		_label(modal_body, "%s %s%s" % [_role_text(r), _option_text(e.events[r], e.choices[r]), mark], 38, P.role_color(r))
 	var hit := bool(e.resonance)
 	_label(modal_body, ("共鸣 · " if hit else "错位 · ") + str(e.text), 44, P.OVERLAP if hit else P.INK_SOFT)
+	var checks: Dictionary = e.get("checks", {})
+	for r in ["qing", "mei"]:
+		if checks.get(r) != null:
+			_label(modal_body, "%s %s　%s" % [_role_text(r), _check_verdict(checks[r]), str(checks[r].get("text", ""))], 34, P.role_color(r))
+	_button(modal_body, "嗯", _close_modal)
+
+
+## 检定：有些选项成不成要看本事和运气（服务端 growth.ts 掷的，结果跟着日志过来）。
+## 两个人在默契事件里选了同一项，就是搭把手：按本事大的那个算。
+const STAT_TEXT := {"body": "体魄", "mind": "心智", "charm": "魅力", "luck": "运气"}
+
+
+func _check_verdict(c: Dictionary) -> String:
+	var how := "没成"
+	if bool(c.get("ok", false)):
+		how = "搭把手，成了" if bool(c.get("help", false)) else "成了"
+	return "%s · %s" % [str(STAT_TEXT.get(str(c.get("stat", "")), "")), how]
+
+
+func _show_check_result(e: Dictionary, c: Dictionary) -> void:
+	_open_modal()
+	var ev: Dictionary = events_by_id.get(e.events[my_role], {})
+	var ok := bool(c.get("ok", false))
+	_label(modal_body, str(e.label), 30, P.INK_SOFT)
+	_label(modal_body, str(ev.get("title", "")), 64)
+	_label(modal_body, _check_verdict(c), 38, P.OVERLAP if ok else P.INK_SOFT)
+	_label(modal_body, str(c.get("text", "")), 44)
 	_button(modal_body, "嗯", _close_modal)
 
 

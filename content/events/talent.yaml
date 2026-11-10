@@ -857,3 +857,48 @@
   dissonance:
     text: 一个终于开了口，另一个已经抱着纸箱下了楼。那句话在楼道里撞了两下，没人接。
     bond: { close: -1 }
+
+# ===================== 天赋 · 普通的孩子 =====================
+
+- id: f_tal_plain_awards
+  kind: solo
+  stage: childhood
+  where: school
+  weight: 2
+  requires: { minAge: 7, flags: [tal_plain] }
+  title: 没念到的名字
+  text: 期末发奖状，老师念了一长串名字，没有你。最后老师说，还有些同学样样都不差，就是不冒尖。你觉得说的是你。
+  options:
+    - id: pick
+      text: 认准一样，往深里学
+      tags: [patient]
+      effects: { self: { mind: 1, mood: -3 } }
+    - id: all
+      text: 样样都再多会一点
+      tags: [adventure]
+      effects: { self: { body: 1, charm: 1, energy: -10 } }
+    - id: fine
+      text: 不冒尖也挺好
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+
+- id: f_tal_plain_reunion
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { flags: [tal_plain] }
+  title: 同学会
+  text: 同学会上，大家记得谁考过第一，谁翻过墙。说到你，想了半天，没想起什么事。后来有人说，我那年的学费是你先垫的。又有人说，我也借过。
+  options:
+    - id: laugh
+      text: 笑笑，说都忘了
+      tags: [gentle]
+      effects: { self: { charm: 1, mood: 5 } }
+    - id: toast
+      text: 站起来敬大家一杯
+      tags: [adventure]
+      effects: { self: { mood: 8, energy: -5 } }
+    - id: early
+      text: 坐了一会儿，先走了
+      tags: [solitude]
+      effects: { self: { mood: -3 } }

@@ -1,0 +1,87 @@
+# 成长、投胎、寿命、亲近的数值规则。设计说明见 docs/GROWTH.md。
+# 改完跑 `npm run build && npm run balance`，看分布有没有跑偏（测试只管规则的形状，不管具体的数）。
+
+# ---------- 投胎 ----------
+roll:
+  budget: 18            # 四项先天属性的合计：人人一样多，只是长的地方不一样（天赋和人家的加成算在里面）
+  wealthAdjust: [1, 0, -1]   # 清贫人家多给 1 点，殷实人家少给 1 点（钱和饭桌已经补上了）
+  statMin: 1            # 随机分配时每项的下限和上限（不含人家和天赋的加成）
+  statMax: 7
+  rerolls: 3
+
+# ---------- 成长 ----------
+# 长多少 = 经历 × 年纪 × 底子
+#   经历：事件里写的 +1、行动里写的 +0.3
+#   年纪：下面的 plasticity，每个阶段每项属性长得多快
+#   底子：离出生时的水平越远，长得越慢。超出 room 以后只剩 floor
+growth:
+  eventScale: 0.15      # 事件里的 +1 实际长多少（往下掉也按这个数，但不看年纪和底子）
+  actionScale: 0.1      # 行动（上学、写作业、玩、打工）里的数实际长多少
+  room: 5.0             # 一辈子最多比出生时高出这么多（之后只能一点点蹭）
+  floor: 0.06
+  plasticity:
+    childhood: { body: 1.0, mind: 1.0, charm: 1.0, luck: 1.0 }
+    teen:      { body: 1.3, mind: 1.3, charm: 1.1, luck: 1.0 }
+    young:     { body: 0.9, mind: 1.1, charm: 1.2, luck: 1.0 }
+    middle:    { body: 0.5, mind: 0.9, charm: 0.9, luck: 1.0 }
+    old:       { body: 0.3, mind: 0.5, charm: 0.6, luck: 1.0 }
+  plainBonus: 1.2       # 「普通的孩子」什么都长得快一点
+
+# ---------- 岁数不饶人 ----------
+# 每过一年掉多少。[从几岁起, 每年掉多少]，取最后一条满足的。
+# 当天动过（体魄）/ 用过脑子（心智）的，只掉 activeFactor 这么多。
+aging:
+  body: [[40, 0.03], [60, 0.06], [75, 0.09]]
+  mind: [[70, 0.04]]
+  activeFactor: 0.4
+
+# ---------- 属性在日子里的用处 ----------
+daily:
+  bodyEnergy: 0.04      # 体魄每高出 5 一点，醒着时精力少掉 4%
+  charmTogether: 0.04   # 同框时，两人魅力合计每高出 10 一点，心情加成多 4%
+  luckFate: 0.02        # 两人运气平均每高出 5 一点，命运给今天准备默契事件的概率 +2%
+
+# ---------- 检定 ----------
+# 成功率 = base + (属性 − 难度) × perPoint + (运气 − 5) × luck，夹在 [min, max] 里。
+# 默契事件里两个人选了同一项，就是「搭把手」：按两人里高的那个算，再 + help。
+check:
+  base: 0.55
+  perPoint: 0.12
+  luck: 0.03
+  min: 0.08
+  max: 0.95
+  help: 1
+
+# ---------- 寿命 ----------
+# 大限 = 出生时定的命数（base ± spread，三角分布）
+#       + (现在的体魄 − 5) × body
+#       + 一辈子的心气（平均心情比 moodMid 每高 moodStep 多活 1 年，夹在 [moodMin, moodMax]）
+#       + 有人惦记（亲近 ≥ bondClose 时 + bond；人走了，惦记还在）
+#       − 对方先走以后，亲近 ≥ widowClose 的再 − widow（撑不过那个冬天）
+lifespan:
+  base: 76
+  spread: 17
+  body: 1.0
+  moodMid: 85
+  moodStep: 5
+  moodMin: -4
+  moodMax: 2
+  bondClose: 55
+  bond: 2
+  widowClose: 85
+  widow: 1.5
+  min: 56
+  max: 104
+
+# ---------- 亲近 ----------
+# 亲近不是攒出来的，是走动出来的：越亲越难再涨，不走动就淡。
+bond:
+  closeSoft: 100        # 亲近越接近这个数，涨得越慢：实际涨幅 = 写的数 × (1 − 亲近 / closeSoft)，最少 closeFloor
+  closeFloor: 0.12
+  closeScale: 0.65      # 整体系数
+  syncSoft: 110
+  syncFloor: 0.15
+  # 一个日子过完，要是这天既没同框也没共鸣，亲近按阶段往下掉（日子之间隔得越久掉得越多），再乘 (1 + 距离 × distance)
+  drift: { childhood: 0.4, teen: 0.9, young: 1.6, middle: 2.4, old: 1.5 }
+  driftDistance: 0.35
+  driftFloor: 5         # 最多淡到这儿：住过对门，总归认识

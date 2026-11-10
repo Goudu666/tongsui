@@ -566,9 +566,9 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
   for (var i = 0; i < ROLES.length; i++) {
     var p = persons[ROLES[i]];
     if (!p.alive) continue;
-    var a = w.actors[ROLES[i]];
-    var slept = a !== null && a.asleep;
-    parts.push(p.name + (slept ? "睡得很香" : "困得趴在了桌上"));
+    // 晚上过完都去睡了。累狠了的人倒头就睡，第二天也缓不过来
+    var tired = p.needs.energy < 15;
+    parts.push(p.name + (tired ? "累得倒头就睡" : "睡得很香"));
     if (p.dayStart) {
       var gain: Partial<Stats> = {};
       for (var gk = 0; gk < STAT_KEYS.length; gk++) {
@@ -580,7 +580,7 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
     }
     // 回合之间的日子：需求回到日常水平，心情慢慢回归
     p.needs.hunger = 75;
-    p.needs.energy = slept ? 90 : 65;
+    p.needs.energy = tired ? 65 : 90;
     p.needs.clean = 75;
     p.needs.mood = Math.round(p.needs.mood * 0.6 + 60 * 0.4);
   }

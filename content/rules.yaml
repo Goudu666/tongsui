@@ -63,7 +63,7 @@ check:
 #       + 有人惦记（亲近 ≥ bondClose 时 + bond；人走了，惦记还在）
 #       − 对方先走以后，亲近 ≥ widowClose 的再 − widow（撑不过那个冬天）
 lifespan:
-  base: 76
+  base: 74              # 关口上走的路还会再折成几年（下面的 flags），所以底数比原来的 76 低两年，平均寿命不变
   spread: 17
   body: 1.0
   moodMid: 85

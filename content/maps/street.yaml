@@ -23,11 +23,11 @@ exits:
   - { id: to_river, at: 3940, to: river, arrive: 60, label: 去海河边 }
 
 spots:
-  - { id: breakfast_stall, at: 530, area: breakfast, actions: [ duty, help_out, eat_out, dine ] }
+  - { id: breakfast_stall, at: 530, area: breakfast, actions: [ duty, eat_out, dine, help_out ] }
   - { id: shop_counter, at: 1080, area: shop, actions: [ help_out ] }
   - { id: alley_rope, at: 1530, area: alley, actions: [ play_alley, chat ] }
   - { id: chess_table, at: 2010, area: alley, actions: [ chess ] }
-  - { id: bike_bench, at: 2710, area: bikeshop, actions: [ duty, help_out, work ] }
+  - { id: bike_bench, at: 2710, area: bikeshop, actions: [ duty, work, help_out ] }
   - { id: tea_stage, at: 3310, area: teahouse, actions: [ club_art, perform ] }
   - { id: tea_seat, at: 3580, area: teahouse, actions: [ listen ] }
 

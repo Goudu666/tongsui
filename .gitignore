@@ -4,3 +4,10 @@ build/
 deploy/.env
 *.keystore
 .DS_Store
+# 唯一例外：公开的调试签名（密码 android），让每次 CI 出的调试包签名一致、能覆盖安装
+!tools/ci/debug.keystore
+deploy/client-server.json
+deploy/backups/
+deploy/*.smoke-bak
+deploy/.env.*
+!deploy/.env.example

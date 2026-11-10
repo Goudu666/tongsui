@@ -1,15 +1,36 @@
 # 同岁 服务端：PostgreSQL + Nakama（+ 线上用 Caddy 做 HTTPS）
-# 本地：  docker compose -f deploy/docker-compose.yml up -d
-# 线上：  docker compose -f deploy/docker-compose.yml --profile prod up -d
+# 本地：  docker compose -f deploy/docker-compose.yml up -d            （不需要 .env，全用默认值）
+# 线上：  sudo bash deploy/install.sh                                  （会生成 deploy/.env 再带 --profile prod 启动）
+# 线上的密钥都在 deploy/.env，compose 会自动读取同目录下的 .env。
 name: tongsui
+
+# 所有容器日志都滚动：单个 10 MB，最多留 3 个，免得把 20 GB 小硬盘写满
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
 
 services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+    logging: *logging
     environment:
       POSTGRES_DB: nakama
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-localdev}
+    # 2 核 2 GB 的小机器够用的参数；只在 compose 内网里给 Nakama 用，不映射端口
+    command:
+      - postgres
+      - -c
+      - shared_buffers=128MB
+      - -c
+      - effective_cache_size=512MB
+      - -c
+      - max_connections=100
+    shm_size: 128mb
+    mem_limit: 512m
+    stop_grace_period: 30s
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -21,45 +42,64 @@ services:
   nakama:
     image: heroiclabs/nakama:3.41.0
     restart: unless-stopped
+    logging: *logging
     depends_on:
       postgres:
         condition: service_healthy
+    # 注意不要用 sh -x，否则密钥会被打印进日志
+    # 后四个密钥 Nakama 的默认值是公开的，线上必须换掉（install.sh 会自动生成）
     entrypoint:
       - /bin/sh
-      - -ecx
+      - -ec
       - >
         /nakama/nakama migrate up --database.address postgres:${POSTGRES_PASSWORD:-localdev}@postgres:5432/nakama &&
         exec /nakama/nakama --config /nakama/data/local.yml
         --database.address postgres:${POSTGRES_PASSWORD:-localdev}@postgres:5432/nakama
         --socket.server_key ${NAKAMA_SERVER_KEY:-defaultkey}
+        --session.encryption_key ${NAKAMA_SESSION_ENCRYPTION_KEY:-defaultencryptionkey}
+        --session.refresh_encryption_key ${NAKAMA_SESSION_REFRESH_ENCRYPTION_KEY:-defaultrefreshencryptionkey}
+        --runtime.http_key ${NAKAMA_RUNTIME_HTTP_KEY:-defaulthttpkey}
         --console.username ${NAKAMA_CONSOLE_USER:-admin}
         --console.password ${NAKAMA_CONSOLE_PASSWORD:-password}
+        --console.signing_key ${NAKAMA_CONSOLE_SIGNING_KEY:-defaultsigningkey}
+    mem_limit: 768m
     volumes:
       - ./nakama/local.yml:/nakama/data/local.yml:ro
       - ../server/build:/nakama/data/modules:ro
     ports:
-      - "127.0.0.1:7350:7350" # 客户端 API / WebSocket（线上只给 Caddy 用）
+      - "127.0.0.1:7350:7350" # 客户端 API / WebSocket（线上只给 Caddy 用，不对外）
       - "127.0.0.1:7351:7351" # 管理控制台（线上用 ssh -L 7351:127.0.0.1:7351 访问）
     healthcheck:
       test: ["CMD", "/nakama/nakama", "healthcheck"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
 
   caddy:
     profiles: ["prod"]
     image: caddy:2.11-alpine
     restart: unless-stopped
-    depends_on: [nakama]
+    logging: *logging
+    depends_on:
+      nakama:
+        condition: service_healthy
     environment:
       DOMAIN: ${DOMAIN:-localhost}
+      # 有邮箱就写进 Caddy 全局配置（证书快过期 / 出问题时 Let's Encrypt 会发邮件）
+      ACME_EMAIL_OPT: ${ACME_EMAIL:+email ${ACME_EMAIL}}
+    mem_limit: 256m
+    # 只有 80 / 443 对公网开放（Docker 映射的端口会绕过 ufw，所以别的端口一律不映射或只绑 127.0.0.1）
     ports:
       - "80:80"
-      - "443:443"
+      - "443:443/tcp"
+      - "443:443/udp" # HTTP/3
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
+      - caddy_data:/data # 证书在这里，别删
+      - caddy_config:/config
 
 volumes:
   pgdata:
   caddy_data:
+  caddy_config:

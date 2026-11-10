@@ -44,7 +44,7 @@
 | 联机服务器 | **Nakama 3.41**（TypeScript 服务端逻辑）+ PostgreSQL 16 | 自带账号、存储、通知和权威实时房间（10 Hz），两人同框走动、共享时钟都在服务器上算 |
 | 内容 | YAML（事件、家庭、天赋、地图）→ 构建脚本 → 客户端 JSON + 服务端 TS | 写剧情、加人家、改地图都不用碰代码 |
 | 部署 | Docker Compose + Caddy（自动 HTTPS），香港或东京一台 2C4G | 境外机房无需备案；香港到大陆延迟最低 |
-| CI | GitHub Actions：构建服务端 + 导出 Android 调试 APK | push 一下，Actions 页面直接下载 APK |
+| CI | GitHub Actions：服务端单测 → 两个真 Godot 客户端连真 Nakama 端到端联机 → 导出签名 APK；打 tag 自动发 Release | push 一下，Actions 页面直接下载 APK |
 
 详细架构见 [docs/TECH.md](docs/TECH.md)，部署见 [docs/DEPLOY.md](docs/DEPLOY.md)。
 
@@ -84,8 +84,10 @@ docker compose -f deploy/docker-compose.yml up -d
 #    同一台电脑开两个窗口测试联机：godot --path client -- --device=a / --device=b
 ```
 
-打包 APK：push 到 GitHub 后，在 Actions → `build` 下载 `tongsui-debug-apk`；
-或者本地在 Godot 编辑器里「项目 → 导出 → Android」。
+打包 APK：push 到 GitHub 后，在 Actions → `build` 页面底部 Artifacts 下载 `tongsui-*.apk`；
+打 tag（`git tag v0.2.0 && git push --tags`）会自动发 GitHub Release。
+本地出包：`docker run --rm -v "$PWD":/w -w /w barichello/godot-ci:4.7.2 bash tools/ci/build_apk.sh`。
+APK 连哪台服务器、怎么配正式签名，见 [docs/DEPLOY.md](docs/DEPLOY.md)。
 
 ## 路线图
 

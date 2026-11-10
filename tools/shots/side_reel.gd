@@ -71,14 +71,16 @@ func _run() -> void:
 		_lapse_t = 0.0
 		_lapse_len = float(c[8])
 		_lapse = true
-		# 对门跟在后头走
+		# 对门跟在后头走：只给 net_target，让她自己插值过去（直接改 position 不算走路，腿不动）
+		var fx := other.position.x
 		var t := 0.0
 		while t < float(c[8]):
 			await process_frame
 			var d := 1.0 / 30.0  ## --fixed-fps 30
 			t += d
 			var target := me.position.x - 120.0
-			other.position.x = move_toward(other.position.x, target, 300.0 * d) if absf(other.position.x - target) > 8.0 else other.position.x
-			other.net_target = other.position
+			if absf(fx - target) > 8.0:
+				fx = move_toward(fx, target, 300.0 * d)
+			other.net_target = Vector2(fx, y)
 		_lapse = false
 	quit()

@@ -16,7 +16,8 @@ pip install pycairo numpy pillow
 bash tools/fetch_addons.sh            # 需要里面的霞鹜文楷字体（招牌、地名）
 python3 tools/art/scenes.py           # 十一张侧视横图 → client/art/scenes/
 python3 tools/art/scenes.py street    # 只重画一张
-python3 tools/art/actors.py           # 角色 → client/art/actors/
+python3 tools/art/actors.py           # 角色（侧视骨骼）→ client/art/actors/
+python3 tools/art/layers.py           # 远景、中景、四季的树、前景 → client/art/layers/
 python3 tools/art/street.py           # 街坊、车、年代道具 → client/art/street/
 ```
 
@@ -34,7 +35,8 @@ python3 tools/art/scenes.py --preview street --x 1200 --w 1600 --scale 0.5 --out
 | --- | --- |
 | `riso.py` | 印刷模拟：`Sheet`（一张纸三块版）、`Pen`（线、多边形、排线、砖缝、文字）、网点合成 |
 | `scenes.py` | 侧视横版的十一张图：零件（楼面、窗、门、招牌、雨棚、树、电线杆、路灯、家具）+ 每张图一个 `draw_<图>` |
-| `actors.py` | 青、梅五个人生阶段的精灵表 |
+| `actors.py` | 青、梅五个人生阶段的侧视精灵表：一副骨架（髋、膝、踝、肩、肘）按关键帧摆姿势，衣裳和头发套在骨架上 |
+| `layers.py` | 视差层：远景天际线和中景屋顶（每个年代一张，带一张夜里亮灯的窗户图）、三种树的四季、四种前景条 |
 | `street_fig.py` | 街坊的参数化小人：体型、朝向、站/坐、衣裳、手里拿的东西，一个字典画一个人 |
 | `street.py` | 街景图集：街坊、公告栏、电话亭、快递柜、共享单车、面的、出租、骑车的人、对岸天际线 |
 
@@ -45,8 +47,11 @@ python3 tools/art/scenes.py --preview street --x 1200 --w 1600 --scale 0.5 --out
   - `anchors.json`：每张图的灯（`street_lamp` 路灯、`window_light` 窗、`hall_lamp` 楼道灯、`stall_light` 摊子、`far_light` 远处），画到灯的时候顺手记下，夜版按它烘灯光图
   - 引擎：`client/scripts/world/scene_art.gd`（切片常数和这里一致），`print_light.gd` 换图时 `relight`
   - 画的规矩：出口的地方画门、楼梯或路口，引擎只挂牌子；互动点的 x 以 content 为准，家具围着它画；年代会变的东西（告示内容、车、价钱）不进底图
-- **角色**：`{qing|mei}_{child|teen|young|middle|old}.png`，6 列 × 4 行，每格 96×128 世界像素（2 倍输出），脚底在格子 (48, 120)。
-  行 0 朝下、1 朝上、2 朝右（朝左由引擎翻转），列 0 站、1~4 走、5 在忙；行 3 是睡觉、挥手、坐着。侧视只用行 2 和行 3。
+- **场景的天是透明的**：底图只印地面以上的楼、树坑和地面。`<图>_mask.png` 是这张图的不透明度（四分之一大小），夜版按它少压天空。`anchors.json` 里每张图多了 `layer`（地平线、远景底边）和 `trees`（每棵树的位置、高、种类，引擎在那儿摆一棵会晃的树）。
+- **视差层**（`layers.py`，`scene_art.gd` 摆）：从后往前是天空着色器（`sky.gdshader`：网点渐变、云、太阳、月亮、星星）→ 远景 `far_<年代>.png` → 中景 `mid_<年代>.png` → 底图 → 树 `tree_<种>_<季>.png`（`sway.gdshader` 晃）→ 前景 `fore_<种>.png` → 天气粒子 → 夜版。
+  远景和中景都是 2048 宽、首尾接得上的横条，`_lit.png` 是同样大小的灰度图，标出哪些窗户夜里会亮（`far_layer.gdshader` 按格子随时间开灯关灯）。年代 0~4 对应童年到老年，楼一代比一代高。
+- **角色**：`{qing|mei}_{child|teen|young|middle|old}.png`，8 列 × 3 行，每格 200×220（2 倍输出），脚底在格子 (100, 206)，都朝右（朝左由引擎翻转）。
+  行 0 是走路八帧（一步一个周期）；行 1 列 0~3 站着（列 3 眨眼）、列 4~7 在忙；行 2 列 0~1 坐、2~3 睡、4~7 招手。引擎按走过的距离推帧（`actor.gd` 的 `STRIDE`），所以快慢都不滑步。
 
 ## 街景：随年代更替的那一层
 

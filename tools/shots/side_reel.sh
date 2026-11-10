@@ -13,6 +13,6 @@ if [[ -z "${DISPLAY:-}" ]] && command -v xvfb-run >/dev/null; then
 else
   "${cmd[@]}"
 fi
-ffmpeg -y -loglevel error -i "$tmp/reel.avi" -an -c:v libx264 -pix_fmt yuv420p -crf 23 -movflags +faststart "$out"
+ffmpeg -y -loglevel error -i "$tmp/reel.avi" -an -c:v libx264 -pix_fmt yuv420p -crf 30 -preset slow -movflags +faststart "$out"
 rm -rf "$tmp"
 echo "✓ $out"

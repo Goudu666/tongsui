@@ -561,6 +561,7 @@ function worldChoose(s: LifeState, c: Content, role: Role, optionId: string, fro
   var missing = pe.roles.filter(function (r) { return !pe.choices[r]; });
   if (missing.length > 0) return { error: null, entry: null };
   var entry = lifeResolveEvent(s, c, pe);
+  duetAfterEvent(s, c, pe, entry); // 猜 TA 的对错；影子替选的记一笔，等本人回话
   w.done.push(pe.eventId);
   w.event = null;
   return { error: null, entry: entry };

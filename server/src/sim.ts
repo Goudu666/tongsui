@@ -486,7 +486,9 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       for (var j = 0; j < o.tags.length; j++) me.tags[o.tags[j]] = (me.tags[o.tags[j]] || 0) + 1;
     }
   }
-  if (pe.kind === "mirror" || (pe.kind === "milestone" && pe.roles.length === 2)) {
+  // 默契事件：选得不一样、但一个抛一个接，duet.ts 按「搭上了」结算，就不走下面的共鸣 / 错位了。
+  // 关口：两个人都过这一关时，走了同一条路算共鸣，分开走算错位（关口不接「搭上了」和猜 TA）
+  if ((pe.kind === "mirror" && !duetCatch(s, c, pe, ev, entry)) || (pe.kind === "milestone" && pe.roles.length === 2)) {
     if (pe.choices.qing === pe.choices.mei) {
       entry.resonance = true;
       if (s.world) s.world.warm = true;

@@ -5,9 +5,9 @@ import assert from "node:assert/strict";
 import { WAYS, live, climb } from "../../tools/paths.mjs";
 
 const N = 16;
-const run = (name, untilAge) => {
+const run = (name, untilAge, n = N) => {
   const marks = [];
-  for (let seed = 1; seed <= N; seed++) marks.push(live(seed * 7919, WAYS[name], untilAge, climb).marks);
+  for (let seed = 1; seed <= n; seed++) marks.push(live(seed * 7919, WAYS[name], untilAge, climb).marks);
   return marks;
 };
 const people = (marks, id) => marks.flatMap((m) => Object.values(m[id] || {}));
@@ -61,7 +61,9 @@ assert.ok(cl <= 0.5 && cs >= 0.7, `九岁的数学小组：不上心 ${Math.roun
 
 // 8. 最后一道关看的是两个人：一辈子搭伴的有一部分并得成一家，各过各的一个也并不成。
 //    亲近不是攒出来的，中年会淡，所以搭伴的人也不是个个够得着
-const oldDuo = run("搭伴练身体", 71), oldSolo = run("一个人练身体", 71);
+// 各过各的够得着搭伙过的本来就有三四个点（main 上 64 条人生 3.4%，一对恰好卡在线上就是两个人），
+// 16 条人生里碰上一对就过了 5%，换了哪几户人家抽得到就会红：这一项跑四倍
+const oldDuo = run("搭伴练身体", 71), oldSolo = run("一个人练身体", 71, N * 4);
 const [pd, ps] = [rate(oldDuo, "m_evening", "pair"), rate(oldSolo, "m_evening", "pair")];
 assert.ok(people(oldDuo, "m_evening").length >= N, "活到七十岁的人太少，最后一道关大多数人见不着");
 assert.ok(pd >= 0.15 && pd <= 0.9, `一辈子搭伴的人有 ${Math.round(pd * 100)}% 够得着搭伙过的线`);

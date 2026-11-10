@@ -1,0 +1,260 @@
+# 隔世的事：只有第二世以后才遇得到。上一世的两个人在河畔里留下的痕迹，这一世的两个孩子会撞见。
+# 写法：上一世埋的东西，这一世让它响。不解释，不说破是谁。给的东西和别的事件一个量级，不因为是隔世的就多给。
+#
+# leg_ 开头的标记是出生时带上的（server/src/legacy.ts → legacyBirth），事件只读不发：
+#   leg_any          不是头一世             leg_house       这户人家的营生，之前有人接下过
+#   leg_<共同标记>   上一世两个人一起做过这件事。只记上一世的：这一世接着做了（再刻一回、再埋一回），才传得下去。
+#                    哪些共同标记会留下，由内容里谁写了 leg_ 来定（tools/build-content.mjs 算出 content.legacy.traces）：
+#                    leg_p_wall_names 刻过名字   leg_p_capsule 埋过盒子   leg_p_pigeon 养过那只灰鸽子
+#                    leg_p_married 住成了一家    leg_p_promise 拉过钩（结局和街坊记住的事读它）
+# 这里发的标记：p_four_names（旧名字旁边又刻了两个）、deja_vu（老了以后做过那个梦，还记在了本子上：往后投胎可能遇到「老灵魂」）。
+
+- id: l_wall_old_names
+  kind: mirror
+  stage: childhood
+  where: hallway
+  hint: 楼道的墙皮掉了一块。
+  weight: 2
+  requires: { minAge: 7, flags: [leg_p_wall_names] }
+  title: 墙皮底下
+  text: 楼道的墙掉了一块皮，露出底下两个歪歪扭扭的名字，挨得很近。没人说得清是哪年刻的。
+  options:
+    - id: trace
+      text: 拿指头描一遍
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+    - id: carve
+      text: 在旁边刻上自己的
+      tags: [adventure]
+      effects: { self: { mood: 8 } }
+    - id: ask
+      text: 去问楼长是谁的
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+  resonance:
+    trace:
+      text: 你描左边那个，对门的描右边那个。描完一数，笔画差不多。
+      memory: 墙皮底下的字
+      bond: { sync: 3, close: 2 }
+    carve:
+      text: 四个名字挤在一块墙皮上。楼长路过，看了半天，没擦。
+      memory: 四个名字
+      bond: { sync: 3, close: 3 }
+      flags: [p_wall_names, p_four_names]
+    ask:
+      text: 楼长翻了半天住户本，合上了：「早先住三楼对门的。刻的时候，跟你俩一般大。」
+      memory: 住户本
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个蹲着描，一个跑去找楼长。楼长来了，看看墙，又看看你俩，什么也没说。
+    bond: { close: 0 }
+
+- id: l_capsule_found
+  kind: mirror
+  stage: childhood
+  where: river
+  hint: 河堤让雨冲了个豁口。
+  weight: 2
+  requires: { minAge: 8, flags: [leg_p_capsule] }
+  title: 别人的盒子
+  text: 大雨把河堤冲出个豁口，露出半截铁皮盒子，盖上的字都锈了。不是你俩埋的。一晃，里头哗啦响。
+  options:
+    - id: open
+      text: 撬开看看
+      tags: [adventure]
+      effects: { self: { mood: 5, clean: -10 } }
+    - id: bury
+      text: 原样埋回去
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+    - id: add
+      text: 添一样东西再埋
+      tags: [gentle]
+      effects: { self: { mood: 8 } }
+  resonance:
+    open:
+      text: 两颗玻璃球，一张画片，一封信。信上的字认不全，只认出一句：「一百年不许变。」
+      memory: 别人的一百年
+      bond: { sync: 3, close: 2 }
+    bury:
+      text: 你俩把土踩实，又压了块砖。走出去老远，对门的说：「他们会回来挖的吧。」
+      memory: 压着的那块砖
+      bond: { sync: 3, close: 2 }
+    add:
+      text: 你搁了颗玻璃球，对门的搁了张画片。盖上再晃，里头比刚才热闹。
+      memory: 添的玻璃球
+      bond: { sync: 3, close: 3 }
+      flags: [p_capsule]
+  dissonance:
+    text: 一个要撬，一个要埋，盒子在两人手里拽了半天。谁也没撬开，盖子倒松了。
+    bond: { close: 0 }
+
+- id: l_old_pigeon
+  kind: solo
+  stage: childhood
+  where: roof
+  hint: 楼顶有只鸽子不走。
+  weight: 3
+  requires: { minAge: 5, flags: [leg_p_pigeon] }
+  title: 认人的鸽子
+  text: 楼顶落着一只老灰鸽子，哪家棚里的都不是。别人一走近它就飞。你过去，它歪着头看了你半天。
+  options:
+    - id: hand
+      text: 伸出手
+      tags: [gentle]
+      effects: { self: { luck: 1, mood: 8 } }
+    - id: feed
+      text: 回家抓一把小米
+      tags: [responsible]
+      effects: { self: { charm: 1, mood: 5 } }
+    - id: shoo
+      text: 轰它走
+      tags: [solitude]
+      effects: { self: { mood: -3 } }
+
+- id: l_house_box
+  kind: solo
+  stage: childhood
+  weight: 3
+  requires: { minAge: 8, flags: [leg_house] }
+  title: 柜顶的匣子
+  text: 柜顶有个旧木匣，落着灰。家里人说，是早先接下这门营生的人留下的，一直没人打开。
+  options:
+    - id: open
+      text: 搬凳子够下来看
+      tags: [adventure]
+      effects: { self: { mind: 1, mood: 3 } }
+    - id: dust
+      text: 擦干净，放回去
+      tags: [patient]
+      effects: { self: { mood: 6 } }
+    - id: leave
+      text: 不碰它
+      tags: [solitude]
+      effects: { self: { mood: 2 } }
+
+- id: l_same_doors
+  kind: mirror
+  stage: young
+  where: hallway
+  hint: 楼道里有人说闲话。
+  weight: 3
+  requires: { minAge: 20, flags: [leg_p_married] }
+  title: 这两扇门
+  text: 楼道里下棋的老爷子看着你俩直乐：「这两扇门出过一对。也是同岁，也是从小住对门。」
+  options:
+    - id: laugh
+      text: 「那后来呢？」
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: look
+      text: 看一眼对门的
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: deny
+      text: 「别瞎说」，回屋关门
+      tags: [solitude]
+      effects: { self: { mood: -3 } }
+  resonance:
+    laugh:
+      text: 「后来？后来就一扇门了呗。」老爷子乐得棋子掉了一地。你俩谁也没捡。
+      memory: 掉了一地的棋子
+      bond: { sync: 2, close: 3 }
+    look:
+      text: 你看过去的时候，对门的正看过来。老爷子咳嗽一声，低头接着下棋。
+      memory: 那一声咳嗽
+      bond: { sync: 3, close: 4 }
+    deny:
+      text: 两扇门同时关上了，关得一样响。老爷子摇摇头，落了一子。
+      memory: 一样响的门
+      bond: { sync: 3 }
+  dissonance:
+    text: 一个追着问后来，一个已经进了屋。老爷子看看关上的那扇门，没往下说。
+    bond: { close: 0 }
+
+- id: l_deja_vu
+  kind: solo
+  stage: old
+  weight: 2
+  requires: { minAge: 75, flags: [leg_any] }
+  title: 好像来过
+  text: 打了个盹，梦见自己三岁，扶着暖气片学走路。醒了，手还扶着。
+  options:
+    - id: tell
+      text: 讲给对门的听
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 5 }, bond: { close: 1 } }
+    - id: write
+      text: 记在本子上
+      tags: [patient]
+      effects: { self: { mind: 1 }, flags: [deja_vu] }
+    - id: smile
+      text: 乐了一下，接着睡
+      tags: [solitude]
+      effects: { self: { mood: 8, energy: 10 } }
+
+# ---- 三种藏着的天赋，各有一件自己的事 ----
+
+- id: l_tal_oldsoul_cord
+  kind: solo
+  stage: childhood
+  where: hallway
+  weight: 2
+  requires: { minAge: 6, flags: [tal_oldsoul] }
+  title: 灯绳
+  text: 头一回一个人下到楼道尽头的煤棚，里头黑着。你没找，一伸手就摸到了灯绳。
+  options:
+    - id: pull
+      text: 拉亮它
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: think
+      text: 站着想了一会儿
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: tell
+      text: 跑回去告诉对门的
+      tags: [gentle]
+      effects: { self: { mood: 5 }, bond: { close: 1 } }
+
+- id: l_tal_linked_lamp
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { flags: [tal_linked], alone: false }
+  title: 灯也亮着
+  text: 半夜忽然醒了，心里发慌，说不上为什么。隔着楼道一看，对门的灯也亮着。
+  options:
+    - id: knock
+      text: 敲三下暖气管
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 5 }, bond: { close: 1 } }
+    - id: wait
+      text: 等那盏灯灭了再睡
+      tags: [patient]
+      effects: { self: { mood: 3, energy: -5 } }
+    - id: cover
+      text: 蒙上被子
+      tags: [solitude]
+      effects: { self: { energy: 5 } }
+
+- id: l_tal_late_dawn
+  kind: solo
+  stage: young
+  weight: 2
+  requires: { minAge: 22, flags: [tal_late] }
+  title: 才开始
+  text: 一块儿长大的都定了型。你夜里翻一本没人让你翻的书，翻着翻着，天亮了。
+  options:
+    - id: read
+      text: 接着往下看
+      tags: [patient]
+      effects: { self: { mind: 1, energy: -10 } }
+    - id: run
+      text: 出门跑一圈
+      tags: [adventure]
+      effects: { self: { body: 1, mood: 5 } }
+    - id: sleep
+      text: 合上书，睡一会儿
+      tags: [gentle]
+      effects: { self: { energy: 10 } }

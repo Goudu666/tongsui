@@ -1,0 +1,92 @@
+# 街坊记住的事：一世走完，河畔里的人会记住这两扇门里出过什么事。按人生线（两个人）记，跨世留着，记过的不记第二回。
+# 只是长卷上的一枚章、住户本里的一行：没有奖励，不解开任何东西，没记住的哪儿都不显示，也不提「还差多少」。
+# 记的是怎么过的，不是数值攒到了多少。规则在 server/src/legacy.ts → legacyNote。
+# 每一条都得是一世之内的事，最多隔着上一世（leg_）。不写「好几世攒齐几样」的：那是给人一张要填满的表。
+#
+#   who       pair 看两个人一起（默认） / each 两个人里有一个做到就算 / both 两个人都得做到
+#   requires  pair：写法同 endings.yaml 的 pair.requires，另有
+#               minHelps 两个人一起才办成的事有几回
+#             each / both：写法同 endings.yaml 的 lives.requires
+#   title 七个字以内，desc 一句话，只说事。
+#
+# x_ 开头的标记是人生结束时规则算出来的（legacyDerive）：
+#   x_same_year 同一年走的   x_opposites 两个人最常做的那类选择不一样   x_many_mirrors 遇到过二十件以上默契事
+#   x_same_trade 两个人干了一辈子同一行   x_plain_life 普通的孩子，没有一项拔尖也没有一项垫底
+# leg_ 开头的是上一世留在河畔里的痕迹（见 events/legacy.yaml 文件头）。
+
+# ---- 两个人 ----
+- id: r_one_door
+  title: 一扇门
+  desc: 对门住成了一家。
+  requires: { flags: [p_married] }
+
+- id: r_patched
+  title: 吵不散
+  desc: 吵翻过，后来又坐到了一张桌上。
+  requires: { flags: [p_estranged, p_reunited] }
+
+- id: r_four_things
+  title: 一样没落下
+  desc: 墙上的名字，河边的盒子，拉过的钩。
+  requires: { flags: [p_wall_names, p_capsule, p_promise] }
+
+- id: r_wordless
+  title: 不用言语
+  desc: 遇到的事，十回有七回想到了一起。
+  requires: { flags: [x_many_mirrors], minRate: 70 }
+
+- id: r_duo
+  title: 一个东一个西
+  desc: 脾气不一样，偏偏好了一辈子。
+  requires: { flags: [x_opposites], minClose: 60 }
+
+- id: r_helping
+  title: 搭把手
+  desc: 有两回，是两个人一起才办成的。
+  requires: { minHelps: 2 }
+
+- id: r_same_trade
+  title: 一个行当
+  desc: 两个人干了一辈子同一行。
+  requires: { flags: [x_same_trade] }
+
+- id: r_same_year
+  title: 同年
+  desc: 同一年来的，同一年走的。
+  requires: { flags: [x_same_year] }
+
+# ---- 一个人 ----
+- id: r_homecoming
+  title: 回来了
+  desc: 有人去了外地，后来又回来了。
+  who: each
+  requires: { flags: [left_city, came_back] }
+
+- id: r_two_signs
+  title: 两块招牌
+  desc: 两个人都接下了家里的营生。
+  who: both
+  requires: { flags: [took_over] }
+
+- id: r_ninety
+  title: 过了九十
+  desc: 有人活过了九十岁。
+  who: each
+  requires: { minDiedAge: 90 }
+
+- id: r_plain
+  title: 挺好
+  desc: 普通的孩子，一辈子没拔过尖，也没掉过队。
+  who: each
+  requires: { flags: [x_plain_life] }
+
+# ---- 隔着一世 ----
+- id: r_again
+  title: 又拉了一回
+  desc: 上一世拉过钩，这一世又拉了一回。
+  requires: { flags: [leg_p_promise, p_promise] }
+
+- id: r_four_names
+  title: 四个名字
+  desc: 墙上的旧名字旁边，又添了两个。
+  requires: { flags: [p_four_names] }

@@ -61,7 +61,7 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 ### 规则只写一份（服务器为准）
 
 - `server/src/sim.ts`：人生层，投胎、事件结算、一天结束、生老病死。
-- `server/src/legacy.ts`：传承，一世走完留下什么、再来一世、投胎时带一件老物件（[LEGACY.md](LEGACY.md)）。
+- `server/src/legacy.ts`：传承，一世走完留下什么、再来一世、投胎时带一件老物件；痕迹、街坊记住的事、藏着的天赋、住户本读归档（[LEGACY.md](LEGACY.md)）。
 - `server/src/world.ts`：一天之内的实时世界，共享时钟、走动限速、行动、需求衰减、同框、地点触发事件、影子。
 - 两个文件都是纯函数，不依赖 Nakama，Node 里可以直接单测（`server/test/life.test.mjs`）。
 - 客户端不做任何结算，只负责画、走、发指令。自己的角色走动由客户端预测，服务器限速后广播；对方的角色按广播插值。
@@ -77,6 +77,7 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | `lifeline_join {code, name}` | 梅 | 输入配对码加入，同时为两人各投一次胎 |
 | `lifeline_open {lifelineId, protocol}` | 任意一方 | 返回正在运行的房间 id，没有就从存档拉起（两人同时打开也只会有一个房间）。回复里带服务器的 `protocol` 和内容指纹 `content` |
 | `lifeline_list` | 任意 | 我参与的人生线：两人名字、是否已配对、阶段、第几世、走到哪一天（大厅的「继续」） |
+| `lifeline_past {lifelineId, life}` | 任意一方 | 住户本：这条人生线上走完的某一世。只给挑过的那几样（结局、两个人的小传、回忆、留下的东西、街坊记住的事），不给长卷和随机数（[LEGACY.md](LEGACY.md) 第十一节） |
 | `content_get {offset}` | 任意 | 分块取服务器这一版的剧情内容：`{version, total, offset, chunk, done}` |
 | `server_info` | 任意 | `{protocol, minClientProtocol, content, lifeVersion, events}`，部署后自检用 |
 
@@ -227,6 +228,7 @@ npm run balance          # 平衡模拟：机器人按真实规则过 1200 条�
                          # + 接话测试（duet.test.mjs）：搭上了 / 猜 TA / 回话 / 存档修复 / 带猜测和回话的联机流程
                          # + 传承测试（legacy.test.mjs）：留下什么 / 再来一世的票和可复现 / 摆和挑 / 带上以后多了什么 / v5 存档升级 /
                          #   房间里的归档、断在半路接着换、新旧安装包混搭 / 老物件压不过活法
+                         #   痕迹只记上一世 / 藏着的天赋要先出过那件事、一头宽一头窄 / 街坊记住的事只记一回不给东西 / v6 存档升级 / 住户本读归档的白名单
 GODOT=godot bash tools/ci/client_unit.sh      # 客户端单测 client/tests/unit_*.gd，不需要服务器
 
 # 下面两个要先起一台本地 Nakama（docker compose，见 README）

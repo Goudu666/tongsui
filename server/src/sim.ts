@@ -87,11 +87,11 @@ function lifeFind<T extends { id: string }>(list: T[], id: string): T {
  * 四项属性的合计人人一样（rules.roll.budget，清贫人家多 1 点、殷实人家少 1 点）：
  * 人家和天赋的加成先占掉一部分点数，剩下的随机分。所以没有「强」的出身，只有长得不一样的出身。
  */
-function lifeRollOnce(s: { rng: number }, c: Content, exceptFamily: string | null): { familyId: string; talentId: string; stats: Stats } {
+function lifeRollOnce(s: { rng: number }, c: Content, exceptFamily: string | null, legacy?: Legacy): { familyId: string; talentId: string; stats: Stats } {
   var rr = c.rules.roll;
   var fams = c.families.filter(function (f) { return f.id !== exceptFamily; });
   var fam = lifePickWeighted(s, fams, function (f) { return f.weight; })!;
-  var tal = lifePickWeighted(s, c.talents, function (t) { return t.weight; })!;
+  var tal = lifePickWeighted(s, legacyTalents(c, legacy), function (t) { return t.weight; })!; // 藏着的天赋要先出过那件事
   var keys: StatKey[] = ["body", "mind", "charm", "luck"];
   // 每项随机分到的底子在 [lo, hi] 里。加成大的那一项上限要让出来、加成是负的下限要垫上去，
   // 这样加完以后还在 0~10 里，不用再夹（夹掉的点数就丢了，合计就不等了）
@@ -135,8 +135,8 @@ function lifeCreate(seed: number, c: Content, legacy?: Legacy): LifeState {
     world: null,
     legacy: legacy || legacyNew(),
   };
-  var q = lifeRollOnce(s, c, null);
-  var m = lifeRollOnce(s, c, q.familyId);
+  var q = lifeRollOnce(s, c, null, s.legacy);
+  var m = lifeRollOnce(s, c, q.familyId, s.legacy);
   s.rolls = {
     qing: { familyId: q.familyId, talentId: q.talentId, stats: q.stats, rerollsLeft: c.rules.roll.rerolls, confirmed: false },
     mei: { familyId: m.familyId, talentId: m.talentId, stats: m.stats, rerollsLeft: c.rules.roll.rerolls, confirmed: false },
@@ -151,7 +151,7 @@ function lifeReroll(s: LifeState, c: Content, role: Role): string | null {
   var r = s.rolls[role];
   if (r.confirmed) return "已经确认了";
   if (r.rerollsLeft <= 0) return "没有重抽次数了";
-  var next = lifeRollOnce(s, c, s.rolls[lifeOther(role)].familyId);
+  var next = lifeRollOnce(s, c, s.rolls[lifeOther(role)].familyId, s.legacy);
   r.familyId = next.familyId;
   r.talentId = next.talentId;
   r.stats = next.stats;
@@ -166,7 +166,7 @@ function lifeConfirm(s: LifeState, c: Content, role: Role, names: { [R in Role]:
   s.rolls[role].confirmed = true;
   if (!s.rolls.qing.confirmed || !s.rolls.mei.confirmed) return false;
   s.persons = { qing: lifeNewPerson(s, c, s.rolls.qing, names.qing), mei: lifeNewPerson(s, c, s.rolls.mei, names.mei) };
-  legacyBirth(s, c); // 家业、带着的老物件
+  legacyBirth(s, c); // 家业、带着的老物件、上一世留在河畔里的痕迹
   s.phase = "life";
   worldStartDay(s, c);
   return true;
@@ -607,8 +607,9 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
   if (!persons.qing.alive && !persons.mei.alive) {
     s.phase = "ended";
     s.world = null;
+    legacyDerive(s); // 这一世走完才看得出来的事（同一年走的、干了一辈子同一行……），结局读得到
     s.ending = lifeEnding(s, c);
-    legacyAbsorb(s, c); // 记进传承：这一世各自给河畔里留下了什么
+    legacyAbsorb(s, c); // 记进传承：各自留下了什么，街坊记住了什么
     var end = lifeEntry(s, "end", lifeEndingText(s, c, s.ending) + lifeEpitaph(s));
     out.push(end);
     s.log.push(end);

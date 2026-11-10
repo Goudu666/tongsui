@@ -139,6 +139,12 @@ func set_minute(m: float) -> void:
 		_refresh(false)
 
 
+## 夜版套印盖不到最上面的气泡：夜里跟互动点的小纸片一样暗一点（0 白天 ~ 1 深夜）
+func set_night(night: float) -> void:
+	if _talk != null:
+		_talk.modulate = Color.WHITE.lerp(Color(0.72, 0.76, 0.9), night)
+
+
 ## 两位主角正在做的行动（world_view 每次收到世界广播时喂进来）
 func set_busy(acts: Array) -> void:
 	if acts != _busy:

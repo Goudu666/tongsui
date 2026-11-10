@@ -486,6 +486,7 @@ function worldView(s: LifelineMatch) {
       var arq = CONTENT.map.actions[ai].requires || {};
       if ((arq.flags || arq.notFlags) && lifeHasAll(p.flags, arq.flags) && lifeHasNone(p.flags, arq.notFlags)) unlocks.push(CONTENT.map.actions[ai].id);
     }
+    unlocks = unlocks.concat(meansGuestUnlocks(life, CONTENT, r)); // 对门正在做、带得了你的（学琴、厂里的澡堂）
     tracks[r] = { id: track.id, label: track.label, unlocks: unlocks, duty: d ? { label: d.label, spot: d.spot, arrive: d.arrive, until: d.until, slots: worldDutySlots(d), done: !!w.dutyDone[r], open: !!worldDutyOpen(life, CONTENT, r) } : null };
   }
   // 今天命运的「提示」：画在地图上，走近了才知道是什么事

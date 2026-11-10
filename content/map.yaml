@@ -128,6 +128,45 @@ actions:
     stats: { charm: 0.5 }
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: 茶社下午没有客人，台子借给孩子们。你们一个打板，一个数拍子。 }
 
+  # ---- 家境：家里才有的（docs/MEANS.md）----
+  # 殷实人家花钱买的：长得比自己练快，但要钱，也占着放学后、晚上的那一段。bring：对门跟过来，两份钱你出
+  - id: piano
+    label: 去少年宫学琴
+    minutes: 90
+    money: -2
+    bring: true
+    requires: { minAge: 6, maxAge: 14, flags: [fam_rich], hours: [930, 1200] }
+    needs: { energy: -6, mood: -3 }
+    stats: { charm: 0.4, mind: 0.15 }
+    together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 一架琴两个人坐，你弹右手，TA 弹左手，老师说拍子对上了。 }
+  - id: tutor
+    label: 过桥上补习班
+    minutes: 120
+    money: -3
+    bring: true
+    requires: { minAge: 12, maxAge: 17, flags: [fam_rich], hours: [1080, 1260] }
+    needs: { energy: -14, mood: -6 }
+    stats: { mind: 0.62 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 回来的末班车上，两个人把今天的卷子对了一遍，错的是同一道。 }
+  # 清贫人家自己的：挣钱，也长见人的本事。不用花钱，可也不带人（那是你家的活）
+  - id: help_out
+    label: 帮家里干活
+    minutes: 120
+    money: 3
+    requires: { minAge: 8, maxAge: 17, flags: [fam_poor] }
+    needs: { energy: -12, clean: -10 }
+    stats: { body: 0.15, charm: 0.2 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 对门过来搭了把手，干完了，你家大人塞给你们一人一个苹果。 }
+  # 爸妈在厂里的：厂里的澡堂，一张澡票洗得又热又久。带对门去，澡票你出
+  - id: factory_bath
+    label: 去厂里澡堂洗澡
+    minutes: 40
+    money: -1
+    bring: true
+    requires: { minAge: 5, flags: [fam_factory] }
+    needs: { clean: 90, mood: 10, energy: 4 }
+    together: { needs: { mood: 8 }, bond: { close: 2 }, text: 出来的时候头发还冒着热气，两个人一人一瓶汽水，坐在厂门口晾着。 }
+
   # ---- 魅力 ----
   - id: chat
     label: 跟街坊聊会儿

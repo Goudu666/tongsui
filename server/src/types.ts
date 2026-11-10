@@ -182,7 +182,7 @@ interface Rules {
   };
   /** [从几岁起, 每年掉多少] */
   aging: { body: number[][]; mind: number[][]; activeFactor: number };
-  daily: { bodyEnergy: number; charmTogether: number; luckFate: number; slotUse: number; wageFlags?: { [flag: string]: number } };
+  daily: { bodyEnergy: number; charmTogether: number; luckFate: number; slotUse: number; needsUse?: number; wageFlags?: { [flag: string]: number } };
   check: { base: number; perPoint: number; luck: number; min: number; max: number; help: number };
   lifespan: {
     base: number; spread: number; body: number;

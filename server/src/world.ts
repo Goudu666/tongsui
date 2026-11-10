@@ -647,8 +647,11 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
     if (k === "mind" && !act.duty && lifeHasFlag(p, "tal_memory")) v *= MEMORY_BOOST; // 过目不忘：自己坐下来念的时候快一倍
     (stats as any)[k] = v;
   }
+  // 饱腹、精力、心情、清洁不按遍数整倍放大：一段四个钟头的跳皮筋不是八回跳皮筋那么累。
+  // 只乘 1 + (遍数 − 1) × needsUse（rules.yaml），不然小孩上午做一件事精力就见底，下午只能睡，一天五段过成三段
+  var ntimes = times <= 1 ? times : 1 + (times - 1) * worldNeedsUse(c);
   var scaled: SelfDelta = {};
-  for (var nk in needs) (scaled as any)[nk] = ((needs as any)[nk] as number) * times;
+  for (var nk in needs) (scaled as any)[nk] = ((needs as any)[nk] as number) * ntimes;
   // 状态、搭伴、天赋先乘好，再交给成长规则按年纪和底子折算（growth.ts → growthApply）
   lifeApplySelf(p, stats, growthCtx(s, c, "action"));
   lifeApplySelf(p, scaled);
@@ -656,6 +659,12 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   if (act.id === "letter") postWrite(s, c, role); // 信第二天早上到对门（post.ts）
   p.money += Math.round(money * 10) / 10;
   worldClearAction(a);
+}
+
+/** 一段里做了好几遍的事，需求按几遍算（rules.yaml → daily.needsUse；没写是老内容，按 1 整倍算） */
+function worldNeedsUse(c: Content): number {
+  var u = c.rules.daily.needsUse;
+  return typeof u === "number" ? u : 1;
 }
 
 // ---------- 影子：离线时按需求和习惯自己过日子 ----------

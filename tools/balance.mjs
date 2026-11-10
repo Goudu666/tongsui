@@ -63,6 +63,12 @@ function rng(seed) {
 
 const zoneOf = new Map(C.map.zones.map((z) => [z.id, z]));
 const eventOf = new Map(C.events.map((e) => [e.id, e]));
+// 主线（content/story.yaml）写的是哪张图、哪一段，不是地点和钟点：折成那张图上第一块公共地方、那一段的钟点，机器人照样去等
+for (const e of C.story?.events || []) {
+  const z = C.map.zones.find((zz) => zz.scene === e.scene && !zz.owner) || C.map.zones.find((zz) => zz.scene === e.scene);
+  const sl = G("SLOTS")[["morning", "am", "pm", "evening", "night"].indexOf(e.slot)];
+  eventOf.set(e.id, { ...e, where: z.id, when: [sl[0], sl[1]] });
+}
 // 一个点位上挂着几件事，按年纪取第一件合适的（world.ts → worldPickAction），所以要带着存档去问「现在这儿能做什么」
 const worldPickAction = G("worldPickAction"), worldDutyOpen = G("worldDutyOpen"), lifeOptionLock = G("lifeOptionLock");
 // 机器人想做的事是按「哪一类」说的：念书在小时候是翻小人书、长大了是看书；河边小时候放风筝、大了是走一圈

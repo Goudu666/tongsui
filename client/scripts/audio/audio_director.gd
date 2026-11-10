@@ -30,7 +30,7 @@ const CUE_DB := {"tap": -7.0, "page": -9.0, "toast": -9.0, "type": -12.0, "xingm
 const STRIDE := {"child": 44.0, "teen": 54.0, "young": 60.0, "middle": 60.0, "old": 48.0}
 const STEP_PITCH := {"child": 1.18, "teen": 1.06, "young": 1.0, "middle": 0.96, "old": 0.92}
 ## 没有专门音效的行动，借用相近的
-const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "play_river", "dine": "eat_out", "ball": "play_alley", "chat": "listen", "club_math": "study", "club_sport": "play_alley", "club_art": "perform"}
+const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "play_river", "dine": "eat_out", "ball": "play_alley", "chat": "listen", "club_math": "study", "club_sport": "play_alley", "club_art": "perform", "piano": "perform", "tutor": "study", "help_out": "work", "factory_bath": "wash"}
 ## 设置按钮的三档：全开 → 只关音乐 → 静音
 const LEVELS := ["乐", "响", "静"]
 ## 横屏：菜单页在右上角；河畔里排在右上「对门的牌」下面（ui/hud.gd：横带 y 40~196，再空 16）

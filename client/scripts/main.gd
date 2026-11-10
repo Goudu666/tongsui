@@ -12,6 +12,7 @@ const WorldView := preload("res://scripts/world/world_view.gd")
 const ServerConfig := preload("res://scripts/net/config.gd")
 const ServerSettings := preload("res://scripts/ui/server_settings.gd")
 const ContentStore := preload("res://scripts/net/content_store.gd")
+const DuetUI := preload("res://scripts/duet/duet_ui.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -40,10 +41,12 @@ var my_role := "qing"
 var life: Dictionary = {}
 var last_world: Dictionary = {}
 var offline_preview := false
+var duet: DuetUI  ## 「接话」的界面：猜 TA / 搭上了 / 回话（见 docs/DUET.md）
 var _preview_minute := 390.0
 
 
 func _ready() -> void:
+	duet = DuetUI.new(self)
 	_load_content()
 	_build_layers()
 	_show_title()
@@ -655,6 +658,7 @@ func _on_snapshot(data: Dictionary) -> void:
 				last_world["schoolDay"] = w.get("schoolDay", false)
 				_resume_event(w.get("event"))
 			_refresh_hud()
+			duet.on_snapshot()  # 我不在的时候影子替我选过的，现在问我
 		"ended":
 			_show_ending()
 
@@ -806,8 +810,17 @@ func _on_event_started(data: Dictionary) -> void:
 
 
 func _pick(option_id: String, option_text: String, mirror: bool) -> void:
+	if mirror:
+		# 默契事件：选完自己的，再猜 TA 选了哪个，两样一起发
+		duet.ask_guess(str(modal.get_meta("waiting_event", "")), option_id, option_text)
+		return
 	net.choose(option_id)
 	_pick_shown(option_id, option_text, mirror)
+
+
+func _pick_send(option_id: String, option_text: String, guess: String) -> void:
+	net.choose(option_id, guess)
+	_pick_shown(option_id, option_text, true)
 
 
 func _pick_shown(_option_id: String, option_text: String, mirror: bool) -> void:
@@ -832,6 +845,7 @@ func _close_modal() -> void:
 	modal.visible = false
 	if modal.has_meta("waiting_event"):
 		modal.remove_meta("waiting_event")
+	duet.check_owed()  # 还有欠着的话就接着问
 
 
 func _option_text(event_id: Variant, option_id: Variant) -> String:
@@ -850,7 +864,9 @@ func _on_log_entries(data: Dictionary) -> void:
 		if kind == "together":
 			_toast("同框 · " + str(e.text))
 		elif kind == "mirror":
-			_show_mirror_result(e)
+			duet.show_result(e)
+		elif kind == "solo" and e.get("duet") is Dictionary and e.duet.get("echo") == true:
+			duet.show_echo(e)
 		elif kind == "solo":
 			if e.events[my_role] != null:
 				_close_modal()
@@ -870,19 +886,6 @@ func _on_log_entries(data: Dictionary) -> void:
 			_button(modal_body, "……", _close_modal)
 
 
-func _show_mirror_result(e: Dictionary) -> void:
-	_open_modal()
-	var ev: Dictionary = events_by_id.get(e.events.qing, {})
-	_label(modal_body, str(e.label), 30, P.INK_SOFT)
-	_label(modal_body, str(ev.get("title", "")), 64)
-	for r in ["qing", "mei"]:
-		var mark := "（影子）" if e.shadow.has(r) else ""
-		_label(modal_body, "%s %s%s" % [_role_text(r), _option_text(e.events[r], e.choices[r]), mark], 38, P.role_color(r))
-	var hit := bool(e.resonance)
-	_label(modal_body, ("共鸣 · " if hit else "错位 · ") + str(e.text), 44, P.OVERLAP if hit else P.INK_SOFT)
-	_button(modal_body, "嗯", _close_modal)
-
-
 # ======================================================================
 # 一生
 # ======================================================================
@@ -895,6 +898,8 @@ func _show_ending() -> void:
 	for e in life.get("log", []):
 		if e.kind == "end":
 			_label(body, str(e.text), 40, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
+	for line in duet.ending_lines():
+		_label(body, str(line), 34, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
 	_gap(body, 40)
 	_label(body, "共同回忆", 48)
 	var memories: Array = life.get("memories", [])

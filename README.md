@@ -56,13 +56,14 @@ tongsui/
 │   ├── scenes/main.tscn    入口场景
 │   ├── scripts/            界面流程、地图与角色、联机封装
 │   ├── shaders/            纸张/套色 shader、XDoG 显影 shader
+│   ├── audio/              配乐、环境音、音效（由 tools/audio 合成）和声景表
 │   └── data/content.json   由 content/ 生成，勿手改
 ├── server/                 Nakama TypeScript 服务端模块
 │   └── src/                配对 RPC、权威实时房间、投胎、世界（时钟/需求/行动/同框）、人生结算
 ├── content/                剧情事件、家庭、天赋、地图（YAML，写内容就改这里）
 ├── deploy/                 docker-compose、Nakama 配置、Caddyfile
 ├── tools/                  内容构建脚本、依赖获取脚本
-└── docs/                   GDD / 技术方案 / 部署
+└── docs/                   GDD / 技术方案 / 部署 / 天津文风圣经 / 声音设计
 ```
 
 ## 快速开始
@@ -101,5 +102,5 @@ APK 连哪台服务器、怎么配正式签名，见 [docs/DEPLOY.md](docs/DEPLO
 
 ## 致谢与声明
 
-品类灵感来自人生模拟 RPG。《同岁》的名字、角色、世界观、美术与全部剧情均为原创；
+品类灵感来自人生模拟 RPG。《同岁》的名字、角色、世界观、美术、音乐音效与全部剧情均为原创（声音全部程序合成，没有采样，见 docs/AUDIO.md）；
 「河畔里」是虚构的地方，城市氛围取自天津市区，不涉及真实店铺与品牌。

@@ -33,7 +33,9 @@ function growthPlasticity(c: Content, p: Person, stage: Stage, k: StatKey): numb
 function growthBase(c: Content, p: Person, k: StatKey): number {
   var born = p.born ? p.born[k] : p.stats[k];
   var mid = c.rules.roll.budget / 4;
-  return mid + (born - mid) * c.rules.growth.bornWeight;
+  // 规则表里没写时按 1 算（出身全算，和加这个参数之前一样），免得旧内容包算出 NaN
+  var w = typeof c.rules.growth.bornWeight === "number" ? c.rules.growth.bornWeight : 1;
+  return mid + (born - mid) * w;
 }
 
 /** 给一个人长（或掉）一项属性。raw 是内容里写的数，返回实际变化 */

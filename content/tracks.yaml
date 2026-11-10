@@ -74,7 +74,7 @@
 - id: job_trade
   label: 做买卖
   requires: { minAge: 22, maxAge: 59, flags: [job_trade] }
-  duty: { label: 出摊, spot: breakfast_stall, arrive: [390, 450], until: 840, needs: { energy: -25, clean: -10 }, stats: { charm: 0.12 }, money: 13 }
+  duty: { label: 出摊, spot: breakfast_stall, arrive: [390, 450], until: 840, needs: { energy: -25, clean: -10 }, stats: { charm: 0.12 }, money: 19 }
 - id: job_craft
   label: 靠手艺吃饭
   requires: { minAge: 22, maxAge: 59, flags: [job_craft] }

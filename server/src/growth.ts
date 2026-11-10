@@ -26,14 +26,23 @@ function growthPlasticity(c: Content, p: Person, stage: Stage, k: StatKey): numb
   return v;
 }
 
+/**
+ * 底子：这个人这项属性「本来该在哪」。出生时的属性只算一部分（bornWeight），其余按人人一样的平均数算，
+ * 所以出身好的人起步高、上头的空间小，出身一般的人起步低、追得上来：出身决定从哪开始，活法决定走到哪。
+ */
+function growthBase(c: Content, p: Person, k: StatKey): number {
+  var born = p.born ? p.born[k] : p.stats[k];
+  var mid = c.rules.roll.budget / 4;
+  return mid + (born - mid) * c.rules.growth.bornWeight;
+}
+
 /** 给一个人长（或掉）一项属性。raw 是内容里写的数，返回实际变化 */
 function growthApply(p: Person, k: StatKey, raw: number, g: GrowCtx): number {
   var before = p.stats[k];
   var v = raw * g.scale;
   if (raw > 0) {
-    // 底子：离出生时的水平越远，长得越慢
-    var born = p.born ? p.born[k] : before;
-    var room = lifeClamp(1 - (before - born) / g.c.rules.growth.room, g.c.rules.growth.floor, 1);
+    // 底子：离底子越远，长得越慢
+    var room = lifeClamp(1 - (before - growthBase(g.c, p, k)) / g.c.rules.growth.room, g.c.rules.growth.floor, 1);
     v *= growthPlasticity(g.c, p, g.stage, k) * room;
     if (p.active && (k === "body" || k === "mind")) p.active[k] = true;
   }

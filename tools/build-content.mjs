@@ -232,7 +232,7 @@ const rules = load("rules.yaml");
 {
   const need = {
     roll: ["budget", "wealthAdjust", "statMin", "statMax", "rerolls"],
-    growth: ["eventScale", "actionScale", "room", "floor", "plasticity", "plainBonus"],
+    growth: ["eventScale", "actionScale", "room", "floor", "bornWeight", "plasticity", "plainBonus"],
     aging: ["body", "mind", "activeFactor"],
     daily: ["bodyEnergy", "charmTogether", "luckFate"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],

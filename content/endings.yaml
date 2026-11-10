@@ -167,7 +167,7 @@ lives:
   - id: l_swimmer
     title: 冬泳的老人
     text: "{name} 八十多岁还在海河里冬泳。上岸的时候冒着白气，冲岸上的年轻人喊：「下来！不冷！」"
-    requires: { stats: { body: 9 }, minDiedAge: 85 }
+    requires: { stats: { body: 8 }, minDiedAge: 85 }
   - id: l_scholar
     title: 读书人
     text: "{name} 读了很多书，走了很远的路，写过几本很厚的书。扉页上写的是：给河畔里。"

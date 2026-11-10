@@ -73,6 +73,18 @@ const sum = (st) => st.body + st.mind + st.charm + st.luck;
   growthApply(top, "mind", 5, at("teen"));
   assert.equal(top.stats.mind, 10);
 
+  // 出身只算一部分底子：出身好的人起步高，但上头的空间小；出身一般的人追得上来
+  if (R.growth.bornWeight < 1) {
+    const mid = R.roll.budget / 4;
+    const gifted = person({ ...base, mind: mid + 3 }), plainKid = person({ ...base, mind: mid - 2 });
+    const g1 = growthApply(gifted, "mind", 1, at("childhood")), g2 = growthApply(plainKid, "mind", 1, at("childhood"));
+    assert.ok(g1 < g2, `出身好的人在自己的起点上应该长得慢一些：${g1} / ${g2}`);
+    // 可出身的差别不会被抹平：站在同一个水平上，出身好的那个还是长得快一点
+    const a = person({ ...base, mind: mid + 3 }), b = person({ ...base, mind: mid - 2 });
+    a.stats.mind = b.stats.mind = mid + 3;
+    if (R.growth.bornWeight > 0) assert.ok(growthApply(a, "mind", 1, at("childhood")) > growthApply(b, "mind", 1, at("childhood")));
+  }
+
   // 年纪：少年长身体最快，老了最慢
   const gain = (stage, k) => growthApply(person(base), k, 1, at(stage));
   assert.ok(gain("teen", "body") > gain("young", "body") && gain("young", "body") > gain("middle", "body") && gain("middle", "body") > gain("old", "body"));
@@ -101,7 +113,7 @@ const sum = (st) => st.body + st.mind + st.charm + st.luck;
   const study = C.map.actions.find((a) => a.id === "study").stats.mind * (p.flags.includes("tal_memory") ? 2 : 1);
   assert.ok(p.stats.mind > before && p.stats.mind - before <= study * R.growth.actionScale * 1.3 * R.growth.plainBonus + 1e-9, "写一次作业只长一点点");
   assert.equal(growthCtx(s, C, "event").scale, R.growth.eventScale);
-  console.log("✓ 成长：离底子越远越慢 / 少年长得最快、老了最慢 / 事件比日常长得多 / 掉属性不打折 / 普通的孩子长得匀 / 到不了 10 以上");
+  console.log("✓ 成长：离底子越远越慢 / 出身只算一部分底子 / 少年长得最快、老了最慢 / 事件比日常长得多 / 掉属性不打折 / 普通的孩子长得匀 / 到不了 10 以上");
 }
 
 // ---------- 3. 岁数不饶人 ----------

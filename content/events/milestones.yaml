@@ -117,7 +117,7 @@
   options:
     - id: away
       text: 去外地念大学
-      min: 8.0
+      min: 8.3
       tags: [adventure, competitive]
       effects: { bond: { distance: 2 }, flags: [uni_away] }
     - id: local
@@ -227,8 +227,8 @@
   options:
     - id: buy
       text: 买下一套自己的房
-      min: 140
-      cost: 140
+      min: 150
+      cost: 150
       tags: [responsible]
       effects: { self: { mood: 15 }, flags: [home_own] }
     - id: rent

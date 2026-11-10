@@ -40,7 +40,7 @@ func _start(color: Color, from: float) -> void:
 	if _tween:
 		_tween.kill()
 	# 网点大小跟着真实分辨率走，手机和电脑上看起来一样大
-	_mat.set_shader_parameter("cell", maxf(14.0, 30.0 * get_viewport().get_visible_rect().size.x / 1080.0 * _pixel_ratio()))
+	_mat.set_shader_parameter("cell", maxf(14.0, 30.0 * get_viewport().get_visible_rect().size.y / 1080.0 * _pixel_ratio()))
 	_mat.set_shader_parameter("ink", color)
 	_set_progress(from)
 	_sheet.visible = true

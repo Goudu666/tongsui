@@ -41,10 +41,16 @@ func _ready() -> void:
 	_http.request_completed.connect(_on_health)
 	add_child(_http)
 
-	_btn("测试连接", _test)
-	_btn("保存", _save)
-	_btn("恢复打包时的地址", _reset)
-	_btn("返回", func(): done.emit(false))
+	# 横屏：四个按钮排成两行两列，一屏放得下
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 26)
+	grid.add_theme_constant_override("v_separation", 22)
+	add_child(grid)
+	_btn("测试连接", _test, grid)
+	_btn("保存", _save, grid)
+	_btn("恢复打包时的地址", _reset, grid)
+	_btn("返回", func(): done.emit(false), grid)
 
 
 func _source_name() -> String:
@@ -124,10 +130,10 @@ func _text(t: String, font_size: int, color := P.INK) -> Label:
 	return l
 
 
-func _btn(t: String, on_press: Callable) -> void:
+func _btn(t: String, on_press: Callable, parent: Node = self) -> void:
 	var b := Button.new()
 	b.text = t
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.pressed.connect(on_press)
-	add_child(b)
+	parent.add_child(b)

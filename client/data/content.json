@@ -1,5 +1,5 @@
 {
- "version": "f8f490a4dda0",
+ "version": "f0bd153b1ffd",
  "events": [
   {
    "id": "c_roof_summer",
@@ -9040,7 +9040,7 @@
     {
      "id": "key",
      "text": "去重点班",
-     "min": 6.4,
+     "min": 7,
      "tags": [
       "competitive"
      ],
@@ -9406,7 +9406,7 @@
       "charm": 0.7,
       "luck": 0.3
      },
-     "min": 6,
+     "min": 6.9,
      "tags": [
       "adventure"
      ],
@@ -23362,7 +23362,7 @@
     "stats": {
      "charm": 0.12
     },
-    "money": 13
+    "money": 19
    }
   },
   {

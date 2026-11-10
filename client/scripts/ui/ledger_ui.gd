@@ -426,8 +426,7 @@ func _page_life(n: int) -> void:
 		Kit.chip(mh, "共同回忆", P.OVERLAP, 28).size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		var st: Variant = pg.get("stats")
 		if st is Dictionary and int(st.get("mirrors", 0)) > 0:
-			var line := "遇到的事，十回有 %d 回想到了一起" % int(round(float(st.get("rate", 0)) / 10.0))
-			var sl := Kit.label(mh, line, 28, P.INK_SOFT)
+			var sl := Kit.label(mh, rate_line(float(st.get("rate", 0))), 28, P.INK_SOFT)
 			sl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		var flow := HFlowContainer.new()
 		flow.name = "Memories"
@@ -444,6 +443,16 @@ func _page_life(n: int) -> void:
 		Kit.chip(_page, "这一世，街坊记住了", P.INK, 28)
 		for id in shown:
 			seal_row(_page, remembered(id), "")
+
+
+## 默契率写成一句话：十回里有几回（数字写汉字，不和「十回」混排）
+static func rate_line(rate: float) -> String:
+	var n := clampi(int(round(rate / 10.0)), 0, 10)
+	if n >= 10:
+		return "遇到的事，回回都想到了一起"
+	if n <= 0:
+		return "遇到的事，没有一回想到一起"
+	return "遇到的事，十回有%s回想到了一起" % "一二三四五六七八九"[n - 1]
 
 
 func _person(box: Container, role: String, p: Dictionary, life_ending: Variant, left_id: Variant) -> void:

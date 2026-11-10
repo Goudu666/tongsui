@@ -125,7 +125,9 @@ func _run() -> void:
 	net.past_life.emit(2, page)
 	t = texts(lg)
 	check(t.contains("7 岁 墙上的名字") and t.contains("46 岁 递过去的暖壶"), "回忆带上岁数：\n" + t)
-	check(t.contains("十回有 6 回想到了一起"), "默契那一行：\n" + t)
+	check(t.contains("十回有六回想到了一起"), "默契那一行：\n" + t)
+	var Ledger := load("res://scripts/ui/ledger_ui.gd")
+	check(Ledger.rate_line(100) == "遇到的事，回回都想到了一起" and Ledger.rate_line(3) == "遇到的事，没有一回想到一起" and Ledger.rate_line(74) == "遇到的事，十回有七回想到了一起", "默契率两头的写法")
 	check(t.contains("带来") and t.contains(hs[2].name), "带来的老物件")
 	for bad in ["rng", "seed", "flags", "null", "<null>"]:
 		check(not t.contains(bad), "页面上不该出现 %s" % bad)

@@ -25,7 +25,7 @@
   requires: { flags: [p_estranged, p_reunited] }
 
 - id: r_four_things
-  title: 一样没落
+  title: 一样没落下
   desc: 墙上的名字，河边的盒子，拉过的钩。
   requires: { flags: [p_wall_names, p_capsule, p_promise] }
 
@@ -35,7 +35,7 @@
   requires: { flags: [x_many_mirrors], minRate: 70 }
 
 - id: r_duo
-  title: 一逗一捧
+  title: 一个东一个西
   desc: 脾气不一样，偏偏好了一辈子。
   requires: { flags: [x_opposites], minClose: 60 }
 
@@ -68,14 +68,14 @@
   requires: { flags: [took_over] }
 
 - id: r_ninety
-  title: 九十整
+  title: 过了九十
   desc: 有人活过了九十岁。
   who: each
   requires: { minDiedAge: 90 }
 
 - id: r_plain
   title: 挺好
-  desc: 普通的孩子，过了恰恰好的一辈子。
+  desc: 普通的孩子，一辈子没拔过尖，也没掉过队。
   who: each
   requires: { flags: [x_plain_life] }
 

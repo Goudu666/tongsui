@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "4e11e86406ab",
+ "version": "971497407808",
  "events": [
   {
    "id": "c_roof_summer",
@@ -25061,7 +25061,7 @@ var CONTENT: Content = {
    {
     "id": "e_again",
     "title": "又是对门",
-    "text": "这两扇门里，早先也有两个孩子拉过钩。新楼分房那天，你们又抓到了对门。楼长翻着住户本，半天没说话。",
+    "text": "这两扇门里，早先也有两个孩子拉过钩。这一回拉钩的，还是住对门的两个。楼长翻着住户本，半天没说话。",
     "requires": {
      "flags": [
       "leg_p_promise",
@@ -26308,7 +26308,7 @@ var CONTENT: Content = {
   },
   {
    "id": "r_four_things",
-   "title": "一样没落",
+   "title": "一样没落下",
    "desc": "墙上的名字，河边的盒子，拉过的钩。",
    "who": "pair",
    "requires": {
@@ -26333,7 +26333,7 @@ var CONTENT: Content = {
   },
   {
    "id": "r_duo",
-   "title": "一逗一捧",
+   "title": "一个东一个西",
    "desc": "脾气不一样，偏偏好了一辈子。",
    "who": "pair",
    "requires": {
@@ -26399,7 +26399,7 @@ var CONTENT: Content = {
   },
   {
    "id": "r_ninety",
-   "title": "九十整",
+   "title": "过了九十",
    "desc": "有人活过了九十岁。",
    "who": "each",
    "requires": {
@@ -26409,7 +26409,7 @@ var CONTENT: Content = {
   {
    "id": "r_plain",
    "title": "挺好",
-   "desc": "普通的孩子，过了恰恰好的一辈子。",
+   "desc": "普通的孩子，一辈子没拔过尖，也没掉过队。",
    "who": "each",
    "requires": {
     "flags": [

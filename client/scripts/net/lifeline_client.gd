@@ -27,6 +27,7 @@ signal world_state(data: Dictionary)
 signal event_started(data: Dictionary)
 signal log_entries(data: Dictionary)
 signal presence(data: Dictionary)
+signal game_state(data: Dictionary)  ## 搭伴小游戏：{game: 视图 | null, result?}
 
 const Config := preload("res://scripts/net/config.gd")
 const Op := preload("res://scripts/net/protocol.gd")
@@ -565,6 +566,10 @@ func choose(option_id: String) -> void:
 	_send(Op.CHOOSE, {"optionId": option_id})
 
 
+func game_input(body: Dictionary) -> void:
+	_send(Op.GAME_INPUT, body)
+
+
 func _on_match_state(state) -> void:
 	_last_rx = ServerClock.local_now()
 	var data: Variant = JSON.parse_string(state.data)
@@ -591,5 +596,7 @@ func _on_match_state(state) -> void:
 		log_entries.emit(data)
 	elif op == Op.PRESENCE:
 		presence.emit(data)
+	elif op == Op.GAME:
+		game_state.emit(data)
 	elif op == Op.ERROR:
 		failed.emit(str(data.get("message", "")))

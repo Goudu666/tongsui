@@ -220,7 +220,7 @@ function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error
   a.shadow = false;
   a.eff = worldEfficiency(s.persons![role]);
   a.together = false;
-  delete a.boost;
+  delete a.boost; // 上一件事没用掉的搭伴倍率不带过来（见 games.ts）
   if (act.sleep) {
     a.asleep = true;
     a.until = null;
@@ -277,6 +277,7 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
     var v = ((gains as any)[k] as number) * eff;
     if (a.together) {
       var lead = other.alive ? lifeClamp((other.stats[k as StatKey] - p.stats[k as StatKey]) * LEAD_PER_POINT, 0, LEAD_MAX) : 0;
+      // 搭伴的倍率：默认 TOGETHER_BOOST；一起玩了小游戏（games.ts）就用打出来的那个，但不会比默认的低
       v *= Math.max(TOGETHER_BOOST, a.boost || 0) + lead;
     }
     if (k === "mind" && !act.duty && lifeHasFlag(p, "tal_memory")) v *= MEMORY_BOOST; // 过目不忘：自己坐下来念的时候快一倍
@@ -444,6 +445,7 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
   if (s.phase !== "life") return out;
   var w = s.world!;
   if (w.event) return out; // 有人在做选择时，时间停住
+  if (w.game) return out; // 搭伴小游戏（问 / 玩）的时候也停住，见 games.ts
   var roles = worldAliveRoles(s);
 
   for (var i = 0; i < roles.length; i++) {

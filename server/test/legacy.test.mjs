@@ -690,6 +690,9 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
   const runN = (n, way, talent, until) => Array.from({ length: n }, (_, i) => live((i + 1) * 7919, WAYS[way], until, climb, as(talent)));
   const nearL = runN(64, "搭伴念书", "linked", 71), nearO = runN(64, "搭伴念书", "owl", 71), farL = run("各顾各的", "linked", 71);
   assert.ok(pairUp(nearL) >= pairUp(nearO) - 0.05, "连心的两个人搭伴过，老了不该比别人更难并一家");
+  // 并一家是够不够线的二选一，64 条里差几个点就是一两个人的事；亲近是连续的数，用它钉「连心一头宽」：同种子搭伴过的，七十岁亲近得高过别人
+  const closeAt = (runs) => avg(at(runs, "m_evening"), (p) => p.close);
+  assert.ok(closeAt(nearL) > closeAt(nearO) + 3, `搭伴的连心七十岁亲近 ${closeAt(nearL).toFixed(1)}，没有高过别人（${closeAt(nearO).toFixed(1)}）：连心倒过来了`);
   assert.ok(pairUp(nearL) <= 0.6, `搭伴的连心七十岁能并一家的有 ${Math.round(pairUp(nearL) * 100)}%，超过六成就是白给了（linkedDrift 调得太低）`);
   assert.equal(pairUp(farL), 0, `各顾各的连心也够得着并一家（${Math.round(pairUp(farL) * 100)}%，${farL.length} 条）：它不该替人把搭伴省了`);
 
@@ -703,7 +706,7 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
 
   console.log(`✓ 藏着的天赋：没出过那件事 ${N} 回一回也抽不到 / 出过的事记上就一直在 / 内容摘了跟着摘`);
   console.log(`  大器晚成：12 岁心智 ${m(late, "m_junior").toFixed(1)} 对 ${m(owl, "m_junior").toFixed(1)}，重点班 ${Math.round(opens(at(late, "m_junior"), "key") * 100)}% 对 ${Math.round(opens(at(owl, "m_junior"), "key") * 100)}%，60 岁 ${m(late, "m_retire").toFixed(1)} 对 ${m(owl, "m_retire").toFixed(1)}`);
-  console.log(`  连心：各顾各的到 30 岁亲近 ${close(linked).toFixed(1)} 对 ${close(apart).toFixed(1)}，属性差 ${gapL.toFixed(2)}，搭伴念书七十岁能并一家 ${Math.round(pairUp(nearL) * 100)}% 对 ${Math.round(pairUp(nearO) * 100)}% / 老灵魂：12 岁魅力 ${ch(old).toFixed(1)} 对 ${ch(kid).toFixed(1)}，检定 +${C.rules.legacy.oldSoul}`);
+  console.log(`  连心：各顾各的到 30 岁亲近 ${close(linked).toFixed(1)} 对 ${close(apart).toFixed(1)}，属性差 ${gapL.toFixed(2)}，搭伴念书七十岁亲近 ${closeAt(nearL).toFixed(1)} 对 ${closeAt(nearO).toFixed(1)}、能并一家 ${Math.round(pairUp(nearL) * 100)}% 对 ${Math.round(pairUp(nearO) * 100)}% / 老灵魂：12 岁魅力 ${ch(old).toFixed(1)} 对 ${ch(kid).toFixed(1)}，检定 +${C.rules.legacy.oldSoul}`);
 }
 
 // ---------- 15. 街坊记住的事：记的是怎么过的，只记一回，不给任何东西 ----------

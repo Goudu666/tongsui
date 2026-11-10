@@ -1,5 +1,5 @@
 {
- "version": "a3ffc109b152",
+ "version": "a5131dacdc32",
  "events": [
   {
    "id": "c_roof_summer",
@@ -32926,7 +32926,9 @@
    "syncSoft": 110,
    "syncFloor": 0.15,
    "slotTogether": 1.5,
-   "syncSteady": 0.8,
+   "syncSteady": 1,
+   "syncSteadyFrom": 5,
+   "syncSteadyFull": 35,
    "drift": {
     "childhood": 0.4,
     "teen": 0.9,

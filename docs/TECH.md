@@ -143,6 +143,8 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | `talents.yaml` | 先天天赋 |
 | `map.yaml` | 地图：地点（矩形区域）、互动点、行动（时长、需求/属性变化、花钱挣钱、同框效果、条件） |
 | `endings.yaml` | 结局：两个人的结局（pair）和每个人的一生小结（lives），按顺序匹配，最后一条兜底 |
+| `rules.yaml` | 数值规则：投胎预算、成长、衰老、检定、寿命、亲近（规则代码在 `server/src/growth.ts`，说明见 [GROWTH.md](GROWTH.md)） |
+| `checks.yaml` | 检定：挂在已有事件的选项上，成不成看属性和运气 |
 
 事件格式：
 
@@ -186,9 +188,11 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 npm test                 # 下面两条一起跑
 npm run content          # 内容校验（字段名写错、规则代码按名字引用的行动/标记缺失都会报错），生成两端数据
 npm run server:test      # 编译 + 投胎规则 + 60 条全影子人生 + 世界规则单点 + 假 Nakama 里的联机流程（配对、并发开房、重连、防泄露、影子宽限）
+                         # + 成长规则（growth.test.mjs）：投胎预算 / 成长 / 衰老 / 检定和搭把手 / 寿命 / 亲近 / v3 存档升级，只测规则的形状，不绑具体的数
                          # + 剧情测试：1500 条随机人生，保证每个事件、每个结局都走得到
                          # + 架构测试（arch.test.mjs）：版本握手与内容下载 / 坏消息 / 存档往返 / 剧情改了以后旧存档还能打开 /
                          #   出错回滚 / 单写者 / 两端契约（消息号、协议版本、年龄阶段表、走动限速这些两边各抄一份的东西有没有走样）
+npm run balance          # 平衡模拟：机器人按真实规则过 1200 条人生，打印成长曲线、寿命、结局的分布（改了 rules.yaml 以后跑，见 GROWTH.md）
 GODOT=godot bash tools/ci/client_unit.sh      # 客户端单测 client/tests/unit_*.gd，不需要服务器
 
 # 下面两个要先起一台本地 Nakama（docker compose，见 README）

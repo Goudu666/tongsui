@@ -16,12 +16,18 @@ const G = (name) => vm.runInContext(name, ctx);
 const C = G("CONTENT");
 const lifeCreate = G("lifeCreate"), lifeConfirm = G("lifeConfirm"), lifeReroll = G("lifeReroll");
 const lifeResolveEvent = G("lifeResolveEvent"), lifeEndDay = G("lifeEndDay"), lifeRand = G("lifeRand");
+const lifeApplyBond = G("lifeApplyBond"), lifeApplySelf = G("lifeApplySelf"), growthCtx = G("growthCtx");
+const DAILY = C.map.actions.filter((a) => Object.keys(a.stats).length > 0);
 const lifeEligible = G("lifeEligible"), lifeTimeAt = G("lifeTimeAt"), lifeEnding = G("lifeEnding");
 
 const byId = new Map(C.events.map((e) => [e.id, e]));
 
-/** 模拟一生。choose(s, role, ev) 返回选项 id */
-function story(seed, choose, rerolls = 0) {
+/**
+ * 模拟一生。choose(s, role, ev) 返回选项 id。
+ * near：这一天两个人碰上、一起做点什么的概率。这里不走地图，就用一次同框的亲近来代替
+ *（亲近是走动出来的：一天既没同框也没共鸣就会淡，见 growth.ts）。
+ */
+function story(seed, choose, rerolls = 0, near = 0.5) {
   const s = lifeCreate(seed, C);
   for (let i = 0; i < rerolls; i++) { lifeReroll(s, C, "qing"); lifeReroll(s, C, "mei"); }
   lifeConfirm(s, C, "qing", { qing: "青", mei: "梅" });
@@ -43,6 +49,13 @@ function story(seed, choose, rerolls = 0) {
       const ev = byId.get(fate[r]);
       lifeResolveEvent(s, C, { eventId: ev.id, kind: "solo", roles: [r], choices: { [r]: choose(s, r, ev) }, shadow: [] });
       seen.push(r + ":" + ev.id);
+    }
+    // 日子不只是事件：每人每天还会上学、写作业、玩、干活里挑两样（长属性，也让岁数大了不至于荒废）
+    for (const r of alive) for (let i = 0; i < 2; i++) lifeApplySelf(s.persons[r], DAILY[Math.floor(lifeRand(s) * DAILY.length)].stats, growthCtx(s, C, "action"));
+    if (alive.length === 2 && lifeRand(s) < near) {
+      // 形影不离的一天里不止一起做一件事
+      lifeApplyBond(s, C, { close: near > 0.9 ? 3 : 1 });
+      w.warm = true;
     }
     for (const r of alive) w.actors[r].asleep = true;
     lifeEndDay(s, C);
@@ -113,13 +126,15 @@ const steadyChoice = (s, role, ev) => G("lifeShadowChoose")(s, C, role, ev.id);
 
 // ---------- 3. 探索：一半随机、一半性格一致，跑很多条人生 ----------
 const LIVES = 1500;
+// 形影不离的、常碰上的、偶尔碰上的、各过各的
+const NEAR = [0.95, 0.7, 0.4, 0.1];
 const hit = new Map(C.events.map((e) => [e.id, 0]));
 const pairEnd = new Map(C.endings.pair.map((e) => [e.id, 0]));
 const lifeEnd = new Map(C.endings.lives.map((e) => [e.id, 0]));
 const flagsSeen = new Map();
 let turns = 0, evs = 0, mems = 0;
 for (let seed = 1; seed <= LIVES; seed++) {
-  const { s, seen } = story(seed * 2654435761, seed % 2 ? randomChoice : steadyChoice, seed % 4);
+  const { s, seen } = story(seed * 2654435761, seed % 2 ? randomChoice : steadyChoice, seed % 4, NEAR[Math.floor(seed / 4) % NEAR.length]);
   for (const k of seen) { const id = k.split(":")[1]; hit.set(id, hit.get(id) + 1); }
   assert.equal(new Set(seen).size, seen.length, "默契事件一生只出现一次，各自的事每人一生只遇一次");
   assert.ok(s.ending, "人生结束时要有结局");
@@ -139,7 +154,9 @@ for (let seed = 1; seed <= LIVES; seed++) {
   assert.deepEqual(never, [], `${never.length} 个事件在 ${LIVES} 条人生里一次也没出现：${never.join(", ")}`);
   const deadPair = [...pairEnd].filter(([, n]) => n === 0).map(([id]) => id);
   assert.deepEqual(deadPair, [], `走不到的结局：${deadPair.join(", ")}`);
-  const deadLife = [...lifeEnd].filter(([, n]) => n === 0).map(([id]) => id);
+  // 高寿的小结（长寿、冬泳的老人）靠的是一辈子吃好睡好心情好，这里不模拟过日子，放在 growth.test.mjs 里测
+  const needsLongLife = new Set(C.endings.lives.filter((e) => (e.requires.minDiedAge ?? 0) >= 85).map((e) => e.id));
+  const deadLife = [...lifeEnd].filter(([id, n]) => n === 0 && !needsLongLife.has(id)).map(([id]) => id);
   assert.deepEqual(deadLife, [], `走不到的一生小结：${deadLife.join(", ")}`);
   // 结局不能一边倒：最常见的结局不超过一半
   const top = Math.max(...pairEnd.values());

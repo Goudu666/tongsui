@@ -44,7 +44,7 @@ const TOGETHER_KEYS = ["needs", "bond", "text"];
 // 规则代码（server/src/sim.ts、world.ts）里按名字写死的行动和标记：影子靠这些行动过日子，天赋效果靠这些标记生效。
 // 在内容里改名或删掉它们，规则会悄悄失效，所以在这里钉住。
 const ENGINE_ACTIONS = ["eat", "eat_out", "sleep", "school", "wash", "study", "knock", "play_roof", "play_river", "play_alley"];
-const ENGINE_FLAGS = ["tal_sunny", "tal_memory", "tal_foodie", "tal_owl"];
+const ENGINE_FLAGS = ["tal_sunny", "tal_memory", "tal_foodie", "tal_owl", "tal_plain"];
 
 const errors = [];
 const events = [];
@@ -194,6 +194,63 @@ for (const [part, keys] of [["pair", PAIR_REQ_KEYS], ["lives", LIFE_REQ_KEYS]]) 
   if (last && Object.keys(last.requires ?? {}).length > 0) errors.push(`endings.${part}: 最后一条是兜底结局，不能有 requires`);
 }
 
+// ---------- 数值规则 ----------
+const rules = load("rules.yaml");
+{
+  const need = {
+    roll: ["budget", "wealthAdjust", "statMin", "statMax", "rerolls"],
+    growth: ["eventScale", "actionScale", "room", "floor", "plasticity", "plainBonus"],
+    aging: ["body", "mind", "activeFactor"],
+    daily: ["bodyEnergy", "charmTogether", "luckFate"],
+    check: ["base", "perPoint", "luck", "min", "max", "help"],
+    lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max"],
+    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "drift", "driftDistance", "driftFloor"],
+  };
+  checkKeys("rules", rules, Object.keys(need));
+  for (const [sec, keys] of Object.entries(need)) {
+    if (!rules?.[sec]) { errors.push(`rules.yaml: 缺少 ${sec}`); continue; }
+    checkKeys(`rules.${sec}`, rules[sec], keys);
+    for (const k of keys) if (rules[sec][k] === undefined) errors.push(`rules.yaml: 缺少 ${sec}.${k}`);
+  }
+  for (const st of STAGES) {
+    for (const k of STAT_KEYS) if (typeof rules?.growth?.plasticity?.[st]?.[k] !== "number") errors.push(`rules.yaml: growth.plasticity.${st}.${k} 必须是数字`);
+    if (typeof rules?.bond?.drift?.[st] !== "number") errors.push(`rules.yaml: bond.drift.${st} 必须是数字`);
+  }
+  if (rules?.roll && rules.roll.wealthAdjust?.length !== 3) errors.push("rules.yaml: roll.wealthAdjust 需要三个数（清贫 / 小康 / 殷实）");
+  // 投胎的点数要分得下去：最极端的人家 + 天赋也得落在 [4 × statMin, 4 × statMax] 里
+  if (rules?.roll) {
+    const sum = (o) => Object.values(o ?? {}).reduce((a, b) => a + b, 0);
+    for (const f of families) for (const t of talents) {
+      const pool = rules.roll.budget + rules.roll.wealthAdjust[f.wealth] - sum(f.bonus) - sum(t.bonus);
+      if (pool < 4 * rules.roll.statMin || pool > 4 * rules.roll.statMax) errors.push(`rules.yaml: ${f.id} + ${t.id} 的点数 ${pool} 分不下去`);
+    }
+  }
+}
+
+// ---------- 检定 ----------
+const CHECK_KEYS = ["event", "option", "stat", "dc", "pass", "fail"];
+const checks = [];
+{
+  const byId = new Map(events.map((e) => [e.id, e]));
+  const seenCheck = new Set();
+  for (const ck of load("checks.yaml") ?? []) {
+    const at = `checks#${ck.event}.${ck.option}`;
+    checkKeys(at, ck, CHECK_KEYS);
+    checkKeys(`${at}.fail`, ck.fail, ["text", "self", "flags"]);
+    const ev = byId.get(ck.event);
+    if (!ev) { errors.push(`${at}: 没有这个事件`); continue; }
+    if (!ev.options.some((o) => o.id === ck.option)) errors.push(`${at}: 事件没有这个选项`);
+    if (seenCheck.has(at)) errors.push(`${at}: 重复登记`);
+    seenCheck.add(at);
+    if (!STAT_KEYS.includes(ck.stat)) errors.push(`${at}: stat 必须是 ${STAT_KEYS.join(" / ")}`);
+    if (typeof ck.dc !== "number") errors.push(`${at}: dc 必须是数字`);
+    if (!ck.pass || !ck.fail?.text) errors.push(`${at}: 需要 pass 和 fail.text`);
+    checkDeltas(`${at}.fail.self`, ck.fail?.self, SELF_KEYS);
+    for (const f of ck.fail?.flags ?? []) produced.add(f);
+    checks.push({ event: ck.event, option: ck.option, stat: ck.stat, dc: ck.dc, pass: ck.pass ?? "", fail: { text: ck.fail?.text ?? "", self: ck.fail?.self ?? null, flags: ck.fail?.flags ?? null } });
+  }
+}
+
 // ---------- 地图 ----------
 const map = load("map.yaml");
 const zoneIds = new Set(map.zones.map((z) => z.id));
@@ -235,7 +292,7 @@ if (errors.length) {
 
 // 内容版本 = 内容本身的指纹。服务器在 lifeline_open 里报出它的版本，客户端发现和自己带的不一样，
 // 就用 content_get 把服务器这份下载下来用（改剧情只需要更新服务器，不用两台手机重装 APK）。
-const body = { events, families, talents, map, endings };
+const body = { events, families, talents, map, endings, rules, checks };
 const version = createHash("sha256").update(JSON.stringify(body)).digest("hex").slice(0, 12);
 const content = { version, ...body };
 const json = JSON.stringify(content, null, 1);
@@ -248,4 +305,4 @@ writeFileSync(
 const by = (k) => events.filter((e) => e.stage === k).length;
 console.log(`✓ ${events.length} 个事件  ` + STAGES.map((s) => `${s}:${by(s)}`).join("  ") +
   `  |  ${families.length} 户人家  ${talents.length} 种天赋  ${map.zones.length} 个地点  ${map.actions.length} 种行动` +
-  `  |  结局 ${endings.pair.length} 种 · 一生 ${endings.lives.length} 种  |  版本 ${version}`);
+  `  |  结局 ${endings.pair.length} 种 · 一生 ${endings.lives.length} 种  |  检定 ${checks.length} 处  |  版本 ${version}`);

@@ -988,11 +988,9 @@ def draw_street(g, sc):
     breakfast(g, sp, zs["breakfast"]["span"], shop_top)
     shop(g, sp, zs["shop"]["span"], shop_top)
     alley(g, sp, ex, zs["alley"]["span"], shop_top)
-    bikeshop(g, sp, zs["bikeshop"]["span"], shop_top)
+    bikeshop(g, sp, ex, zs["bikeshop"]["span"], shop_top)
     teahouse(g, sp, zs["teahouse"]["span"], shop_top)
-    # 最左头两个路口：去小学、去中学
-    for k, xx in enumerate((ex["to_primary"][0], ex["to_middle"][0])):
-        pass
+    # 最左头的路口：去小学
     g.clear(rect_pts(-40, shop_top - 80, 250, GROUND - shop_top + 80))
     g.pen("ink", 0.28).fill(rect_pts(-40, shop_top - 80, 250, GROUND - shop_top + 80))
     fhatch(g, "ink", -40, shop_top - 80, 250, GROUND - shop_top + 80, 30, 14, 1.0, 0.4)
@@ -1136,31 +1134,44 @@ def alley(g, sp, ex, span, top):
     signboard(g, gx + 140, top + 40, "河畔里", "qing", 24, vertical=True, pad=8)
 
 
-def bikeshop(g, sp, span, top):
+def lane(g, x, top, w=150):
+    """两栋楼之间的一条窄胡同口：黑洞洞的一条，上头一道过街的檐。"""
+    g.clear(rect_pts(x - w / 2, top - 80, w, GROUND - top + 80))
+    g.pen("ink", 0.32).fill(rect_pts(x - w / 2, top - 80, w, GROUND - top + 80))
+    fhatch(g, "ink", x - w / 2, top - 80, w, GROUND - top + 80, 30, 14, 1.0, 0.4)
+    g.ink.line([(x - w / 2, top - 80), (x - w / 2, GROUND)], 3.4)
+    g.ink.line([(x + w / 2, top - 80), (x + w / 2, GROUND)], 3.4)
+    g.pen("ink", 0.5).fill([(x - w / 2 - 20, top - 80), (x + w / 2 + 20, top - 80), (x + w / 2 + 10, top - 108), (x - w / 2 - 10, top - 108)])
+
+
+def bikeshop(g, sp, ex, span, top):
     x0, x1 = span
-    signboard(g, (x0 + x1) / 2, top - 46, "修车", "ink", 44)
-    # 墙上挂的内胎、二胡、工具板
-    for k in range(4):
-        g.ink.circle(x0 + 90 + k * 70, top + 110, 30, lw=4)
-        g.ink.line([(x0 + 90 + k * 70, top + 70), (x0 + 90 + k * 70, top + 80)], 2)
-    hx = x1 - 140
+    # 修车铺左手边一条胡同，往中学去
+    lane(g, ex["to_middle"][0], top, 130)
+    b0 = ex["to_middle"][0] + 80
+    signboard(g, (b0 + x1) / 2, top - 46, "修车", "ink", 44)
+    # 墙上挂的内胎、工具板、一把旧二胡
+    for k in range(3):
+        g.ink.circle(b0 + 60 + k * 70, top + 110, 30, lw=4)
+        g.ink.line([(b0 + 60 + k * 70, top + 70), (b0 + 60 + k * 70, top + 80)], 2)
+    g.ink.rect(b0 + 250, top + 60, 110, 110, lw=2.4)
+    for r in range(3):
+        for c in range(3):
+            g.ink.line([(b0 + 270 + c * 30, top + 76 + r * 32), (b0 + 270 + c * 30, top + 98 + r * 32)], 3)
+    hx = x1 - 50
     g.ink.line([(hx, top + 50), (hx + 10, top + 230)], 3)
     g.clear(ellipse_pts(hx + 12, top + 226, 18, 12))
     g.pen("mei", 0.6).fill(ellipse_pts(hx + 12, top + 226, 18, 12))
     g.ink.ellipse(hx + 12, top + 226, 18, 12, lw=2)
     g.ink.line([(hx - 30, top + 160), (hx + 40, top + 190)], 1.4)
-    g.ink.rect(x0 + 380, top + 60, 120, 110, lw=2.4)
-    for r in range(3):
-        for c in range(4):
-            g.ink.line([(x0 + 396 + c * 28, top + 76 + r * 32), (x0 + 396 + c * 28, top + 98 + r * 32)], 3)
-    # 一辆正修着的车倒扣着
-    bicycle(g, x0 + 150, GROUND, 1, "qing")
-    bicycle(g, x1 - 120, GROUND, -1, "mei")
+    # 修着的车、等着取的车
+    bicycle(g, b0 + 210, GROUND, 1, "qing")
+    bicycle(g, x1 - 90, GROUND, -1, "mei")
     # 打气筒、水盆
-    g.ink.line([(x0 + 320, GROUND), (x0 + 320, GROUND - 90)], 4)
-    g.ink.line([(x0 + 300, GROUND - 90), (x0 + 340, GROUND - 90)], 4)
-    g.ink.ellipse(x0 + 400, GROUND - 14, 40, 12, lw=2.4)
-    g.pen("qing", 0.4).fill(ellipse_pts(x0 + 400, GROUND - 16, 36, 8))
+    g.ink.line([(b0 + 300, GROUND), (b0 + 300, GROUND - 90)], 4)
+    g.ink.line([(b0 + 280, GROUND - 90), (b0 + 320, GROUND - 90)], 4)
+    g.ink.ellipse(b0 + 360, GROUND - 14, 34, 10, lw=2.4)
+    g.pen("qing", 0.4).fill(ellipse_pts(b0 + 360, GROUND - 16, 30, 7))
     stool(g, sp["bike_bench"], GROUND, "ink", 70, 44)
 
 

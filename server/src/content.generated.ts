@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "9bfd37aae25e",
+ "version": "c9f80f438aba",
  "events": [
   {
    "id": "c_roof_summer",
@@ -28282,7 +28282,7 @@ var CONTENT: Content = {
        ]
       },
       {
-       "minAge": 4,
+       "minAge": 5,
        "flags": [
         "fam_factory"
        ]
@@ -28404,7 +28404,7 @@ var CONTENT: Content = {
      20760
     ],
     "unlock": {
-     "minAge": 40
+     "minAge": 45
     },
     "far": false
    }
@@ -29942,7 +29942,7 @@ var CONTENT: Content = {
     ],
     "to": "street",
     "arrive": [
-     160,
+     2540,
      2760
     ],
     "label": "回楼下"
@@ -30063,7 +30063,7 @@ var CONTENT: Content = {
     "id": "street.to_middle",
     "scene": "street",
     "at": [
-     160,
+     2540,
      2760
     ],
     "to": "middle",
@@ -31396,7 +31396,7 @@ var CONTENT: Content = {
    "lateEarly": 0.75,
    "lateAfter": 1.8,
    "lateRoom": 3,
-   "linkedDrift": 0.5,
+   "linkedDrift": 0.6,
    "linkedMood": 0.3,
    "oldSoul": 0.08,
    "oldSoulCharm": 0.8

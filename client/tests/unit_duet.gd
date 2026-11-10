@@ -1,6 +1,6 @@
 extends SceneTree
 ## 「接话」界面的单测（不需要服务器）：godot --headless --path client -s res://tests/unit_duet.gd
-## 用真的主场景 + 一个只记账的假联机层，把 猜 TA / 三种结算 / 回话 / 结局闲话 各走一遍。
+## 用真的主场景 + 一个只记账的假联机层，把 默契事件选项 / 三种结算 / 回话 / 结局闲话 各走一遍。
 
 const Op := preload("res://scripts/net/protocol.gd")
 const Resonance := preload("res://scripts/ui/resonance.gd")
@@ -74,24 +74,16 @@ func _run() -> void:
 	await process_frame
 	var ev: Dictionary = main.events_by_id["d_kite_tree"]
 	check(ev.get("catches", []).size() == 1, "内容里带着搭上了")
-	check(main.content.duet.echo.has("ask") and main.content.duet.lines.has("knew_one"), "内容里带着接话的文案")
+	check(main.content.duet.echo.has("ask") and not main.content.duet.has("lines"), "内容里带着接话的文案，没有猜 TA 的旁白")
 
-	# ---- 猜 TA：选完自己的再猜，两样一起发 ----
+	# ---- 默契事件：选了就发，不再猜 TA ----
 	main._on_event_started({"event": {"eventId": "d_kite_tree", "kind": "mirror", "roles": ["qing", "mei"]}})
 	check(buttons().size() == 3, "默契事件三个选项")
 	press(ev.options[0].text)
-	check(net.sent.is_empty(), "还没猜，先不发")
-	check(buttons().size() == 4 and texts().contains("猜猜") and texts().contains("梅"), "猜 TA：三个选项 + 不猜")
-	press(ev.options[1].text)
-	check(net.sent == [[Op.CHOOSE, {"optionId": "climb", "guess": "hold"}]], "选择和猜测一起发：%s" % [net.sent])
-	check(texts().contains("TA 还在想"), "发完等 TA")
+	check(net.sent == [[Op.CHOOSE, {"optionId": "climb"}]], "选了就发，不带 guess：%s" % [net.sent])
+	check(texts().contains("TA 还在想") and not texts().contains("猜猜"), "发完等 TA，没有猜 TA 那一步")
 	net.sent.clear()
-	main._on_event_started({"event": {"eventId": "d_kite_tree", "kind": "mirror", "roles": ["qing", "mei"]}})
-	press(ev.options[2].text)
-	press("不猜")
-	check(net.sent == [[Op.CHOOSE, {"optionId": "wait"}]], "不猜就不带 guess：%s" % [net.sent])
-	net.sent.clear()
-	# 各自的事不用猜
+	# 各自的事
 	var solo: Dictionary = main.content.events.filter(func(e): return e.kind == "solo")[0]
 	main._on_event_started({"event": {"eventId": solo.id, "kind": "solo", "roles": ["qing"]}})
 	press(solo.options[0].text)
@@ -101,10 +93,10 @@ func _run() -> void:
 	# ---- 结算：共鸣 / 搭上了 / 错位 ----
 	main._on_log_entries({"entries": [entry("d_kite_tree", "climb", "hold", {
 		"resonance": true, "text": ev.catches[0].text,
-		"duet": {"outcome": "catch", "guess": {"qing": "hold", "mei": "wait"}, "knew": {"qing": true, "mei": false}, "line": "青猜着了梅，梅没猜着青。"},
+		"duet": {"outcome": "catch"},
 	})]})
-	check(main.modal.visible and texts().contains("搭上了") and texts().contains("一个上树") and texts().contains("青猜着了梅"), "搭上了的卡：\n" + texts())
-	check(seal() != null and seal().outcome == "catch" and seal().knew.get("qing") == true, "印：扣在一起，青懂梅")
+	check(main.modal.visible and texts().contains("搭上了") and texts().contains("一个上树"), "搭上了的卡：\n" + texts())
+	check(seal() != null and seal().outcome == "catch", "印：扣在一起")
 	main._on_log_entries({"entries": [entry("d_kite_tree", "wait", "wait", {"duet": {"outcome": "res", "knew": {"qing": null, "mei": null}, "line": null}})]})
 	check(texts().contains("共鸣") and seal().outcome == "res", "共鸣的卡")
 	main._on_log_entries({"entries": [entry("d_kite_tree", "climb", "wait", {"shadow": ["mei"], "duet": {"outcome": "miss", "owed": "mei", "line": null}})]})
@@ -116,7 +108,7 @@ func _run() -> void:
 	check(DuetUI.outcome_of({"resonance": false}) == "miss", "没有 duet 字段的错位")
 
 	# ---- 回话 ----
-	main.life["duet"] = {"keep": 8, "epitaph": ["青猜中梅 1 回，梅猜中青 0 回。"], "owed": {"mei": [], "qing": [
+	main.life["duet"] = {"keep": 8, "epitaph": ["影子替梅去过 1 回，有 0 回选得跟本人一样。"], "owed": {"mei": [], "qing": [
 		{"turn": 9, "age": 8, "label": "8 岁 · 春", "eventId": "d_kite_tree", "shadow": "wait", "partner": "hold", "outcome": "miss"},
 		{"turn": 10, "age": 8, "label": "8 岁 · 春", "eventId": "d_broken_window", "shadow": "run", "partner": "own", "outcome": "miss"},
 		{"turn": 2, "age": 6, "label": "6 岁 · 春", "eventId": "d_radio_show", "shadow": "fix", "partner": "pick", "outcome": "miss"},
@@ -169,12 +161,12 @@ func _run() -> void:
 	check(not main.modal.visible and main.toast_label.text.contains("梅回了「%s」那天的话" % ev.title), "没补上只提一句：" + main.toast_label.text)
 
 	# ---- 结局多出来的几句 ----
-	check(main.duet.ending_lines() == ["青猜中梅 1 回，梅猜中青 0 回。"], "结局闲话")
+	check(main.duet.ending_lines() == ["影子替梅去过 1 回，有 0 回选得跟本人一样。"], "结局闲话")
 	main.life.erase("duet")
 	check(main.duet.ending_lines().is_empty() and main.duet.owed_list().is_empty(), "老服务器没有 duet 也不出错")
 
 	if fails == 0:
-		print("✓ 接话界面：猜 TA 和选择一起发 / 不猜 / 三种结算和印 / 回话（盲答、先不说、不提了、过期不问）/ 对门回话 / 结局闲话")
+		print("✓ 接话界面：默契事件选了就发 / 三种结算和印 / 回话（盲答、先不说、不提了、过期不问）/ 对门回话 / 结局闲话")
 	main.queue_free()
 	await process_frame
 	quit(1 if fails > 0 else 0)

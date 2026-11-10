@@ -45,7 +45,7 @@ var OP = {
   ROLL_STATE: 3, // s→c { rolls }  每人带着 house（家业传了几代）、offer（摆在面前的老物件）、heirloomId（挑中的）
   MOVE: 4, // c→s { x, y }
   ACT: 5, // c→s { spot }
-  CHOOSE: 6, // c→s { optionId, guess? } guess：默契事件里猜 TA 选了哪一项（可以不猜）
+  CHOOSE: 6, // c→s { optionId }（旧客户端带的 guess 不认了：猜 TA 砍了）
   WORLD: 7, // s→c 精简世界状态（5Hz）
   EVENT: 8, // s→c { event } 有事件开始了
   ERROR: 9, // s→c { message }
@@ -469,8 +469,8 @@ function worldView(s: LifelineMatch) {
     var r = ROLES[i];
     var a = w.actors[r];
     // seq：服务器已处理到这个人的第几条 MOVE，本地玩家拿它对照自己的历史位置做校正
-    // tg：这次是搭伴做的；fr：这件事从第几段开始（比这一段早就撤不回了）
-    actors[r] = a ? { x: r1(a.x), y: r1(a.y), act: a.action, spot: a.spot, sleep: a.asleep, seq: s.moveSeq[r] || 0, tg: !!a.together, fr: a.from } : null;
+    // tg：这次是搭伴做的；fr：这件事从第几段开始（比这一段早就撤不回了）；rd：这一段在路上花掉的分钟（过桥、坐车，客户端拿它把按钮灰掉）
+    actors[r] = a ? { x: r1(a.x), y: r1(a.y), act: a.action, spot: a.spot, sleep: a.asleep, seq: s.moveSeq[r] || 0, tg: !!a.together, fr: a.from, rd: worldRide(a, w.slot) } : null;
     var p = life.persons![r];
     needs[r] = { hunger: r1(p.needs.hunger), energy: r1(p.needs.energy), mood: r1(p.needs.mood), clean: r1(p.needs.clean) };
     money[r] = p.money;
@@ -729,7 +729,6 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
       if (res.error) sendError(dispatcher, msg.sender, res.error);
       if (res.together) broadcastLog(dispatcher, [res.together]);
     } else if (msg.opCode === OP.CHOOSE) {
-      duetGuess(life, CONTENT, role, body.guess); // 要先记下，两人都选完那一刻就结算了
       var ch = worldChoose(life, CONTENT, role, String(body.optionId), false);
       if (ch.error) sendError(dispatcher, msg.sender, ch.error);
       if (ch.entry) {

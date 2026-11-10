@@ -23,6 +23,7 @@ const ServerConfig := preload("res://scripts/net/config.gd")
 const ServerSettings := preload("res://scripts/ui/server_settings.gd")
 const ContentStore := preload("res://scripts/net/content_store.gd")
 const DuetUI := preload("res://scripts/duet/duet_ui.gd")
+const LetterCard := preload("res://scripts/ui/letter_card.gd")
 const LegacyUI := preload("res://scripts/ui/legacy_ui.gd")
 const Guide := preload("res://scripts/ui/guide.gd")
 
@@ -68,7 +69,7 @@ var my_role := "qing"
 var life: Dictionary = {}
 var last_world: Dictionary = {}
 var offline_preview := false
-var duet: DuetUI  ## 「接话」的界面：猜 TA / 搭上了 / 回话（见 docs/DUET.md）
+var duet: DuetUI  ## 「接话」的界面：搭上了 / 回话（见 docs/DUET.md）
 var legacy: LegacyUI  ## 传承的界面：投胎页的老物件、结局页的再来一世（见 docs/LEGACY.md）
 var guide: Guide  ## 开局引导：章首卡、主线路标、头几天的小纸条（ui/guide.gd）
 var _preview_minute := 390.0
@@ -614,7 +615,7 @@ func _show_spot_action() -> void:
 	if not ex.is_empty() and (spot.is_empty() or absf(float(ex.at[0]) - me.position.x) < absf(float(spot.at[0]) - me.position.x)):
 		action_btn.set_meta("exit", str(ex.id))
 		var to: Dictionary = world.scenes.get(str(ex.to), {})
-		_set_action("exit", str(ex.label), "去" + str(to.get("name", "")) if str(ex.to) != str(world.scene.get("id", "")) else "", false)
+		_set_action("exit", str(ex.label), exit_cost(ex, to, str(world.scene.get("id", ""))), false)
 		return
 	if spot.is_empty():
 		action_btn.visible = false
@@ -632,13 +633,42 @@ func _show_spot_action() -> void:
 		cost.append("做到 %s" % P.clock(float(WorldView.SLOTS[world.slot][1])))
 	if int(act.get("money", 0)) < 0:
 		cost.append("%d 块" % -int(act.money))
+	if str(act.get("id", "")) == "letter":
+		cost.append("明天早上到 TA 手里")
 	# TA 这一段也定了在这儿做同一件事：现在定下就是搭伴，两个人都长得快
 	if world.partner_doing(spot, act):
 		cost.append("和 TA 搭伴")
 	action_btn.set_meta("spot", spot.id)
+	var spent := false
+	if not bool(act.get("sleep", false)) and not bool(act.get("duty", false)) and not bool(act.get("quick", false)):
+		var mine: Variant = _dict(last_world.get("actors")).get(my_role)
+		var use := float(_dict(_dict(content.get("rules")).get("daily")).get("slotUse", 1.0))
+		spent = mine is Dictionary and slot_left(mine, world.slot, use) <= 0.0
+	if spent:
+		cost = ["路上把这一段花掉了"]
 	if offline_preview:
 		cost = ["联网之后才能做"]
-	_set_action("act", str(act.get("label", "")), " · ".join(cost), offline_preview)
+	_set_action("act", str(act.get("label", "")), " · ".join(cost), offline_preview or spent)
+
+
+## 这一段还能花在一件事上的分钟：一段的长度 × slotUse，扣掉过桥、坐车花掉的（WORLD 的 actors 带 rd；同 world.ts 的 worldSlotLeft）
+static func slot_left(actor: Dictionary, slot: int, slot_use: float) -> float:
+	var s: int = clampi(slot, 0, WorldView.SLOTS.size() - 1)
+	var span := float(int(WorldView.SLOTS[s][1]) - int(WorldView.SLOTS[s][0])) * slot_use
+	return span - float(actor.get("rd", 0))
+
+
+## 出口按钮底下那行：去哪张图；过桥、坐车的写路上花多久（服务器从这一段里扣，见 world.ts 的 worldExit）
+static func exit_cost(ex: Dictionary, to: Dictionary, here: String) -> String:
+	var parts: Array = []
+	if str(ex.get("to", "")) != here:
+		parts.append("去" + str(to.get("name", "")))
+	var ride := int(ex.get("ride", 0))
+	if ride >= 180:
+		parts.append("路上一整段")
+	elif ride > 0:
+		parts.append("路上 %s" % ("一个钟头" if ride == 60 else "%d 分钟" % ride))
+	return " · ".join(parts)
 
 
 ## 「就这么过」：这一段不做正经事。TA 已经定了的话写一句，别让人干等
@@ -1438,24 +1468,15 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 	_gap(modal_body, 4)
 
 
-## 关口上选路：不走默契事件的「猜 TA」（可以商量，没什么可猜的）。waiting：对门也过这一关，选完要等 TA
+## 关口上选路。waiting：对门也过这一关，选完要等 TA
 func _pick_path(option_id: String, option_text: String, waiting: bool) -> void:
 	net.choose(option_id)
 	_pick_shown(option_id, option_text, waiting)
 
 
 func _pick(option_id: String, option_text: String, mirror: bool) -> void:
-	if mirror:
-		# 默契事件：选完自己的，再猜 TA 选了哪个，两样一起发
-		duet.ask_guess(str(modal.get_meta("waiting_event", "")), option_id, option_text)
-		return
 	net.choose(option_id)
 	_pick_shown(option_id, option_text, mirror)
-
-
-func _pick_send(option_id: String, option_text: String, guess: String) -> void:
-	net.choose(option_id, guess)
-	_pick_shown(option_id, option_text, true)
 
 
 func _pick_shown(_option_id: String, option_text: String, mirror: bool) -> void:
@@ -1538,15 +1559,28 @@ func _on_log_entries(data: Dictionary) -> void:
 				var ev: Dictionary = events_by_id.get(e.events[other], {})
 				_toast("TA 遇到了「%s」，选了：%s" % [str(ev.get("title", "")), _option_text(e.events[other], e.choices[other])])
 		elif kind == "day":
-			# 一天过完：撕下来的一页日历
-			_open_modal()
-			Kit.chip(modal_body, str(e.label), P.role_color(my_role))
-			_label(modal_body, str(e.text), 44)
-			Kit.rule(modal_body, Color(P.INK, 0.25))
+			# 一天过完：撕下来的一页日历。分在外地和河畔里的时候，底下压着 TA 的信（post.ts）
+			var letters := LetterCard.mine(e, my_role)
+			_open_modal(MODAL_WIDE if not letters.is_empty() else MODAL_WIDTH)
+			var page: Container = modal_body
+			var desk: Container = null
+			if not letters.is_empty():
+				var cols: Array = _columns(modal_body, 1.0, 1.25, 56)
+				page = cols[0]
+				desk = cols[1]
+			Kit.chip(page, str(e.label), P.role_color(my_role))
+			_label(page, str(e.text), 44)
+			Kit.rule(page, Color(P.INK, 0.25))
 			var grew := _gains_text(_dict(_dict(e.get("gains")).get(my_role)))
-			_label(modal_body, ("这一天你长了：" + grew) if grew != "" else "日子一天天过去……", 32, P.INK_SOFT)
-			_primary(modal_body, "下一个被记住的日子", _close_modal)
-			_gap(modal_body, 4)
+			_label(page, ("这一天你长了：" + grew) if grew != "" else "日子一天天过去……", 32, P.INK_SOFT)
+			if desk != null:
+				_label(page, "早上，信到了。", 32, P.role_color(_other()))
+				for l in letters:
+					LetterCard.build(desk, l, names)
+				if e.get("crossed") is String:
+					_label(desk, str(e.crossed), 30, P.INK_SOFT)
+			_primary(page, "下一个被记住的日子", _close_modal)
+			_gap(page, 4)
 		elif kind == "death":
 			_open_modal()
 			_label(modal_body, str(e.text), 52, P.OVERLAP)

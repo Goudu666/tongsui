@@ -65,16 +65,16 @@
 - id: uni_abroad
   label: 在国外念书
   requires: { minAge: 18, maxAge: 21, flags: [uni_abroad] }
-  duty: { label: 回学校, spot: river_bridge, arrive: [390, 480], until: 1140, needs: { hunger: 30, energy: -20, mood: -3 }, stats: { mind: 0.5, charm: 0.2 } }
+  duty: { label: 去上课, spot: away_gate, arrive: [390, 480], until: 1140, needs: { hunger: 30, energy: -20, mood: -3 }, stats: { mind: 0.5, charm: 0.2 } }
 # 当兵（不是殷实人家的孩子的一条路，m_gaokao 的 army）：长体魄，有一点津贴，二十二岁退伍能安置进厂
 - id: army
   label: 在部队
   requires: { minAge: 18, maxAge: 21, flags: [army] }
-  duty: { label: 出操, spot: river_bridge, arrive: [390, 420], until: 1050, needs: { hunger: 35, energy: -28, clean: -15 }, stats: { body: 0.5, mind: 0.08 }, money: 4 }
+  duty: { label: 出操, spot: away_work, arrive: [390, 420], until: 1050, needs: { hunger: 35, energy: -28, clean: -15 }, stats: { body: 0.5, mind: 0.08 }, money: 4 }
 - id: uni_away
   label: 在外地念大学
   requires: { minAge: 18, maxAge: 21, flags: [uni_away] }
-  duty: { label: 回学校, spot: river_bridge, arrive: [390, 480], until: 1140, needs: { hunger: 30, energy: -20 }, stats: { mind: 0.53, charm: 0.14 } }
+  duty: { label: 去上课, spot: away_gate, arrive: [390, 480], until: 1140, needs: { hunger: 30, energy: -20 }, stats: { mind: 0.53, charm: 0.14 } }
 - id: uni_near
   label: 在本市念大学
   requires: { minAge: 18, maxAge: 21, flags: [uni_near] }
@@ -88,7 +88,7 @@
 - id: job_away
   label: 在外地工作
   requires: { minAge: 22, maxAge: 59, flags: [left_city], notFlags: [came_back] }
-  duty: { label: 过桥上班, spot: river_bridge, arrive: [390, 480], until: 1170, needs: { hunger: 25, energy: -28, mood: -3 }, money: 16 }
+  duty: { label: 上班, spot: away_work, arrive: [390, 480], until: 1170, needs: { hunger: 25, energy: -28, mood: -3 }, money: 16 }
 - id: job_desk
   label: 坐办公室
   requires: { minAge: 22, maxAge: 59, flags: [job_desk] }

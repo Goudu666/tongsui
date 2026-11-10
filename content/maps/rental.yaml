@@ -7,9 +7,10 @@ width: 1920
 far: true
 unlock:
   any:
-    - { minAge: 18, flags: [ uni_away ] }
-    - { minAge: 18, flags: [ uni_abroad ] }
-    - { minAge: 22, flags: [ left_city ], notFlags: [ came_back ] }
+    - { minAge: 18, maxAge: 21, flags: [ uni_away ] }
+    - { minAge: 18, maxAge: 21, flags: [ uni_abroad ] }
+    - { minAge: 18, maxAge: 21, flags: [ army ] }
+    - { minAge: 22, maxAge: 59, flags: [ left_city ], notFlags: [ came_back ] }
 
 areas:
   - { id: rent_room, name: 屋里, span: [ 0, 1000 ], floor: 0 }
@@ -20,6 +21,7 @@ exits:
 
 spots:
   - { id: rent_bed, at: 260, area: rent_room, actions: [ sleep ] }
+  - { id: rent_table, at: 480, area: rent_room, actions: [ eat ] }
   - { id: rent_desk, at: 700, area: rent_room, actions: [ read ] }
   - { id: rent_basin, at: 1150, area: rent_hall, actions: [ wash ] }
   - { id: rent_stove, at: 1500, area: rent_hall, actions: [ cook ] }

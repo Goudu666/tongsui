@@ -227,14 +227,15 @@
   options:
     - id: buy
       text: 买下一套自己的房
-      min: 150
-      cost: 150
+      # 成年后歇班那年工钱照发以后，三十岁的积蓄整体多了四成，线跟着从 150 抬到 200（tools/paths.mjs 校准）
+      min: 200
+      cost: 200
       tags: [responsible]
       effects: { self: { mood: 15 }, flags: [home_own] }
     - id: rent
       text: 在附近租一间
-      min: 60
-      cost: 60
+      min: 100
+      cost: 100
       tags: [adventure]
       effects: { self: { mood: 6 }, flags: [home_rent] }
     - id: stay

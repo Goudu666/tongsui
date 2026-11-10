@@ -937,6 +937,9 @@ func _on_log_entries(data: Dictionary) -> void:
 		elif kind == "solo":
 			if e.events[my_role] != null:
 				_close_modal()
+				var mine: Variant = e.get("checks", {}).get(my_role)
+				if mine != null:
+					_show_check_result(e, mine)
 			else:
 				var other := _other()
 				var ev: Dictionary = events_by_id.get(e.events[other], {})
@@ -960,6 +963,35 @@ func _on_log_entries(data: Dictionary) -> void:
 ## 默契事件的结算卡：共鸣 / 搭上了 / 错位（画在 duet_ui.gd 里）
 func _show_mirror_result(e: Dictionary) -> void:
 	duet.show_result(e)
+
+
+## 检定：有些选项成不成要看本事和运气（服务端 growth.ts 掷的，结果跟着日志过来）。
+## 两个人在默契事件里选了同一项，就是搭把手：按本事大的那个算。
+const STAT_TEXT := {"body": "体魄", "mind": "心智", "charm": "魅力", "luck": "运气"}
+
+
+func _check_verdict(c: Dictionary) -> String:
+	var how := "没成"
+	if bool(c.get("ok", false)):
+		how = "搭把手，成了" if bool(c.get("help", false)) else "成了"
+	return "%s · %s" % [str(STAT_TEXT.get(str(c.get("stat", "")), "")), how]
+
+
+## 各自的事里挂着检定的选项：选完弹一张小卡，说成没成
+func _show_check_result(e: Dictionary, c: Dictionary) -> void:
+	_open_modal()
+	var ev: Dictionary = events_by_id.get(e.events[my_role], {})
+	var ok := bool(c.get("ok", false))
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 16)
+	modal_body.add_child(head)
+	Kit.chip(head, _check_verdict(c), P.role_color(my_role) if ok else P.INK_SOFT)
+	var when := _label(head, "%s · %s" % [str(e.label), str(ev.get("title", ""))], 30, P.INK_SOFT)
+	when.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	Kit.rule(modal_body, Color(P.INK, 0.25))
+	_label(modal_body, str(c.get("text", "")), 44, P.INK)
+	_primary(modal_body, "嗯", _close_modal)
+	_gap(modal_body, 4)
 
 
 # ======================================================================

@@ -99,13 +99,13 @@ function duetHasMemory(s: LifeState, title: string): boolean {
 // ---------- 搭上了 ----------
 
 /** lifeResolveEvent 里，mirror 事件先问这里：两人选得不一样，但是不是一个抛、一个接？是就按「搭上了」结算，返回 true */
-function duetCatch(s: LifeState, pe: PendingEvent, ev: LifeEvent, entry: LogEntry): boolean {
+function duetCatch(s: LifeState, c: Content, pe: PendingEvent, ev: LifeEvent, entry: LogEntry): boolean {
   var hit = duetFindCatch(ev, pe.choices.qing, pe.choices.mei);
   if (!hit) return false;
   entry.resonance = true; // 接住了也算默契，计入默契率
   entry.text = hit.text;
   entry.duet = { outcome: "catch" };
-  lifeApplyBond(s, hit.bond);
+  lifeApplyBond(s, c, hit.bond);
   lifeAddFlags(s.persons!.qing, hit.flags);
   lifeAddFlags(s.persons!.mei, hit.flags);
   if (hit.memory) s.memories.push({ title: hit.memory, eventId: ev.id, turn: s.turn, age: entry.age, vivid: 3 });
@@ -143,14 +143,14 @@ function duetAfterEvent(s: LifeState, c: Content, pe: PendingEvent, entry: LogEn
     info.knew[r] = hit;
     guessed += 1;
     d.know[r][1] += 1;
-    if (hit) { knew.push(r); d.know[r][0] += 1; lifeApplyBond(s, { sync: 1 }); }
+    if (hit) { knew.push(r); d.know[r][0] += 1; lifeApplyBond(s, c, { sync: 1 }); }
   }
   var L = c.duet.lines;
   var line: string | null = null;
   if (guessed === 2) {
     if (knew.length === 2) {
       line = same ? L.knew_both_same : L.knew_both_diff;
-      if (!same) lifeApplyBond(s, { close: 1 }); // 选得不一样，但知根知底
+      if (!same) lifeApplyBond(s, c, { close: 1 }); // 选得不一样，但知根知底
     } else if (knew.length === 1) {
       line = duetFill(L.knew_one, { a: s.persons![knew[0]].name, b: s.persons![lifeOther(knew[0])].name });
     } else {
@@ -236,7 +236,7 @@ function duetEcho(s: LifeState, c: Content, role: Role, turn: number, optionId: 
   }
   // 当时没接上、现在接上了：补一段回忆（补的，鲜明度低一级）
   if (outcome !== "miss" && o.outcome === "miss") {
-    lifeApplyBond(s, { sync: 2, close: 1 });
+    lifeApplyBond(s, c, { sync: 2, close: 1 });
     lifeAddFlags(s.persons.qing, flags);
     lifeAddFlags(s.persons.mei, flags);
     if (memory && !duetHasMemory(s, memory)) s.memories.push({ title: memory, eventId: ev.id, turn: o.turn, age: o.age, vivid: 2 });
@@ -264,7 +264,7 @@ function duetEcho(s: LifeState, c: Content, role: Role, turn: number, optionId: 
   if (o.guess !== null) {
     partnerKnew = o.guess === opt.id;
     var wasHit = o.guess === o.shadow;
-    if (partnerKnew && !wasHit) { d.know[other][0] += 1; lifeApplyBond(s, { sync: 1 }); }
+    if (partnerKnew && !wasHit) { d.know[other][0] += 1; lifeApplyBond(s, c, { sync: 1 }); }
     if (!partnerKnew && wasHit) d.know[other][0] = Math.max(0, d.know[other][0] - 1);
     if (partnerKnew && !like) lines.push(duetFill(E.knew, { b: s.persons[other].name }));
   }

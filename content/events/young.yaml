@@ -7,7 +7,7 @@
   weight: 3
   requires: { minAge: 20, notFlags: [left_city, stayed] }
   title: 另一座城市
-  text: 一家外地的公司给了你一份工作，工资是现在的两倍。
+  text: 外地一家公司要你，工资翻一番。你妈正熬着鱼，头也没回：「去不去的，你自己琢磨。鱼好了，先吃饭。」
   options:
     - id: go
       text: 去
@@ -47,7 +47,7 @@
   weight: 3
   requires: { maxAge: 19, flags: [uni_away] }
   title: 火车站
-  text: 站台上的广播一遍一遍念车次。你妈往你包里又塞了一兜大麻花，拉链怎么也拉不上了。
+  text: 站台上的广播一遍一遍念车次。你妈往你包里又塞了一兜大麻花：「外地的麻花不拧劲儿。」拉链怎么也拉不上了。
   options:
     - id: take
       text: 全带上，一根不落
@@ -688,7 +688,7 @@
   weight: 2
   requires: { minAge: 24, notFlags: [p_lovers, married_other] }
   title: 相亲
-  text: 你姑介绍的人坐在对面，搅着一杯不加糖的咖啡。人挺好，话不多，说起小时候的海河，眼睛亮了一下。
+  text: 你二姑当的介绍人。对面那位搅着一杯不加糖的咖啡，人挺好，话不多。说起小时候的海河，眼睛亮了一下。
   options:
     - id: yes
       text: 就这个人了
@@ -712,7 +712,7 @@
   weight: 3
   requires: { minAge: 24, flags: [p_lovers], notFlags: [p_married, married_other] }
   title: 楼顶的喜事
-  text: 楼顶晾床单的铁丝上挂满了红灯笼，两家把饭桌都搬了上来。对门的妈妈说，打你们三岁那年她就知道有今天。
+  text: 楼顶晾床单的铁丝上挂满了红灯笼，两家的饭桌都搬了上来。两家的妈逢人就说：打这俩三岁起，我就知道有今天。
   options:
     - id: vow
       text: 当着全楼说我愿意

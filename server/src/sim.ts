@@ -88,18 +88,28 @@ function lifeRollOnce(s: { rng: number }, c: Content, exceptFamily: string | nul
   var fam = lifePickWeighted(s, fams, function (f) { return f.weight; })!;
   var tal = lifePickWeighted(s, c.talents, function (t) { return t.weight; })!;
   var keys: StatKey[] = ["body", "mind", "charm", "luck"];
-  var stats: Stats = { body: rr.statMin, mind: rr.statMin, charm: rr.statMin, luck: rr.statMin };
-  var pool = rr.budget + rr.wealthAdjust[fam.wealth] - 4 * rr.statMin;
-  for (var b = 0; b < keys.length; b++) pool -= (fam.bonus[keys[b]] || 0) + (tal.bonus[keys[b]] || 0);
-  pool = lifeClamp(pool, 0, 4 * (rr.statMax - rr.statMin));
+  // 每项随机分到的底子在 [lo, hi] 里。加成大的那一项上限要让出来、加成是负的下限要垫上去，
+  // 这样加完以后还在 0~10 里，不用再夹（夹掉的点数就丢了，合计就不等了）
+  var bonus: Stats = { body: 0, mind: 0, charm: 0, luck: 0 };
+  var hi: Stats = { body: 0, mind: 0, charm: 0, luck: 0 };
+  var stats: Stats = { body: 0, mind: 0, charm: 0, luck: 0 };
+  var pool = rr.budget + rr.wealthAdjust[fam.wealth];
+  var room = 0;
+  for (var b = 0; b < keys.length; b++) {
+    var kb = keys[b];
+    bonus[kb] = (fam.bonus[kb] || 0) + (tal.bonus[kb] || 0);
+    stats[kb] = Math.max(rr.statMin, -bonus[kb]);
+    hi[kb] = Math.max(stats[kb], Math.min(rr.statMax, 10 - bonus[kb]));
+    pool -= stats[kb] + bonus[kb];
+    room += hi[kb] - stats[kb];
+  }
+  // 内容校验（build-content.mjs）保证每种人家 × 天赋都分得下去；这里再夹一次只是不让坏数据卡死循环
+  pool = lifeClamp(pool, 0, room);
   while (pool > 0) {
     var k = keys[Math.floor(lifeRand(s) * 4)];
-    if (stats[k] < rr.statMax) { stats[k] += 1; pool -= 1; }
+    if (stats[k] < hi[k]) { stats[k] += 1; pool -= 1; }
   }
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    stats[key] = lifeClamp(stats[key] + (fam.bonus[key] || 0) + (tal.bonus[key] || 0), 0, 10);
-  }
+  for (var i = 0; i < keys.length; i++) stats[keys[i]] = lifeClamp(stats[keys[i]] + bonus[keys[i]], 0, 10);
   return { familyId: fam.id, talentId: tal.id, stats: stats };
 }
 

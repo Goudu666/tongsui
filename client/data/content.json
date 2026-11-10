@@ -1,5 +1,5 @@
 {
- "version": "ba115d248ff5",
+ "version": "cb04227bce5b",
  "events": [
   {
    "id": "c_roof_summer",
@@ -17,7 +17,7 @@
    "hint": "楼顶好像有人在收凉席。",
    "requires": {},
    "title": "楼顶的夏夜",
-   "text": "夏天晚上，楼顶比屋里凉快。远处海河对岸的灯一盏一盏亮起来，楼下有人在收音机里听相声。",
+   "text": "三伏天，屋里待不住人。楼顶上凉席挨着凉席，谁家的收音机开着，没人认真听。",
    "options": [
     {
      "id": "stars",
@@ -97,7 +97,7 @@
     }
    },
    "dissonance": {
-    "text": "一个人在楼顶等了很久，另一个人已经在楼下了。",
+    "text": "一个在楼顶占着两个人的凉席，一个在楼下攥着两根冰棍。冰棍化了，凉席也没人躺。",
     "bond": {
      "close": 1
     },
@@ -117,7 +117,7 @@
     "minAge": 5
    },
    "title": "暖气片后面的猫",
-   "text": "楼道的暖气片后面缩着一只受伤的小猫。楼长说过不许在楼道里养东西。",
+   "text": "楼道暖气片后头缩着一只瘸腿的小猫，叫得比蚊子还细。楼长贴过条子：楼道里不许养活物。白菜不算。",
    "options": [
     {
      "id": "hide",
@@ -179,7 +179,7 @@
      "flags": []
     },
     "tell": {
-     "text": "你们一起去敲了楼长的门。小猫后来被自行车铺的爷爷收养了。",
+     "text": "你们去敲了楼长的门。楼长嘴上说净给他找事儿，转脸把猫抱去了车铺：逮耗子，顶半个伙计。",
      "memory": "车铺的猫",
      "bond": {
       "sync": 2,
@@ -212,7 +212,7 @@
    "hint": "楼下飘着一股火药味。",
    "requires": {},
    "title": "除夕的鞭炮",
-   "text": "除夕夜，楼下满地红纸屑。你攥着一盒偷来的火柴，兜里揣着三个\"二踢脚\"。",
+   "text": "大年三十，楼下一地红纸屑。你攥着一盒从灶台上顺来的火柴，兜里揣着三个「二踢脚」，捻儿都让你搓软了。",
    "options": [
     {
      "id": "together",
@@ -247,7 +247,7 @@
    ],
    "resonance": {
     "together": {
-     "text": "「砰——啪！」你们的眉毛都被燎掉了一点，楼上有人推开窗户骂了一句，然后也乐了。",
+     "text": "「砰——啪！」眉毛燎没了半截。楼上有人推开窗户：「谁家倒霉孩子！」骂完自己先乐了：「过年好！」",
      "memory": "燎掉的眉毛",
      "bond": {
       "sync": 3,
@@ -286,7 +286,7 @@
    "hint": "海河边有人在喊\"冻实了！\"",
    "requires": {},
    "title": "冻上的海河",
-   "text": "海河冻上了。冰面上有人抽冰嘎，有人推着冰车跑，岸边大人喊着\"别往中间去\"。",
+   "text": "海河冻结实了。冰面上抽冰嘎的、推冰车的、凿窟窿钓鱼的，各占一块地方。岸上的大人就会喊一句：「别往中间去！」",
    "options": [
     {
      "id": "skate",
@@ -364,7 +364,7 @@
     "minAge": 7
    },
    "title": "第一次打架",
-   "text": "放学路上，隔壁楼的几个大孩子拦住你，说你\"天天跟对门那个玩，丢人\"。",
+   "text": "放学路上，隔壁楼几个大孩子把你堵在墙根儿，说你「天天跟对门那个混在一块儿，没出息」。",
    "options": [
     {
      "id": "fight",
@@ -433,7 +433,7 @@
    "hint": null,
    "requires": {},
    "title": "下雨天",
-   "text": "雨下了一整天，楼下的路成了河。",
+   "text": "雨从夜里下到晌午，楼下的路成了河，有人拿洗衣裳的大盆当船划。出不去了。",
    "options": [
     {
      "id": "read",
@@ -503,7 +503,7 @@
     "minAge": 8
    },
    "title": "车铺里的旧二胡",
-   "text": "修车爷爷的墙上挂着一把落满灰的二胡。他说，想学就来。",
+   "text": "修车爷爷的墙上，扳手和车圈中间挂着一把落灰的二胡。「想学就来。不收钱，收耳朵：头仨月那动静，你得受得了。」",
    "options": [
     {
      "id": "learn",
@@ -553,7 +553,7 @@
     "minAge": 9
    },
    "title": "期末考试",
-   "text": "明天期末考试，你的数学还有两个单元没看。",
+   "text": "明天期末考试，数学还有两个单元一眼没看。大人放了话：考好了吃捞面，考砸了吃笤帚疙瘩。",
    "options": [
     {
      "id": "cram",
@@ -1034,7 +1034,7 @@
     "minAge": 6
    },
    "title": "一只灰鸽子",
-   "text": "楼顶养鸽子的刘大爷说，这只灰鸽子翅膀伤了，跟不上群了，谁要就给谁。它在纸箱里缩成一团，咕咕地叫。",
+   "text": "楼顶养鸽子的刘大爷托着个纸箱：「翅膀伤了，跟不上群了。谁要谁抱走，不要钱，给口小米就行。」里头一只灰鸽子，缩成一团。",
    "options": [
     {
      "id": "raise",
@@ -2530,7 +2530,7 @@
    "hint": null,
    "requires": {},
    "title": "收音机里的相声",
-   "text": "楼下乘凉的大爷把收音机搁在棋盘边上，里头正说一段贯口，一口气报了几十道菜名。大爷们摇着蒲扇，乐得直拍腿。",
+   "text": "楼下乘凉的大爷把收音机搁在棋盘边上，里头正说一段贯口，一口气报了几十道菜名，愣没换气。大爷们的蒲扇都忘了摇。",
    "options": [
     {
      "id": "learn",
@@ -2883,7 +2883,7 @@
     ]
    },
    "title": "楼下的二胡",
-   "text": "秋天傍晚，楼下乘凉的人还没散。修车爷爷把那把二胡递到你手里：「练了这么久了，拉一段给街坊听听。」",
+   "text": "秋天傍晚，楼下乘凉的人还没散。修车爷爷把二胡递到你手里：「拉一段。街坊的耳朵早让你磨出茧子了，不怕。」",
    "options": [
     {
      "id": "play",
@@ -3529,7 +3529,7 @@
     ]
    },
    "title": "脸盆里的气泡",
-   "text": "你爸蹲在车铺门口补胎，把内胎一截一截按进脸盆里。他说：盯着，哪儿冒泡，哪儿就是漏眼。",
+   "text": "你爸蹲在车铺门口补胎。他先拿耳朵听了一圈，再把内胎按进脸盆：「盯着。哪儿冒泡，哪儿就是漏眼。」",
    "options": [
     {
      "id": "watch",
@@ -5777,7 +5777,7 @@
     ]
    },
    "title": "你接着说",
-   "text": "你爸嗓子哑了，说不动了。他把那把用了四十年的扇子往你手里一塞：下礼拜那场，你接着说。",
+   "text": "你爸嗓子哑了。他把用了四十年的扇子往你手里一塞：「下礼拜那场你接着说。别让话掉地上。」",
    "options": [
     {
      "id": "take",
@@ -6352,7 +6352,7 @@
    "hint": "楼门口贴了一张红色的告示。",
    "requires": {},
    "title": "拆迁通知",
-   "text": "楼门口贴出了拆迁通知。这栋红砖楼也在红线里。",
+   "text": "楼门口贴了张红纸。全楼的人围着看，看完了没人说话。末了楼长说：「得，今年白菜不用码楼道里了。」",
    "options": [
     {
      "id": "dig",
@@ -6387,7 +6387,7 @@
    ],
    "resonance": {
     "dig": {
-     "text": "你们隔了很多年，在同一个周末回到了楼里，在三楼的楼道里碰了面。墙上两个人的名字还在。",
+     "text": "隔了多少年，同一个礼拜天，三楼楼道里撞上了。墙上俩名字还在，刻得真矮，得蹲下才拍得着。",
      "memory": "拆迁前的周末",
      "bond": {
       "sync": 4,
@@ -6640,7 +6640,7 @@
     "minAge": 36
    },
    "title": "车铺爷爷",
-   "text": "修车的爷爷走了。车铺门口摆着花圈，墙上那把二胡还挂着，门边停着一辆没修完的二八车。",
+   "text": "修车的爷爷走了。来送的人排到了街口：这一片儿的车胎，都是他补的。墙上的二胡还挂着，门边支着一辆没修完的二八车。",
    "options": [
     {
      "id": "fix",
@@ -7453,7 +7453,7 @@
     ]
    },
    "title": "老屋",
-   "text": "事办完了，亲戚都走了。饭桌上还摆着半碗没喝完的粥，碗边搁着老花镜。",
+   "text": "事办完了。帮忙的街坊码好最后一把椅子，说了句「有事喊一声」，也走了。饭桌上还有半碗没喝完的粥，碗边搁着老花镜。",
    "options": [
     {
      "id": "coat",
@@ -8155,6 +8155,3137 @@
    "dissonance": null
   },
   {
+   "id": "j_ear",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "bikeshop",
+   "when": [
+    900,
+    1140
+   ],
+   "hint": "车铺门口有人在打赌。",
+   "requires": {
+    "minAge": 5
+   },
+   "title": "耳朵",
+   "text": "修车的爷爷修车不大抬头。车从街口一拐，他就说：「中轴缺珠子。」今天有人不信，推来一辆让他听。",
+   "options": [
+    {
+     "id": "yes",
+     "text": "押爷爷听得出来",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "no",
+     "text": "押他这回听不出来",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "listen",
+     "text": "闭上眼，自己也听听",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "yes": {
+     "text": "爷爷头也不抬：「车没毛病。是车筐里那瓶醋，盖儿没拧紧。」那人一低头，裤腿都湿了。",
+     "memory": "没拧紧的醋",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "no": {
+     "text": "爷爷听完不说话，油手一伸：「一人欠我一趟酱油。」那天你们拎着瓶子，跑了两趟副食店。",
+     "memory": "两趟酱油",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "listen": {
+     "text": "你们闭着眼听了半天，同时喊：「是车铃！」爷爷乐了：「铃好好的。是你俩的肚子。」",
+     "memory": "肚子叫唤",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个押能，一个押不能。爷爷就说了三个字：「没毛病。」车是好的，那人是专门来找乐子的。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_popcorn",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "autumn",
+    "winter"
+   ],
+   "weight": 2,
+   "where": "alley",
+   "when": [
+    900,
+    1140
+   ],
+   "hint": "楼下有个黑铁葫芦在火上转。",
+   "requires": {},
+   "title": "响喽",
+   "text": "崩爆米花的来了。孩子们端着茶缸子排队，一缸棒子粒，一撮糖精。老头儿不看表，嘴里数数。数到头，脚一蹬：「响——喽——」",
+   "options": [
+    {
+     "id": "cover",
+     "text": "赶紧捂住自己的耳朵",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "other",
+     "text": "伸手去捂对门的耳朵",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {
+       "mood": 5
+      },
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "brave",
+     "text": "不捂，瞪着眼等",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "other": {
+     "text": "都去捂对方的耳朵，自己的全晾着。「砰！」耳朵嗡了一下午，说话全靠喊，大人以为你们吵架了。",
+     "memory": "嗡了一下午",
+     "bond": {
+      "sync": 4,
+      "close": 3
+     },
+     "flags": []
+    },
+    "brave": {
+     "text": "「砰！」白烟腾起来，你们俩谁也没眨眼。其实腿都软了，谁也不说。",
+     "memory": "谁也没眨眼",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "cover": {
+     "text": "捂得太早，胳膊都酸了它还不响。你们对了个眼神，刚一松手——「砰！」",
+     "memory": "刚一松手",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个捂着耳朵蹲下了，一个伸出去的手捂了个空。爆米花倒没耽误：一麻袋，甜的。",
+    "bond": {
+     "close": -1
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_dough_figure",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "autumn"
+   ],
+   "weight": 2,
+   "where": "school",
+   "when": [
+    930,
+    1080
+   ],
+   "hint": "校门口围了一圈小脑袋。",
+   "requires": {
+    "minAge": 6
+   },
+   "title": "面人",
+   "text": "校门口来了个捏面人的。一块面在他手指头里转两转，鼻子眼儿就齐了。五毛一个。你们俩的钱凑一块儿，正好五毛。",
+   "options": [
+    {
+     "id": "monkey",
+     "text": "要个孙猴",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "us",
+     "text": "「能捏我们俩吗？」",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "watch",
+     "text": "不买，看他捏就够了",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "us": {
+     "text": "老头儿瞅瞅你们，搓了两搓：两个小人儿，一个缺门牙，一个翘头发，脚底下连着面。「掰开就都坏了。」",
+     "memory": "连着的面人",
+     "bond": {
+      "sync": 4,
+      "close": 4
+     },
+     "flags": []
+    },
+    "monkey": {
+     "text": "孙猴一人拿一天。第九天，金箍棒掉了；第二十天，裂了一道缝。谁也不认是在自己手里裂的。",
+     "memory": "一人一天的孙猴",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "watch": {
+     "text": "你们蹲到天擦黑。老头儿收摊，把一块红面掰成两半：「回家自己捏去。」",
+     "memory": "一块红面",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个要孙猴，一个要捏人。老头儿把面团一撂：「商量好了再来。」第二天，他没来。",
+    "bond": {
+     "close": -1
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_dragonfly",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "summer"
+   ],
+   "weight": 2,
+   "where": "river",
+   "when": [
+    1080,
+    1260
+   ],
+   "hint": "河边有人举着线抡圈儿。",
+   "requires": {
+    "minAge": 6
+   },
+   "title": "蜻蜓",
+   "text": "太阳一落，河边的蜻蜓压得很低。大孩子拿线拴住一只抡圈儿，天上的大个儿就往下扑。他们匀给你们一只。",
+   "options": [
+    {
+     "id": "spin",
+     "text": "「我来抡！」",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "net",
+     "text": "举着网兜，等着扣",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "free",
+     "text": "把拴着的这只放了",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "spin": {
+     "text": "两只手抢一个线头，抡出来的圈是扁的。大个儿的没招来，线缠了两人一脑袋。",
+     "memory": "扁的圈",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "net": {
+     "text": "都举着网兜等，没人抡线。天黑才发现，拴着的那只早挣断线飞了。",
+     "memory": "没人抡线",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "free": {
+     "text": "它没马上走，在你们手指头上趴了一会儿。大孩子说你们是「善人」，这在他们嘴里不算好话。",
+     "memory": "手指头上的蜻蜓",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个抡，一个扣，头一网就扣着只大个儿的。回家路上才想起来：咱俩想的明明不是一回事。",
+    "bond": {
+     "sync": 1,
+     "close": 1
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_haircut",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "spring"
+   ],
+   "weight": 2,
+   "where": "alley",
+   "when": [
+    600,
+    1080
+   ],
+   "hint": "楼下树底下支起了剃头挑子。",
+   "requires": {
+    "minAge": 4,
+    "maxAge": 8
+   },
+   "title": "茶壶盖",
+   "text": "二月二，楼下剃头的支起了挑子，推子咔嚓咔嚓响。两家大人一人按着一个：「憋了一正月，今天都得剃！」",
+   "options": [
+    {
+     "id": "sit",
+     "text": "闭上眼，认了",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "clean": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "cry",
+     "text": "扯着嗓子哭",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "run",
+     "text": "挣开了就跑",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "sit": {
+     "text": "布单子一掀，两个一模一样的茶壶盖。你们指着对方笑，笑着笑着，都去摸自己的。",
+     "memory": "两个茶壶盖",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "cry": {
+     "text": "两个人比着哭，一个比一个调门高。老师傅推子不停：「哭吧。哭完了，正好剃完。」",
+     "memory": "比着哭",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "run": {
+     "text": "一个往东，一个往西。最后是在早点铺门口一块儿被逮住的，都剃了一半。",
+     "memory": "剃了一半",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个老实坐着，一个跑没了影。坐着的那个顶着茶壶盖找了一下午，就想让对方瞧一眼。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_seafood",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "spring"
+   ],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    1020,
+    1260
+   ],
+   "hint": "楼道里一股海腥味儿。",
+   "requires": {},
+   "title": "皮皮虾",
+   "text": "开海了，楼下来了一卡车皮皮虾，蹦着卖。两家各端回一大盆，楼道里的锅盖直跳，腥味儿一直飘到顶楼。",
+   "options": [
+    {
+     "id": "whole",
+     "text": "扎了手也要剥整只的",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "hunger": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "roe",
+     "text": "专挑带籽儿的",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "hunger": 15,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "give",
+     "text": "剥好了，先递给对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {
+       "hunger": 10,
+       "mood": 5
+      },
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "give": {
+     "text": "两只剥好的虾在半道上碰了头。换着吃了，味儿是一个味儿，可都说对方那只鲜。",
+     "memory": "换着吃的皮皮虾",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "whole": {
+     "text": "一人剥出一排整只的，码在暖气片上比。手指头扎得全是眼儿，第二天捏不住笔。",
+     "memory": "扎满眼儿的手",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "roe": {
+     "text": "带籽儿的全让你们俩挑走了。两家大人吃了一晚上空壳的，还直夸：今年的虾，肥。",
+     "memory": "带籽儿的",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个埋头剥，一个埋头吃，剥的全进了吃的那位嘴里。剥的那个，第二天才回过味儿来。",
+    "bond": {
+     "close": -1
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_cabbage",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "winter"
+   ],
+   "weight": 2,
+   "where": "alley",
+   "when": [
+    600,
+    1080
+   ],
+   "hint": "楼下卡车上的白菜堆成了山。",
+   "requires": {
+    "minAge": 6
+   },
+   "title": "搬白菜",
+   "text": "立冬，冬储大白菜进城。卡车往楼下一停，一家几百斤，得一趟趟抱上三楼，码在楼道里。大人说了：搬一棵，记一分。",
+   "options": [
+    {
+     "id": "three",
+     "text": "一趟抱三棵，逞个能",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "pair",
+     "text": "俩人抬一筐",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stack",
+     "text": "留在楼道里管码垛",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "pair": {
+     "text": "一筐白菜两个人抬，下巴上都沾着菜叶。抬到最后分不清哪筐是哪家的，码成了一垛。",
+     "memory": "一垛白菜",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "three": {
+     "text": "都抱三棵，在二楼拐角撞了个满怀。六棵白菜滚下楼，一棵没糟践，全让楼长捡走了：充公。",
+     "memory": "滚下楼的白菜",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "stack": {
+     "text": "两家的白菜码成了一堵墙，齐得像砖。楼长背着手看了半天：「这手艺，留着盖房。」",
+     "memory": "白菜墙",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在楼下抱，一个在楼上码，一下午没照面。天黑数分，两家大人各说各的孩子搬得多。",
+    "bond": {
+     "close": -1
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_fry",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "winter"
+   ],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    900,
+    1200
+   ],
+   "hint": "楼道里的油锅响了。",
+   "requires": {},
+   "title": "尝尝咸淡",
+   "text": "腊月二十几，家家在楼道里支油锅，炸丸子，炸藕夹。谁家炸什么，全楼的鼻子都知道。两家大人同时招手：「过来，尝尝咸淡。」",
+   "options": [
+    {
+     "id": "own",
+     "text": "就着锅边吃头一个",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "hunger": 10,
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "swap",
+     "text": "端一碗去换对门的",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {
+       "hunger": 10,
+       "mood": 5
+      },
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "both",
+     "text": "两家的都偷着吃",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "hunger": 20,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "swap": {
+     "text": "两只碗在楼道中间碰了头。这家咸，那家淡，掺一块儿正好。后来两家炸东西，就支一口锅。",
+     "memory": "一口锅",
+     "bond": {
+      "sync": 3,
+      "close": 4
+     },
+     "flags": []
+    },
+    "own": {
+     "text": "都烫了舌头，隔着楼道互相吐着舌头扇风。大人问咸淡，一个字也没问出来。",
+     "memory": "烫了的舌头",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "both": {
+     "text": "两个笸箩都下去了一半。没挨打：年根儿底下不兴打孩子。这笔账，记到了正月十六。",
+     "memory": "记到十六的账",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个端着碗来换，对门那个鼓着腮帮子，碗已经空了。「等会儿，下一锅给你。」",
+    "bond": {
+     "close": -1
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_movie",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "summer"
+   ],
+   "weight": 2,
+   "where": "alley",
+   "when": [
+    1140,
+    1320
+   ],
+   "hint": "楼下两棵树中间扯起了白布。",
+   "requires": {},
+   "title": "反面",
+   "text": "楼下两棵槐树中间扯起白布，放电影。正面早让板凳、砖头占满了。反面空着，一样能看，就是里头的人全成了左撇子。",
+   "options": [
+    {
+     "id": "front",
+     "text": "往正面前头挤",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back",
+     "text": "上反面看去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sill",
+     "text": "回屋趴窗台上看",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3,
+       "energy": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "back": {
+     "text": "反面就你们俩。那场电影你们记了一辈子：英雄是左手打的枪，片名念出来像句外国话。",
+     "memory": "反面的电影",
+     "bond": {
+      "sync": 4,
+      "close": 3
+     },
+     "flags": []
+    },
+    "front": {
+     "text": "挤到最前头，幕布上一张脸有门板大。散了场，你们的小板凳让人坐走了一个。",
+     "memory": "丢了的板凳",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "sill": {
+     "text": "两个窗台，两个下巴。离得远听不见声儿，你们一个配男的，一个配女的，胡说了一晚上。",
+     "memory": "两个窗台",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在正面，一个在反面，隔着一块布。散场一对词儿，两个人讲的像是两部片子。",
+    "bond": {
+     "close": -1
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_sesame",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "alley",
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 6
+   },
+   "title": "二两麻酱",
+   "text": "大人给你一只碗：「打二两麻酱去。」副食店的胖婶一提子下去，拉着丝儿，不多不少。回家要走一百多步，碗里那层油亮得照人。",
+   "options": [
+    {
+     "id": "lick",
+     "text": "舔一圈，拿手指头抹平",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "hunger": 5,
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "straight",
+     "text": "两手端平，一口不动",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "door",
+     "text": "喊对门下楼，一人一指头",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {
+       "mood": 8
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "j_gaba_pot",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "breakfast",
+   "when": [
+    390,
+    600
+   ],
+   "hint": null,
+   "requires": {
+    "minAge": 6
+   },
+   "title": "小钢种锅",
+   "text": "大人塞给你一只小钢种锅：「打一锅嘎巴菜，多要卤。」排你前头的，有拎暖壶打豆浆的，有手心里攥着俩鸡蛋等摊煎饼的。",
+   "options": [
+    {
+     "id": "steady",
+     "text": "两手端着，一步一挪",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "hunger": 15,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sip",
+     "text": "走到楼门口先偷喝一口",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "hunger": 20,
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sweet",
+     "text": "「婶儿，多给点儿麻酱。」",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "hunger": 15,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "j_pingshu",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 5
+   },
+   "title": "下回分解",
+   "text": "中午十二点半，全楼的收音机拧的是一个台。说书的正说到大将被围，醒木一拍：「要知后事如何——」满楼的饭碗一块儿「嗐」。",
+   "options": [
+    {
+     "id": "guess",
+     "text": "自己把下回编出来",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "pingshu"
+      ]
+     }
+    },
+    {
+     "id": "tell",
+     "text": "跑去对门：「他死不了！」",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {
+       "mood": 5
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": [
+       "pingshu"
+      ]
+     }
+    },
+    {
+     "id": "wait",
+     "text": "忍着，明天十二点半见",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "pingshu"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "j_bathhouse",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [
+    "winter"
+   ],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 4
+   },
+   "title": "澡堂子",
+   "text": "年根儿底下，大人领你去澡堂子。雾气里有人拖着长腔唱戏，四下里接一声「好」。搓澡师傅把你翻过来掉过去，像烙饼。",
+   "options": [
+    {
+     "id": "soak",
+     "text": "咬着牙泡进大池",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "clean": 40,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "scrub",
+     "text": "让师傅搓，疼也不躲",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "clean": 60,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "radish",
+     "text": "出来啃半个青萝卜",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "clean": 30,
+       "hunger": 5,
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "j_rule_jianbing",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "breakfast",
+   "when": [
+    390,
+    600
+   ],
+   "hint": "早点铺排队的人都扭着头。",
+   "requires": {},
+   "title": "规矩",
+   "text": "早点铺来了个生面孔：「能加根火腿肠吗？」老板娘手上没停：「我们这儿不加。」排队的都扭头看他。",
+   "options": [
+    {
+     "id": "explain",
+     "text": "小声给他讲讲规矩",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "join",
+     "text": "跟着说：「没这规矩。」",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "curious",
+     "text": "其实也想尝尝加肠的",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "explain": {
+     "text": "你们一左一右，把绿豆面、果子、果篦儿讲了个全套。那人听完，老老实实要了一套。",
+     "memory": "一套正经的",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "join": {
+     "text": "数你们俩嗓门大。老板娘刮子一指：「就你俩懂？上回谁管我要番茄酱来着？」",
+     "memory": "番茄酱",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "curious": {
+     "text": "你们对了个眼神，谁也没敢出声。那是你们头一回发现：对门跟自己一样，是个叛徒。",
+     "memory": "两个叛徒",
+     "bond": {
+      "sync": 4,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个喊没这规矩，一个嘀咕加一根也死不了人。排队的下了结论：这俩，早晚出一个离家的。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_bachuang",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "alley",
+   "when": [
+    930,
+    1200
+   ],
+   "hint": "胡同口堵着几个半大小子。",
+   "requires": {
+    "minAge": 13
+   },
+   "title": "胡同口",
+   "text": "隔壁楼几个半大小子堵了胡同口，冲的是你们俩里的一个。领头的把车一横：「听说你挺能耐？」",
+   "options": [
+    {
+     "id": "front",
+     "text": "往前一步：「冲我来。」",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "talk",
+     "text": "「有话好说，因为什么？」",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "fetch",
+     "text": "扭头回楼里喊人",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "front": {
+     "text": "都想把对方挡在身后，结果肩膀撞肩膀，谁也没挡住谁。领头的乐了：「你俩先打一架吧。」",
+     "memory": "肩膀撞肩膀",
+     "bond": {
+      "sync": 3,
+      "close": 4
+     },
+     "flags": []
+    },
+    "talk": {
+     "text": "从谁先瞪的谁，掰扯到谁家亲戚认识谁家亲戚。末了一论，领头的得管你们俩叫长辈。",
+     "memory": "论出来的辈分",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "fetch": {
+     "text": "喊下来的是修车爷爷，拎着扳手，叼着半根果子。对面散了：都在他那儿赊过车胎。",
+     "memory": "赊过的车胎",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个往前站了，回头一看，另一个喊人去了。「你上哪儿了？」「搬兵去了！」这事掰扯了好些年。",
+    "bond": {
+     "close": -2
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_ximian",
+   "kind": "mirror",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "alley",
+   "when": [
+    600,
+    1080
+   ],
+   "hint": "楼下搭起棚子，摆了十来桌。",
+   "requires": {
+    "minAge": 19,
+    "notFlags": [
+     "p_married",
+     "married_other",
+     "p_estranged"
+    ]
+   },
+   "title": "喜酒",
+   "text": "楼里有人娶媳妇，楼下摆了席。你们俩被抓了差，端菜。一位大娘接过盘子，上下打量你们：「什么时候吃你俩的？」",
+   "options": [
+    {
+     "id": "serve",
+     "text": "装没听见，接着端菜",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "retort",
+     "text": "「您先把份子钱备好！」",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "blush",
+     "text": "脸一红，盘子差点扣了",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "retort": {
+     "text": "两个人说的是同一句，连口气都一样。满院子笑得拍桌子。大娘真掏出个红包：「备好了。」",
+     "memory": "备好的份子钱",
+     "bond": {
+      "sync": 4,
+      "close": 3
+     },
+     "flags": []
+    },
+    "serve": {
+     "text": "端了四十多盘，谁也没接那个话茬。可从那天起，一个上楼，另一个准绕到那头下。",
+     "memory": "绕着走",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "blush": {
+     "text": "两张脸一块儿红，比新娘子的盖头还红。大娘看看这个，看看那个，光笑，不说话。",
+     "memory": "比盖头还红",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个回嘴回得山响，一个扭头进了楼。大娘咂咂嘴：「得，我多嘴了。」那盘菜，凉了。",
+    "bond": {
+     "close": -2
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_first_wage",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 19,
+    "maxAge": 26
+   },
+   "title": "一兜螃蟹",
+   "text": "头一个月工资到手。你妈早放了话：存着。可秋风一起，海螃蟹正肥，卖螃蟹的冲你一掀草帘子。",
+   "options": [
+    {
+     "id": "crab",
+     "text": "一咬牙，全买了",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10,
+       "hunger": 15
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "save",
+     "text": "咽口唾沫，存起来",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "four",
+     "text": "买四只，两只敲对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "hunger": 10
+      },
+      "other": {
+       "mood": 8,
+       "hunger": 10
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "j_dive",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "river",
+   "when": [
+    600,
+    1140
+   ],
+   "hint": "桥栏杆外头站着一排光膀子的。",
+   "requires": {
+    "minAge": 42
+   },
+   "title": "桥上的老几位",
+   "text": "伏天，桥栏杆外头站着一排光膀子的老爷子。跳之前先报花样：「冰棍儿！」直着就下去了。",
+   "options": [
+    {
+     "id": "cheer",
+     "text": "扯着嗓子叫一声「好」",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "join",
+     "text": "把兜里的东西塞给对方",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": 10,
+       "energy": -10,
+       "clean": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "worry",
+     "text": "「这岁数，不怕出事？」",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "cheer": {
+     "text": "你们那声「好」叫在了一个点儿上。水里的老爷子冒出头，朝桥上挥了挥手。",
+     "memory": "叫在点儿上",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "join": {
+     "text": "都要下，没人看东西，最后全托给了卖冰棍的。你们报的花样是「俩饺子」：一前一后，下锅。",
+     "memory": "俩饺子",
+     "bond": {
+      "sync": 4,
+      "close": 3
+     },
+     "flags": []
+    },
+    "worry": {
+     "text": "旁边一位七十多的刚上岸，浑身滴水：「怕？我怕的是不让跳。」他抹把脸，又翻出去了。",
+     "memory": "怕不让跳",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个已经在脱鞋，一个死死拽着胳膊。旁边的老爷子看了一会儿，自己先翻出去了。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_kid_dialect",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 33,
+    "maxAge": 48,
+    "flags": [
+     "has_kid"
+    ]
+   },
+   "title": "口音",
+   "text": "孩子一口电视里的普通话，忽然问：「口音是什么呀？」你张了张嘴。你从来没听见过自己的口音。",
+   "options": [
+    {
+     "id": "teach",
+     "text": "「就是家里的味儿。」",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "let",
+     "text": "算了，普通话也挺好",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5,
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "show",
+     "text": "带孩子回老楼住一晚",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "j_photo",
+   "kind": "mirror",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    600,
+    1200
+   ],
+   "hint": "楼道里有人在翻相册。",
+   "requires": {},
+   "title": "那张相片",
+   "text": "到了岁数，那张相片得自己先挑好。你俩搬出相册，挑的是对方的。",
+   "options": [
+    {
+     "id": "silly",
+     "text": "挑TA笑得最没样儿的",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sharp",
+     "text": "挑TA最精神的那张",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "none",
+     "text": "「早着呢。」合上相册",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "silly": {
+     "text": "挑出来的是同一张：楼顶照的，两个脑袋，都缺着门牙。「人家要单人的。」「那就铰开。」没舍得铰。",
+     "memory": "没铰开的相片",
+     "bond": {
+      "sync": 4,
+      "close": 4
+     },
+     "flags": []
+    },
+    "sharp": {
+     "text": "都挑了对方二十来岁那张，腰板还直。端详了半天，一个说：「这谁呀？」一个说：「不认识。」",
+     "memory": "不认识",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "none": {
+     "text": "相册合上了，你们说了一下午别的。谁心里都有数：那张早挑好了，只是不告诉你。",
+     "memory": "合上的相册",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个挑了张傻笑的，一个挑了张板着脸的。「你就这么瞧我？」拌了一下午嘴，比哪天都精神。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_mazha",
+   "kind": "mirror",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "alley",
+   "when": [
+    600,
+    1080
+   ],
+   "hint": "树底下摆了一圈马扎。",
+   "requires": {},
+   "title": "树底下的马扎",
+   "text": "开春头一个暖和天，树底下的马扎少了两个。没人提。",
+   "options": [
+    {
+     "id": "seat",
+     "text": "把空马扎照旧支上",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "talk",
+     "text": "念叨那两位的糗事",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "price",
+     "text": "「今天菜价又涨了。」",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "talk": {
+     "text": "说着说着都乐了，乐得直擦眼泪。那两位要是听得见，准得回一句：「背后说人，罚酒。」",
+     "memory": "背后说人",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "seat": {
+     "text": "你们俩一人支了一个。有孩子要坐，两根拐棍同时伸过去：「有人。」",
+     "memory": "有人",
+     "bond": {
+      "sync": 4,
+      "close": 3
+     },
+     "flags": []
+    },
+    "price": {
+     "text": "从菜价说到药价，绕了一大圈，谁也没提那两个名字。散的时候，有人把马扎留在了树底下。",
+     "memory": "留下的马扎",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个想说说他们，一个把话岔开了。岔开的那个回到家，对着窗户说了半宿。",
+    "bond": {
+     "close": -1
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "j_pingshu_end",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "alone": false,
+    "flags": [
+     "pingshu"
+    ]
+   },
+   "title": "大结局",
+   "text": "收音机重播那部老书，小时候没听着结局的那部。今天是最后一回。",
+   "options": [
+    {
+     "id": "listen",
+     "text": "把声音拧大，听完",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "off",
+     "text": "关上，不听结局",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "luck": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "打给对门：「他没死！」",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {
+       "mood": 8
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "f_bai_seat",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 5,
+    "flags": [
+     "fam_dale"
+    ]
+   },
+   "title": "席尾",
+   "text": "这片儿的红白事，都请你爸张罗。今天是白事，你坐席尾。满院子哭的哭，乱的乱，只有他一开口，人就知道该干什么了。",
+   "options": [
+    {
+     "id": "eat",
+     "text": "闷头把那碗饭吃完",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "hunger": 20
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "bai_seat"
+      ]
+     }
+    },
+    {
+     "id": "count",
+     "text": "数他喊了多少声「谢」",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "bai_seat"
+      ]
+     }
+    },
+    {
+     "id": "ask",
+     "text": "问他：人没了上哪儿去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "bai_seat"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "f_bai_help",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": "hallway",
+   "when": [
+    600,
+    1200
+   ],
+   "hint": "楼道里摆了一张记账的小桌。",
+   "requires": {
+    "minAge": 13,
+    "flags": [
+     "fam_dale",
+     "bai_seat"
+    ]
+   },
+   "title": "记账的小桌",
+   "text": "楼里一位老人走了。白家伯伯张罗后事，人手不够，把你们俩抓了差：楼道里摆张小桌，记账，倒茶。来的全是街坊，都红着眼圈。",
+   "options": [
+    {
+     "id": "ledger",
+     "text": "记账，一笔不许错",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "bai_help"
+      ]
+     }
+    },
+    {
+     "id": "tea",
+     "text": "给哭的人挨个儿递热茶",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "bai_help"
+      ]
+     }
+    },
+    {
+     "id": "hide",
+     "text": "躲到楼梯拐角去",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "bai_help"
+      ]
+     }
+    }
+   ],
+   "resonance": {
+    "ledger": {
+     "text": "一个念，一个写。散了以后白伯伯一对，分文不差。他没夸，只说：「行。往后有事，敢叫你俩。」",
+     "memory": "分文不差的账",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "tea": {
+     "text": "茶递到谁手里，谁就攥着你们的手多哭两声。头一回知道，一碗热茶能顶这么大的事。",
+     "memory": "递出去的茶",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "hide": {
+     "text": "楼梯拐角里，两个人挤着坐下，谁也没说话。哭声一阵阵传下来，你们的肩膀挨得很紧。",
+     "memory": "楼梯拐角",
+     "bond": {
+      "sync": 3,
+      "close": 4
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在桌后记账，一个不见了。记账的写着写着，把一位街坊的名字写成了对门的，赶紧划了。",
+    "bond": {
+     "close": -1
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "f_bai_takeover",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 36,
+    "flags": [
+     "fam_dale",
+     "bai_help"
+    ]
+   },
+   "title": "出山",
+   "text": "你爸站不了一整天了。来请的人搓着手：「你们家不出人，老礼儿就没人懂了。」你爸看你。",
+   "options": [
+    {
+     "id": "take",
+     "text": "「我去。」",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "took_over",
+       "bai_kept"
+      ]
+     }
+    },
+    {
+     "id": "neighbors",
+     "text": "不挂牌，只帮老街坊",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "decline",
+     "text": "「这行当，到我爸为止。」",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "f_bai_own",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "fam_dale",
+     "bai_seat"
+    ]
+   },
+   "title": "给自己开的单子",
+   "text": "别人的事，你看了一辈子。今天你铺开纸，给自己开一张单子。",
+   "options": [
+    {
+     "id": "simple",
+     "text": "一切从简，别折腾孩子",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "full",
+     "text": "老礼儿一样不能落",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "joke",
+     "text": "添一行：不许哭，放相声",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "f_jin_guoguo",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [
+    "winter"
+   ],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 6,
+    "flags": [
+     "fam_oldmoney"
+    ]
+   },
+   "title": "怀里的蝈蝈",
+   "text": "你爷爷祖上阔过，如今就剩一身规矩和一只蝈蝈葫芦。冬天他把葫芦塞进你棉袄：「替我焐着。」第二节课，教室里静极了。它叫了。",
+   "options": [
+    {
+     "id": "cough",
+     "text": "捂住胸口，假装咳嗽",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "jin_guoguo"
+      ]
+     }
+    },
+    {
+     "id": "own",
+     "text": "「报告，是我的蝈蝈。」",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "jin_guoguo"
+      ]
+     }
+    },
+    {
+     "id": "pass",
+     "text": "从桌子底下递给对门",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {
+       "mood": 5
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": [
+       "jin_guoguo"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "f_jin_box",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": "alley",
+   "when": [
+    600,
+    1080
+   ],
+   "hint": "楼下有人摇着拨浪鼓收旧货。",
+   "requires": {
+    "minAge": 13,
+    "flags": [
+     "fam_oldmoney",
+     "jin_guoguo"
+    ]
+   },
+   "title": "樟木箱子",
+   "text": "楼下来了收旧货的。金家爷爷抱着樟木箱子下了楼，站了半天，不开价，也不撒手。街坊都知道他那句话：倒驴不倒架。",
+   "options": [
+    {
+     "id": "stop",
+     "text": "一边一个拽住爷爷袖子",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "jin_box"
+      ]
+     }
+    },
+    {
+     "id": "haggle",
+     "text": "替爷爷跟人讲价",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "jin_box"
+      ]
+     }
+    },
+    {
+     "id": "quiet",
+     "text": "不出声，让爷爷自己定",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "jin_box"
+      ]
+     }
+    }
+   ],
+   "resonance": {
+    "stop": {
+     "text": "老爷子看看左边，看看右边：「得，听孩子的。」那天金家晚饭是棒子面粥，蝈蝈叫了一宿。",
+     "memory": "抱回楼上的箱子",
+     "bond": {
+      "sync": 3,
+      "close": 4
+     },
+     "flags": []
+    },
+    "haggle": {
+     "text": "你一句我一句，愣让人多掏了二十块。老爷子背着手往回走，走得比来的时候快。",
+     "memory": "多出来的二十块",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "quiet": {
+     "text": "老爷子站够了，自己挑出一件递过去，头也没回。你们跟在他后头上楼，三个人的脚步都很轻。",
+     "memory": "很轻的脚步",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个拽袖子，一个讲上了价。老爷子直乐：「行了。我还没倒呢，架子先让你俩拆了。」",
+    "bond": {
+     "close": 1
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "f_jin_legacy",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 36,
+    "flags": [
+     "fam_oldmoney",
+     "jin_box"
+    ]
+   },
+   "title": "末一条规矩",
+   "text": "樟木箱子传到了你手上：一只蝈蝈葫芦，爷爷手订的十条规矩。末一条：日子再紧，脸要洗净。",
+   "options": [
+    {
+     "id": "keep",
+     "text": "入了冬，怀里也揣只蝈蝈",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "took_over",
+       "jin_kept"
+      ]
+     }
+    },
+    {
+     "id": "donate",
+     "text": "葫芦捐了，写爷爷的名字",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "teach",
+     "text": "把十条念给孩子听",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "f_tong_circle",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": "alley",
+   "when": [
+    900,
+    1140
+   ],
+   "hint": "楼下的沙土地上画了个圈。",
+   "requires": {
+    "minAge": 5,
+    "flags": [
+     "fam_wrestle"
+    ]
+   },
+   "title": "圈儿里",
+   "text": "佟家伯伯年轻时摔过跤。他在楼下沙土地上画了个圈：「俩小孩儿，进来学个绊子。规矩说在前头：倒了地的人，不许再碰。」",
+   "options": [
+    {
+     "id": "learn",
+     "text": "一招一式跟着学",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "tong_mat"
+      ]
+     }
+    },
+    {
+     "id": "grab",
+     "text": "上去就抱腿",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "clean": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "tong_mat"
+      ]
+     }
+    },
+    {
+     "id": "watch",
+     "text": "蹲在圈儿外头看",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "learn": {
+     "text": "你绊我，我绊你，一块儿倒了，滚了一身土。佟伯伯让你们拉了手，才许出圈。",
+     "memory": "一身土",
+     "bond": {
+      "sync": 3,
+      "close": 4
+     },
+     "flags": []
+    },
+    "grab": {
+     "text": "同时扑上去抱对方的腿，脑袋磕脑袋，「咚」的一声。两个人捂着脑门，在圈里坐了半天。",
+     "memory": "咚的一声",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个摆好架势，一个上来就抱腿，真撂倒了。「不算！」佟伯伯说：「算。街上没人讲规矩。可你得讲。」",
+    "bond": {
+     "close": -1
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "f_tong_rule",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "flags": [
+     "fam_wrestle",
+     "tong_mat"
+    ]
+   },
+   "title": "倒了地的人",
+   "text": "放学路上有人推了你三把。第四把，你脚下一别，手上一送，他躺下了，嘴里还不干不净。你爸那句规矩在耳边响：倒了地的人——",
+   "options": [
+    {
+     "id": "hand",
+     "text": "伸手把他拉起来",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "walk",
+     "text": "不碰他，背上书包走人",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "kick",
+     "text": "再补一脚",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "charm": -1,
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "f_tong_teach",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 36,
+    "flags": [
+     "fam_wrestle",
+     "tong_mat"
+    ]
+   },
+   "title": "先学倒",
+   "text": "你爸摔不动了，礼拜天还去跤场边上坐着。回来就生闷气：「没一个会倒的。不会倒，就敢往上冲。」",
+   "options": [
+    {
+     "id": "teach",
+     "text": "礼拜天，你下了场",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "took_over",
+       "tong_kept"
+      ]
+     }
+    },
+    {
+     "id": "sit",
+     "text": "陪他坐着，听他数落",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "hang",
+     "text": "把他的跤衣收进柜子",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "f_fu_eyes",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "spring"
+   ],
+   "weight": 3,
+   "where": "river",
+   "when": [
+    600,
+    1080
+   ],
+   "hint": "河边有只风筝，还没画眼睛。",
+   "requires": {
+    "minAge": 5,
+    "flags": [
+     "fam_kite"
+    ]
+   },
+   "title": "点睛",
+   "text": "傅家爷爷扎了一辈子风筝。这只燕子，竹篾劈得比挂面还细，就差眼睛。他把笔一递：「点睛这一笔，手不能抖。你们俩，谁来？」",
+   "options": [
+    {
+     "id": "take",
+     "text": "接过笔",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "fu_kite"
+      ]
+     }
+    },
+    {
+     "id": "hold",
+     "text": "「你点，我给你扶着。」",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "fu_kite"
+      ]
+     }
+    },
+    {
+     "id": "back",
+     "text": "「爷爷，还是您来吧。」",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "take": {
+     "text": "两只手攥着一支笔点了下去：一只眼大，一只眼小。爷爷端详半天：「行。像是冲人挤眼睛。」",
+     "memory": "挤眼睛的燕子",
+     "bond": {
+      "sync": 4,
+      "close": 3
+     },
+     "flags": []
+    },
+    "hold": {
+     "text": "都伸手去扶，没人拿笔。爷爷自己拿起笔，把你们俩的手按在风筝上。那两个黑点，算三个人点的。",
+     "memory": "三个人点的睛",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个点，一个扶。扶的比点的还紧张，把竹篾攥出了一道印儿。爷爷看了看，没换，就这么糊上了纸。",
+    "bond": {
+     "close": 1
+    },
+    "flags": []
+   }
+  },
+  {
+   "id": "f_fu_plastic",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 19,
+    "flags": [
+     "fam_kite",
+     "fu_kite"
+    ]
+   },
+   "title": "五块钱一只",
+   "text": "河边卖风筝的换了货：塑料布印的，五块钱一只。你家的风筝扎三天，挂了一礼拜没开张。爷爷照旧劈篾子：「能上天的，都不寒碜。」",
+   "options": [
+    {
+     "id": "learn",
+     "text": "坐他边上，从劈篾子学起",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stock",
+     "text": "劝他捎带着卖塑料的",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "luck": 1,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "fly",
+     "text": "拿一只去河边放",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "f_fu_last",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 36,
+    "flags": [
+     "fam_kite",
+     "fu_kite"
+    ]
+   },
+   "title": "传人",
+   "text": "区里来人要给老手艺挂牌子，问：「师傅，有传人吗？」你爸手上缠着胶布。他扭过脸，看你。",
+   "options": [
+    {
+     "id": "me",
+     "text": "「有。我。」",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "took_over",
+       "fu_kept"
+      ]
+     }
+    },
+    {
+     "id": "class",
+     "text": "「没传人，学生管够。」",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "took_over",
+       "fu_kept"
+      ]
+     }
+    },
+    {
+     "id": "pack",
+     "text": "把骨架包好，收进箱子",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
    "id": "o_last_letter",
    "kind": "solo",
    "stage": "old",
@@ -8165,7 +11296,7 @@
    "hint": null,
    "requires": {},
    "title": "最后一封信",
-   "text": "你翻出一叠旧信。有一封，当年写好了却没有寄出去。",
+   "text": "翻箱子找棉裤，带出一沓旧信，猴皮筋一碰就断。有一封贴好了邮票，没寄。",
    "options": [
     {
      "id": "send",
@@ -10187,7 +13318,7 @@
     ]
    },
    "title": "一百道菜",
-   "text": "楼下收音机里一段贯口，一口气报了一百多道菜。你只听了一遍，就一个字不差地记住了。",
+   "text": "楼下收音机里一段贯口，一口气报了一百多道菜。你只听了一遍，一个字不差，连人家哪儿偷的气都记住了。",
    "options": [
     {
      "id": "show",
@@ -11823,7 +14954,7 @@
    "hint": null,
    "requires": {},
    "title": "课本上的纸条",
-   "text": "上课时，一张纸条从后排传了过来，上面只有一个问号。",
+   "text": "物理课，老师背着身画滑轮。一张纸条从后排一站一站传过来，传到你手里，就一个问号。没写给谁，也没落款。",
    "options": [
     {
      "id": "reply",
@@ -11891,7 +15022,7 @@
     ]
    },
    "title": "志愿",
-   "text": "中考志愿表发下来了。市里的重点高中要住校，离家很远。",
+   "text": "中考志愿表发下来了。市重点得住校，离家隔着大半个城。街坊都说孩子还是守着家好，可那是重点啊。",
    "options": [
     {
      "id": "far",
@@ -12633,7 +15764,7 @@
     "minAge": 13
    },
    "title": "第一次挣钱",
-   "text": "车铺爷爷今天腰疼，让你替他补了一下午的胎。收摊时，他从铁盒里数出五块钱，拍在你满是黑油的手心里。",
+   "text": "车铺爷爷腰疼，你替他补了一下午胎。收摊，他从铁盒里数出五块钱，拍在你的黑手心里：「拿着。手艺钱，花着硬气。」",
    "options": [
     {
      "id": "tape",
@@ -14369,7 +17500,7 @@
     ]
    },
    "title": "另一座城市",
-   "text": "一家外地的公司给了你一份工作，工资是现在的两倍。",
+   "text": "外地一家公司要你，工资翻一番。你妈正熬着鱼，头也没回：「去不去的，你自己琢磨。鱼好了，先吃饭。」",
    "options": [
     {
      "id": "go",
@@ -14510,7 +17641,7 @@
     ]
    },
    "title": "火车站",
-   "text": "站台上的广播一遍一遍念车次。你妈往你包里又塞了一兜大麻花，拉链怎么也拉不上了。",
+   "text": "站台上的广播一遍一遍念车次。你妈往你包里又塞了一兜大麻花：「外地的麻花不拧劲儿。」拉链怎么也拉不上了。",
    "options": [
     {
      "id": "take",
@@ -16374,7 +19505,7 @@
     ]
    },
    "title": "相亲",
-   "text": "你姑介绍的人坐在对面，搅着一杯不加糖的咖啡。人挺好，话不多，说起小时候的海河，眼睛亮了一下。",
+   "text": "你二姑当的介绍人。对面那位搅着一杯不加糖的咖啡，人挺好，话不多。说起小时候的海河，眼睛亮了一下。",
    "options": [
     {
      "id": "yes",
@@ -16452,7 +19583,7 @@
     ]
    },
    "title": "楼顶的喜事",
-   "text": "楼顶晾床单的铁丝上挂满了红灯笼，两家把饭桌都搬了上来。对门的妈妈说，打你们三岁那年她就知道有今天。",
+   "text": "楼顶晾床单的铁丝上挂满了红灯笼，两家的饭桌都搬了上来。两家的妈逢人就说：打这俩三岁起，我就知道有今天。",
    "options": [
     {
      "id": "vow",
@@ -16966,7 +20097,7 @@
    "wealth": 1,
    "weight": 3,
    "money": 30,
-   "desc": "父亲在楼下修了二十年自行车，满手机油。母亲在纺织厂倒三班。",
+   "desc": "你爸在楼下修了二十年车，一手机油洗不出来了。车有毛病，他先拿耳朵听。你妈在纺织厂倒三班。",
    "bonus": {
     "body": 1
    },
@@ -16980,7 +20111,7 @@
    "wealth": 1,
    "weight": 3,
    "money": 25,
-   "desc": "父母都是小学老师。家里书比碗多，规矩也比别家多。",
+   "desc": "爸妈都是小学老师。家里书比碗多，规矩比书多。楼里的孩子路过你家门口，嗓门自动小一半。",
    "bonus": {
     "mind": 2,
     "charm": -1
@@ -16995,7 +20126,7 @@
    "wealth": 1,
    "weight": 3,
    "money": 35,
-   "desc": "楼下那家煎饼果子摊就是你家的。天不亮爸妈就起来和面，整栋楼都认识你。",
+   "desc": "楼下的煎饼果子摊是你家的。天不亮爸妈就起来磨绿豆面，全楼都是闻着你家的味儿醒的。",
    "bonus": {
     "charm": 1
    },
@@ -17009,7 +20140,7 @@
    "wealth": 2,
    "weight": 1,
    "money": 90,
-   "desc": "父亲在港口上船跑远洋，一年回来两次，每次都带很贵的礼物。",
+   "desc": "你爸在船上跑远洋，一年回来两趟，带回些街坊叫不上名儿的洋玩意儿。挂历上的红圈是你画的。",
    "bonus": {
     "luck": 1
    },
@@ -17024,7 +20155,7 @@
    "wealth": 0,
    "weight": 2,
    "money": 5,
-   "desc": "爸妈在外地打工，你跟姥姥住。姥姥不识字，但会讲一百个故事。",
+   "desc": "爸妈在外地打工，你跟着姥姥过。姥姥不识字，肚子里有一百个故事，讲一个，择完一把韭菜。",
    "bonus": {
     "charm": 1,
     "luck": 1
@@ -17040,7 +20171,7 @@
    "wealth": 1,
    "weight": 2,
    "money": 30,
-   "desc": "母亲的裁缝铺里总挂满别人的新衣裳。你的衣服永远是这片儿最合身的。",
+   "desc": "你妈的裁缝铺里挂满别人的新衣裳。她量人不用尺，搭一眼就有数。你的衣裳是这片儿最合身的。",
    "bonus": {
     "charm": 1,
     "luck": 1
@@ -17055,7 +20186,7 @@
    "wealth": 2,
    "weight": 1,
    "money": 120,
-   "desc": "刚从南方搬来，说话没有天津味儿。楼里的孩子一开始都不太跟你玩。",
+   "desc": "刚从南方搬来，口音跟全楼都不一样。楼里的孩子起先不大跟你玩。",
    "bonus": {
     "mind": 1,
     "charm": -1
@@ -17071,7 +20202,7 @@
    "wealth": 0,
    "weight": 2,
    "money": 8,
-   "desc": "爸妈都在钢厂上班，晚上回来倒头就睡。你很早就学会自己热饭。",
+   "desc": "爸妈都在钢厂三班倒，回家倒头就睡。你脖子上挂着钥匙，很早就会自己热饭，也很早就不爱吭声。",
    "bonus": {
     "body": 2
    },
@@ -17086,7 +20217,7 @@
    "wealth": 1,
    "weight": 2,
    "money": 20,
-   "desc": "父亲晚上在茶馆说相声，白天在家对着墙练贯口。你从小就嘴皮子溜。",
+   "desc": "你爸晚上在茶馆说相声，白天对着墙练贯口。你是听着包袱长大的，三岁就会接下茬。",
    "bonus": {
     "charm": 2
    },
@@ -17100,7 +20231,7 @@
    "wealth": 0,
    "weight": 2,
    "money": 6,
-   "desc": "上面有个哥哥，下面有个妹妹。家里什么都得抢，但从来不冷清。",
+   "desc": "上头一个哥，下头一个妹，一间屋四张嘴。什么都得抢，抢慢了就没了。可你家从来不冷清。",
    "bonus": {
     "luck": 2
    },
@@ -17115,7 +20246,7 @@
    "wealth": 1,
    "weight": 2,
    "money": 25,
-   "desc": "父亲是这栋楼的楼长，腰上挂着全楼的钥匙。谁家漏水、谁家欠电费、楼道里谁堆了白菜，他都知道。",
+   "desc": "你爸是楼长，腰上挂着全楼的钥匙。谁家漏水，谁家欠电费，谁在楼道多码了两棵白菜，他都有数。",
    "bonus": {
     "mind": 1,
     "charm": 1,
@@ -17131,7 +20262,7 @@
    "wealth": 0,
    "weight": 2,
    "money": 6,
-   "desc": "爷爷在楼顶搭了个鸽子棚，三十多只鸽子，每只都有名字。家里的钱一半买了鸽粮。",
+   "desc": "你爷爷在楼顶搭了个鸽子棚，三十多只，个个有名字。家里的钱一半买了鸽粮，他说值。",
    "bonus": {
     "luck": 1,
     "body": 1
@@ -17147,7 +20278,7 @@
    "wealth": 1,
    "weight": 2,
    "money": 28,
-   "desc": "爸爸一个人带你，白天黑夜都在开出租。车后座是你的另一张床，收音机里的相声你都会背。",
+   "desc": "就你爸一个人带你，白天黑夜地开出租。车后座是你的另一张床，收音机里的相声你比他背得熟。",
    "bonus": {
     "charm": 1,
     "body": 1,
@@ -17164,7 +20295,7 @@
    "wealth": 1,
    "weight": 2,
    "money": 40,
-   "desc": "楼下的小卖部是你家开的。冰柜、汽水、泡泡糖、五毛钱的画片，全楼的孩子都想跟你好。",
+   "desc": "楼下的小卖部是你家的。冰柜、汽水、泡泡糖、五毛钱的画片。全楼的孩子都想跟你好，真假得自己分。",
    "bonus": {
     "luck": 1,
     "mind": 1,
@@ -17173,6 +20304,68 @@
    "traits": [
     "fam_shop"
    ]
+  },
+  {
+   "id": "bai",
+   "name": "白家 · 管红白事的",
+   "wealth": 1,
+   "weight": 2,
+   "money": 25,
+   "desc": "这片儿谁家娶媳妇、送老人，都请你爸张罗。他说红事白事一个理儿：把人好好送进门，好好送出门。",
+   "bonus": {
+    "mind": 1,
+    "charm": 1
+   },
+   "traits": [
+    "fam_dale"
+   ]
+  },
+  {
+   "id": "jin",
+   "name": "金家 · 老城里搬来的",
+   "wealth": 0,
+   "weight": 2,
+   "money": 6,
+   "desc": "祖上在老城里阔过，如今三代挤一间半。爷爷的规矩一样没丢：吃饭不许吧唧嘴，冬天怀里揣着蝈蝈葫芦。",
+   "bonus": {
+    "mind": 1,
+    "charm": 1,
+    "body": -1
+   },
+   "traits": [
+    "fam_oldmoney",
+    "fam_poor"
+   ]
+  },
+  {
+   "id": "tong",
+   "name": "佟家 · 摔跤的",
+   "wealth": 0,
+   "weight": 2,
+   "money": 8,
+   "desc": "你爸年轻时摔过跤，有点名气，如今在厂里看大门。当年的跤衣还挂在门后头。他的规矩就一条：倒了地的人，不许再碰。",
+   "bonus": {
+    "body": 2
+   },
+   "traits": [
+    "fam_wrestle",
+    "fam_poor"
+   ]
+  },
+  {
+   "id": "fu",
+   "name": "傅家 · 扎风筝的",
+   "wealth": 1,
+   "weight": 2,
+   "money": 20,
+   "desc": "你家房梁上挂满没糊纸的风筝骨架，一屋子竹篾和浆糊味儿。爷爷说：扎是手艺，放是能耐，起不起得来看老天爷。",
+   "bonus": {
+    "mind": 1,
+    "luck": 1
+   },
+   "traits": [
+    "fam_kite"
+   ]
   }
  ],
  "talents": [
@@ -17180,7 +20373,7 @@
    "id": "none",
    "name": "普通的孩子",
    "weight": 8,
-   "desc": "没有什么特别的，所以学什么都不偏科，长得比别人匀实。",
+   "desc": "没什么特别的。可平平常常的日子，过好了也是能耐。",
    "bonus": {},
    "flags": [
     "tal_plain"
@@ -17190,7 +20383,7 @@
    "id": "memory",
    "name": "过目不忘",
    "weight": 1,
-   "desc": "看一遍就记住了，写作业的效率是别人的两倍。",
+   "desc": "看一遍就印在脑子里，写作业比别人快一倍。忘不掉，有时候也是个事儿。",
    "bonus": {
     "mind": 2
    },
@@ -17202,7 +20395,7 @@
    "id": "strong",
    "name": "天生神力",
    "weight": 1,
-   "desc": "三岁就能把水桶从井里提上来。",
+   "desc": "三岁就能把一桶水拎上三楼，一滴不洒。",
    "bonus": {
     "body": 2
    },
@@ -17214,7 +20407,7 @@
    "id": "sunny",
    "name": "倍儿哏儿",
    "weight": 1,
-   "desc": "天生乐呵，谁见了都想笑。心情掉得比别人慢。",
+   "desc": "天生的乐呵人，谁见了都想笑。心情掉得比别人慢。",
    "bonus": {
     "charm": 2
    },
@@ -17226,7 +20419,7 @@
    "id": "koi",
    "name": "锦鲤",
    "weight": 1,
-   "desc": "运气好得离谱。",
+   "desc": "运气好得没地方讲理。",
    "bonus": {
     "luck": 3
    },
@@ -17238,7 +20431,7 @@
    "id": "owl",
    "name": "夜猫子",
    "weight": 1,
-   "desc": "晚上精神特别好，早上起不来。",
+   "desc": "夜里比谁都精神，早上谁叫都不醒。",
    "bonus": {},
    "flags": [
     "tal_owl"
@@ -17248,7 +20441,7 @@
    "id": "foodie",
    "name": "小馋猫",
    "weight": 1,
-   "desc": "饿得快，但每顿饭都吃得特别开心。",
+   "desc": "饿得快，可吃什么都香，一碗面汤也能美半天。",
    "bonus": {
     "charm": 1
    },
@@ -17260,7 +20453,7 @@
    "id": "pigeon",
    "name": "鸽子缘",
    "weight": 1,
-   "desc": "楼顶的鸽子愿意落在你肩上，丢了的鸽子也会飞回你的窗台。",
+   "desc": "楼顶的鸽子爱往你肩膀上落，飞丢了的，过几天也会找到你的窗台。",
    "bonus": {
     "luck": 1
    },
@@ -17272,7 +20465,7 @@
    "id": "loud",
    "name": "大嗓门",
    "weight": 1,
-   "desc": "在楼下喊一声，六楼都听得见。",
+   "desc": "在楼下喊一嗓子，六楼的玻璃都跟着颤。",
    "bonus": {
     "body": 1,
     "charm": 1
@@ -17285,7 +20478,7 @@
    "id": "crafty",
    "name": "巧手",
    "weight": 1,
-   "desc": "什么都能拆开，再原样装回去，还多出来一个螺丝。",
+   "desc": "什么都敢拆，拆了还能原样装回去，手里还多一颗螺丝。",
    "bonus": {
     "mind": 1,
     "body": 1
@@ -17298,7 +20491,7 @@
    "id": "kind",
    "name": "老好人",
    "weight": 1,
-   "desc": "谁的忙都帮，从来不会说不。",
+   "desc": "谁的忙都帮，「不」字到了嘴边，总是咽回去。",
    "bonus": {
     "charm": 1,
     "luck": 1
@@ -17311,7 +20504,7 @@
    "id": "stubborn",
    "name": "犟脾气",
    "weight": 1,
-   "desc": "认准的事，九头牛也拉不回来。",
+   "desc": "认准的事，九头牛拉不回来。十头也白搭。",
    "bonus": {
     "body": 2,
     "charm": -1
@@ -17890,7 +21083,7 @@
    {
     "id": "e_neighbors",
     "title": "还住对门",
-    "text": "拆了，迁了，换了新楼。抓阄分房那天，你们又抓到了对门的两套。",
+    "text": "拆了，迁了，换了新楼。抓阄分房那天，你们又抓到了对门的两套。街坊说是缘分，你们说，这叫赖上了。",
     "requires": {
      "flags": [
       "p_promise"
@@ -18128,6 +21321,50 @@
     "requires": {
      "flags": [
       "fam_shop",
+      "took_over"
+     ]
+    }
+   },
+   {
+    "id": "l_heir_dale",
+    "title": "送行的",
+    "text": "{name} 张罗了一辈子红白事，送走了半个河畔里。轮到自己那天，事办得一丝不乱：单子是 {name} 早就开好的。",
+    "requires": {
+     "flags": [
+      "fam_dale",
+      "took_over"
+     ]
+    }
+   },
+   {
+    "id": "l_heir_oldmoney",
+    "title": "怀里的葫芦",
+    "text": "{name} 一入冬，怀里就揣着葫芦。公交车上有人让座，以为是捂着心口不舒服。葫芦里叫了一声，一车人都乐了。",
+    "requires": {
+     "flags": [
+      "fam_oldmoney",
+      "took_over"
+     ]
+    }
+   },
+   {
+    "id": "l_heir_wrestle",
+    "title": "会倒的人",
+    "text": "{name} 教了一帮孩子摔跤，头一课永远是怎么倒。{name} 说：会倒的人，摔不坏。",
+    "requires": {
+     "flags": [
+      "fam_wrestle",
+      "took_over"
+     ]
+    }
+   },
+   {
+    "id": "l_heir_kite",
+    "title": "风筝",
+    "text": "{name} 扎了一辈子风筝。开春河边天上的风筝，十只里有三只出自 {name} 的手。剩下七只塑料的，线也是 {name} 给理顺的。",
+    "requires": {
+     "flags": [
+      "fam_kite",
       "took_over"
      ]
     }

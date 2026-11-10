@@ -345,7 +345,7 @@
   weight: 2
   requires: { minAge: 6, flags: [tal_memory] }
   title: 一百道菜
-  text: 楼下收音机里一段贯口，一口气报了一百多道菜。你只听了一遍，就一个字不差地记住了。
+  text: 楼下收音机里一段贯口，一口气报了一百多道菜。你只听了一遍，一个字不差，连人家哪儿偷的气都记住了。
   options:
     - id: show
       text: 站楼下给大伙来一段

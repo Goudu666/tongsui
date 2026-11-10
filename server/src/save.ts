@@ -31,6 +31,8 @@ function lifeUpgrade(s: any): string[] {
       if (!p.born) p.born = { body: p.stats.body, mind: p.stats.mind, charm: p.stats.charm, luck: p.stats.luck };
       if (p.moodSum === undefined) { p.moodSum = 0; p.moodDays = 0; }
       if (!p.active) p.active = { body: false, mind: false };
+      // 「普通的孩子」以前没有标记（标记是出生时拷进 flags 的），补上才长得匀、才遇得到它的专属事件
+      if (p.talentId === "none" && p.flags && p.flags.indexOf("tal_plain") < 0) p.flags.push("tal_plain");
     }
     if (s.world && s.world.warm === undefined) s.world.warm = false;
     v = 4;

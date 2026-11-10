@@ -1,0 +1,165 @@
+# 小学的支线（pl_pr_ 前缀）。where 用 content/maps/primary.yaml 的 areas。写法见 places/building.yaml 文件头。
+# 上学第一天、刻名字、铁皮盒子归主线；开学第一天、转学的同桌、同学录已经有了。
+
+- id: pl_pr_board
+  kind: mirror
+  stage: childhood
+  where: classroom
+  when: [930, 1080]
+  hint: 教室里有人在拍粉笔灰。
+  weight: 2
+  requires: { minAge: 8 }
+  title: 黑板报
+  text: 轮到你们出黑板报。报头空着，粉笔只剩红黄两根。老师说明天一早检查，说完锁了办公室的门。
+  options:
+    - id: draw
+      text: 先画报头
+      tags: [adventure]
+      effects: { self: { charm: 1 } }
+    - id: copy
+      text: 先把字抄上
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+    - id: half
+      text: 一人管半块黑板
+      tags: [competitive]
+      effects: { self: { mood: 4 } }
+  resonance:
+    draw:
+      text: 两个人都画了太阳，一个在左边，一个在右边。第二天全班说黑板上有两个太阳。
+      memory: 两个太阳
+      bond: { sync: 3, close: 2 }
+    copy:
+      text: 字抄得一边大一边小。你们站在讲台上，拿板擦一个字一个字改齐了。
+      memory: 改齐的字
+      bond: { sync: 3, close: 2 }
+    half:
+      text: 一人画了半块黑板，当中那道缝怎么也对不上。你们干脆在中间画了一座桥。
+      memory: 当中一座桥
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个画满了报头，一个抄满了字。最后报头挤在角上，像一张邮票。
+    bond: { close: 0 }
+
+- id: pl_pr_pencilbox
+  kind: mirror
+  stage: childhood
+  where: classroom
+  when: [480, 930]
+  hint: 后排一阵起哄。
+  weight: 2
+  requires: { minAge: 7, maxAge: 9 }
+  title: 会弹的盖子
+  text: 班上有人带来一个双层铁皮文具盒，一按，盖子自己弹开。下课全班围着看，排着队按。
+  options:
+    - id: queue
+      text: 排队按一下
+      tags: [adventure]
+      effects: { self: { mood: 4 } }
+    - id: seat
+      text: 坐着不动
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: make
+      text: 拿硬纸板自己糊一个
+      tags: [gentle]
+      effects: { self: { mind: 1, mood: 2 } }
+  resonance:
+    queue:
+      text: 你们排在一前一后。轮到了，两个人一人按了一下，盖子弹得一样高。
+      memory: 弹起来的盖子
+      bond: { sync: 3, close: 2 }
+    seat:
+      text: 全班都围过去了，就剩你们俩坐着。你们互相看了一眼，接着削铅笔。
+      memory: 削铅笔
+      bond: { sync: 3, close: 2 }
+    make:
+      text: 你们拿硬纸板一人糊了一个，没有弹簧，盖子拿手一推就开。一直用到了五年级。
+      memory: 纸板文具盒
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个挤在人堆里，一个在座位上拿纸板比画。上课铃响，两个人都没看够。
+    bond: { close: 0 }
+
+- id: pl_pr_photo
+  kind: mirror
+  stage: childhood
+  where: yard
+  when: [540, 930]
+  hint: 操场上摆了几排长凳。
+  weight: 2
+  requires: { minAge: 11 }
+  title: 毕业照
+  text: 操场上摆好了长凳，按个头排。照相的数「一、二」，还没数到三，就有人眨了眼。
+  options:
+    - id: front
+      text: 往前头挤
+      tags: [competitive]
+      effects: { self: { charm: 1 } }
+    - id: beside
+      text: 站到对门旁边
+      tags: [gentle]
+      effects: { self: { mood: 4 } }
+    - id: tiptoe
+      text: 踮起脚
+      tags: [adventure]
+      effects: { self: { mood: 3 } }
+  resonance:
+    front:
+      text: 你们都挤到了第一排正当中，把班主任挤到了边上。
+      memory: 第一排正中
+      bond: { sync: 3, close: 2 }
+    beside:
+      text: 个头不一样，一个站长凳一个站地上，肩膀正好齐了。
+      memory: 齐着的肩膀
+      bond: { sync: 3, close: 3 }
+    tiptoe:
+      text: 你们都踮着脚。照片洗出来，两个人都比实际高出一截。
+      memory: 踮着的脚
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个往前挤，一个往旁边找。照片上两个人隔着三个人，都在往一边看。
+    bond: { close: 0 }
+
+- id: pl_pr_keys
+  kind: solo
+  stage: childhood
+  where: school
+  when: [930, 1080]
+  hint: 传达室的窗户开着。
+  weight: 2
+  requires: { minAge: 7 }
+  title: 搁在这儿的钥匙
+  text: 放学出门，传达室的大爷叫住你：「你妈把钥匙搁我这儿了。」他认得全校每个孩子是谁家的。
+  options:
+    - id: run
+      text: 道声谢就跑
+      tags: [adventure]
+      effects: { self: { mood: 3 } }
+    - id: stay
+      text: 坐下陪他听会儿收音机
+      tags: [patient]
+      effects: { self: { mood: 5, charm: 1 } }
+    - id: ask
+      text: 问他怎么都认得
+      tags: [gentle]
+      effects: { self: { mind: 1 } }
+
+- id: pl_pr_pickup
+  kind: solo
+  stage: old
+  where: school
+  when: [930, 1080]
+  hint: 校门口站满了老人。
+  weight: 2
+  title: 接孩子
+  text: 校门口等孩子的，一半是老人。你站在当年等人的那棵树底下。
+  options:
+    - id: wave
+      text: 朝门里招手
+      tags: [gentle]
+      effects: { self: { mood: 6 } }
+    - id: sit
+      text: 坐在花坛边上等
+      tags: [patient]
+      effects: { self: { energy: 3 } }

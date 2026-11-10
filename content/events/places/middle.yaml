@@ -1,0 +1,148 @@
+# 中学的支线（pl_md_ 前缀）。where 用 content/maps/middle.yaml 的 areas。写法见 places/building.yaml 文件头。
+# 课本里的纸条、中考前一晚归主线；分班、同一条上学路、绞了的磁带已经有了。
+
+- id: pl_md_tire
+  kind: mirror
+  stage: teen
+  where: shed
+  when: [930, 1140]
+  hint: 车棚里有人在打气。
+  weight: 2
+  requires: { minAge: 12 }
+  title: 没气的胎
+  text: 放学，车棚里只剩两辆车，其中一辆后胎瘪了。看车棚的阿姨把打气筒往外一推：「自己打。」
+  options:
+    - id: pump
+      text: 你压我扶
+      tags: [gentle]
+      effects: { self: { body: 1 } }
+    - id: push
+      text: 推着走回去
+      tags: [patient]
+      effects: { self: { energy: -4, mood: 2 } }
+    - id: double
+      text: 一辆车驮两个人
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+  resonance:
+    pump:
+      text: 打气筒漏气，你们轮着压了二十下，胎还是软的。阿姨看不下去，过来压了三下。
+      memory: 阿姨那三下
+      bond: { sync: 3, close: 2 }
+    push:
+      text: 推着车从学校走回河畔里，路灯一盏一盏在前头亮起来。
+      memory: 一路路灯
+      bond: { sync: 3, close: 2 }
+    double:
+      text: 一个蹬车，一个坐后座扶着另一辆的把。歪歪扭扭到了楼下，谁也没摔。
+      memory: 扶着的车把
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个蹲下要打气，一个已经推着车走了。阿姨在后头喊：「还打不打了？」
+    bond: { close: 0 }
+
+- id: pl_md_radio
+  kind: mirror
+  stage: teen
+  where: radio_room
+  when: [720, 840]
+  hint: 喇叭里有人在试音。
+  weight: 2
+  requires: { minAge: 12 }
+  title: 午间广播
+  text: 中午的广播站缺人，老师抓了你们俩。稿子一页，歌一首。喇叭一开，全校都在吃饭。
+  options:
+    - id: read
+      text: 抢着念稿
+      tags: [competitive]
+      effects: { self: { charm: 1 } }
+    - id: song
+      text: 管放歌
+      tags: [patient]
+      effects: { self: { mood: 4 } }
+    - id: dedicate
+      text: 偷偷点一首歌
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+  resonance:
+    read:
+      text: 两个人凑着一个话筒念，念到第三行同时念错。喇叭里传出了笑声。
+      memory: 第三行
+      bond: { sync: 3, close: 2 }
+    song:
+      text: 你们都去摸磁带，挑的是同一盘。歌放到一半，楼下有人跟着哼。
+      memory: 同一盘磁带
+      bond: { sync: 3, close: 2 }
+    dedicate:
+      text: 你们都给对方点了歌，念出来是同一首。喇叭里安静了一下。
+      memory: 同一首歌
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个凑到话筒前念稿，一个按下了放歌的键。稿子和歌一起在全校响了半分钟。
+    bond: { close: 0 }
+
+- id: pl_md_envelope
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 12, flags: [fam_poor] }
+  title: 一个信封
+  text: 开学交费，大人给你一个信封。钱一张一张数过，零的多。你在路上摸了好几回兜。
+  options:
+    - id: hand
+      text: 交给老师就走
+      tags: [responsible]
+      effects: { self: { mood: -2 } }
+    - id: count
+      text: 当着老师再数一遍
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: tell
+      text: 路上跟对门说说
+      tags: [gentle]
+      effects: { self: { mood: 3 }, bond: { close: 1 } }
+
+- id: pl_md_redlist
+  kind: solo
+  stage: teen
+  where: middle_front
+  when: [930, 1140]
+  hint: 校门口贴了张红纸。
+  weight: 2
+  requires: { minAge: 13 }
+  title: 红榜
+  text: 校门口贴了红榜，前五十名。人挤人地找，有人找着了，有人找了两遍。
+  options:
+    - id: mine
+      text: 挤进去找自己
+      tags: [competitive]
+      effects: { self: { mood: 3 } }
+    - id: theirs
+      text: 先找对门的名字
+      tags: [gentle]
+      effects: { self: { charm: 1 }, bond: { close: 1 } }
+    - id: leave
+      text: 不看，回家
+      tags: [solitude]
+      effects: { self: { mind: 1 } }
+
+- id: pl_md_paid
+  kind: solo
+  stage: teen
+  weight: 1
+  requires: { minAge: 12, flags: [school_paid] }
+  title: 点名
+  text: 这个学校是家里交了钱才进来的。开学第一天点名，念到你，班主任抬头看了一眼。
+  options:
+    - id: loud
+      text: 大声应一声
+      tags: [competitive]
+      effects: { self: { charm: 1 } }
+    - id: low
+      text: 低着头应
+      tags: [solitude]
+      effects: { self: { mood: -3, mind: 1 } }
+    - id: work
+      text: 头一回作业写两遍
+      tags: [responsible]
+      effects: { self: { mind: 1, energy: -5 } }

@@ -1,5 +1,5 @@
 {
- "version": "bf8c86504ee0",
+ "version": "e7f800d16281",
  "events": [
   {
    "id": "c_roof_summer",
@@ -25588,6 +25588,416 @@
       "sync": 1
      },
      "text": "漂动了。你们俩同时喊「上钩了！」鱼吓跑了。大爷没恼，笑了笑，又挂了一条蚯蚓。"
+    },
+    "bring": false
+   },
+   {
+    "id": "chess",
+    "label": "跟大爷下盘棋",
+    "minutes": 60,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 7,
+     "hours": [
+      720,
+      1110
+     ]
+    },
+    "needs": {
+     "mood": 4,
+     "energy": -4
+    },
+    "stats": {
+     "mind": 0.25
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "你们俩对着下，大爷们围了一圈，谁也不许支招。"
+    },
+    "bring": false
+   },
+   {
+    "id": "blackboard",
+    "label": "出黑板报",
+    "minutes": 60,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 7,
+     "maxAge": 11,
+     "hours": [
+      930,
+      1080
+     ]
+    },
+    "needs": {
+     "energy": -6,
+     "clean": -4,
+     "mood": 2
+    },
+    "stats": {
+     "charm": 0.3,
+     "mind": 0.05
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个画报头，一个抄字，粉笔灰落了两个人一头。"
+    },
+    "bring": false
+   },
+   {
+    "id": "broadcast",
+    "label": "去广播站念稿",
+    "minutes": 45,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 12,
+     "maxAge": 17,
+     "hours": [
+      720,
+      840
+     ]
+    },
+    "needs": {
+     "energy": -4,
+     "mood": 4
+    },
+    "stats": {
+     "charm": 0.35
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "一个念稿，一个放歌。念错一个字，全校都听见你们俩在笑。"
+    },
+    "bring": false
+   },
+   {
+    "id": "rail_talk",
+    "label": "靠着栏杆站会儿",
+    "minutes": 45,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 12
+    },
+    "needs": {
+     "mood": 5
+    },
+    "stats": {},
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 8
+     },
+     "bond": {
+      "close": 2,
+      "sync": 1
+     },
+     "text": "船过去了三条，话说了一半。剩下那一半，明天再说。"
+    },
+    "bring": false
+   },
+   {
+    "id": "window_shop",
+    "label": "逛商场",
+    "minutes": 90,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 12,
+     "hours": [
+      600,
+      1260
+     ]
+    },
+    "needs": {
+     "mood": 10,
+     "energy": -8
+    },
+    "stats": {},
+    "money": -3,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "什么也没买，从一楼逛到顶楼，又坐滚梯下来。"
+    },
+    "bring": false
+   },
+   {
+    "id": "dine_west",
+    "label": "吃顿西餐",
+    "minutes": 90,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 15,
+     "hours": [
+      1020,
+      1260
+     ]
+    },
+    "needs": {
+     "hunger": 55,
+     "mood": 14
+    },
+    "stats": {
+     "charm": 0.05
+    },
+    "money": -15,
+    "together": {
+     "needs": {
+      "mood": 8
+     },
+     "bond": {
+      "close": 2
+     },
+     "text": "刀叉摆了一排，你们从最外头那把拿起，拿错了也没人看。"
+    },
+    "bring": false
+   },
+   {
+    "id": "read_store",
+    "label": "蹲在书店看书",
+    "minutes": 120,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 10,
+     "hours": [
+      540,
+      1200
+     ]
+    },
+    "needs": {
+     "energy": -6,
+     "mood": 4
+    },
+    "stats": {
+     "mind": 0.4
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "你们背靠着一个书架坐在地上，一人一本，翻页的声音错开。"
+    },
+    "bring": false
+   },
+   {
+    "id": "night_snack",
+    "label": "夜市吃一碗",
+    "minutes": 30,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 18,
+     "hours": [
+      1080,
+      1320
+     ]
+    },
+    "needs": {
+     "hunger": 45,
+     "mood": 8
+    },
+    "stats": {},
+    "money": -2,
+    "together": null,
+    "bring": false
+   },
+   {
+    "id": "cook",
+    "label": "自己做顿饭",
+    "minutes": 45,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 18
+    },
+    "needs": {
+     "hunger": 50,
+     "mood": 5,
+     "clean": -4
+    },
+    "stats": {},
+    "money": -1,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个灶眼，两个人轮着炒，炒出来的是一个味儿。"
+    },
+    "bring": false
+   },
+   {
+    "id": "balcony",
+    "label": "去阳台站会儿",
+    "minutes": 20,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 30
+    },
+    "needs": {
+     "mood": 5
+    },
+    "stats": {},
+    "money": 0,
+    "together": null,
+    "bring": false
+   },
+   {
+    "id": "morning_walk",
+    "label": "绕湖走一圈",
+    "minutes": 60,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 45,
+     "hours": [
+      390,
+      600
+     ]
+    },
+    "needs": {
+     "mood": 6,
+     "energy": -6
+    },
+    "stats": {
+     "body": 0.25
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "你们一前一后走，走到第三圈，并成了一排。"
+    },
+    "bring": false
+   },
+   {
+    "id": "choir",
+    "label": "跟合唱队唱",
+    "minutes": 60,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 50,
+     "hours": [
+      480,
+      720
+     ]
+    },
+    "needs": {
+     "mood": 8,
+     "energy": -4
+    },
+    "stats": {
+     "charm": 0.25
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "你们站在一排，调都起高了，谁也没往下落。"
+    },
+    "bring": false
+   },
+   {
+    "id": "ground_write",
+    "label": "拿水在地上写字",
+    "minutes": 60,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 55,
+     "hours": [
+      390,
+      720
+     ]
+    },
+    "needs": {
+     "mood": 6,
+     "energy": -2
+    },
+    "stats": {
+     "mind": 0.2
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个写上句，一个接下句。写到第四句，第一句已经干了。"
+    },
+    "bring": false
+   },
+   {
+    "id": "accompany",
+    "label": "陪床",
+    "minutes": 120,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 30
+    },
+    "needs": {
+     "mood": -4,
+     "energy": -8
+    },
+    "stats": {},
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 8
+     },
+     "bond": {
+      "close": 2
+     },
+     "text": "两把椅子拼在一起，你们轮着眯一会儿。"
     },
     "bring": false
    }

@@ -8,6 +8,8 @@ const P := preload("res://scripts/ui/palette.gd")
 const Actor := preload("res://scripts/world/actor.gd")
 const MapArt := preload("res://scripts/world/map_art.gd")
 const Nav := preload("res://scripts/world/nav.gd")
+const StreetLife := preload("res://scripts/world/street_life.gd")
+const PrintLight := preload("res://scripts/world/print_light.gd")
 const SPOT_RADIUS := 100.0  ## 比服务器的 110 小一点，避免边缘抖动
 const MOVE_SEND_INTERVAL := 0.1
 const SnapshotBuffer := preload("res://scripts/net/snapshot_buffer.gd")
@@ -23,6 +25,8 @@ var hints: Array = []
 var controllable := true
 var camera: Camera2D
 var art: MapArt
+var street: StreetLife  ## 街坊、车流、年代道具（纯街景，不参与结算）
+var light: PrintLight  ## 昼夜和旧纸感（夜版套印）
 var nav := Nav.new()
 var _marks: Node2D  ## 互动点和命运提示：画在叠印层上面
 var _tap_fx := Vector2.INF
@@ -34,6 +38,7 @@ var net = null
 var buffers: Dictionary = {}    ## role -> SnapshotBuffer（只用于对方）
 var _correction := Vector2.ZERO ## 本地角色还没消化掉的服务器校正量
 var _corrected_upto := 0        ## 这个序号及以前的 MOVE 是在校正之前发的，不再拿来校正（避免重复校正）
+var _stage_set := false
 
 
 func setup(content: Dictionary, role: String, names: Dictionary) -> void:
@@ -43,7 +48,11 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 	my_role = role
 	y_sort_enabled = true
 	art = MapArt.new()
+	art.plate_lighting = true
 	add_child(art)
+	light = PrintLight.new()
+	add_child(light)
+	light.setup(Vector2(map.size[0], map.size[1]), art.anchors)
 	nav.load_mask()
 	_marks = _Marks.new(self)
 	_marks.z_index = 70
@@ -55,8 +64,11 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 		add_child(actor)
 		actors[r] = actor
 		buffers[r] = SnapshotBuffer.new()
+		light.actors.append(actor)
 	camera = Camera2D.new()
-	camera.zoom = Vector2.ONE * 1.4
+	# 长屏手机上一屏能看到的比地图还高，就再放大一点，别露出地图外面的白纸
+	var view := get_viewport_rect().size
+	camera.zoom = Vector2.ONE * maxf(1.4, maxf(view.x / float(map.size[0]), view.y / float(map.size[1])) + 0.01)
 	camera.limit_left = 0
 	camera.limit_top = 0
 	camera.limit_right = int(map.size[0])
@@ -65,6 +77,9 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 	camera.position_smoothing_speed = 6.0
 	add_child(camera)
 	camera.make_current()
+	street = StreetLife.new()
+	add_child(street)
+	street.setup(self)
 	queue_redraw()
 
 
@@ -76,12 +91,26 @@ func me() -> Actor:
 func set_stage(stage: String) -> void:
 	for a in actors.values():
 		a.set_stage(stage)
+	if street != null:
+		street.set_stage(stage)
+	if light != null:
+		light.set_stage(stage, not _stage_set)
+	_stage_set = true
 
 
 ## 时钟：决定昼夜（联机时 apply_world 自动调用；离线预览由 main 喂）
 func set_minute(m: float) -> void:
 	if art != null:
 		art.set_minute(m)
+	if street != null:
+		street.set_minute(m)
+	if light != null:
+		light.set_minute(m)
+		# 互动点的小纸片在夜版上面，夜里跟着暗一点，不然太扎眼
+		if _marks != null:
+			_marks.modulate = Color.WHITE.lerp(Color(0.72, 0.76, 0.9), light.night)
+		if street != null:
+			street.set_night(light.night)
 
 
 func _process(delta: float) -> void:
@@ -157,6 +186,12 @@ func apply_world(view: Dictionary) -> void:
 	if view.has("minute"):
 		set_minute(float(view.minute))
 	var t := float(view.get("tick", 0)) / TICK_RATE
+	var busy: Array = []
+	var qs: Variant = view.actors.get("qing")
+	var ms: Variant = view.actors.get("mei")
+	# 两个人在同一个点上做同一件事：左右错开半步，别叠成一个人
+	var side_by_side: bool = qs != null and ms != null and qs.get("act") != null \
+		and qs.get("act") == ms.get("act") and Vector2(qs.x, qs.y).distance_to(Vector2(ms.x, ms.y)) < 4.0
 	for r in ["qing", "mei"]:
 		var a: Actor = actors[r]
 		var s: Variant = view.actors.get(r)
@@ -165,7 +200,11 @@ func apply_world(view: Dictionary) -> void:
 			continue
 		a.visible = true
 		var server_pos := Vector2(s.x, s.y)
+		if side_by_side:
+			server_pos.x += -24.0 if r == "qing" else 24.0
 		var act: Variant = s.get("act")
+		if act != null:
+			busy.append(str(act))
 		a.asleep = bool(s.get("sleep", false))
 		a.action_label = "" if act == null or a.asleep else str(actions.get(act, {}).get("label", act))
 		if a.is_local:
@@ -176,6 +215,8 @@ func apply_world(view: Dictionary) -> void:
 				a.net_target = server_pos
 			else:
 				buf.push(t, server_pos)
+	if street != null:
+		street.set_busy(busy)
 	queue_redraw()
 
 

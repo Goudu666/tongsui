@@ -16,6 +16,7 @@ pip install pycairo numpy pillow
 bash tools/fetch_addons.sh            # 需要里面的霞鹜文楷字体（招牌、地名）
 python3 tools/art/build_map.py        # 地图 → client/art/map/
 python3 tools/art/actors.py           # 角色 → client/art/actors/
+python3 tools/art/street.py           # 街坊、车、年代道具 → client/art/street/
 ```
 
 生成结果已经提交，不改美术不用跑。生成后用 Godot 打开一次项目让它重新导入。
@@ -40,7 +41,10 @@ python3 tools/art/build_map.py --region 1400,250,500,450 --scale 1 --out /tmp/x.
 | `hepanli/breakfast.py` | 早点铺、街角报刊亭 |
 | `hepanli/river.py` | 海河步道、铁桥、水面、对岸 |
 | `hepanli/school.py` `bikeshop.py` `south.py` | 小学、自行车铺、小花园和南边街坊 |
+| `hepanli/teahouse.py` `landmarks.py` | 街角的河畔茶社（剖面）、胡同口的路牌 |
 | `actors.py` | 青、梅五个人生阶段的精灵表 |
+| `street_fig.py` | 街坊的参数化小人：体型、朝向、站/坐、衣裳、手里拿的东西，一个字典画一个人 |
+| `street.py` | 街景图集：街坊、公告栏、电话亭、快递柜、共享单车、面的、出租、骑车的人、对岸天际线 |
 
 ## 输出约定（引擎依赖这些）
 
@@ -52,3 +56,16 @@ python3 tools/art/build_map.py --region 1400,250,500,450 --scale 1 --out /tmp/x.
 - **角色**：`{qing|mei}_{child|teen|young|middle|old}.png`，6 列 × 4 行，每格 96×128 世界像素（2 倍输出），脚底在格子 (48, 120)。
   行 0 朝下、1 朝上、2 朝右（朝左由引擎翻转），列 0 站、1~4 走、5 在忙；行 3 是睡觉、挥手、坐着。
 - 地图里 zone 和互动点的坐标以 `content/map.yaml` 为准（服务器按它判定），美术只能围着它们画，不能挪。
+
+## 街景：随年代更替的那一层
+
+底图（`build_map.py`）只画不会变的东西。会来、会走、会老的东西单独一层：
+
+- `content/street.yaml` 写谁、站哪、哪个人生阶段在、几点在、走近了说什么；`npm run content` 编译成 `client/data/street.json`，并检查精灵名、年代名、行动名
+- `tools/art/street.py` 把每个精灵画成一小张印张，拼成 `client/art/street/atlas.png`（2 倍输出）+ `sprites.json`（每个精灵的位置、帧数、脚底锚点）
+- `client/scripts/world/street_life.gd` 按人生阶段和钟点摆出来：街坊和主角一起按 y 排序，走近了冒一句话；街上的车按年代换，上下班时段变密
+
+这一层只是街景，不进服务端、不参与结算。加一位街坊：在 `street.py` 里用 `person(...)` 画，在 `street.yaml` 里摆，跑上面两条命令。
+
+分寸：这是一条普通的老街，不是景点。不摆城市名片，不堆方言，街坊只叫行当不起姓（姓留给玩家可能投胎到的那几户人家）。
+年代靠街上的东西自己说：面的换成小出租，黑板报换成公告栏，对岸的烟囱换成楼。越往后越虚，老年只留不变的。

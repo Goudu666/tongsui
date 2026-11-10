@@ -8,6 +8,7 @@
     "server:build": "npm --prefix server install && npm --prefix server run build",
     "server:test": "npm --prefix server run test",
     "test": "npm run content && npm run server:test",
+    "balance": "node tools/balance.mjs",
     "build": "npm run content && npm run server:build"
   },
   "devDependencies": {

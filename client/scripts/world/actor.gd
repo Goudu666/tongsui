@@ -13,9 +13,9 @@ const FOOT := Vector2(48, 120)
 const ART_SCALE := 2.0
 const STAGES := ["childhood", "teen", "young", "middle", "old"]
 const STAGE_FILE := {"childhood": "child", "teen": "teen", "young": "young", "middle": "middle", "old": "old"}
-## 做这些事的时候坐着，其它事是"在忙"的姿势
-const SIT_ACTIONS := ["吃饭", "写作业"]
-const WAVE_ACTIONS := ["开门喊一声"]
+## 做这些事的时候坐着，其它事是"在忙"的姿势（行动 id，见 content/map.yaml）
+const SIT_ACTIONS := ["eat", "eat_out", "dine", "picture_book", "study", "read"]
+const WAVE_ACTIONS := ["knock"]
 
 var role := "qing"
 var display_name := ""
@@ -23,6 +23,9 @@ var is_local := false
 var net_target := Vector2.ZERO   ## 远端：插值缓冲算出的位置（已经是平滑的）
 var snap_remote := false         ## 下一帧直接跳到 net_target（重连快照）
 var action_label := ""
+var doing := ""                  ## 正在做的行动 id（没在做是 ""）
+var at_spot := ""                ## 在哪个点位上做
+var together := false            ## 这一次是两个人搭伴做的（长得快）
 var asleep := false
 var walking := false
 var stage := "childhood"
@@ -127,11 +130,11 @@ func _update_frame() -> void:
 		row = 3
 		col = 0
 		_sprite.flip_h = role == "mei"
-	elif action_label in SIT_ACTIONS:
+	elif doing in SIT_ACTIONS:
 		row = 3
 		col = 2
 		_sprite.flip_h = false
-	elif action_label in WAVE_ACTIONS:
+	elif doing in WAVE_ACTIONS:
 		row = 3
 		col = 1
 		_sprite.flip_h = false
@@ -155,9 +158,13 @@ func _draw() -> void:
 		if asleep:
 			_text("z z", Vector2(34, head + 30 + sin(_t * 2.0) * 6.0), 28, P.INK_SOFT)
 		elif action_label != "":
-			_text(action_label + "中…", Vector2(0, head - 8 + sin(_t * 3.0) * 3.0), 24, P.INK_SOFT)
+			_text(_doing_text(), Vector2(0, head - 8 + sin(_t * 3.0) * 3.0), 24, P.OVERLAP if together else P.INK_SOFT)
 		return
 	_draw_fallback(c)
+
+
+func _doing_text() -> String:
+	return ("一起" if together else "") + action_label + "中…"
 
 
 ## 脚下的名字：垫一小片纸，压在网点和砖缝上也看得清。自己的那片多一条色边
@@ -192,7 +199,7 @@ func _draw_fallback(c: Color) -> void:
 	draw_circle(Vector2(7, -68 + bob), 2.5, P.INK)
 	_text(display_name, Vector2(0, 36), 28, c)
 	if action_label != "":
-		_text(action_label + "中…", Vector2(0, -104 + sin(_t * 3.0) * 3.0), 26, P.INK_SOFT)
+		_text(_doing_text(), Vector2(0, -104 + sin(_t * 3.0) * 3.0), 26, P.OVERLAP if together else P.INK_SOFT)
 
 
 func _text(s: String, at: Vector2, size: int, color: Color) -> void:

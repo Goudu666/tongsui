@@ -148,8 +148,20 @@ func _run() -> void:
 	# 联机时的 HUD：四个圆表、零花钱、两个圆（假装服务器发来了状态）
 	main.offline_preview = false
 	main.life = {"turn": 17}
-	main.last_world = {"minute": 462.0, "schoolDay": true, "needs": {"qing": {"hunger": 22, "energy": 81, "mood": 64, "clean": 47}},
-		"money": {"qing": 12}, "bond": {"sync": 14, "close": 46}}
+	var junior := {"id": "m_junior", "title": "小升初", "age": 12, "turns": 14, "lines": [
+		{"id": "key", "text": "去重点班", "by": "心智", "unit": "分", "have": 58, "need": 64, "ok": false}]}
+	var junior_mei: Dictionary = junior.duplicate(true)
+	junior_mei.lines[0].have = 66
+	junior_mei.lines[0].ok = true
+	var duty := {"label": "上学", "spot": "school_gate", "arrive": [420, 540], "until": 930, "done": false, "open": true}
+	main.last_world = {"minute": 462.0, "rest": false, "needs": {"qing": {"hunger": 22, "energy": 81, "mood": 64, "clean": 47}},
+		"money": {"qing": 12}, "bond": {"sync": 14, "close": 46},
+		"goals": {"qing": junior, "mei": junior_mei},
+		"stats": {"qing": {"body": 6.2, "mind": 5.8, "charm": 4.1, "luck": 5.0}, "mei": {"body": 4.4, "mind": 6.6, "charm": 6.9, "luck": 3.0}},
+		"eff": {"qing": 1.1, "mei": 0.9},
+		"tracks": {"qing": {"id": "primary", "label": "上小学", "duty": duty}, "mei": {"id": "primary", "label": "上小学", "duty": duty}}}
+	if main.world != null:
+		main.world.duties = {"qing": duty, "mei": duty}
 	if main.has_method("_grow_up"):
 		main._stage_shown = "childhood"
 	if main.world != null:
@@ -159,6 +171,57 @@ func _run() -> void:
 	await _walk(Vector2(1630, 500), 3.2)
 	await _snap("14_hud_online")
 	main._close_modal()
+
+	# 核心玩法：目标纸带点开、人生关口（有一条路够不着）、揭晓（同路 / 各走各的）、带成长的日结
+	if main.has_method("_show_goal_detail"):
+		main._show_goal_detail()
+		await _wait(1.5)
+		await _snap("21_goal_detail")
+		main._close_modal()
+		var job := {"id": "m_job", "title": "找个正经事由", "age": 22, "turns": 3, "lines": [
+			{"id": "desk", "text": "考进机关坐办公室", "by": "心智", "unit": "分", "have": 74, "need": 82, "ok": false},
+			{"id": "teach", "text": "回学校教书", "by": "心智和魅力", "unit": "分", "have": 66, "need": 68, "ok": false},
+			{"id": "trade", "text": "自己支个摊", "by": "魅力和运气", "unit": "分", "have": 52, "need": 60, "ok": false},
+			{"id": "craft", "text": "学门手艺", "by": "体魄和心智", "unit": "分", "have": 69, "need": 64, "ok": true},
+			{"id": "labor", "text": "去码头上工", "by": "体魄", "unit": "分", "have": 64, "need": 60, "ok": true}]}
+		var job_mei: Dictionary = job.duplicate(true)
+		for i in 5:
+			job_mei.lines[i].have = [70, 71, 66, 55, 44][i]
+		main.last_world.goals = {"qing": job, "mei": job_mei}
+		main.life = {"turn": 49}
+		main._refresh_hud()
+		main._show_goal_detail()
+		await _wait(1.5)
+		await _snap("22_goal_job")
+		main._close_modal()
+		main.life = {"turn": 36}
+		main._on_event_started({"event": {"roles": ["qing", "mei"], "eventId": "m_junior", "kind": "milestone", "choices": {}, "swing": {"qing": 0.2, "mei": -0.1}},
+			"locks": {"qing": {"key": "心智 60 分，线是 64 分"}, "mei": {}}})
+		await _wait(1.5)
+		await _snap("23_milestone_locked")
+		main._close_modal()
+		main.my_role = "mei"
+		main._on_event_started({"event": {"roles": ["qing", "mei"], "eventId": "m_junior", "kind": "milestone", "choices": {}, "swing": {"qing": 0.2, "mei": -0.1}},
+			"locks": {"qing": {"key": "心智 60 分，线是 64 分"}, "mei": {}}})
+		await _wait(1.5)
+		await _snap("24_milestone_choice")
+		main.my_role = "qing"
+		main._on_log_entries({"entries": [{"kind": "milestone", "label": "12 岁 · 上学期", "events": {"qing": "m_junior", "mei": "m_junior"},
+			"choices": {"qing": "normal", "mei": "normal"}, "shadow": [], "resonance": true, "text": "三点半，校门口，还是你们俩。",
+			"results": {"qing": {"score": 60, "unit": "分", "grade": null, "option": "normal", "track": "junior"}, "mei": {"score": 65, "unit": "分", "grade": null, "option": "normal", "track": "junior"}}}]})
+		await _wait(1.9)
+		await _snap("25_milestone_same")
+		main._on_log_entries({"entries": [{"kind": "milestone", "label": "12 岁 · 上学期", "events": {"qing": "m_junior", "mei": "m_junior"},
+			"choices": {"qing": "normal", "mei": "key"}, "shadow": [], "resonance": false, "text": "一个三点半放学，一个要上到五点。先出来的那个，在校门口的台阶上多坐了一会儿。",
+			"results": {"qing": {"score": 60, "unit": "分", "grade": null, "option": "normal", "track": "junior"}, "mei": {"score": 65, "unit": "分", "grade": null, "option": "key", "track": "junior_key"}}}]})
+		await _wait(1.9)
+		await _snap("26_milestone_apart")
+		main._on_log_entries({"entries": [{"kind": "day", "label": "11 岁 · 立秋", "text": "这一天，你们在一张桌上写完了作业。",
+			"gains": {"qing": {"mind": 0.21, "body": 0.04}, "mei": {"mind": 0.16}}}]})
+		await _wait(1.5)
+		await _snap("27_day_gains")
+		main._close_modal()
+		main.life = {"turn": 17}
 
 	# 一生
 	main.life = {"phase": "ended", "turn": 200, "log": [{"kind": "end", "text": "七十九岁那年冬天，两个人前后脚走了。楼下的槐树还在。"}],

@@ -82,7 +82,7 @@
   stat: mind
   dc: 6.5
   pass: 收卷铃响的时候，你刚写完最后一个等号。
-  fail: { text: 算到一半，铃响了。那道题留了半页白。, self: { energy: -20, mood: -10 }, flags: [gaokao_bad] }
+  fail: { text: 算到一半，铃响了。那道题留了半页白。, self: { energy: -20, mood: -10 } }
 
 # ---------- 青年 ----------
 - event: y_dorm_good

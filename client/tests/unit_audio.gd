@@ -63,9 +63,13 @@ func _run() -> void:
 		_ok(cfg.has("every") or cfg.has("at"), "单发声要有 every 或 at：" + str(cfg.files))
 		_check_cfg(cfg, zone_ids)
 
-	# 行动音：地图上的每个行动都有声音
+	# 行动音：地图上的每个行动，在每个阶段都落在一条真有的声音上（按导演的映射查：duty 分上学 / 上班，没有自己声音的借一条近的）
 	for a in content.map.actions:
-		_ok(manifest.files.has("sfx/act_%s.ogg" % a.id), "行动没有声音：" + str(a.id))
+		for stage in Director.STAGE_FILE.values():
+			var cue_name: String = Director.act_cue(str(a.id), stage)
+			_ok(manifest.files.has("sfx/%s.ogg" % cue_name), "行动没有声音：%s（%s 阶段落在 %s）" % [a.id, stage, cue_name])
+	for from in Director.ACT_ALIAS:
+		_ok(manifest.files.has("sfx/act_%s.ogg" % Director.ACT_ALIAS[from]), "ACT_ALIAS 把 %s 指到了不存在的声音" % from)
 
 	# 观察者的依赖：它读的属性、听的信号、认的按钮字样都还在。
 	# 观察者对不上就不出声、不报错，所以改名要在这里变成红的，不能等人发现游戏哑了一块

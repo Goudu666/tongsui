@@ -18,33 +18,41 @@ zones:
   # 街坊的去处（街上的人、车、摊子随年代变化，见 content/street.yaml）
   - { id: teahouse, name: 河畔茶社, rect: [1456, 0, 430, 284] }
 
-# 可以互动的点：走到附近（110 像素内）会出现按钮
+# 可以互动的点：走到附近（110 像素内）会出现按钮。
+# action 写一个，或者 actions 写几个：同一个物件不同年纪做不同的事，取第一个年龄合适的。
 spots:
   - { id: bed_qing, zone: home_qing, at: [260, 560], action: sleep }
   - { id: table_qing, zone: home_qing, at: [450, 380], action: eat }
-  - { id: desk_qing, zone: home_qing, at: [250, 360], action: study }
+  - { id: desk_qing, zone: home_qing, at: [250, 360], actions: [picture_book, study, read] }
   - { id: basin_qing, zone: home_qing, at: [560, 620], action: wash }
   - { id: bed_mei, zone: home_mei, at: [1220, 560], action: sleep }
   - { id: table_mei, zone: home_mei, at: [1030, 380], action: eat }
-  - { id: desk_mei, zone: home_mei, at: [1230, 360], action: study }
+  - { id: desk_mei, zone: home_mei, at: [1230, 360], actions: [picture_book, study, read] }
   - { id: basin_mei, zone: home_mei, at: [920, 620], action: wash }
   - { id: door_qing, zone: hallway, at: [715, 470], action: knock }
   - { id: door_mei, zone: hallway, at: [765, 470], action: knock }
   - { id: roof_pigeon, zone: roof, at: [740, 130], action: play_roof }
-  - { id: breakfast_stall, zone: breakfast, at: [1630, 470], action: eat_out }
-  - { id: river_bank, zone: river, at: [2140, 820], action: play_river }
-  - { id: alley_rope, zone: alley, at: [1260, 880], action: play_alley }
-  - { id: bike_bench, zone: bikeshop, at: [1120, 1280], action: work }
-  - { id: school_gate, zone: school, at: [320, 1200], action: school }
+  - { id: breakfast_stall, zone: breakfast, at: [1630, 470], actions: [duty, eat_out, dine] }
+  - { id: river_bank, zone: river, at: [2140, 820], actions: [play_river, walk_river] }
+  - { id: river_bridge, zone: river, at: [2360, 690], action: duty }
+  - { id: alley_rope, zone: alley, at: [1260, 880], actions: [play_alley, chat] }
+  - { id: bike_bench, zone: bikeshop, at: [1120, 1280], actions: [duty, work] }
+  - { id: school_gate, zone: school, at: [320, 1200], action: duty }
+  - { id: school_yard, zone: school, at: [470, 1400], action: ball }
+  # 街坊的去处：茶社长魅力，河边钓鱼歇心
   - { id: tea_seat, zone: teahouse, at: [1716, 236], action: listen }
   - { id: tea_stage, zone: teahouse, at: [1668, 104], action: perform }
   - { id: river_fish, zone: river, at: [2096, 1134], action: fish }
 
 # 行动。needs：hunger 饱腹 / energy 精力 / mood 心情 / clean 清洁（0~100）
-#       stats：body / mind / charm / luck（0~10，可以是小数，慢慢长）
+#       stats：body / mind / charm（0~10，一次涨零点几；运气是天生的，行动不给）
 #       money：正数是挣钱，负数是花钱（钱不够做不了）
-# together：两个人同时在做同一个行动时，额外给两人的效果（「同框」，每种每天一次）
+# 每个行动只回答一个问题：它涨什么。日常行动是成长的大头，事件给的属性只是点缀。
+# together：两个人同时在同一个点做同一件事叫「搭伴」。成长有倍率（见 server/src/world.ts），
+#           这里写的是每种每天第一次搭伴时另给的心情、亲近和一句话。
+# duty：日程（上学、上班）。做多久、涨什么、挣多少由这个人走的路决定，见 content/tracks.yaml。
 actions:
+  # ---- 过日子 ----
   - id: eat
     label: 吃饭
     minutes: 30
@@ -55,21 +63,98 @@ actions:
     money: -2
     requires: { hours: [390, 600] }
     needs: { hunger: 40, mood: 8 }
-    together: { needs: { mood: 6 }, bond: { close: 1 }, text: "「俩鸡蛋，多放葱花！」你们异口同声。" }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: "「俩鸡蛋，多放葱花。」你们说的是同一句。" }
+  - id: dine
+    label: 下馆子
+    minutes: 60
+    money: -8
+    requires: { minAge: 18, hours: [1020, 1260] }
+    needs: { hunger: 55, mood: 12 }
+    together: { needs: { mood: 8 }, bond: { close: 2 }, text: 一张小桌，两瓶汽水，说到人家收摊。 }
   - id: sleep
     label: 睡觉
     sleep: true
     requires: { owner: true }
-  - id: study
-    label: 写作业
-    minutes: 60
-    requires: { minAge: 6 }
-    needs: { energy: -8, mood: -4 }
-    stats: { mind: 0.3 }
   - id: wash
     label: 洗澡
     minutes: 20
     needs: { clean: 60, mood: 2 }
+  - id: duty
+    label: 上学
+    duty: true
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 你们是一路去的。 }
+
+  # ---- 心智 ----
+  - id: picture_book
+    label: 翻小人书
+    minutes: 60
+    requires: { maxAge: 5 }
+    needs: { energy: -4, mood: 2 }
+    stats: { mind: 0.3 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 两个脑袋凑在一本书上，谁也不让谁翻页。 }
+  - id: study
+    label: 写作业
+    minutes: 90
+    requires: { minAge: 6, maxAge: 17 }
+    needs: { energy: -10, mood: -6 }
+    stats: { mind: 0.4 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 一张桌子两头坐，写一会儿，抬头看一眼对面写到哪了。 }
+  - id: read
+    label: 看书
+    minutes: 90
+    requires: { minAge: 18 }
+    needs: { energy: -8, mood: -2 }
+    stats: { mind: 0.35 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 各看各的，半天没人说话，也不觉得闷。 }
+
+  # ---- 体魄 ----
+  - id: play_alley
+    label: 楼下跳皮筋
+    minutes: 60
+    requires: { maxAge: 14 }
+    needs: { mood: 10, energy: -8, clean: -8 }
+    stats: { body: 0.25, charm: 0.2 }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: "「小皮球，架脚踢……」你们俩跳得一样快。" }
+  - id: play_river
+    label: 海河边放风筝
+    minutes: 60
+    requires: { maxAge: 17 }
+    needs: { mood: 10, energy: -8, clean: -6 }
+    stats: { body: 0.3 }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 一个人拽线，一个人举着风筝跑。 }
+  - id: walk_river
+    label: 沿河走一圈
+    minutes: 60
+    requires: { minAge: 18 }
+    needs: { mood: 8, energy: -6 }
+    stats: { body: 0.3 }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 从桥这头走到那头，话说了一半，又走回来。 }
+  - id: ball
+    label: 操场踢球
+    minutes: 90
+    requires: { minAge: 6, maxAge: 40 }
+    needs: { mood: 6, energy: -14, clean: -10 }
+    stats: { body: 0.45 }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 两个人，一个球，书包摆成门。 }
+  - id: work
+    label: 帮爷爷修车
+    minutes: 120
+    requires: { minAge: 8, maxAge: 17 }
+    money: 5
+    needs: { energy: -12, clean: -15 }
+    stats: { body: 0.3, mind: 0.15 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 爷爷说你们俩加一块儿顶半个学徒。 }
+
+  # ---- 魅力 ----
+  - id: chat
+    label: 跟街坊聊会儿
+    minutes: 60
+    requires: { minAge: 15 }
+    needs: { mood: 4 }
+    stats: { charm: 0.4 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 街坊问你们俩怎么老在一块儿，你们同时说「顺路」。 }
+
+  # ---- 彼此 ----
   - id: knock
     label: 开门喊一声
     minutes: 15
@@ -77,36 +162,9 @@ actions:
     together: { needs: { mood: 10 }, bond: { close: 2, sync: 1 }, text: 两扇门同时开了，你们在楼道里对着乐。 }
   - id: play_roof
     label: 楼顶放鸽子
-    minutes: 45
-    needs: { mood: 10, energy: -6, clean: -6 }
+    minutes: 60
+    needs: { mood: 12, energy: -4, clean: -4 }
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: 鸽子绕着楼顶飞了三圈，你们数的圈数不一样。 }
-  - id: play_river
-    label: 海河边放风筝
-    minutes: 45
-    needs: { mood: 10, energy: -8, clean: -6 }
-    stats: { body: 0.2 }
-    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 一个人拽线，一个人举着风筝跑。 }
-  - id: play_alley
-    label: 楼下跳皮筋
-    minutes: 45
-    needs: { mood: 10, energy: -8, clean: -8 }
-    stats: { body: 0.2 }
-    together: { needs: { mood: 6 }, bond: { close: 1 }, text: "「小皮球，架脚踢……」你们俩跳得一样快。" }
-  - id: work
-    label: 帮爷爷修车
-    minutes: 90
-    requires: { minAge: 8 }
-    money: 5
-    needs: { energy: -12, clean: -15 }
-    stats: { body: 0.2 }
-    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 爷爷说你们俩加一块儿顶半个学徒。 }
-  - id: school
-    label: 上学
-    school: true
-    requires: { minAge: 6, maxAge: 17, hours: [420, 540] }
-    needs: { hunger: 30, energy: -15 }
-    stats: { mind: 0.5, charm: 0.1 }
-    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 你们一起走进了校门。 }
 
   # ---------- 街坊的去处 ----------
   - id: listen

@@ -10,6 +10,9 @@ const Kit := preload("res://scripts/ui/kit.gd")
 const Hud := preload("res://scripts/ui/hud.gd")
 const Fx := preload("res://scripts/ui/fx.gd")
 const TitleArt := preload("res://scripts/ui/title_art.gd")
+const Resonance := preload("res://scripts/ui/resonance.gd")
+const GoalPanel := preload("res://scripts/ui/goal_panel.gd")
+const GoalRow := preload("res://scripts/ui/goal_row.gd")
 const LifeTime := preload("res://scripts/ui/life_time.gd")
 const NetClient := preload("res://scripts/net/lifeline_client.gd")
 const WorldView := preload("res://scripts/world/world_view.gd")
@@ -29,6 +32,7 @@ var fx: Fx               ## 转场（网点"印出来"、长大的过场卡）
 var screen: Control      ## 全屏菜单页
 var body: VBoxContainer  ## screen 里的内容（标题页没有）
 var hud: Hud
+var goal_panel: GoalPanel  ## 下一个人生关口（HUD 里日历牌下面那条纸带，点开看全部的线）
 var action_btn: Button
 var modal: ColorRect
 var modal_card: PanelContainer
@@ -132,6 +136,15 @@ func _build_layers() -> void:
 	hud = Hud.new()
 	hud.visible = false
 	ui.add_child(hud)
+	goal_panel = GoalPanel.new()
+	goal_panel.anchor_right = 1.0
+	goal_panel.offset_left = 40
+	goal_panel.offset_right = -40
+	goal_panel.offset_top = 282
+	goal_panel.offset_bottom = 378
+	goal_panel.visible = false
+	goal_panel.pressed.connect(_show_goal_detail)
+	hud.add_child(goal_panel)
 	action_btn = Button.new()
 	action_btn.anchor_left = 0.5
 	action_btn.anchor_right = 0.5
@@ -378,12 +391,15 @@ func _process(delta: float) -> void:
 	var cost := ""
 	if bool(act.get("sleep", false)):
 		cost = " · 结束这一天"
-	elif bool(act.get("school", false)):
-		cost = " · 到 15:30"
+	elif bool(act.get("duty", false)):
+		cost = " · 到 %s" % P.clock(float(act.get("until", 930)))
 	elif int(act.get("minutes", 0)) > 0:
 		cost = " · %d 分钟" % int(act.minutes)
 	if int(act.get("money", 0)) < 0:
 		cost += " · %d 块" % -int(act.money)
+	# TA 正在这儿做同一件事：现在坐下就是搭伴，两个人都长得快
+	if world.partner_doing(spot, act):
+		cost += " · 和 TA 搭伴"
 	action_btn.text = str(act.get("label", "")) + cost
 	action_btn.set_meta("spot", spot.id)
 	action_btn.disabled = offline_preview
@@ -651,7 +667,7 @@ func _on_snapshot(data: Dictionary) -> void:
 			if w is Dictionary:
 				world.apply_snapshot_actors(w.get("actors"))
 				last_world["minute"] = w.get("minute", 390)
-				last_world["schoolDay"] = w.get("schoolDay", false)
+				last_world["rest"] = w.get("rest", false)
 				_resume_event(w.get("event"))
 			_refresh_hud()
 			duet.on_snapshot()  # 我不在的时候影子替我选过的，现在问我
@@ -673,7 +689,7 @@ func _resume_event(pe: Variant) -> void:
 	else:
 		_open_modal()
 		modal.set_meta("waiting_event", pe.eventId)
-		_pick_shown(str(mine), _option_text(pe.eventId, mine), pe.kind == "mirror")
+		_pick_shown(str(mine), _option_text(pe.eventId, mine), pe.roles.has(_other()))
 
 
 # ======================================================================
@@ -776,6 +792,7 @@ func _enter_world() -> void:
 	var t := LifeTime.at(int(life.get("turn", 0)))
 	_stage_shown = str(t.stage)
 	world.set_stage(_stage_shown)
+	world.age = int(t.age)
 	world.net = null if offline_preview else net
 	world.move_report.connect(_on_move_report)
 	_refresh_hud()
@@ -827,15 +844,22 @@ func _refresh_hud() -> void:
 	var t := LifeTime.at(int(life.get("turn", 0)))
 	hud.time_label = str(t.label)
 	hud.stage = str(t.stage)
+	if world != null:
+		world.age = int(t.age)
 	if offline_preview:
 		hud.tag = "预览"
 		hud.needs = {}
 		hud.bond = {}
 		hud.money = -1
 		hud.note = ""
+		goal_panel.visible = false
 		return
 	hud.minute = float(last_world.get("minute", 390))
-	hud.tag = "上学日" if bool(last_world.get("schoolDay", false)) else ""
+	# 日历牌色条上的那个词：今天要去哪（上学 / 上班 / 出摊），不用去就是休息
+	var my_track: Dictionary = _dict(_dict(last_world.get("tracks")).get(my_role))
+	var duty: Dictionary = _dict(my_track.get("duty"))
+	hud.tag = str(duty.get("label", "")) if not duty.is_empty() else ("休息" if bool(last_world.get("rest", false)) and int(t.age) >= 6 else "")
+	_refresh_goal(my_track)
 	hud.note = _ping_text()
 	var needs: Dictionary = last_world.get("needs", {}).get(my_role, {})
 	if needs.is_empty() and life.get("persons") != null:
@@ -843,6 +867,67 @@ func _refresh_hud() -> void:
 	hud.needs = needs
 	hud.money = int(last_world.get("money", {}).get(my_role, 0))
 	hud.bond = last_world.get("bond", life.get("bond", {}))
+
+
+static func _dict(v: Variant) -> Dictionary:
+	return v if v is Dictionary else {}
+
+
+## 属性按百分制给人看（服务器里是 0~10，关口的线也是这么换的：sim.ts → lifePoints）
+static func _points(v: Variant) -> int:
+	return int(floor(float(v) * 10.0 + 0.001))
+
+
+func _refresh_goal(my_track: Dictionary) -> void:
+	var goals: Dictionary = _dict(last_world.get("goals"))
+	goal_panel.visible = last_world.has("goals") and hud.visible
+	goal_panel.goal = goals.get(my_role)
+	goal_panel.their_goal = goals.get(_other())
+	goal_panel.my_color = P.role_color(my_role)
+	goal_panel.their_color = P.role_color(_other())
+	goal_panel.eff = float(_dict(last_world.get("eff")).get(my_role, 1.0))
+	goal_panel.track = str(my_track.get("label", ""))
+	goal_panel.stats = _dict(_dict(last_world.get("stats")).get(my_role))
+
+
+## 点开目标纸带：这一关所有的线，两个人各在哪；下面是三项属性和「怎么长得快」
+func _show_goal_detail() -> void:
+	if modal.visible or world == null:
+		return
+	var goals: Dictionary = _dict(last_world.get("goals"))
+	var mine: Variant = goals.get(my_role)
+	var theirs: Variant = goals.get(_other())
+	var stats: Dictionary = _dict(last_world.get("stats"))
+	var my_c := P.role_color(my_role)
+	var their_c := P.role_color(_other())
+	_open_modal()
+	if mine is Dictionary:
+		var head := HBoxContainer.new()
+		head.add_theme_constant_override("separation", 16)
+		modal_body.add_child(head)
+		Kit.chip(head, "下一个关口", my_c)
+		var when := _label(head, "%d 岁 · %s" % [int(mine.age), GoalPanel.turns_text(int(mine.turns))], 30, P.INK_SOFT)
+		when.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		_label(modal_body, str(mine.title), 68)
+		Kit.rule(modal_body)
+		for l in mine.lines:
+			modal_body.add_child(GoalRow.new(l, GoalPanel.their_have(theirs if theirs is Dictionary and theirs.id == mine.id else null, str(l.id)), my_c, their_c))
+		if theirs is Dictionary and theirs.id != mine.id:
+			_label(modal_body, "%s 要过的是另一关：%s。" % [_role_text(_other()), str(theirs.title)], 30, P.INK_SOFT)
+	else:
+		Kit.chip(modal_body, "往后的日子", my_c)
+		_label(modal_body, "没有非过不可的关了", 56)
+	Kit.rule(modal_body, Color(P.INK, 0.25))
+	var mine_stats: Dictionary = _dict(stats.get(my_role))
+	var their_stats: Dictionary = _dict(stats.get(_other()))
+	for k in ["body", "mind", "charm"]:
+		if not mine_stats.has(k):
+			continue
+		var row := {"id": k, "text": P.STAT_NAME[k], "by": "", "unit": "分", "have": _points(mine_stats[k]), "need": 0, "ok": true}
+		modal_body.add_child(GoalRow.new(row, float(_points(their_stats[k])) if their_stats.has(k) else -1.0, my_c, their_c))
+	_label(modal_body, "实心的点是你，空心的是 %s。两个人在同一个地方做同一件事，都长得快一半；心情好的时候学得快，饿着困着学不进去。" % str(names.get(_other(), "TA")), 28, P.INK_SOFT)
+	_primary(modal_body, "知道了", _close_modal)
+	_gap(modal_body, 4)
 
 
 func _on_world_state(data: Dictionary) -> void:
@@ -881,6 +966,9 @@ func _on_event_started(data: Dictionary) -> void:
 		return
 	var ev: Dictionary = events_by_id.get(pe.eventId, {})
 	var mirror: bool = pe.kind == "mirror"
+	if pe.kind == "milestone":
+		_show_milestone(pe, ev, _dict(data.get("locks", pe.get("locks"))))
+		return
 	_open_modal()
 	modal.set_meta("waiting_event", pe.eventId)
 	if mirror:
@@ -894,6 +982,55 @@ func _on_event_started(data: Dictionary) -> void:
 		var otext: String = o.text
 		_button(modal_body, otext, _pick.bind(oid, otext, mirror))
 	_gap(modal_body, 4)
+
+
+## 人生关口：够不着的路是灰的，写着差多少；够得着的路上写着对门走不走得了。
+## 这是整个游戏里最重的一次选择：分数是平时一天天攒的，路是自己挑的，可以为了对门走低的那条。
+func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
+	var both: bool = pe.roles.has(_other())
+	_open_modal()
+	modal.set_meta("waiting_event", pe.eventId)
+	# 只有一条路可走的人，服务器已经替他定了：直接显示结果，等对门
+	var fixed: Variant = _dict(pe.get("choices")).get(my_role, pe.get("mine"))
+	if fixed != null:
+		_pick_shown(str(fixed), _option_text(pe.eventId, fixed), both)
+		return
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 16)
+	modal_body.add_child(head)
+	Kit.chip(head, "人生关口", P.INK)
+	var sub := _label(head, "各选各的，可以商量" if both else "这一关只有你过", 30, P.INK_SOFT)
+	sub.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_label(modal_body, str(ev.get("title", "")), 68)
+	Kit.rule(modal_body)
+	_label(modal_body, str(ev.get("text", "")), 40)
+	var luck := float(_dict(pe.get("swing")).get(my_role, 0.0))
+	var swing := int(round(luck * 10.0))
+	if swing != 0:
+		_label(modal_body, "今天发挥得%s，%s %d 分。" % ["不错" if swing > 0 else "不大好", "多了" if swing > 0 else "少了", absi(swing)], 30, P.INK_SOFT)
+	_gap(modal_body, 8)
+	var my_locks: Dictionary = _dict(locks.get(my_role))
+	var their_locks: Dictionary = _dict(locks.get(_other()))
+	var their_name := str(names.get(_other(), "TA"))
+	for o in ev.get("options", []):
+		var oid: String = o.id
+		var otext: String = o.text
+		var gated: bool = o.has("min") or o.has("cost")
+		if my_locks.has(oid):
+			var b := _button(modal_body, "%s\n%s" % [otext, str(my_locks[oid])], func(): pass)
+			b.disabled = true
+		else:
+			var note := ""
+			if both and gated:
+				note = ("\n%s 够不着这条" if their_locks.has(oid) else "\n%s 也走得了") % their_name
+			_button(modal_body, otext + note, _pick_path.bind(oid, otext, both))
+	_gap(modal_body, 4)
+
+
+## 关口上选路：不走默契事件的「猜 TA」（可以商量，没什么可猜的）。waiting：对门也过这一关，选完要等 TA
+func _pick_path(option_id: String, option_text: String, waiting: bool) -> void:
+	net.choose(option_id)
+	_pick_shown(option_id, option_text, waiting)
 
 
 func _pick(option_id: String, option_text: String, mirror: bool) -> void:
@@ -966,6 +1103,8 @@ func _on_log_entries(data: Dictionary) -> void:
 			_toast("同框 · " + str(e.text))
 		elif kind == "mirror":
 			_show_mirror_result(e)
+		elif kind == "milestone":
+			_show_milestone_result(e)
 		elif kind == "solo" and e.get("duet") is Dictionary and e.duet.get("echo") == true:
 			duet.show_echo(e)
 		elif kind == "solo":
@@ -984,7 +1123,8 @@ func _on_log_entries(data: Dictionary) -> void:
 			Kit.chip(modal_body, str(e.label), P.role_color(my_role))
 			_label(modal_body, str(e.text), 44)
 			Kit.rule(modal_body, Color(P.INK, 0.25))
-			_label(modal_body, "日子一天天过去……", 32, P.INK_SOFT)
+			var grew := _gains_text(_dict(_dict(e.get("gains")).get(my_role)))
+			_label(modal_body, ("这一天你长了：" + grew) if grew != "" else "日子一天天过去……", 32, P.INK_SOFT)
 			_primary(modal_body, "下一个被记住的日子", _close_modal)
 			_gap(modal_body, 4)
 		elif kind == "death":
@@ -992,6 +1132,79 @@ func _on_log_entries(data: Dictionary) -> void:
 			_label(modal_body, str(e.text), 52, P.OVERLAP)
 			_button(modal_body, "……", _close_modal)
 			_gap(modal_body, 4)
+
+
+## 一天下来长了多少（百分制，不到 1 分的写「一点」）
+func _gains_text(gains: Dictionary) -> String:
+	var parts: Array = []
+	for k in ["body", "mind", "charm"]:
+		var v := float(gains.get(k, 0.0)) * 10.0
+		if v >= 0.95:
+			parts.append("%s +%d" % [P.STAT_NAME[k], int(round(v))])
+		elif v >= 0.15:
+			parts.append("%s 一点" % P.STAT_NAME[k])
+	return "　".join(parts)
+
+
+## 关口揭晓：每个人考了多少、走上了哪条路；两个人都过这一关时，同路是两个圆叠住，分开走是各在一边
+func _show_milestone_result(e: Dictionary) -> void:
+	var results: Dictionary = _dict(e.get("results"))
+	if not results.has(my_role):
+		var theirs: Dictionary = _dict(results.get(_other()))
+		if not theirs.is_empty():
+			_toast("%s 过了一关：%s" % [_role_text(_other()), _option_text(e.events[_other()], theirs.get("option"))])
+		return
+	var ev: Dictionary = events_by_id.get(e.events[my_role], {})
+	var both := results.size() == 2
+	var same := bool(e.get("resonance", false))
+	var has_line := false
+	for o in ev.get("options", []):
+		if o.has("min"):
+			has_line = true
+	# 只有一条路、也没有成绩可说的关（上小学、退休）：不弹卡，一行字带过
+	if ev.get("options", []).size() <= 1:
+		_close_modal()
+		_toast("%s：%s" % [str(ev.get("title", "")), _option_text(e.events[my_role], results[my_role].get("option"))])
+		return
+	_open_modal()
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 16)
+	modal_body.add_child(head)
+	Kit.chip(head, ("同路" if same else "各走各的") if both else "人生关口", P.OVERLAP if same else P.INK)
+	var when := _label(head, "%s · %s" % [str(e.label), str(ev.get("title", ""))], 30, P.INK_SOFT)
+	when.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	if both:
+		modal_body.add_child(Resonance.new(same))
+	for r in ["qing", "mei"]:
+		if not results.has(r):
+			continue
+		var res: Dictionary = results[r]
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 18)
+		modal_body.add_child(row)
+		Kit.chip(row, str(names.get(r, P.ROLE_NAME[r])), P.role_color(r), 30)
+		var mark := "（影子）" if e.get("shadow", []).has(r) else ""
+		var pick := _label(row, _option_text(e.events[r], res.get("option")) + mark, 38, P.INK)
+		pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		if has_line:
+			var score := "%d %s" % [int(res.get("score", 0)), str(res.get("unit", "分"))]
+			if res.get("grade") != null:
+				score += " · " + str(res.grade)
+			var sl := _label(row, score, 30, P.INK_SOFT, HORIZONTAL_ALIGNMENT_RIGHT)
+			sl.autowrap_mode = TextServer.AUTOWRAP_OFF
+			sl.size_flags_horizontal = Control.SIZE_SHRINK_END
+			sl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var track_label := ""
+	for tr in content.get("tracks", []):
+		if tr.id == results[my_role].get("track"):
+			track_label = str(tr.label)
+	if str(e.get("text", "")) != "":
+		Kit.rule(modal_body, Color(P.INK, 0.25))
+		_label(modal_body, str(e.text), 44, P.OVERLAP if same else P.INK)
+	if track_label != "":
+		_label(modal_body, "从今天起：%s。" % track_label, 30, P.INK_SOFT)
+	_primary(modal_body, "往下过", _close_modal)
+	_gap(modal_body, 4)
 
 
 ## 默契事件的结算卡：共鸣 / 搭上了 / 错位（画在 duet_ui.gd 里）

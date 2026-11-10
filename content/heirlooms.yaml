@@ -16,7 +16,7 @@
 # ---- 接下了家里的营生 ----
 - id: h_scraper
   name: 竹刮板
-  desc: 摊了两辈子煎饼的那把，把儿上磨出了手印。
+  desc: 摊了几十年煎饼的那把，把儿上磨出了手印。
   from: { flags: [fam_breakfast, took_over] }
   bonus: { charm: 0.5 }
   flags: [heir_scraper]
@@ -37,7 +37,7 @@
 
 - id: h_keys
   name: 一串钥匙
-  desc: 楼拆了，钥匙没扔。哪把是谁家的，闭着眼能摸出来。
+  desc: 一大串，每把上缠着一截不同颜色的线。
   from: { flags: [fam_head, took_over] }
   bonus: { mind: 0.5 }
   flags: [heir_keys]
@@ -52,7 +52,7 @@
 # ---- 一个人练出来的 ----
 - id: h_erhu
   name: 旧二胡
-  desc: 车铺墙上挂过的那把。弦换过三回，弓子没换。
+  desc: 弦换过三回，弓子没换。琴筒上有一块手磨亮的地方。
   from: { flags: [erhu_life] }
   bonus: { charm: 0.5 }
   flags: [erhu, heir_erhu]    # 家里挂着一把现成的，这一世的孩子摸得着琴

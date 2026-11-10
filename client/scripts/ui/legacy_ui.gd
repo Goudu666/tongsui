@@ -322,7 +322,7 @@ func _fill_again() -> bool:
 		var b: Button = m._primary(_again_box, "再来一世", func(): pass)
 		b.disabled = true
 	elif mine:
-		var wait := "等 TA 也点头……" if here else "TA 不在。等 TA 上来点头。"
+		var wait := "等 TA 也点头……" if here else "TA 不在。等 TA 回来点头。"
 		m._label(_again_box, "这就走。" if theirs else "你点了头。" + wait, 36, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
 		if not theirs:
 			m._quiet(_again_box, "再想想", func(): m.net.again(false))
@@ -330,7 +330,7 @@ func _fill_again() -> bool:
 		if theirs:
 			m._label(_again_box, "%s 想再来一世。" % _name(other), 36, P.role_color(other), HORIZONTAL_ALIGNMENT_CENTER)
 		else:
-			m._label(_again_box, "两个人都点头，就在河畔里重新投胎。留下的东西，下一世各带一件。", 32, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
+			m._label(_again_box, "两个人都点头，就在河畔里重新投胎。留下的东西，下一世可以各带一件。", 32, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
 		m._primary(_again_box, "再来一世", func(): m.net.again(true))
 	return true
 

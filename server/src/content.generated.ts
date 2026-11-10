@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "5dc2075367f1",
+ "version": "551cfdae9250",
  "events": [
   {
    "id": "c_roof_summer",
@@ -24314,7 +24314,7 @@ var CONTENT: Content = {
   {
    "id": "h_scraper",
    "name": "竹刮板",
-   "desc": "摊了两辈子煎饼的那把，把儿上磨出了手印。",
+   "desc": "摊了几十年煎饼的那把，把儿上磨出了手印。",
    "from": {
     "flags": [
      "fam_breakfast",
@@ -24371,7 +24371,7 @@ var CONTENT: Content = {
   {
    "id": "h_keys",
    "name": "一串钥匙",
-   "desc": "楼拆了，钥匙没扔。哪把是谁家的，闭着眼能摸出来。",
+   "desc": "一大串，每把上缠着一截不同颜色的线。",
    "from": {
     "flags": [
      "fam_head",
@@ -24408,7 +24408,7 @@ var CONTENT: Content = {
   {
    "id": "h_erhu",
    "name": "旧二胡",
-   "desc": "车铺墙上挂过的那把。弦换过三回，弓子没换。",
+   "desc": "弦换过三回，弓子没换。琴筒上有一块手磨亮的地方。",
    "from": {
     "flags": [
      "erhu_life"

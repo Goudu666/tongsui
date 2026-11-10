@@ -150,7 +150,7 @@ func _run() -> void:
 	# TA 下线了
 	net.again_state.emit({"again": {"qing": true, "mei": false}})
 	main._on_presence({"online": {"qing": true, "mei": false}, "protocols": {"qing": 3, "mei": 0}})
-	check(texts().contains("TA 不在。等 TA 上来点头。"), "TA 不在线：\n" + texts())
+	check(texts().contains("TA 不在。等 TA 回来点头。"), "TA 不在线：\n" + texts())
 	# TA 用旧安装包上来了：说清楚，按钮按不了
 	net.again_state.emit({"again": {"qing": false, "mei": false}})
 	main._on_presence({"online": {"qing": true, "mei": true}, "protocols": {"qing": 3, "mei": 2}})

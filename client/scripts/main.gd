@@ -24,6 +24,7 @@ const ServerSettings := preload("res://scripts/ui/server_settings.gd")
 const ContentStore := preload("res://scripts/net/content_store.gd")
 const DuetUI := preload("res://scripts/duet/duet_ui.gd")
 const LegacyUI := preload("res://scripts/ui/legacy_ui.gd")
+const Guide := preload("res://scripts/ui/guide.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -69,6 +70,7 @@ var last_world: Dictionary = {}
 var offline_preview := false
 var duet: DuetUI  ## 「接话」的界面：猜 TA / 搭上了 / 回话（见 docs/DUET.md）
 var legacy: LegacyUI  ## 传承的界面：投胎页的老物件、结局页的再来一世（见 docs/LEGACY.md）
+var guide: Guide  ## 开局引导：章首卡、主线路标、头几天的小纸条（ui/guide.gd）
 var _preview_minute := 390.0
 const PAGE_WIDTH := 1560.0    ## 菜单页内容最宽这么多，再宽就居中（两栏）
 const COLUMN_WIDTH := 1040.0  ## 只有一栏的页面
@@ -145,6 +147,10 @@ func _build_layers() -> void:
 	layer.add_child(ui)
 	fx = Fx.new()
 	add_child(fx)
+	guide = Guide.new()
+	guide.main = self
+	add_child(guide)
+	fx.card_hook = guide.card_lines
 
 	# 全屏菜单（透明，透出底下带颗粒的纸）
 	screen = Control.new()
@@ -616,7 +622,8 @@ func _show_spot_action() -> void:
 	var act := world.action_of(spot)
 	var cost: Array = []
 	if bool(act.get("sleep", false)):
-		cost.append("睡到明天")
+		# 一睁眼就站在床边：大按钮写着「睡觉」，头一回玩的人一按，这一天就没了。天还亮着就说清楚，按两下才睡
+		cost.append("睡到明天" if world.slot >= SLEEP_EARLY_BEFORE else ("再按一下，今天就过完了" if _sleep_armed() else "天还亮着，今天就过完了"))
 	elif bool(act.get("duty", false)):
 		cost.append("到 %s" % P.clock(float(act.get("until", 930))))
 	elif bool(act.get("quick", false)):
@@ -659,13 +666,38 @@ func _on_action_pressed() -> void:
 	match str(action_btn.get_meta("mode", "")):
 		"act":
 			if action_btn.has_meta("spot"):
-				net.act(str(action_btn.get_meta("spot")))
+				var sp := str(action_btn.get_meta("spot"))
+				if _sleep_early(sp) and not _sleep_armed():
+					_sleep_armed_at = Time.get_ticks_msec()
+					_toast("还早呢。真要睡，再按一下")
+					return
+				_sleep_armed_at = -1
+				net.act(sp)
 		"cancel":
 			net.cancel_slot()
 		"exit":
 			if action_btn.has_meta("exit"):
 				world.begin_exit()
 				net.exit(str(action_btn.get_meta("exit")))
+
+
+const SLEEP_EARLY_BEFORE := 3  ## 傍晚以前睡下算「早」：要按两下
+var _sleep_armed_at := -1
+
+
+## 这个点位现在是不是「天还亮着就去睡」
+func _sleep_early(spot_id: String) -> bool:
+	if world == null or world.slot >= SLEEP_EARLY_BEFORE:
+		return false
+	for sp in world.map.spots:
+		if str(sp.id) == spot_id:
+			return bool(world.action_of(sp).get("sleep", false))
+	return false
+
+
+## 按过一下「睡觉」，四秒内再按就真睡
+func _sleep_armed() -> bool:
+	return _sleep_armed_at >= 0 and Time.get_ticks_msec() - _sleep_armed_at < 4000
 
 
 func _on_slot_pressed() -> void:
@@ -1084,6 +1116,8 @@ func _enter_world() -> void:
 	world.move_report.connect(_on_move_report)
 	_layout_hud()
 	_refresh_hud()
+	if not offline_preview:
+		guide.enter()
 
 
 func _leave_world() -> void:

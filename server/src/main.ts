@@ -469,8 +469,8 @@ function worldView(s: LifelineMatch) {
     var r = ROLES[i];
     var a = w.actors[r];
     // seq：服务器已处理到这个人的第几条 MOVE，本地玩家拿它对照自己的历史位置做校正
-    // tg：这次是搭伴做的；fr：这件事从第几段开始（比这一段早就撤不回了）
-    actors[r] = a ? { x: r1(a.x), y: r1(a.y), act: a.action, spot: a.spot, sleep: a.asleep, seq: s.moveSeq[r] || 0, tg: !!a.together, fr: a.from } : null;
+    // tg：这次是搭伴做的；fr：这件事从第几段开始（比这一段早就撤不回了）；rd：这一段在路上花掉的分钟（过桥、坐车，客户端拿它把按钮灰掉）
+    actors[r] = a ? { x: r1(a.x), y: r1(a.y), act: a.action, spot: a.spot, sleep: a.asleep, seq: s.moveSeq[r] || 0, tg: !!a.together, fr: a.from, rd: worldRide(a, w.slot) } : null;
     var p = life.persons![r];
     needs[r] = { hunger: r1(p.needs.hunger), energy: r1(p.needs.energy), mood: r1(p.needs.mood), clean: r1(p.needs.clean) };
     money[r] = p.money;

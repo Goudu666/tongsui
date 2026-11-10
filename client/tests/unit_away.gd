@@ -19,7 +19,7 @@ func _run() -> void:
 	_exits()
 	_letters()
 	if _failed == 0:
-		print("✓ 外地和写信：出口写路上多久 / 信只挑寄给我的、带落款 / 安装包里有信的文字和坐车的出口")
+		print("✓ 外地和写信：出口写路上多久、坐完车这一段灰掉 / 信只挑寄给我的、带落款 / 安装包里有信的文字和坐车的出口")
 	quit(1 if _failed > 0 else 0)
 
 
@@ -35,6 +35,11 @@ func _exits() -> void:
 	_check(main.exit_cost({"to": "away", "ride": 240}, {"name": "外地"}, "street") == "去外地 · 路上一整段", "去外地")
 	_check(main.exit_cost({"to": "street"}, {"name": "楼下"}, "building") == "去楼下", "走过去的不写路上")
 	_check(main.exit_cost({"to": "building", "ride": 0}, {}, "building") == "", "同一张图上下楼什么也不写")
+	# 坐完车，这一段还剩多少（按钮灰掉、写「路上把这一段花掉了」）
+	_check(main.slot_left({"rd": 240}, 1, 1.0) <= 0.0, "上午坐车去外地：这一段花光了")
+	_check(main.slot_left({"rd": 60}, 1, 1.0) == 180.0, "上午过一趟桥：还剩三个钟头")
+	_check(main.slot_left({"rd": 120}, 0, 1.0) < 0.0, "早上过去又回来：早上只有一个半钟头")
+	_check(main.slot_left({}, 0, 1.0) == 90.0, "老服务器没有 rd")
 	var c: Dictionary = ContentStore.load_bundled()
 	var rides := {}
 	for ex in c.map.exits:

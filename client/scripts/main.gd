@@ -639,9 +639,23 @@ func _show_spot_action() -> void:
 	if world.partner_doing(spot, act):
 		cost.append("和 TA 搭伴")
 	action_btn.set_meta("spot", spot.id)
+	var spent := false
+	if not bool(act.get("sleep", false)) and not bool(act.get("duty", false)) and not bool(act.get("quick", false)):
+		var mine: Variant = _dict(last_world.get("actors")).get(my_role)
+		var use := float(_dict(_dict(content.get("rules")).get("daily")).get("slotUse", 1.0))
+		spent = mine is Dictionary and slot_left(mine, world.slot, use) <= 0.0
+	if spent:
+		cost = ["路上把这一段花掉了"]
 	if offline_preview:
 		cost = ["联网之后才能做"]
-	_set_action("act", str(act.get("label", "")), " · ".join(cost), offline_preview)
+	_set_action("act", str(act.get("label", "")), " · ".join(cost), offline_preview or spent)
+
+
+## 这一段还能花在一件事上的分钟：一段的长度 × slotUse，扣掉过桥、坐车花掉的（WORLD 的 actors 带 rd；同 world.ts 的 worldSlotLeft）
+static func slot_left(actor: Dictionary, slot: int, slot_use: float) -> float:
+	var s: int = clampi(slot, 0, WorldView.SLOTS.size() - 1)
+	var span := float(int(WorldView.SLOTS[s][1]) - int(WorldView.SLOTS[s][0])) * slot_use
+	return span - float(actor.get("rd", 0))
 
 
 ## 出口按钮底下那行：去哪张图；过桥、坐车的写路上花多久（服务器从这一段里扣，见 world.ts 的 worldExit）

@@ -1,0 +1,910 @@
+# 少年篇事件（12–17 岁，一回合 = 半年里被记住的一天）
+# 字段说明见 docs/TECH.md「内容格式」，写作约定见 childhood.yaml 文件头。
+
+- id: t_note
+  kind: mirror
+  stage: teen
+  where: school
+  weight: 2
+  title: 课本上的纸条
+  text: 上课时，一张纸条从后排传了过来，上面只有一个问号。
+  options:
+    - id: reply
+      text: 在问号后面画一个笑脸
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: ignore
+      text: 认真听课，假装没看见
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+  resonance:
+    reply:
+      text: 那张纸条来回传了一整节课，最后变成一整页的小人。
+      memory: 一整页的小人
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 纸条在课桌角上躺了一节课。下课时，它不见了。
+    bond: { close: -1 }
+
+- id: t_choose_school
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 15, notFlags: [dropout] }
+  title: 志愿
+  text: 中考志愿表发下来了。市里的重点高中要住校，离家很远。
+  options:
+    - id: far
+      text: 报市重点
+      tags: [competitive]
+      effects: { self: { mind: 2 }, bond: { distance: 1 }, flags: [school_far] }
+    - id: near
+      text: 报家门口的学校
+      tags: [gentle]
+      effects: { self: { mood: 5 }, flags: [school_near] }
+
+# ---------------------------------------------------------------
+# 12 岁：小升初、分班
+# ---------------------------------------------------------------
+
+- id: t_new_class
+  kind: mirror
+  stage: teen
+  where: school
+  hint: 校门口贴出了红纸名单。
+  weight: 3
+  requires: { minAge: 12, maxAge: 12 }
+  title: 分班
+  text: 初一分班的名单贴在校门口的红纸上，一共八个班。人挤着人，你踮起脚，从一班开始往下找。
+  options:
+    - id: mine
+      text: 先找自己的名字
+      tags: [competitive]
+      effects: { self: { mind: 1 } }
+    - id: theirs
+      text: 先找对门的名字
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: wait
+      text: 等人散了再看
+      tags: [patient]
+      effects: { self: { energy: 5 } }
+  resonance:
+    mine:
+      text: "各自找着了自己，一抬头，都在四班。「你也四班？」「嗯，你也是。」"
+      memory: 都在四班
+      bond: { sync: 2, close: 2 }
+    theirs:
+      text: 你们都是先找到了对方的名字，又都装作是顺便看见的。
+      memory: 顺便看见的
+      bond: { sync: 3, close: 3 }
+    wait:
+      text: 人散光了，红纸前只剩你们俩，和一个被风掀起来的纸角。
+      memory: 掀起来的纸角
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: "一个人在名单前喊「咱俩一个班！」，另一个人早被人群挤到了马路对面，没听见。"
+    bond: { close: 0 }
+
+# ---------------------------------------------------------------
+# 13–14 岁：长个儿、外号、别扭
+# ---------------------------------------------------------------
+
+- id: t_blackboard
+  kind: mirror
+  stage: teen
+  where: school
+  hint: 教室里一阵起哄声。
+  weight: 2
+  requires: { minAge: 13, maxAge: 14 }
+  title: 黑板角上
+  text: 早自习前，黑板右下角被人用粉笔写上了你们俩的名字，中间画了把歪歪扭扭的伞。全班都在起哄，等着看你们俩的脸。
+  options:
+    - id: erase
+      text: 冲上去擦掉
+      tags: [competitive]
+      effects: { self: { mood: -5, body: 1 } }
+    - id: ignore
+      text: 坐下，假装没看见
+      tags: [patient]
+      effects: { self: { mood: -3, mind: 1 } }
+    - id: laugh
+      text: "「画得也忒难看了。」"
+      tags: [adventure]
+      effects: { self: { charm: 1 } }
+  resonance:
+    erase:
+      text: 你们从两头冲向黑板，两只板擦在伞把那儿撞上了。起哄声更大了。
+      memory: 撞上的板擦
+      bond: { sync: 3, close: 1 }
+    ignore:
+      text: 你们都盯着课本，一上午没往对方那边看一眼。放学路上，中间也隔着一个人走。
+      memory: 隔着一个人
+      bond: { sync: 2, close: 1 }
+    laugh:
+      text: 你们俩说了同一句话。全班愣了一下，然后笑得更凶了。那把伞一直留到了下午。
+      memory: 忒难看的伞
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个人冲上去擦了黑板，另一个人坐着没动。擦完回座位时，觉得全班都在看自己，只有对门没看。
+    bond: { close: -1 }
+
+- id: t_growth_spurt
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 13, maxAge: 14 }
+  title: 电线杆儿
+  text: 一个暑假蹿了一头，裤腿短了一截，嗓子也变了调。开学第一天，后排有人喊你「电线杆儿」，全班都回过头来。
+  options:
+    - id: accept
+      text: 应一声，认了
+      tags: [gentle]
+      effects: { self: { charm: 1, mood: -3 } }
+    - id: argue
+      text: "「你再喊一句试试？」"
+      tags: [competitive]
+      effects: { self: { body: 1, mood: 3, charm: -1 } }
+    - id: hunch
+      text: 从此驼着背走路
+      tags: [solitude]
+      effects: { self: { mood: -8, mind: 1 } }
+
+- id: t_diary
+  kind: mirror
+  stage: teen
+  where: hallway
+  hint: 楼道里掉了一地的本子。
+  weight: 2
+  requires: { minAge: 13, maxAge: 15 }
+  title: 带锁的本子
+  text: 你们在楼道里撞了个满怀，书包里的东西撒了一地。捡起来才发现，手里那个带小锁的日记本不是自己的——锁没扣上。
+  options:
+    - id: peek
+      text: 翻开看一页
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: back
+      text: 原样还回去
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+    - id: lock
+      text: 替TA扣上锁再还
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 3 } }
+  resonance:
+    peek:
+      text: 两个人都翻开了一页，又在同一秒合上，红着脸把本子塞回对方手里。那一页上写了什么，谁都没问。
+      memory: 没问的那一页
+      bond: { sync: 3, close: 2 }
+    back:
+      text: "「你的。」「你的。」换完本子，你们各自进了门。"
+      memory: 你的
+      bond: { sync: 2, close: 1 }
+    lock:
+      text: 两个本子还回来时，锁都扣得好好的。咔哒一声，像说好了似的。
+      memory: 咔哒一声
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个人把本子原样还了回去。另一个人还回来的那本，有一页的页角折起了一小块。
+    bond: { close: -2 }
+
+- id: t_walkman
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 13, maxAge: 16 }
+  title: 绞了的磁带
+  text: 攒了半年钱买的随身听，今天把最喜欢的那盘磁带绞了。棕色的带子从机器里扯出来，缠成乱糟糟的一团。
+  options:
+    - id: pencil
+      text: 拿铅笔一圈圈卷回去
+      tags: [patient]
+      effects: { self: { mood: 5, mind: 1 } }
+    - id: record
+      text: 录一盘新的，送对门
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 8 }, bond: { close: 1 } }
+    - id: toss
+      text: 扔了，不听了
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+
+- id: t_misjudged
+  kind: solo
+  stage: teen
+  where: school
+  weight: 2
+  requires: { minAge: 13 }
+  title: 谁抄的谁
+  text: "你的作文和后排那人的几乎一字不差。老师把两张纸举起来：「谁抄的谁？」后排那人低着头，不吭声。"
+  options:
+    - id: stand
+      text: 站起来掰扯清楚
+      tags: [competitive]
+      effects: { self: { charm: 1, mood: -3 } }
+    - id: swallow
+      text: 不吭声，认了罚抄
+      tags: [patient]
+      effects: { self: { mood: -10, mind: 1 } }
+    - id: office
+      text: 下了课去办公室说
+      tags: [responsible]
+      effects: { self: { mind: 1, mood: -3, energy: -5 } }
+
+# ---------------------------------------------------------------
+# 楼下开了网吧
+# ---------------------------------------------------------------
+
+- id: t_netcafe_door
+  kind: mirror
+  stage: teen
+  where: alley
+  when: [900, 1260]
+  hint: 楼下新挂了一块棉门帘。
+  weight: 3
+  requires: { minAge: 13 }
+  title: 楼下开了网吧
+  text: 楼下原先的粮店改成了网吧，门口挂着厚棉门帘，里面噼里啪啦全是键盘声。门口还摆了张掉漆的台球桌，一块钱一局。
+  options:
+    - id: enter
+      text: 掀帘子进去
+      tags: [adventure]
+      effects: { self: { mood: 10, energy: -10 }, flags: [netcafe] }
+    - id: pool
+      text: 在门口打一局台球
+      tags: [competitive]
+      effects: { self: { mood: 8 } }
+    - id: home
+      text: 回家写作业
+      tags: [responsible]
+      effects: { self: { mind: 1, mood: -3 } }
+  resonance:
+    enter:
+      text: 只剩最后一台机器了。你们挤在一把椅子上，一个握鼠标一个指挥，一个钟头眨眼就没了。
+      memory: 一台机器两个人
+      bond: { sync: 3, close: 3 }
+    pool:
+      text: 你们打了七局，四比三。输的那个非说桌子是斜的，蹲下去看了半天。
+      memory: 斜的台球桌
+      bond: { sync: 3, close: 2 }
+    home:
+      text: 门帘后头吵吵嚷嚷。你们俩谁也没回头，一前一后上了楼。
+      memory: 没回头
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个人掀开门帘进去了。门帘落下来，把另一个人留在了外头的大太阳底下。
+    bond: { close: -1 }
+
+- id: t_netcafe_night
+  kind: solo
+  stage: teen
+  where: alley
+  when: [1140, 1320]
+  weight: 2
+  requires: { minAge: 14, flags: [netcafe] }
+  title: 门帘一掀
+  text: 夜里，网吧里烟雾腾腾，你兜里只剩最后两块钱。门帘一掀，冷风灌进来——进来的是你妈，手里攥着鸡毛掸子。
+  options:
+    - id: run
+      text: 从后门溜
+      tags: [adventure]
+      effects: { self: { body: 1, mood: -3 } }
+    - id: follow
+      text: 老老实实跟着回家
+      tags: [responsible]
+      effects: { self: { mood: -8, mind: 1 } }
+    - id: plead
+      text: "「再五分钟，就五分钟！」"
+      tags: [competitive]
+      effects: { self: { mood: -5, energy: -10, luck: 1 } }
+
+- id: t_first_money
+  kind: solo
+  stage: teen
+  where: bikeshop
+  weight: 2
+  requires: { minAge: 13 }
+  title: 第一次挣钱
+  text: 车铺爷爷今天腰疼，让你替他补了一下午的胎。收摊时，他从铁盒里数出五块钱，拍在你满是黑油的手心里。
+  options:
+    - id: tape
+      text: 去买一盘新磁带
+      tags: [adventure]
+      effects: { self: { mood: 10 } }
+    - id: home
+      text: 交给家里
+      tags: [responsible]
+      effects: { self: { charm: 1, mood: 3 } }
+    - id: treat
+      text: 请对门吃炸糕
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 8, hunger: 10 }, bond: { close: 1 } }
+
+- id: t_layoff
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 12, maxAge: 16 }
+  title: 厂子黄了
+  text: 不年不节的下午，爸爸居然在家，坐在床沿上擦他那个铝饭盒，擦了一遍又一遍。妈妈在厨房小声说：厂子黄了。
+  options:
+    - id: pretend
+      text: 假装什么都不知道
+      tags: [patient]
+      effects: { self: { mood: -5, mind: 1 } }
+    - id: money
+      text: 把零花钱塞回他抽屉
+      tags: [gentle]
+      effects: { self: { mood: -3, charm: 1 } }
+    - id: work
+      text: 去车铺问要不要帮工
+      tags: [responsible]
+      effects: { self: { body: 1, energy: -10 } }
+
+# ---------------------------------------------------------------
+# 楼顶、鸽子、楼道墙
+# ---------------------------------------------------------------
+
+- id: t_roof_fireworks
+  kind: mirror
+  stage: teen
+  where: roof
+  when: [1140, 1320]
+  hint: 楼顶有汽水瓶碰响。
+  weight: 2
+  title: 楼顶的烟花
+  text: 过年，海河对岸放烟花。大人们在屋里看电视，你们揣着两瓶偷拿的汽水溜上楼顶，瓶盖是用牙咬开的。
+  options:
+    - id: wish
+      text: 对着烟花许个愿
+      tags: [gentle]
+      effects: { self: { mood: 8 } }
+    - id: shout
+      text: 冲着对岸大喊一声
+      tags: [adventure]
+      effects: { self: { mood: 10, energy: -5 } }
+    - id: quiet
+      text: 什么都不说，喝汽水
+      tags: [solitude]
+      effects: { self: { mood: 5, energy: 5 } }
+  resonance:
+    wish:
+      text: 你们都闭上了眼睛。睁开时，最后一朵烟花刚好散完，天上只剩一点烟。
+      memory: 最后一朵
+      bond: { sync: 3, close: 3 }
+    shout:
+      text: 你们一起冲着对岸喊，喊的不是同一句，全被烟花盖住了。
+      memory: 被盖住的喊声
+      bond: { sync: 3, close: 2 }
+    quiet:
+      text: 汽水喝完了，你们把两个空瓶并排立在楼顶边上，像两个看烟花的小人。
+      memory: 两个空瓶
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 烟花炸开的那一下，你们一个在看天，一个在看旁边的人。
+    bond: { close: 1 }
+
+- id: t_pigeon_old
+  kind: mirror
+  stage: teen
+  where: roof
+  hint: 鸽子笼那边很安静。
+  weight: 3
+  requires: { minAge: 13, flags: [p_pigeon] }
+  title: 小灰老了
+  text: 小灰老了，羽毛没了光。别的鸽子飞出去三圈，它只在笼顶上扑腾两下。今天天很好，笼门开着。
+  options:
+    - id: fly
+      text: 托起它，往天上一送
+      tags: [adventure]
+      effects: { self: { mood: -3 } }
+    - id: keep
+      text: 关上笼门，让它歇着
+      tags: [gentle]
+      effects: { self: { mood: 3 } }
+    - id: sit
+      text: 陪它坐一会儿
+      tags: [patient]
+      effects: { self: { mood: 5, energy: 5 } }
+  resonance:
+    fly:
+      text: 你们一起把它送了出去。它飞得很低，绕着楼顶转了一圈，落在了对门的窗台上。
+      memory: 最后一圈
+      bond: { sync: 4, close: 3 }
+    keep:
+      text: 你们一人捏了一小撮玉米粒，从笼缝里塞进去。小灰咕咕了两声，跟小时候一样。
+      memory: 一撮玉米粒
+      bond: { sync: 3, close: 3 }
+    sit:
+      text: 你们靠着笼子坐到太阳落山。别家楼顶传来鸽哨声，小灰歪着脑袋听。
+      memory: 别家的鸽哨
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个想让它飞，一个想留下它。笼门开了又关，小灰在里面看着你们俩。
+    bond: { close: -1 }
+
+- id: t_wall_names
+  kind: mirror
+  stage: teen
+  where: hallway
+  hint: 楼道里一股石灰味。
+  weight: 3
+  requires: { minAge: 12, flags: [p_wall_names] }
+  title: 刷墙
+  text: 楼长请人来刷楼道，白灰桶就搁在你们两家门口。粉刷师傅的刷子，离墙上那两个歪歪扭扭的名字只剩一胳膊远。
+  options:
+    - id: stop
+      text: "「师傅，介块儿别刷！」"
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: let
+      text: 让他刷吧
+      tags: [solitude]
+      effects: { self: { mood: -5, mind: 1 } }
+    - id: redo
+      text: 等刷完了再刻一遍
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+  resonance:
+    stop:
+      text: 你们同时喊出了声。师傅乐了，绕着那两个名字刷了一圈，白墙上留下一块灰扑扑的方框。
+      memory: 墙上的方框
+      bond: { sync: 4, close: 3 }
+    redo:
+      text: 半夜，两扇门同时开了条缝。你们各攥着一根钉子，在新墙上把名字又刻了一遍，比原来深。
+      memory: 刻得更深
+      bond: { sync: 3, close: 3 }
+    let:
+      text: 名字没了。第二天早上出门，你们都朝那块白墙看了一眼，然后各自下楼。
+      memory: 一面白墙
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 师傅的刷子悬在半空，看看左边这个，又看看右边那个。最后那面墙刷了一半。
+    bond: { close: -1 }
+
+- id: t_empty_flat
+  kind: solo
+  stage: teen
+  where: hallway
+  weight: 2
+  requires: { minAge: 14, flags: [p_promise] }
+  title: 空出来的屋
+  text: 楼道尽头的老李家搬进了新楼，三楼第一次有了一间空屋，门上贴着「出售」。你站在门口，想起小时候拉过的那个钩。
+  options:
+    - id: knock
+      text: 去敲对门的门
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 5 }, bond: { close: 1 } }
+    - id: nothing
+      text: 什么也没说，回屋
+      tags: [solitude]
+      effects: { self: { mood: -3, mind: 1 } }
+    - id: diary
+      text: 把那个钩写进日记
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+
+# ---------------------------------------------------------------
+# 14 岁起：海边、腰上的小玩意儿
+# ---------------------------------------------------------------
+
+- id: t_seaside
+  kind: mirror
+  stage: teen
+  where: bikeshop
+  when: [420, 720]
+  hint: 车铺门口有人在打气。
+  weight: 3
+  requires: { minAge: 14 }
+  title: 骑车去海边
+  text: "车铺爷爷给两辆二八车都打足了气，拍拍车座：「顺着海河往东骑，骑到没路了，就是海。」"
+  options:
+    - id: go
+      text: 蹬上车就走
+      tags: [adventure]
+      effects: { self: { mood: 10, body: 1, energy: -15 } }
+    - id: river
+      text: 就在海河边转转
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+    - id: stay
+      text: 下午还得补课
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+  resonance:
+    go:
+      text: 骑到天快黑，眼前忽然一片灰蓝。风是咸的。你们谁都没说话，把车一扔就往水里跑。
+      memory: 咸的风
+      bond: { sync: 4, close: 3 }
+      flags: [p_seaside]
+    river:
+      text: 你们沿着堤岸骑了一下午，在铁桥底下吃了两套煎饼。海就先留着，下回再说。
+      memory: 下回再说
+      bond: { sync: 2, close: 2 }
+    stay:
+      text: 两辆车在车铺门口靠在一起，晒了一下午的太阳。
+      memory: 靠在一起的车
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个人已经跨上了车，另一个人还站在车铺门口。爷爷看看两个人，低下头接着补他的胎。
+    bond: { close: -1 }
+
+- id: t_pager
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 15, maxAge: 17 }
+  title: 腰上的小玩意儿
+  text: 班里好几个人腰上别着那个会「嘀嘀」响的小玩意儿。一响就低头看，看完就往外跑，神神秘秘的。
+  options:
+    - id: ask
+      text: 跟家里开口要
+      tags: [adventure]
+      effects: { self: { charm: 1, mood: 5 }, other: { mood: -3 } }
+    - id: save
+      text: 自己一分一分攒
+      tags: [patient]
+      effects: { self: { mind: 1, mood: -3 } }
+    - id: door
+      text: 不要，有事敲门就行
+      tags: [gentle]
+      effects: { self: { mood: 3 }, bond: { close: 1 } }
+
+- id: t_home_fight
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 14 }
+  title: 摔门之后
+  text: 昨晚跟家里大吵了一架，你摔门进了自己那屋。今天早上，桌上照常摆着一碗嘎巴菜，还冒着热气，屋里没人说话。
+  options:
+    - id: eat
+      text: 低头吃完，出门
+      tags: [patient]
+      effects: { self: { hunger: 20, mood: -3 } }
+    - id: sorry
+      text: 先开口：「昨晚……」
+      tags: [gentle]
+      effects: { self: { mood: 8, hunger: 15 } }
+    - id: leave
+      text: 不吃，摔门就走
+      tags: [competitive]
+      effects: { self: { hunger: -10, mood: -8, body: 1 } }
+
+# ---------------------------------------------------------------
+# 15 岁：中考，两条路
+# ---------------------------------------------------------------
+
+- id: t_zhongkao_morning
+  kind: mirror
+  stage: teen
+  where: breakfast
+  when: [390, 540]
+  hint: 早点铺今天出摊特别早。
+  weight: 3
+  requires: { minAge: 15, maxAge: 15, notFlags: [dropout] }
+  title: 中考那天早上
+  text: "中考那天一早，早点铺的老板娘看见你们俩背着书包，二话不说往鏊子上又磕了两个鸡蛋：「一人仨，考一百！」"
+  options:
+    - id: eat
+      text: 全吃完，撑着去考
+      tags: [competitive]
+      effects: { self: { hunger: 20, mood: 5, energy: -3 } }
+    - id: share
+      text: 匀一个鸡蛋给对门
+      tags: [gentle]
+      effects: { self: { hunger: 10 }, other: { hunger: 10, mood: 5 } }
+    - id: pocket
+      text: 揣兜里，考完再吃
+      tags: [patient]
+      effects: { self: { mood: 3, mind: 1 } }
+  resonance:
+    eat:
+      text: 你们俩在考场门口一起打了个嗝。监考老师从眼镜上头看了你们一眼。
+      memory: 考场门口的嗝
+      bond: { sync: 3, close: 2 }
+    share:
+      text: 你们隔着煎饼互相夹过去一个鸡蛋，绕了一圈，谁的也没少。
+      memory: 绕了一圈的鸡蛋
+      bond: { sync: 3, close: 3 }
+    pocket:
+      text: 考完出来，兜里的煎饼压成了一张饼中饼。你们蹲在马路牙子上，凉着吃完了。
+      memory: 凉煎饼
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个吃得满嘴是酱，一个攥着煎饼进了考场。出来时，谁也没问对方考得怎么样。
+    bond: { close: 0 }
+
+- id: t_near_morning
+  kind: mirror
+  stage: teen
+  where: breakfast
+  when: [390, 540]
+  hint: 早点铺门口靠着两辆车。
+  weight: 2
+  requires: { minAge: 15, flags: [school_near], notFlags: [school_far, dropout] }
+  title: 同一条上学路
+  text: 上了家门口的高中，早上还是一前一后下楼。老板娘不用问，两套煎饼已经摊好了，一套多放葱花，一套不要香菜。
+  options:
+    - id: ride
+      text: 一起骑车走
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: race
+      text: 比谁先到校门
+      tags: [competitive]
+      effects: { self: { body: 1, energy: -5 } }
+    - id: alone
+      text: 先走一步
+      tags: [solitude]
+      effects: { self: { mind: 1 } }
+  resonance:
+    ride:
+      text: 你们并排骑着，车把时不时碰一下。三年，这条路大概走了一千遍。
+      memory: 一千遍
+      bond: { sync: 3, close: 3 }
+    race:
+      text: "两辆车同时冲进校门，门卫大爷在后头喊：「慢点儿！又是你们俩！」"
+      memory: 又是你们俩
+      bond: { sync: 3, close: 2 }
+    alone:
+      text: 你们都想先走一步，结果在早点铺门口又撞上了，手里的煎饼还烫手。
+      memory: 又撞上了
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个人在早点铺门口等，等到煎饼都凉了。另一个人早就骑出去了。
+    bond: { close: -1 }
+
+- id: t_near_school
+  kind: solo
+  stage: teen
+  where: bikeshop
+  weight: 2
+  requires: { minAge: 15, flags: [school_near] }
+  title: 家门口
+  text: "上了家门口的高中，中午还能回家吃饭。路过车铺，爷爷从车底下探出头来：「好孩子，怎么没去考重点？」"
+  options:
+    - id: near
+      text: "「离家近，饭热乎。」"
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: smile
+      text: 笑笑，没接话
+      tags: [patient]
+      effects: { self: { charm: 1 } }
+    - id: vow
+      text: "「三年后见分晓。」"
+      tags: [competitive]
+      effects: { self: { mind: 1, energy: -5 } }
+
+- id: t_far_dorm
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 15, flags: [school_far] }
+  title: 住校的第一晚
+  text: 住校的第一晚，宿舍八张床。熄了灯，有人在被窝里哭，有人在磨牙。你睡上铺，离天花板只有一胳膊远。
+  options:
+    - id: letter
+      text: 打着手电给对门写信
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 5 }, bond: { close: 1 } }
+    - id: chat
+      text: 跟下铺聊到后半夜
+      tags: [adventure]
+      effects: { self: { charm: 1, energy: -10 } }
+    - id: tape
+      text: 蒙着被子听磁带
+      tags: [solitude]
+      effects: { self: { mood: 5 } }
+
+- id: t_far_weekend
+  kind: mirror
+  stage: teen
+  where: hallway
+  when: [1020, 1320]
+  hint: 楼道里有人拖着行李。
+  weight: 3
+  requires: { minAge: 15, flags: [school_far] }
+  title: 周末回来
+  text: 周五晚上，住校的人回来了。楼道的灯坏了一半，你们在两扇门中间撞了个正着。才一个月，好像谁都高了一点，又好像哪儿不太一样了。
+  options:
+    - id: talk
+      text: 先开口说话
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: wait
+      text: 等对方先开口
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: nod
+      text: 点个头，进屋
+      tags: [solitude]
+      effects: { self: { energy: 5 } }
+  resonance:
+    talk:
+      text: "「回来啦。」「嗯，回来了。」两个人同时开口，又同时闭上嘴，最后都乐了。"
+      memory: 回来啦
+      bond: { sync: 3, close: 3 }
+    wait:
+      text: 你们谁也没说话，就那么站着。暖气片咔哒响了一声，楼道的灯灭了。
+      memory: 灭掉的灯
+      bond: { sync: 3, close: 2 }
+    nod:
+      text: 两扇门几乎同时关上。隔着门，都听见了对面放下书包的声音。
+      memory: 隔着门
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个人还想说点什么，另一个人的门已经关上了。那句话留在楼道里，跟煤气罐一起待了一宿。
+    bond: { close: -1 }
+
+# ---------------------------------------------------------------
+# 16–17 岁：高中、家里出事、高考
+# ---------------------------------------------------------------
+
+- id: t_ball_game
+  kind: solo
+  stage: teen
+  where: school
+  when: [930, 1200]
+  weight: 2
+  requires: { minAge: 15 }
+  title: 投进了
+  text: 年级篮球赛决赛，最后三秒，你投进了。全班冲进场里，把你压在了人堆最底下，球还抱在怀里。
+  options:
+    - id: find
+      text: 爬出来找对门在哪
+      tags: [gentle]
+      effects: { self: { mood: 8 }, other: { mood: 5 }, bond: { close: 1 } }
+    - id: give
+      text: 把球塞给坐板凳的
+      tags: [responsible]
+      effects: { self: { charm: 1, mood: 5 } }
+    - id: lie
+      text: 躺着不动，看天
+      tags: [solitude]
+      effects: { self: { mood: 10, body: 1 } }
+
+- id: t_highrise
+  kind: mirror
+  stage: teen
+  where: river
+  when: [930, 1200]
+  hint: 对岸的高楼亮起了红灯。
+  weight: 2
+  requires: { minAge: 16 }
+  title: 对岸的高楼
+  text: 海河对岸起了第一栋高楼，楼顶一闪一闪地亮着红灯。你们骑车走在堤岸上，风把校服吹得鼓鼓的。
+  options:
+    - id: count
+      text: 停下来数有几层
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: race
+      text: 比谁先骑上铁桥
+      tags: [competitive]
+      effects: { self: { body: 1, energy: -8 } }
+    - id: hands
+      text: 撒开把骑
+      tags: [adventure]
+      effects: { self: { mood: 10, clean: -10 } }
+  resonance:
+    count:
+      text: 你们数出来的层数不一样，在桥头争了半天。后来才知道，那楼还没盖完。
+      memory: 没盖完的楼
+      bond: { sync: 3, close: 3 }
+    race:
+      text: 两辆车几乎同时冲上铁桥，桥板咣当咣当地响。你们喘得说不出话，光剩下笑。
+      memory: 咣当咣当
+      bond: { sync: 3, close: 2 }
+    hands:
+      text: 你们都撒开了车把，张着胳膊往前冲，像两只要飞的鸽子。差点一块儿栽进河里。
+      memory: 张开的胳膊
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个人停在了堤岸上，一个人骑远了。回过头喊了一声，声音被河风吹散了。
+    bond: { close: 0 }
+
+- id: t_family_trouble
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 16, notFlags: [dropout, gaokao_good, gaokao_bad] }
+  title: 家里出事了
+  text: 妈妈在车间里伤了手。夜里你听见爸妈在隔壁小声算账——学费、药费、下个月的煤气罐。算到后来，就没声了。
+  options:
+    - id: quit
+      text: 不念了，去打工
+      tags: [responsible]
+      effects: { self: { mood: -10, body: 1 }, flags: [dropout] }
+    - id: stay
+      text: 咬咬牙，接着念
+      tags: [competitive]
+      effects: { self: { mind: 1, mood: -5 } }
+    - id: both
+      text: 白天上学，晚上帮工
+      tags: [patient]
+      effects: { self: { body: 1, energy: -20, mood: -5 } }
+
+- id: t_first_paycheck
+  kind: solo
+  stage: teen
+  weight: 3
+  requires: { minAge: 16, flags: [dropout] }
+  title: 头一个月的工钱
+  text: 在港口仓库扛了一个月的货，你领到了头一份工钱。薄薄一沓，揣在兜里，一路上隔着裤子摸了好几遍。
+  options:
+    - id: table
+      text: 全拍在家里桌上
+      tags: [responsible]
+      effects: { self: { mood: 5, charm: 1 } }
+    - id: book
+      text: 偷偷买一套复习书
+      tags: [patient]
+      effects: { self: { mind: 2, mood: -3 } }
+    - id: treat
+      text: 请对门吃顿好的
+      tags: [gentle]
+      effects: { self: { mood: 8 }, other: { mood: 8 }, bond: { close: 1 } }
+
+- id: t_gate_dropout
+  kind: mirror
+  stage: teen
+  where: school
+  when: [930, 1140]
+  hint: 校门口蹲着个穿工装的。
+  weight: 3
+  requires: { minAge: 16, flags: [dropout] }
+  title: 校门口
+  text: 放学铃响了。校门口，一个背着书包，一个穿着沾了油的工装，中间隔着一道铁栅栏门，和一群往外涌的学生。
+  options:
+    - id: call
+      text: 喊对方的名字
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: noodle
+      text: "「走，吃碗面去。」"
+      tags: [gentle]
+      effects: { self: { hunger: 15 }, other: { mood: 5 } }
+    - id: pretend
+      text: 装作没看见
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+  resonance:
+    call:
+      text: 你们同时喊出了对方的名字，隔着栅栏都笑了。笑完，谁也不知道下一句该说什么。
+      memory: 隔着栅栏
+      bond: { sync: 3, close: 2 }
+    noodle:
+      text: 面馆里，一个说学校的事，一个说厂里的事。两碗面都坨了，话还没说完。
+      memory: 坨了的面
+      bond: { sync: 3, close: 3 }
+    pretend:
+      text: 你们都把头扭向了别处。人群散了，校门口只剩下两个背影，往两头走。
+      memory: 两个背影
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个人抬起手想打招呼，另一个人已经低头扎进了人群。那只手在半空停了一会儿，挠了挠头。
+    bond: { close: -1 }
+
+- id: t_gaokao
+  kind: solo
+  stage: teen
+  weight: 3
+  requires: { minAge: 17, notFlags: [dropout, gaokao_good, gaokao_bad] }
+  title: 最后一门
+  text: 高考最后一门，离交卷还有二十分钟，你忽然发现前面一道大题从第一步就错了。窗外的知了叫得人心慌。
+  options:
+    - id: redo
+      text: 推倒重算，赌一把
+      tags: [adventure]
+      effects: { self: { mind: 1, energy: -20, mood: -5 }, flags: [gaokao_good] }
+    - id: safe
+      text: 不动它，先保住会的
+      tags: [patient]
+      effects: { self: { mind: 1, mood: 3 }, flags: [gaokao_bad] }
+    - id: window
+      text: 搁下笔，看窗外
+      tags: [solitude]
+      effects: { self: { mood: 10, luck: 1 }, flags: [gaokao_bad] }

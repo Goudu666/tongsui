@@ -1,0 +1,921 @@
+# 家庭专属剧情（f_ 前缀）
+# 开局抽到的人家，traits 会成为本人的标记（fam_*）。每户一条贯穿一生的小线：童年 → 少年/青年 → 中年/老年。
+# 线靠个人标记串起来：后一步的 requires.flags = 家庭标记 + 前一步打的标记。
+# mirror 的 requires.flags 看两人标记的并集：只要有一方是这户人家就能触发。文案里不要说「你家」，两个人看到的是同一段字。
+# 接下家里营生的选项打 took_over，同时打一个本家的标记（chen_kept / zhou_kept ……），方便以后单独读取。
+
+# ======================== 陈家 · 自行车铺（fam_handy） ========================
+
+- id: f_chen_patch
+  kind: solo
+  stage: childhood
+  where: bikeshop
+  weight: 3
+  requires: { minAge: 5, flags: [fam_handy] }
+  title: 脸盆里的气泡
+  text: 你爸蹲在车铺门口补胎，把内胎一截一截按进脸盆里。他说：盯着，哪儿冒泡，哪儿就是漏眼。
+  options:
+    - id: watch
+      text: 蹲下来盯着水面
+      tags: [patient]
+      effects: { self: { mind: 1, mood: 5 }, flags: [chen_patch] }
+    - id: bell
+      text: 偷偷拆下一个车铃
+      tags: [adventure]
+      effects: { self: { body: 1, clean: -10 }, flags: [chen_patch] }
+    - id: run
+      text: 嫌一手油，跑了
+      tags: [solitude]
+      effects: { self: { mood: 5 } }
+
+- id: f_chen_old_bike
+  kind: mirror
+  stage: teen
+  where: bikeshop
+  when: [930, 1200]
+  hint: 车铺门口靠着一辆锈车。
+  weight: 3
+  requires: { minAge: 13, flags: [fam_handy, chen_patch] }
+  title: 锈死的二八车
+  text: 陈家车铺推进来一辆锈死的二八车。车主老太太说是她老伴儿的，修不好，就当废铁卖了吧。
+  options:
+    - id: strip
+      text: 一根辐条一根辐条地拆
+      tags: [patient]
+      effects: { self: { body: 1, clean: -15, energy: -10 }, flags: [chen_rust] }
+    - id: new
+      text: 全换新零件
+      tags: [responsible]
+      effects: { self: { mind: 1 }, flags: [chen_rust] }
+    - id: sell
+      text: 劝她卖了算了
+      tags: [solitude]
+      effects: { self: { mood: -5 }, flags: [chen_rust] }
+  resonance:
+    strip:
+      text: 修到车铺关门，链条终于转了一整圈。老太太按了按车铃，叮——她别过脸去。
+      memory: 叮的一声
+      bond: { sync: 3, close: 3 }
+    new:
+      text: 新车把，新链条，新座子。老太太绕着车走了三圈：「介还是他那辆吗？」你们俩谁也答不上来。
+      memory: 新零件
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个蹲着拆，一个站着劝。老太太看看这个，看看那个，把车推走了。第二天又推了回来。
+    bond: { close: 0 }
+
+- id: f_chen_wrench
+  kind: solo
+  stage: middle
+  where: bikeshop
+  weight: 3
+  requires: { minAge: 36, flags: [fam_handy, chen_rust] }
+  title: 那把扳手
+  text: 你爸的手抖了，一颗螺丝拧了三回没拧紧。他把那把磨得发亮的扳手放在工具箱最上面，没说话。
+  options:
+    - id: take
+      text: 拿起扳手
+      tags: [responsible]
+      effects: { self: { body: 1, mood: 5 }, flags: [took_over, chen_kept] }
+    - id: close
+      text: 劝他把铺子关了
+      tags: [gentle]
+      effects: { self: { mood: -10 }, flags: [chen_closed] }
+    - id: weekend
+      text: 周末回来帮一天
+      tags: [patient]
+      effects: { self: { energy: -10, mood: 5 } }
+
+# ======================== 林家 · 教书先生（fam_strict） ========================
+
+- id: f_lin_copybook
+  kind: solo
+  stage: childhood
+  weight: 3
+  requires: { minAge: 6, flags: [fam_strict] }
+  title: 一页大字
+  text: 林家的规矩：晚饭后写一页大字，写不完不许下楼。窗外，楼下有人在喊你的名字。
+  options:
+    - id: finish
+      text: 一笔一笔写完
+      tags: [responsible]
+      effects: { self: { mind: 1, mood: -5 }, flags: [lin_rules] }
+    - id: rush
+      text: 写得飞快，字像蚯蚓
+      tags: [adventure]
+      effects: { self: { mood: 5 }, flags: [lin_rules, lin_rebel] }
+    - id: note
+      text: 从窗户扔个纸团下去
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 5 }, flags: [lin_rules] }
+
+- id: f_lin_class
+  kind: mirror
+  stage: teen
+  where: school
+  when: [930, 1140]
+  hint: 有间教室放学了还亮着灯。
+  weight: 3
+  requires: { minAge: 12, maxAge: 16, flags: [fam_strict, lin_rules] }
+  title: 林老师的补课
+  text: 放学后，林家爸爸留下几个孩子补课，不收钱，规矩比课还多。对门的孩子也被家里塞了进来，两个人坐同一张桌。
+  options:
+    - id: listen
+      text: 坐直了认真听
+      tags: [responsible]
+      effects: { self: { mind: 2, mood: -5 }, flags: [lin_class] }
+    - id: doodle
+      text: 在桌底下传张画
+      tags: [adventure]
+      effects: { self: { mood: 5 }, flags: [lin_class] }
+    - id: board
+      text: 下课帮着擦黑板
+      tags: [gentle]
+      effects: { self: { charm: 1 }, flags: [lin_class] }
+  resonance:
+    listen:
+      text: 两个本子上的红勾一样多。林老师难得笑了一下：「明儿给你们俩煮挂面。」
+      memory: 一样多的红勾
+      bond: { sync: 3, close: 2 }
+    doodle:
+      text: 画被截了。林老师当众打开，是他自己，头上长了两只角。他没骂，把画夹进了教案里。
+      memory: 长角的林老师
+      bond: { sync: 3, close: 3 }
+    board:
+      text: 两块黑板擦拍在一起，粉笔灰扑了一脸。林老师在门口站了一会儿，假装没看见。
+      memory: 粉笔灰
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个在认真记笔记，一个在桌子底下戳TA的胳膊。林老师咳嗽了一声，两个人都坐直了。
+    bond: { close: 0 }
+
+- id: f_lin_podium
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 30, maxAge: 45, flags: [fam_strict, lin_class] }
+  title: 那块讲台
+  text: 你爸退休那天，学校来人问你，愿不愿意回来教他那个班。他的教案还在抽屉里，里面夹着一张长角的画。
+  options:
+    - id: teach
+      text: 回来，站上那块讲台
+      tags: [responsible]
+      effects: { self: { mind: 1, charm: 1 }, flags: [took_over, lin_teach] }
+    - id: away
+      text: 不了，想去别处看看
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: keep
+      text: 把教案收进箱子里
+      tags: [patient]
+      effects: { self: { mood: -5, mind: 1 } }
+
+# ======================== 周家 · 早点铺（fam_breakfast） ========================
+
+- id: f_zhou_dough
+  kind: solo
+  stage: childhood
+  seasons: [winter, autumn]
+  weight: 3
+  requires: { minAge: 5, flags: [fam_breakfast] }
+  title: 凌晨三点
+  text: 凌晨三点，外屋的灯亮了。爸妈在和面，面盆比你还大，屋里一股热乎乎的绿豆面味儿。
+  options:
+    - id: knead
+      text: 挽起袖子帮着揉
+      tags: [responsible]
+      effects: { self: { body: 1, energy: -15 }, flags: [zhou_dough] }
+    - id: eggs
+      text: 蹲着数鸡蛋
+      tags: [patient]
+      effects: { self: { mind: 1, energy: -10 }, flags: [zhou_dough] }
+    - id: bed
+      text: 钻回被窝
+      tags: [solitude]
+      effects: { self: { energy: 10 } }
+
+- id: f_zhou_stall
+  kind: solo
+  stage: young
+  where: breakfast
+  weight: 3
+  requires: { minAge: 21, flags: [fam_breakfast, zhou_dough] }
+  title: 这摊子你要吗
+  text: 过年回来，你妈手腕上贴着膏药。你爸一边摊煎饼一边说：这摊子，你要不要？不要，开春就盘出去了。
+  options:
+    - id: take
+      text: 我接
+      tags: [responsible]
+      effects: { self: { charm: 1, energy: -15 }, flags: [took_over, zhou_kept] }
+    - id: sell
+      text: 盘出去吧，你们歇歇
+      tags: [gentle]
+      effects: { self: { mood: -5 }, flags: [zhou_sold] }
+    - id: recipe
+      text: 先把面糊方子抄下来
+      tags: [patient]
+      effects: { self: { mind: 1 }, flags: [zhou_sold, zhou_recipe] }
+
+- id: f_zhou_taste
+  kind: mirror
+  stage: old
+  where: breakfast
+  when: [390, 600]
+  hint: 早点铺的铛冒着热气。
+  weight: 3
+  requires: { flags: [fam_breakfast, zhou_dough] }
+  title: 还是那个味儿
+  text: 楼下的早点铺换过三回招牌，面糊还是周家那个方子。两个老人站在铛前，等一套煎饼果子。
+  options:
+    - id: two_eggs
+      text: 俩鸡蛋，多放葱花
+      tags: [gentle]
+      effects: { self: { mood: 10, hunger: 20 } }
+    - id: share
+      text: 就要一套，分着吃
+      tags: [patient]
+      effects: { self: { mood: 5, hunger: 10 } }
+  resonance:
+    two_eggs:
+      text: 你们异口同声，跟七岁那年一模一样。摊煎饼的小年轻乐了：介二位，倍儿默契。
+      memory: 多放葱花
+      bond: { sync: 3, close: 2 }
+    share:
+      text: 一套煎饼，一人一半。咬下去，是凌晨三点的面盆味儿。
+      memory: 一人一半
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个要了俩鸡蛋，一个只要半套。最后半套也让给了对方。
+    bond: { close: 1 }
+
+# ======================== 许家 · 跑海运（fam_father_away / fam_rich） ========================
+
+- id: f_xu_ships
+  kind: mirror
+  stage: childhood
+  where: river
+  when: [900, 1140]
+  hint: 铁桥下面有船鸣笛。
+  weight: 3
+  requires: { minAge: 5, flags: [fam_father_away] }
+  title: 数船
+  text: 许家挂历上的红圈只剩三个了，船就要靠岸。两个孩子趴在铁桥栏杆上，一条一条数从底下过去的船。
+  options:
+    - id: count
+      text: 一条一条接着数
+      tags: [patient]
+      effects: { self: { mood: 5 }, flags: [xu_waiting] }
+    - id: paper
+      text: 折个纸船放下去
+      tags: [gentle]
+      effects: { self: { mood: 5, luck: 1 }, flags: [xu_waiting] }
+    - id: shout
+      text: 冲每条船喊一声
+      tags: [adventure]
+      effects: { self: { charm: 1, energy: -10 }, flags: [xu_waiting] }
+  resonance:
+    count:
+      text: 数到第六十三条，天黑了。谁也没说那条船没来。
+      memory: 第六十三条船
+      bond: { sync: 3, close: 3 }
+    paper:
+      text: 两只纸船一前一后漂远了。有人小声说：船上的人会看见的。
+      memory: 两只纸船
+      bond: { sync: 3, close: 3 }
+    shout:
+      text: 喊到嗓子哑，有条船真的鸣了一声笛。两个人高兴得差点翻过栏杆。
+      memory: 回了一声笛
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个还在数，一个已经不想等了。桥上的风很大，挂历上的圈还剩三个。
+    bond: { close: 0 }
+
+- id: f_xu_retire
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 20, flags: [fam_father_away, xu_waiting] }
+  title: 他不走了
+  text: 你爸退休了，这回不走了。他每天五点站在阳台上看天，问你吃没吃饭，客气得像问一个邻居。
+  options:
+    - id: river
+      text: 陪他去海河边站站
+      tags: [gentle]
+      effects: { self: { mood: 5 }, flags: [xu_home, xu_near] }
+    - id: ask
+      text: 问他船上是嘛样
+      tags: [patient]
+      effects: { self: { mind: 1 }, flags: [xu_home, xu_near] }
+    - id: apart
+      text: 各过各的吧
+      tags: [solitude]
+      effects: { self: { mood: -10 }, flags: [xu_home] }
+
+- id: f_xu_logbook
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 36, flags: [fam_father_away, xu_home] }
+  title: 航海日志
+  text: 你爸眼睛花了。他把一摞发黄的航海日志推过来：念念。第一本第一页写着：今天风大，想家。
+  options:
+    - id: read
+      text: 一页一页念给他听
+      tags: [patient]
+      effects: { self: { mood: 10 }, flags: [xu_read] }
+    - id: write
+      text: 念完，在空白页接着写
+      tags: [responsible]
+      effects: { self: { mind: 1, mood: 5 }, flags: [took_over, xu_log] }
+    - id: later
+      text: 合上，说明儿再念
+      tags: [solitude]
+      effects: { self: { mood: -10 } }
+
+# ======================== 何家 · 姥姥带大（fam_grandma / fam_poor） ========================
+
+- id: f_he_story99
+  kind: mirror
+  stage: childhood
+  where: hallway
+  when: [1080, 1300]
+  hint: 楼道里有人在讲古。
+  weight: 3
+  requires: { minAge: 5, flags: [fam_grandma] }
+  title: 第九十九个
+  text: 何家姥姥坐着小马扎在楼道里择韭菜，一边择一边讲。讲完第九十九个，她拍拍手：第一百个，等你们长大再讲。
+  options:
+    - id: beg
+      text: 缠着她现在就讲
+      tags: [adventure]
+      effects: { self: { mood: 5 }, flags: [he_99] }
+    - id: pinky
+      text: 拉钩，等长大
+      tags: [patient]
+      effects: { self: { mood: 5 }, flags: [he_99] }
+    - id: write
+      text: 把故事记在作业本背面
+      tags: [responsible]
+      effects: { self: { mind: 1 }, flags: [he_99, he_notebook] }
+  resonance:
+    pinky:
+      text: 三根手指勾在一起，姥姥的那根最粗。她说：第一百个，给你们俩留着。
+      memory: 第一百个
+      bond: { sync: 3, close: 4 }
+      flags: [p_hundredth]
+    beg:
+      text: 两个人一左一右拽着姥姥的袖子。韭菜撒了一地，第一百个还是没讲。
+      memory: 一地韭菜
+      bond: { sync: 3, close: 2 }
+    write:
+      text: 姥姥不识字，凑过来看两个本子：「介写的是我？」你们一起念给她听，她乐得直拍腿。
+      memory: 作业本背面
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个还在缠，一个已经拉了钩。姥姥一手一个，把你们俩的脑袋按在一块儿。
+    bond: { close: 1 }
+
+- id: f_he_gone
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 21, flags: [fam_grandma, he_99] }
+  title: 姥姥走了
+  text: 姥姥走了。收拾床铺，枕头底下压着一个手绢包，里头是你小时候掉的牙，还有一张谁也看不懂的画。
+  options:
+    - id: pocket
+      text: 把那张画揣进兜里
+      tags: [gentle]
+      effects: { self: { mood: -10 }, flags: [he_gone, he_paper] }
+    - id: sit
+      text: 在床边坐了一宿
+      tags: [solitude]
+      effects: { self: { mood: -15, energy: -20 }, flags: [he_gone] }
+    - id: door
+      text: 去敲对门
+      tags: [gentle]
+      effects: { self: { mood: -5 }, other: { mood: -5 }, bond: { close: 2 }, flags: [he_gone] }
+
+- id: f_he_hundredth
+  kind: solo
+  stage: old
+  weight: 3
+  requires: { flags: [fam_grandma, he_gone] }
+  title: 第一百个
+  text: 小孙子扒着门框，要听故事。九十九个，你都讲过了。
+  options:
+    - id: tell
+      text: 讲第一百个
+      tags: [gentle]
+      effects: { self: { mood: 15 }, flags: [took_over, he_told] }
+    - id: wait
+      text: 「等你长大再讲。」
+      tags: [patient]
+      effects: { self: { mood: 5 }, flags: [he_wait] }
+    - id: candy
+      text: 塞给TA一块糖
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+
+# ======================== 苏家 · 裁缝铺（fam_tailor） ========================
+
+- id: f_su_doll
+  kind: solo
+  stage: childhood
+  weight: 3
+  requires: { minAge: 5, flags: [fam_tailor] }
+  title: 缝纫机底下
+  text: 你妈的缝纫机咔哒咔哒响了一晚上。踏板底下，你捡着碎布头，给布娃娃缝第一件衣裳。
+  options:
+    - id: sew
+      text: 一针一针缝完
+      tags: [patient]
+      effects: { self: { charm: 1, mood: 5 }, flags: [su_needle] }
+    - id: prick
+      text: 扎了手，含着指头接着缝
+      tags: [responsible]
+      effects: { self: { mood: -5, body: 1 }, flags: [su_needle] }
+    - id: pedal
+      text: 趁她不注意踩一脚踏板
+      tags: [adventure]
+      effects: { self: { mood: 10 }, flags: [su_needle] }
+
+- id: f_su_same_cloth
+  kind: mirror
+  stage: teen
+  where: hallway
+  hint: 楼道里有股新布的味儿。
+  weight: 3
+  requires: { minAge: 12, maxAge: 15, flags: [fam_tailor, su_needle] }
+  title: 同一匹布
+  text: 过年前，苏家裁缝铺剩下一截格子布，正好够做两件褂子。一件挂在苏家门上，一件挂在对门门上。
+  options:
+    - id: wear
+      text: 穿上下楼转一圈
+      tags: [adventure]
+      effects: { self: { charm: 1, mood: 5 }, flags: [su_cloth] }
+    - id: save
+      text: 留到初一再穿
+      tags: [patient]
+      effects: { self: { mood: 5 }, flags: [su_cloth] }
+    - id: no
+      text: 一样的，才不穿
+      tags: [solitude]
+      effects: { self: { mood: -5 }, flags: [su_cloth] }
+  resonance:
+    wear:
+      text: 两件一模一样的格子褂子走在楼下，整条街都在乐：「介是双胞胎？」
+      memory: 同一匹布
+      bond: { sync: 3, close: 3 }
+    save:
+      text: 大年初一，两扇门同时开了。你们看着对方的褂子，谁也没憋住。
+      memory: 初一的格子褂
+      bond: { sync: 3, close: 3 }
+    no:
+      text: 两件褂子在门上挂了一冬。开春收起来的时候，谁也没说为嘛。
+      memory: 挂了一冬
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个人穿着格子褂在楼下转了三圈，另一件还挂在门上。
+    bond: { close: -1 }
+
+- id: f_su_machine
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 33, flags: [fam_tailor, su_cloth] }
+  title: 盖着布的缝纫机
+  text: 你妈穿不上针了。缝纫机上盖着块格子布，铺子里还挂着三件没人来取的衣裳。
+  options:
+    - id: pedal
+      text: 掀开布，踩起来
+      tags: [responsible]
+      effects: { self: { charm: 1, mood: 5 }, flags: [took_over, su_kept] }
+    - id: deliver
+      text: 把那三件送到人家门上
+      tags: [gentle]
+      effects: { self: { mood: 5, energy: -10 }, flags: [su_closed] }
+    - id: table
+      text: 搬回家当桌子用
+      tags: [patient]
+      effects: { self: { mood: -5 }, flags: [su_closed] }
+
+# ======================== 唐家 · 南方搬来的（fam_outsider / fam_rich） ========================
+
+- id: f_tang_rope
+  kind: mirror
+  stage: childhood
+  where: alley
+  when: [900, 1140]
+  hint: 跳皮筋的还差一个人。
+  weight: 3
+  requires: { minAge: 4, maxAge: 8, flags: [fam_outsider] }
+  title: 南腔北调
+  text: 楼下跳皮筋缺一个人。唐家刚搬来，说话没有天津味儿，楼里的孩子都还不太跟TA玩。两个人隔着一根皮筋站着。
+  options:
+    - id: speak
+      text: 先开口
+      tags: [adventure]
+      effects: { self: { charm: 1 }, flags: [tang_new] }
+    - id: wait
+      text: 等对方先开口
+      tags: [patient]
+      effects: { self: { mood: -5 }, flags: [tang_new] }
+    - id: hand
+      text: 把皮筋递过去
+      tags: [gentle]
+      effects: { self: { mood: 5 }, flags: [tang_new] }
+  resonance:
+    speak:
+      text: 两个人同时张嘴，一个说「来呀」，一个说「我可以玩吗」。一个北调，一个南腔。
+      memory: 南腔北调
+      bond: { sync: 4, close: 3 }
+    wait:
+      text: 两个人干站着，站到皮筋都收了。第二天还是这样。第三天，一起笑了。
+      memory: 第三天
+      bond: { sync: 3, close: 2 }
+    hand:
+      text: 两只手同时伸出去，皮筋一拽，绷直了。谁也没说话，就这么跳上了。
+      memory: 绷直的皮筋
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个开了口，一个还低着头。那句话听岔了，回家琢磨了一晚上。
+    bond: { close: 1 }
+
+- id: f_tang_south
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 22, flags: [fam_outsider, tang_new] }
+  title: 回南方吗
+  text: 你爸的生意在南方越做越大，他打电话来：回来吧，公司总得有人接。你张嘴回了一句「嘛？」，自己都愣了。
+  options:
+    - id: go
+      text: 回南方接手
+      tags: [responsible]
+      effects: { self: { mind: 1 }, bond: { distance: 1 }, flags: [took_over, tang_kept, tang_grown] }
+    - id: stay
+      text: 我在这儿挺好
+      tags: [gentle]
+      effects: { self: { mood: 5 }, flags: [tang_grown] }
+    - id: later
+      text: 再给我两年
+      tags: [patient]
+      effects: { self: { mood: -5 }, flags: [tang_grown] }
+
+- id: f_tang_where_from
+  kind: solo
+  stage: old
+  weight: 3
+  requires: { flags: [fam_outsider, tang_grown] }
+  title: 哪儿人
+  text: 孙子问你：你到底是哪儿人？你一张嘴，南腔北调。
+  options:
+    - id: tianjin
+      text: 「天津的。」
+      tags: [gentle]
+      effects: { self: { mood: 10 } }
+    - id: south
+      text: 「南边儿的。」
+      tags: [solitude]
+      effects: { self: { mood: 5 } }
+    - id: here
+      text: 「河畔里三楼的。」
+      tags: [patient]
+      effects: { self: { mood: 10 }, other: { mood: 5 } }
+
+# ======================== 吴家 · 钢厂双职工（fam_independent / fam_poor） ========================
+
+- id: f_wu_key
+  kind: solo
+  stage: childhood
+  when: [930, 1140]
+  weight: 3
+  requires: { minAge: 6, flags: [fam_independent] }
+  title: 脖子上的钥匙
+  text: 放学回家，锅里留着窝头和熬白菜，锅盖上压着一张纸条：自己热。钥匙还挂在你脖子上，凉冰冰的。
+  options:
+    - id: heat
+      text: 踮着脚点煤气
+      tags: [responsible]
+      effects: { self: { body: 1, hunger: 20 }, flags: [wu_key] }
+    - id: cold
+      text: 凉着吃
+      tags: [solitude]
+      effects: { self: { hunger: 15, mood: -5 }, flags: [wu_key] }
+    - id: knock
+      text: 端着锅去敲对门
+      tags: [gentle]
+      effects: { self: { hunger: 20, mood: 5 }, other: { mood: 5 }, bond: { close: 1 }, flags: [wu_key] }
+
+- id: f_wu_hire
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 18, maxAge: 24, flags: [fam_independent, wu_key] }
+  title: 进厂
+  text: 钢厂招工，子弟优先。你爸把表格放在饭桌上，手指头敲了两下：铁饭碗，想好了。
+  options:
+    - id: join
+      text: 填表，进厂
+      tags: [responsible]
+      effects: { self: { body: 1 }, flags: [took_over, wu_kept, wu_factory] }
+    - id: out
+      text: 不进，出去闯
+      tags: [adventure]
+      effects: { self: { mood: 5 }, flags: [wu_factory] }
+    - id: fold
+      text: 把表格叠好收起来
+      tags: [patient]
+      effects: { self: { mind: 1, mood: -5 }, flags: [wu_factory] }
+
+- id: f_wu_chimney
+  kind: mirror
+  stage: middle
+  where: river
+  when: [480, 720]
+  hint: 河边站满了人，都朝一个方向看。
+  weight: 3
+  requires: { flags: [fam_independent, wu_factory] }
+  title: 最后一根烟囱
+  text: 钢厂要搬了，河对岸那根大烟囱今天拆。吴家老两口一大早就搬着马扎来了，河边站满了穿过蓝工装的人。
+  options:
+    - id: count
+      text: 跟着大伙儿数倒计时
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+    - id: turn
+      text: 别过脸去
+      tags: [solitude]
+      effects: { self: { mood: -10 } }
+    - id: hold
+      text: 扶住吴家老爷子
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 5 } }
+  resonance:
+    count:
+      text: 「三、二、一——」烟囱慢慢坐了下去。灰散了以后，两个人才发现自己一直攥着对方的袖子。
+      memory: 最后一根烟囱
+      bond: { sync: 3, close: 3 }
+    hold:
+      text: 两只手同时扶住了老爷子。他没看烟囱，一直看着你们俩：「介俩孩子，都长这么大了。」
+      memory: 都长这么大了
+      bond: { sync: 3, close: 4 }
+    turn:
+      text: 两个人都背过身去。轰的一声，脚底下震了一下。谁也没回头。
+      memory: 背过身去
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个在数，一个别过了脸。烟囱倒下的那一下，只有一个人看见了。
+    bond: { close: 0 }
+
+# ======================== 顾家 · 说相声的（fam_crosstalk） ========================
+
+- id: f_gu_backstage
+  kind: solo
+  stage: childhood
+  weight: 3
+  requires: { minAge: 5, flags: [fam_crosstalk] }
+  title: 茶馆后台
+  text: 茶馆后台一股茶叶末和烟味儿。你蹲在箱子后面，听你爸在台上抖包袱，台下笑一阵，你也跟着笑一阵。
+  options:
+    - id: memorize
+      text: 偷偷把包袱记下来
+      tags: [patient]
+      effects: { self: { mind: 1 }, flags: [heard_backstage] }
+    - id: block
+      text: 学他拍一下醒木
+      tags: [adventure]
+      effects: { self: { charm: 1 }, flags: [heard_backstage] }
+    - id: sleep
+      text: 趴在箱子上睡着了
+      tags: [solitude]
+      effects: { self: { energy: 10 } }
+
+- id: f_gu_first_stage
+  kind: mirror
+  stage: teen
+  where: alley
+  when: [1080, 1300]
+  hint: 楼下搭了个小台子。
+  weight: 3
+  requires: { minAge: 12, flags: [fam_crosstalk, heard_backstage] }
+  title: 第一次捧哏
+  text: 居委会联欢，楼下支了个小台子。顾叔逗哏，捧哏的是顾家的孩子，头一回上台。对门搬着小板凳，坐第一排。
+  options:
+    - id: look
+      text: 往对方那儿看一眼
+      tags: [gentle]
+      effects: { self: { mood: 5 }, flags: [gu_stage] }
+    - id: steady
+      text: 绷住了，谁也不看
+      tags: [responsible]
+      effects: { self: { charm: 1 }, flags: [gu_stage] }
+    - id: crack
+      text: 先乐场了
+      tags: [adventure]
+      effects: { self: { mood: 10 }, flags: [gu_stage] }
+  resonance:
+    look:
+      text: 台上台下对了一眼。顾叔包袱刚落地，那声「嗯」接得正是时候，满堂彩。
+      memory: 第一排的小板凳
+      bond: { sync: 4, close: 3 }
+    crack:
+      text: 台下先乐了，台上也绷不住了。顾叔拿扇子一指：「介俩孩子，砸挂砸到自个儿人身上了！」
+      memory: 笑场
+      bond: { sync: 3, close: 3 }
+    steady:
+      text: 一个字没错，一眼没看。下了台，两个人的手心都是汗。
+      memory: 手心的汗
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个往这边看，一个没看过去。那声「嗯」慢了半拍，台下还是鼓了掌。
+    bond: { close: 0 }
+
+- id: f_gu_fan
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 39, flags: [fam_crosstalk, gu_stage] }
+  title: 你接着说
+  text: 你爸嗓子哑了，说不动了。他把那把用了四十年的扇子往你手里一塞：下礼拜那场，你接着说。
+  options:
+    - id: take
+      text: 接过扇子上台
+      tags: [responsible]
+      effects: { self: { charm: 2, mood: 5 }, flags: [took_over, gu_kept] }
+    - id: once
+      text: 就说这一场，给他听
+      tags: [gentle]
+      effects: { self: { charm: 1, mood: 10 }, flags: [gu_once] }
+    - id: hang
+      text: 把扇子挂回墙上
+      tags: [solitude]
+      effects: { self: { mood: -10 } }
+
+# ======================== 江家 · 四口挤一间（fam_siblings / fam_poor） ========================
+
+- id: f_jiang_floor
+  kind: mirror
+  stage: childhood
+  where: hallway
+  when: [1140, 1320]
+  hint: 楼道里铺了一溜凉席。
+  seasons: [summer]
+  weight: 3
+  requires: { minAge: 4, flags: [fam_siblings] }
+  title: 楼道里打地铺
+  text: 江家一间屋挤不下，夏天三个孩子抱着凉席睡楼道。哥哥占了暖气片那头，妹妹已经睡着了，留出一条缝。
+  options:
+    - id: ghost
+      text: 讲鬼故事
+      tags: [adventure]
+      effects: { self: { mood: 5, energy: -10 }, flags: [jiang_floor] }
+    - id: fan
+      text: 给妹妹扇扇子
+      tags: [gentle]
+      effects: { self: { mood: 5 }, flags: [jiang_floor] }
+    - id: sleep
+      text: 挤着躺下，先睡
+      tags: [patient]
+      effects: { self: { energy: 15 }, flags: [jiang_floor] }
+  resonance:
+    ghost:
+      text: 鬼故事讲到一半，楼道灯灭了。四个孩子同时尖叫，三楼的门全开了。
+      memory: 楼道灯灭了
+      bond: { sync: 3, close: 3 }
+    fan:
+      text: 两把蒲扇对着一个妹妹扇。妹妹睡得打呼噜，你们俩胳膊都酸了。
+      memory: 两把蒲扇
+      bond: { sync: 3, close: 3 }
+    sleep:
+      text: 四个人挤一条缝，谁的脚丫子都搭在谁身上。早上醒来，凉席印了一脸。
+      memory: 凉席印
+      bond: { sync: 2, close: 3 }
+  dissonance:
+    text: 一个还在讲鬼故事，一个已经睡着了。讲故事的人自己把自己吓着了。
+    bond: { close: 1 }
+
+- id: f_jiang_tuition
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 19, flags: [fam_siblings, jiang_floor] }
+  title: 妹妹的学费
+  text: 妹妹考上了外地的大学，学费还差一截。哥哥寄回来一点，你攒的那个信封就在抽屉里，鼓鼓囊囊的。
+  options:
+    - id: all
+      text: 整个信封塞给她
+      tags: [gentle]
+      effects: { self: { mood: 5 }, flags: [jiang_tuition, jiang_gave] }
+    - id: half
+      text: 给一半，留一半
+      tags: [responsible]
+      effects: { self: { mind: 1 }, flags: [jiang_tuition] }
+    - id: keep
+      text: 信封留着，自己也要用
+      tags: [solitude]
+      effects: { self: { mood: -10 }, flags: [jiang_tuition] }
+
+- id: f_jiang_room
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 36, flags: [fam_siblings, jiang_tuition] }
+  title: 那一间屋
+  text: 哥哥在外地，妹妹在更远的地方。爸妈老了，那一间小屋终于空出来了，空得有点不习惯。
+  options:
+    - id: move
+      text: 搬回来照顾他们
+      tags: [responsible]
+      effects: { self: { mood: 5, energy: -10 }, flags: [took_over, jiang_kept] }
+    - id: call
+      text: 拉个群，三个人轮着回来
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: visit
+      text: 每礼拜回来吃顿饭
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+
+# ======================== 家境：清贫 / 殷实 ========================
+
+- id: f_poor_shoes
+  kind: solo
+  stage: childhood
+  seasons: [spring, autumn]
+  weight: 2
+  requires: { minAge: 6, flags: [fam_poor] }
+  title: 鞋里的纸板
+  text: 鞋底磨穿了，你往里垫了一块硬纸板。下雨了，纸板一点一点变软。
+  options:
+    - id: tell
+      text: 回家跟大人说
+      tags: [responsible]
+      effects: { self: { mood: -5 } }
+    - id: another
+      text: 再垫一块，不说
+      tags: [patient]
+      effects: { self: { mind: 1, mood: -5 }, flags: [hid_hard] }
+    - id: barefoot
+      text: 拎着鞋光脚走回来
+      tags: [adventure]
+      effects: { self: { body: 1, clean: -15, mood: 5 } }
+
+- id: f_rich_toycar
+  kind: solo
+  stage: childhood
+  where: alley
+  weight: 2
+  requires: { minAge: 5, flags: [fam_rich] }
+  title: 会跑的小汽车
+  text: 家里给你买了个会自己跑的小汽车，整条街没人见过。楼下的孩子都跟着你，你分不清他们是来看车的，还是来找你的。
+  options:
+    - id: lend
+      text: 让大家轮着玩
+      tags: [gentle]
+      effects: { self: { charm: 1, mood: 5 } }
+    - id: other
+      text: 只给对门玩
+      tags: [responsible]
+      effects: { self: { mood: 5 }, other: { mood: 10 }, bond: { close: 1 } }
+    - id: hide
+      text: 收起来，一个人玩
+      tags: [solitude]
+      effects: { self: { mind: 1, mood: -5 } }
+
+- id: f_trip_money
+  kind: mirror
+  stage: teen
+  where: school
+  when: [930, 1140]
+  hint: 班里在收春游的钱。
+  weight: 2
+  requires: { minAge: 12, maxAge: 15, flags: [fam_poor, fam_rich] }
+  title: 春游的三十块
+  text: 学校组织去海边春游，一人交三十块，明天截止。一个人兜里有，一个人兜里没有。两个人都知道。
+  options:
+    - id: skip
+      text: 说自己不想去
+      tags: [gentle]
+      effects: { self: { mood: -5 } }
+    - id: earn
+      text: 拉上对方去车铺挣
+      tags: [competitive]
+      effects: { self: { body: 1, energy: -15 } }
+    - id: quiet
+      text: 装作不知道这事
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+  resonance:
+    skip:
+      text: 两个人都说不想去。那天你们在楼顶坐了一下午，谁也没提钱的事。
+      memory: 没去的春游
+      bond: { sync: 4, close: 4 }
+    earn:
+      text: 两个人一起在车铺蹲了三个下午，满手机油，凑够了。海边的风是咸的。
+      memory: 机油换的海风
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个说了不想去，一个还在琢磨怎么开口。第二天，班里的名单上少了一个名字，又好像多了一个。
+    bond: { close: -1 }

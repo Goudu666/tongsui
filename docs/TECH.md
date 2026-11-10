@@ -94,6 +94,7 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | `families.yaml` | 投胎能抽到的人家：家境、零花钱、属性加成、家庭标记 |
 | `talents.yaml` | 先天天赋 |
 | `map.yaml` | 地图：地点（矩形区域）、互动点、行动（时长、需求/属性变化、花钱挣钱、同框效果、条件） |
+| `endings.yaml` | 结局：两个人的结局（pair）和每个人的一生小结（lives），按顺序匹配，最后一条兜底 |
 
 事件格式：
 
@@ -106,7 +107,9 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
   hint: 楼顶好像有人在收凉席。   # 可选，地图上飘着的提示
   seasons: [summer]      # 可选，仅童年有季节
   weight: 3              # 抽取权重
-  requires: { minAge: 6, flags: [erhu], notFlags: [] }   # 可选，flags 可以是家庭/天赋/事件打的标记
+  requires: { minAge: 6, flags: [erhu], notFlags: [] }   # 可选，flags 可以是家庭/天赋/事件打的标记（mirror 看两人的并集）
+  # requires 还可以写：minClose/maxClose 亲近、minSync/maxSync 默契、minDistance/maxDistance 距离、
+  #   alone: true（只在对方已经离开以后，仅 solo）/ false（只在两人都在世时）
   title: 楼顶的夏夜
   text: 夏天晚上，楼顶比屋里凉快……
   options:
@@ -119,15 +122,22 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
         bond:  { sync: 1, close: 1 }     # sync 默契 / close 亲近 / distance 距离
         flags: [saw_stars]
   resonance:                             # mirror 专用：两人选到同一项
-    stars: { text: ……, memory: 第四十七颗星, bond: { sync: 3 } }
-  dissonance: { text: ……, bond: { close: 1 } }   # mirror 专用：选得不一样
+    stars: { text: ……, memory: 第四十七颗星, bond: { sync: 3 }, flags: [p_stars] }   # flags：共同标记，两人都得到，必须 p_ 开头
+  dissonance: { text: ……, bond: { close: 1 }, flags: [] }   # mirror 专用：选得不一样
 ```
+
+`npm run content` 的校验除了格式，还会检查：性格标签只能是 gentle / adventure / solitude / responsible / competitive / patient；
+只有童年能写 seasons；mirror 不能放在某一家屋里；要求了某个标记却没有任何地方会打上它时给出警告（多半是拼错了）。
+
+结局格式见 `content/endings.yaml` 文件头。服务器在两人都离开后调用 `lifeEnding` 算出结局，存进 `LifeState.ending`（`{ pair, lives: { qing, mei } }`），
+并把结局文字写进最后一条 `end` 日志，客户端的长卷直接显示。
 
 ## 测试
 
 ```bash
 npm run content          # 内容校验
 npm run server:test      # 编译 + 投胎规则 + 60 条全影子人生 + 世界规则单点 + 模拟一遍联机流程
+                         # + 剧情测试：1500 条随机人生，保证每个事件、每个结局都走得到
 ```
 
 CI（`.github/workflows/build.yml`）还会在真实的 Nakama 容器里加载模块并调用一次 `lifeline_create`，然后导出 Android 调试 APK。

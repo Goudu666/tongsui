@@ -1,0 +1,186 @@
+# 结局。人生长卷的最后一段：先是两个人一起走到的结局（pair），再是每个人自己的一生（lives）。
+# 两张表都按顺序匹配，取第一个满足条件的；最后一条是兜底，不能有条件。
+#
+# pair.requires：
+#   flags / notFlags     两人标记的并集（家庭 fam_、天赋 tal_、个人标记、共同标记 p_）
+#   minClose / maxClose  亲近（-20~100）   minSync / maxSync 默契（0~100）   minDistance / maxDistance 距离（0~5）
+#   minMemories          共同回忆段数       minRate / maxRate 默契率（0~100）  minTogether 同框次数
+# lives.requires：
+#   flags / notFlags     这个人自己的标记    stats 属性下限，如 { mind: 8 }    minDiedAge / maxDiedAge 去世的年纪
+#   text 里的 {name} 会换成这个人的名字
+
+pair:
+  - id: e_same_year
+    title: 同岁
+    text: 同一年出生，在同一条楼道里长大，后来住进同一扇门。小时候拉过的那个钩，一百年，真的没变。
+    requires: { flags: [p_married, p_promise], minClose: 65, minRate: 50 }
+
+  - id: e_white_hair
+    title: 白头
+    text: 楼道里的灯坏了又修，修了又坏。两个人的头发白了，一个还是喊另一个「对门的」。
+    requires: { flags: [p_married], minClose: 45 }
+
+  - id: e_dinner_table
+    title: 一张饭桌
+    text: 结了婚，吵了大半辈子。可是每天晚上，饭桌上总摆着两副碗筷。
+    requires: { flags: [p_married] }
+
+  - id: e_reunited
+    title: 重逢
+    text: 走散过很多年。后来在海河边又碰上了，谁也没提那些年，只说了一句：「吃了吗您？」
+    requires: { flags: [p_reunited], minClose: 25 }
+
+  - id: e_partners
+    title: 合伙人
+    text: 那间小铺子开了很多年，招牌换过三回，门框上一直刻着两个人的名字。
+    requires: { flags: [p_partners], minClose: 30 }
+
+  - id: e_neighbors
+    title: 还住对门
+    text: 拆了，迁了，换了新楼。抓阄分房那天，你们又抓到了对门的两套。
+    requires: { flags: [p_promise], maxDistance: 1, minClose: 45 }
+
+  - id: e_unsaid
+    title: 那句话
+    text: 有一句话，两个人里只有一个说出了口。后来的几十年，谁也没再提，谁也没忘。
+    requires: { flags: [p_missed], minClose: 20 }
+
+  - id: e_letter
+    title: 没回的信
+    text: 那封信后来找到了，夹在一本没看完的书里。信封上的邮票已经褪了色，回信的人已经不在了。
+    requires: { flags: [p_unanswered], minDistance: 2 }
+
+  - id: e_kindred
+    title: 知己
+    text: 不常见面，见了面也不怎么说话。但每一次私下的选择，你们差不多都选到了一起。
+    requires: { minRate: 60, minSync: 30, minMemories: 6 }
+
+  - id: e_lifelong
+    title: 一辈子的发小
+    text: 从穿开裆裤到拄拐棍，楼下的人换了好几茬，只有你们俩，还是那两个从三楼跑下来的孩子。
+    requires: { minClose: 60, notFlags: [p_estranged] }
+
+  - id: e_far
+    title: 远方
+    text: 一个留在天津，一个去了远方。每年腊月二十九，三楼的楼道会亮一整夜的灯。
+    requires: { minDistance: 3, minClose: 15 }
+
+  - id: e_drifted
+    title: 走散
+    text: 吵完那一架，就再也没有见过。只有楼道墙上的两个名字，挨得很近。
+    requires: { flags: [p_estranged], maxClose: 30 }
+
+  - id: e_nod
+    title: 点头之交
+    text: 后来在街上碰见，你们都愣了一下，然后点点头，各自走了。那一下愣，是一整个童年。
+    requires: { maxClose: 25 }
+
+  - id: e_doors
+    title: 对门
+    text: 你们只是住过对门。可是在那么多被记住的日子里，对门的那扇门，总是开着的。
+    requires: {}
+
+lives:
+  # ---- 接下了家里的营生 ----
+  - id: l_heir_breakfast
+    title: 早点铺的手艺
+    text: "{name} 接下了楼下的早点铺。面糊摊得和爸妈当年一样薄，鸡蛋磕得一样响。"
+    requires: { flags: [fam_breakfast, took_over] }
+  - id: l_heir_crosstalk
+    title: 说了一辈子
+    text: "{name} 在茶馆说了一辈子相声。最后一场，台下有人跟着把贯口背完了。"
+    requires: { flags: [fam_crosstalk, took_over] }
+  - id: l_heir_bike
+    title: 车铺
+    text: "{name} 守着楼下那间车铺，修好的车能绕海河十圈。墙上的二胡，一直挂在原处。"
+    requires: { flags: [fam_handy, took_over] }
+  - id: l_heir_teacher
+    title: 教书先生
+    text: "{name} 也当了老师。退休那天，讲台上摆满了学生偷偷放的糖堆儿。"
+    requires: { flags: [fam_strict, took_over] }
+  - id: l_heir_tailor
+    title: 量体裁衣
+    text: "{name} 给半条街的人做过嫁衣，也给很多人做过最后一身衣裳。尺子上的刻度磨平了。"
+    requires: { flags: [fam_tailor, took_over] }
+  - id: l_heir_sea
+    title: 出海
+    text: "{name} 也上了船。每到一个港口，都给河畔里寄一张明信片，一张也没落下。"
+    requires: { flags: [fam_father_away, took_over] }
+  - id: l_heir_grandma
+    title: 第一百个故事
+    text: "{name} 把姥姥的九十九个故事讲给了孩子们，第一百个，是自己编的。"
+    requires: { flags: [fam_grandma, took_over] }
+  - id: l_heir_outsider
+    title: 天津人
+    text: "{name} 后来说一口地道的天津话，比谁都地道。只有生气的时候，才冒出一句南方口音。"
+    requires: { flags: [fam_outsider, took_over] }
+  - id: l_heir_steel
+    title: 炉火
+    text: "{name} 进了厂，又看着厂子关了门。下班的路上，总会在早点铺给自己热一碗嘎巴菜。"
+    requires: { flags: [fam_independent, took_over] }
+  - id: l_heir_siblings
+    title: 一大家子
+    text: "{name} 撑起了一大家子人。过年的饭桌拼了三张，还是挤。"
+    requires: { flags: [fam_siblings, took_over] }
+  - id: l_heir_head
+    title: 楼长
+    text: "{name} 接过了腰上那串钥匙。新楼没有楼道，可大家还是习惯有事先敲 {name} 家的门。"
+    requires: { flags: [fam_head, took_over] }
+  - id: l_heir_pigeon
+    title: 鸽子棚
+    text: "{name} 守着楼顶的鸽子棚，一直到楼拆了，又在新楼顶上搭了一个。鸽哨响的时候，整片儿都抬头。"
+    requires: { flags: [fam_pigeon, took_over] }
+  - id: l_heir_taxi
+    title: 夜班车
+    text: "{name} 开了一辈子出租。后座上坐过几万个人，副驾驶上那个位置，一直留着。"
+    requires: { flags: [fam_taxi, took_over] }
+  - id: l_heir_shop
+    title: 小卖部
+    text: "{name} 守着楼下的小卖部。冰柜换了三台，五毛钱的画片，一直进货。"
+    requires: { flags: [fam_shop, took_over] }
+
+  # ---- 活成了什么样 ----
+  - id: l_early
+    title: 早走的人
+    text: "{name} 走得早了一些。楼里的人后来说起 {name}，还是那个跑得最快的孩子。"
+    requires: { maxDiedAge: 70 }
+  - id: l_long
+    title: 长寿
+    text: "{name} 活到了九十五岁。最后几年记不清很多事，却记得楼顶那年夏天的星星。"
+    requires: { minDiedAge: 95 }
+  - id: l_swimmer
+    title: 冬泳的老人
+    text: "{name} 八十多岁还在海河里冬泳。上岸的时候冒着白气，冲岸上的年轻人喊：「下来！不冷！」"
+    requires: { stats: { body: 9 }, minDiedAge: 85 }
+  - id: l_scholar
+    title: 读书人
+    text: "{name} 读了很多书，走了很远的路，写过几本很厚的书。扉页上写的是：给河畔里。"
+    requires: { flags: [gaokao_good], stats: { mind: 9 } }
+  - id: l_erhu
+    title: 桥下的琴声
+    text: "{name} 老了以后，傍晚常在铁桥底下拉二胡。拉的是车铺爷爷教的第一支曲子，拉了一辈子也没拉准。"
+    requires: { flags: [erhu, erhu_life] }
+  - id: l_koi
+    title: 好运气
+    text: "{name} 的运气好了一辈子。摸奖中过，捡钱还过，连走的那天，都是个大晴天。"
+    requires: { stats: { luck: 9 } }
+  - id: l_wanderer
+    title: 远行的人
+    text: "{name} 在很远的城市过了大半辈子。那边的人都说 {name} 是天津人，可 {name} 已经说不准天津话了。"
+    requires: { flags: [left_city], notFlags: [stayed] }
+  - id: l_parent
+    title: 当了爹妈
+    text: "{name} 有了自己的孩子，带孩子去海河边放风筝，就像当年有人带 {name} 去一样。"
+    requires: { flags: [has_kid] }
+  - id: l_charmer
+    title: 开心果
+    text: "{name} 走到哪儿，哪儿就热闹。告别那天来了很多人，大家想起 {name}，都先笑了。"
+    requires: { stats: { charm: 9.5 } }
+  - id: l_stayer
+    title: 守着河畔里
+    text: "{name} 一辈子没离开过天津。楼拆了，人散了，{name} 还能闭着眼走到海河边。"
+    requires: { flags: [stayed] }
+  - id: l_ordinary
+    title: 普通的一生
+    text: "{name} 过了普通的一生。吃过很多套煎饼果子，看过很多次海河结冰，也被一个人记了一辈子。"
+    requires: {}

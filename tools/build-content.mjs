@@ -2,6 +2,7 @@
 // 把 content/ 下的 YAML 编译成：
 //   client/data/content.json         客户端读取（画地图、显示文字）
 //   server/src/content.generated.ts  服务端结算（Nakama JS 运行时不方便读文件，直接内联）
+// 另有 duet.yaml：两个人之间一抛一接的内容（搭上了 / 猜 TA / 回话），挂到事件的 catches 和 content.duet 上
 // 包含：events/*.yaml 剧情事件、families.yaml 家庭、talents.yaml 天赋、map.yaml 地图与行动、endings.yaml 结局
 // 同时做基础校验，写剧情时出错能第一时间看到。
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
@@ -223,6 +224,57 @@ map.actions = map.actions.map((a) => {
     together: a.together ? { needs: a.together.needs ?? {}, bond: a.together.bond ?? {}, text: a.together.text ?? "" } : null,
   };
 });
+// ---------- 接话（duet.yaml）：搭上了 / 猜 TA / 回话 ----------
+// 「搭上了」按事件 id 写在 duet.yaml 里（不改事件文件），这里挂到事件的 catches 上。
+const duetRaw = load("duet.yaml") ?? {};
+const len = (t) => [...String(t ?? "")].length;
+const needText = (where, t, max) => {
+  if (!t || typeof t !== "string") errors.push(`${where}: 缺少文字`);
+  else if (len(t) > max) errors.push(`${where}: ${len(t)} 字，超过 ${max} 字（${t}）`);
+};
+checkKeys("duet.yaml", duetRaw, ["catches", "lines", "echo", "epitaph"]);
+const eventById = new Map(events.map((e) => [e.id, e]));
+for (const ev of events) ev.catches = [];
+let catchCount = 0;
+for (const [eventId, list] of Object.entries(duetRaw.catches ?? {})) {
+  const ev = eventById.get(eventId);
+  if (!ev) { errors.push(`duet.catches#${eventId}: 没有这个事件`); continue; }
+  if (ev.kind !== "mirror") { errors.push(`duet.catches#${eventId}: 只有 mirror 事件才有「搭上了」`); continue; }
+  const optionIds = new Set(ev.options.map((o) => o.id));
+  const pairs = new Set();
+  for (const [i, c] of (list ?? []).entries()) {
+    const at = `duet.catches#${eventId}[${i}]`;
+    checkKeys(at, c, ["pair", "text", "memory", "bond", "flags"]);
+    if (!Array.isArray(c.pair) || c.pair.length !== 2 || c.pair[0] === c.pair[1]) { errors.push(`${at}: pair 应为两个不同的选项 id`); continue; }
+    for (const o of c.pair) if (!optionIds.has(o)) errors.push(`${at}: 事件里没有选项 ${o}`);
+    const key = [...c.pair].sort().join("+");
+    if (pairs.has(key)) errors.push(`${at}: 这一对写了两遍`);
+    pairs.add(key);
+    needText(`${at}.text`, c.text, 48);
+    if (c.memory != null) needText(`${at}.memory`, c.memory, 8);
+    checkDeltas(`${at}.bond`, c.bond, BOND_KEYS);
+    ev.catches.push({ pair: c.pair, text: c.text, memory: c.memory ?? null, bond: c.bond ?? {}, flags: checkPairFlags(at, c.flags) });
+    catchCount++;
+  }
+}
+const duetTexts = (name, keys) => {
+  checkKeys(`duet.${name}`, duetRaw[name], keys.concat(name === "epitaph" ? ["last"] : []));
+  const out = {};
+  for (const k of keys) { needText(`duet.${name}.${k}`, duetRaw[name]?.[k], 40); out[k] = duetRaw[name]?.[k] ?? ""; }
+  return out;
+};
+const duet = {
+  lines: duetTexts("lines", ["knew_both_same", "knew_both_diff", "knew_one", "knew_none", "knew_single"]),
+  echo: duetTexts("echo", ["ask", "res", "catch", "miss", "like", "unlike", "knew", "kept", "told"]),
+  epitaph: duetTexts("epitaph", ["know", "shadow"]),
+};
+duet.epitaph.last = (duetRaw.epitaph?.last ?? []).map((l, i) => {
+  needText(`duet.epitaph.last[${i}]`, l.text, 40);
+  if (typeof l.minRate !== "number") errors.push(`duet.epitaph.last[${i}]: 需要 minRate`);
+  return { minRate: l.minRate ?? 0, text: l.text ?? "" };
+});
+if (duet.epitaph.last.length === 0 || duet.epitaph.last.at(-1).minRate !== 0) errors.push("duet.epitaph.last: 最后一条的 minRate 必须是 0（兜底）");
+
 for (const ev of events) if (ev.where && !zoneIds.has(ev.where)) errors.push(`${ev.id}: where 未知地点 ${ev.where}`);
 for (const ev of events) if (ev.where && ev.where.startsWith("home_") && ev.kind === "mirror") errors.push(`${ev.id}: mirror 不能放在某一家屋里（${ev.where}）`);
 const orphan = consumed.filter(([, f]) => !produced.has(f));
@@ -235,7 +287,7 @@ if (errors.length) {
 
 // 内容版本 = 内容本身的指纹。服务器在 lifeline_open 里报出它的版本，客户端发现和自己带的不一样，
 // 就用 content_get 把服务器这份下载下来用（改剧情只需要更新服务器，不用两台手机重装 APK）。
-const body = { events, families, talents, map, endings };
+const body = { events, families, talents, map, endings, duet };
 const version = createHash("sha256").update(JSON.stringify(body)).digest("hex").slice(0, 12);
 const content = { version, ...body };
 const json = JSON.stringify(content, null, 1);
@@ -248,4 +300,4 @@ writeFileSync(
 const by = (k) => events.filter((e) => e.stage === k).length;
 console.log(`✓ ${events.length} 个事件  ` + STAGES.map((s) => `${s}:${by(s)}`).join("  ") +
   `  |  ${families.length} 户人家  ${talents.length} 种天赋  ${map.zones.length} 个地点  ${map.actions.length} 种行动` +
-  `  |  结局 ${endings.pair.length} 种 · 一生 ${endings.lives.length} 种  |  版本 ${version}`);
+  `  |  结局 ${endings.pair.length} 种 · 一生 ${endings.lives.length} 种  |  搭上了 ${catchCount} 组  |  版本 ${version}`);

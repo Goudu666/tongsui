@@ -38,7 +38,7 @@ var OP = {
   ROLL_STATE: 3, // s→c { rolls }
   MOVE: 4, // c→s { x, y }
   ACT: 5, // c→s { spot }
-  CHOOSE: 6, // c→s { optionId }
+  CHOOSE: 6, // c→s { optionId, guess? } guess：默契事件里猜 TA 选了哪一项（可以不猜）
   WORLD: 7, // s→c 精简世界状态（5Hz）
   EVENT: 8, // s→c { event } 有事件开始了
   ERROR: 9, // s→c { message }
@@ -46,9 +46,10 @@ var OP = {
   PRESENCE: 11, // s→c { online }
   PING: 12, // c→s { t } 心跳，客户端用来测延迟、发现死连接
   PONG: 13, // s→c { t, tick } 原样带回 t，附上服务器 tick
+  ECHO: 30, // c→s { turn, optionId } 回话：补答影子替我选过的默契事件；optionId 为 null 是「不提了」
 };
 /** c→s 的消息号：只有这些会被处理，其余的回一个 ERROR */
-var CLIENT_OPS = [OP.ROLL, OP.MOVE, OP.ACT, OP.CHOOSE, OP.PING];
+var CLIENT_OPS = [OP.ROLL, OP.MOVE, OP.ACT, OP.CHOOSE, OP.PING, OP.ECHO];
 
 interface LifelineRecord {
   id: string;
@@ -349,6 +350,7 @@ function snapshot(s: LifelineMatch, role: Role) {
     if (k === "rng" || k === "seed" || k === "world") continue;
     view[k] = (life as any)[k];
   }
+  if (life.phase !== "roll") view.duet = duetView(life, role);
   view.log = life.phase === "ended" ? life.log : life.log.slice(-SNAPSHOT_LOG_TAIL);
   view.logTotal = life.log.length;
   var w = life.world;
@@ -612,12 +614,17 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
       if (res.error) sendError(dispatcher, msg.sender, res.error);
       if (res.together) broadcastLog(dispatcher, [res.together]);
     } else if (msg.opCode === OP.CHOOSE) {
+      duetGuess(life, CONTENT, role, body.guess); // 要先记下，两人都选完那一刻就结算了
       var ch = worldChoose(life, CONTENT, role, String(body.optionId), false);
       if (ch.error) sendError(dispatcher, msg.sender, ch.error);
       if (ch.entry) {
         state.eventWaitSince = null;
         broadcastLog(dispatcher, [ch.entry]);
       }
+    } else if (msg.opCode === OP.ECHO) {
+      var echo = duetEcho(life, CONTENT, role, Number(body.turn), body.optionId);
+      if (echo.error) sendError(dispatcher, msg.sender, echo.error);
+      if (echo.entry) broadcastLog(dispatcher, [echo.entry]);
     }
   }
 

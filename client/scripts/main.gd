@@ -597,9 +597,16 @@ func _set_action(mode: String, title: String, sub: String, dim: bool) -> void:
 	action_btn.visible = true
 
 
-## 还没定的时候：走近一个点位，按钮上写在这儿能做什么、占多久
+## 还没定的时候：走近一个点位，按钮上写在这儿能做什么、占多久；站在门口、楼梯口，按钮是「下楼」「去海河边」
 func _show_spot_action() -> void:
 	var spot := world.nearest_spot()
+	var ex := world.nearest_exit()
+	var me = world.me()
+	if not ex.is_empty() and (spot.is_empty() or absf(float(ex.at[0]) - me.position.x) < absf(float(spot.at[0]) - me.position.x)):
+		action_btn.set_meta("exit", str(ex.id))
+		var to: Dictionary = world.scenes.get(str(ex.to), {})
+		_set_action("exit", str(ex.label), "去" + str(to.get("name", "")) if str(ex.to) != str(world.scene.get("id", "")) else "", false)
+		return
 	if spot.is_empty():
 		action_btn.visible = false
 		return
@@ -641,6 +648,9 @@ func _ping_text() -> String:
 
 
 func _on_action_pressed() -> void:
+	if offline_preview and str(action_btn.get_meta("mode", "")) == "exit":
+		world.walk_through(str(action_btn.get_meta("exit")))  # 不联网也能楼上楼下、街上河边逛
+		return
 	if net == null or offline_preview:
 		return
 	match str(action_btn.get_meta("mode", "")):
@@ -649,6 +659,10 @@ func _on_action_pressed() -> void:
 				net.act(str(action_btn.get_meta("spot")))
 		"cancel":
 			net.cancel_slot()
+		"exit":
+			if action_btn.has_meta("exit"):
+				world.begin_exit()
+				net.exit(str(action_btn.get_meta("exit")))
 
 
 func _on_slot_pressed() -> void:

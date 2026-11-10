@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "583bde7cd4d4",
+ "version": "9bfd37aae25e",
  "events": [
   {
    "id": "c_roof_summer",
@@ -22905,6 +22905,3736 @@ var CONTENT: Content = {
    "resonance": null,
    "dissonance": null,
    "catches": []
+  },
+  {
+   "id": "pl_ac_corridor",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "youth_palace",
+   "when": [
+    480,
+    1080
+   ],
+   "hint": "走廊里每扇门一首曲子。",
+   "requires": {
+    "minAge": 6
+   },
+   "title": "琴房走廊",
+   "text": "少年宫的走廊长，两边全是琴房，每扇门里漏出一首曲子。等下课的大人坐满了长椅，手里织着毛衣。",
+   "options": [
+    {
+     "id": "listen",
+     "text": "挨个门听过去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "坐在长椅上等",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "hum",
+     "text": "跟着门里哼",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "listen": {
+     "text": "你们一扇门一扇门听过去。最后一扇门里弹错了一个音，你们同时缩了一下脖子。",
+     "memory": "最后一扇门",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "长椅上挤着坐，你们跟着门里的拍子数，数着数着都打起了瞌睡。",
+     "memory": "数拍子",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "hum": {
+     "text": "你们跟着门里哼。门里停了，你们没停，屋里的老师探出头来看。",
+     "memory": "没停的那句",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个贴着门缝听，一个坐在长椅上等。下了课，两个人都说那首好听，说的不是同一首。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_ac_knees",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "youth_palace",
+   "when": null,
+   "hint": "少年宫的窗户里有琴声。",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11,
+    "flags": [
+     "fam_rich"
+    ]
+   },
+   "title": "膝盖上的琴",
+   "text": "每个礼拜天过桥学琴。回来的车上，你把今天的曲子在膝盖上弹一遍，车一颠，就从头再来。",
+   "options": [
+    {
+     "id": "practice",
+     "text": "回家再练一个钟头",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "play",
+     "text": "弹给对门听",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {
+       "mood": 3
+      },
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "skip",
+     "text": "下礼拜想去河边玩",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_ac_bath",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "factory",
+   "when": [
+    780,
+    1110
+   ],
+   "hint": "厂里的锅炉房冒着白气。",
+   "requires": {
+    "minAge": 4
+   },
+   "title": "厂里的澡堂",
+   "text": "厂里澡堂下午开，凭票进。大人们下了班先洗，你们俩攥着一张票，在门口等水热。",
+   "options": [
+    {
+     "id": "soap",
+     "text": "抢先占个水龙头",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "clean": 20
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "等大人们洗完",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "clean": 15,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "boiler",
+     "text": "去锅炉房看烧火",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "clean": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "soap": {
+     "text": "你们占了挨着的两个龙头，一个热一个凉，轮着换，换到手指头都起了皱。",
+     "memory": "一热一凉",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "等到最后一拨，池子里就剩你们俩。烧锅炉的隔着墙喊：「洗够了没有？」",
+     "memory": "隔着墙那一嗓子",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "boiler": {
+     "text": "锅炉房里热得睁不开眼。烧锅炉的让你们一人往炉膛里扔了一锹煤。",
+     "memory": "一锹煤",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个已经泡进了池子，一个还蹲在锅炉房门口。回去的车上，一个头发湿，一个头发干。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_ac_escalator",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "mall",
+   "when": [
+    600,
+    1200
+   ],
+   "hint": "商场门口有人在发气球。",
+   "requires": {
+    "minAge": 12
+   },
+   "title": "滚梯",
+   "text": "对岸的商场有滚梯。头一回站上去，你们抓着扶手不敢动，后头的人一路说着「借过」。",
+   "options": [
+    {
+     "id": "up",
+     "text": "一直坐到顶楼",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "down",
+     "text": "逆着往下走",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stairs",
+     "text": "下来，走楼梯",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "up": {
+     "text": "一直坐到五楼。什么也没买，又坐着下来，又上去了一回。",
+     "memory": "上上下下",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "down": {
+     "text": "你们逆着滚梯往下跑，跑了半天还在原地。保安来了，你们才跑下去。",
+     "memory": "原地跑",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "stairs": {
+     "text": "你们走楼梯，在每层的拐角往滚梯上看，看那些人一点点升上去。",
+     "memory": "楼梯拐角",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个站上了滚梯，一个留在底下。上头那个回头，越升越高，底下那个一直在挥手。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_ac_floor",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "bookstore",
+   "when": null,
+   "hint": "书店地上坐满了人。",
+   "requires": {
+    "minAge": 12
+   },
+   "title": "坐在地上",
+   "text": "大书店的地上坐满了不买书的人。你蹲在最里头那排，一套书看了一个暑假，书签夹在第三本。",
+   "options": [
+    {
+     "id": "read",
+     "text": "接着往下看",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "save",
+     "text": "记下书名，攒钱买",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "问店员能不能借回去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_ac_cutlery",
+   "kind": "mirror",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "mall",
+   "when": [
+    1080,
+    1260
+   ],
+   "hint": "有家店门口立着菜单。",
+   "requires": {},
+   "title": "刀叉",
+   "text": "你们进了一家西餐馆。菜单上的数先看了一遍，刀叉摆了一排，不知道该先拿哪个。",
+   "options": [
+    {
+     "id": "ask",
+     "text": "叫服务员来问",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "peek",
+     "text": "偷看邻桌",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sticks",
+     "text": "要两双筷子",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "ask": {
+     "text": "服务员说从外往里拿。你们同时拿起最外头那把，是汤勺。",
+     "memory": "最外头那把",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "peek": {
+     "text": "邻桌也在偷看你们。四个人对着看了一眼，都笑了。",
+     "memory": "邻桌那一眼",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "sticks": {
+     "text": "服务员愣了一下，真拿来了两双。牛排切好了夹着吃，吃得挺好。",
+     "memory": "两双筷子",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个举着刀叉比画，一个已经要了筷子。账单来了，两个人都抢着看，都没吭声。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_ac_floor19",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "office",
+   "when": [
+    1110,
+    1320
+   ],
+   "hint": "写字楼还亮着几层。",
+   "requires": {
+    "flags": [
+     "job_desk"
+    ]
+   },
+   "title": "十九层",
+   "text": "加班到九点，十九层只剩你这一盏灯。窗外是河，河那边的老楼里，哪个窗户是家，数不出来。",
+   "options": [
+    {
+     "id": "count",
+     "text": "接着数",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "给家里打个电话",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "work",
+     "text": "低头接着干",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_aw_bowl",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "market",
+   "when": [
+    1080,
+    1320
+   ],
+   "hint": "夜市的油烟飘过来。",
+   "requires": {},
+   "title": "最辣的一碗",
+   "text": "夜市上什么吃的都有，没有一样是家里的味儿。你挑了最辣的一碗，吃出一身汗。",
+   "options": [
+    {
+     "id": "again",
+     "text": "明天还来",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "tell",
+     "text": "写进下一封信里",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "learn",
+     "text": "问摊主怎么做",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_aw_river",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "worksite",
+   "when": [
+    690,
+    810
+   ],
+   "hint": "路边蹲着一排吃饭的人。",
+   "requires": {
+    "minAge": 22
+   },
+   "title": "有条河",
+   "text": "中午蹲在路边吃盒饭。旁边的人问你是哪儿人，你说了。他说那地方他去过，有条河。",
+   "options": [
+    {
+     "id": "talk",
+     "text": "跟他多说几句",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "eat",
+     "text": "低头接着吃",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "hunger": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "water",
+     "text": "递他一瓶水",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_aw_hours",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "uni_abroad"
+    ]
+   },
+   "title": "时差",
+   "text": "这边天刚亮，家里已经是晚饭的点。你算了三遍时差打过去，那头在炒菜，说话得喊。",
+   "options": [
+    {
+     "id": "listen",
+     "text": "让他们接着炒",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "tell",
+     "text": "说说这边的事",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "short",
+     "text": "报个平安就挂",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_aw_window",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 1,
+   "where": "campus",
+   "when": [
+    1110,
+    1320
+   ],
+   "hint": "宿舍楼的窗户一格一格亮着。",
+   "requires": {},
+   "title": "一格窗户",
+   "text": "宿舍楼的窗户一格一格亮着。你数到自己那一格，灯是黑的，才想起人在楼下。",
+   "options": [
+    {
+     "id": "up",
+     "text": "上楼开灯",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "energy": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stay",
+     "text": "在楼下多站会儿",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_bd_coal",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "autumn",
+    "winter"
+   ],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    480,
+    900
+   ],
+   "hint": "楼下停着一车蜂窝煤。",
+   "requires": {
+    "minAge": 5
+   },
+   "title": "蜂窝煤",
+   "text": "送煤的车停在楼下。楼里的孩子排成一串，一人捧两块，从一楼递到三楼。送煤的说，摔一块赔一块。",
+   "options": [
+    {
+     "id": "four",
+     "text": "一次捧四块",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "clean": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "slow",
+     "text": "两块，走慢点",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3,
+       "clean": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "count",
+     "text": "站在楼梯口数数",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "four": {
+     "text": "你们一人捧四块，在二楼拐角撞了个满怀。煤一块没碎，两张脸全黑了。",
+     "memory": "两张黑脸",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "slow": {
+     "text": "你们走得最慢。送煤的走前塞给你俩一人一块糖，糖纸上也是黑手印。",
+     "memory": "黑手印糖纸",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "count": {
+     "text": "一个在楼下喊，一个在楼上应，二百一十块，一块不差。送煤的让你们在账本上画了个圈。",
+     "memory": "二百一十块",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个抢着往上跑，一个守在楼梯口数。数到一半就乱了，送煤的说不要紧，他心里有数。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_bd_stool",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    1110,
+    1290
+   ],
+   "hint": "楼道里有人借着灯写字。",
+   "requires": {
+    "minAge": 7,
+    "flags": [
+     "fam_poor"
+    ]
+   },
+   "title": "小板凳",
+   "text": "屋里一张桌子，吃饭用，写字也用。晚上你搬个小板凳去楼道，暖气片上铺张报纸，就是书桌。",
+   "options": [
+    {
+     "id": "write",
+     "text": "趴着写到熄灯",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "knock",
+     "text": "敲开对门借个亮",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "hum",
+     "text": "一边写一边哼歌",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_bd_aircon",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [
+    "summer"
+   ],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 6,
+    "flags": [
+     "fam_rich"
+    ]
+   },
+   "title": "头一台空调",
+   "text": "家里装了空调，外机一开，整个楼道都听得见。三伏天，楼里的孩子都爱往你家门口凑。",
+   "options": [
+    {
+     "id": "share",
+     "text": "叫对门的进来写作业",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {
+       "mood": 5
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "remote",
+     "text": "让大家轮着按遥控器",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "roof",
+     "text": "关了，一块儿上楼顶",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4,
+       "energy": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_bd_blackout",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    1110,
+    1320
+   ],
+   "hint": "楼道里有人在喊保险丝。",
+   "requires": {},
+   "title": "停电",
+   "text": "整栋楼一下子黑了。各家都开了门，楼道里一串手电筒，有人说是总闸，有人说整片都停了。",
+   "options": [
+    {
+     "id": "candle",
+     "text": "回屋找蜡烛",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stairs",
+     "text": "坐楼梯上等来电",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "roof",
+     "text": "上楼顶看看",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "candle": {
+     "text": "两家同时点着了蜡烛，门都开着，楼道里一边一个亮。你们隔着楼道写完了作业。",
+     "memory": "两根蜡烛",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "stairs": {
+     "text": "你们坐在同一级台阶上。灯亮的时候全楼一声欢呼，你们谁都没动。",
+     "memory": "同一级台阶",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "roof": {
+     "text": "楼顶上看出去整片都黑着，只有河对岸还亮。你们看了很久，楼下喊来电了。",
+     "memory": "对岸的亮",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在屋里翻抽屉找蜡烛，一个已经摸黑上了楼顶。来电的时候，两个人都在找对方。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_bd_stairs",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": null,
+   "hint": "楼梯上有人在喘气。",
+   "requires": {
+    "minAge": 65
+   },
+   "title": "一层一歇",
+   "text": "三楼爬到一半，你在二楼拐角歇一歇。窗台上换了一盆花。",
+   "options": [
+    {
+     "id": "rest",
+     "text": "歇够了再走",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "push",
+     "text": "一口气上去",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_hp_queue",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "lobby",
+   "when": [
+    390,
+    600
+   ],
+   "hint": "挂号的队排到了门外。",
+   "requires": {},
+   "title": "天没亮",
+   "text": "天没亮来排队挂号，前头站了几十个人。你替家里老人站着，一手病历，一手早点。",
+   "options": [
+    {
+     "id": "wait",
+     "text": "站着等",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": -5,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "read",
+     "text": "翻翻病历",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "chat",
+     "text": "跟前后的人搭话",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_hp_water",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "ward_hall",
+   "when": [
+    1110,
+    1320
+   ],
+   "hint": "走廊尽头冒着白气。",
+   "requires": {},
+   "title": "开水房",
+   "text": "晚上去开水房打水。排前头的人拎着四个暖壶，说一屋的都替着打了。",
+   "options": [
+    {
+     "id": "help",
+     "text": "也替别人打一壶",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "等他打完",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back",
+     "text": "打完就回",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "energy": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_hp_window",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "ward",
+   "when": null,
+   "hint": "病房的窗户朝着河。",
+   "requires": {},
+   "title": "靠窗这一床",
+   "text": "病房的窗户朝着河。护士说你运气好，这一床看得见水。",
+   "options": [
+    {
+     "id": "look",
+     "text": "让她把帘子拉开",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "rest",
+     "text": "闭上眼歇着",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_md_tire",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "shed",
+   "when": [
+    930,
+    1140
+   ],
+   "hint": "车棚里有人在打气。",
+   "requires": {
+    "minAge": 12
+   },
+   "title": "没气的胎",
+   "text": "放学，车棚里只剩两辆车，其中一辆后胎瘪了。看车棚的阿姨把打气筒往外一推：「自己打。」",
+   "options": [
+    {
+     "id": "pump",
+     "text": "你压我扶",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "body": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "push",
+     "text": "推着走回去",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": -4,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "double",
+     "text": "一辆车驮两个人",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "pump": {
+     "text": "打气筒漏气，你们轮着压了二十下，胎还是软的。阿姨看不下去，过来压了三下。",
+     "memory": "阿姨那三下",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "push": {
+     "text": "推着车从学校走回河畔里，路灯一盏一盏在前头亮起来。",
+     "memory": "一路路灯",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "double": {
+     "text": "一个蹬车，一个坐后座扶着另一辆的把。歪歪扭扭到了楼下，谁也没摔。",
+     "memory": "扶着的车把",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个蹲下要打气，一个已经推着车走了。阿姨在后头喊：「还打不打了？」",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_md_radio",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "radio_room",
+   "when": [
+    720,
+    840
+   ],
+   "hint": "喇叭里有人在试音。",
+   "requires": {
+    "minAge": 12
+   },
+   "title": "午间广播",
+   "text": "中午的广播站缺人，老师抓了你们俩。稿子一页，歌一首。喇叭一开，全校都在吃饭。",
+   "options": [
+    {
+     "id": "read",
+     "text": "抢着念稿",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "song",
+     "text": "管放歌",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "dedicate",
+     "text": "偷偷点一首歌",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "read": {
+     "text": "两个人凑着一个话筒念，念到第三行同时念错。喇叭里传出了笑声。",
+     "memory": "第三行",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "song": {
+     "text": "你们都去摸磁带，挑的是同一盘。歌放到一半，楼下有人跟着哼。",
+     "memory": "同一盘磁带",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "dedicate": {
+     "text": "你们都给对方点了歌，念出来是同一首。喇叭里安静了一下。",
+     "memory": "同一首歌",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个凑到话筒前念稿，一个按下了放歌的键。稿子和歌一起在全校响了半分钟。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_md_envelope",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 12,
+    "flags": [
+     "fam_poor"
+    ]
+   },
+   "title": "一个信封",
+   "text": "开学交费，大人给你一个信封。钱一张一张数过，零的多。你在路上摸了好几回兜。",
+   "options": [
+    {
+     "id": "hand",
+     "text": "交给老师就走",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "count",
+     "text": "当着老师再数一遍",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "tell",
+     "text": "路上跟对门说说",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_md_redlist",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "middle_front",
+   "when": [
+    930,
+    1140
+   ],
+   "hint": "校门口贴了张红纸。",
+   "requires": {
+    "minAge": 13
+   },
+   "title": "红榜",
+   "text": "校门口贴了红榜，前五十名。人挤人地找，有人找着了，有人找了两遍。",
+   "options": [
+    {
+     "id": "mine",
+     "text": "挤进去找自己",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "theirs",
+     "text": "先找对门的名字",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "leave",
+     "text": "不看，回家",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_md_paid",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 12,
+    "flags": [
+     "school_paid"
+    ]
+   },
+   "title": "点名",
+   "text": "这个学校是家里交了钱才进来的。开学第一天点名，念到你，班主任抬头看了一眼。",
+   "options": [
+    {
+     "id": "loud",
+     "text": "大声应一声",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "low",
+     "text": "低着头应",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3,
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "work",
+     "text": "头一回作业写两遍",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_nh_neighbor",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": "电梯间里没有人说话。",
+   "requires": {
+    "flags": [
+     "home_own"
+    ]
+   },
+   "title": "隔壁姓什么",
+   "text": "住进新楼三年，还不知道隔壁姓什么。今天电梯里碰上了，两个人一齐看着数字往上跳。",
+   "options": [
+    {
+     "id": "ask",
+     "text": "问一句贵姓",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "nod",
+     "text": "点个头",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stairs",
+     "text": "下回走楼梯",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "body": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_nh_balcony",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "flat",
+   "when": [
+    1110,
+    1320
+   ],
+   "hint": "阳台的门开着。",
+   "requires": {
+    "flags": [
+     "home_own"
+    ]
+   },
+   "title": "阳台",
+   "text": "新家的阳台朝着河。晚上站出去，看得见对岸老楼那一片，亮着的窗比从前少了。",
+   "options": [
+    {
+     "id": "stay",
+     "text": "多站一会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "打给对门的",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {
+       "mood": 3
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "in",
+     "text": "回屋",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_nh_garden",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "garden",
+   "when": [
+    1080,
+    1260
+   ],
+   "hint": "花园里有人在遛狗。",
+   "requires": {},
+   "title": "又在楼下",
+   "text": "两家买在了同一个小区，隔着两栋楼。晚饭后在花园里碰上，跟小时候在楼下一个点儿。",
+   "options": [
+    {
+     "id": "walk",
+     "text": "一起绕一圈",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "bench",
+     "text": "找条长椅坐",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "race",
+     "text": "比谁先走到河边",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "walk": {
+     "text": "绕了一圈又一圈，说的全是小时候那栋楼。",
+     "memory": "一圈又一圈",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "bench": {
+     "text": "长椅太新，坐着有点硌。你们都说，还是楼道的台阶好坐。",
+     "memory": "楼道的台阶",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "race": {
+     "text": "两个人都快走，谁也不肯跑。到了河边，都喘了。",
+     "memory": "都喘了",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个往长椅走，一个已经迈开步子绕圈。绕回来，长椅上那个正给他留着座。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_pk_water",
+   "kind": "mirror",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "square",
+   "when": [
+    390,
+    720
+   ],
+   "hint": "地上有人拿水写字。",
+   "requires": {},
+   "title": "水写的字",
+   "text": "空地上有人拿大笔蘸水写字。写完一行，头一个字已经干了。",
+   "options": [
+    {
+     "id": "write",
+     "text": "也写一个字",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "watch",
+     "text": "看着它干",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "write": {
+     "text": "你们写的是同一个字。还没写完，它就干了。",
+     "memory": "同一个字",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    },
+    "watch": {
+     "text": "一行字一个一个没了。你们都没说话。",
+     "memory": "干了的字",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个蹲下写，一个站着看。写的那个回头，字已经干了。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_pk_choir",
+   "kind": "mirror",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "pavilion",
+   "when": [
+    480,
+    720
+   ],
+   "hint": "亭子里有人在起调。",
+   "requires": {},
+   "title": "起调",
+   "text": "亭子里的合唱队缺两个人。指挥冲你们招手：「会唱的都来。」",
+   "options": [
+    {
+     "id": "sing",
+     "text": "跟着唱",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "mouth",
+     "text": "站后排张张嘴",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "sing": {
+     "text": "你们一开口，调起高了。指挥没停，全队跟着往上够。",
+     "memory": "起高的调",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    },
+    "mouth": {
+     "text": "两个人站在最后一排，都只张嘴不出声，被对方看出来了。",
+     "memory": "只张嘴",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个唱得最响，一个在后排对口型。散了以后，两个人都夸对方唱得好。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_pk_stroller",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "lake_path",
+   "when": [
+    390,
+    720
+   ],
+   "hint": "有人推着婴儿车过来。",
+   "requires": {},
+   "title": "婴儿车",
+   "text": "绕湖第三圈，旁边推过一辆婴儿车。车里的孩子盯着你看。",
+   "options": [
+    {
+     "id": "face",
+     "text": "冲他做个鬼脸",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "walk",
+     "text": "接着走第四圈",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_pr_board",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "classroom",
+   "when": [
+    930,
+    1080
+   ],
+   "hint": "教室里有人在拍粉笔灰。",
+   "requires": {
+    "minAge": 8
+   },
+   "title": "黑板报",
+   "text": "轮到你们出黑板报。报头空着，粉笔只剩红黄两根。老师说明天一早检查，说完锁了办公室的门。",
+   "options": [
+    {
+     "id": "draw",
+     "text": "先画报头",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "copy",
+     "text": "先把字抄上",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "half",
+     "text": "一人管半块黑板",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "draw": {
+     "text": "两个人都画了太阳，一个在左边，一个在右边。第二天全班说黑板上有两个太阳。",
+     "memory": "两个太阳",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "copy": {
+     "text": "字抄得一边大一边小。你们站在讲台上，拿板擦一个字一个字改齐了。",
+     "memory": "改齐的字",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "half": {
+     "text": "一人画了半块黑板，当中那道缝怎么也对不上。你们干脆在中间画了一座桥。",
+     "memory": "当中一座桥",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个画满了报头，一个抄满了字。最后报头挤在角上，像一张邮票。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_pr_pencilbox",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "classroom",
+   "when": [
+    480,
+    930
+   ],
+   "hint": "后排一阵起哄。",
+   "requires": {
+    "minAge": 7,
+    "maxAge": 9
+   },
+   "title": "会弹的盖子",
+   "text": "班上有人带来一个双层铁皮文具盒，一按，盖子自己弹开。下课全班围着看，排着队按。",
+   "options": [
+    {
+     "id": "queue",
+     "text": "排队按一下",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "seat",
+     "text": "坐着不动",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "make",
+     "text": "拿硬纸板自己糊一个",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "queue": {
+     "text": "你们排在一前一后。轮到了，两个人一人按了一下，盖子弹得一样高。",
+     "memory": "弹起来的盖子",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "seat": {
+     "text": "全班都围过去了，就剩你们俩坐着。你们互相看了一眼，接着削铅笔。",
+     "memory": "削铅笔",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "make": {
+     "text": "你们拿硬纸板一人糊了一个，没有弹簧，盖子拿手一推就开。一直用到了五年级。",
+     "memory": "纸板文具盒",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个挤在人堆里，一个在座位上拿纸板比画。上课铃响，两个人都没看够。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_pr_photo",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "yard",
+   "when": [
+    540,
+    930
+   ],
+   "hint": "操场上摆了几排长凳。",
+   "requires": {
+    "minAge": 11
+   },
+   "title": "毕业照",
+   "text": "操场上摆好了长凳，按个头排。照相的数「一、二」，还没数到三，就有人眨了眼。",
+   "options": [
+    {
+     "id": "front",
+     "text": "往前头挤",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "beside",
+     "text": "站到对门旁边",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "tiptoe",
+     "text": "踮起脚",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "front": {
+     "text": "你们都挤到了第一排正当中，把班主任挤到了边上。",
+     "memory": "第一排正中",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "beside": {
+     "text": "个头不一样，一个站长凳一个站地上，肩膀正好齐了。",
+     "memory": "齐着的肩膀",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "tiptoe": {
+     "text": "你们都踮着脚。照片洗出来，两个人都比实际高出一截。",
+     "memory": "踮着的脚",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个往前挤，一个往旁边找。照片上两个人隔着三个人，都在往一边看。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_pr_keys",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "school",
+   "when": [
+    930,
+    1080
+   ],
+   "hint": "传达室的窗户开着。",
+   "requires": {
+    "minAge": 7
+   },
+   "title": "搁在这儿的钥匙",
+   "text": "放学出门，传达室的大爷叫住你：「你妈把钥匙搁我这儿了。」他认得全校每个孩子是谁家的。",
+   "options": [
+    {
+     "id": "run",
+     "text": "道声谢就跑",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stay",
+     "text": "坐下陪他听会儿收音机",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "问他怎么都认得",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_pr_pickup",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "school",
+   "when": [
+    930,
+    1080
+   ],
+   "hint": "校门口站满了老人。",
+   "requires": {},
+   "title": "接孩子",
+   "text": "校门口等孩子的，一半是老人。你站在当年等人的那棵树底下。",
+   "options": [
+    {
+     "id": "wave",
+     "text": "朝门里招手",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sit",
+     "text": "坐在花坛边上等",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_rt_stove",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "rent_hall",
+   "when": [
+    1020,
+    1260
+   ],
+   "hint": "走廊里谁家在炝锅。",
+   "requires": {},
+   "title": "一个灶眼",
+   "text": "一层楼合用一个厨房，灶眼排着号。你的锅刚坐上，隔壁屋的端着菜站在后头。",
+   "options": [
+    {
+     "id": "yield",
+     "text": "让他先炒",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "quick",
+     "text": "三分钟炒完",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "share",
+     "text": "干脆一块儿吃",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_rt_window",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "rent_room",
+   "when": [
+    1110,
+    1320
+   ],
+   "hint": "对面楼的灯亮了。",
+   "requires": {},
+   "title": "对面的窗",
+   "text": "出租屋的窗户正对着别人家的窗户，近得看得清那家吃什么。那家两个孩子，在一张桌上写作业。",
+   "options": [
+    {
+     "id": "watch",
+     "text": "多看一会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "curtain",
+     "text": "拉上窗帘",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wave",
+     "text": "冲那边招招手",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_rt_note",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "rent_room",
+   "when": null,
+   "hint": "门缝里塞着张条。",
+   "requires": {
+    "minAge": 22
+   },
+   "title": "门缝里的条",
+   "text": "房东在门缝里塞了张条：下个月起，房租涨一成。背面是去年的水电账。",
+   "options": [
+    {
+     "id": "pay",
+     "text": "认了",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "talk",
+     "text": "找房东说说",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "move",
+     "text": "开始看房子",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_rv_boat",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 1,
+   "where": "river",
+   "when": [
+    780,
+    1110
+   ],
+   "hint": "河边台阶上有人蹲着。",
+   "requires": {
+    "minAge": 6,
+    "flags": [
+     "fam_rich"
+    ]
+   },
+   "title": "船模",
+   "text": "家里人从外地给你带回一只船模，帆是真布的。你蹲在河边台阶上，想放下去，又怕它漂走。",
+   "options": [
+    {
+     "id": "float",
+     "text": "拴根线放下去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "show",
+     "text": "先拿给对门看",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {
+       "mood": 4
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "keep",
+     "text": "抱回家搁柜顶上",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_rv_horn",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "river",
+   "when": [
+    930,
+    1200
+   ],
+   "hint": "河上有船在拉笛。",
+   "requires": {},
+   "title": "船笛",
+   "text": "傍晚一条船从下游开上来，拉了一声长笛。栏杆边的人都停了一下，像在等它拉第二声。",
+   "options": [
+    {
+     "id": "wait",
+     "text": "等第二声",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "guess",
+     "text": "猜它从哪儿来",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "该回家吃饭了",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "hunger": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "wait": {
+     "text": "第二声拉得更长。你们一直等到船过了桥，谁也没说话。",
+     "memory": "第二声笛",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "guess": {
+     "text": "你说从海上来，对门的说要到海上去。说着说着，两个人都想跟着去。",
+     "memory": "海上来的船",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "home": {
+     "text": "你们一齐转身往回走。走出好远，笛又响了，两个人都回了头。",
+     "memory": "回头那一下",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个趴在栏杆上等，一个已经走到了街口。第二声笛响的时候，两个人隔着半条街。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_rv_veil",
+   "kind": "mirror",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "river",
+   "when": [
+    600,
+    1020
+   ],
+   "hint": "栏杆边有人举着反光板。",
+   "requires": {},
+   "title": "反光板",
+   "text": "一对新人在栏杆边拍照，风大，纱裙老往一边飘。拍照的冲你们招手：「搭把手，帮着拽一下。」",
+   "options": [
+    {
+     "id": "hold",
+     "text": "一人拽一边",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "board",
+     "text": "帮着举反光板",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "walk",
+     "text": "笑笑，走开",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "hold": {
+     "text": "你们一人拽一边，拽了十几张。新人走的时候塞给你们两块喜糖，你们站在风里剥。",
+     "memory": "两块喜糖",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "board": {
+     "text": "反光板一晃，光晃到了对方脸上。拍照的说：「别动，这张给你俩。」",
+     "memory": "晃过来的光",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "walk": {
+     "text": "走开几步，你们又一齐回头。纱裙飘起来的那一下，像风筝。",
+     "memory": "像风筝",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在帮着拽纱，一个替人看着包。照片里露出一只手，是谁的说不清。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_rv_paint",
+   "kind": "mirror",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "river",
+   "when": [
+    390,
+    720
+   ],
+   "hint": "河边的栏杆刷了新漆。",
+   "requires": {},
+   "title": "新漆",
+   "text": "河边栏杆刷了新漆，挂着「别碰」。你们隔着一步站着。",
+   "options": [
+    {
+     "id": "touch",
+     "text": "拿手指碰一下",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "等漆干",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "touch": {
+     "text": "两个指印，一高一低，留在栏杆上了。",
+     "memory": "两个指印",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "站到漆干了。手搭上去，还是那个凉。",
+     "memory": "那个凉",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个碰了一下，一个掏出手绢去擦。指印擦花了，还看得出是两个。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_st_icebox",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "summer"
+   ],
+   "weight": 2,
+   "where": "shop",
+   "when": [
+    780,
+    1110
+   ],
+   "hint": "小卖部的冰柜嗡嗡响。",
+   "requires": {
+    "minAge": 4
+   },
+   "title": "一根冰棍",
+   "text": "你们俩的钱凑一块儿，只够一根冰棍。小卖部的阿姨把冰柜盖子掀开，等你们挑。",
+   "options": [
+    {
+     "id": "split",
+     "text": "买一根掰两半",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "rps",
+     "text": "剪子包袱锤，赢的先咬",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "攒着明天再来",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "split": {
+     "text": "冰棍掰得一长一短。你们都伸手去拿短的，又同时缩了回去。",
+     "memory": "一长一短",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "rps": {
+     "text": "你们连出了五回一样的。阿姨看不下去，又从柜里拿了一根：「算我的。」",
+     "memory": "五回平局",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "第二天再来，冰柜里正好剩一根，就是昨天那个味儿。",
+     "memory": "剩下的那根",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个已经把冰棍掰开了，一个说留着明天。半根冰棍化在手里，滴了一路。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_st_chess",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "alley",
+   "when": [
+    780,
+    1140
+   ],
+   "hint": "棋摊那边围了一圈人。",
+   "requires": {
+    "minAge": 12
+   },
+   "title": "观棋不语",
+   "text": "楼下的棋摊围了一圈人。下棋的大爷举着马不落，回头问：「你俩谁看出来了？说一个。」",
+   "options": [
+    {
+     "id": "point",
+     "text": "指一步",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "hush",
+     "text": "摇头，不说",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "look",
+     "text": "先看对门的眼色",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "point": {
+     "text": "你们伸出手指，指的是同一个格子。大爷把马落下去，对面认了输。",
+     "memory": "同一个格子",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "hush": {
+     "text": "你们一起摇头。大爷乐了：「对，观棋不语。」这盘他输了，也没怪你们。",
+     "memory": "一起摇头",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "look": {
+     "text": "你们看了对方一眼，又一齐看向大爷。大爷说：「行，俩人一个心思。」",
+     "memory": "一个眼色",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个张嘴要说，一个在底下踩了他一脚。大爷全看见了，假装没看见。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_st_cloth",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "alley",
+   "when": [
+    930,
+    1110
+   ],
+   "hint": "路口有人在铺塑料布。",
+   "requires": {
+    "minAge": 12,
+    "flags": [
+     "fam_poor"
+    ]
+   },
+   "title": "一块塑料布",
+   "text": "放学先不回家。路口铺开一块塑料布，袜子鞋垫码整齐，你坐马扎上，作业本搁在膝盖上。",
+   "options": [
+    {
+     "id": "call",
+     "text": "抬头吆喝一声",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "write",
+     "text": "低头写作业",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wave",
+     "text": "冲路过的同学招手",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_st_newbike",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 1,
+   "where": "alley",
+   "when": null,
+   "hint": "楼门口停着辆新车。",
+   "requires": {
+    "minAge": 12,
+    "maxAge": 15,
+    "flags": [
+     "fam_rich"
+    ]
+   },
+   "title": "新车",
+   "text": "家里给你买了辆变速山地车。楼下几个孩子围着看。旧的那辆二八靠在墙边，链子是你俩一块儿上的油。",
+   "options": [
+    {
+     "id": "lend",
+     "text": "让对门先骑一圈",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {
+       "mood": 5
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "ride",
+     "text": "骑去河边兜一圈",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "teach",
+     "text": "教那几个孩子换挡",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_st_bench",
+   "kind": "mirror",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "shop",
+   "when": [
+    780,
+    1110
+   ],
+   "hint": "便利店门口的长凳空着。",
+   "requires": {},
+   "title": "门口的长凳",
+   "text": "小卖部改成了便利店，门口那条长凳没撤。你们一人坐一头。",
+   "options": [
+    {
+     "id": "soda",
+     "text": "买两瓶汽水",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sit",
+     "text": "就这么坐着",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "soda": {
+     "text": "汽水换了瓶子，还是那个甜。你们喝得很慢。",
+     "memory": "两瓶汽水",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    },
+    "sit": {
+     "text": "坐了一下午。过去的人，有一半认得你们。",
+     "memory": "一下午",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个进去买汽水，出来时另一个靠着长凳打起了盹。汽水就搁在他手边。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
   }
  ],
  "families": [
@@ -23377,390 +27107,6 @@ var CONTENT: Content = {
   }
  ],
  "map": {
-  "size": [
-   2400,
-   1600
-  ],
-  "spawn": {
-   "qing": [
-    300,
-    560
-   ],
-   "mei": [
-    1180,
-    560
-   ]
-  },
-  "zones": [
-   {
-    "id": "roof",
-    "name": "楼顶",
-    "rect": [
-     140,
-     40,
-     1200,
-     180
-    ]
-   },
-   {
-    "id": "home_qing",
-    "name": "青家",
-    "rect": [
-     140,
-     260,
-     540,
-     440
-    ],
-    "owner": "qing"
-   },
-   {
-    "id": "hallway",
-    "name": "楼道",
-    "rect": [
-     690,
-     260,
-     100,
-     440
-    ]
-   },
-   {
-    "id": "home_mei",
-    "name": "梅家",
-    "rect": [
-     800,
-     260,
-     540,
-     440
-    ],
-    "owner": "mei"
-   },
-   {
-    "id": "breakfast",
-    "name": "早点铺",
-    "rect": [
-     1460,
-     300,
-     340,
-     340
-    ]
-   },
-   {
-    "id": "river",
-    "name": "海河边",
-    "rect": [
-     1900,
-     140,
-     480,
-     1360
-    ]
-   },
-   {
-    "id": "alley",
-    "name": "河畔里",
-    "rect": [
-     0,
-     760,
-     1880,
-     240
-    ]
-   },
-   {
-    "id": "school",
-    "name": "小学",
-    "rect": [
-     40,
-     1080,
-     560,
-     420
-    ]
-   },
-   {
-    "id": "bikeshop",
-    "name": "自行车铺",
-    "rect": [
-     860,
-     1080,
-     520,
-     400
-    ]
-   },
-   {
-    "id": "teahouse",
-    "name": "河畔茶社",
-    "rect": [
-     1456,
-     0,
-     430,
-     284
-    ]
-   }
-  ],
-  "spots": [
-   {
-    "id": "bed_qing",
-    "zone": "home_qing",
-    "at": [
-     260,
-     560
-    ],
-    "action": "sleep",
-    "actions": [
-     "sleep"
-    ]
-   },
-   {
-    "id": "table_qing",
-    "zone": "home_qing",
-    "at": [
-     450,
-     380
-    ],
-    "action": "eat",
-    "actions": [
-     "eat"
-    ]
-   },
-   {
-    "id": "desk_qing",
-    "zone": "home_qing",
-    "at": [
-     250,
-     360
-    ],
-    "actions": [
-     "picture_book",
-     "study",
-     "read"
-    ],
-    "action": "picture_book"
-   },
-   {
-    "id": "basin_qing",
-    "zone": "home_qing",
-    "at": [
-     560,
-     620
-    ],
-    "action": "wash",
-    "actions": [
-     "wash"
-    ]
-   },
-   {
-    "id": "bed_mei",
-    "zone": "home_mei",
-    "at": [
-     1220,
-     560
-    ],
-    "action": "sleep",
-    "actions": [
-     "sleep"
-    ]
-   },
-   {
-    "id": "table_mei",
-    "zone": "home_mei",
-    "at": [
-     1030,
-     380
-    ],
-    "action": "eat",
-    "actions": [
-     "eat"
-    ]
-   },
-   {
-    "id": "desk_mei",
-    "zone": "home_mei",
-    "at": [
-     1230,
-     360
-    ],
-    "actions": [
-     "picture_book",
-     "study",
-     "read"
-    ],
-    "action": "picture_book"
-   },
-   {
-    "id": "basin_mei",
-    "zone": "home_mei",
-    "at": [
-     920,
-     620
-    ],
-    "action": "wash",
-    "actions": [
-     "wash"
-    ]
-   },
-   {
-    "id": "door_qing",
-    "zone": "hallway",
-    "at": [
-     715,
-     470
-    ],
-    "action": "knock",
-    "actions": [
-     "knock"
-    ]
-   },
-   {
-    "id": "door_mei",
-    "zone": "hallway",
-    "at": [
-     765,
-     470
-    ],
-    "action": "knock",
-    "actions": [
-     "knock"
-    ]
-   },
-   {
-    "id": "roof_pigeon",
-    "zone": "roof",
-    "at": [
-     740,
-     130
-    ],
-    "action": "play_roof",
-    "actions": [
-     "play_roof"
-    ]
-   },
-   {
-    "id": "breakfast_stall",
-    "zone": "breakfast",
-    "at": [
-     1630,
-     470
-    ],
-    "actions": [
-     "duty",
-     "eat_out",
-     "dine"
-    ],
-    "action": "duty"
-   },
-   {
-    "id": "river_bank",
-    "zone": "river",
-    "at": [
-     2140,
-     820
-    ],
-    "actions": [
-     "play_river",
-     "walk_river"
-    ],
-    "action": "play_river"
-   },
-   {
-    "id": "river_bridge",
-    "zone": "river",
-    "at": [
-     2360,
-     690
-    ],
-    "action": "duty",
-    "actions": [
-     "duty"
-    ]
-   },
-   {
-    "id": "alley_rope",
-    "zone": "alley",
-    "at": [
-     1260,
-     880
-    ],
-    "actions": [
-     "play_alley",
-     "chat"
-    ],
-    "action": "play_alley"
-   },
-   {
-    "id": "bike_bench",
-    "zone": "bikeshop",
-    "at": [
-     1120,
-     1280
-    ],
-    "actions": [
-     "duty",
-     "work"
-    ],
-    "action": "duty"
-   },
-   {
-    "id": "school_gate",
-    "zone": "school",
-    "at": [
-     320,
-     1200
-    ],
-    "actions": [
-     "duty",
-     "club_math"
-    ],
-    "action": "duty"
-   },
-   {
-    "id": "school_yard",
-    "zone": "school",
-    "at": [
-     470,
-     1400
-    ],
-    "actions": [
-     "club_sport",
-     "ball"
-    ],
-    "action": "club_sport"
-   },
-   {
-    "id": "tea_seat",
-    "zone": "teahouse",
-    "at": [
-     1716,
-     236
-    ],
-    "action": "listen",
-    "actions": [
-     "listen"
-    ]
-   },
-   {
-    "id": "tea_stage",
-    "zone": "teahouse",
-    "at": [
-     1668,
-     104
-    ],
-    "actions": [
-     "club_art",
-     "perform"
-    ],
-    "action": "club_art"
-   },
-   {
-    "id": "river_fish",
-    "zone": "river",
-    "at": [
-     2096,
-     1134
-    ],
-    "action": "fish",
-    "actions": [
-     "fish"
-    ]
-   }
-  ],
   "actions": [
    {
     "id": "eat",
@@ -24814,8 +28160,1977 @@ var CONTENT: Content = {
      },
      "text": "两把椅子拼在一起，你们轮着眯一会儿。"
     }
+   },
+   {
+    "id": "letter",
+    "label": "写信",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 15
+    },
+    "needs": {
+     "mood": 5
+    },
+    "stats": {
+     "mind": 0.15
+    },
+    "money": 0,
+    "together": null
    }
-  ]
+  ],
+  "scenes": [
+   {
+    "id": "building",
+    "name": "楼里",
+    "index": 0,
+    "top": 0,
+    "width": 3200,
+    "floors": [
+     260,
+     720
+    ],
+    "unlock": null,
+    "far": false
+   },
+   {
+    "id": "street",
+    "name": "楼下",
+    "index": 1,
+    "top": 2000,
+    "width": 4000,
+    "floors": [
+     2760
+    ],
+    "unlock": null,
+    "far": false
+   },
+   {
+    "id": "river",
+    "name": "海河边",
+    "index": 2,
+    "top": 4000,
+    "width": 3600,
+    "floors": [
+     4760
+    ],
+    "unlock": {
+     "minAge": 5
+    },
+    "far": false
+   },
+   {
+    "id": "primary",
+    "name": "小学",
+    "index": 3,
+    "top": 6000,
+    "width": 2800,
+    "floors": [
+     6760
+    ],
+    "unlock": {
+     "minAge": 6
+    },
+    "far": false
+   },
+   {
+    "id": "middle",
+    "name": "中学",
+    "index": 4,
+    "top": 8000,
+    "width": 2800,
+    "floors": [
+     8760
+    ],
+    "unlock": {
+     "minAge": 12
+    },
+    "far": false
+   },
+   {
+    "id": "across",
+    "name": "河对岸",
+    "index": 5,
+    "top": 10000,
+    "width": 5600,
+    "floors": [
+     10760
+    ],
+    "unlock": {
+     "any": [
+      {
+       "minAge": 18
+      },
+      {
+       "minAge": 15,
+       "flags": [
+        "school_far"
+       ]
+      },
+      {
+       "minAge": 12,
+       "flags": [
+        "p_bridge"
+       ]
+      },
+      {
+       "minAge": 6,
+       "flags": [
+        "fam_rich"
+       ]
+      },
+      {
+       "minAge": 4,
+       "flags": [
+        "fam_factory"
+       ]
+      }
+     ]
+    },
+    "far": false
+   },
+   {
+    "id": "away",
+    "name": "外地",
+    "index": 6,
+    "top": 12000,
+    "width": 4000,
+    "floors": [
+     12760
+    ],
+    "unlock": {
+     "any": [
+      {
+       "minAge": 18,
+       "flags": [
+        "uni_away"
+       ]
+      },
+      {
+       "minAge": 18,
+       "flags": [
+        "uni_abroad"
+       ]
+      },
+      {
+       "minAge": 22,
+       "flags": [
+        "left_city"
+       ],
+       "notFlags": [
+        "came_back"
+       ]
+      }
+     ]
+    },
+    "far": true
+   },
+   {
+    "id": "rental",
+    "name": "出租屋",
+    "index": 7,
+    "top": 14000,
+    "width": 1920,
+    "floors": [
+     14760
+    ],
+    "unlock": {
+     "any": [
+      {
+       "minAge": 18,
+       "flags": [
+        "uni_away"
+       ]
+      },
+      {
+       "minAge": 18,
+       "flags": [
+        "uni_abroad"
+       ]
+      },
+      {
+       "minAge": 22,
+       "flags": [
+        "left_city"
+       ],
+       "notFlags": [
+        "came_back"
+       ]
+      }
+     ]
+    },
+    "far": true
+   },
+   {
+    "id": "newhome",
+    "name": "新家",
+    "index": 8,
+    "top": 16000,
+    "width": 2800,
+    "floors": [
+     16760
+    ],
+    "unlock": {
+     "minAge": 30,
+     "flags": [
+      "home_own"
+     ]
+    },
+    "far": false
+   },
+   {
+    "id": "park",
+    "name": "公园",
+    "index": 9,
+    "top": 18000,
+    "width": 3200,
+    "floors": [
+     18760
+    ],
+    "unlock": {
+     "minAge": 45
+    },
+    "far": false
+   },
+   {
+    "id": "hospital",
+    "name": "医院",
+    "index": 10,
+    "top": 20000,
+    "width": 2800,
+    "floors": [
+     20760
+    ],
+    "unlock": {
+     "minAge": 40
+    },
+    "far": false
+   }
+  ],
+  "zones": [
+   {
+    "id": "bridgehead",
+    "name": "桥头车站",
+    "scene": "across",
+    "floor": 0,
+    "span": [
+     0,
+     510
+    ],
+    "rect": [
+     0,
+     10360,
+     510,
+     420
+    ]
+   },
+   {
+    "id": "factory",
+    "name": "老厂",
+    "scene": "across",
+    "floor": 0,
+    "span": [
+     510,
+     1240
+    ],
+    "rect": [
+     510,
+     10360,
+     730,
+     420
+    ]
+   },
+   {
+    "id": "youth_palace",
+    "name": "少年宫",
+    "scene": "across",
+    "floor": 0,
+    "span": [
+     1240,
+     1970
+    ],
+    "rect": [
+     1240,
+     10360,
+     730,
+     420
+    ]
+   },
+   {
+    "id": "key_school",
+    "name": "市重点",
+    "scene": "across",
+    "floor": 0,
+    "span": [
+     1970,
+     2630
+    ],
+    "rect": [
+     1970,
+     10360,
+     660,
+     420
+    ]
+   },
+   {
+    "id": "mall",
+    "name": "商场",
+    "scene": "across",
+    "floor": 0,
+    "span": [
+     2630,
+     3650
+    ],
+    "rect": [
+     2630,
+     10360,
+     1020,
+     420
+    ]
+   },
+   {
+    "id": "bookstore",
+    "name": "大书店",
+    "scene": "across",
+    "floor": 0,
+    "span": [
+     3650,
+     4160
+    ],
+    "rect": [
+     3650,
+     10360,
+     510,
+     420
+    ]
+   },
+   {
+    "id": "uni",
+    "name": "大学",
+    "scene": "across",
+    "floor": 0,
+    "span": [
+     4160,
+     4810
+    ],
+    "rect": [
+     4160,
+     10360,
+     650,
+     420
+    ]
+   },
+   {
+    "id": "office",
+    "name": "写字楼",
+    "scene": "across",
+    "floor": 0,
+    "span": [
+     4810,
+     5600
+    ],
+    "rect": [
+     4810,
+     10360,
+     790,
+     420
+    ]
+   },
+   {
+    "id": "station",
+    "name": "车站",
+    "scene": "away",
+    "floor": 0,
+    "span": [
+     0,
+     630
+    ],
+    "rect": [
+     0,
+     12360,
+     630,
+     420
+    ]
+   },
+   {
+    "id": "campus",
+    "name": "学校",
+    "scene": "away",
+    "floor": 0,
+    "span": [
+     630,
+     1600
+    ],
+    "rect": [
+     630,
+     12360,
+     970,
+     420
+    ]
+   },
+   {
+    "id": "market",
+    "name": "夜市",
+    "scene": "away",
+    "floor": 0,
+    "span": [
+     1600,
+     2570
+    ],
+    "rect": [
+     1600,
+     12360,
+     970,
+     420
+    ]
+   },
+   {
+    "id": "worksite",
+    "name": "上班的地方",
+    "scene": "away",
+    "floor": 0,
+    "span": [
+     2570,
+     3400
+    ],
+    "rect": [
+     2570,
+     12360,
+     830,
+     420
+    ]
+   },
+   {
+    "id": "post",
+    "name": "邮局",
+    "scene": "away",
+    "floor": 0,
+    "span": [
+     3400,
+     4000
+    ],
+    "rect": [
+     3400,
+     12360,
+     600,
+     420
+    ]
+   },
+   {
+    "id": "home_qing",
+    "name": "青家",
+    "scene": "building",
+    "floor": 1,
+    "span": [
+     0,
+     1200
+    ],
+    "rect": [
+     0,
+     320,
+     1200,
+     420
+    ],
+    "owner": "qing"
+   },
+   {
+    "id": "hallway",
+    "name": "楼道",
+    "scene": "building",
+    "floor": 1,
+    "span": [
+     1200,
+     2000
+    ],
+    "rect": [
+     1200,
+     320,
+     800,
+     420
+    ]
+   },
+   {
+    "id": "home_mei",
+    "name": "梅家",
+    "scene": "building",
+    "floor": 1,
+    "span": [
+     2000,
+     3200
+    ],
+    "rect": [
+     2000,
+     320,
+     1200,
+     420
+    ],
+    "owner": "mei"
+   },
+   {
+    "id": "roof",
+    "name": "楼顶",
+    "scene": "building",
+    "floor": 0,
+    "span": [
+     1000,
+     2200
+    ],
+    "rect": [
+     1000,
+     -140,
+     1200,
+     420
+    ]
+   },
+   {
+    "id": "lobby",
+    "name": "挂号大厅",
+    "scene": "hospital",
+    "floor": 0,
+    "span": [
+     0,
+     950
+    ],
+    "rect": [
+     0,
+     20360,
+     950,
+     420
+    ]
+   },
+   {
+    "id": "ward_hall",
+    "name": "走廊",
+    "scene": "hospital",
+    "floor": 0,
+    "span": [
+     950,
+     1900
+    ],
+    "rect": [
+     950,
+     20360,
+     950,
+     420
+    ]
+   },
+   {
+    "id": "ward",
+    "name": "病房",
+    "scene": "hospital",
+    "floor": 0,
+    "span": [
+     1900,
+     2800
+    ],
+    "rect": [
+     1900,
+     20360,
+     900,
+     420
+    ]
+   },
+   {
+    "id": "middle_front",
+    "name": "校门口",
+    "scene": "middle",
+    "floor": 0,
+    "span": [
+     0,
+     660
+    ],
+    "rect": [
+     0,
+     8360,
+     660,
+     420
+    ]
+   },
+   {
+    "id": "middle_class",
+    "name": "教室",
+    "scene": "middle",
+    "floor": 0,
+    "span": [
+     660,
+     1530
+    ],
+    "rect": [
+     660,
+     8360,
+     870,
+     420
+    ]
+   },
+   {
+    "id": "radio_room",
+    "name": "广播站",
+    "scene": "middle",
+    "floor": 0,
+    "span": [
+     1530,
+     1820
+    ],
+    "rect": [
+     1530,
+     8360,
+     290,
+     420
+    ]
+   },
+   {
+    "id": "middle_field",
+    "name": "操场",
+    "scene": "middle",
+    "floor": 0,
+    "span": [
+     1820,
+     2330
+    ],
+    "rect": [
+     1820,
+     8360,
+     510,
+     420
+    ]
+   },
+   {
+    "id": "shed",
+    "name": "车棚",
+    "scene": "middle",
+    "floor": 0,
+    "span": [
+     2330,
+     2800
+    ],
+    "rect": [
+     2330,
+     8360,
+     470,
+     420
+    ]
+   },
+   {
+    "id": "flat",
+    "name": "屋里",
+    "scene": "newhome",
+    "floor": 0,
+    "span": [
+     0,
+     1240
+    ],
+    "rect": [
+     0,
+     16360,
+     1240,
+     420
+    ]
+   },
+   {
+    "id": "landing",
+    "name": "电梯间",
+    "scene": "newhome",
+    "floor": 0,
+    "span": [
+     1240,
+     1680
+    ],
+    "rect": [
+     1240,
+     16360,
+     440,
+     420
+    ]
+   },
+   {
+    "id": "garden",
+    "name": "小区花园",
+    "scene": "newhome",
+    "floor": 0,
+    "span": [
+     1680,
+     2800
+    ],
+    "rect": [
+     1680,
+     16360,
+     1120,
+     420
+    ]
+   },
+   {
+    "id": "park_gate",
+    "name": "公园门口",
+    "scene": "park",
+    "floor": 0,
+    "span": [
+     0,
+     580
+    ],
+    "rect": [
+     0,
+     18360,
+     580,
+     420
+    ]
+   },
+   {
+    "id": "lake_path",
+    "name": "环湖路",
+    "scene": "park",
+    "floor": 0,
+    "span": [
+     580,
+     1670
+    ],
+    "rect": [
+     580,
+     18360,
+     1090,
+     420
+    ]
+   },
+   {
+    "id": "pavilion",
+    "name": "亭子",
+    "scene": "park",
+    "floor": 0,
+    "span": [
+     1670,
+     2330
+    ],
+    "rect": [
+     1670,
+     18360,
+     660,
+     420
+    ]
+   },
+   {
+    "id": "square",
+    "name": "空地",
+    "scene": "park",
+    "floor": 0,
+    "span": [
+     2330,
+     3200
+    ],
+    "rect": [
+     2330,
+     18360,
+     870,
+     420
+    ]
+   },
+   {
+    "id": "school",
+    "name": "校门口",
+    "scene": "primary",
+    "floor": 0,
+    "span": [
+     0,
+     800
+    ],
+    "rect": [
+     0,
+     6360,
+     800,
+     420
+    ]
+   },
+   {
+    "id": "classroom",
+    "name": "教室",
+    "scene": "primary",
+    "floor": 0,
+    "span": [
+     800,
+     1820
+    ],
+    "rect": [
+     800,
+     6360,
+     1020,
+     420
+    ]
+   },
+   {
+    "id": "yard",
+    "name": "操场",
+    "scene": "primary",
+    "floor": 0,
+    "span": [
+     1820,
+     2800
+    ],
+    "rect": [
+     1820,
+     6360,
+     980,
+     420
+    ]
+   },
+   {
+    "id": "rent_room",
+    "name": "屋里",
+    "scene": "rental",
+    "floor": 0,
+    "span": [
+     0,
+     1000
+    ],
+    "rect": [
+     0,
+     14360,
+     1000,
+     420
+    ]
+   },
+   {
+    "id": "rent_hall",
+    "name": "走廊",
+    "scene": "rental",
+    "floor": 0,
+    "span": [
+     1000,
+     1920
+    ],
+    "rect": [
+     1000,
+     14360,
+     920,
+     420
+    ]
+   },
+   {
+    "id": "river",
+    "name": "海河边",
+    "scene": "river",
+    "floor": 0,
+    "span": [
+     0,
+     2630
+    ],
+    "rect": [
+     0,
+     4360,
+     2630,
+     420
+    ]
+   },
+   {
+    "id": "bridge",
+    "name": "铁桥",
+    "scene": "river",
+    "floor": 0,
+    "span": [
+     2630,
+     3600
+    ],
+    "rect": [
+     2630,
+     4360,
+     970,
+     420
+    ]
+   },
+   {
+    "id": "breakfast",
+    "name": "早点铺",
+    "scene": "street",
+    "floor": 0,
+    "span": [
+     210,
+     830
+    ],
+    "rect": [
+     210,
+     2360,
+     620,
+     420
+    ]
+   },
+   {
+    "id": "shop",
+    "name": "小卖部",
+    "scene": "street",
+    "floor": 0,
+    "span": [
+     830,
+     1320
+    ],
+    "rect": [
+     830,
+     2360,
+     490,
+     420
+    ]
+   },
+   {
+    "id": "alley",
+    "name": "河畔里",
+    "scene": "street",
+    "floor": 0,
+    "span": [
+     1320,
+     2430
+    ],
+    "rect": [
+     1320,
+     2360,
+     1110,
+     420
+    ]
+   },
+   {
+    "id": "bikeshop",
+    "name": "自行车铺",
+    "scene": "street",
+    "floor": 0,
+    "span": [
+     2430,
+     3060
+    ],
+    "rect": [
+     2430,
+     2360,
+     630,
+     420
+    ]
+   },
+   {
+    "id": "teahouse",
+    "name": "河畔茶社",
+    "scene": "street",
+    "floor": 0,
+    "span": [
+     3060,
+     3820
+    ],
+    "rect": [
+     3060,
+     2360,
+     760,
+     420
+    ]
+   }
+  ],
+  "spots": [
+   {
+    "id": "key_gate",
+    "zone": "key_school",
+    "scene": "across",
+    "at": [
+     2260,
+     10760
+    ],
+    "actions": [
+     "duty"
+    ],
+    "action": "duty"
+   },
+   {
+    "id": "mall_floor",
+    "zone": "mall",
+    "scene": "across",
+    "at": [
+     2990,
+     10760
+    ],
+    "actions": [
+     "window_shop"
+    ],
+    "action": "window_shop"
+   },
+   {
+    "id": "mall_food",
+    "zone": "mall",
+    "scene": "across",
+    "at": [
+     3430,
+     10760
+    ],
+    "actions": [
+     "dine_west"
+    ],
+    "action": "dine_west"
+   },
+   {
+    "id": "book_shelf",
+    "zone": "bookstore",
+    "scene": "across",
+    "at": [
+     3900,
+     10760
+    ],
+    "actions": [
+     "read_store"
+    ],
+    "action": "read_store"
+   },
+   {
+    "id": "uni_gate",
+    "zone": "uni",
+    "scene": "across",
+    "at": [
+     4450,
+     10760
+    ],
+    "actions": [
+     "duty"
+    ],
+    "action": "duty"
+   },
+   {
+    "id": "office_desk",
+    "zone": "office",
+    "scene": "across",
+    "at": [
+     5100,
+     10760
+    ],
+    "actions": [
+     "duty"
+    ],
+    "action": "duty"
+   },
+   {
+    "id": "away_gate",
+    "zone": "campus",
+    "scene": "away",
+    "at": [
+     1040,
+     12760
+    ],
+    "actions": [
+     "duty"
+    ],
+    "action": "duty"
+   },
+   {
+    "id": "away_desk",
+    "zone": "campus",
+    "scene": "away",
+    "at": [
+     1390,
+     12760
+    ],
+    "actions": [
+     "read"
+    ],
+    "action": "read"
+   },
+   {
+    "id": "market_stall",
+    "zone": "market",
+    "scene": "away",
+    "at": [
+     2150,
+     12760
+    ],
+    "actions": [
+     "night_snack"
+    ],
+    "action": "night_snack"
+   },
+   {
+    "id": "away_work",
+    "zone": "worksite",
+    "scene": "away",
+    "at": [
+     2990,
+     12760
+    ],
+    "actions": [
+     "duty"
+    ],
+    "action": "duty"
+   },
+   {
+    "id": "post_box",
+    "zone": "post",
+    "scene": "away",
+    "at": [
+     3680,
+     12760
+    ],
+    "actions": [
+     "letter"
+    ],
+    "action": "letter"
+   },
+   {
+    "id": "bed_qing",
+    "zone": "home_qing",
+    "scene": "building",
+    "at": [
+     180,
+     720
+    ],
+    "actions": [
+     "sleep"
+    ],
+    "action": "sleep"
+   },
+   {
+    "id": "desk_qing",
+    "zone": "home_qing",
+    "scene": "building",
+    "at": [
+     520,
+     720
+    ],
+    "actions": [
+     "picture_book",
+     "study",
+     "read"
+    ],
+    "action": "picture_book"
+   },
+   {
+    "id": "table_qing",
+    "zone": "home_qing",
+    "scene": "building",
+    "at": [
+     800,
+     720
+    ],
+    "actions": [
+     "eat"
+    ],
+    "action": "eat"
+   },
+   {
+    "id": "basin_qing",
+    "zone": "home_qing",
+    "scene": "building",
+    "at": [
+     1070,
+     720
+    ],
+    "actions": [
+     "wash"
+    ],
+    "action": "wash"
+   },
+   {
+    "id": "door_qing",
+    "zone": "hallway",
+    "scene": "building",
+    "at": [
+     1300,
+     720
+    ],
+    "actions": [
+     "knock"
+    ],
+    "action": "knock"
+   },
+   {
+    "id": "hall_stool",
+    "zone": "hallway",
+    "scene": "building",
+    "at": [
+     1480,
+     720
+    ],
+    "actions": [
+     "study",
+     "read"
+    ],
+    "action": "study"
+   },
+   {
+    "id": "door_mei",
+    "zone": "hallway",
+    "scene": "building",
+    "at": [
+     1900,
+     720
+    ],
+    "actions": [
+     "knock"
+    ],
+    "action": "knock"
+   },
+   {
+    "id": "basin_mei",
+    "zone": "home_mei",
+    "scene": "building",
+    "at": [
+     2130,
+     720
+    ],
+    "actions": [
+     "wash"
+    ],
+    "action": "wash"
+   },
+   {
+    "id": "table_mei",
+    "zone": "home_mei",
+    "scene": "building",
+    "at": [
+     2400,
+     720
+    ],
+    "actions": [
+     "eat"
+    ],
+    "action": "eat"
+   },
+   {
+    "id": "desk_mei",
+    "zone": "home_mei",
+    "scene": "building",
+    "at": [
+     2680,
+     720
+    ],
+    "actions": [
+     "picture_book",
+     "study",
+     "read"
+    ],
+    "action": "picture_book"
+   },
+   {
+    "id": "bed_mei",
+    "zone": "home_mei",
+    "scene": "building",
+    "at": [
+     3020,
+     720
+    ],
+    "actions": [
+     "sleep"
+    ],
+    "action": "sleep"
+   },
+   {
+    "id": "roof_pigeon",
+    "zone": "roof",
+    "scene": "building",
+    "at": [
+     1250,
+     260
+    ],
+    "actions": [
+     "play_roof"
+    ],
+    "action": "play_roof"
+   },
+   {
+    "id": "ward_chair",
+    "zone": "ward",
+    "scene": "hospital",
+    "at": [
+     2330,
+     20760
+    ],
+    "actions": [
+     "accompany"
+    ],
+    "action": "accompany"
+   },
+   {
+    "id": "middle_gate",
+    "zone": "middle_front",
+    "scene": "middle",
+    "at": [
+     310,
+     8760
+    ],
+    "actions": [
+     "duty"
+    ],
+    "action": "duty"
+   },
+   {
+    "id": "middle_desk",
+    "zone": "middle_class",
+    "scene": "middle",
+    "at": [
+     1090,
+     8760
+    ],
+    "actions": [
+     "study"
+    ],
+    "action": "study"
+   },
+   {
+    "id": "radio_mic",
+    "zone": "radio_room",
+    "scene": "middle",
+    "at": [
+     1680,
+     8760
+    ],
+    "actions": [
+     "broadcast"
+    ],
+    "action": "broadcast"
+   },
+   {
+    "id": "middle_yard",
+    "zone": "middle_field",
+    "scene": "middle",
+    "at": [
+     2080,
+     8760
+    ],
+    "actions": [
+     "ball"
+    ],
+    "action": "ball"
+   },
+   {
+    "id": "new_bed",
+    "zone": "flat",
+    "scene": "newhome",
+    "at": [
+     160,
+     16760
+    ],
+    "actions": [
+     "sleep"
+    ],
+    "action": "sleep"
+   },
+   {
+    "id": "new_table",
+    "zone": "flat",
+    "scene": "newhome",
+    "at": [
+     510,
+     16760
+    ],
+    "actions": [
+     "eat"
+    ],
+    "action": "eat"
+   },
+   {
+    "id": "new_desk",
+    "zone": "flat",
+    "scene": "newhome",
+    "at": [
+     730,
+     16760
+    ],
+    "actions": [
+     "read"
+    ],
+    "action": "read"
+   },
+   {
+    "id": "new_balcony",
+    "zone": "flat",
+    "scene": "newhome",
+    "at": [
+     1060,
+     16760
+    ],
+    "actions": [
+     "balcony"
+    ],
+    "action": "balcony"
+   },
+   {
+    "id": "garden_path",
+    "zone": "garden",
+    "scene": "newhome",
+    "at": [
+     2190,
+     16760
+    ],
+    "actions": [
+     "walk_river"
+    ],
+    "action": "walk_river"
+   },
+   {
+    "id": "lake_walk",
+    "zone": "lake_path",
+    "scene": "park",
+    "at": [
+     1080,
+     18760
+    ],
+    "actions": [
+     "morning_walk"
+    ],
+    "action": "morning_walk"
+   },
+   {
+    "id": "pavilion_choir",
+    "zone": "pavilion",
+    "scene": "park",
+    "at": [
+     2000,
+     18760
+    ],
+    "actions": [
+     "choir"
+    ],
+    "action": "choir"
+   },
+   {
+    "id": "square_ground",
+    "zone": "square",
+    "scene": "park",
+    "at": [
+     2750,
+     18760
+    ],
+    "actions": [
+     "ground_write"
+    ],
+    "action": "ground_write"
+   },
+   {
+    "id": "school_gate",
+    "zone": "school",
+    "scene": "primary",
+    "at": [
+     380,
+     6760
+    ],
+    "actions": [
+     "duty",
+     "club_math"
+    ],
+    "action": "duty"
+   },
+   {
+    "id": "class_board",
+    "zone": "classroom",
+    "scene": "primary",
+    "at": [
+     1090,
+     6760
+    ],
+    "actions": [
+     "blackboard"
+    ],
+    "action": "blackboard"
+   },
+   {
+    "id": "class_desk",
+    "zone": "classroom",
+    "scene": "primary",
+    "at": [
+     1530,
+     6760
+    ],
+    "actions": [
+     "study"
+    ],
+    "action": "study"
+   },
+   {
+    "id": "school_yard",
+    "zone": "yard",
+    "scene": "primary",
+    "at": [
+     2260,
+     6760
+    ],
+    "actions": [
+     "club_sport",
+     "ball"
+    ],
+    "action": "club_sport"
+   },
+   {
+    "id": "rent_bed",
+    "zone": "rent_room",
+    "scene": "rental",
+    "at": [
+     260,
+     14760
+    ],
+    "actions": [
+     "sleep"
+    ],
+    "action": "sleep"
+   },
+   {
+    "id": "rent_desk",
+    "zone": "rent_room",
+    "scene": "rental",
+    "at": [
+     700,
+     14760
+    ],
+    "actions": [
+     "read"
+    ],
+    "action": "read"
+   },
+   {
+    "id": "rent_basin",
+    "zone": "rent_hall",
+    "scene": "rental",
+    "at": [
+     1150,
+     14760
+    ],
+    "actions": [
+     "wash"
+    ],
+    "action": "wash"
+   },
+   {
+    "id": "rent_stove",
+    "zone": "rent_hall",
+    "scene": "rental",
+    "at": [
+     1500,
+     14760
+    ],
+    "actions": [
+     "cook"
+    ],
+    "action": "cook"
+   },
+   {
+    "id": "river_bank",
+    "zone": "river",
+    "scene": "river",
+    "at": [
+     560,
+     4760
+    ],
+    "actions": [
+     "play_river",
+     "walk_river"
+    ],
+    "action": "play_river"
+   },
+   {
+    "id": "river_rail",
+    "zone": "river",
+    "scene": "river",
+    "at": [
+     1310,
+     4760
+    ],
+    "actions": [
+     "rail_talk"
+    ],
+    "action": "rail_talk"
+   },
+   {
+    "id": "river_fish",
+    "zone": "river",
+    "scene": "river",
+    "at": [
+     2000,
+     4760
+    ],
+    "actions": [
+     "fish"
+    ],
+    "action": "fish"
+   },
+   {
+    "id": "river_bridge",
+    "zone": "bridge",
+    "scene": "river",
+    "at": [
+     2940,
+     4760
+    ],
+    "actions": [
+     "duty"
+    ],
+    "action": "duty"
+   },
+   {
+    "id": "breakfast_stall",
+    "zone": "breakfast",
+    "scene": "street",
+    "at": [
+     530,
+     2760
+    ],
+    "actions": [
+     "duty",
+     "eat_out",
+     "dine"
+    ],
+    "action": "duty"
+   },
+   {
+    "id": "alley_rope",
+    "zone": "alley",
+    "scene": "street",
+    "at": [
+     1530,
+     2760
+    ],
+    "actions": [
+     "play_alley",
+     "chat"
+    ],
+    "action": "play_alley"
+   },
+   {
+    "id": "chess_table",
+    "zone": "alley",
+    "scene": "street",
+    "at": [
+     2010,
+     2760
+    ],
+    "actions": [
+     "chess"
+    ],
+    "action": "chess"
+   },
+   {
+    "id": "bike_bench",
+    "zone": "bikeshop",
+    "scene": "street",
+    "at": [
+     2710,
+     2760
+    ],
+    "actions": [
+     "duty",
+     "work"
+    ],
+    "action": "duty"
+   },
+   {
+    "id": "tea_stage",
+    "zone": "teahouse",
+    "scene": "street",
+    "at": [
+     3310,
+     2760
+    ],
+    "actions": [
+     "club_art",
+     "perform"
+    ],
+    "action": "club_art"
+   },
+   {
+    "id": "tea_seat",
+    "zone": "teahouse",
+    "scene": "street",
+    "at": [
+     3580,
+     2760
+    ],
+    "actions": [
+     "listen"
+    ],
+    "action": "listen"
+   }
+  ],
+  "exits": [
+   {
+    "id": "across.to_river",
+    "scene": "across",
+    "at": [
+     60,
+     10760
+    ],
+    "to": "river",
+    "arrive": [
+     3560,
+     4760
+    ],
+    "label": "过桥回去"
+   },
+   {
+    "id": "across.to_newhome",
+    "scene": "across",
+    "at": [
+     880,
+     10760
+    ],
+    "to": "newhome",
+    "arrive": [
+     2740,
+     16760
+    ],
+    "label": "进小区"
+   },
+   {
+    "id": "away.to_rental",
+    "scene": "away",
+    "at": [
+     2080,
+     12760
+    ],
+    "to": "rental",
+    "arrive": [
+     1880,
+     14760
+    ],
+    "label": "回住的地方"
+   },
+   {
+    "id": "building.hall_down",
+    "scene": "building",
+    "at": [
+     1500,
+     720
+    ],
+    "to": "street",
+    "arrive": [
+     1700,
+     2760
+    ],
+    "label": "下楼"
+   },
+   {
+    "id": "building.hall_up",
+    "scene": "building",
+    "at": [
+     1740,
+     720
+    ],
+    "to": "building",
+    "arrive": [
+     1740,
+     260
+    ],
+    "label": "上楼顶"
+   },
+   {
+    "id": "building.roof_down",
+    "scene": "building",
+    "at": [
+     1740,
+     260
+    ],
+    "to": "building",
+    "arrive": [
+     1740,
+     720
+    ],
+    "label": "下楼道"
+   },
+   {
+    "id": "hospital.to_park",
+    "scene": "hospital",
+    "at": [
+     60,
+     20760
+    ],
+    "to": "park",
+    "arrive": [
+     500,
+     18760
+    ],
+    "label": "出门"
+   },
+   {
+    "id": "middle.to_street",
+    "scene": "middle",
+    "at": [
+     60,
+     8760
+    ],
+    "to": "street",
+    "arrive": [
+     160,
+     2760
+    ],
+    "label": "回楼下"
+   },
+   {
+    "id": "newhome.to_across",
+    "scene": "newhome",
+    "at": [
+     2740,
+     16760
+    ],
+    "to": "across",
+    "arrive": [
+     880,
+     10760
+    ],
+    "label": "出小区"
+   },
+   {
+    "id": "park.to_street",
+    "scene": "park",
+    "at": [
+     60,
+     18760
+    ],
+    "to": "street",
+    "arrive": [
+     2300,
+     2760
+    ],
+    "label": "回去"
+   },
+   {
+    "id": "park.to_hospital",
+    "scene": "park",
+    "at": [
+     500,
+     18760
+    ],
+    "to": "hospital",
+    "arrive": [
+     60,
+     20760
+    ],
+    "label": "去医院"
+   },
+   {
+    "id": "primary.to_street",
+    "scene": "primary",
+    "at": [
+     60,
+     6760
+    ],
+    "to": "street",
+    "arrive": [
+     60,
+     2760
+    ],
+    "label": "回楼下"
+   },
+   {
+    "id": "rental.to_away",
+    "scene": "rental",
+    "at": [
+     1880,
+     14760
+    ],
+    "to": "away",
+    "arrive": [
+     2080,
+     12760
+    ],
+    "label": "出门"
+   },
+   {
+    "id": "river.to_street",
+    "scene": "river",
+    "at": [
+     60,
+     4760
+    ],
+    "to": "street",
+    "arrive": [
+     3940,
+     2760
+    ],
+    "label": "回楼下"
+   },
+   {
+    "id": "river.to_across",
+    "scene": "river",
+    "at": [
+     3560,
+     4760
+    ],
+    "to": "across",
+    "arrive": [
+     60,
+     10760
+    ],
+    "label": "过桥"
+   },
+   {
+    "id": "street.to_primary",
+    "scene": "street",
+    "at": [
+     60,
+     2760
+    ],
+    "to": "primary",
+    "arrive": [
+     60,
+     6760
+    ],
+    "label": "去小学"
+   },
+   {
+    "id": "street.to_middle",
+    "scene": "street",
+    "at": [
+     160,
+     2760
+    ],
+    "to": "middle",
+    "arrive": [
+     60,
+     8760
+    ],
+    "label": "去中学"
+   },
+   {
+    "id": "street.upstairs",
+    "scene": "street",
+    "at": [
+     1700,
+     2760
+    ],
+    "to": "building",
+    "arrive": [
+     1500,
+     720
+    ],
+    "label": "上楼"
+   },
+   {
+    "id": "street.to_park",
+    "scene": "street",
+    "at": [
+     2300,
+     2760
+    ],
+    "to": "park",
+    "arrive": [
+     60,
+     18760
+    ],
+    "label": "去公园"
+   },
+   {
+    "id": "street.to_river",
+    "scene": "street",
+    "at": [
+     3940,
+     2760
+    ],
+    "to": "river",
+    "arrive": [
+     60,
+     4760
+    ],
+    "label": "去海河边"
+   }
+  ],
+  "stride": 2000,
+  "size": [
+   5600,
+   22000
+  ],
+  "spawn": {
+   "qing": [
+    180,
+    720
+   ],
+   "mei": [
+    3020,
+    720
+   ]
+  }
  },
  "tracks": [
   {
@@ -24987,7 +30302,7 @@ var CONTENT: Content = {
    "group": null,
    "duty": {
     "label": "上学",
-    "spot": "school_gate",
+    "spot": "middle_gate",
     "arrive": [
      420,
      510
@@ -25015,7 +30330,7 @@ var CONTENT: Content = {
    "group": null,
    "duty": {
     "label": "上学",
-    "spot": "school_gate",
+    "spot": "middle_gate",
     "arrive": [
      420,
      540
@@ -25045,7 +30360,7 @@ var CONTENT: Content = {
    "group": null,
    "duty": {
     "label": "过桥上学",
-    "spot": "river_bridge",
+    "spot": "key_gate",
     "arrive": [
      390,
      480
@@ -25076,7 +30391,7 @@ var CONTENT: Content = {
    "group": null,
    "duty": {
     "label": "上学",
-    "spot": "school_gate",
+    "spot": "middle_gate",
     "arrive": [
      420,
      510
@@ -25104,7 +30419,7 @@ var CONTENT: Content = {
    "group": null,
    "duty": {
     "label": "上学",
-    "spot": "school_gate",
+    "spot": "middle_gate",
     "arrive": [
      420,
      540
@@ -25165,7 +30480,7 @@ var CONTENT: Content = {
    "group": null,
    "duty": {
     "label": "去上课",
-    "spot": "river_bridge",
+    "spot": "uni_gate",
     "arrive": [
      420,
      540
@@ -25252,7 +30567,7 @@ var CONTENT: Content = {
    "group": null,
    "duty": {
     "label": "过桥上班",
-    "spot": "river_bridge",
+    "spot": "office_desk",
     "arrive": [
      420,
      510

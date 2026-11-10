@@ -32,7 +32,7 @@ const STEP_PITCH := {"child": 1.18, "teen": 1.06, "young": 1.0, "middle": 0.96, 
 ## 没有专门音效的行动，借用相近的
 const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "play_river", "dine": "eat_out", "ball": "play_alley", "chat": "listen", "club_math": "study", "club_sport": "play_alley", "club_art": "perform",
 	# 新地图上的去处（content/maps/）：先借近的声音，以后要专门的再加素材
-	"chess": "study", "blackboard": "study", "broadcast": "perform", "rail_talk": "play_river", "window_shop": "eat_out", "dine_west": "eat_out", "read_store": "study", "night_snack": "eat_out", "cook": "eat", "balcony": "play_roof", "morning_walk": "play_river", "choir": "perform", "ground_write": "study", "accompany": "wash"}
+	"chess": "study", "blackboard": "study", "broadcast": "perform", "rail_talk": "play_river", "window_shop": "eat_out", "dine_west": "eat_out", "read_store": "study", "night_snack": "eat_out", "cook": "eat", "balcony": "play_roof", "morning_walk": "play_river", "choir": "perform", "ground_write": "study", "accompany": "wash", "letter": "study"}
 ## 设置按钮的三档：全开 → 只关音乐 → 静音
 const LEVELS := ["乐", "响", "静"]
 ## 横屏：菜单页在右上角；河畔里排在右上「对门的牌」下面（ui/hud.gd：横带 y 40~196，再空 16）

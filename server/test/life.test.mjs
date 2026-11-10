@@ -64,13 +64,39 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   G("lifeConfirm")(s, C, "mei", { qing: "青", mei: "梅" });
   s.world.fate = { mirror: null, qing: null, mei: null, milestone: null }; // 这里只测行动
   const w = s.world;
+  const spotAt = (id) => C.map.spots.find((sp) => sp.id === id).at;
+  const put = (r, id) => { const at = spotAt(id); s.world.actors[r].x = at[0]; s.world.actors[r].y = at[1]; };
+  const zoneAt = (id) => { const z = C.map.zones.find((x) => x.id === id); return [z.span[0] + 40, z.rect[1] + z.rect[3] - 20]; };
+  const putZone = (r, id, dx = 0) => { const at = zoneAt(id); s.world.actors[r].x = at[0] + dx; s.world.actors[r].y = at[1]; };
   assert.match(G("worldAct")(s, C, "qing", "river_bank").error, /走近/);
   assert.match(G("worldAct")(s, C, "qing", "bed_mei").error, /走近|不是你的家/);
-  // 限速：一次上报 2000 像素会被截断
-  G("worldMove")(s, C, "qing", 2300, 560, 0.1);
-  assert.ok(w.actors.qing.x < 400, "瞬移要被限速");
+  // 限速：一次上报 2000 像素会被截断；人只左右走，y 不认客户端的
+  const y0 = w.actors.qing.y, x0 = w.actors.qing.x;
+  G("worldMove")(s, C, "qing", x0 + 2000, y0 - 300, 0.1);
+  assert.ok(w.actors.qing.x < x0 + 400, "瞬移要被限速");
+  assert.equal(w.actors.qing.y, y0, "上下楼要走出口，不能直接改 y");
+  // 出口：走到跟前才走得了，到了那边站在落脚点；不同的图上的点位够不着
+  const exitOf = (id) => C.map.exits.find((e) => e.id === id);
+  assert.match(G("worldExit")(s, C, "qing", "building.hall_down"), /走近/);
+  w.actors.qing.x = exitOf("building.hall_down").at[0]; w.actors.qing.y = exitOf("building.hall_down").at[1];
+  assert.equal(G("worldExit")(s, C, "qing", "building.hall_down"), null);
+  assert.equal(G("worldSceneAt")(C, w.actors.qing.y).id, "street");
+  assert.deepEqual([w.actors.qing.x, w.actors.qing.y], [...exitOf("building.hall_down").arrive]);
+  assert.match(G("worldExit")(s, C, "qing", "没有这个"), /没有/);
+  const bedQ = spotAt("bed_qing");
+  w.actors.qing.x = bedQ[0];
+  assert.match(G("worldAct")(s, C, "qing", "bed_qing").error, /走近/, "横坐标对上了，可人在楼下街");
+  // 去不了的图：年纪不够回原因，人不动
+  const lockSc = { ...C.map.scenes.find((sc) => sc.id === "river"), unlock: { minAge: 30 } };
+  const keep = C.map.scenes;
+  C.map.scenes = keep.map((sc) => (sc.id === "river" ? lockSc : sc));
+  const ex = exitOf("street.to_river");
+  w.actors.qing.x = ex.at[0]; w.actors.qing.y = ex.at[1];
+  assert.match(G("worldExit")(s, C, "qing", "street.to_river"), /还太小/);
+  assert.equal(G("worldSceneAt")(C, w.actors.qing.y).id, "street");
+  C.map.scenes = keep;
   // 顺手的事：两人都去楼下早点铺买煎饼果子 → 同框，当场做完，不占这一段；钱不够买不了，一段里只买一回
-  for (const r of ["qing", "mei"]) { w.actors[r].x = 1630; w.actors[r].y = 470; s.persons[r].money = 10; s.persons[r].needs.hunger = 40; }
+  for (const r of ["qing", "mei"]) { put(r, "breakfast_stall"); s.persons[r].money = 10; s.persons[r].needs.hunger = 40; }
   s.persons.mei.money = 1;
   assert.match(G("worldAct")(s, C, "mei", "breakfast_stall").error, /钱/);
   s.persons.mei.money = 10;
@@ -83,7 +109,7 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   assert.match(G("worldAct")(s, C, "qing", "breakfast_stall").error, /过/, "一段里同一件顺手的事只做一回");
   assert.equal(w.minute, 390, "顺手的事不花时间");
   // 一段：两个人都定了才过。坐在同一张书桌前翻小人书 = 搭伴
-  for (const r of ["qing", "mei"]) { w.actors[r].x = 250; w.actors[r].y = 360; }
+  for (const r of ["qing", "mei"]) put(r, "desk_qing");
   const mind0 = s.persons.qing.stats.mind;
   assert.equal(G("worldAct")(s, C, "qing", "desk_qing").error, null);
   for (let i = 0; i < 20; i++) G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
@@ -125,15 +151,14 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   // mirror 事件：两人都在 where、这一段碰得上它的钟点才触发
   const mev = C.events.find((e) => e.id === "c_roof_summer");
   s.world.fate = { mirror: mev.id, qing: null, mei: null };
-  s.world.actors.qing.x = 600; s.world.actors.qing.y = 130;
-  s.world.actors.mei.x = 900; s.world.actors.mei.y = 120;
+  putZone("qing", "roof"); putZone("mei", "roof", 300);
   G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
   assert.equal(s.world.event, null, "早上不是楼顶乘凉的时候");
   s.world.slot = 3; s.world.minute = 930;
-  s.world.actors.mei.x = 1180; s.world.actors.mei.y = 560;
+  put("mei", "bed_mei");
   G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
   assert.equal(s.world.event, null, "只有一个人到了不触发");
-  s.world.actors.mei.x = 900; s.world.actors.mei.y = 120;
+  putZone("mei", "roof", 300);
   const st = G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
   assert.equal(st.started.eventId, "c_roof_summer");
   const m1 = s.world.minute;
@@ -243,6 +268,23 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   R.loop([R.msg(pa, 4, { x: 2000, y: 600, seq: 4 })]);
   assert.ok(R.life().world.actors.qing.x < 360 + 700, "久站之后也要限速");
   R.life().world.actors.qing.x = 360;
+  // 出口：EXIT 带上走之前最后一条 MOVE 的序号，路上还没到的旧 MOVE 不再挪这边的人
+  R.life().world.fate = { mirror: null, qing: null, mei: null, milestone: null };
+  R.life().world.event = null;
+  const door = C.map.exits.find((e) => e.id === "building.hall_down");
+  R.life().world.actors.qing.x = door.at[0];
+  R.loop([R.msg(pa, 24, { exit: "building.hall_down", seq: 9 })]);
+  assert.deepEqual([R.life().world.actors.qing.x, R.life().world.actors.qing.y], [...door.arrive], "EXIT：下楼到了街上");
+  R.loop([R.msg(pa, 4, { x: door.at[0] - 100, y: 0, seq: 8 })]);
+  assert.equal(R.life().world.actors.qing.x, door.arrive[0], "出门以前发的 MOVE 不算");
+  R.loop([R.msg(pa, 24, { exit: "street.upstairs", seq: 10 })]);
+  R.loop([R.msg(pa, 24, { exit: "street.upstairs", seq: 11 })]);
+  assert.ok(R.to(pa, 9).length > 0, "不在出口跟前回 ERROR");
+  const back = C.map.exits.find((e) => e.id === "street.upstairs");
+  R.life().world.actors.qing.x = back.at[0];
+  R.loop([R.msg(pa, 24, { exit: "street.upstairs", seq: 12 })]);
+  assert.equal(G("worldSceneAt")(C, R.life().world.actors.qing.y).id, "building");
+  R.life().world.actors.qing.x = 360;
   // 行动报错回给本人
   R.loop([R.msg(pb, 5, { spot: "river_bank" })]);
   assert.ok(R.to(pb, 9).length > 0 && R.to(pb, 9).at(-1).to[0] === "sb");
@@ -285,7 +327,7 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
 
   // 事件：快照不能泄露 TA 的选择
   R.life().world.fate.mirror = "c_stray_cat";
-  for (const r of ["qing", "mei"]) { R.life().world.actors[r].x = 740; R.life().world.actors[r].y = 470; }
+  for (const r of ["qing", "mei"]) { const at = C.map.spots.find((sp) => sp.id === "door_qing").at; R.life().world.actors[r].x = at[0]; R.life().world.actors[r].y = at[1]; }
   R.loop();
   assert.equal(R.life().world.event?.eventId, "c_stray_cat", "两人在楼道应触发");
   assert.ok(R.sent.some((m) => m.op === 8));

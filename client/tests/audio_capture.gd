@@ -29,10 +29,7 @@ func _wait(seconds: float) -> void:
 
 func _go(world: Node, to: Vector2) -> void:
 	var me: Node2D = world.me()
-	if world.nav.ready():
-		me.set_path(world.nav.path(me.position, world.nav.snap(to)))
-	else:
-		me.walk_target = to
+	me.walk_target = Vector2(to.x, me.position.y)  # 侧视：只左右走
 
 
 func _run() -> void:

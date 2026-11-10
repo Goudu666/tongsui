@@ -6,7 +6,7 @@
 
 每个精灵是一小张印张：可以有几帧（横排），脚底锚点 foot 用世界像素写在 sprites.json 里。
 引擎（client/scripts/world/street_life.gd）按 content/street.yaml 把它们摆到街上，按年代换。
-底图里不会变的东西（茶社、桥、河）在 tools/art/hepanli/ 里画；这里只画会来、会走、会老的。
+底图里不会变的东西（茶社、桥、河）在 tools/art/scenes.py 里画；这里只画会来、会走、会老的。
 """
 from __future__ import annotations
 
@@ -21,10 +21,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, "hepanli"))
 
 from actors import SKIN, arc_pts, chaikin, ell, part, place, rotate, rrect, solid, tint, tube  # noqa: E402
-from common import _knockout_text as _ko_abs  # noqa: E402
+from scenes import knock as _ko_abs  # noqa: E402
 from riso import ROOT, Sheet, circle_pts, ellipse_pts, font_path, rect_pts  # noqa: E402
 from street_fig import INK, WHITE_HAIR, fig, rider  # noqa: E402
 

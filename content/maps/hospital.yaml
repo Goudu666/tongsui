@@ -4,7 +4,7 @@
 id: hospital
 name: 医院
 width: 2800
-unlock: { minAge: 40 }
+unlock: { minAge: 45 }   # 只能从公园进，公园 45 岁开；医院的支线是中年照顾爸妈
 
 areas:
   - { id: lobby, name: 挂号大厅, span: [ 0, 950 ], floor: 0 }

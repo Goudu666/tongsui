@@ -22,9 +22,9 @@ areas:
   - { id: roof, name: 楼顶, span: [ 1000, 2200 ], floor: 0 }
 
 exits:
-  - { id: hall_down, at: 1560, floor: 1, to: street, arrive: 1700, label: 下楼 }
-  - { id: hall_up, at: 1640, floor: 1, to: building, arrive: 1640, arriveFloor: 0, label: 上楼顶 }
-  - { id: roof_down, at: 1640, floor: 0, to: building, arrive: 1640, arriveFloor: 1, label: 下楼道 }
+  - { id: hall_down, at: 1500, floor: 1, to: street, arrive: 1700, label: 下楼 }
+  - { id: hall_up, at: 1740, floor: 1, to: building, arrive: 1740, arriveFloor: 0, label: 上楼顶 }
+  - { id: roof_down, at: 1740, floor: 0, to: building, arrive: 1740, arriveFloor: 1, label: 下楼道 }
 
 spots:
   # 青家：床、书桌、饭桌、脸盆。屋角那架琴只有殷实人家才摆（piano 由「让出身体现资源差异」定）

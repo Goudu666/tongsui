@@ -1,56 +1,4 @@
-# 河畔里（虚构的天津市区老楼片儿）地图
-# 世界坐标，单位像素；客户端按这个画，服务器按这个判定。
-# 一栋红砖老楼，你们两家住三楼对门；楼顶能放鸽子，楼下是早点铺，往东走到头就是海河。
-
-size: [2400, 1600]
-spawn: { qing: [300, 560], mei: [1180, 560] }
-
-zones:
-  - { id: roof, name: 楼顶, rect: [140, 40, 1200, 180] }
-  - { id: home_qing, name: 青家, rect: [140, 260, 540, 440], owner: qing }
-  - { id: hallway, name: 楼道, rect: [690, 260, 100, 440] }
-  - { id: home_mei, name: 梅家, rect: [800, 260, 540, 440], owner: mei }
-  - { id: breakfast, name: 早点铺, rect: [1460, 300, 340, 340] }
-  - { id: river, name: 海河边, rect: [1900, 140, 480, 1360] }
-  - { id: alley, name: 河畔里, rect: [0, 760, 1880, 240] }
-  - { id: school, name: 小学, rect: [40, 1080, 560, 420] }
-  - { id: bikeshop, name: 自行车铺, rect: [860, 1080, 520, 400] }
-  # 街坊的去处（街上的人、车、摊子随年代变化，见 content/street.yaml）
-  - { id: teahouse, name: 河畔茶社, rect: [1456, 0, 430, 284] }
-
-# 可以互动的点：走到附近（110 像素内）会出现按钮。
-# action 写一个，或者 actions 写几个：同一个物件不同年纪做不同的事，取第一个年龄合适的。
-spots:
-  - { id: bed_qing, zone: home_qing, at: [260, 560], action: sleep }
-  - { id: table_qing, zone: home_qing, at: [450, 380], action: eat }
-  - { id: desk_qing, zone: home_qing, at: [250, 360], actions: [picture_book, study, read] }
-  - { id: basin_qing, zone: home_qing, at: [560, 620], action: wash }
-  - { id: bed_mei, zone: home_mei, at: [1220, 560], action: sleep }
-  - { id: table_mei, zone: home_mei, at: [1030, 380], action: eat }
-  - { id: desk_mei, zone: home_mei, at: [1230, 360], actions: [picture_book, study, read] }
-  - { id: basin_mei, zone: home_mei, at: [920, 620], action: wash }
-  - { id: door_qing, zone: hallway, at: [715, 470], action: knock }
-  - { id: door_mei, zone: hallway, at: [765, 470], action: knock }
-  - { id: roof_pigeon, zone: roof, at: [740, 130], action: play_roof }
-  - { id: breakfast_stall, zone: breakfast, at: [1630, 470], actions: [duty, eat_out, dine] }
-  - { id: river_bank, zone: river, at: [2140, 820], actions: [play_river, walk_river] }
-  # 桥：上学上班的报到处；殷实人家的孩子晚上过桥去对岸上补习班（tutor）
-  - { id: river_bridge, zone: river, at: [2360, 690], actions: [duty, tutor] }
-  - { id: alley_rope, zone: alley, at: [1260, 880], actions: [play_alley, chat] }
-  - { id: bike_bench, zone: bikeshop, at: [1120, 1280], actions: [duty, work] }
-  # 三年级那一关（m_club）挣来的去处写在前面：进了的人下午四点前后看见的是它，别的人、别的钟点还是原来那件事
-  - { id: school_gate, zone: school, at: [320, 1200], actions: [duty, club_math] }
-  - { id: school_yard, zone: school, at: [470, 1400], actions: [club_sport, ball] }
-  # 街坊的去处：茶社长魅力，河边钓鱼歇心
-  - { id: tea_seat, zone: teahouse, at: [1716, 236], action: listen }
-  - { id: tea_stage, zone: teahouse, at: [1668, 104], actions: [club_art, perform] }
-  - { id: river_fish, zone: river, at: [2096, 1134], action: fish }
-  # 家境（docs/MEANS.md）：殷实人家放学后去少年宫学琴；清贫人家的孩子在楼下帮家里干活；爸妈在厂里的带上对门去厂里的澡堂。
-  # 新地图（content/maps/）落地以后这几处搬过去：学琴到对岸的少年宫，干活到各家的铺子，澡堂到厂区
-  - { id: palace_piano, zone: school, at: [150, 1330], action: piano }
-  - { id: alley_cart, zone: alley, at: [560, 880], action: help_out }
-  - { id: factory_bath, zone: bikeshop, at: [1300, 1160], action: factory_bath }
-
+# 行动（各个地方在哪、有哪些点位，见 content/maps/<图>.yaml）
 # 行动。needs：hunger 饱腹 / energy 精力 / mood 心情 / clean 清洁（0~100）
 #       stats：body / mind / charm（0~10，一次涨零点几；运气是天生的，行动不给）
 #       money：正数是挣钱，负数是花钱（钱不够做不了）
@@ -362,3 +310,10 @@ actions:
     requires: { minAge: 30 }
     needs: { mood: -4, energy: -8 }
     together: { needs: { mood: 8 }, bond: { close: 2 }, text: 两把椅子拼在一起，你们轮着眯一会儿。 }
+  # 外地：隔着两张图的两个人，靠写信（信怎么寄到、TA 什么时候收到，见第三步的主线引擎）
+  - id: letter
+    label: 写信
+    minutes: 60
+    requires: { minAge: 15 }
+    needs: { mood: 5 }
+    stats: { mind: 0.15 }

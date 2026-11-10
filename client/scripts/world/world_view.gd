@@ -1,14 +1,13 @@
 extends Node2D
-## 河畔里：铺上孔版套色的地图（map_art.gd），放两个孩子，点哪走哪（nav.gd 寻路绕开墙和家具）。
-## 地图贴图不在时，退回 M0 的墨线占位画法（_draw_fallback_map）。
+## 河畔里：一张张横着的图（content/maps/<图>.yaml），剖面和街景，人只左右走。
+## 眼前只画自己所在的那一张（scene_art.gd）；换图走出口（门、楼梯、街口），点一下就到，不花时间。
+## 世界坐标里每张图占一条（第 i 张图 y 从 i × map.stride 起），服务器的距离判定照旧是二维的，不同的图自然够不着。
 
 signal move_report(pos: Vector2)
 
 const P := preload("res://scripts/ui/palette.gd")
 const Actor := preload("res://scripts/world/actor.gd")
-const MapArt := preload("res://scripts/world/map_art.gd")
-const Nav := preload("res://scripts/world/nav.gd")
-const StreetLife := preload("res://scripts/world/street_life.gd")
+const SceneArt := preload("res://scripts/world/scene_art.gd")
 const PrintLight := preload("res://scripts/world/print_light.gd")
 const SPOT_RADIUS := 100.0  ## 比服务器的 110 小一点，避免边缘抖动
 const MOVE_SEND_INTERVAL := 0.1
@@ -18,8 +17,10 @@ const CORRECT_DEADZONE := 6.0   ## 服务器和本地差这么点就不管
 const SNAP_DIST := 220.0        ## 差太多（换天回家、被叫去事件）直接到位
 ## 一天五段 [从, 到, 名字]：和服务器 world.ts 的 SLOTS 一样（server/test/arch.test.mjs 对着查）
 const SLOTS := [[390, 480, "早上"], [480, 720, "上午"], [720, 930, "下午"], [930, 1110, "傍晚"], [1110, 1320, "晚上"]]
-const ZOOM := 1.4               ## 镜头：1080 高的屏幕上看到 771 高的一段河畔里
-const HUD_SHIFT := 56.0         ## 人在屏幕上比正中低这么多（界面坐标）
+const ACTOR_SCALE := 1.5        ## 横版里人画大一点（精灵表是给俯视的大地图画的）
+const VIEW_MIN := 900.0         ## 镜头竖着至少看这么高（世界像素）：一层的图，地面在下面五分之四
+const HEAD_ROOM := 430.0        ## 最上一层地面往上留这么多：头、头顶上的字、HUD 那一条
+const FOOT_ROOM := 220.0        ## 最下一层地面往下留这么多：底下的按钮
 
 var map: Dictionary = {}
 var actions: Dictionary = {}
@@ -34,10 +35,12 @@ var actors: Dictionary = {}  ## role -> Actor
 var hints: Array = []
 var controllable := true
 var camera: Camera2D
-var art: MapArt
-var street: StreetLife  ## 街坊、车流、年代道具（纯街景，不参与结算）
+var art: SceneArt
+var street = null  ## 街坊、车流、年代道具：横版的那一层还没做，先空着（street_life.gd 是俯视大地图的）
+var scene: Dictionary = {}   ## 我现在在哪张图上
+var scenes: Dictionary = {}  ## id -> 图
+var _exiting := 0.0          ## 刚按了出口：等服务器把人挪过去，这期间不报位置（报的是上一张图的横坐标）
 var light: PrintLight  ## 昼夜和旧纸感（夜版套印）
-var nav := Nav.new()
 var _marks: Node2D  ## 互动点和命运提示：画在叠印层上面
 var _tap_fx := Vector2.INF
 var _tap_t := 0.0
@@ -55,15 +58,16 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 	map = content.map
 	for a in map.actions:
 		actions[a.id] = a
+	for sc in map.get("scenes", []):
+		scenes[str(sc.id)] = sc
 	my_role = role
 	y_sort_enabled = true
-	art = MapArt.new()
-	art.plate_lighting = true
+	art = SceneArt.new()
+	art.z_index = -10
 	add_child(art)
 	light = PrintLight.new()
 	add_child(light)
-	light.setup(Vector2(map.size[0], map.size[1]), art.anchors)
-	nav.load_mask()
+	light.setup(Vector2(float(map.size[0]), SceneArt.BOTTOM - SceneArt.TOP), {})
 	_marks = _Marks.new(self)
 	_marks.z_index = 70
 	add_child(_marks)
@@ -71,28 +75,59 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 		var sp: Array = map.spawn[r]
 		var actor := Actor.new()
 		actor.setup(r, str(names.get(r, P.ROLE_NAME[r])), r == role, Vector2(sp[0], sp[1]))
+		actor.scale = Vector2.ONE * ACTOR_SCALE
 		add_child(actor)
 		actors[r] = actor
 		buffers[r] = SnapshotBuffer.new()
 		light.actors.append(actor)
 	camera = Camera2D.new()
-	# 横屏：一屏横着能看到大半条街。屏幕特别长（或者平板特别高）时一屏比地图还大，就再放大一点，别露出地图外面的白纸
-	var view := get_viewport_rect().size
-	camera.zoom = Vector2.ONE * maxf(ZOOM, maxf(view.x / float(map.size[0]), view.y / float(map.size[1])) + 0.01)
-	# 顶上有一条 HUD：人往下站一点，头顶上的字不被纸带压住
-	camera.offset = Vector2(0, -HUD_SHIFT / camera.zoom.y)
-	camera.limit_left = 0
-	camera.limit_top = 0
-	camera.limit_right = int(map.size[0])
-	camera.limit_bottom = int(map.size[1])
 	camera.position_smoothing_enabled = true
 	camera.position_smoothing_speed = 6.0
 	add_child(camera)
 	camera.make_current()
-	street = StreetLife.new()
-	add_child(street)
-	street.setup(self)
+	_enter_scene(scene_at(float(map.spawn[role][1])))
 	queue_redraw()
+
+
+## 这个世界 y 在哪张图上（content.map.stride 一条）
+func scene_at(y: float) -> Dictionary:
+	var i := int(floor(y / float(map.get("stride", 2000))))
+	for sc in scenes.values():
+		if int(sc.index) == i:
+			return sc
+	return {}
+
+
+## 换到另一张图：画、镜头、夜版跟着过去
+func _enter_scene(sc: Dictionary) -> void:
+	if sc.is_empty() or str(sc.get("id", "")) == str(scene.get("id", "")):
+		return
+	scene = sc
+	art.show_scene(sc, map.zones, map.get("exits", []))
+	var floors: Array = sc.floors
+	var bottom := float(floors[-1]) + FOOT_ROOM
+	var top := minf(float(floors[0]) - HEAD_ROOM, bottom - VIEW_MIN)
+	var view := get_viewport_rect().size
+	# 竖着正好装下这一截；横着比这张图还宽的长屏，再放大一点，别露出图外面
+	camera.zoom = Vector2.ONE * maxf(view.y / (bottom - top), view.x / float(sc.width))
+	camera.offset = Vector2(0, 0)
+	camera.limit_left = 0
+	camera.limit_right = int(sc.width)
+	camera.limit_top = int(top)
+	camera.limit_bottom = int(bottom)
+	camera.position = Vector2(me().position.x if me() != null else 0.0, (top + bottom) / 2.0)
+	camera.reset_smoothing()
+	light.position = Vector2(0, float(sc.top) + SceneArt.TOP)
+	light.relight(Vector2(float(sc.width), SceneArt.BOTTOM - SceneArt.TOP), SceneArt.anchors_for(str(sc.id)))
+	_refresh_visible()
+
+
+## 对门在别的图上（楼上楼下、外地）：这张图上看不见 TA
+func _refresh_visible() -> void:
+	for r in actors:
+		var a: Actor = actors[r]
+		if not a.is_local:
+			a.visible = a.visible and str(scene_at(a.position.y).get("id", "")) == str(scene.get("id", ""))
 
 
 func me() -> Actor:
@@ -108,14 +143,14 @@ func set_stage(stage: String) -> void:
 	if light != null:
 		light.set_stage(stage, not _stage_set)
 	_stage_set = true
+	if art != null:
+		art.queue_redraw()
 
 
 ## 时钟：决定昼夜（联机时 apply_world 自动调用；离线预览由 main 喂）
 func set_minute(m: float) -> void:
 	minute = m
 	slot = slot_at(m)
-	if art != null:
-		art.set_minute(m)
 	if street != null:
 		street.set_minute(m)
 	if light != null:
@@ -144,10 +179,14 @@ func _process(delta: float) -> void:
 			var buf = buffers[r]
 			if not other.is_local and not buf.is_empty():
 				other.net_target = buf.sample(render_t)
-	camera.position = a.position
+	camera.position.x = a.position.x
+	_enter_scene(scene_at(a.position.y))
 	_tap_t += delta
 	_marks.queue_redraw()
 	_send_timer += delta
+	if _exiting > 0.0:
+		_exiting -= delta
+		return
 	if _send_timer >= MOVE_SEND_INTERVAL:
 		_send_timer = 0.0
 		if a.position.distance_to(_last_sent) > 2.0:
@@ -160,14 +199,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	var mb := event as InputEventMouseButton
 	if mb != null and mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
-		var target := get_global_mouse_position()
-		target.x = clampf(target.x, 0.0, float(map.size[0]))
-		target.y = clampf(target.y, 0.0, float(map.size[1]))
-		if nav.ready():
-			target = nav.snap(target)
-			me().set_path(nav.path(me().position, target))
-		else:
-			me().walk_target = target
+		# 人只在脚下这层地面上左右走：点哪儿，走到那个横坐标
+		var target := Vector2(clampf(get_global_mouse_position().x, 0.0, float(scene.get("width", map.size[0]))), me().position.y)
+		me().walk_target = target
 		_tap_fx = target
 		_tap_t = 0.0
 
@@ -220,8 +254,9 @@ func apply_world(view: Dictionary) -> void:
 		if s == null:
 			a.visible = false
 			continue
-		a.visible = true
 		var server_pos := Vector2(s.x, s.y)
+		# 不在我这张图上的人（楼上、外地）：这儿看不见
+		a.visible = a.is_local or str(scene_at(server_pos.y).get("id", "")) == str(scene.get("id", ""))
 		if side_by_side:
 			server_pos.x += -24.0 if r == "qing" else 24.0
 		var act: Variant = s.get("act")
@@ -286,20 +321,55 @@ func _doing_label(role: String, act: String) -> String:
 	return str(actions.get(act, {}).get("label", act))
 
 
-## 这个位置叫什么（HUD 上「对门在哪」用）。自己家写「家里」，串门写「你家」，不在哪块地方上就是路上
+## 这个位置叫什么（HUD 上「对门在哪」用）。自己家写「家里」，串门写「你家」，不在哪块地方上就写那张图的名字
 func place_name(pos: Vector2, role: String) -> String:
 	for z in map.zones:
 		if Rect2(z.rect[0], z.rect[1], z.rect[2], z.rect[3]).has_point(pos):
 			if z.has("owner"):
 				return "家里" if str(z.owner) == role else ("你家" if str(z.owner) == my_role else str(z.name))
 			return str(z.name)
-	return "路上"
+	var sc := scene_at(pos.y)
+	return str(sc.get("name", "路上")) if not sc.is_empty() else "路上"
+
+
+## 跟前的出口（门、楼梯、街口）。没有返回 {}
+func nearest_exit() -> Dictionary:
+	var a := me()
+	if a == null or not a.visible or a.action_label != "" or a.asleep or _exiting > 0.0:
+		return {}
+	var best: Dictionary = {}
+	var best_d := SPOT_RADIUS
+	for ex in map.get("exits", []):
+		if absf(float(ex.at[1]) - a.position.y) > 1.0:
+			continue
+		var d := absf(float(ex.at[0]) - a.position.x)
+		if d < best_d:
+			best_d = d
+			best = ex
+	return best
+
+
+## 离线逛逛：自己走过去（联机时由服务器挪人）
+func walk_through(exit_id: String) -> void:
+	for ex in map.get("exits", []):
+		if str(ex.id) == exit_id and me() != null:
+			var to := Vector2(float(ex.arrive[0]), float(ex.arrive[1]))
+			me().position = to
+			me().walk_target = to
+			_enter_scene(scene_at(to.y))
+
+
+## 按了出口：先停下，等服务器把人挪到那边（WORLD 里看见自己到了别的图就接着报位置）
+func begin_exit() -> void:
+	_exiting = 1.2
+	if me() != null:
+		me().walk_target = me().position
 
 
 ## 离自己最近、够得着、现在有事可做的互动点
 func nearest_spot() -> Dictionary:
 	var a := me()
-	if a == null or not a.visible or a.action_label != "" or a.asleep:
+	if a == null or not a.visible or a.action_label != "" or a.asleep or playing:
 		return {}
 	var best: Dictionary = {}
 	var best_d := SPOT_RADIUS
@@ -392,7 +462,16 @@ func draw_marks(c: CanvasItem) -> void:
 	if _tap_fx != Vector2.INF and t < 0.6:
 		c.draw_arc(_tap_fx, 10.0 + t * 40.0, 0, TAU, 24, Color(P.INK, 0.6 * (1.0 - t / 0.6)), 2.0)
 	var duty := my_duty()
+	var here := str(scene.get("id", ""))
+	var duty_scene := ""
+	if not duty.is_empty():
+		for sp in map.spots:
+			if str(sp.id) == str(duty.get("spot", "")):
+				duty_scene = str(sp.get("scene", ""))
+	_draw_exits(c, f, here, duty_scene)
 	for sp in map.spots:
+		if str(sp.get("scene", "")) != here:
+			continue
 		var at := Vector2(sp.at[0], sp.at[1])
 		var act := action_of(sp)
 		if act.is_empty():
@@ -426,11 +505,39 @@ func draw_marks(c: CanvasItem) -> void:
 	# 命运的提示：一行很淡的字，飘在那个地方
 	for h in hints:
 		for z in map.zones:
-			if z.id == h.zone:
+			if z.id == h.zone and str(z.get("scene", "")) == here:
 				var top := Vector2(z.rect[0] + z.rect[2] / 2.0, z.rect[1] + 36 + sin(Time.get_ticks_msec() / 900.0) * 4.0)
 				var tw := f.get_string_size(str(h.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x
 				c.draw_rect(Rect2(top + Vector2(-tw / 2.0 - 10, -26), Vector2(tw + 20, 38)), Color(P.PAPER, 0.85))
 				c.draw_string(f, top - Vector2(tw / 2.0, 0), str(h.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 26, P.OVERLAP)
+
+
+## 出口：门框上头挂一块小牌子，写往哪儿去。今天要去的地方在那边，牌子上一圈自己颜色的波纹
+func _draw_exits(c: CanvasItem, f: Font, here: String, duty_scene: String) -> void:
+	var near := nearest_exit()
+	for ex in map.get("exits", []):
+		if str(ex.scene) != here:
+			continue
+		var at := Vector2(float(ex.at[0]), float(ex.at[1]))
+		var label := str(ex.label)
+		var to: Dictionary = scenes.get(str(ex.to), {})
+		var is_near: bool = not near.is_empty() and str(near.id) == str(ex.id)
+		var sign := at + Vector2(0, -210)
+		var w := f.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x
+		var box := Rect2(sign + Vector2(-w / 2.0 - 30, -22), Vector2(w + 48, 40))
+		if duty_scene != "" and str(ex.to) == duty_scene and duty_scene != here:
+			var k := fmod(Time.get_ticks_msec() / 1400.0, 1.0)
+			c.draw_rect(box.grow(6.0 + k * 22.0), Color(P.role_color(my_role), 0.8 * (1.0 - k)), false, 4.0)
+		c.draw_rect(Rect2(box.position + Vector2(4, 4), box.size), P.MEI if is_near else Color(P.INK, 0.85))
+		c.draw_rect(box, P.PAPER)
+		c.draw_rect(box, P.INK, false, 2.0)
+		# 箭头：往左还是往右、往上还是往下（同一张图上下楼）
+		var dir := "↑" if str(ex.to) == here and float(ex.arrive[1]) < at.y else ("↓" if str(ex.to) == here else ("←" if at.x < float(scene.get("width", 0)) / 2.0 else "→"))
+		c.draw_string(f, box.position + Vector2(10, 29), dir, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, P.MEI)
+		c.draw_string(f, box.position + Vector2(36, 29), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, P.INK)
+		c.draw_line(sign + Vector2(0, 18), at + Vector2(0, -6), Color(P.INK, 0.25), 2.0)
+		if not to.is_empty() and to.get("far", false):
+			c.draw_string(f, box.position + Vector2(0, -8), "外地", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, P.INK_SOFT)
 
 
 class _Marks extends Node2D:
@@ -441,93 +548,3 @@ class _Marks extends Node2D:
 
 	func _draw() -> void:
 		view.draw_marks(self)
-
-
-# ======================================================================
-# 占位地图（没有生成美术时）
-# ======================================================================
-
-func _draw() -> void:
-	if map.is_empty() or (art != null and art.has_art):
-		return
-	var f := P.font()
-	for z in map.zones:
-		var r := Rect2(z.rect[0], z.rect[1], z.rect[2], z.rect[3])
-		match z.id:
-			"alley":  # 楼下的街：柏油路 + 自行车道虚线
-				draw_rect(r, P.PAPER_DARK)
-				draw_line(r.position, r.position + Vector2(r.size.x, 0), P.INK, 3.0)
-				draw_line(r.position + Vector2(0, r.size.y), r.end, P.INK, 3.0)
-				var x := 30.0
-				while x < r.size.x:
-					draw_line(r.position + Vector2(x, r.size.y / 2.0), r.position + Vector2(x + 60, r.size.y / 2.0), Color(P.INK, 0.3), 3.0)
-					x += 140.0
-			"river":  # 海河：青色水纹 + 一座铁桥
-				draw_rect(r, Color(P.QING, 0.10))
-				for i in 22:
-					var y := r.position.y + 40.0 + i * 60.0
-					var x0 := r.position.x + 30.0 + fmod(i * 37.0, 120.0)
-					draw_arc(Vector2(x0, y), 26.0, PI * 1.1, PI * 1.9, 10, Color(P.QING, 0.6), 2.5)
-					draw_arc(Vector2(x0 + 180.0, y + 20.0), 26.0, PI * 1.1, PI * 1.9, 10, Color(P.QING, 0.6), 2.5)
-				var by := r.position.y + 520.0
-				draw_line(Vector2(r.position.x - 20, by), Vector2(r.end.x, by), P.INK, 5.0)
-				draw_line(Vector2(r.position.x - 20, by + 60), Vector2(r.end.x, by + 60), P.INK, 5.0)
-				var bx := r.position.x
-				while bx < r.end.x:  # 桥上的钢桁架
-					draw_line(Vector2(bx, by), Vector2(bx + 40, by + 60), P.INK, 2.0)
-					draw_line(Vector2(bx + 40, by + 60), Vector2(bx + 80, by), P.INK, 2.0)
-					bx += 80.0
-			"roof":  # 楼顶：晾衣绳上一件青、一件梅，几只鸽子
-				_zone_frame(r, Color(P.INK, 0.03))
-				var y0 := r.position.y + 60.0
-				draw_line(Vector2(r.position.x + 120, y0), Vector2(r.position.x + 560, y0 + 10), P.INK, 2.0)
-				draw_rect(Rect2(r.position.x + 220, y0 + 4, 50, 60), Color(P.QING, 0.8))
-				draw_rect(Rect2(r.position.x + 330, y0 + 6, 50, 60), Color(P.MEI, 0.8))
-				draw_line(Vector2(r.position.x + 900, r.end.y), Vector2(r.position.x + 900, r.position.y + 10), P.INK, 3.0)  # 天线
-				draw_line(Vector2(r.position.x + 860, r.position.y + 40), Vector2(r.position.x + 940, r.position.y + 40), P.INK, 3.0)
-				for i in 5:
-					var g := Vector2(r.position.x + 700 + i * 60.0, r.position.y + 30.0 + sin(i * 1.7) * 14.0)
-					draw_line(g + Vector2(-12, -6), g, P.INK, 2.5)
-					draw_line(g, g + Vector2(12, -6), P.INK, 2.5)
-			"breakfast":  # 早点铺：摊子 + 热气
-				_zone_frame(r, Color(P.MEI, 0.05))
-				var c := r.get_center()
-				draw_rect(Rect2(c + Vector2(-110, 10), Vector2(220, 70)), P.PAPER)
-				draw_rect(Rect2(c + Vector2(-110, 10), Vector2(220, 70)), P.INK, false, 3.0)
-				draw_circle(c + Vector2(-40, 0), 34.0, Color(P.INK, 0.1))  # 鏊子
-				draw_arc(c + Vector2(-40, 0), 34.0, 0, TAU, 32, P.INK, 3.0)
-				for i in 3:
-					var sx := c.x - 70.0 + i * 30.0
-					draw_arc(Vector2(sx, c.y - 60), 14.0, PI * 0.5, PI * 1.5, 8, Color(P.INK, 0.4), 2.0)
-					draw_arc(Vector2(sx + 6, c.y - 88), 14.0, -PI * 0.5, PI * 0.5, 8, Color(P.INK, 0.4), 2.0)
-				draw_string(f, c + Vector2(20, -30), "煎饼果子", HORIZONTAL_ALIGNMENT_LEFT, -1, 30, P.MEI)
-			"hallway":  # 楼道：一级级台阶
-				draw_rect(r, Color(P.INK, 0.05))
-				for i in 8:
-					var sy := r.position.y + 40.0 + i * 50.0
-					draw_line(Vector2(r.position.x + 10, sy), Vector2(r.end.x - 10, sy), Color(P.INK, 0.35), 2.0)
-			_:
-				var tint := Color(0, 0, 0, 0)
-				if z.has("owner"):
-					tint = Color(P.role_color(z.owner), 0.07)
-				_zone_frame(r, tint)
-				if z.has("owner"):  # 红砖墙的砖缝
-					for row in 3:
-						var wy := r.end.y - 52.0 + row * 14.0
-						var off := 0.0 if row % 2 == 0 else 20.0
-						var wx := r.position.x + off
-						while wx < r.end.x - 30.0:
-							draw_rect(Rect2(wx, wy, 34, 10), Color(P.MEI, 0.18))
-							wx += 40.0
-		draw_string(f, r.position + Vector2(20, 44), str(z.name), HORIZONTAL_ALIGNMENT_LEFT, -1, 32, P.INK_SOFT)
-
-
-func _zone_frame(r: Rect2, fill: Color) -> void:
-	if fill.a > 0.0:
-		draw_rect(r, fill)
-	# 手绘感：线条两端各出头一点
-	var e := 10.0
-	draw_line(r.position + Vector2(-e, 0), Vector2(r.end.x + e, r.position.y), P.INK, 3.0)
-	draw_line(Vector2(r.position.x - e, r.end.y), r.end + Vector2(e, 0), P.INK, 3.0)
-	draw_line(r.position + Vector2(0, -e), Vector2(r.position.x, r.end.y + e), P.INK, 3.0)
-	draw_line(Vector2(r.end.x, r.position.y - e), r.end + Vector2(0, e), P.INK, 3.0)

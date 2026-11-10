@@ -44,6 +44,48 @@ function worldZoneAt(c: Content, x: number, y: number): string | null {
   return null;
 }
 
+/** 这个世界 y 落在哪张图上 */
+function worldSceneAt(c: Content, y: number): Scene | null {
+  var i = Math.floor(y / c.map.stride);
+  for (var k = 0; k < c.map.scenes.length; k++) if (c.map.scenes[k].index === i) return c.map.scenes[k];
+  return null;
+}
+
+/**
+ * 这个人现在去不去得了这张图。unlock 顶上写的条件都要满足；any 里满足一条就行（河对岸：18 岁，或者 15 岁考上了市重点……）。
+ * 今天要去这张图上报到的人（上学、上班）总去得了。去不了返回原因
+ */
+function worldSceneLock(s: LifeState, c: Content, sc: Scene, role: Role, today?: Duty | null): string | null {
+  var u = sc.unlock;
+  if (!u) return null;
+  var duty = today === undefined ? worldDuty(s, c, role) : today;
+  if (duty && lifeFind(c.map.spots, duty.spot).scene === sc.id) return null;
+  var age = lifeTimeAt(s.turn).age;
+  var p = s.persons![role];
+  var why = function (q: SceneUnlock): string | null {
+    if (q.minAge !== undefined && age < q.minAge) return "还太小了，一个人去不了" + sc.name;
+    if (q.maxAge !== undefined && age > q.maxAge) return "已经不去" + sc.name + "了";
+    if (!lifeHasAll(p.flags, q.flags) || !lifeHasNone(p.flags, q.notFlags)) return "没有去" + sc.name + "的由头";
+    return null;
+  };
+  var top = why(u);
+  if (top || !u.any) return top;
+  var first: string | null = null;
+  for (var i = 0; i < u.any.length; i++) {
+    var w = why(u.any[i]);
+    if (!w) return null;
+    if (!first) first = w;
+  }
+  return first;
+}
+
+/** 离这个位置最近的那层地面（人只在地面上走） */
+function worldFloorY(sc: Scene, y: number): number {
+  var best = sc.floors[0];
+  for (var i = 1; i < sc.floors.length; i++) if (Math.abs(sc.floors[i] - y) < Math.abs(best - y)) best = sc.floors[i];
+  return best;
+}
+
 function worldIdle(a: Actor | null): boolean {
   return a !== null && a.action === null && !a.asleep;
 }
@@ -117,10 +159,16 @@ function worldStartDay(s: LifeState, c: Content) {
   // 命运给今天准备的事：mirror 一件（两人都在世时），每人 solo 一件。要走到对的地方才会发生。
   var seen = lifeSeenIds(s);
   var fate: WorldState["fate"] = { mirror: null, qing: null, mei: null };
+  // 事情出在哪张图上，那张图这个人得去得了：八岁的孩子遇不上少年宫走廊里的事（除非家里送去学琴），不然这一天命运准备的事白白落空
+  var reach = function (e: LifeEvent, r: Role): boolean {
+    if (!e.where) return true;
+    var z = lifeFind(c.map.zones, e.where);
+    return !worldSceneLock(s, c, lifeFind(c.map.scenes, z.scene), r, lifeTrack(c, persons[r], t.age).duty);
+  };
   var together: EligibleCtx = { bond: s.bond, alone: false };
   if (persons.qing.alive && persons.mei.alive) {
     var both = persons.qing.flags.concat(persons.mei.flags);
-    var mirrors = c.events.filter(function (e) { return e.kind === "mirror" && lifeEligible(e, t, both, seen, together); });
+    var mirrors = c.events.filter(function (e) { return e.kind === "mirror" && lifeEligible(e, t, both, seen, together) && reach(e, "qing") && reach(e, "mei"); });
     // 运气好的两个人，命运准备的事也多一点
     var luck = (persons.qing.stats.luck + persons.mei.stats.luck) / 2 - 5;
     if (mirrors.length > 0 && lifeRand(s) < (t.stage === "childhood" ? 0.6 : 0.45) + luck * c.rules.daily.luckFate) {
@@ -135,7 +183,7 @@ function worldStartDay(s: LifeState, c: Content) {
     // solo 按人算：对门遇到过的事，你也可能遇到（但同一天两人不会是同一件）
     var mine = lifeSeenIds(s, role);
     if (fate.qing) mine[fate.qing] = true;
-    var solos = c.events.filter(function (e) { return e.kind === "solo" && lifeEligible(e, t, flags, mine, ctx); });
+    var solos = c.events.filter(function (e) { return e.kind === "solo" && lifeEligible(e, t, flags, mine, ctx) && reach(e, role); });
     if (solos.length > 0 && lifeRand(s) < 0.7) {
       var pick = lifePickWeighted(s, solos, function (e) { return e.weight; })!;
       fate[role] = pick.id;
@@ -179,24 +227,42 @@ function worldStartDay(s: LifeState, c: Content) {
 
 // ---------- 走动 ----------
 
-/** 客户端上报位置。服务器只做限速和边界，不做碰撞（合作游戏，信任客户端的走位） */
+/**
+ * 客户端上报位置。服务器只做限速和边界，不做碰撞（合作游戏，信任客户端的走位）。
+ * 人只在这一层地面上左右走：y 不认客户端的，上下楼、出门都走出口（worldExit）
+ */
 function worldMove(s: LifeState, c: Content, role: Role, x: number, y: number, dtSec: number): boolean {
   if (s.phase !== "life") return false;
   var a = s.world!.actors[role];
   if (!worldIdle(a) || !s.persons![role].alive) return false;
-  if (typeof x !== "number" || typeof y !== "number" || isNaN(x) || isNaN(y)) return false;
-  x = lifeClamp(x, 0, c.map.size[0]);
-  y = lifeClamp(y, 0, c.map.size[1]);
-  var dx = x - a!.x, dy = y - a!.y;
-  var dist = Math.sqrt(dx * dx + dy * dy);
+  if (typeof x !== "number" || isNaN(x)) return false;
+  var sc = worldSceneAt(c, a!.y);
+  x = lifeClamp(x, 0, sc ? sc.width : c.map.size[0]);
+  var dx = x - a!.x;
   var max = WALK_SPEED * Math.max(dtSec, 0.05) * 1.6 + 30;
-  if (dist > max) {
-    x = a!.x + (dx / dist) * max;
-    y = a!.y + (dy / dist) * max;
-  }
+  if (Math.abs(dx) > max) x = a!.x + (dx > 0 ? max : -max);
   a!.x = x;
-  a!.y = y;
   return true;
+}
+
+/** 走出口：门、楼梯、街口。站在出口跟前才行，不花时间。去不了的图回原因 */
+function worldExit(s: LifeState, c: Content, role: Role, exitId: string): string | null {
+  if (s.phase !== "life" || !s.world) return "人生还没开始";
+  var w = s.world;
+  var a = w.actors[role];
+  if (!a || !s.persons![role].alive) return "你已经不在了";
+  if (w.playing) return "这一段正在过";
+  if (w.event && w.event.roles.indexOf(role) >= 0) return "先做完眼前的选择";
+  if (!worldIdle(a)) return a.asleep ? "已经睡下了" : "这一段已经定了";
+  var ex: Exit;
+  try { ex = lifeFind(c.map.exits, exitId); } catch (e) { return "没有这个出口"; }
+  if (Math.abs(ex.at[0] - a.x) > SPOT_RADIUS || Math.abs(ex.at[1] - a.y) > 1) return "走近一点";
+  var to = lifeFind(c.map.scenes, ex.to);
+  var lock = worldSceneLock(s, c, to, role);
+  if (lock) return lock;
+  a.x = ex.arrive[0];
+  a.y = ex.arrive[1];
+  return null;
 }
 
 // ---------- 行动 ----------
@@ -277,6 +343,11 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
   try { sp = lifeFind(c.map.spots, spotId); } catch (e) { return "没有这个地方"; }
   var dx = sp.at[0] - a.x, dy = sp.at[1] - a.y;
   if (!anywhere && dx * dx + dy * dy > SPOT_RADIUS * SPOT_RADIUS) return "走近一点";
+  // 影子找事、跟着对门、睡觉都是直接到点位上的（anywhere）：那张图这个人去不了，就不能去（上学上班 worldSceneLock 自己放行）
+  if (anywhere) {
+    var lock = worldSceneLock(s, c, lifeFind(c.map.scenes, sp.scene), role);
+    if (lock) return lock;
+  }
   var pick = worldPickAction(s, c, role, sp);
   if (!pick.act) return pick.why;
   var act = pick.act;
@@ -737,10 +808,14 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
     var mev = lifeFindEvent(c, w.fate.mirror);
     // 在线的人要自己走到那里；离线的影子只要没睡着，就会被「叫过来」
     var anyOnline = roles.some(function (r) { return online[r]; });
+    var host: Actor | null = null;
+    for (var h0 = 0; h0 < roles.length; h0++) if (online[roles[h0]]) host = w.actors[roles[h0]];
+    var hostScene = host ? worldSceneAt(c, host.y) : null;
     var available = function (r: Role) {
       var x = w.actors[r]!;
       if (online[r]) return worldIdle(x) && worldInZone(c, x, mev.where);
-      if (anyOnline) return !x.asleep && (x.from === undefined || x.from === w.slot);
+      // 叫过来也得是他去得了的图（四岁的影子不会被叫到海河边）
+      if (anyOnline) return !x.asleep && (x.from === undefined || x.from === w.slot) && !!hostScene && !worldSceneLock(s, c, hostScene, r);
       return !x.asleep && worldInZone(c, x, mev.where);
     };
     if (roles.length === 2 && worldOverlaps(mev.when, w.slot) && roles.every(available)) {

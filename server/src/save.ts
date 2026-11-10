@@ -151,9 +151,16 @@ function lifeRepair(s: LifeState, c: Content): string[] {
         a.shadow = false;
       }
       if (a.spot && !lifeHasId(c.map.spots, a.spot)) a.spot = null;
-      // 地图变小了：人不能留在地图外面
-      a.x = lifeClamp(a.x, 0, c.map.size[0]);
-      a.y = lifeClamp(a.y, 0, c.map.size[1]);
+      // 地图改了（变小了、某张图拿掉了、换成一张张横图以前的老坐标）：人得站在某张图的某层地面上。
+      // 站不住的：手上有事就站回那个点位，没事就回自己家床边
+      var sc = worldSceneAt(c, a.y);
+      if (!sc || sc.floors.indexOf(a.y) < 0 || a.x < 0 || a.x > sc.width) {
+        var home = a.spot ? lifeFind(c.map.spots, a.spot) : null;
+        var at = home ? home.at : c.map.spawn[ROLES[j]];
+        notes.push("actor." + ROLES[j] + " 站在地图外面（" + Math.round(a.x) + ", " + Math.round(a.y) + "），挪到 " + (home ? home.id : "家里"));
+        a.x = at[0];
+        a.y = at[1];
+      }
     }
   }
 

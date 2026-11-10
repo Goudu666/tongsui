@@ -123,7 +123,7 @@ func _movie() -> void:
 	await _wait(4.5)
 	main._show_mirror_result({"label": "3 岁 · 立春", "events": {"qing": ev.id, "mei": ev.id},
 		"choices": {"qing": ev.options[0].id, "mei": ev.options[0].id}, "shadow": [], "resonance": true,
-		"text": str(ev.get("resonance", "隔着一扇门，两个人敲的是同一个拍子。"))})
+		"text": _resonance_text(ev)})
 	await _wait(4.0)
 	main._close_modal()
 	_frame("day0_street")
@@ -133,3 +133,15 @@ func _movie() -> void:
 	_frame("day36")
 	await _wait(7.5)
 
+
+
+## 共鸣那句：剧本里按选项写（{选项: {text…}}），取两个人都选了的第一个选项那句
+func _resonance_text(ev: Dictionary) -> String:
+	var r = ev.get("resonance", null)
+	if r is Dictionary:
+		var one = r.get(str(ev.options[0].id), null)
+		if one is Dictionary and one.has("text"):
+			return str(one.text)
+	if r is String:
+		return r
+	return "隔着一扇门，两个人敲的是同一个拍子。"

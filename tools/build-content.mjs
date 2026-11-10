@@ -43,9 +43,9 @@ const EVENT_KEYS = ["id", "kind", "stage", "where", "when", "hint", "seasons", "
 // 关口（kind: milestone）多出来的字段，见 content/events/milestones.yaml 文件头
 const MILESTONE_KEYS = [...EVENT_KEYS, "age", "score", "swing", "grades"];
 const MILESTONE_OPTION_KEYS = ["id", "text", "tags", "effects", "min", "score", "cost", "requires"];
-const SCORE_KEYS = ["body", "mind", "charm", "luck", "money"];
+const SCORE_KEYS = ["body", "mind", "charm", "luck", "money", "close"];
 const GRADE_KEYS = ["min", "label", "flags"];
-const TRACK_KEYS = ["id", "label", "requires", "duty"];
+const TRACK_KEYS = ["id", "label", "requires", "group", "duty"];
 const TRACK_REQ_KEYS = ["minAge", "maxAge", "flags", "notFlags"];
 const DUTY_KEYS = ["label", "spot", "arrive", "until", "needs", "stats", "money"];
 const OPTION_KEYS = ["id", "text", "tags", "effects"];
@@ -59,7 +59,7 @@ const MAP_KEYS = ["size", "spawn", "zones", "spots", "actions"];
 const ZONE_KEYS = ["id", "name", "rect", "owner"];
 const SPOT_KEYS = ["id", "zone", "at", "action", "actions"];
 const ACTION_KEYS = ["id", "label", "minutes", "sleep", "duty", "requires", "needs", "stats", "money", "together"];
-const ACTION_REQ_KEYS = ["minAge", "maxAge", "owner", "hours"];
+const ACTION_REQ_KEYS = ["minAge", "maxAge", "owner", "hours", "flags", "notFlags"];
 const TOGETHER_KEYS = ["needs", "bond", "text"];
 // 规则代码（server/src/sim.ts、world.ts）里按名字写死的行动和标记：影子靠这些行动过日子，天赋效果靠这些标记生效。
 // 在内容里改名或删掉它们，规则会悄悄失效，所以在这里钉住。
@@ -244,10 +244,10 @@ const rules = load("rules.yaml");
     roll: ["budget", "wealthAdjust", "statMin", "statMax", "rerolls"],
     growth: ["eventScale", "actionScale", "room", "floor", "bornWeight", "plasticity", "plainBonus"],
     aging: ["body", "mind", "activeFactor"],
-    daily: ["bodyEnergy", "charmTogether", "luckFate"],
+    daily: ["bodyEnergy", "charmTogether", "luckFate", "wageFlags"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],
-    lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max"],
-    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "drift", "driftDistance", "driftFloor"],
+    lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max", "flags"],
+    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "drift", "driftDistance", "driftFloor"],
     legacy: ["pastKept", "heirloomOffer", "houseMax", "houseMoney"],
   };
   checkKeys("rules", rules, Object.keys(need));
@@ -255,6 +255,16 @@ const rules = load("rules.yaml");
     if (!rules?.[sec]) { errors.push(`rules.yaml: 缺少 ${sec}`); continue; }
     checkKeys(`rules.${sec}`, rules[sec], keys);
     for (const k of keys) if (rules[sec][k] === undefined) errors.push(`rules.yaml: 缺少 ${sec}.${k}`);
+  }
+  if (rules?.bond && (typeof rules.bond.syncSteady !== "number" || rules.bond.syncSteady < 0 || rules.bond.syncSteady > 1)) errors.push("rules.yaml: bond.syncSteady 是默契替考场托住的那一份，要在 0 到 1 之间");
+  for (const [f, mul] of Object.entries(rules?.daily?.wageFlags ?? {})) {
+    consumed.push(["rules.daily.wageFlags", f]);
+    if (typeof mul !== "number" || mul < 1 || mul > 2) errors.push(`rules.yaml: daily.wageFlags.${f} 是工钱的倍数，要在 1 到 2 之间`);
+  }
+  // 关口上走的路折成的寿数：标记拼错了要报（没有任何选项打这个标记）
+  for (const [f, years] of Object.entries(rules?.lifespan?.flags ?? {})) {
+    consumed.push(["rules.lifespan.flags", f]);
+    if (typeof years !== "number" || Math.abs(years) > 4) errors.push(`rules.yaml: lifespan.flags.${f} 必须是数字，而且一条路最多折 4 年`);
   }
   for (const st of STAGES) {
     for (const k of STAT_KEYS) if (typeof rules?.growth?.plasticity?.[st]?.[k] !== "number") errors.push(`rules.yaml: growth.plasticity.${st}.${k} 必须是数字`);
@@ -356,6 +366,14 @@ map.actions = map.actions.map((a) => {
   checkDeltas(`map.actions#${a.id}.together.bond`, a.together?.bond, BOND_KEYS);
   if (!a.sleep && !a.duty && !(a.minutes > 0)) errors.push(`map.actions#${a.id}: 需要 minutes（睡觉和日程除外）`);
   if (a.stats?.luck) errors.push(`map.actions#${a.id}: 行动不给运气（运气是天生的）`);
+  for (const k of ["flags", "notFlags"]) if (a.requires?.[k] && !Array.isArray(a.requires[k])) errors.push(`map.actions#${a.id}.requires.${k}: 必须是列表`);
+  // 客户端和服务器都按 hours[0]、hours[1] 读：形状不对的在这里拦下
+  if (a.requires?.hours !== undefined) {
+    const h = a.requires.hours;
+    if (!(Array.isArray(h) && h.length === 2 && h.every((x) => typeof x === "number" && x >= 0 && x <= 1440) && h[0] < h[1])) errors.push(`map.actions#${a.id}.requires.hours: 应为 [起始分钟, 结束分钟]，0~1440，起小于止`);
+  }
+  for (const f of a.requires?.flags ?? []) consumed.push([`map.actions#${a.id}`, f]);
+  if ((a.requires?.flags || a.requires?.notFlags) && (a.sleep || a.duty)) errors.push(`map.actions#${a.id}: 睡觉和日程不能挂标记条件`);
   return {
     id: a.id, label: a.label, minutes: a.minutes ?? 0, sleep: !!a.sleep, duty: !!a.duty,
     requires: a.requires ?? {}, needs: a.needs ?? {}, stats: a.stats ?? {}, money: a.money ?? 0,
@@ -435,7 +453,7 @@ const tracks = (load("tracks.yaml") ?? []).map((t) => {
     checkDeltas(`${at}.duty.stats`, d.stats, STAT_KEYS);
   }
   return {
-    id: t.id, label: t.label, requires: t.requires ?? {},
+    id: t.id, label: t.label, requires: t.requires ?? {}, group: t.group ?? null,
     duty: d ? { label: d.label, spot: d.spot, arrive: d.arrive, until: d.until, needs: d.needs ?? {}, stats: d.stats ?? {}, money: d.money ?? 0 } : null,
   };
 });

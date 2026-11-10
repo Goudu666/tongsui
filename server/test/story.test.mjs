@@ -22,7 +22,7 @@ const DAILY = C.map.actions.filter((a) => Object.keys(a.stats).length > 0);
 const lifeEligible = G("lifeEligible"), lifeTimeAt = G("lifeTimeAt"), lifeEnding = G("lifeEnding");
 const lifeMilestoneFor = G("lifeMilestoneFor"), lifeSeenIds = G("lifeSeenIds"), lifeOptionLock = G("lifeOptionLock"), lifeTrack = G("lifeTrack");
 
-const byId = new Map(C.events.map((e) => [e.id, e]));
+const byId = new Map(C.events.concat(C.story.events).map((e) => [e.id, e]));
 
 /**
  * 模拟一生。choose(s, role, ev) 返回选项 id。
@@ -87,7 +87,11 @@ function story(seed, choose, rerolls = 0, near = 0.5, legacy = undefined) {
 }
 
 // 两种玩家：随手乱选的，和性格前后一致的（按自己攒下的性格标签选，和影子一样）
-const randomChoice = (s, role, ev) => ev.options[Math.floor(lifeRand(s) * ev.options.length)].id;
+// 主线的选项有家底门槛（requires / cost），乱选也只在自己选得了的里面挑
+const randomChoice = (s, role, ev) => {
+  const open = ev.chapter === undefined ? ev.options : ev.options.filter((o) => !G("lifeOptionLock")(ev, o, s.persons[role], 0));
+  return open[Math.floor(lifeRand(s) * open.length)].id;
+};
 const steadyChoice = (s, role, ev) => G("lifeShadowChoose")(s, C, role, ev.id);
 
 // ---------- 1. 内容规模 ----------
@@ -173,7 +177,7 @@ for (let seed = 1; seed <= LIVES; seed++) {
   for (const id of s.noted) noted.set(id, noted.get(id) + 1);
   for (const r of ["qing", "mei"]) talentSeen.set(s.persons[r].talentId, (talentSeen.get(s.persons[r].talentId) ?? 0) + 1);
   if (nth === 0) for (const r of ["qing", "mei"]) assert.ok(!s.persons[r].flags.some((f) => f.startsWith("leg_")), "头一世不带上一世的痕迹");
-  for (const k of seen) { const id = k.split(":")[1]; hit.set(id, hit.get(id) + 1); }
+  for (const k of seen) { const id = k.split(":")[1]; if (hit.has(id)) hit.set(id, hit.get(id) + 1); }
   assert.equal(new Set(seen).size, seen.length, "默契事件一生只出现一次，各自的事和关口每人一生只遇一次");
   for (const r of ["qing", "mei"]) trackSeen.add(lifeTrack(C, s.persons[r], 40).id);
   assert.ok(s.ending, "人生结束时要有结局");
@@ -200,7 +204,9 @@ for (let seed = 1; seed <= LIVES; seed++) {
     const u = C.map.scenes.find((x) => x.id === C.map.zones.find((z) => z.id === where).scene).unlock;
     return !!u && (held(u.flags) || (u.any?.length > 0 && u.any.every((q) => held(q.flags))));
   };
-  const waits = (id) => held(byId.get(id).requires?.flags) || sceneHeld(byId.get(id).where);
+  // 主线顶替掉的旧事件（story.yaml 的 replaces）不再进随机池
+  const replaced = new Set(C.story.events.flatMap((e) => e.replaces));
+  const waits = (id) => replaced.has(id) || held(byId.get(id).requires?.flags) || sceneHeld(byId.get(id).where);
   const never = [...hit].filter(([id, n]) => n === 0 && !waits(id)).map(([id]) => id);
   assert.deepEqual(never, [], `${never.length} 个事件在 ${LIVES} 条人生里一次也没出现：${never.join(", ")}`);
   const deadPair = [...pairEnd].filter(([, n]) => n === 0).map(([id]) => id);

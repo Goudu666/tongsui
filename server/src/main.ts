@@ -29,10 +29,11 @@ var SHADOW_GRACE_SECONDS = 10; // 掉线这么久之内不交给影子：切网�
  * - 旧客户端没法再用了：把 MIN_CLIENT_PROTOCOL 提到能用的最低版本，旧包会看到「请装新版」，而不是卡在看不懂的界面里
  * 剧情内容不走这个：内容有自己的指纹 CONTENT.version，客户端发现不一样会自己下载（content_get）。
  */
-var PROTOCOL_VERSION = 5; // 2：关口（上锁的选项）、日程、目标、属性进了 WORLD；schoolDay 没了  3：传承（老物件、再来一世），旧包可以忽略
+var PROTOCOL_VERSION = 6; // 2：关口（上锁的选项）、日程、目标、属性进了 WORLD；schoolDay 没了  3：传承（老物件、再来一世），旧包可以忽略
 // 4：一天五段（WORLD 多了 slot / ready / playing，新消息 PASS / CANCEL）；放风筝小游戏（20 / 21）拿掉。旧包不会按「就这么过」，一段都过不去
 // 5：一张张横着的图（世界坐标按图分条，人只左右走，新消息 EXIT 走出口）。旧包画的还是原来那张大地图，对不上
-var MIN_CLIENT_PROTOCOL = 5;
+// 6：主线（EVENT 会是 content.story 里的事、带上了锁的选项；WORLD 多了 story 纸带）。旧包找不到主线事件，弹出来是空的
+var MIN_CLIENT_PROTOCOL = 6;
 /** 从这个协议版本起，安装包才认识传承的消息（31 AGAIN）。和 protocol.gd 的 LEGACY_SINCE 是同一个数 */
 var LEGACY_SINCE_PROTOCOL = 3;
 var CONTENT_CHUNK = 48000; // content_get 一次回多少个字符：整份内容约 17 万字符，分几次取，不撞单条消息的大小上限
@@ -439,7 +440,7 @@ function snapshot(s: LifelineMatch, role: Role) {
         locks: lifeMilestoneLocks(life, CONTENT),
       };
     }
-    view.world = { minute: Math.floor(w.minute), slot: w.slot, ready: worldReadyView(life), playing: w.playing, rest: w.rest, actors: w.actors, event: ev };
+    view.world = { minute: Math.floor(w.minute), slot: w.slot, ready: worldReadyView(life), playing: w.playing, rest: w.rest, actors: w.actors, event: ev, story: storyView(life, CONTENT) };
   } else {
     view.world = null;
   }
@@ -503,6 +504,8 @@ function worldView(s: LifelineMatch) {
   return {
     tick: s.tick, minute: Math.floor(w.minute), slot: w.slot, ready: worldReadyView(life), playing: w.playing, wait: Math.floor(w.wait), rest: w.rest, actors: actors, needs: needs, money: money, event: ev, bond: life.bond, hints: hints,
     stats: stats, eff: eff, goals: goals, tracks: tracks,
+    // 纸带：这一章，和今天的「下一件事」（主线，story.ts）
+    story: storyView(life, CONTENT),
   };
 }
 

@@ -12,13 +12,15 @@ const ROLL_STATE := 3  ## s→c {rolls}
 const MOVE := 4        ## c→s {x, y, seq}
 const ACT := 5         ## c→s {spot}
 const CHOOSE := 6      ## c→s {optionId}
-const WORLD := 7       ## s→c {tick, minute, schoolDay, actors{x,y,act,spot,sleep,seq}, needs, money, event, bond, hints}
+const WORLD := 7       ## s→c {tick, minute, rest, actors{x,y,act,spot,sleep,seq,tg}, needs, money, event, bond, hints, stats, eff, goals, tracks}
 const EVENT := 8       ## s→c {event}
 const ERROR := 9       ## s→c {message}
 const LOG := 10        ## s→c {entries}
 const PRESENCE := 11   ## s→c {online}
 const PING := 12       ## c→s {t}
 const PONG := 13       ## s→c {t, tick}
+const GAME := 20       ## s→c {game: {gameId, phase, left, ready, t, d} | null, result?} 搭伴小游戏
+const GAME_INPUT := 21 ## c→s {k: "ready" | "pass" | "quit" | 小游戏自己的输入}
 
 ## 通知码（Nakama notification code），与 main.ts 保持一致
 const NOTIFY_PARTNER_JOINED := 101

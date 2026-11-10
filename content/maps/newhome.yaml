@@ -33,7 +33,7 @@ npcs:
       old:
         - 大爷，电梯修好了，慢点儿。
   - id: next_door
-    name: 对门的邻居
+    name: 隔壁的邻居
     at: 1390
     eras: [ middle, old ]
     slots: [ morning, night ]
@@ -42,7 +42,7 @@ npcs:
         - 您好。
         - 上班去？
       old:
-        - 您是对门的吧？住了这么多年，头一回说上话。
+        - 您住隔壁吧？这么多年，头一回说上话。
   - id: dog_walker
     name: 遛狗的
     at: 2330

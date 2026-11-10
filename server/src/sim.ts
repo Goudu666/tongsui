@@ -319,7 +319,8 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       for (var j = 0; j < o.tags.length; j++) me.tags[o.tags[j]] = (me.tags[o.tags[j]] || 0) + 1;
     }
   }
-  if (pe.kind === "mirror") {
+  // 选得不一样、但一个抛一个接：duet.ts 按「搭上了」结算，就不走下面的共鸣 / 错位了
+  if (pe.kind === "mirror" && !duetCatch(s, c, pe, ev, entry)) {
     if (pe.choices.qing === pe.choices.mei) {
       entry.resonance = true;
       if (s.world) s.world.warm = true;

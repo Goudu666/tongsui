@@ -1,0 +1,240 @@
+# 「接话」默契事件：每条都按 逗（出招）/ 捧（接着）/ 独（不接）三个选项写。
+#
+# 格式与其他事件文件相同（见 docs/TECH.md「内容格式」）。
+# 这些事件的「搭上了」（选得不一样、但一个抛一个接）写在 content/duet.yaml 的 catches 里，
+# 玩法说明见 docs/DUET.md。文案只写动作和物件，不堆方言词。
+
+- id: d_kite_tree
+  kind: mirror
+  stage: childhood
+  where: river
+  hint: 河边的杨树上挂着个东西。
+  seasons: [spring]
+  weight: 2
+  requires: { minAge: 5 }
+  title: 挂在树上的风筝
+  text: 风筝挂在了河边的杨树上，线还攥在手里。树底下钓鱼的头也不回：「别拽，越拽越紧。」
+  options:
+    - id: climb
+      text: 爬上去够
+      tags: [adventure]
+      effects: { self: { body: 1, clean: -10 } }
+    - id: hold
+      text: 在树底下张手接着
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: wait
+      text: 等风把它吹下来
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+  resonance:
+    climb:
+      text: 俩人都上了树。风筝够着了，底下没人接。钓鱼的叹了口气，把竿放下了。
+      memory: 树上的俩人
+      bond: { sync: 3, close: 2 }
+    hold:
+      text: 俩人都在底下举着手，等了半天。风筝没下来，胳膊先酸了。
+      memory: 举酸的胳膊
+      bond: { sync: 3, close: 2 }
+    wait:
+      text: 你俩在河边坐到天擦黑。起风了，风筝自己下来了，落在钓鱼的桶里。
+      memory: 桶里的风筝
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个上了树，一个说等风。树上的喊了三声「接着」，末了是钓鱼的伸手接的。
+    bond: { close: 0 }
+
+- id: d_broken_window
+  kind: mirror
+  stage: childhood
+  where: alley
+  when: [900, 1200]
+  hint: 楼下「哗啦」一声。
+  weight: 2
+  requires: { minAge: 6 }
+  title: 一楼的玻璃
+  text: 皮球把一楼马奶奶家的玻璃砸了个窟窿。球是你俩一块儿踢的，最后那一脚是谁的，说不清。
+  options:
+    - id: own
+      text: 上去敲门认了
+      tags: [responsible]
+      effects: { self: { charm: 1, mood: -3 } }
+    - id: cover
+      text: 说是自己一个人踢的
+      tags: [gentle]
+      effects: { self: { mood: -3 }, other: { mood: 5 }, bond: { close: 1 } }
+    - id: run
+      text: 抱起球就跑
+      tags: [adventure]
+      effects: { self: { body: 1, mood: 3 } }
+  resonance:
+    own:
+      text: 你俩并排站在门口。马奶奶看了半天：「一块玻璃，来俩认的。得，一人半块。」
+      memory: 一人半块玻璃
+      bond: { sync: 3, close: 3 }
+    cover:
+      text: 俩人抢着说「是我一个人踢的」。马奶奶乐了：「一个球，俩人都是一个人踢的？」
+      memory: 一个人踢的
+      bond: { sync: 3, close: 4 }
+    run:
+      text: 你俩跑出去两条街才停下。球忘在马奶奶窗根底下了，上头写着俩人的名字。
+      memory: 写着名字的球
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个站在门口认了，一个已经跑没影了。马奶奶说：「那个跑的，鞋掉了一只。」
+    bond: { close: 0 }
+
+- id: d_radio_show
+  kind: mirror
+  stage: childhood
+  where: roof
+  when: [1080, 1300]
+  hint: 楼顶的收音机说到一半。
+  seasons: [summer, autumn]
+  weight: 2
+  requires: { minAge: 6 }
+  title: 没电的收音机
+  text: 楼顶的收音机正说着相声，说到一半，电池没电了。逗哏的那句刚抛出来，还悬在半空。
+  options:
+    - id: pick
+      text: 你来往下编
+      tags: [adventure]
+      effects: { self: { charm: 1, mood: 5 } }
+    - id: clap
+      text: 在边上「嗯、啊、是」
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: fix
+      text: 下楼找电池去
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+  resonance:
+    pick:
+      text: 俩人抢着往下编，编的不是一个包袱。楼顶乘凉的都乐了，比原来那段还逗。
+      memory: 两个包袱
+      bond: { sync: 3, close: 2 }
+    clap:
+      text: 你俩一个「嗯」，一个「啊」，等了半天，没人说正文。
+      memory: 没人说正文
+      bond: { sync: 3, close: 2 }
+    fix:
+      text: 你俩翻遍了两家的抽屉，凑了四节旧电池。装上，那段早说完了，正报天气。
+      memory: 四节旧电池
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个接着往下说，一个下楼找电池去了。说的人回头一看，捧着的是马爷爷。
+    bond: { close: 0 }
+
+- id: d_teen_bike
+  kind: mirror
+  stage: teen
+  where: bikeshop
+  hint: 车铺门口支着一辆车。
+  weight: 2
+  title: 一辆车俩人
+  text: 放学，车铺门口。一辆二八大杠，俩人，一个书包。后座的铁架子硌得慌。
+  options:
+    - id: ride
+      text: 你来蹬
+      tags: [competitive]
+      effects: { self: { body: 1, energy: -6 } }
+    - id: seat
+      text: 你坐后座
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: walk
+      text: 推着走吧
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+  resonance:
+    ride:
+      text: 俩人都要蹬，一人攥着一边车把，谁也不撒手。车没动，天黑了。
+      memory: 一人一边车把
+      bond: { sync: 3, close: 2 }
+    seat:
+      text: 俩人都往后座上挤。修车爷爷从铺子里探出头：「前头没人，这车自己认路？」
+      memory: 没人蹬的车
+      bond: { sync: 3, close: 2 }
+    walk:
+      text: 你俩推着车走了四站地，车铃一路没响。到楼下才想起来，车胎是有气的。
+      memory: 四站地
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个蹬上走了，一个还在说「推着走吧」。蹬出去半条街，又拐回来了。
+    bond: { close: 0 }
+
+- id: d_wheel_steps
+  kind: mirror
+  stage: middle
+  where: alley
+  hint: 楼门口有人喊「搭把手」。
+  weight: 2
+  title: 三级台阶
+  text: 老楼长的轮椅卡在楼门口。就三级台阶，你俩小时候一步就蹦下去了。
+  options:
+    - id: front
+      text: 你抬前头
+      tags: [responsible]
+      effects: { self: { energy: -8 } }
+    - id: back
+      text: 你抬后头
+      tags: [gentle]
+      effects: { self: { energy: -8 } }
+    - id: call
+      text: 喊个年轻的来
+      tags: [solitude]
+      effects: { self: { mood: -3 } }
+  resonance:
+    front:
+      text: 俩人都去抬前头，轮椅差点翻过去。老楼长：「我还没走呢，你俩倒先抢上了。」
+      memory: 抢着抬前头
+      bond: { sync: 3, close: 2 }
+    back:
+      text: 俩人都在后头推。前头没人把着，轮椅自己下去了，老楼长坐得稳稳的。
+      memory: 自己下去的轮椅
+      bond: { sync: 3, close: 2 }
+    call:
+      text: 你俩站在楼门口喊了半天，没喊来人。末了还是你俩抬的，歇了两回。
+      memory: 歇了两回
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个弯下腰了，一个还在喊人。老楼长自己攥着扶手站了起来：「别抬了，我下来。」
+    bond: { close: 0 }
+
+- id: d_old_bench
+  kind: mirror
+  stage: old
+  where: river
+  hint: 河边的长椅空着。
+  weight: 2
+  title: 河边的长椅
+  text: 河边的长椅。坐下，就不大想起来。对岸的灯比去年又高了一截。
+  options:
+    - id: talk
+      text: 说点什么
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: quiet
+      text: 就这么坐着
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+    - id: go
+      text: 该回了
+      tags: [responsible]
+      effects: { self: { energy: 5 } }
+  resonance:
+    talk:
+      text: 俩人同时开的口，说的是同一件事。说完了，都没想起来是哪年的事。
+      memory: 同一件事
+      bond: { sync: 3, close: 3 }
+    quiet:
+      text: 坐到路灯亮。谁也没说话，也没觉得缺什么。
+      memory: 路灯亮了
+      bond: { sync: 3, close: 3 }
+    go:
+      text: 你俩一块儿撑着膝盖站起来，一块儿「哎哟」了一声。
+      memory: 一声哎哟
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个起身了，一个还坐着。走出去十来步，又回来坐下了。
+    bond: { close: 0 }

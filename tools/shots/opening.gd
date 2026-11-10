@@ -1,7 +1,8 @@
 extends SceneTree
 ## 开局一小时的截图：章首卡、头几天的小纸条、主线路标、长大和进新一章并成的那张卡。
 ##   node tools/shots/opening_dump.mjs <json>   先从真服务器取几帧状态
-##   godot --path client --rendering-driver opengl3 --resolution 1920x1080 --script ../tools/shots/opening.gd -- --out=<目录> --frames=<json>
+##   godot --path client --rendering-driver opengl3 --resolution 1920x1080 --script res://../tools/shots/opening.gd -- --out=<目录> --frames=<json>
+##   加 --movie（配合 Godot 的 --write-movie x.avi --fixed-fps 30）录一段约 50 秒的开局：标题、投胎、章首卡、小纸条、第一件主线、路标、长大
 ## 不联网：把取来的 SNAPSHOT / WORLD 原样喂给 main.gd。
 
 var out_dir := "user://shots"
@@ -9,12 +10,15 @@ var frames_path := ""
 var main: Node
 var frames: Dictionary = {}
 var _feed: Dictionary = {}
+var movie := false
 
 
 func _initialize() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--out="):
 			out_dir = a.trim_prefix("--out=")
+		if a == "--movie":
+			movie = true
 		if a.begins_with("--frames="):
 			frames_path = a.trim_prefix("--frames=")
 	DirAccess.make_dir_recursive_absolute(out_dir)
@@ -55,12 +59,15 @@ func _run() -> void:
 	main = current_scene
 	await _wait(1.0)
 	_pump()
+	if movie:
+		await _movie()
+		quit()
+		return
 	# 头一天：一进来是第一章的章首卡
 	_frame("day0_morning")
 	await _wait(1.3)
 	await _snap("o01_chapter1")
 	await _wait(3.6)
-	print("tip ", main.guide._tip_id, " ", main.guide._tip.size, " ", main.guide._tip_label.size, " ", main.guide._tip_label.text.left(10), " vis=", main.guide._tip_label.visible, " mod=", main.guide._tip.modulate)
 	await _snap("o02_tip_walk")
 	main.guide._hide_tip()
 	await _wait(2.8)
@@ -85,3 +92,44 @@ func _run() -> void:
 	await _wait(4.0)
 	await _snap("o08_teen")
 	quit()
+
+
+func _movie() -> void:
+	await _wait(1.5)  # 标题
+	var fams: Array = main.content.families
+	var tals: Array = main.content.talents
+	main.names = {"qing": "小满", "mei": "阿蘅"}
+	main._set_role("qing")
+	main.life = {"phase": "roll", "turn": 0, "rolls": {
+		"qing": {"familyId": fams[11].id, "talentId": tals[0].id, "stats": {"body": 6, "mind": 7, "charm": 4, "luck": 5}, "confirmed": false, "rerollsLeft": 2},
+		"mei": {"familyId": fams[4].id, "talentId": tals[3].id, "stats": {"body": 4, "mind": 5, "charm": 8, "luck": 5}, "confirmed": true, "rerollsLeft": 1},
+	}}
+	main._show_roll()
+	await _wait(3.5)
+	_frame("day0_morning")
+	await _wait(9.0)  # 章首卡揭开，第一张纸条
+	main.guide._hide_tip()
+	await _wait(4.0)  # 主线小签那张
+	main.guide._hide_tip()
+	await _wait(3.5)
+	main.guide._hide_tip()
+	# 第一件主线：上午，楼道里，隔着门敲三下
+	var ev: Dictionary = {}
+	for e in main.content.story.events:
+		if int(e.chapter) == 1 and int(e.beat) == 1:
+			ev = e
+			break
+	main._on_event_started({"event": {"roles": ["qing", "mei"], "eventId": ev.id, "kind": "mirror"}})
+	await _wait(4.5)
+	main._show_mirror_result({"label": "3 岁 · 立春", "events": {"qing": ev.id, "mei": ev.id},
+		"choices": {"qing": ev.options[0].id, "mei": ev.options[0].id}, "shadow": [], "resonance": true,
+		"text": str(ev.get("resonance", "隔着一扇门，两个人敲的是同一个拍子。"))})
+	await _wait(4.0)
+	main._close_modal()
+	_frame("day0_street")
+	await _wait(4.0)  # 路标：主线在楼里，指着「上楼」
+	_frame("day12")
+	await _wait(6.0)
+	_frame("day36")
+	await _wait(7.5)
+

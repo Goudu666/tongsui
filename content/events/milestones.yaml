@@ -1,0 +1,275 @@
+# 人生关口。到了年纪的那天早上一定发生，两个人同时面对、各自私下选。
+#
+# 和普通事件不同的地方：
+#   age     到这个年纪的第一天发生
+#   score   怎么算分：各项属性乘权重相加（money = 积蓄）。界面上常驻显示离每条线还差多少
+#   swing   考试有发挥：得分随手气和运气上下浮动一点（约 ±0.3）
+#   grades  成绩档（事实）：从高到低取第一个够得着的，给标记
+#   options 能走的路（选择）：min 是这条路的分数线，不够的选项是灰的；score 可以单独写这条路看什么；
+#           cost 是选了以后花掉的积蓄。只剩一条路可走时不弹窗，直接记进长卷
+#   resonance / dissonance 两个人选了同一条路 / 不同的路
+#
+# 选项只管打标记，日程由 content/tracks.yaml 按标记决定。
+# 考上了也可以不去：分数够不够是一回事，走不走是另一回事。
+# 分数线是这个游戏最要紧的数值，改之前跑一遍 node tools/paths.mjs 看各种活法落在哪。
+
+- id: m_school
+  kind: milestone
+  stage: childhood
+  age: 6
+  title: 上小学
+  text: 新书包比你的背还宽。从今天起，白天有一大半不归你了。
+  options:
+    - id: go
+      text: 背上书包
+      effects: { flags: [in_school] }
+  resonance:
+    go:
+      text: 两扇门是同时开的。两个新书包，一前一后下了楼。
+      memory: 两个新书包
+      bond: { close: 2 }
+
+- id: m_junior
+  kind: milestone
+  stage: teen
+  age: 12
+  score: { mind: 1 }
+  swing: true
+  requires: { notFlags: [dropout] }
+  title: 小升初
+  text: 分班的名单贴在校门口的红纸上。重点班在最上面一栏，放学比别的班晚一个半钟头。
+  options:
+    - id: key
+      text: 去重点班
+      min: 6.4
+      tags: [competitive]
+      effects: { flags: [junior_key] }
+    - id: normal
+      text: 去普通班
+      tags: [gentle]
+      effects: { self: { mood: 4 } }
+  resonance:
+    key:
+      text: 两个名字都在最上面那一栏，中间隔着三个人。放学晚了，可是一块儿晚。
+      memory: 最上面那一栏
+      bond: { sync: 2, close: 2 }
+    normal:
+      text: 三点半，校门口，还是你们俩。
+      memory: 三点半的校门口
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个三点半放学，一个要上到五点。先出来的那个，在校门口的台阶上多坐了一会儿。
+    bond: { close: -3 }
+
+- id: m_senior
+  kind: milestone
+  stage: teen
+  age: 15
+  score: { mind: 1 }
+  swing: true
+  requires: { notFlags: [dropout] }
+  title: 中考
+  text: 志愿表发下来了。市里的重点高中在河对岸，天不亮就得过桥；家门口的高中走路十分钟；职专下午三点就放学。
+  options:
+    - id: far
+      text: 过桥去念重点高中
+      min: 7.2
+      tags: [competitive]
+      effects: { bond: { distance: 1 }, flags: [school_far] }
+    - id: near
+      text: 念家门口的高中
+      min: 5.8
+      tags: [gentle]
+      effects: { flags: [school_near] }
+    - id: vocational
+      text: 念职专，早点学本事
+      tags: [responsible]
+      effects: { flags: [vocational] }
+  resonance:
+    far:
+      text: 天不亮，桥上只有两辆自行车。风大，谁也没说话，蹬得一样快。
+      memory: 桥上两辆车
+      bond: { sync: 3, close: 2 }
+    near:
+      text: 还是那条路，还是十分钟。校服换了个颜色，别的没换。
+      memory: 还是那条路
+      bond: { sync: 2, close: 2 }
+    vocational:
+      text: 三点钟放学，太阳还高。你们推着车往回走，说以后合伙开个铺子。
+      memory: 三点钟的太阳
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个往桥那边去，一个往胡同里拐。早上出门的钟点不一样了，楼道里碰不上了。
+    bond: { close: -3 }
+
+- id: m_gaokao
+  kind: milestone
+  stage: young
+  age: 18
+  score: { mind: 1 }
+  swing: true
+  requires: { notFlags: [dropout, vocational] }
+  title: 高考
+  text: 分数出来了，志愿表摊在饭桌上。最远的那所学校，坐火车要一天一夜。
+  grades:
+    - { min: 6.8, label: 过了本科线, flags: [gaokao_good] }
+    - { min: 0, label: 没过线, flags: [gaokao_bad] }
+  options:
+    - id: away
+      text: 去外地念大学
+      min: 8.0
+      tags: [adventure, competitive]
+      effects: { bond: { distance: 2 }, flags: [uni_away] }
+    - id: local
+      text: 念本市的大学
+      min: 6.8
+      tags: [gentle]
+      effects: { flags: [uni_near] }
+    - id: work
+      text: 不念了，找活干
+      tags: [responsible]
+      effects: { flags: [work_early] }
+  resonance:
+    away:
+      text: 两张火车票，两个方向。你们在站台上对了对表，说好寒假同一天回来。
+      memory: 对过的表
+      bond: { sync: 3, close: 1 }
+    local:
+      text: 两所学校隔着四站地。周末回河畔里，还是从同一个楼门进去。
+      memory: 四站地
+      bond: { sync: 2, close: 2 }
+    work:
+      text: 第一个月的工钱，你们一人买了一双新鞋，在楼下比了比谁的贵。
+      memory: 两双新鞋
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个去车站，一个去上工。同一个早上出的门，往两头走的。
+    bond: { close: -3 }
+
+- id: m_job
+  kind: milestone
+  stage: young
+  age: 22
+  requires: { notFlags: [left_city] }
+  title: 找个正经事由
+  text: 该定下来了。干哪一行，往后几十年每天几点出门、几点回来，就都跟着定了。
+  options:
+    - id: desk
+      text: 过桥去坐办公室
+      score: { mind: 1 }
+      min: 8.2
+      tags: [competitive]
+      effects: { flags: [job_desk] }
+    - id: teach
+      text: 回小学教书
+      score: { mind: 0.6, charm: 0.4 }
+      min: 6.8
+      tags: [patient]
+      effects: { flags: [job_teach] }
+    - id: trade
+      text: 在街口支个摊，做买卖
+      score: { charm: 0.7, luck: 0.3 }
+      min: 6.0
+      tags: [adventure]
+      effects: { flags: [job_trade] }
+    - id: craft
+      text: 学一门手艺
+      score: { body: 0.5, mind: 0.5 }
+      min: 6.4
+      tags: [patient, responsible]
+      effects: { flags: [job_craft] }
+    - id: labor
+      text: 去码头卖力气
+      score: { body: 1 }
+      min: 6.0
+      tags: [responsible]
+      effects: { flags: [job_labor] }
+    - id: odd
+      text: 先打零工
+      tags: [solitude]
+      effects: { flags: [job_odd] }
+  resonance:
+    desk:
+      text: 同一趟早班车，一个在第三站下，一个在第五站下。
+      memory: 同一趟早班车
+      bond: { sync: 2, close: 2 }
+    teach:
+      text: 当年你们坐过的那间教室，现在一人教一个班。
+      memory: 一人一个班
+      bond: { sync: 3, close: 2 }
+    trade:
+      text: 两个摊子挨着，一把遮阳伞底下，谁先卖完谁帮另一个吆喝。
+      memory: 一把遮阳伞
+      bond: { sync: 3, close: 2 }
+    craft:
+      text: 一个铺子，两条板凳，师傅说你们俩一个手稳一个手快。
+      memory: 两条板凳
+      bond: { sync: 3, close: 2 }
+    labor:
+      text: 一根杠子两头抬，走了一天，步子是一样的。
+      memory: 一根杠子
+      bond: { sync: 3, close: 2 }
+    odd:
+      text: 今天有活，明天没活。没活的那天，你们在河边坐一下午。
+      memory: 没活的下午
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个出门早，一个回来晚。对门的灯，各亮各的钟点。
+    bond: { close: -3 }
+
+- id: m_settle
+  kind: milestone
+  stage: middle
+  age: 30
+  score: { money: 1 }
+  title: 安家
+  text: 三十了。这些年攒下的钱都在存折上，够不够给自己安一个地方？
+  options:
+    - id: buy
+      text: 买下一套自己的房
+      min: 140
+      cost: 140
+      tags: [responsible]
+      effects: { self: { mood: 15 }, flags: [home_own] }
+    - id: rent
+      text: 在附近租一间
+      min: 60
+      cost: 60
+      tags: [adventure]
+      effects: { self: { mood: 6 }, flags: [home_rent] }
+    - id: stay
+      text: 还住老屋
+      tags: [gentle]
+      effects: { flags: [home_old] }
+  resonance:
+    buy:
+      text: 钥匙是同一天拿的。新楼没有楼道灯，你们各自在门口装了一盏。
+      memory: 两盏门灯
+      bond: { sync: 2, close: 2 }
+    rent:
+      text: 搬家那天互相搭了把手。东西都不多，一趟就完了。
+      memory: 一趟就搬完
+      bond: { sync: 2, close: 2 }
+    stay:
+      text: 还是三楼，还是对门。暖气片还是那么烫手。
+      memory: 还是对门
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个搬走了，一个留下了。留下的那个，有时候还会朝对面那扇门看一眼。
+    bond: { close: -3 }
+
+- id: m_retire
+  kind: milestone
+  stage: old
+  age: 60
+  title: 退休
+  text: 最后一天的活干完了。从明天起，一整天又都是自己的了。
+  options:
+    - id: rest
+      text: 把闹钟收起来
+      effects: { self: { mood: 8 }, flags: [retired] }
+  resonance:
+    rest:
+      text: 早上醒得还是那么早。你们在楼下碰见了，都不知道该往哪走，就一块儿往河边走。
+      memory: 不知道往哪走的早晨
+      bond: { sync: 2, close: 2 }

@@ -73,7 +73,7 @@ pair:
   - id: e_nod
     title: 点头之交
     text: 后来在街上碰见，你们都愣了一下，然后点点头，各自走了。那一下愣，是一整个童年。
-    requires: { maxClose: 25 }
+    requires: { maxClose: 30 }
 
   - id: e_doors
     title: 对门

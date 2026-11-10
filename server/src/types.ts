@@ -27,11 +27,27 @@ interface EventOption {
   text: string;
   tags: string[];
   effects: OptionEffects;
+  /** 只有关口（milestone）用：得分达到 min 才能选；score 不写就用关口自己的算法；cost 是选了以后花掉的积蓄 */
+  min?: number;
+  score?: ScoreWeights;
+  cost?: number;
+  requires?: { flags?: string[]; notFlags?: string[] };
+}
+
+/** 关口怎么算分：各项属性乘权重相加；money 表示积蓄 */
+type ScoreWeights = Partial<Stats> & { money?: number };
+
+/** 关口的成绩档：从高到低，取第一个够得着的。和「选了哪条路」分开记：成绩是事实，路是选择 */
+interface Grade {
+  min: number;
+  label: string;
+  flags: string[];
 }
 
 interface LifeEvent {
   id: string;
-  kind: "mirror" | "solo";
+  /** mirror 默契事件 / solo 各自的事 / milestone 人生关口（到了年纪的那天早上一定发生，选项按属性上锁） */
+  kind: "mirror" | "solo" | "milestone";
   stage: Stage;
   seasons: Season[];
   weight: number;
@@ -46,6 +62,13 @@ interface LifeEvent {
   /** flags：共同标记（p_ 开头），共鸣/错位时两个人都会得到 */
   resonance: { [optionId: string]: { text: string; memory?: string; bond: Partial<Bond>; flags: string[] } } | null;
   dissonance: { text: string; bond: Partial<Bond>; flags: string[] } | null;
+  // ---- 以下只有 milestone 有 ----
+  /** 到这个年纪的第一天发生 */
+  age?: number;
+  score?: ScoreWeights;
+  /** 考试有发挥：得分会随手气和运气上下浮动一点 */
+  swing?: boolean;
+  grades?: Grade[];
 }
 
 interface EventRequires {
@@ -150,6 +173,9 @@ interface Spot {
   id: string;
   zone: string;
   at: [number, number];
+  /** 这个地方能做的事。同一个物件不同年纪做不同的事：取第一个年龄合适的 */
+  actions: string[];
+  /** = actions[0]，给只认一个行动的旧代码用 */
   action: string;
 }
 
@@ -158,7 +184,8 @@ interface Action {
   label: string;
   minutes: number;
   sleep: boolean;
-  school: boolean;
+  /** 日程：上学、上班。做多久、涨什么、挣多少由这个人走的路（Track.duty）决定 */
+  duty: boolean;
   requires: { minAge?: number; maxAge?: number; owner?: boolean; hours?: [number, number] };
   needs: Partial<Needs>;
   stats: Partial<Stats>;
@@ -174,6 +201,30 @@ interface GameMap {
   actions: Action[];
 }
 
+/** 每天被占掉的那一块时间 */
+interface Duty {
+  label: string;
+  spot: string;
+  /** 几点到几点之间到 */
+  arrive: [number, number];
+  /** 几点结束 */
+  until: number;
+  needs: Partial<Needs>;
+  stats: Partial<Stats>;
+  money: number;
+}
+
+/**
+ * 人生路线：这个人现在在过哪一种日子。不存进存档，每次按年龄和标记从上往下取第一条符合的，
+ * 所以关口和事件只管打标记（考上了、辍学了、去外地了），日程自己会跟着变。
+ */
+interface Track {
+  id: string;
+  label: string;
+  requires: { minAge?: number; maxAge?: number; flags?: string[]; notFlags?: string[] };
+  duty: Duty | null;
+}
+
 interface Content {
   /** 内容指纹（tools/build-content.mjs 算的）。客户端拿它判断要不要从服务器下载新内容 */
   version: string;
@@ -181,6 +232,7 @@ interface Content {
   families: Family[];
   talents: Talent[];
   map: GameMap;
+  tracks: Track[];
   endings: Endings;
 }
 
@@ -208,6 +260,8 @@ interface Person {
   flags: string[];
   /** 性格标签计数，用来训练「影子」 */
   tags: { [tag: string]: number };
+  /** 今天早上的属性，用来算一天的小结 */
+  dayStart?: Stats;
 }
 
 interface Memory {
@@ -230,24 +284,35 @@ interface Actor {
   asleep: boolean;
   /** 这个行动是影子替他开始的（本人回来时可以收回） */
   shadow?: boolean;
+  /** 开始时的状态效率（饿、困、心情差时成长打折） */
+  eff?: number;
+  /** 这次是和 TA 搭伴做的 */
+  together?: boolean;
+  /** 搭伴倍率，不写用默认值。小游戏之类的手感层可以改它 */
+  boost?: number;
 }
 
 interface PendingEvent {
   eventId: string;
-  kind: "mirror" | "solo";
+  kind: "mirror" | "solo" | "milestone";
   roles: Role[];
   choices: Choices;
   shadow: Role[];
+  /** 关口：每个人这次的发挥（加在得分上） */
+  swing?: { [R in Role]?: number };
 }
 
 interface WorldState {
   /** 当天的游戏分钟，390 = 06:30 */
   minute: number;
-  schoolDay: boolean;
+  /** 今天歇着：不上学也不上班 */
+  rest: boolean;
+  /** 今天的日程去过了没有 */
+  dutyDone: { [R in Role]?: boolean };
   actors: { [R in Role]: Actor | null };
   event: PendingEvent | null;
   /** 今天命运准备好的事件：要走到对的地方才会发生 */
-  fate: { mirror: string | null; qing: string | null; mei: string | null };
+  fate: { mirror: string | null; qing: string | null; mei: string | null; milestone?: string | null };
   /** 已经触发过的 fate */
   done: string[];
 }
@@ -256,13 +321,17 @@ interface LogEntry {
   turn: number;
   age: number;
   label: string;
-  kind: "mirror" | "solo" | "together" | "day" | "death" | "end";
+  kind: "mirror" | "solo" | "milestone" | "together" | "day" | "death" | "end";
   minute: number | null;
   events: { [R in Role]: string | null };
   choices: { [R in Role]: string | null };
   shadow: Role[];
   resonance: boolean | null;
   text: string;
+  /** 关口：每个人的得分、成绩和走上的路 */
+  results?: { [R in Role]?: { score: number; grade: string | null; option: string; track: string } };
+  /** 一天的小结：每个人今天涨了多少 */
+  gains?: { [R in Role]?: Partial<Stats> };
 }
 
 interface LifeState {

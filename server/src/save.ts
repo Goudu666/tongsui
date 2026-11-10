@@ -8,7 +8,7 @@
 //
 // 纯函数，不依赖 Nakama。
 
-var LIFE_VERSION = 3;
+var LIFE_VERSION = 4;
 
 /** 结构升级。返回做了什么（写服务器日志用）；存档比服务器还新时抛错（服务器被回滚了，不能硬读） */
 function lifeUpgrade(s: any): string[] {
@@ -21,6 +21,17 @@ function lifeUpgrade(s: any): string[] {
     s.contentVersion = s.contentVersion || "";
     v = 3;
     notes.push("v2→v3");
+  }
+  if (v === 3) {
+    // v4：日程按人生路线走。schoolDay 换成 rest（今天歇着），多了 dutyDone 和关口
+    if (s.world) {
+      s.world.rest = !s.world.schoolDay;
+      delete s.world.schoolDay;
+      s.world.dutyDone = {};
+      if (s.world.fate) s.world.fate.milestone = null;
+    }
+    v = 4;
+    notes.push("v3→v4");
   }
   s.version = v;
   return notes;
@@ -53,7 +64,7 @@ function lifeRepair(s: LifeState, c: Content): string[] {
 
   var w = s.world;
   if (s.phase === "life" && w) {
-    var slots: ("mirror" | "qing" | "mei")[] = ["mirror", "qing", "mei"];
+    var slots: ("mirror" | "qing" | "mei" | "milestone")[] = ["mirror", "qing", "mei", "milestone"];
     for (var f = 0; f < slots.length; f++) {
       var fid = w.fate[slots[f]];
       if (fid && !lifeHasId(c.events, fid)) {
@@ -89,6 +100,9 @@ function lifeRepair(s: LifeState, c: Content): string[] {
         a.until = null;
         a.asleep = false;
         a.shadow = false;
+        delete a.eff;
+        delete a.together;
+        delete a.boost;
       }
       if (a.spot && !lifeHasId(c.map.spots, a.spot)) a.spot = null;
       // 地图变小了：人不能留在地图外面

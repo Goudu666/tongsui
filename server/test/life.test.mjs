@@ -62,7 +62,7 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   const s = G("lifeCreate")(7, C);
   G("lifeConfirm")(s, C, "qing", { qing: "青", mei: "梅" });
   G("lifeConfirm")(s, C, "mei", { qing: "青", mei: "梅" });
-  s.world.fate = { mirror: null, qing: null, mei: null }; // 这里只测行动
+  s.world.fate = { mirror: null, qing: null, mei: null, milestone: null }; // 这里只测行动
   const w = s.world;
   assert.match(G("worldAct")(s, C, "qing", "river_bank").error, /走近/);
   assert.match(G("worldAct")(s, C, "qing", "bed_mei").error, /走近|不是你的家/);
@@ -165,7 +165,7 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   R.loop([R.msg(pa, 2, { confirm: true }), R.msg(pb, 2, { confirm: true })]);
   assert.equal(R.life().phase, "life");
   assert.equal(R.sent.filter((m) => m.op === 1 && m.data.life.phase === "life").length, 2, "开局后重发快照");
-  R.life().world.fate = { mirror: null, qing: null, mei: null };
+  R.life().world.fate = { mirror: null, qing: null, mei: null, milestone: null };
 
   // 走动：带序号，乱序的旧包丢掉；世界广播带 tick 和已处理序号
   R.loop([R.msg(pa, 4, { x: 330, y: 600, seq: 1 })]);

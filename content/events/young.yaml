@@ -20,27 +20,6 @@
 
 # ---------- 18 岁：志愿与离家 ----------
 
-- id: y_zhiyuan
-  kind: solo
-  stage: young
-  weight: 3
-  requires: { maxAge: 18, notFlags: [dropout] }
-  title: 填志愿
-  text: 志愿表摊在饭桌上，你爸戴着老花镜翻那本厚厚的招生目录。最远的那所学校，坐火车要一天一夜。
-  options:
-    - id: far
-      text: 往最远的那格填
-      tags: [adventure]
-      effects: { self: { mind: 1, mood: 5 }, bond: { distance: 2 }, flags: [uni_away] }
-    - id: mid
-      text: 填隔壁省城的
-      tags: [competitive]
-      effects: { self: { mind: 1 }, bond: { distance: 1 }, flags: [uni_away] }
-    - id: near
-      text: 就填本市的
-      tags: [gentle, responsible]
-      effects: { self: { mood: 5 }, other: { mood: 5 }, flags: [uni_near] }
-
 - id: y_station
   kind: solo
   stage: young
@@ -108,7 +87,7 @@
   kind: solo
   stage: young
   weight: 2
-  requires: { minAge: 19, maxAge: 22, flags: [gaokao_good] }
+  requires: { minAge: 19, maxAge: 21, flags: [uni_away] }
   title: 上铺的问题
   text: 大学的图书馆比整片河畔里还大。宿舍熄了灯，上铺的同学探下头来问：「你们天津人，是不是都会说相声？」
   options:
@@ -129,7 +108,7 @@
   kind: solo
   stage: young
   weight: 2
-  requires: { maxAge: 20, flags: [gaokao_bad] }
+  requires: { maxAge: 20, flags: [gaokao_bad], notFlags: [uni_near, uni_away] }
   title: 暖气片上的纸
   text: 分数出来那天，你爸在阳台上抽了半包烟。复读班的报名表和一所大专的通知书，一起压在暖气片上，烘得发脆。
   options:

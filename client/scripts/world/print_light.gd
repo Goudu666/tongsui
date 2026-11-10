@@ -50,12 +50,23 @@ func setup(size: Vector2, anchors: Dictionary) -> void:
 	set_minute(minute)
 
 
-## 换一张图：纸的大小和灯都换成那张图的（横版一张图一套灯）
-func relight(size: Vector2, anchors: Dictionary) -> void:
+## 换一张图：纸的大小和灯都换成那张图的（横版一张图一套灯）。mask：哪儿是天（scene_art.scene_mask），没有就整张都印
+func relight(size: Vector2, anchors: Dictionary, mask: Texture2D = null) -> void:
 	map_size = size
 	_mat.set_shader_parameter("map_size", map_size)
 	_mat.set_shader_parameter("light_map", _bake(anchors))
+	_mat.set_shader_parameter("scene_mask", mask)
+	_mat.set_shader_parameter("use_mask", mask != null)
 	_quad.scale = map_size
+
+
+## 晚霞、清早各印多深（scene_art 的天和远景跟着它变）
+func dusk() -> float:
+	return _dusk
+
+
+func dawn() -> float:
+	return _dawn
 
 
 ## 把所有灯烘成一张灰度图：每盏灯只画自己照得到的那一小块，叠加用"滤色"

@@ -303,8 +303,9 @@ function lifeMilestoneFallback(ev: LifeEvent): EventOption {
 /** 正在进行的关口里，每个人哪些路是锁着的：{ role: { optionId: 原因 } }。不在关口里返回 null */
 function lifeMilestoneLocks(s: LifeState, c: Content): { [R in Role]?: { [optionId: string]: string } } | null {
   var pe = s.world && s.world.event;
-  if (!pe || pe.kind !== "milestone") return null;
+  if (!pe) return null;
   var ev = lifeFindEvent(c, pe.eventId);
+  if (pe.kind !== "milestone" && !storyIs(ev)) return null; // 主线的选项也有门槛：家底、积蓄
   var out: { [R in Role]?: { [optionId: string]: string } } = {};
   for (var i = 0; i < pe.roles.length; i++) {
     var r = pe.roles[i];
@@ -439,8 +440,18 @@ function lifeAddFlags(p: Person, flags: string[] | undefined) {
   for (var i = 0; i < flags.length; i++) if (!lifeHasFlag(p, flags[i])) p.flags.push(flags[i]);
 }
 
+/** 随机池、关口，再找主线（content/story.yaml） */
 function lifeFindEvent(c: Content, id: string): LifeEvent {
-  return lifeFind(c.events, id);
+  for (var i = 0; i < c.events.length; i++) if (c.events[i].id === id) return c.events[i];
+  var st = storyFindEvent(c, id);
+  if (st) return st;
+  throw new Error("not found: " + id);
+}
+
+function lifeHasEvent(c: Content, id: string | null | undefined): boolean {
+  if (!id) return false;
+  for (var i = 0; i < c.events.length; i++) if (c.events[i].id === id) return true;
+  return !!storyFindEvent(c, id);
 }
 
 function lifeFindOption(ev: LifeEvent, optionId: string): EventOption | null {
@@ -459,7 +470,7 @@ function lifeShadowChoose(s: LifeState, c: Content, role: Role, eventId: string)
   for (var i = 0; i < ev.options.length; i++) {
     var o = ev.options[i];
     // 关口：走不了的路影子也不能替他选。够得着的路里，影子偏向线最高的那条（人往高处走），再看性格
-    if (ev.kind === "milestone" && lifeOptionLock(ev, o, s.persons![role], swing, lifePairBond(s, role))) continue;
+    if ((ev.kind === "milestone" || storyIs(ev)) && lifeOptionLock(ev, o, s.persons![role], swing, lifePairBond(s, role))) continue;
     var score = ev.kind === "milestone" ? (o.min || 0) * 0.01 : 0;
     for (var j = 0; j < o.tags.length; j++) score += tags[o.tags[j]] || 0;
     if (score > bestScore) { bestScore = score; best = [o]; }

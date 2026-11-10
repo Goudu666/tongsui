@@ -119,13 +119,14 @@ function lifeRepair(s: LifeState, c: Content): string[] {
     var slots: ("mirror" | "qing" | "mei" | "milestone")[] = ["mirror", "qing", "mei", "milestone"];
     for (var f = 0; f < slots.length; f++) {
       var fid = w.fate[slots[f]];
-      if (fid && !lifeHasId(c.events, fid)) {
+      if (fid && !lifeHasEvent(c, fid)) {
         notes.push("fate." + slots[f] + " " + fid + " 已不存在，作废");
         w.fate[slots[f]] = null;
       }
     }
+    if (w.fate.force) w.fate.force = w.fate.force.filter(function (id) { return lifeHasEvent(c, id); });
     if (w.event) {
-      if (!lifeHasId(c.events, w.event.eventId)) {
+      if (!lifeHasEvent(c, w.event.eventId)) {
         notes.push("event " + w.event.eventId + " 已不存在，取消");
         w.event = null;
       } else {

@@ -97,11 +97,11 @@ function restart(env, id) {
 // 哪天有人把状态放到 LifeState 外面（模块级变量、闭包、没进存档的字段），这里会第一时间挂掉。
 {
   const pick = (s, role, eventId) => {
-    const ev = C.events.find((e) => e.id === eventId);
+    const ev = G("lifeFindEvent")(C, eventId);
     const h = createHash("md5").update(`${eventId}/${role}/${s.turn}`).digest();
     // 关口上够不着的路选不了，只在走得通的里面挑
     const swing = (s.world.event.swing && s.world.event.swing[role]) || 0;
-    const open = ev.kind === "milestone" ? ev.options.filter((o) => !G("lifeOptionLock")(ev, o, s.persons[role], swing, G("lifePairBond")(s, role))) : ev.options;
+    const open = ev.kind === "milestone" || ev.chapter !== undefined ? ev.options.filter((o) => !G("lifeOptionLock")(ev, o, s.persons[role], swing, G("lifePairBond")(s, role))) : ev.options;
     return open[h[0] % open.length].id;
   };
   const live = (seed, reloadEvery) => {
@@ -153,7 +153,7 @@ function restart(env, id) {
         const ENGINE = ["eat", "eat_out", "sleep", "duty", "wash", "knock", "play_roof"]; // 引擎点名要用的行动，内容构建不许删（tools/build-content.mjs 的 ENGINE_ACTIONS）
         gone = new Set([w.fate.mirror, w.fate.qing, w.fate.mei, w.event.eventId].filter(Boolean));
         const busy = ["qing", "mei"].map((r) => w.actors[r] && w.actors[r].action).filter((x) => x && !ENGINE.includes(x));
-        C2 = { ...C, version: "rewritten", events: C.events.filter((e) => !gone.has(e.id)) };
+        C2 = { ...C, version: "rewritten", events: C.events.filter((e) => !gone.has(e.id)), story: { ...C.story, events: C.story.events.filter((e) => !gone.has(e.id)) } };
         if (busy.length) {
           // 和内容构建保证的一样：点位上不留指向不存在行动的引用，一个行动都不剩的点位整个拿掉
           const spots = C.map.spots.map((sp) => ({ ...sp, actions: sp.actions.filter((x) => !busy.includes(x)) })).filter((sp) => sp.actions.length).map((sp) => ({ ...sp, action: sp.actions[0] }));

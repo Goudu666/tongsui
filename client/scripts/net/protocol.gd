@@ -1,5 +1,10 @@
 extends RefCounted
-## 与 server/src/main.ts 中的 OP 保持一致
+## 与 server/src/main.ts 中的 OP 保持一致（server/test/arch.test.mjs 会逐项比对，改一边忘了另一边测试会挂）
+
+## 协议版本：和 main.ts 的 PROTOCOL_VERSION 一起改。进房间前双方互报版本，对不上就提示更新，而不是进去以后卡住
+const VERSION := 1
+## 能用的最旧的服务器。连到比这还旧的服务器时提示「服务器需要更新」
+const MIN_SERVER := 1
 
 const SNAPSHOT := 1    ## s→c 完整状态 {lifelineId, names, life, you, online, tick}
 const ROLL := 2        ## c→s {reroll: true} | {confirm: true}

@@ -21,6 +21,16 @@ var DUP_MATCH = "DUP_MATCH:"; // matchInit 发现已有房间时抛出的错误�
 var MATCH_CLAIM_GRACE_MS = 15000; // 刚写进存档的 matchId 在这段时间内一律当作活着
 var SHADOW_GRACE_SECONDS = 10; // 掉线这么久之内不交给影子：切网络、进电梯的几秒钟，人还是自己的
 
+/**
+ * 协议版本。服务器和安装包是分开更新的（服务器 ship.sh 一下就换了，手机要重装 APK），所以进房间前先对一下：
+ * - 改了消息的含义、加了客户端必须懂的东西：PROTOCOL_VERSION + 1，client/scripts/net/protocol.gd 的 VERSION 跟着改
+ * - 旧客户端没法再用了：把 MIN_CLIENT_PROTOCOL 提到能用的最低版本，旧包会看到「请装新版」，而不是卡在看不懂的界面里
+ * 剧情内容不走这个：内容有自己的指纹 CONTENT.version，客户端发现不一样会自己下载（content_get）。
+ */
+var PROTOCOL_VERSION = 1;
+var MIN_CLIENT_PROTOCOL = 1;
+var CONTENT_CHUNK = 48000; // content_get 一次回多少个字符：整份内容约 17 万字符，分几次取，不撞单条消息的大小上限
+
 /** 客户端 ↔ 服务端消息号，client/scripts/net/protocol.gd 里保持一致 */
 var OP = {
   SNAPSHOT: 1, // s→c 完整状态 { lifelineId, names, life, you, online }
@@ -37,6 +47,8 @@ var OP = {
   PING: 12, // c→s { t } 心跳，客户端用来测延迟、发现死连接
   PONG: 13, // s→c { t, tick } 原样带回 t，附上服务器 tick
 };
+/** c→s 的消息号：只有这些会被处理，其余的回一个 ERROR */
+var CLIENT_OPS = [OP.ROLL, OP.MOVE, OP.ACT, OP.CHOOSE, OP.PING];
 
 interface LifelineRecord {
   id: string;
@@ -47,11 +59,20 @@ interface LifelineRecord {
   /** matchId 写进存档的时间（ms）。刚拉起的房间要等 matchInit 返回后才能被 matchGet 查到，这段时间也算「活着」 */
   matchClaimedAt?: number;
   life: LifeState | null;
+  /** 房间因为规则代码出错而回滚过几次、最近一次的原因（排查用，见 faultClose） */
+  faults?: number;
+  lastFault?: string;
 }
 
 interface LifelineMatch {
   lifelineId: string;
+  /** 这个房间自己的 id（存档里的 matchId 可能被别的房间改掉，拿这个来对） */
+  matchId: string | null;
   record: LifelineRecord;
+  /** 存档当前的版本号。房间是存档唯一的写入者，每次带着它做条件写入 */
+  version: string;
+  /** 存档已经被另一个房间接管：这个房间不再写存档，下一跳关闭 */
+  superseded: boolean;
   presences: { [R in Role]?: nkruntime.Presence };
   /** 上一次收到各自 MOVE 的 tick，用来限速 */
   lastMoveTick: { [R in Role]?: number };
@@ -97,10 +118,12 @@ function roomUsable(nk: nkruntime.Nakama, rec: LifelineRecord): boolean {
   return matchAlive(nk, rec.matchId);
 }
 
-function saveLifeline(nk: nkruntime.Nakama, rec: LifelineRecord) {
-  nk.storageWrite([
-    { collection: COL_LIFELINES, key: rec.id, userId: SYSTEM_USER, value: rec as any, permissionRead: 0, permissionWrite: 0 },
-  ]);
+/** 写存档，返回新的版本号。给了 version 就是条件写入：存档已经被别人改过时抛错 */
+function saveLifeline(nk: nkruntime.Nakama, rec: LifelineRecord, version?: string): string {
+  var w: nkruntime.StorageWriteRequest = { collection: COL_LIFELINES, key: rec.id, userId: SYSTEM_USER, value: rec as any, permissionRead: 0, permissionWrite: 0 };
+  if (version) w.version = version;
+  var acks = nk.storageWrite([w]);
+  return acks && acks.length ? acks[0].version : "";
 }
 
 function roleOf(rec: LifelineRecord, userId: string): Role | null {
@@ -199,29 +222,67 @@ var rpcLifelineJoin: nkruntime.RpcFunction = function (ctx, logger, nk, payload)
 var rpcLifelineOpen: nkruntime.RpcFunction = function (ctx, logger, nk, payload) {
   if (!ctx.userId) throw new Error("需要登录");
   var p = parsePayload(payload);
+  // 先对版本：太旧的安装包在这里就拦下，给一句人话，不放进房间里卡住
+  var clientProtocol = Number(p.protocol) || 0;
+  if (clientProtocol < MIN_CLIENT_PROTOCOL) {
+    throw new Error("这个安装包太旧了，和服务器对不上，请装最新版（CLIENT_TOO_OLD " + clientProtocol + " < " + MIN_CLIENT_PROTOCOL + "）");
+  }
   var rec = loadLifeline(nk, String(p.lifelineId || ""));
   if (!rec) throw new Error("人生线不存在");
   var role = roleOf(rec, ctx.userId);
   if (!role) throw new Error("这不是你的人生线");
-  if (!rec.life) return JSON.stringify({ lifelineId: rec.id, role: role, matchId: null, waitingForPartner: true, code: rec.code });
+  // 每个回复都带上服务器的协议版本和内容指纹，客户端进房间前据此同步内容
+  var reply = function (extra: { [k: string]: any }) {
+    var out: { [k: string]: any } = { lifelineId: rec!.id, role: role, protocol: PROTOCOL_VERSION, content: CONTENT.version };
+    for (var k in extra) out[k] = extra[k];
+    return JSON.stringify(out);
+  };
+  if (!rec.life) return reply({ matchId: null, waitingForPartner: true, code: rec.code });
 
+  var lastError = "";
   for (var attempt = 0; attempt < 4; attempt++) {
-    if (roomUsable(nk, rec)) {
-      return JSON.stringify({ lifelineId: rec.id, role: role, matchId: rec.matchId });
-    }
+    if (roomUsable(nk, rec)) return reply({ matchId: rec.matchId });
     try {
-      var matchId = nk.matchCreate(MATCH_NAME, { lifelineId: rec.id });
-      return JSON.stringify({ lifelineId: rec.id, role: role, matchId: matchId });
+      return reply({ matchId: nk.matchCreate(MATCH_NAME, { lifelineId: rec.id }) });
     } catch (e) {
       // 另一个人刚好也在拉起房间：DUP_MATCH 里带着赢家的房间；版本冲突就重读存档再来
-      var msg = String(e && (e as any).message ? (e as any).message : e);
-      var dup = msg.match(/DUP_MATCH:([^\s"']+)/);
-      if (dup) return JSON.stringify({ lifelineId: rec.id, role: role, matchId: dup[1] });
-      logger.info("lifeline_open race on %s: %s", rec.id, msg);
+      lastError = String(e && (e as any).message ? (e as any).message : e);
+      var dup = lastError.match(/DUP_MATCH:([^\s"']+)/);
+      if (dup) return reply({ matchId: dup[1] });
+      logger.info("lifeline_open race on %s: %s", rec.id, lastError);
       rec = loadLifeline(nk, rec.id)!;
     }
   }
-  throw new Error("房间正忙，请再试一次");
+  // 四次都没拉起来就不是「撞车」了（比如存档升级失败）：把真正的原因带出去，别只说「正忙」
+  logger.error("lifeline_open failed on %s: %s", rec.id, lastError);
+  throw new Error("这条人生线暂时打不开：" + lastError);
+};
+
+/**
+ * 取服务器这一版的剧情内容（和 client/data/content.json 同一份数据）。
+ * 客户端在 lifeline_open 里发现内容指纹和自己带的不一样时调用，分块取完拼起来，缓存在手机上。
+ * 这样改剧情只要更新服务器，两台手机不用重装。
+ */
+var rpcContentGet: nkruntime.RpcFunction = function (ctx, logger, nk, payload) {
+  var p = parsePayload(payload);
+  var all = JSON.stringify(CONTENT);
+  var offset = Math.min(all.length, Math.max(0, Math.floor(Number(p.offset) || 0)));
+  var end = Math.min(all.length, offset + CONTENT_CHUNK);
+  // 不把一个字拆成两半（UTF-16 代理对）
+  var tail = all.charCodeAt(end - 1);
+  if (end < all.length && tail >= 0xd800 && tail <= 0xdbff) end -= 1;
+  return JSON.stringify({ version: CONTENT.version, total: all.length, offset: offset, chunk: all.substring(offset, end), done: end >= all.length });
+};
+
+/** 服务器是哪一版：部署后自检、客户端「服务器设置」里测试连接用 */
+var rpcServerInfo: nkruntime.RpcFunction = function () {
+  return JSON.stringify({
+    protocol: PROTOCOL_VERSION,
+    minClientProtocol: MIN_CLIENT_PROTOCOL,
+    content: CONTENT.version,
+    lifeVersion: LIFE_VERSION,
+    events: CONTENT.events.length,
+  });
 };
 
 /** 列出我的人生线（大厅里的「继续」），带上两人名字和走到了哪一天 */
@@ -340,9 +401,32 @@ function worldView(s: LifelineMatch) {
   return { tick: s.tick, minute: Math.floor(w.minute), schoolDay: w.schoolDay, actors: actors, needs: needs, money: money, event: ev, bond: life.bond, hints: hints };
 }
 
-function save(nk: nkruntime.Nakama, s: LifelineMatch, tick: number) {
-  saveLifeline(nk, s.record);
+/**
+ * 房间存档。一条人生线同一时间只有一个房间在写：带着上次写入的版本号做条件写入。
+ * 写不进去说明存档被别人动过。还是我的房间（比如在 Nakama 控制台里手动改过）就以房间里的为准重写；
+ * 已经是别的房间的了，就把自己标成 superseded，不再写，免得把对方的进度盖回去。
+ */
+function save(nk: nkruntime.Nakama, logger: nkruntime.Logger, s: LifelineMatch, tick: number): boolean {
   s.lastSaveTick = tick;
+  if (s.superseded) return false;
+  try {
+    s.version = saveLifeline(nk, s.record, s.version);
+    return true;
+  } catch (e) {
+    try {
+      var cur = loadLifelineVersioned(nk, s.lifelineId);
+      if (cur && cur.rec.matchId === s.matchId) {
+        s.version = saveLifeline(nk, s.record, cur.version);
+        return true;
+      }
+      s.superseded = true;
+      logger.warn("lifeline %s: room %s superseded by %s, stop saving", s.lifelineId, String(s.matchId), String(cur ? cur.rec.matchId : null));
+    } catch (e2) {
+      // 存储暂时不可用：这次没存上，下个存档点再试
+      logger.error("lifeline %s: save failed: %s / %s", s.lifelineId, String(e), String(e2));
+    }
+    return false;
+  }
 }
 
 var matchInit: nkruntime.MatchInitFunction<LifelineMatch> = function (ctx, logger, nk, params) {
@@ -350,14 +434,19 @@ var matchInit: nkruntime.MatchInitFunction<LifelineMatch> = function (ctx, logge
   if (!got || !got.rec.life) throw new Error("lifeline not ready: " + params.lifelineId);
   var rec = got.rec;
   if (rec.matchId && rec.matchId !== ctx.matchId && roomUsable(nk, rec)) throw new Error(DUP_MATCH + rec.matchId);
+  // 存档可能是旧结构、旧剧情下存的：先升级结构，再摘掉新内容里已经不存在的引用（见 save.ts）
+  var fixed = lifeUpgrade(rec.life).concat(lifeRepair(rec.life!, CONTENT));
+  if (fixed.length > 0) logger.info("lifeline %s save brought up to date: %s", rec.id, fixed.join("; "));
   // 一条人生线同一时间只能有一个房间：带版本号写入，和另一个同时拉起的房间比快
   rec.matchId = ctx.matchId || null;
   rec.matchClaimedAt = Date.now();
-  nk.storageWrite([
-    { collection: COL_LIFELINES, key: rec.id, userId: SYSTEM_USER, value: rec as any, version: got.version, permissionRead: 0, permissionWrite: 0 },
-  ]);
+  var version = saveLifeline(nk, rec, got.version);
+  logger.info("lifeline %s room %s opened: phase=%s turn=%d content=%s", rec.id, String(ctx.matchId), rec.life!.phase, rec.life!.turn, CONTENT.version);
   return {
-    state: { lifelineId: rec.id, record: rec, presences: {}, lastMoveTick: {}, moveSeq: {}, eventWaitSince: null, lastSaveTick: 0, emptyTicks: 0, tick: 0, leftAt: {} },
+    state: {
+      lifelineId: rec.id, matchId: ctx.matchId || null, record: rec, version: version, superseded: false,
+      presences: {}, lastMoveTick: {}, moveSeq: {}, eventWaitSince: null, lastSaveTick: 0, emptyTicks: 0, tick: 0, leftAt: {},
+    },
     tickRate: TICK_RATE,
     label: JSON.stringify({ lifeline: rec.id }),
   };
@@ -411,7 +500,7 @@ var matchLeave: nkruntime.MatchLeaveFunction<LifelineMatch> = function (ctx, log
     }
   }
   send(dispatcher, OP.PRESENCE, { online: online(state) });
-  save(nk, state, tick);
+  save(nk, logger, state, tick);
   return { state: state };
 };
 
@@ -423,9 +512,53 @@ function broadcastLog(dispatcher: nkruntime.MatchDispatcher, entries: LogEntry[]
   if (entries.length > 0) send(dispatcher, OP.LOG, { entries: entries });
 }
 
+/**
+ * 规则代码抛错了。这一跳可能只改了一半，内存里的状态不可信，不能存：
+ * 丢掉它，回到上一次存档（最多丢 30 秒），关房。客户端会自动重连，从存档重新拉起房间接着玩。
+ * 存档上只记一笔出错的次数和原因、清掉 matchId（让重连立刻能拉起新房间），不碰 life。
+ */
+function faultClose(nk: nkruntime.Nakama, logger: nkruntime.Logger, dispatcher: nkruntime.MatchDispatcher, state: LifelineMatch, tick: number, e: any): null {
+  var msg = String(e && e.message ? e.message : e);
+  var life = state.record.life;
+  logger.error(
+    "lifeline %s room fault at tick %d (phase=%s turn=%d minute=%s event=%s): %s\n%s",
+    state.lifelineId, tick, life ? life.phase : "?", life ? life.turn : -1,
+    String(life && life.world ? Math.floor(life.world.minute) : null),
+    String(life && life.world && life.world.event ? life.world.event.eventId : null),
+    msg, String((e && e.stack) || ""),
+  );
+  try {
+    send(dispatcher, OP.ERROR, { message: "服务器这边出了点岔子，正在回到刚才的存档……", fault: true });
+  } catch (e1) {
+    // 通知发不出去也要把下面的善后做完
+  }
+  try {
+    var cur = loadLifelineVersioned(nk, state.lifelineId);
+    if (cur && cur.rec.matchId === state.matchId) {
+      cur.rec.matchId = null;
+      cur.rec.matchClaimedAt = 0;
+      cur.rec.faults = (cur.rec.faults || 0) + 1;
+      cur.rec.lastFault = msg.substring(0, 300);
+      saveLifeline(nk, cur.rec, cur.version);
+    }
+  } catch (e2) {
+    logger.error("lifeline %s: could not record fault: %s", state.lifelineId, String(e2));
+  }
+  return null;
+}
+
 var matchLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, logger, nk, dispatcher, tick, state, messages) {
+  try {
+    return lifelineLoop(ctx, logger, nk, dispatcher, tick, state, messages);
+  } catch (e) {
+    return faultClose(nk, logger, dispatcher, state, tick, e);
+  }
+};
+
+var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, logger, nk, dispatcher, tick, state, messages) {
   var life = state.record.life!;
   state.tick = tick;
+  if (state.superseded) return null; // 存档归别的房间了：悄悄退场，不存档
 
   for (var i = 0; i < messages.length; i++) {
     var msg = messages[i];
@@ -436,6 +569,11 @@ var matchLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, logge
       body = JSON.parse(nk.binaryToString(msg.data));
     } catch (e) {
       sendError(dispatcher, msg.sender, "bad json");
+      continue;
+    }
+    // 边界上先把形状验了：消息体必须是对象（null、数字、数组都不行），消息号必须是客户端该发的
+    if (!body || typeof body !== "object" || Array.isArray(body) || CLIENT_OPS.indexOf(msg.opCode) < 0) {
+      sendError(dispatcher, msg.sender, "bad message");
       continue;
     }
 
@@ -456,7 +594,7 @@ var matchLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, logge
         var started = lifeConfirm(life, CONTENT, role, state.record.names);
         send(dispatcher, OP.ROLL_STATE, { rolls: life.rolls });
         if (started) {
-          save(nk, state, tick);
+          save(nk, logger, state, tick);
           for (var rr in state.presences) send(dispatcher, OP.SNAPSHOT, snapshot(state, rr as Role), [state.presences[rr as Role]!]);
         }
       }
@@ -510,20 +648,20 @@ var matchLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, logge
       if (t.started) send(dispatcher, OP.EVENT, { event: t.started });
       broadcastLog(dispatcher, t.entries);
       if (t.dayEnded) {
-        save(nk, state, tick);
+        save(nk, logger, state, tick);
         for (var pr in state.presences) send(dispatcher, OP.SNAPSHOT, snapshot(state, pr as Role), [state.presences[pr as Role]!]);
       }
     }
     if (tick % WORLD_BROADCAST_EVERY === 0 && life.world) send(dispatcher, OP.WORLD, worldView(state));
   }
 
-  if (tick - state.lastSaveTick >= SAVE_EVERY_SECONDS * TICK_RATE) save(nk, state, tick);
+  if (tick - state.lastSaveTick >= SAVE_EVERY_SECONDS * TICK_RATE) save(nk, logger, state, tick);
 
   // 空房间超时关闭
   if (!state.presences.qing && !state.presences.mei) {
     state.emptyTicks += 1;
     if (state.emptyTicks >= EMPTY_CLOSE_SECONDS * TICK_RATE) {
-      closeRoom(nk, state);
+      closeRoom(nk, logger, state, "empty");
       return null;
     }
   }
@@ -531,15 +669,16 @@ var matchLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, logge
 };
 
 var matchTerminate: nkruntime.MatchTerminateFunction<LifelineMatch> = function (ctx, logger, nk, dispatcher, tick, state) {
-  closeRoom(nk, state);
+  closeRoom(nk, logger, state, "terminate");
   return { state: state };
 };
 
 /** 房间关闭：存档，并清掉存档里的 matchId，下次 lifeline_open 重新拉起 */
-function closeRoom(nk: nkruntime.Nakama, state: LifelineMatch) {
+function closeRoom(nk: nkruntime.Nakama, logger: nkruntime.Logger, state: LifelineMatch, why: string) {
   state.record.matchId = null;
   state.record.matchClaimedAt = 0;
-  saveLifeline(nk, state.record);
+  var saved = save(nk, logger, state, state.tick);
+  logger.info("lifeline %s room %s closed (%s): turn=%d saved=%s", state.lifelineId, String(state.matchId), why, state.record.life ? state.record.life.turn : -1, String(saved));
 }
 
 var matchSignal: nkruntime.MatchSignalFunction<LifelineMatch> = function (ctx, logger, nk, dispatcher, tick, state, data) {
@@ -553,6 +692,8 @@ var InitModule: nkruntime.InitModule = function (ctx, logger, nk, initializer) {
   initializer.registerRpc("lifeline_join", rpcLifelineJoin);
   initializer.registerRpc("lifeline_open", rpcLifelineOpen);
   initializer.registerRpc("lifeline_list", rpcLifelineList);
+  initializer.registerRpc("content_get", rpcContentGet);
+  initializer.registerRpc("server_info", rpcServerInfo);
   initializer.registerMatch<LifelineMatch>(MATCH_NAME, {
     matchInit: matchInit,
     matchJoinAttempt: matchJoinAttempt,
@@ -562,7 +703,7 @@ var InitModule: nkruntime.InitModule = function (ctx, logger, nk, initializer) {
     matchTerminate: matchTerminate,
     matchSignal: matchSignal,
   });
-  logger.info("同岁 server module loaded: %d events, %d families", CONTENT.events.length, CONTENT.families.length);
+  logger.info("同岁 server module loaded: %d events, %d families, content %s, protocol %d", CONTENT.events.length, CONTENT.families.length, CONTENT.version, PROTOCOL_VERSION);
 };
 
 // 防止 InitModule 被当作未使用代码删掉（Nakama 官方 TS 模板的写法）

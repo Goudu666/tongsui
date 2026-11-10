@@ -100,7 +100,8 @@ function lifeRollOnce(s: { rng: number }, c: Content, exceptFamily: string | nul
 
 function lifeCreate(seed: number, c: Content): LifeState {
   var s: LifeState = {
-    version: 2,
+    version: LIFE_VERSION,
+    contentVersion: c.version,
     seed: seed,
     rng: seed | 0,
     phase: "roll",

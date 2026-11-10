@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "0d05389175c3",
+ "version": "aefd369322e8",
  "events": [
   {
    "id": "c_roof_summer",
@@ -9393,7 +9393,7 @@ var CONTENT: Content = {
    "hint": "早点铺排队的人都扭着头。",
    "requires": {},
    "title": "规矩",
-   "text": "早点铺来了个外地口音的：「能加根火腿肠吗？」老板娘手上没停：「我们这儿不加。」排队的都扭头看他。",
+   "text": "早点铺来了个生面孔：「能加根火腿肠吗？」老板娘手上没停：「我们这儿不加。」排队的都扭头看他。",
    "options": [
     {
      "id": "explain",

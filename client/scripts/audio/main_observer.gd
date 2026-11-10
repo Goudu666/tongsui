@@ -21,6 +21,7 @@ var _toast_alpha := 0.0
 var _acts := {}
 var _money := -1
 var _other_chosen := false
+var _paired := false  ## 这会儿两人正搭伴做同一件事（world_state 里 actors[我].tg）
 var _partner_live := true
 var _last_pos := {}
 var _page_cool := 0.0
@@ -123,6 +124,7 @@ func _on_snapshot(data: Dictionary) -> void:
 	if online is Dictionary:
 		_partner_live = bool(online.get(_other(str(data.get("you", "qing"))), true))
 	_acts.clear()
+	_paired = false
 	_money = -1
 	var life: Variant = data.get("life")
 	if life is Dictionary and str(life.get("phase", "")) == "ended":
@@ -149,7 +151,9 @@ func _on_event_started(data: Dictionary) -> void:
 	if not pe is Dictionary:
 		return
 	_other_chosen = false
-	if (pe.get("roles", []) as Array).has(_role()):
+	if str(pe.get("kind", "")) == "milestone":
+		audio.hush(30.0)  # 关口（升学、找工作、安家）：不拍醒木，把音乐收住，越静越重
+	elif (pe.get("roles", []) as Array).has(_role()):
 		audio.cue("xingmu")  # 醒木一拍，开说
 
 
@@ -164,6 +168,8 @@ func _on_world_state(data: Dictionary) -> void:
 			if act != null and _acts.get(r) != act and _acts.has(r):
 				audio.act(str(act), r == me, _near())
 			_acts[r] = act
+		var mine: Variant = actors.get(me)
+		_paired = mine is Dictionary and bool(mine.get("tg", false))
 	var money: Variant = data.get("money")
 	if money is Dictionary:
 		var m := int(money.get(me, 0))
@@ -188,6 +194,8 @@ func _on_log_entries(data: Dictionary) -> void:
 				audio.cue("bell_duet")
 			"mirror":
 				audio.sting("resonance" if bool(e.get("resonance", false)) else "mismatch", 0.0)
+			"milestone":  # 关口揭晓：同路是合上的那一句；分开走，只剩我这半句，没人接
+				audio.sting("resonance" if bool(e.get("resonance", false)) else "call_" + _role())
 			"day":
 				audio.hush(7.0)
 				audio.cue("day_end")
@@ -253,9 +261,15 @@ func _process(delta: float) -> void:
 	var bond: Variant = last.get("bond", life.get("bond", {}))
 	var sync := float(bond.get("sync", 0.0)) if bond is Dictionary else 0.0
 	var other_pos: Variant = b.position if b != null and b.visible else null
+	# 上学日：老字段 schoolDay；新字段 rest 的意思反过来（true 是休息日）
+	var school_day := bool(last.get("schoolDay", false)) if last.has("schoolDay") else (last.has("rest") and not bool(last.get("rest")))
+	if preview:
+		sync = 30.0
+	elif _paired:
+		sync = 100.0  # 搭伴的时候「合」一直浮着，不用等默契攒起来
 	audio.set_life(_dict("content").get("map", {}), me, a.position, other_pos, _partner_live or preview, turn,
-		str(LifeTime.at(turn).stage), LifeTime.SEASONS[turn % 4], minute, bool(last.get("schoolDay", false)),
-		sync if not preview else 30.0, modal != null and modal.visible)
+		str(LifeTime.at(turn).stage), LifeTime.SEASONS[turn % 4], minute, school_day,
+		sync, modal != null and modal.visible)
 
 	# 脚步
 	for r in actors:

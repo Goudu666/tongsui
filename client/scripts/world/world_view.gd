@@ -9,6 +9,7 @@ const P := preload("res://scripts/ui/palette.gd")
 const Actor := preload("res://scripts/world/actor.gd")
 const SceneArt := preload("res://scripts/world/scene_art.gd")
 const PrintLight := preload("res://scripts/world/print_light.gd")
+const Weather := preload("res://scripts/world/weather.gd")
 const SPOT_RADIUS := 100.0  ## 比服务器的 110 小一点，避免边缘抖动
 const MOVE_SEND_INTERVAL := 0.1
 const SnapshotBuffer := preload("res://scripts/net/snapshot_buffer.gd")
@@ -41,6 +42,7 @@ var scene: Dictionary = {}   ## 我现在在哪张图上
 var scenes: Dictionary = {}  ## id -> 图
 var _exiting := 0.0          ## 刚按了出口：等服务器把人挪过去，这期间不报位置（报的是上一张图的横坐标）
 var light: PrintLight  ## 昼夜和旧纸感（夜版套印）
+var weather: Weather   ## 雨、雪、柳絮、落叶（只是画面）
 var _marks: Node2D  ## 互动点和命运提示：画在叠印层上面
 var _tap_fx := Vector2.INF
 var _tap_t := 0.0
@@ -67,6 +69,9 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 	add_child(art)
 	light = PrintLight.new()
 	add_child(light)
+	weather = Weather.new()
+	add_child(weather)
+	weather.art = art
 	light.setup(Vector2(float(map.size[0]), SceneArt.BOTTOM - SceneArt.TOP), {})
 	_marks = _Marks.new(self)
 	_marks.z_index = 70
@@ -118,7 +123,9 @@ func _enter_scene(sc: Dictionary) -> void:
 	camera.position = Vector2(me().position.x if me() != null else 0.0, (top + bottom) / 2.0)
 	camera.reset_smoothing()
 	light.position = Vector2(0, float(sc.top) + SceneArt.TOP)
-	light.relight(Vector2(float(sc.width), SceneArt.BOTTOM - SceneArt.TOP), SceneArt.anchors_for(str(sc.id)))
+	light.relight(Vector2(float(sc.width), SceneArt.BOTTOM - SceneArt.TOP), SceneArt.anchors_for(str(sc.id)), SceneArt.scene_mask(str(sc.id)))
+	if weather != null:
+		weather.set_scene(str(sc.id))
 	_refresh_visible()
 
 
@@ -144,7 +151,16 @@ func set_stage(stage: String) -> void:
 		light.set_stage(stage, not _stage_set)
 	_stage_set = true
 	if art != null:
+		art.set_stage(stage)
 		art.queue_redraw()
+
+
+## 季节（只是画面：树、天气）。LifeTime.season_of(turn)；turn 决定这一天下不下雨雪
+func set_season(season: String, turn := -1) -> void:
+	if art != null:
+		art.set_season(season)
+	if weather != null:
+		weather.set_season(season, turn)
 
 
 ## 时钟：决定昼夜（联机时 apply_world 自动调用；离线预览由 main 喂）
@@ -155,6 +171,8 @@ func set_minute(m: float) -> void:
 		street.set_minute(m)
 	if light != null:
 		light.set_minute(m)
+		if art != null:
+			art.set_time(light.night, light.dusk(), light.dawn(), m)
 		# 互动点的小纸片在夜版上面，夜里跟着暗一点，不然太扎眼
 		if _marks != null:
 			_marks.modulate = Color.WHITE.lerp(Color(0.72, 0.76, 0.9), light.night)

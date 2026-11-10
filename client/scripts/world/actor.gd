@@ -1,15 +1,22 @@
 extends Node2D
 ## 河畔里的一个孩子（会长大）。本地玩家沿寻路的路径走；对方按服务器广播插值。
-## 外观是孔版套色的精灵表 res://art/actors/{role}_{stage}.png（tools/art/actors.py 生成）：
-##   6 列 × 4 行，每格 96×128 世界像素（贴图 2 倍），脚底在格子里的 (48, 120)
-##   行 0 朝下 / 1 朝上 / 2 朝右（朝左翻转）：列 0 站、1~4 走、5 在忙
-##   行 3：列 0 睡觉、1 挥手、2 坐着
+## 外观是孔版套色的侧视精灵表 res://art/actors/{role}_{stage}.png（tools/art/actors.py 用骨架摆出来）：
+##   8 列 × 3 行，每格 200×220 世界像素（贴图 2 倍），脚底在格子里的 (100, 206)，人朝右（朝左翻转）
+##   行 0：走一整步 8 帧
+##   行 1：0~3 站着喘气（3 眨眼），4~7 在忙
+##   行 2：0~1 坐着，2~3 睡觉，4~7 挥手
+## 精灵按世界像素原大画：不管 world_view 把这个节点放大多少，人还是那么高（名字牌跟着节点放大）。
 ## 没有贴图时退回 M0 的墨线简笔。
 
 const P := preload("res://scripts/ui/palette.gd")
 const WALK_SPEED := 330.0  ## 略低于服务器限速
-const CELL := Vector2(96, 128)
-const FOOT := Vector2(48, 120)
+const CELL := Vector2(200, 220)
+const FOOT := Vector2(100, 206)
+const COLS := 8
+const ROWS := 3
+## 每个年纪的身高（世界像素，梅比青矮 6）、走一整步前进多远
+const HEIGHT := {"childhood": 112.0, "teen": 152.0, "young": 172.0, "middle": 170.0, "old": 160.0}
+const STRIDE := {"childhood": 74.0, "teen": 104.0, "young": 120.0, "middle": 112.0, "old": 78.0}
 const ART_SCALE := 2.0
 const STAGES := ["childhood", "teen", "young", "middle", "old"]
 const STAGE_FILE := {"childhood": "child", "teen": "teen", "young": "young", "middle": "middle", "old": "old"}
@@ -37,8 +44,9 @@ var walk_target := Vector2.ZERO:
 
 var _path := PackedVector2Array()
 var _t := 0.0
-var _dir := 0       ## 0 下 1 上 2 右 3 左
-var _phase := 0.0
+var _dir := 2       ## 2 朝右 3 朝左（侧视只有左右，竖着挪的时候保持原来的朝向）
+var _phase := 0.0   ## 走路走到一步里的哪儿（0~8 帧）
+var _idle := 0.0    ## 站着、坐着、在忙的小动作
 var _sprite: Sprite2D
 var _last_pos := Vector2.ZERO
 
@@ -53,8 +61,8 @@ func setup(p_role: String, p_name: String, p_local: bool, pos: Vector2) -> void:
 	net_target = pos
 	_sprite = Sprite2D.new()
 	_sprite.centered = false
-	_sprite.hframes = 6
-	_sprite.vframes = 4
+	_sprite.hframes = COLS
+	_sprite.vframes = ROWS
 	_sprite.scale = Vector2.ONE / ART_SCALE
 	_sprite.offset = -FOOT * ART_SCALE
 	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
@@ -107,15 +115,17 @@ func _process(delta: float) -> void:
 			# 缓冲给出的已经是匀速轨迹，这里只做很轻的平滑，抹掉帧间的小抖动
 			position = position.lerp(net_target, 1.0 - exp(-25.0 * delta))
 	var v := (position - before) / maxf(delta, 0.001)
-	walking = v.length() > 25.0
+	walking = absf(v.x) > 25.0
 	if walking:
-		if absf(v.x) > absf(v.y) * 1.1:
-			_dir = 2 if v.x > 0 else 3
-		else:
-			_dir = 0 if v.y > 0 else 1
-		_phase += delta * clampf(v.length() / 300.0, 0.5, 1.2) * 9.0
+		_dir = 2 if v.x > 0 else 3
+		# 按走了多远翻帧：一整步 8 帧，脚底基本不打滑
+		_phase += absf(v.x) * delta / float(STRIDE.get(stage, 110.0)) * 8.0
 	else:
 		_phase = 0.0
+	_idle += delta
+	# 精灵按世界原大：抵消掉节点自己的放大
+	if _sprite != null and not is_equal_approx(_sprite.scale.x * scale.x, 1.0 / ART_SCALE):
+		_sprite.scale = Vector2.ONE / (ART_SCALE * maxf(scale.x, 0.01))
 	_update_frame()
 	queue_redraw()
 
@@ -123,26 +133,28 @@ func _process(delta: float) -> void:
 func _update_frame() -> void:
 	if _sprite == null or _sprite.texture == null:
 		return
-	var row := 0 if _dir == 0 else (1 if _dir == 1 else 2)
+	var row := 1
 	var col := 0
 	_sprite.flip_h = _dir == 3
 	if asleep:
-		row = 3
-		col = 0
-		_sprite.flip_h = role == "mei"
+		row = 2
+		col = 2 + int(_idle / 1.6) % 2
 	elif doing in SIT_ACTIONS:
-		row = 3
-		col = 2
-		_sprite.flip_h = false
+		row = 2
+		col = int(_idle / 0.7) % 2
 	elif doing in WAVE_ACTIONS:
-		row = 3
-		col = 1
-		_sprite.flip_h = false
+		row = 2
+		col = 4 + int(_idle * 7.0) % 4
 	elif action_label != "":
-		col = 5
+		col = 4 + int(_idle * 5.0) % 4
 	elif walking:
-		col = 1 + int(_phase) % 4
-	_sprite.frame = row * 6 + col
+		row = 0
+		col = int(_phase) % 8
+	else:
+		# 站着：慢慢喘气，隔几秒眨一下眼
+		var k := int(_idle * 2.2) % 4
+		col = 3 if fmod(_idle + float(role.length()), 4.3) < 0.14 else (k if k < 3 else 1)
+	_sprite.frame = row * COLS + col
 
 
 func _draw() -> void:
@@ -153,7 +165,7 @@ func _draw() -> void:
 	draw_circle(Vector2.ZERO, w, Color(P.INK, 0.16))
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	if _sprite != null and _sprite.visible:
-		var head := -CELL.y * _height_ratio()
+		var head := -_height() / maxf(scale.x, 0.01) - 14.0
 		_name_tag(c)
 		if asleep:
 			_text("z z", Vector2(34, head + 30 + sin(_t * 2.0) * 6.0), 28, P.INK_SOFT)
@@ -179,8 +191,9 @@ func _name_tag(c: Color) -> void:
 	draw_string(f, Vector2(-w / 2.0, 35.0), display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, c)
 
 
-func _height_ratio() -> float:
-	return {"childhood": 0.58, "teen": 0.74, "young": 0.82, "middle": 0.80, "old": 0.76}.get(stage, 0.7)
+## 精灵里的人有多高（世界像素）
+func _height() -> float:
+	return float(HEIGHT.get(stage, 160.0)) - (6.0 if role == "mei" else 0.0)
 
 
 func _draw_fallback(c: Color) -> void:

@@ -15,7 +15,7 @@ const P := preload("res://scripts/ui/palette.gd")
 
 ## 从主场景（scripts/main.gd）读的属性
 const READS := ["world", "net", "life", "last_world", "my_role", "content", "events_by_id", "ui", "screen",
-	"modal", "modal_body", "toast", "offline_preview", "_preview_minute", "_page_id"]
+	"modal", "modal_body", "toast", "games", "offline_preview", "_preview_minute", "_page_id"]
 ## 监听的联机信号（scripts/net/lifeline_client.gd）
 const SIGNALS := ["snapshot", "world_state", "event_started", "log_entries", "presence", "failed"]
 ## 页面名（main._page_id）→ 配乐的场景。没列出来的页面都算 title

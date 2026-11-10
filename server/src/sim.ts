@@ -265,7 +265,7 @@ function lifeMilestoneFor(ev: LifeEvent, p: Person): boolean {
 /** 这条路走不走得了。走不了返回原因（给玩家看的），走得了返回 null。swing 是这次的发挥 */
 function lifeOptionLock(ev: LifeEvent, o: EventOption, p: Person, swing: number, bond?: Bond): string | null {
   var rq = o.requires || {};
-  if (!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) return "这条路不是给你留的";
+  if (!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) return o.lock || "这条路不是给你留的"; // 家里拿不出这笔钱（docs/MEANS.md）
   if (o.min) {
     var w = lifeOptionWeights(ev, o);
     if (w.close && !bond) return "对门已经空了";
@@ -282,11 +282,20 @@ function lifeOptionLock(ev: LifeEvent, o: EventOption, p: Person, swing: number,
   return null;
 }
 
+/** 关口上这条路算哪条路：花钱进的重点、托关系进的单位，和考进去的是同一条（joins），两个人还是同路 */
+function lifeRoad(ev: LifeEvent, optionId: string): string {
+  var o = lifeFindOption(ev, optionId);
+  return (o && o.joins) || optionId;
+}
+
 /** 关口一条路都走不通时走的那条：线最低的（一样低取写在后面的，内容里兜底的路习惯写在最后） */
 function lifeMilestoneFallback(ev: LifeEvent): EventOption {
-  var best = ev.options[0];
-  for (var i = 1; i < ev.options.length; i++) {
-    if ((ev.options[i].min || 0) <= (best.min || 0)) best = ev.options[i];
+  // 只看谁都走得了的路：挂了标记的（接班、家里出钱的）不是兜底
+  var open = ev.options.filter(function (o) { var rq = o.requires || {}; return !(rq.flags && rq.flags.length) && !(rq.notFlags && rq.notFlags.length); });
+  if (!open.length) open = ev.options;
+  var best = open[0];
+  for (var i = 1; i < open.length; i++) {
+    if ((open[i].min || 0) <= (best.min || 0)) best = open[i];
   }
   return best;
 }
@@ -341,6 +350,8 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
   for (var j = 0; j < best.options.length; j++) {
     var o = best.options[j];
     if (!o.min) continue;
+    var orq = o.requires || {};
+    if (!lifeHasAll(p.flags, orq.flags) || !lifeHasNone(p.flags, orq.notFlags)) continue; // 不是给这个人留的路不摆在目标条上
     var w = lifeOptionWeights(best, o);
     var have = lifeScore(p, w, lifePairBond(s, role));
     var raw = lifeScoreRaw(w);
@@ -524,10 +535,10 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
   // 默契事件：选得不一样、但一个抛一个接，duet.ts 按「搭上了」结算，就不走下面的共鸣 / 错位了。
   // 关口：两个人都过这一关时，走了同一条路算共鸣，分开走算错位（关口不接「搭上了」和猜 TA）
   if ((pe.kind === "mirror" && !duetCatch(s, c, pe, ev, entry)) || (pe.kind === "milestone" && pe.roles.length === 2)) {
-    if (pe.choices.qing === pe.choices.mei) {
+    if (lifeRoad(ev, pe.choices.qing!) === lifeRoad(ev, pe.choices.mei!)) {
       entry.resonance = true;
       if (s.world) s.world.warm = true;
-      var res = ev.resonance && ev.resonance[pe.choices.qing!];
+      var res = ev.resonance && ev.resonance[lifeRoad(ev, pe.choices.qing!)];
       if (res) {
         lifeApplyBond(s, c, res.bond);
         lifeAddFlags(s.persons!.qing, res.flags);

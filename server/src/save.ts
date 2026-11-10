@@ -136,6 +136,7 @@ function lifeRepair(s: LifeState, c: Content): string[] {
         delete a.eff;
         delete a.together;
         delete a.boost;
+        delete a.guest;
       }
       if (a.spot && !lifeHasId(c.map.spots, a.spot)) a.spot = null;
       // 地图变小了：人不能留在地图外面

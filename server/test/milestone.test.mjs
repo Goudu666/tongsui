@@ -270,8 +270,10 @@ function sleep(s, r) {
     assert.notEqual(pick(older, "qing", "school_gate"), "club_math", "小学毕业以后小组就散了");
     // 客户端不知道标记：WORLD 里带一张「我挣来的去处」的单子
     const view = G("worldView")({ record: { life: s }, moveSeq: {}, tick: 0 });
-    assert.deepEqual(J(view.tracks.qing.unlocks).sort(), ["club_math", "club_sport"]);
-    assert.deepEqual(J(view.tracks.mei.unlocks), []);
+    // 单子里还有家境给的（学琴、帮家里干活，见 test/means.test.mjs），这里只看关口挣来的
+    const clubs = (r) => J(view.tracks[r].unlocks).filter((id) => id.startsWith("club_")).sort();
+    assert.deepEqual(clubs("qing"), ["club_math", "club_sport"]);
+    assert.deepEqual(clubs("mei"), []);
   }
 
   // 45 岁那一关：争到位子的人工钱多五成（歇班那年也是）

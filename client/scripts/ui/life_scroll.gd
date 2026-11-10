@@ -95,7 +95,8 @@ static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 						"shadow": _list(e.get("shadow")).has(r),
 					}
 				var both := roads.size() == 2
-				var same: bool = both and str(roads.qing.option) == str(roads.mei.option)
+				# joins：花钱进的重点和考进去的是同一所学校，算同路（服务器 lifeRoad 同一个规矩）
+				var same: bool = both and _road(ev, str(roads.qing.option)) == _road(ev, str(roads.mei.option))
 				if both:
 					counts["same" if same else "apart"] += 1
 				var mem: Dictionary = gate_memory.get(id, {})
@@ -123,6 +124,13 @@ static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 				lives[r] = {"title": str(it.title), "text": str(it.text).replace("{name}", nm)}
 	var close := float(life.get("bond", {}).get("close", 0.0)) if life.get("bond") is Dictionary else 0.0
 	return {"last": last, "close": close, "stations": stations, "stitches": stitches, "memories": memories, "deaths": deaths, "pair": pair, "lives": lives, "counts": counts}
+
+
+static func _road(ev: Dictionary, option: String) -> String:
+	for o in ev.get("options", []):
+		if str(o.id) == option and str(o.get("joins", "")) != "":
+			return str(o.joins)
+	return option
 
 
 static func _option_text(ev: Dictionary, option: String) -> String:

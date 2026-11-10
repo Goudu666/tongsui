@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "d39045616476",
+ "version": "6090bd71e151",
  "events": [
   {
    "id": "c_roof_summer",
@@ -7877,6 +7877,715 @@ var CONTENT: Content = {
    "catches": []
   },
   {
+   "id": "f_dong_phone",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    1080,
+    1260
+   ],
+   "hint": "楼道里有电话铃在响。",
+   "requires": {
+    "minAge": 4,
+    "flags": [
+     "fam_cadre"
+    ]
+   },
+   "title": "楼道里的长途",
+   "text": "董家的电话响了，是外地打来找对门的长途。董家婶子把听筒搁在桌上，站在楼道里喊了一声。",
+   "options": [
+    {
+     "id": "run",
+     "text": "跑去敲对门",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "dong_phone"
+      ]
+     }
+    },
+    {
+     "id": "listen",
+     "text": "先拿起听筒听听",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "dong_phone"
+      ]
+     }
+    },
+    {
+     "id": "wait",
+     "text": "站在门口等着",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "dong_phone"
+      ]
+     }
+    }
+   ],
+   "resonance": {
+    "run": {
+     "text": "两个人同时撞上对门的门。大人接电话的时候，你们俩蹲在桌子底下，听那头说了一句「都好」。",
+     "memory": "一句都好",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "listen": {
+     "text": "两个脑袋凑着一个听筒。那头沙沙响，有人在很远的地方喊了一个名字，是你们俩都认得的名字。",
+     "memory": "沙沙响的听筒",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "电话打了一刻钟。你们俩站在门槛两边，一个在董家里头，一个在外头，谁也没进谁也没走。",
+     "memory": "门槛两边",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个跑去喊人，一个守着听筒。大人来了，接过去说了很久。那天以后，对门的长途都打到董家。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "f_dong_new_year",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 12,
+    "maxAge": 16,
+    "flags": [
+     "fam_cadre"
+    ]
+   },
+   "title": "两桶油",
+   "text": "过年厂里发东西。别人家是一桶油，你家是两桶，外加一箱带鱼。你爸说，给对门送一桶过去。",
+   "options": [
+    {
+     "id": "give",
+     "text": "扛着就去敲门",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 1
+      },
+      "other": {
+       "mood": 8
+      },
+      "bond": {
+       "close": 2
+      },
+      "flags": [
+       "dong_gave"
+      ]
+     }
+    },
+    {
+     "id": "fish",
+     "text": "换成送那箱带鱼",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {
+       "mood": 6
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": [
+       "dong_gave"
+      ]
+     }
+    },
+    {
+     "id": "shy",
+     "text": "让你爸自己去送",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "f_dong_quiet_phone",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 42,
+    "flags": [
+     "fam_cadre"
+    ]
+   },
+   "title": "不响的电话",
+   "text": "厂子改了制，你爸退了下来。家里那部电话还在原处，一礼拜也不响一回。",
+   "options": [
+    {
+     "id": "call",
+     "text": "每个礼拜打一回",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "dong_call"
+      ]
+     }
+    },
+    {
+     "id": "chess",
+     "text": "陪他下楼下棋",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "busy",
+     "text": "忙，顾不上",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "f_zheng_knock",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 4,
+    "flags": [
+     "fam_doctor"
+    ]
+   },
+   "title": "半夜敲门",
+   "text": "你妈下班进门先洗手，洗三遍。楼里谁家孩子半夜发烧，都来敲你家的门。今晚又有人敲了。",
+   "options": [
+    {
+     "id": "help",
+     "text": "爬起来递体温表",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "zheng_thermo"
+      ]
+     }
+    },
+    {
+     "id": "peek",
+     "text": "扒着门缝看",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sleep",
+     "text": "蒙上被子接着睡",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "f_zheng_atlas",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": "hallway",
+   "when": [
+    930,
+    1140
+   ],
+   "hint": "有人抱着一本厚书。",
+   "requires": {
+    "minAge": 12,
+    "maxAge": 15,
+    "flags": [
+     "fam_doctor"
+    ]
+   },
+   "title": "厚书",
+   "text": "郑家书架上有本厚厚的人体图谱。两个人趁大人不在搬下来，翻到画着心脏的那一页。",
+   "options": [
+    {
+     "id": "fist",
+     "text": "攥拳头比一比",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "read",
+     "text": "接着往后翻",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back",
+     "text": "赶紧放回去",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "fist": {
+     "text": "两只拳头凑在一块儿，都比画上的大一圈。TA 说，那装的东西也能多一点。",
+     "memory": "两只拳头",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "read": {
+     "text": "一个念字，一个找图，翻到天黑。书放回去的时候，夹着两根头发，一长一短。",
+     "memory": "夹着的头发",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "back": {
+     "text": "两个人同时伸手把书推回去，推歪了。郑大夫回来一眼就看出来了，什么也没说。",
+     "memory": "推歪的书",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个还想往后翻，一个已经把书合上了。那一页的折角，留了好些年。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "f_zheng_thermo",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 40,
+    "flags": [
+     "fam_doctor",
+     "zheng_thermo"
+    ]
+   },
+   "title": "体温表",
+   "text": "半夜有人敲门。你还没醒透，手已经伸进抽屉去摸体温表，跟你妈当年一样。",
+   "options": [
+    {
+     "id": "go",
+     "text": "披上衣服去开门",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "先给你妈打电话",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "g_piano_window",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "school",
+   "when": [
+    930,
+    1140
+   ],
+   "hint": "少年宫里有人在弹琴。",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 9,
+    "flags": [
+     "fam_rich",
+     "fam_poor"
+    ]
+   },
+   "title": "琴房的窗户",
+   "text": "少年宫的琴房，一个在里头上课，一个在外头扒着窗户。老师出来问：外头那个，是一块儿的吗？",
+   "options": [
+    {
+     "id": "same",
+     "text": "说是一块儿的",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "no",
+     "text": "说不认识",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "go",
+     "text": "拉着走了",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "same": {
+     "text": "老师多搬了一把凳子。往后放了学，琴凳上坐两个人，学费记在一个人的账上。",
+     "memory": "琴凳上两个人",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "go": {
+     "text": "琴不学了，两个人跑到河边，拿石头在台阶上敲。敲出来的哪个音都不对，可是很响。",
+     "memory": "台阶上的音",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "里头的说是，外头的说不是。老师看看这个，又看看那个，回去把窗帘拉上了一半。",
+    "bond": {
+     "close": -1
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "g_bath_ticket",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "winter"
+   ],
+   "weight": 2,
+   "where": "bikeshop",
+   "when": [
+    960,
+    1200
+   ],
+   "hint": "有人兜里揣着几张澡票。",
+   "requires": {
+    "minAge": 6,
+    "flags": [
+     "fam_factory"
+    ]
+   },
+   "title": "澡票",
+   "text": "厂里澡堂的澡票，一张能洗一个钟头。攒下的那几张在兜里揣了一冬天，攥得发软。",
+   "options": [
+    {
+     "id": "share",
+     "text": "分对门一张",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {
+       "mood": 5,
+       "clean": 20
+      },
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "keep",
+     "text": "留着过年用",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "trade",
+     "text": "换两根冰棍",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "share": {
+     "text": "两个人进了澡堂，出来的时候头发冒着热气，在厂门口站着，等它慢慢干。",
+     "memory": "冒热气的头发",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "keep": {
+     "text": "过年前一天，两个人一人一张，洗到澡堂的大爷来敲门。",
+     "memory": "过年前一天",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "trade": {
+     "text": "大冬天，一人一根冰棍，在楼下吃得直跺脚。",
+     "memory": "冬天的冰棍",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个想分，一个想留。澡票揣在兜里，过了一冬天谁也没用上。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
    "id": "m_demolish",
    "kind": "mirror",
    "stage": "middle",
@@ -10022,6 +10731,31 @@ var CONTENT: Content = {
      }
     },
     {
+     "id": "paid",
+     "text": "家里交了钱，进重点班",
+     "min": 6.5,
+     "cost": 20,
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ]
+     },
+     "lock": "家里拿不出这笔钱",
+     "joins": "key",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "junior_key",
+       "junior_paid"
+      ]
+     }
+    },
+    {
      "id": "normal",
      "text": "去普通班",
      "tags": [
@@ -10104,6 +10838,33 @@ var CONTENT: Content = {
       },
       "flags": [
        "school_far"
+      ]
+     }
+    },
+    {
+     "id": "paid",
+     "text": "交择校费，过桥上重点",
+     "min": 6.8,
+     "cost": 35,
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ]
+     },
+     "lock": "家里拿不出择校费",
+     "joins": "far",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "distance": 1
+      },
+      "flags": [
+       "school_far",
+       "school_paid"
       ]
      }
     },
@@ -10221,6 +10982,31 @@ var CONTENT: Content = {
      }
     },
     {
+     "id": "abroad",
+     "text": "家里送你出国念书",
+     "min": 6.3,
+     "cost": 60,
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ]
+     },
+     "lock": "家里供不起",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "distance": 3
+      },
+      "flags": [
+       "uni_abroad"
+      ]
+     }
+    },
+    {
      "id": "local",
      "text": "念本市的大学",
      "min": 6.8,
@@ -10233,6 +11019,34 @@ var CONTENT: Content = {
       "bond": {},
       "flags": [
        "uni_near"
+      ]
+     }
+    },
+    {
+     "id": "army",
+     "text": "报名去当兵",
+     "score": {
+      "body": 1
+     },
+     "min": 5.8,
+     "requires": {
+      "notFlags": [
+       "fam_rich"
+      ]
+     },
+     "lock": "家里舍不得",
+     "tags": [
+      "responsible",
+      "adventure"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "distance": 2
+      },
+      "flags": [
+       "army"
       ]
      }
     },
@@ -10267,6 +11081,24 @@ var CONTENT: Content = {
      "memory": "四站地",
      "bond": {
       "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "abroad": {
+     "text": "两个人坐同一班飞机走的。落地以后，一个往东，一个往西，隔着一个时区写信。",
+     "memory": "同一班飞机",
+     "bond": {
+      "sync": 3,
+      "close": 1
+     },
+     "flags": []
+    },
+    "army": {
+     "text": "胸口戴着同一种红花，坐上同一趟车。车开了，楼里的人还站在路口。",
+     "memory": "同一种红花",
+     "bond": {
+      "sync": 3,
       "close": 2
      },
      "flags": []
@@ -10344,6 +11176,37 @@ var CONTENT: Content = {
       "bond": {},
       "flags": [
        "job_desk"
+      ]
+     }
+    },
+    {
+     "id": "pull",
+     "text": "托家里的关系进单位",
+     "score": {
+      "charm": 0.6,
+      "mind": 0.4
+     },
+     "min": 6.7,
+     "cost": 15,
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ]
+     },
+     "lock": "家里没有这层关系",
+     "joins": "desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_desk",
+       "job_pull"
       ]
      }
     },
@@ -10428,6 +11291,50 @@ var CONTENT: Content = {
      }
     },
     {
+     "id": "succeed",
+     "text": "接爸妈的班，进厂",
+     "requires": {
+      "flags": [
+       "fam_factory"
+      ]
+     },
+     "lock": "家里没人在厂里",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_succeed"
+      ]
+     }
+    },
+    {
+     "id": "placed",
+     "text": "退伍安置，进厂",
+     "requires": {
+      "flags": [
+       "army"
+      ]
+     },
+     "lock": "没当过兵",
+     "joins": "succeed",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_succeed",
+       "army_placed"
+      ]
+     }
+    },
+    {
      "id": "odd",
      "text": "先打零工",
      "tags": [
@@ -10489,6 +11396,15 @@ var CONTENT: Content = {
      },
      "flags": []
     },
+    "succeed": {
+     "text": "同一个厂门，同一种蓝工装。下了班在澡堂门口等，谁先出来谁去买汽水。",
+     "memory": "两身蓝工装",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
     "odd": {
      "text": "今天有活，明天没活。没活的那天，你们在河边坐一下午。",
      "memory": "没活的下午",
@@ -10541,6 +11457,60 @@ var CONTENT: Content = {
       "bond": {},
       "flags": [
        "home_own"
+      ]
+     }
+    },
+    {
+     "id": "help",
+     "text": "爸妈出首付，买了房",
+     "min": 150,
+     "cost": 150,
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ]
+     },
+     "lock": "爸妈帮不上",
+     "joins": "buy",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "home_own",
+       "home_help"
+      ]
+     }
+    },
+    {
+     "id": "unit",
+     "text": "等到了厂里分的房",
+     "min": 40,
+     "cost": 40,
+     "requires": {
+      "flags": [
+       "job_succeed"
+      ]
+     },
+     "lock": "单位不分房",
+     "joins": "buy",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 12
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "home_own",
+       "home_unit"
       ]
      }
     },
@@ -22919,7 +23889,8 @@ var CONTENT: Content = {
     "body": 1
    },
    "traits": [
-    "fam_handy"
+    "fam_handy",
+    "fam_factory"
    ]
   },
   {
@@ -22955,8 +23926,8 @@ var CONTENT: Content = {
    "id": "xu",
    "name": "许家 · 跑海运",
    "wealth": 2,
-   "weight": 1,
-   "money": 90,
+   "weight": 2,
+   "money": 55,
    "desc": "你爸在船上跑远洋，一年回来两趟，带回些街坊叫不上名儿的洋玩意儿。挂历上的红圈是你画的。",
    "bonus": {
     "luck": 1
@@ -23001,8 +23972,8 @@ var CONTENT: Content = {
    "id": "tang",
    "name": "唐家 · 南方搬来的",
    "wealth": 2,
-   "weight": 1,
-   "money": 120,
+   "weight": 2,
+   "money": 60,
    "desc": "刚从南方搬来，口音跟全楼都不一样。楼里的孩子起先不大跟你玩。",
    "bonus": {
     "mind": 1,
@@ -23025,7 +23996,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_poor",
-    "fam_independent"
+    "fam_independent",
+    "fam_factory"
    ]
   },
   {
@@ -23166,7 +24138,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_wrestle",
-    "fam_poor"
+    "fam_poor",
+    "fam_factory"
    ]
   },
   {
@@ -23182,6 +24155,39 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_kite"
+   ]
+  },
+  {
+   "id": "dong",
+   "name": "董家 · 厂长家",
+   "wealth": 2,
+   "weight": 2,
+   "money": 55,
+   "desc": "你爸是厂里的副厂长，家里有全楼头一部电话。谁家来了长途，你妈就站在楼道里喊人下来接。",
+   "bonus": {
+    "charm": 1,
+    "mind": 1,
+    "body": -1
+   },
+   "traits": [
+    "fam_rich",
+    "fam_cadre"
+   ]
+  },
+  {
+   "id": "zheng",
+   "name": "郑家 · 大夫家",
+   "wealth": 2,
+   "weight": 2,
+   "money": 50,
+   "desc": "你妈是区医院的大夫，你爸在设计院画图纸。家里永远有一股来苏水味儿，书架上一半是你看不懂的厚书。",
+   "bonus": {
+    "mind": 2,
+    "body": -1
+   },
+   "traits": [
+    "fam_rich",
+    "fam_doctor"
    ]
   }
  ],
@@ -23666,10 +24672,11 @@ var CONTENT: Content = {
      2360,
      690
     ],
-    "action": "duty",
     "actions": [
-     "duty"
-    ]
+     "duty",
+     "tutor"
+    ],
+    "action": "duty"
    },
    {
     "id": "alley_rope",
@@ -23759,6 +24766,42 @@ var CONTENT: Content = {
     "actions": [
      "fish"
     ]
+   },
+   {
+    "id": "palace_piano",
+    "zone": "school",
+    "at": [
+     150,
+     1330
+    ],
+    "action": "piano",
+    "actions": [
+     "piano"
+    ]
+   },
+   {
+    "id": "alley_cart",
+    "zone": "alley",
+    "at": [
+     560,
+     880
+    ],
+    "action": "help_out",
+    "actions": [
+     "help_out"
+    ]
+   },
+   {
+    "id": "factory_bath",
+    "zone": "bikeshop",
+    "at": [
+     1300,
+     1160
+    ],
+    "action": "factory_bath",
+    "actions": [
+     "factory_bath"
+    ]
    }
   ],
   "actions": [
@@ -23775,7 +24818,8 @@ var CONTENT: Content = {
     },
     "stats": {},
     "money": 0,
-    "together": null
+    "together": null,
+    "bring": false
    },
    {
     "id": "eat_out",
@@ -23803,7 +24847,8 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "「俩鸡蛋，多放葱花。」你们说的是同一句。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "dine",
@@ -23832,7 +24877,8 @@ var CONTENT: Content = {
       "close": 2
      },
      "text": "一张小桌，两瓶汽水，说到人家收摊。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "sleep",
@@ -23846,7 +24892,8 @@ var CONTENT: Content = {
     "needs": {},
     "stats": {},
     "money": 0,
-    "together": null
+    "together": null,
+    "bring": false
    },
    {
     "id": "wash",
@@ -23861,7 +24908,8 @@ var CONTENT: Content = {
     },
     "stats": {},
     "money": 0,
-    "together": null
+    "together": null,
+    "bring": false
    },
    {
     "id": "duty",
@@ -23881,7 +24929,8 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "你们是一路去的。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "picture_book",
@@ -23908,7 +24957,8 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "两个脑袋凑在一本书上，谁也不让谁翻页。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "study",
@@ -23936,7 +24986,8 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "一张桌子两头坐，写一会儿，抬头看一眼对面写到哪了。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "read",
@@ -23963,7 +25014,8 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "各看各的，半天没人说话，也不觉得闷。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "play_alley",
@@ -23992,7 +25044,8 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "「小皮球，架脚踢……」你们俩跳得一样快。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "play_river",
@@ -24020,7 +25073,8 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "一个人拽线，一个人举着风筝跑。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "walk_river",
@@ -24047,7 +25101,8 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "从桥这头走到那头，话说了一半，又走回来。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "ball",
@@ -24076,7 +25131,8 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "两个人，一个球，书包摆成门。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "work",
@@ -24105,7 +25161,8 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "爷爷说你们俩加一块儿顶半个学徒。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "club_math",
@@ -24140,7 +25197,8 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "一道题两种解法，你们各讲各的，讲到传达室的大爷来锁门。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "club_sport",
@@ -24176,7 +25234,8 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "压腿的时候背靠着背，谁也不敢先喊疼。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "club_art",
@@ -24211,7 +25270,145 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "茶社下午没有客人，台子借给孩子们。你们一个打板，一个数拍子。"
-    }
+    },
+    "bring": false
+   },
+   {
+    "id": "piano",
+    "label": "去少年宫学琴",
+    "minutes": 90,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 6,
+     "maxAge": 14,
+     "flags": [
+      "fam_rich"
+     ],
+     "hours": [
+      930,
+      1200
+     ]
+    },
+    "needs": {
+     "energy": -6,
+     "mood": -3
+    },
+    "stats": {
+     "charm": 0.4,
+     "mind": 0.15
+    },
+    "money": -2,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "一架琴两个人坐，你弹右手，TA 弹左手，老师说拍子对上了。"
+    },
+    "bring": true
+   },
+   {
+    "id": "tutor",
+    "label": "过桥上补习班",
+    "minutes": 120,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 12,
+     "maxAge": 17,
+     "flags": [
+      "fam_rich"
+     ],
+     "hours": [
+      1080,
+      1260
+     ]
+    },
+    "needs": {
+     "energy": -14,
+     "mood": -6
+    },
+    "stats": {
+     "mind": 0.62
+    },
+    "money": -3,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "回来的末班车上，两个人把今天的卷子对了一遍，错的是同一道。"
+    },
+    "bring": true
+   },
+   {
+    "id": "help_out",
+    "label": "帮家里干活",
+    "minutes": 120,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 8,
+     "maxAge": 17,
+     "flags": [
+      "fam_poor"
+     ]
+    },
+    "needs": {
+     "energy": -12,
+     "clean": -10
+    },
+    "stats": {
+     "body": 0.15,
+     "charm": 0.2
+    },
+    "money": 3,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "对门过来搭了把手，干完了，你家大人塞给你们一人一个苹果。"
+    },
+    "bring": false
+   },
+   {
+    "id": "factory_bath",
+    "label": "去厂里澡堂洗澡",
+    "minutes": 40,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 5,
+     "flags": [
+      "fam_factory"
+     ]
+    },
+    "needs": {
+     "clean": 90,
+     "mood": 10,
+     "energy": 4
+    },
+    "stats": {},
+    "money": -1,
+    "together": {
+     "needs": {
+      "mood": 8
+     },
+     "bond": {
+      "close": 2
+     },
+     "text": "出来的时候头发还冒着热气，两个人一人一瓶汽水，坐在厂门口晾着。"
+    },
+    "bring": true
    },
    {
     "id": "chat",
@@ -24237,7 +25434,8 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "街坊问你们俩怎么老在一块儿，你们同时说「顺路」。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "knock",
@@ -24260,7 +25458,8 @@ var CONTENT: Content = {
       "sync": 1
      },
      "text": "两扇门同时开了，你们在楼道里对着乐。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "play_roof",
@@ -24284,7 +25483,8 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "鸽子绕着楼顶飞了三圈，你们数的圈数不一样。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "listen",
@@ -24316,7 +25516,8 @@ var CONTENT: Content = {
       "sync": 1
      },
      "text": "台上讲到最要紧的地方停了一下。你们俩同时笑出了声，又同时捂住了嘴。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "perform",
@@ -24348,7 +25549,8 @@ var CONTENT: Content = {
       "sync": 2
      },
      "text": "你忘了词，TA 在旁边接了下去，像排练过一样。台下有人叫了声好。"
-    }
+    },
+    "bring": false
    },
    {
     "id": "fish",
@@ -24380,7 +25582,8 @@ var CONTENT: Content = {
       "sync": 1
      },
      "text": "漂动了。你们俩同时喊「上钩了！」鱼吓跑了。大爷没恼，笑了笑，又挂了一条蚯蚓。"
-    }
+    },
+    "bring": false
    }
   ]
  },
@@ -24690,6 +25893,68 @@ var CONTENT: Content = {
    }
   },
   {
+   "id": "uni_abroad",
+   "label": "在国外念书",
+   "requires": {
+    "minAge": 18,
+    "maxAge": 21,
+    "flags": [
+     "uni_abroad"
+    ]
+   },
+   "group": null,
+   "duty": {
+    "label": "回学校",
+    "spot": "river_bridge",
+    "arrive": [
+     390,
+     480
+    ],
+    "until": 1140,
+    "needs": {
+     "hunger": 30,
+     "energy": -20,
+     "mood": -3
+    },
+    "stats": {
+     "mind": 0.5,
+     "charm": 0.2
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "army",
+   "label": "在部队",
+   "requires": {
+    "minAge": 18,
+    "maxAge": 21,
+    "flags": [
+     "army"
+    ]
+   },
+   "group": null,
+   "duty": {
+    "label": "出操",
+    "spot": "river_bridge",
+    "arrive": [
+     390,
+     420
+    ],
+    "until": 1050,
+    "needs": {
+     "hunger": 35,
+     "energy": -28,
+     "clean": -15
+    },
+    "stats": {
+     "body": 0.5,
+     "mind": 0.08
+    },
+    "money": 4
+   }
+  },
+  {
    "id": "uni_away",
    "label": "在外地念大学",
    "requires": {
@@ -24953,6 +26218,36 @@ var CONTENT: Content = {
      "body": 0.14
     },
     "money": 16
+   }
+  },
+  {
+   "id": "job_succeed",
+   "label": "在厂里上班",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_succeed"
+    ]
+   },
+   "group": null,
+   "duty": {
+    "label": "过桥上班",
+    "spot": "river_bridge",
+    "arrive": [
+     420,
+     480
+    ],
+    "until": 1020,
+    "needs": {
+     "hunger": 25,
+     "energy": -24,
+     "clean": -12
+    },
+    "stats": {
+     "body": 0.07
+    },
+    "money": 14
    }
   },
   {

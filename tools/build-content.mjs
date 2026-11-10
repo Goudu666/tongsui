@@ -52,7 +52,7 @@ const REMEMBERED_MAX = 19;
 const EVENT_KEYS = ["id", "kind", "stage", "where", "when", "hint", "seasons", "weight", "requires", "title", "text", "options", "resonance", "dissonance"];
 // 关口（kind: milestone）多出来的字段，见 content/events/milestones.yaml 文件头
 const MILESTONE_KEYS = [...EVENT_KEYS, "age", "score", "swing", "grades"];
-const MILESTONE_OPTION_KEYS = ["id", "text", "tags", "effects", "min", "score", "cost", "requires"];
+const MILESTONE_OPTION_KEYS = ["id", "text", "tags", "effects", "min", "score", "cost", "requires", "lock", "joins"];
 const SCORE_KEYS = ["body", "mind", "charm", "luck", "money", "close"];
 const GRADE_KEYS = ["min", "label", "flags"];
 const TRACK_KEYS = ["id", "label", "requires", "group", "duty"];
@@ -68,7 +68,7 @@ const ENDING_KEYS = ["id", "title", "text", "requires"];
 const MAP_KEYS = ["size", "spawn", "zones", "spots", "actions"];
 const ZONE_KEYS = ["id", "name", "rect", "owner"];
 const SPOT_KEYS = ["id", "zone", "at", "action", "actions"];
-const ACTION_KEYS = ["id", "label", "minutes", "sleep", "duty", "requires", "needs", "stats", "money", "together"];
+const ACTION_KEYS = ["id", "label", "minutes", "sleep", "duty", "requires", "needs", "stats", "money", "together", "bring"];
 const ACTION_REQ_KEYS = ["minAge", "maxAge", "owner", "hours", "flags", "notFlags"];
 const TOGETHER_KEYS = ["needs", "bond", "text"];
 // 规则代码（server/src/sim.ts、world.ts）里按名字写死的行动和标记：影子靠这些行动过日子，天赋效果靠这些标记生效。
@@ -166,6 +166,9 @@ for (const file of readdirSync(dir).filter((f) => f.endsWith(".yaml")).sort()) {
         if (o.min !== undefined && typeof o.min !== "number") errors.push(`${oat}.min: 必须是数字`);
         if (o.min && !o.score && !ev.score) errors.push(`${oat}: 写了 min 却没有 score（选项或关口至少一处要写怎么算分）`);
         if (o.cost !== undefined && !(o.cost > 0)) errors.push(`${oat}.cost: 必须是正数`);
+        // lock：标记不对的人看到的那句（「家里拿不出这笔钱」）。只有挂了标记条件的路才用得上
+        if (o.lock !== undefined && (typeof o.lock !== "string" || !(o.requires?.flags?.length || o.requires?.notFlags?.length))) errors.push(`${oat}.lock: 是一句话，只能写在带 requires 的选项上`);
+        if (o.lock && [...o.lock].length > 12) errors.push(`${oat}.lock: 不超过 12 个字`);
       }
       checkKeys(`${oat}.effects`, o.effects, EFFECT_KEYS);
       if (optionIds.has(o.id)) errors.push(`${oat}: 选项 id 重复`);
@@ -178,6 +181,10 @@ for (const file of readdirSync(dir).filter((f) => f.endsWith(".yaml")).sort()) {
       checkDeltas(`${oat}.bond`, e.bond, BOND_KEYS);
       o.tags = o.tags ?? [];
       o.effects = { self: e.self ?? {}, other: e.other ?? {}, bond: e.bond ?? {}, flags: e.flags ?? [] };
+    }
+    for (const o of ev.options ?? []) {
+      if (o.joins !== undefined && (!optionIds.has(o.joins) || o.joins === o.id || ev.options.find((x) => x.id === o.joins)?.joins)) errors.push(`${at}.${o.id}.joins: 要写同一关里另一条不带 joins 的路`);
+      if (o.joins && ev.resonance?.[o.id]) errors.push(`${at}.resonance.${o.id}: 这条路 joins ${o.joins}，同路的共鸣写在 ${o.joins} 下面`);
     }
     if (ev.kind === "mirror" || ms) {
       for (const [oid, r] of Object.entries(ev.resonance ?? {})) {
@@ -214,6 +221,10 @@ for (const file of readdirSync(dir).filter((f) => f.endsWith(".yaml")).sort()) {
 const load = (f) => parse(readFileSync(join(root, "content", f), "utf8"));
 const families = load("families.yaml").map((f) => {
   if (![0, 1, 2].includes(f.wealth)) errors.push(`families#${f.id}: wealth 必须是 0/1/2`);
+  // 内容里读家境只认这两个标记（docs/MEANS.md），所以它们必须和 wealth 一一对应
+  const tr = f.traits ?? [];
+  if ((f.wealth === 2) !== tr.includes("fam_rich")) errors.push(`families#${f.id}: 殷实人家（wealth 2）必须带 fam_rich，别的人家不能带`);
+  if ((f.wealth === 0) !== tr.includes("fam_poor")) errors.push(`families#${f.id}: 清贫人家（wealth 0）必须带 fam_poor，别的人家不能带`);
   checkKeys(`families#${f.id}`, f, FAMILY_KEYS);
   checkDeltas(`families#${f.id}.bonus`, f.bonus, STAT_KEYS);
   return { id: f.id, name: f.name, wealth: f.wealth, weight: f.weight ?? 1, money: f.money ?? 0, desc: f.desc ?? "", bonus: f.bonus ?? {}, traits: f.traits ?? [] };
@@ -408,10 +419,13 @@ map.actions = map.actions.map((a) => {
   }
   for (const f of a.requires?.flags ?? []) consumed.push([`map.actions#${a.id}`, f]);
   if ((a.requires?.flags || a.requires?.notFlags) && (a.sleep || a.duty)) errors.push(`map.actions#${a.id}: 睡觉和日程不能挂标记条件`);
+  // bring：标记够的人正在做，对门跟过去也能做，钱由带的人出（server/src/means.ts）
+  if (a.bring !== undefined && (a.bring !== true || !a.requires?.flags?.length)) errors.push(`map.actions#${a.id}.bring: 只能写 true，而且要挂 requires.flags（谁带谁）`);
   return {
     id: a.id, label: a.label, minutes: a.minutes ?? 0, sleep: !!a.sleep, duty: !!a.duty,
     requires: a.requires ?? {}, needs: a.needs ?? {}, stats: a.stats ?? {}, money: a.money ?? 0,
     together: a.together ? { needs: a.together.needs ?? {}, bond: a.together.bond ?? {}, text: a.together.text ?? "" } : null,
+    bring: !!a.bring,
   };
 });
 // ---------- 接话（duet.yaml）：搭上了 / 猜 TA / 回话 ----------

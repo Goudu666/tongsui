@@ -1,0 +1,249 @@
+# 家境篇（docs/MEANS.md）：两户新搬来的殷实人家的小线，和对门家境不一样时才有的事。
+#
+# 家境差在哪，主要不写在事件里，写在路上：关口上能交钱的路、能接班的路（milestones.yaml 的 requires / lock），
+# 放学以后能去的地方（map.yaml 的学琴、补习班、帮家里干活、厂里的澡堂）。事件只管两个人在这件事上怎么相处。
+# 写法守文风手册：不评价谁家好谁家差，不哭穷也不炫富。钱只是摆在那儿的一件事，事是两个人的。
+# mirror 的 requires.flags 看两人标记的并集：写 [fam_rich, fam_poor] 就是「一个殷实、一个清贫」。
+
+# ======================== 董家 · 厂长家（fam_cadre / fam_rich） ========================
+
+- id: f_dong_phone
+  kind: mirror
+  stage: childhood
+  where: hallway
+  when: [1080, 1260]
+  hint: 楼道里有电话铃在响。
+  weight: 2
+  requires: { minAge: 4, flags: [fam_cadre] }
+  title: 楼道里的长途
+  text: 董家的电话响了，是外地打来找对门的长途。董家婶子把听筒搁在桌上，站在楼道里喊了一声。
+  options:
+    - id: run
+      text: 跑去敲对门
+      tags: [responsible]
+      effects: { self: { body: 1, mood: 5 }, flags: [dong_phone] }
+    - id: listen
+      text: 先拿起听筒听听
+      tags: [adventure]
+      effects: { self: { mind: 1, mood: 5 }, flags: [dong_phone] }
+    - id: wait
+      text: 站在门口等着
+      tags: [patient]
+      effects: { self: { mood: 2 }, flags: [dong_phone] }
+  resonance:
+    run:
+      text: 两个人同时撞上对门的门。大人接电话的时候，你们俩蹲在桌子底下，听那头说了一句「都好」。
+      memory: 一句都好
+      bond: { sync: 3, close: 3 }
+    listen:
+      text: 两个脑袋凑着一个听筒。那头沙沙响，有人在很远的地方喊了一个名字，是你们俩都认得的名字。
+      memory: 沙沙响的听筒
+      bond: { sync: 3, close: 2 }
+    wait:
+      text: 电话打了一刻钟。你们俩站在门槛两边，一个在董家里头，一个在外头，谁也没进谁也没走。
+      memory: 门槛两边
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个跑去喊人，一个守着听筒。大人来了，接过去说了很久。那天以后，对门的长途都打到董家。
+    bond: { close: 0 }
+
+- id: f_dong_new_year
+  kind: solo
+  stage: teen
+  weight: 3
+  requires: { minAge: 12, maxAge: 16, flags: [fam_cadre] }
+  title: 两桶油
+  text: 过年厂里发东西。别人家是一桶油，你家是两桶，外加一箱带鱼。你爸说，给对门送一桶过去。
+  options:
+    - id: give
+      text: 扛着就去敲门
+      tags: [responsible]
+      effects: { self: { body: 1 }, other: { mood: 8 }, bond: { close: 2 }, flags: [dong_gave] }
+    - id: fish
+      text: 换成送那箱带鱼
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 6 }, bond: { close: 1 }, flags: [dong_gave] }
+    - id: shy
+      text: 让你爸自己去送
+      tags: [solitude]
+      effects: { self: { mind: 1, mood: -3 } }
+
+- id: f_dong_quiet_phone
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 42, flags: [fam_cadre] }
+  title: 不响的电话
+  text: 厂子改了制，你爸退了下来。家里那部电话还在原处，一礼拜也不响一回。
+  options:
+    - id: call
+      text: 每个礼拜打一回
+      tags: [responsible]
+      effects: { self: { mood: 3 }, flags: [dong_call] }
+    - id: chess
+      text: 陪他下楼下棋
+      tags: [gentle]
+      effects: { self: { mind: 1, mood: 5 } }
+    - id: busy
+      text: 忙，顾不上
+      tags: [solitude]
+      effects: { self: { mood: -6 } }
+
+# ======================== 郑家 · 大夫家（fam_doctor / fam_rich） ========================
+
+- id: f_zheng_knock
+  kind: solo
+  stage: childhood
+  weight: 3
+  requires: { minAge: 4, flags: [fam_doctor] }
+  title: 半夜敲门
+  text: 你妈下班进门先洗手，洗三遍。楼里谁家孩子半夜发烧，都来敲你家的门。今晚又有人敲了。
+  options:
+    - id: help
+      text: 爬起来递体温表
+      tags: [responsible]
+      effects: { self: { mind: 1, energy: -10 }, flags: [zheng_thermo] }
+    - id: peek
+      text: 扒着门缝看
+      tags: [adventure]
+      effects: { self: { mood: 5, energy: -5 } }
+    - id: sleep
+      text: 蒙上被子接着睡
+      tags: [solitude]
+      effects: { self: { mood: 2 } }
+
+- id: f_zheng_atlas
+  kind: mirror
+  stage: teen
+  where: hallway
+  when: [930, 1140]
+  hint: 有人抱着一本厚书。
+  weight: 3
+  requires: { minAge: 12, maxAge: 15, flags: [fam_doctor] }
+  title: 厚书
+  text: 郑家书架上有本厚厚的人体图谱。两个人趁大人不在搬下来，翻到画着心脏的那一页。
+  options:
+    - id: fist
+      text: 攥拳头比一比
+      tags: [adventure]
+      effects: { self: { mind: 1, mood: 5 } }
+    - id: read
+      text: 接着往后翻
+      tags: [competitive]
+      effects: { self: { mind: 1 } }
+    - id: back
+      text: 赶紧放回去
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+  resonance:
+    fist:
+      text: 两只拳头凑在一块儿，都比画上的大一圈。TA 说，那装的东西也能多一点。
+      memory: 两只拳头
+      bond: { sync: 3, close: 3 }
+    read:
+      text: 一个念字，一个找图，翻到天黑。书放回去的时候，夹着两根头发，一长一短。
+      memory: 夹着的头发
+      bond: { sync: 3, close: 2 }
+    back:
+      text: 两个人同时伸手把书推回去，推歪了。郑大夫回来一眼就看出来了，什么也没说。
+      memory: 推歪的书
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个还想往后翻，一个已经把书合上了。那一页的折角，留了好些年。
+    bond: { close: 0 }
+
+- id: f_zheng_thermo
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 40, flags: [fam_doctor, zheng_thermo] }
+  title: 体温表
+  text: 半夜有人敲门。你还没醒透，手已经伸进抽屉去摸体温表，跟你妈当年一样。
+  options:
+    - id: go
+      text: 披上衣服去开门
+      tags: [responsible]
+      effects: { self: { mood: 6, energy: -10 } }
+    - id: call
+      text: 先给你妈打电话
+      tags: [gentle]
+      effects: { self: { mood: 4 } }
+
+# ======================== 一个殷实、一个清贫：两个人之间的事 ========================
+
+- id: g_piano_window
+  kind: mirror
+  stage: childhood
+  where: school
+  when: [930, 1140]
+  hint: 少年宫里有人在弹琴。
+  weight: 2
+  requires: { minAge: 6, maxAge: 9, flags: [fam_rich, fam_poor] }
+  title: 琴房的窗户
+  text: 少年宫的琴房，一个在里头上课，一个在外头扒着窗户。老师出来问：外头那个，是一块儿的吗？
+  options:
+    - id: same
+      text: 说是一块儿的
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: no
+      text: 说不认识
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+    - id: go
+      text: 拉着走了
+      tags: [adventure]
+      effects: { self: { body: 1, mood: 2 } }
+  resonance:
+    same:
+      text: 老师多搬了一把凳子。往后放了学，琴凳上坐两个人，学费记在一个人的账上。
+      memory: 琴凳上两个人
+      bond: { sync: 3, close: 3 }
+    go:
+      text: 琴不学了，两个人跑到河边，拿石头在台阶上敲。敲出来的哪个音都不对，可是很响。
+      memory: 台阶上的音
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 里头的说是，外头的说不是。老师看看这个，又看看那个，回去把窗帘拉上了一半。
+    bond: { close: -1 }
+
+- id: g_bath_ticket
+  kind: mirror
+  stage: childhood
+  where: bikeshop
+  when: [960, 1200]
+  seasons: [winter]
+  hint: 有人兜里揣着几张澡票。
+  weight: 2
+  requires: { minAge: 6, flags: [fam_factory] }
+  title: 澡票
+  text: 厂里澡堂的澡票，一张能洗一个钟头。攒下的那几张在兜里揣了一冬天，攥得发软。
+  options:
+    - id: share
+      text: 分对门一张
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 5, clean: 20 } }
+    - id: keep
+      text: 留着过年用
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+    - id: trade
+      text: 换两根冰棍
+      tags: [adventure]
+      effects: { self: { mood: 8 } }
+  resonance:
+    share:
+      text: 两个人进了澡堂，出来的时候头发冒着热气，在厂门口站着，等它慢慢干。
+      memory: 冒热气的头发
+      bond: { sync: 3, close: 3 }
+    keep:
+      text: 过年前一天，两个人一人一张，洗到澡堂的大爷来敲门。
+      memory: 过年前一天
+      bond: { sync: 2, close: 2 }
+    trade:
+      text: 大冬天，一人一根冰棍，在楼下吃得直跺脚。
+      memory: 冬天的冰棍
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个想分，一个想留。澡票揣在兜里，过了一冬天谁也没用上。
+    bond: { close: 0 }

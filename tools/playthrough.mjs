@@ -132,7 +132,7 @@ function decide(s, P, partnerPlan) {
     if (SLOTS.indexOf(st.slot) === w.slot && (PERSONA === "careful" || rand() < 0.6)) {
       if (sceneAt(a.y).id === st.scene) return { pass: true, why: "story-wait", scene: st.scene };
       const sc = sceneOf.get(st.scene);
-      const tgt = C.map.spots.find((sp) => sp.scene === st.scene && !zoneOf.get(sp.zone).owner) || { at: [sc.width / 2, sc.index * C.map.stride + sc.floors[sc.floors.length - 1]] };
+      const tgt = C.map.spots.find((sp) => sp.scene === st.scene && !zoneOf.get(sp.zone).owner) || { at: [sc.width / 2, sc.floors[sc.floors.length - 1]] };
       return { walkTo: tgt.at, why: "story", scene: st.scene };
     }
   }
@@ -154,7 +154,7 @@ function decide(s, P, partnerPlan) {
       if (fe.when && !(fe.when[0] < G("SLOTS")[w.slot][1] && fe.when[1] > G("SLOTS")[w.slot][0])) continue;
       P.tried.add(id + ":" + w.slot);
       const sc = sceneOf.get(z.scene);
-      return { walkTo: [z.span[0] + (z.span[1] - z.span[0]) / 2, sc.index * C.map.stride + sc.floors[z.floor]], why: "hint", scene: z.id, linger: true };
+      return { walkTo: [z.span[0] + (z.span[1] - z.span[0]) / 2, sc.floors[z.floor]], why: "hint", scene: z.id, linger: true };
     }
   }
   // 3. 过日子
@@ -329,7 +329,6 @@ function playLife(seed) {
       if (!P.plan) {
         const other = players[r === "qing" ? "mei" : "qing"];
         P.plan = decide(s, P, other.plan);
-        if (process.env.DEBUG && P.plan.why.startsWith("no-route")) console.log("no-route", r, t.label, P.plan.why);
         P.did = P.plan.why;
       }
       const plan = P.plan;
@@ -337,7 +336,7 @@ function playLife(seed) {
       const target = plan.spot ? plan.spot.at : plan.walkTo;
       if (target) {
         const rt = route(s, r, a.x, a.y, target[0], target[1]);
-        if (!rt) { P.plan = { pass: true, why: "no-route:" + (plan.spot ? plan.spot.id : plan.scene) }; P.did = P.plan.why; continue; }
+        if (!rt) { if (process.env.DEBUG) console.log("no-route", r, t.age, w.slot, plan.why, plan.spot ? plan.spot.id : plan.scene); P.plan = { pass: true, why: "no-route:" + (plan.spot ? plan.spot.id : plan.scene) }; P.did = P.plan.why; continue; }
         if (Math.abs(a.x - rt.x) > 4) {
           const nx = a.x + Math.sign(rt.x - a.x) * Math.min(WALK / TICK, Math.abs(rt.x - a.x));
           msgs.push(R.msg(P.presence, OP.MOVE, { x: nx, y: a.y, seq: ++P.moveSeq }));

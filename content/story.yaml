@@ -173,11 +173,11 @@ events:
     chapter: 1
     beat: 3
     scene: building
-    slot: night
-    next: 晚上，楼顶
+    slot: evening   # 原来是晚上：五岁的孩子晚上那一段总在睡，回回是被叫醒的。收床单本来就是天擦黑的事
+    next: 傍晚，楼顶
     replaces: [c_promise]
     title: 对岸的灯
-    text: 晚上大人上楼顶收床单，你俩趴在栏杆上。河对岸的灯一片一片亮起来，比这边多，也比这边高。
+    text: 天擦黑，大人上楼顶收床单，你俩趴在栏杆上。河对岸的灯一片一片亮起来，比这边多，也比这边高。
     options:
       - id: hook
         text: 伸出小拇指

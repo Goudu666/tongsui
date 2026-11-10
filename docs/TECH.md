@@ -87,9 +87,12 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | 11 PRESENCE | s→c | `{online}` |
 | 12 PING | c→s | `{t}` 每 2 秒，测延迟 |
 | 13 PONG | s→c | `{t, tick}` 只回给发的人 |
+| 20 GAME | s→c | `{game}` 搭伴小游戏的状态：`{gameId, phase: offer/play, left, ready, t, d}`；局关掉时发 `{game: null, result}`，打完了 `result = {gameId, score, boost}`，没玩成是 `null` |
+| 21 GAME_INPUT | c→s | `{k}`：问的时候 `ready` / `pass`；玩的时候 `quit`，或各款自己的输入（放风筝：`{k: "line", v}` 攥线的人报线长，`{k: "run", v}` 另一个人报跑到哪，都是 0~1） |
 | 30 ECHO | c→s | `{turn, optionId}` 回话：补答影子替我选过的默契事件（`turn` 是那天的序号，`optionId` 为 null 是「不提了」）。结算作为一条 LOG 发给两个人 |
 
 - 事件进行中时钟暂停；没选的人都离线时，等 30 秒后由影子代选。
+- 搭伴小游戏（`games.ts`）问和玩的时候时钟也暂停。它只在两人都真在线、同时做 `GAME_ACTIONS` 里的行动时问一次（每天一次），结果只写成这一次行动的成长倍率 `Actor.boost`，`worldFinish` 用掉就清；没玩成（不了、没理、掉线、中途退出）什么都不留。物理在服务器上跑，客户端只报手指位置；`client/scripts/games/kite_sim.gd` 是照抄的一份，只给离线试玩用，改规则先改服务器。
 - 掉线 10 秒之内影子不接手（切网络、进电梯）；超过 10 秒影子替他过日子；本人回来时影子手上的事（睡觉、上学除外）停下，把身体还给他。
 - 每天结束、有人掉线、每 30 秒各存一次档。两人都下线后世界停住，2 分钟后房间关闭，存档里的 matchId 清空，下次打开从存档重新拉起。
 

@@ -150,6 +150,8 @@ func owed_list() -> Array:
 func check_owed() -> void:
 	if _quiet or m.world == null or m.modal.visible or str(m.life.get("phase", "")) != "life":
 		return
+	if m.games != null and m.games.busy():
+		return  # 正在放风筝，不打断；下一次关弹窗或者下一个日子再问
 	var list := owed_list()
 	if not list.is_empty():
 		_show_owed(list[0])

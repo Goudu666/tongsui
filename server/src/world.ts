@@ -440,6 +440,51 @@ function worldInWindow(ev: LifeEvent, minute: number): boolean {
   return !ev.when || (minute >= ev.when[0] && minute <= ev.when[1]);
 }
 
+/** 今天有关口，而且还没过 */
+function worldMilestoneDue(s: LifeState): boolean {
+  var w = s.world!;
+  return !!w.fate.milestone && w.done.indexOf(w.fate.milestone) < 0;
+}
+
+/**
+ * 过今天的关口。轮得到的人放下手里的事（睡着的叫醒）一起面对：
+ * 两人都只剩一条路可走时不弹窗，直接记进长卷（out.entries）；否则开始事件（out.started）。
+ * 返回 false：今天的关口没有人轮得到，记成过了，这一跳照常往下走。
+ */
+function worldMilestone(s: LifeState, c: Content, out: WorldTick): boolean {
+  var w = s.world!;
+  var ms = lifeFindEvent(c, w.fate.milestone!);
+  var due = worldAliveRoles(s).filter(function (r) { return lifeMilestoneFor(ms, s.persons![r]) && !lifeSeenIds(s, r)[ms.id]; });
+  if (due.length === 0) {
+    w.done.push(ms.id);
+    return false;
+  }
+  var pe: PendingEvent = { eventId: ms.id, kind: "milestone", roles: due, choices: {}, shadow: [], swing: {} };
+  var forced = true;
+  for (var i = 0; i < due.length; i++) {
+    var r = due[i];
+    var a = w.actors[r]!;
+    if (a.action || a.asleep) { a.action = null; a.spot = null; a.until = null; a.asleep = false; delete a.eff; delete a.together; delete a.boost; }
+    var luck = s.persons![r].stats.luck;
+    var swing = ms.swing ? Math.round(((lifeRand(s) - 0.5) * SWING_RANGE + (luck - 5) * SWING_LUCK) * 100) / 100 : 0;
+    pe.swing![r] = swing;
+    var open = ms.options.filter(function (o) { return !lifeOptionLock(ms, o, s.persons![r], swing); });
+    // 一条都走不通（内容写漏了兜底的路）：走线最低的那条，不让这条人生卡在这里
+    if (open.length === 0) pe.choices[r] = lifeMilestoneFallback(ms).id;
+    else if (open.length === 1) pe.choices[r] = open[0].id;
+    else forced = false;
+  }
+  if (forced) {
+    out.entries.push(lifeResolveEvent(s, c, pe));
+    w.done.push(ms.id);
+  } else {
+    // 只有一条路的人不用选，但要等另一个人选完一起揭晓
+    w.event = pe;
+    out.started = pe;
+  }
+  return true;
+}
+
 function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in Role]: boolean }): WorldTick {
   var out: WorldTick = { entries: [], started: null, dayEnded: false };
   if (s.phase !== "life") return out;
@@ -453,6 +498,8 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
   }
 
   var allAsleep = roles.every(function (r) { return w.actors[r]!.asleep; });
+  // 关口躲不掉：一大早就都躺下了，也得先起来把这一关过了，这一天才能翻过去（青年以后一岁只有一天，错过就没有了）
+  if (allAsleep && worldMilestoneDue(s) && worldMilestone(s, c, out)) return out;
   if (allAsleep) {
     out.entries = lifeEndDay(s, c);
     out.dayEnded = true;
@@ -474,36 +521,8 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
     return out;
   }
 
-  // 关口：早上醒来不久，轮得到的人一起面对。两人都只剩一条路可走时不弹窗，直接记进长卷
-  if (w.fate.milestone && w.done.indexOf(w.fate.milestone) < 0 && w.minute >= MILESTONE_AT) {
-    var ms = lifeFindEvent(c, w.fate.milestone);
-    var due = roles.filter(function (r) { return lifeMilestoneFor(ms, s.persons![r]) && !lifeSeenIds(s, r)[ms.id]; });
-    if (due.length === 0) {
-      w.done.push(ms.id);
-    } else if (due.every(function (r) { return !w.actors[r]!.asleep; })) {
-      var pe: PendingEvent = { eventId: ms.id, kind: "milestone", roles: due, choices: {}, shadow: [], swing: {} };
-      var forced = true;
-      for (var d0 = 0; d0 < due.length; d0++) {
-        var dr = due[d0];
-        var da = w.actors[dr]!;
-        if (da.action) { da.action = null; da.spot = null; da.until = null; delete da.eff; delete da.together; delete da.boost; }
-        var luck = s.persons![dr].stats.luck;
-        pe.swing![dr] = ms.swing ? Math.round(((lifeRand(s) - 0.5) * SWING_RANGE + (luck - 5) * SWING_LUCK) * 100) / 100 : 0;
-        var open = ms.options.filter(function (o) { return !lifeOptionLock(ms, o, s.persons![dr], pe.swing![dr]!); });
-        if (open.length === 1) pe.choices[dr] = open[0].id;
-        else forced = false;
-      }
-      if (forced) {
-        out.entries.push(lifeResolveEvent(s, c, pe));
-        w.done.push(ms.id);
-      } else {
-        // 只有一条路的人不用选，但要等另一个人选完一起揭晓
-        w.event = pe;
-        out.started = pe;
-      }
-      return out;
-    }
-  }
+  // 关口：早上醒来不久，轮得到的人一起面对
+  if (worldMilestoneDue(s) && w.minute >= MILESTONE_AT && worldMilestone(s, c, out)) return out;
 
   // 触发命运：mirror 需要两人都空闲、都在 where
   if (w.fate.mirror && w.done.indexOf(w.fate.mirror) < 0) {

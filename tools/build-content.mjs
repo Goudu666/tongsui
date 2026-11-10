@@ -410,6 +410,11 @@ if (tracks.length === 0 || Object.keys(tracks.at(-1).requires).length > 0) error
 if (new Set(tracks.map((t) => t.id)).size !== tracks.length) errors.push("tracks.yaml: id 重复");
 const milestones = events.filter((e) => e.kind === "milestone");
 if (new Set(milestones.map((e) => e.age)).size !== milestones.length) errors.push("milestones: 同一个年纪只能有一个关口");
+// 每个关口都要有一条谁都走得了的路：不带线、不要钱、不看标记。没有的话，属性低的人到了这一关无路可走
+const hasKeys = (x) => !!x && Object.values(x).some((v) => (Array.isArray(v) ? v.length > 0 : v != null));
+for (const ev of milestones) {
+  if (!ev.options.some((o) => !o.min && !o.cost && !hasKeys(o.requires))) errors.push(`milestones#${ev.id}: 至少要有一个不带 min / cost / requires 的选项（兜底的路）`);
+}
 
 const orphan = consumed.filter(([, f]) => !produced.has(f));
 for (const [where, f] of orphan) errors.push(`${where}: 要求标记 "${f}"，但没有任何人家、天赋、选项或共鸣会打上它（多半是拼错了）`);

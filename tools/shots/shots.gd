@@ -262,6 +262,29 @@ func _run() -> void:
 		main.games.close()
 		await _wait(0.3)
 
+	# 人生长卷：一条真跑出来的人生（tools/shots/life_sample.json），先看卷首，再拖到中间和卷尾
+	var sample: Variant = JSON.parse_string(FileAccess.get_file_as_string(ProjectSettings.globalize_path("res://").path_join("../tools/shots/life_sample.json")))
+	if sample is Dictionary:
+		main.life = sample
+		main._page_id = ""
+		main._show_ending()
+		await _wait(0.5)
+		await _snap("46_scroll_head")
+		var paper: ScrollContainer = null
+		for c in main.screen.get_children():
+			if c is ScrollContainer:
+				paper = c
+		if paper != null:
+			for tw in paper.get_tree().get_processed_tweens():
+				tw.kill()
+			paper.scroll_horizontal = 1500
+			await _wait(0.3)
+			await _snap("47_scroll_middle")
+			paper.scroll_horizontal = 100000
+			await _wait(0.3)
+			await _snap("48_scroll_tail")
+		main._page_id = ""
+
 	# 一生
 	main.life = {"phase": "ended", "turn": 200, "log": [{"kind": "end", "text": "七十九岁那年冬天，两个人前后脚走了。楼下的槐树还在。"}],
 		"memories": [{"age": 6, "title": "楼顶的鸽子", "vivid": 2}, {"age": 9, "title": "一毛钱的冰棍", "vivid": 1},

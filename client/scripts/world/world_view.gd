@@ -300,6 +300,7 @@ func my_duty() -> Dictionary:
 ## 我现在在这个点位上能做的事。和服务器 world.ts 的 worldPickAction 一个规则：
 ## 点位上的行动按顺序看，日程只给今天该来这儿、还来得及的人，其余按年纪、关口上挣来的资格、钟点取第一件合适的。没有就是 {}
 func action_of(spot: Dictionary) -> Dictionary:
+	var late := {}
 	var ids: Array = spot.get("actions", [])
 	if ids.is_empty() and spot.has("action"):
 		ids = [spot.action]
@@ -323,10 +324,14 @@ func action_of(spot: Dictionary) -> Dictionary:
 		# 标记在服务器手里，客户端只认它发来的那张单子
 		if (rq.has("flags") or rq.has("notFlags")) and not (unlocks.get(my_role, []) as Array).has(str(id)):
 			continue
-		if rq.has("hours") and (minute < float(rq.hours[0]) or minute > float(rq.hours[1])):
+		# 不在钟点上先看后面还有没有别的事；都没有就还是它（点了服务器回「现在不是时候」）
+		var hours: Variant = rq.get("hours")
+		if hours is Array and hours.size() == 2 and (minute < float(hours[0]) or minute > float(hours[1])):
+			if late.is_empty():
+				late = act
 			continue
 		return act
-	return {}
+	return late
 
 
 ## 对门正在这个点位上做同一件事：现在过去就是搭伴

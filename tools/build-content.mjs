@@ -367,6 +367,11 @@ map.actions = map.actions.map((a) => {
   if (!a.sleep && !a.duty && !(a.minutes > 0)) errors.push(`map.actions#${a.id}: 需要 minutes（睡觉和日程除外）`);
   if (a.stats?.luck) errors.push(`map.actions#${a.id}: 行动不给运气（运气是天生的）`);
   for (const k of ["flags", "notFlags"]) if (a.requires?.[k] && !Array.isArray(a.requires[k])) errors.push(`map.actions#${a.id}.requires.${k}: 必须是列表`);
+  // 客户端和服务器都按 hours[0]、hours[1] 读：形状不对的在这里拦下
+  if (a.requires?.hours !== undefined) {
+    const h = a.requires.hours;
+    if (!(Array.isArray(h) && h.length === 2 && h.every((x) => typeof x === "number" && x >= 0 && x <= 1440) && h[0] < h[1])) errors.push(`map.actions#${a.id}.requires.hours: 应为 [起始分钟, 结束分钟]，0~1440，起小于止`);
+  }
   for (const f of a.requires?.flags ?? []) consumed.push([`map.actions#${a.id}`, f]);
   if ((a.requires?.flags || a.requires?.notFlags) && (a.sleep || a.duty)) errors.push(`map.actions#${a.id}: 睡觉和日程不能挂标记条件`);
   return {

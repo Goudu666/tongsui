@@ -1217,7 +1217,7 @@ func _show_milestone_result(e: Dictionary) -> void:
 		var mark := "（影子）" if e.get("shadow", []).has(r) else ""
 		var pick := _label(row, _option_text(e.events[r], res.get("option")) + mark, 38, P.INK)
 		pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		if has_line and res.get("score") != null:
+		if has_line and bool(res.get("scored", true)):
 			var score := "%d %s" % [int(res.get("score", 0)), str(res.get("unit", "分"))]
 			if res.get("grade") != null:
 				score += " · " + str(res.grade)

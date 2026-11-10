@@ -247,7 +247,9 @@ function sleep(s, r) {
     const club = C.map.actions.find((a) => a.id === "club_math");
     s.world.minute = club.requires.hours[0] - 30;
     s.world.dutyDone = { qing: true, mei: true };
-    assert.equal(pick(s, "qing", "school_gate"), null, "还没到钟点");
+    assert.equal(pick(s, "qing", "school_gate"), "club_math", "还没到钟点：点位上有名字");
+    at(s, "qing", "school_gate");
+    assert.equal(G("worldAct")(s, C, "qing", "school_gate").error, "现在不是时候", "但做不了");
     assert.equal(pick(s, "qing", "school_yard"), "ball", "体校没开练，操场照样能踢球");
     s.world.minute = club.requires.hours[0] + 10;
     assert.equal(pick(s, "qing", "school_gate"), "club_math");
@@ -257,7 +259,8 @@ function sleep(s, r) {
     at(s, "mei", "school_gate");
     assert.ok(G("worldAct")(s, C, "mei", "school_gate").error, "也做不了");
     s.world.minute = club.requires.hours[1] + 10;
-    assert.equal(pick(s, "qing", "school_gate"), null, "锁门以后就没有了");
+    assert.equal(G("worldAct")(s, C, "qing", "school_gate").error, "现在不是时候", "锁门以后也做不了");
+    assert.equal(pick(s, "qing", "school_yard"), "ball", "操场又只能踢球了");
     // 小组比自己写作业长得快，但没有快到非进不可
     const study = C.map.actions.find((a) => a.id === "study");
     assert.ok(club.stats.mind > study.stats.mind && club.stats.mind <= study.stats.mind * 1.4);
@@ -328,8 +331,8 @@ function sleep(s, r) {
     assert.equal(G("worldChoose")(s, C, "qing", "go", false).error, null);
     assert.equal(G("worldChoose")(s, C, "mei", "study", false).error, null);
     const res = s.log.at(-1).results;
-    assert.equal(res.qing.score, null);
-    assert.deepEqual([res.mei.score, res.mei.unit], [90, "分"]);
+    assert.deepEqual([res.qing.score, res.qing.scored], [0, false], "分数照旧是数字（旧安装包拿它当数字用），画不画看 scored");
+    assert.deepEqual([res.mei.score, res.mei.scored, res.mei.unit], [90, true, "分"]);
   }
   console.log("✓ 关口接得上日子：小干部还是同班 / 小组只给进了的人、只在放学后、毕业就散 / 位子多五成工钱 / 搭伙看亲近、对门空了就没有 / 走过的路折成寿数 / 三岁起眼前就有一道关 / 不看分的路不记 0 分");
 }

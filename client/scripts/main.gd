@@ -450,14 +450,14 @@ func _show_online() -> void:
 	name_edit.placeholder_text = "你的名字（最多 12 个字）"
 	name_edit.max_length = 12
 	body.add_child(name_edit)
-	_primary(body, "开一条新的人生线（我是青）", func(): net.create_lifeline(name_edit.text))
+	Kit.tint(_primary(body, "开一条新的人生线（我是青）", func(): net.create_lifeline(name_edit.text)), P.QING)
 	_gap(body, 10)
 	Kit.rule(body, Color(P.INK, 0.25))
 	var code_edit := LineEdit.new()
 	code_edit.placeholder_text = "输入 TA 发给你的 6 位配对码"
 	code_edit.max_length = 6
 	body.add_child(code_edit)
-	_primary(body, "加入（我是梅）", func(): net.join_lifeline(code_edit.text.strip_edges(), name_edit.text))
+	Kit.tint(_primary(body, "加入（我是梅）", func(): net.join_lifeline(code_edit.text.strip_edges(), name_edit.text)), P.MEI)
 	_status(body)
 	Kit.rule(body, Color(P.INK, 0.25))
 	_button(body, "换手机找回", _show_recovery)
@@ -495,7 +495,10 @@ func _show_recovery() -> void:
 	_gap(body, 60)
 	_label(body, "换手机找回", 72)
 	_label(body, "把下面的找回码记下来。换手机、卸载重装之后，在新手机上输入它，就能回到你们的人生线。", 34, P.INK_SOFT)
-	var code_label := _label(body, "生成中……", 88, P.QING, HORIZONTAL_ALIGNMENT_CENTER)
+	# 和配对码一样，印在一张票上
+	var ticket := Kit.card(Kit.accent, 40.0)
+	body.add_child(ticket)
+	var code_label := _label(ticket, "生成中……", 84, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
 	var code: String = await net.recovery_code()
 	if not is_instance_valid(code_label):
 		return
@@ -548,11 +551,7 @@ func _on_lifelines(items: Array) -> void:
 			text = "%s & %s · %s" % [me, str(nm.get(other_role, "")), where]
 		var id := str(it.lifelineId)
 		# 色块用这条人生线里自己的颜色：一眼看出当时是青还是梅
-		var b := _button(lobby_list, text, func(): net.open_lifeline(id))
-		for st in ["normal", "hover", "pressed"]:
-			var sb: StyleBox = b.get_theme_stylebox(st).duplicate()
-			sb.block = P.role_color(role)
-			b.add_theme_stylebox_override(st, sb)
+		Kit.tint(_button(lobby_list, text, func(): net.open_lifeline(id)), P.role_color(role))
 
 
 func _on_net_opened(info: Dictionary) -> void:

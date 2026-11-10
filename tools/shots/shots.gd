@@ -55,6 +55,21 @@ func _run() -> void:
 		await _wait(1.5)
 		await _snap("18_server")
 
+	# 联机大厅和找回码（假联机，不连服务器）
+	if main.has_method("_show_recovery"):
+		var fake: Node = load((get_script() as Script).resource_path.get_base_dir().path_join("fake_net.gd")).new()
+		main.add_child(fake)
+		fake.lifelines.connect(main._on_lifelines)
+		main.net = fake
+		main._show_online()
+		await _wait(1.6)
+		await _snap("19_lobby")
+		main._show_recovery()
+		await _wait(1.6)
+		await _snap("20_recovery")
+		main.net = null
+		fake.queue_free()
+
 	# 河畔里：清早 / 傍晚 / 夜里
 	main._start_preview()
 	main.names = {"qing": "小满", "mei": "阿蘅"}

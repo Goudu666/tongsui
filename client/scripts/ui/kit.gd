@@ -7,10 +7,12 @@ const P := preload("res://scripts/ui/palette.gd")
 const RisoBox := preload("res://scripts/ui/riso_box.gd")
 
 static var accent := P.QING
-static var _accent_boxes: Array = []  ## 换 accent 时要跟着变的框
+static var _accent_boxes: Array = []  ## 换 accent 时要跟着变的框（只有主题里那三个，不会涨）
 
 
 static func set_accent(c: Color) -> void:
+	if c == accent:
+		return
 	accent = c
 	for b in _accent_boxes:
 		b.block = c
@@ -71,12 +73,13 @@ static func theme() -> Theme:
 
 
 ## 主要按钮：整块墨底，纸色的字
+## 这里的框不登记进 _accent_boxes：页面每次都重建，登记了只会越攒越多
 static func make_primary(b: Button) -> void:
-	var normal := _box()
+	var normal := _box(40.0, 26.0, 7.0, false)
 	normal.fill = P.INK
-	var hover := _box()
+	var hover := _box(40.0, 26.0, 7.0, false)
 	hover.fill = P.INK.lerp(P.OVERLAP, 0.6)
-	var pressed := _box()
+	var pressed := _box(40.0, 26.0, 7.0, false)
 	pressed.fill = P.OVERLAP
 	pressed.shift = Vector2(5, 5)
 	b.add_theme_stylebox_override("normal", normal)
@@ -85,6 +88,14 @@ static func make_primary(b: Button) -> void:
 	for c in ["font_color", "font_hover_color", "font_focus_color", "font_pressed_color"]:
 		b.add_theme_color_override(c, P.PAPER)
 	b.alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+
+## 把一个按钮的色块钉成某个颜色，不再跟着 accent 走（大厅里"我是青 / 我是梅"、各条人生线）
+static func tint(b: Button, color: Color) -> void:
+	for st in ["normal", "hover", "pressed"]:
+		var sb: StyleBox = b.get_theme_stylebox(st).duplicate()
+		sb.block = color
+		b.add_theme_stylebox_override(st, sb)
 
 
 ## 次要按钮：没有框，只有一条虚的底线（返回、取消）

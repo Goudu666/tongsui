@@ -235,7 +235,7 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
   if (rq.owner && lifeFind(c.map.zones, sp.zone).owner !== role) return "这不是你的家";
   if (rq.hours && (w.minute < rq.hours[0] || w.minute > rq.hours[1])) return "现在不是时候";
   if (act.duty && w.minute < worldDuty(s, c, role)!.arrive[0]) return "还没到点";
-  var broke = meansCantPay(s, role, act, !lifeHasAll(s.persons![role].flags, rq.flags) || !lifeHasNone(s.persons![role].flags, rq.notFlags));
+  var broke = meansCantPay(s, role, act, meansNeedsHost(s.persons![role], act));
   if (broke) return broke;
   return null;
 }
@@ -256,8 +256,7 @@ function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error
   a.eff = worldEfficiency(s.persons![role]);
   a.together = false;
   delete a.boost; // 上一件事没用掉的搭伴倍率不带过来（见 games.ts）
-  var arq = act.requires || {};
-  if (!lifeHasAll(s.persons![role].flags, arq.flags) || !lifeHasNone(s.persons![role].flags, arq.notFlags)) a.guest = true; else delete a.guest; // 对门带着做的（means.ts）
+  if (meansNeedsHost(s.persons![role], act)) { a.guest = true; s.persons![lifeOther(role)].money += act.money; } else delete a.guest; // 对门带着做的：这份钱现在就记在对门头上（means.ts）
   if (act.sleep) {
     a.asleep = true;
     a.until = null;
@@ -329,8 +328,7 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
     for (var fi = 0; fi < c.families.length; fi++) if (c.families[fi].id === p.familyId) wealth = c.families[fi].wealth;
     lifeApplySelf(p, { mood: wealth * 3 + (lifeHasFlag(p, "tal_foodie") ? 6 : 0) });
   }
-  var payer = s.persons![meansPayer(s, role)]; // 对门带着做的，钱记在对门头上（means.ts）
-  payer.money = Math.max(0, payer.money + money);
+  if (!a.guest) p.money += money; // 对门带着做的，钱开始时已经记在对门头上了（means.ts）
   a.action = null;
   a.spot = null;
   a.until = null;
@@ -345,6 +343,8 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
 /** 影子去一个点位做事（它不用走路）。做不了返回 false */
 function worldShadowGo(s: LifeState, c: Content, role: Role, spot: Spot | null): boolean {
   if (!spot || worldCanAct(s, c, role, spot.id, true)) return false;
+  var pk = worldPickAction(s, c, role, spot).act;
+  if (pk && meansNeedsHost(s.persons![role], pk)) return false; // 影子不被对门带着花钱（means.ts）
   var a = s.world!.actors[role]!;
   a.x = spot.at[0];
   a.y = spot.at[1];

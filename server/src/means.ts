@@ -7,7 +7,8 @@
 //   可要是对门正在同一个点做这件事，走过去就能跟着做：两个人是搭伴，长得一样快，
 //   两份钱都记在带的那个人头上。家里有的东西能分给对门一半，但得是两个人凑到一块儿的时候。
 //
-// 影子不带人（人不在不替人花钱），也不被带。
+// 影子不带人（人不在不替人花钱），也不被带（worldShadowGo 跳过要人带的事）。
+// 被带的那份钱在开始时就从带的人兜里扣（worldAct），带的人自己那份照旧做完才扣：所以开始时要拿得出两份。
 
 /** role 现在能不能被对门带着做 act（在 sp 这个点）。只看「带」这一条：年纪、钟点照常由调用方判 */
 function meansGuestOk(s: LifeState, c: Content, role: Role, sp: Spot, act: Action): boolean {
@@ -23,10 +24,10 @@ function meansGuestOk(s: LifeState, c: Content, role: Role, sp: Spot, act: Actio
   return lifeHasAll(hp.flags, rq.flags) && lifeHasNone(hp.flags, rq.notFlags);
 }
 
-/** 这件事谁出钱：被带着做的记在对门头上 */
-function meansPayer(s: LifeState, role: Role): Role {
-  var a = s.world && s.world.actors[role];
-  return a && a.guest ? lifeOther(role) : role;
+/** 这个人自己的标记够不够做 act：不够的话，只能被对门带着做 */
+function meansNeedsHost(p: Person, act: Action): boolean {
+  var rq = act.requires || {};
+  return !lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags);
 }
 
 /** 钱够不够：带人的要连对门那份一起出得起。够返回 null */

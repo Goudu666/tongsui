@@ -73,6 +73,7 @@ function finish(s) { for (let i = 0; i < 4000 && (s.world.actors.qing.action || 
   assert.ok(J(view(s).tracks.mei.unlocks).includes("piano"), "客户端的单子里有它，点位上才显示");
   const mm = s.persons.mei.money;
   assert.equal(G("worldAct")(s, C, "mei", "palace_piano").error, null);
+  assert.equal(s.persons.qing.money, 50 - -C.map.actions.find((a) => a.id === "piano").money, "梅那份开始时就记在青头上，青中途花钱也赖不掉");
   assert.ok(s.world.actors.mei.guest && s.world.actors.mei.together && s.world.actors.qing.together, "跟着学也算搭伴");
   finish(s);
   const cost = -C.map.actions.find((a) => a.id === "piano").money;
@@ -88,6 +89,22 @@ function finish(s) { for (let i = 0; i < 4000 && (s.world.actors.qing.action || 
   assert.equal(G("worldAct")(t, C, "qing", "palace_piano").error, null);
   t.world.actors.qing.shadow = true;
   assert.equal(pick(t, "mei", "palace_piano"), null, "影子不替人花钱带人");
+
+  // 也不被带：青在线学琴，梅不在线，梅的影子不跟过去（不然两份学费都从青兜里出）
+  for (let seed = 1; seed <= 40; seed++) {
+    const v = lifeAt(seed, 8, "dong", "wu");
+    v.world.minute = 960;
+    v.world.dutyDone = { qing: true, mei: true };
+    at(v, "qing", "palace_piano");
+    v.persons.qing.money = 50;
+    assert.equal(G("worldAct")(v, C, "qing", "palace_piano").error, null);
+    assert.equal(G("worldShadowGo")(v, C, "mei", spot("palace_piano")), false, "影子不跟着学琴");
+    for (let i = 0; i < 200 && v.world.actors.qing.action === "piano"; i++) {
+      G("worldAdvance")(v, C, 0.5, { qing: true, mei: false });
+      assert.ok(!v.world.actors.mei.guest, "影子被带着做了事");
+    }
+    assert.ok(v.persons.qing.money >= 50 - 2 - 1e-9, "青替影子付了学费");
+  }
 
   // 反过来：吴家（爸妈在厂里）的梅带董家的青去厂里的澡堂，澡票梅出
   const u = lifeAt(12, 8, "dong", "wu");

@@ -444,7 +444,7 @@ const rules = load("rules.yaml");
     roll: ["budget", "wealthAdjust", "statMin", "statMax", "rerolls"],
     growth: ["eventScale", "actionScale", "room", "floor", "bornWeight", "plasticity", "plainBonus"],
     aging: ["body", "mind", "activeFactor"],
-    daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "wageFlags"],
+    daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "needsUse", "wageFlags"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],
     lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max", "flags"],
     bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "slotTogether", "drift", "driftDistance", "driftFloor"],
@@ -456,6 +456,7 @@ const rules = load("rules.yaml");
     checkKeys(`rules.${sec}`, rules[sec], keys);
     for (const k of keys) if (rules[sec][k] === undefined) errors.push(`rules.yaml: 缺少 ${sec}.${k}`);
   }
+  if (rules?.daily && rules.daily.needsUse !== undefined && !(typeof rules.daily.needsUse === "number" && rules.daily.needsUse >= 0 && rules.daily.needsUse <= 1)) errors.push("rules.yaml: daily.needsUse 是一段里多做的那几遍按几成算需求，要在 0 到 1 之间");
   if (rules?.daily && !(typeof rules.daily.slotUse === "number" && rules.daily.slotUse > 0 && rules.daily.slotUse <= 1)) errors.push("rules.yaml: daily.slotUse 是一段里真花在那件事上的一份，要在 0 到 1 之间");
   if (rules?.bond && (typeof rules.bond.syncSteady !== "number" || rules.bond.syncSteady < 0 || rules.bond.syncSteady > 1)) errors.push("rules.yaml: bond.syncSteady 是默契替考场托住的那一份，要在 0 到 1 之间");
   for (const [f, mul] of Object.entries(rules?.daily?.wageFlags ?? {})) {

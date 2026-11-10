@@ -38,6 +38,7 @@ var partner: Dictionary = {}  ## 对门的牌 { name, color, online, big, small 
 var pointer: Dictionary = {}  ## 对门走出画面了 { at: 屏幕上贴边的位置, dir: 方向, color, name }；在画面里是空的
 var inset := Vector2.ZERO     ## (左, 右) 给刘海让开的宽度
 var story: Dictionary = {}    ## 主线 { chapter, title, next, force }（WORLD 的 story，next 是我这一句）；空的不画
+var story_rect := Rect2()     ## 主线小签上一回画在哪（开局引导的纸条贴在它底下）
 var _shown: Dictionary = {}   ## 圆表上正在显示的值（慢慢追上真实值）
 var _t := 0.0
 var _idle := 0.0
@@ -213,6 +214,7 @@ func _story(f: Font, at: Vector2) -> float:
 	var hw := f.get_string_size(parts[0], HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x + 24.0
 	var bw := f.get_string_size(parts[1], HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x + 28.0
 	var r := Rect2(at, Vector2(hw + bw, 42))
+	story_rect = r
 	draw_rect(Rect2(r.position + Vector2(4, 4), r.size), Color(P.INK, 0.25))
 	draw_rect(r, P.PAPER)
 	draw_rect(Rect2(at, Vector2(hw, 42)), P.MEI if bool(story.get("force", false)) else P.INK)

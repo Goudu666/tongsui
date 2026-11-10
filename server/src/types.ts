@@ -218,9 +218,40 @@ interface CheckResult {
   text: string;
 }
 
+/** 一张图（content/maps/<id>.yaml）：横着的一条剖面 / 街景。在世界坐标里占 y ∈ [top, top + stride) 这一条 */
+interface Scene {
+  id: string;
+  name: string;
+  index: number;
+  top: number;
+  width: number;
+  /** 每层地面的世界 y（从上往下）。人只在地面上左右走，换层走出口 */
+  floors: number[];
+  /** 什么人能去：年纪、标记（和行动的 requires 一个意思）；any 里满足一条就行 */
+  unlock: (SceneUnlock & { any?: SceneUnlock[] }) | null;
+  /** 外地：另一个人在别的图上，互相看不见 */
+  far: boolean;
+}
+
+interface SceneUnlock { minAge?: number; maxAge?: number; flags?: string[]; notFlags?: string[] }
+
+/** 出口：门、楼梯、街口。走到跟前点一下就到 to 那张图的 arrive（不花时间） */
+interface Exit {
+  id: string;
+  scene: string;
+  at: [number, number];
+  to: string;
+  arrive: [number, number];
+  label: string;
+}
+
 interface Zone {
   id: string;
   name: string;
+  scene: string;
+  floor: number;
+  span: [number, number];
+  /** 世界坐标里的框（由 span 和那一层地面算出来），判定「人在不在这儿」用 */
   rect: [number, number, number, number];
   owner?: Role;
 }
@@ -228,6 +259,7 @@ interface Zone {
 interface Spot {
   id: string;
   zone: string;
+  scene: string;
   at: [number, number];
   /** 这个地方能做的事。同一个物件不同年纪做不同的事：取第一个年龄合适的 */
   actions: string[];
@@ -254,6 +286,10 @@ interface Action {
 }
 
 interface GameMap {
+  scenes: Scene[];
+  exits: Exit[];
+  /** 每张图在世界坐标里占多高 */
+  stride: number;
   size: [number, number];
   spawn: { [R in Role]: [number, number] };
   zones: Zone[];

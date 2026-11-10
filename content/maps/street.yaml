@@ -17,8 +17,8 @@ areas:
 
 exits:
   - { id: to_primary, at: 60, to: primary, arrive: 60, label: 去小学 }
-  - { id: to_middle, at: 160, to: middle, arrive: 60, label: 去中学 }
-  - { id: upstairs, at: 1700, to: building, arrive: 1560, arriveFloor: 1, label: 上楼 }
+  - { id: to_middle, at: 2540, to: middle, arrive: 60, label: 去中学 }
+  - { id: upstairs, at: 1700, to: building, arrive: 1500, arriveFloor: 1, label: 上楼 }
   - { id: to_park, at: 2300, to: park, arrive: 60, label: 去公园 }
   - { id: to_river, at: 3940, to: river, arrive: 60, label: 去海河边 }
 

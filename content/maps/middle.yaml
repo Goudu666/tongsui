@@ -15,7 +15,7 @@ areas:
   - { id: shed, name: 车棚, span: [ 2330, 2800 ], floor: 0 }
 
 exits:
-  - { id: to_street, at: 60, to: street, arrive: 160, label: 回楼下 }
+  - { id: to_street, at: 60, to: street, arrive: 2540, label: 回楼下 }
 
 spots:
   - { id: middle_gate, at: 310, area: middle_front, actions: [ duty ] }

@@ -42,23 +42,23 @@
 - id: junior_key
   label: 初中 · 重点班
   requires: { minAge: 12, maxAge: 14, flags: [junior_key] }
-  duty: { label: 上学, spot: school_gate, arrive: [420, 510], until: 1020, needs: { hunger: 30, energy: -22, mood: -3 }, stats: { mind: 0.48, charm: 0.05 } }
+  duty: { label: 上学, spot: middle_gate, arrive: [420, 510], until: 1020, needs: { hunger: 30, energy: -22, mood: -3 }, stats: { mind: 0.48, charm: 0.05 } }
 - id: junior
   label: 初中 · 普通班
   requires: { minAge: 12, maxAge: 14 }
-  duty: { label: 上学, spot: school_gate, arrive: [420, 540], until: 930, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.31, charm: 0.1 } }
+  duty: { label: 上学, spot: middle_gate, arrive: [420, 540], until: 930, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.31, charm: 0.1 } }
 - id: senior_key
   label: 重点高中
   requires: { minAge: 15, maxAge: 17, flags: [school_far] }
-  duty: { label: 过桥上学, spot: river_bridge, arrive: [390, 480], until: 1110, needs: { hunger: 30, energy: -25, mood: -4 }, stats: { mind: 0.58, charm: 0.05 } }
+  duty: { label: 过桥上学, spot: key_gate, arrive: [390, 480], until: 1110, needs: { hunger: 30, energy: -25, mood: -4 }, stats: { mind: 0.58, charm: 0.05 } }
 - id: senior
   label: 高中
   requires: { minAge: 15, maxAge: 17, flags: [school_near] }
-  duty: { label: 上学, spot: school_gate, arrive: [420, 510], until: 1020, needs: { hunger: 30, energy: -20, mood: -2 }, stats: { mind: 0.38, charm: 0.1 } }
+  duty: { label: 上学, spot: middle_gate, arrive: [420, 510], until: 1020, needs: { hunger: 30, energy: -20, mood: -2 }, stats: { mind: 0.38, charm: 0.1 } }
 - id: vocational
   label: 职专
   requires: { minAge: 15, maxAge: 17 }
-  duty: { label: 上学, spot: school_gate, arrive: [420, 540], until: 900, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.14, body: 0.19, charm: 0.12 } }
+  duty: { label: 上学, spot: middle_gate, arrive: [420, 540], until: 900, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.14, body: 0.19, charm: 0.12 } }
 
 # ---- 18~21 大学，或者先干着 ----
 # 出国（殷实人家才走得了，m_gaokao 的 abroad）：长得最快，离得最远，一年只回来一趟
@@ -78,7 +78,7 @@
 - id: uni_near
   label: 在本市念大学
   requires: { minAge: 18, maxAge: 21, flags: [uni_near] }
-  duty: { label: 去上课, spot: river_bridge, arrive: [420, 540], until: 960, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.38, charm: 0.14 } }
+  duty: { label: 去上课, spot: uni_gate, arrive: [420, 540], until: 960, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.38, charm: 0.14 } }
 - id: first_job
   label: 先干着
   requires: { minAge: 18, maxAge: 21 }
@@ -92,12 +92,12 @@
 - id: job_desk
   label: 坐办公室
   requires: { minAge: 22, maxAge: 59, flags: [job_desk] }
-  duty: { label: 过桥上班, spot: river_bridge, arrive: [420, 510], until: 1080, needs: { hunger: 25, energy: -22, mood: -2 }, stats: { mind: 0.1 }, money: 24 }
+  duty: { label: 过桥上班, spot: office_desk, arrive: [420, 510], until: 1080, needs: { hunger: 25, energy: -22, mood: -2 }, stats: { mind: 0.1 }, money: 24 }
 # 托家里的关系进的单位（m_job 的 pull，殷实人家）：和考进去的坐办公室不是一回事，钱少几块，也不长本事
 - id: job_pull
   label: 托关系进的单位
   requires: { minAge: 22, maxAge: 59, flags: [job_pull] }
-  duty: { label: 过桥上班, spot: river_bridge, arrive: [450, 540], until: 1050, needs: { hunger: 25, energy: -18, mood: -2 }, money: 18 }
+  duty: { label: 过桥上班, spot: office_desk, arrive: [450, 540], until: 1050, needs: { hunger: 25, energy: -18, mood: -2 }, money: 18 }
 - id: job_teach
   label: 教书
   requires: { minAge: 22, maxAge: 59, flags: [job_teach] }

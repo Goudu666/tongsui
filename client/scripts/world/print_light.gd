@@ -50,6 +50,14 @@ func setup(size: Vector2, anchors: Dictionary) -> void:
 	set_minute(minute)
 
 
+## 换一张图：纸的大小和灯都换成那张图的（横版一张图一套灯）
+func relight(size: Vector2, anchors: Dictionary) -> void:
+	map_size = size
+	_mat.set_shader_parameter("map_size", map_size)
+	_mat.set_shader_parameter("light_map", _bake(anchors))
+	_quad.scale = map_size
+
+
 ## 把所有灯烘成一张灰度图：每盏灯只画自己照得到的那一小块，叠加用"滤色"
 func _bake(anchors: Dictionary) -> ImageTexture:
 	var w := int(ceil(map_size.x / BAKE_STEP))

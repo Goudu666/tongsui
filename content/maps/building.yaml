@@ -1,0 +1,125 @@
+# 楼里：红砖楼三楼剖开，左边青家、当中楼道、右边梅家；楼道的梯子上去是楼顶，楼梯下去是楼下的街。
+#
+# 这份文件分两半：
+#   几何（width / areas / exits / spots 的 at）是初值，地图线程画图时会挪，别的线程别依赖具体数。
+#   内容（spots 的 actions、npcs、props、art）归地点内容。写法守 docs/tianjin_style.md。
+# 点位 id 沿用旧的 content/map.yaml（tracks.yaml 和存档认这些 id），新点位才起新名字。
+# npcs / props 的写法和 content/street.yaml 一样，at 只剩横坐标，hours 换成 slots
+# （morning 6:30–8 / am 8–12 / pm 12–15:30 / evening 15:30–18:30 / night 18:30–22；不写 = 全天）。
+
+id: building
+name: 楼里
+width: 3200
+# 两层地面：0 楼顶、1 三楼（基线 y）
+floors: [ 260, 720 ]
+unlock: {}
+
+# 楼顶在上一层：横坐标和楼道重叠，从楼道的铁梯子上去。
+areas:
+  - { id: home_qing, name: 青家, span: [ 0, 1200 ], floor: 1, owner: qing }
+  - { id: hallway, name: 楼道, span: [ 1200, 2000 ], floor: 1 }
+  - { id: home_mei, name: 梅家, span: [ 2000, 3200 ], floor: 1, owner: mei }
+  - { id: roof, name: 楼顶, span: [ 1000, 2200 ], floor: 0 }
+
+exits:
+  - { id: hall_down, at: 1560, floor: 1, to: street, arrive: 1700, label: 下楼 }
+  - { id: hall_up, at: 1640, floor: 1, to: building, arrive: 1640, arriveFloor: 0, label: 上楼顶 }
+  - { id: roof_down, at: 1640, floor: 0, to: building, arrive: 1640, arriveFloor: 1, label: 下楼道 }
+
+spots:
+  # 青家：床、书桌、饭桌、脸盆。屋角那架琴只有殷实人家才摆（piano 由「让出身体现资源差异」定）
+  - { id: bed_qing, at: 180, area: home_qing, actions: [ sleep ], owner: qing }
+  - { id: corner_qing, at: 350, area: home_qing, actions: [ piano ], owner: qing }
+  - { id: desk_qing, at: 520, area: home_qing, actions: [ picture_book, study, read ], owner: qing }
+  - { id: table_qing, at: 800, area: home_qing, actions: [ eat ], owner: qing }
+  - { id: basin_qing, at: 1070, area: home_qing, actions: [ wash ], owner: qing }
+  # 楼道：两扇对门，中间一只小板凳。哪家都不是，两个人都能坐，写作业也行
+  - { id: door_qing, at: 1300, area: hallway, actions: [ knock ] }
+  - { id: hall_stool, at: 1480, area: hallway, actions: [ study, read ] }
+  - { id: door_mei, at: 1900, area: hallway, actions: [ knock ] }
+  # 梅家：和青家左右对称
+  - { id: basin_mei, at: 2130, area: home_mei, actions: [ wash ], owner: mei }
+  - { id: table_mei, at: 2400, area: home_mei, actions: [ eat ], owner: mei }
+  - { id: desk_mei, at: 2680, area: home_mei, actions: [ picture_book, study, read ], owner: mei }
+  - { id: corner_mei, at: 2850, area: home_mei, actions: [ piano ], owner: mei }
+  - { id: bed_mei, at: 3020, area: home_mei, actions: [ sleep ], owner: mei }
+  # 楼顶
+  - { id: roof_pigeon, at: 1250, area: roof, actions: [ play_roof ] }
+
+npcs:
+  - id: er_nainai
+    name: 二楼的奶奶
+    at: 1630
+    eras: [ childhood, teen, young ]
+    slots: [ am, pm ]
+    lines:
+      childhood:
+        - 慢点儿跑，楼梯是水泥的。
+        - 上来帮奶奶穿个针。
+        - 你俩又一块儿下去？早点回来吃饭。
+      teen:
+        - 个子比我高了，还叫我奶奶呢。
+        - 楼道灯又坏了，跟楼长说一声。
+      young:
+        - 我孙子在南边，一年回来一趟。你俩还在，挺好。
+  - id: coal
+    name: 送煤的
+    at: 1580
+    eras: [ childhood ]
+    slots: [ am ]
+    lines:
+      default:
+        - 让一让，让一让，煤来了。
+        - 别碰，一碰一手黑。
+  - id: junk
+    name: 收废品的
+    at: 1670
+    slots: [ am ]
+    lines:
+      childhood:
+        - 收——旧报纸、酒瓶子——
+      teen:
+        - 收——旧书本、旧电扇——
+      young:
+        - 收——旧家电、旧手机——
+      middle:
+        - 纸箱子攒着呢？我下礼拜再来。
+      old:
+        - 楼里没几户了。我也是来看看。
+  - id: silou
+    name: 四楼租房的
+    at: 1570
+    eras: [ young, middle ]
+    slots: [ morning, night ]
+    lines:
+      young:
+        - 您早。我住四楼，刚搬来的。
+        - 这楼隔音不行，昨晚你家看的什么我都听见了。
+      middle:
+        - 租了八年了，房东都换了一个。
+
+props:
+  # 楼道就是日历：堆的东西一个年代一换（手册 §7）。走近能看一眼
+  - id: hall_pile
+    name: 楼道里堆的
+    at: 1400
+    lines:
+      childhood:
+        - 蜂窝煤码到窗台，上头搁着两棵白菜。
+        - 一辆二八车，车座上套着塑料袋。
+      teen:
+        - 一辆山地车锁在暖气管上。
+        - 几个纸箱子，写着「别扔」。
+      young:
+        - 一辆电动车，充电线从门缝里拉出来。
+        - 墙上贴满了开锁和通下水的小广告。
+      middle:
+        - 快递盒子，婴儿车，一把折起来的轮椅。
+      old:
+        - 什么也没有了。地上有搬家拖过的印子。
+
+art: |
+  三楼剖面，一屏半宽的两家，中间一段楼道。两家格局左右对称（床、书桌、饭桌、脸盆），
+  但各家陈设跟着出身换：殷实人家屋角多一架琴、窗台上一台电扇，清贫人家屋当间一道布帘子、一张折叠床。
+  楼道里一盏拉线灯、一组暖气片、一只小板凳、两扇对开的门；hall_pile 那一处随年代换堆的东西。
+  楼顶在上一层：鸽子棚、晾衣绳、凉席；冬天床单冻成板，后来棚清了。

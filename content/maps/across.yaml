@@ -1,0 +1,116 @@
+# 河对岸：过了铁桥，坐车一站。少年宫、老厂（后来是工地、再后来是新楼小区）、市重点、商场、大书店、本市的大学、写字楼。
+# 过桥坐车，去一趟这一段少一个钟头（过桥的耗时归地图线程）。写法见 building.yaml 文件头。
+#
+# 出身在这里最看得出来（用户：有钱人户应该能解锁更多不一样的）：
+#   殷实人家的孩子六岁就过桥，每个礼拜天去少年宫学琴，还能把对门带上（bring，见「让出身体现资源差异」）；
+#   爸妈在厂里的孩子四岁就过桥，跟着大人去厂里的澡堂；
+#   别的孩子第一次自己过桥要等到十二岁以后（主线「过桥」），十五岁考上市重点的天天过，十八岁以后谁都能去。
+#   大书店不要钱，谁都能蹲在地上看一下午；商场、西餐馆要钱。
+# 所以 unlock 有几条路，满足一条就开：需要地图线程支持 unlock.any（或者换成你定的写法）。
+
+id: across
+name: 河对岸
+width: 5600
+unlock:
+  any:
+    - { minAge: 18 }
+    - { minAge: 15, flags: [ school_far ] }
+    - { minAge: 12, flags: [ p_bridge ] }
+    - { minAge: 6, flags: [ fam_rich ] }
+    - { minAge: 4, flags: [ fam_factory ] }
+
+areas:
+  - { id: bridgehead, name: 桥头车站, span: [ 0, 510 ], floor: 0 }
+  - { id: factory, name: 老厂, span: [ 510, 1240 ], floor: 0 }
+  - { id: youth_palace, name: 少年宫, span: [ 1240, 1970 ], floor: 0 }
+  - { id: key_school, name: 市重点, span: [ 1970, 2630 ], floor: 0 }
+  - { id: mall, name: 商场, span: [ 2630, 3650 ], floor: 0 }
+  - { id: bookstore, name: 大书店, span: [ 3650, 4160 ], floor: 0 }
+  - { id: uni, name: 大学, span: [ 4160, 4810 ], floor: 0 }
+  - { id: office, name: 写字楼, span: [ 4810, 5600 ], floor: 0 }
+
+exits:
+  - { id: to_river, at: 60, to: river, arrive: 3560, label: 过桥回去 }
+  - { id: to_newhome, at: 880, to: newhome, arrive: 2740, label: 进小区 }
+
+spots:
+  # 老厂：童年少年是厂区和澡堂，青年拆成工地，中年起是新楼小区的大门（exits 里的 newhome）
+  - { id: factory_bath, at: 800, area: factory, actions: [ factory_bath ] }
+  - { id: palace_piano, at: 1600, area: youth_palace, actions: [ piano ] }
+  - { id: key_gate, at: 2260, area: key_school, actions: [ duty ] }
+  - { id: mall_floor, at: 2990, area: mall, actions: [ window_shop ] }
+  - { id: mall_food, at: 3430, area: mall, actions: [ dine_west ] }
+  - { id: book_shelf, at: 3900, area: bookstore, actions: [ read_store ] }
+  - { id: uni_gate, at: 4450, area: uni, actions: [ duty ] }
+  - { id: office_desk, at: 5100, area: office, actions: [ duty, tutor ] }
+
+npcs:
+  - id: piano_teacher
+    name: 少年宫的钢琴老师
+    at: 1680
+    eras: [ childhood, teen ]
+    slots: [ am, pm ]
+    lines:
+      childhood:
+        - 手腕放平，像捧着个鸡蛋。
+        - 回去每天练半个钟头，下礼拜我听得出来。
+        - 门口那个是谁？让他进来听吧，坐后头别出声。
+      teen:
+        - 考级不是目的。你自己爱弹才是。
+  - id: bath_uncle
+    name: 澡堂烧锅炉的
+    at: 730
+    eras: [ childhood, teen ]
+    slots: [ pm, evening ]
+    lines:
+      default:
+        - 下了班的先洗，小孩儿往后排。
+        - 水烫，先拿脚试。
+  - id: site_worker
+    name: 工地上的
+    at: 880
+    eras: [ young ]
+    lines:
+      default:
+        - 这儿原来是个厂。我爸在这儿干过。
+        - 戴安全帽，别往里走。
+  - id: greeter
+    name: 商场门口发传单的
+    at: 2770
+    eras: [ teen, young, middle ]
+    lines:
+      teen:
+        - 新店开张，三楼，凭传单打九折。
+      young:
+        - 扫个码，送个气球。
+      middle:
+        - 这层要改成别的了，最后几天。
+  - id: clerk
+    name: 书店的店员
+    at: 3940
+    eras: [ teen, young, middle, old ]
+    lines:
+      teen:
+        - 别坐地上——算了，坐吧，别折书角。
+      young:
+        - 那套书你看了三年了，还没买。
+      middle:
+        - 现在来看书的少了，坐吧，地方大。
+      old:
+        - 我们也老了。椅子给您搬过来。
+  - id: guard_office
+    name: 写字楼的保安
+    at: 5250
+    eras: [ young, middle ]
+    slots: [ evening, night ]
+    lines:
+      default:
+        - 又是最后一个？灯记得关。
+        - 十九层还亮着，是你们那层吧。
+
+art: |
+  过了桥是另一副样子：楼高、路宽、车多，街面比河畔里干净，也冷一点。
+  老厂一段最要紧，它换三回脸：童年少年是红砖厂房、高烟囱、厂里的澡堂；青年拆成工地，围着蓝铁皮；
+  中年以后是新楼小区的大门（买房的那户就住进这里，见 newhome.yaml）。爸妈在厂里干了一辈子的地方，后来成了别人的家。
+  少年宫是一栋带廊子的老楼，一排琴房的窗户；市重点的大门有门卫；商场有滚梯和橱窗；
+  大书店的地上总坐着人；大学门口一条小吃街；写字楼的玻璃晚上一层一层亮着。

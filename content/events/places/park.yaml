@@ -1,0 +1,83 @@
+# 公园的支线（pl_pk_ 前缀）。where 用 content/maps/park.yaml 的 areas。写法见 places/building.yaml 文件头。
+# 早上公园里那一圈归主线。老年正文 30 字以内。
+
+- id: pl_pk_water
+  kind: mirror
+  stage: old
+  where: square
+  when: [390, 720]
+  hint: 地上有人拿水写字。
+  weight: 2
+  title: 水写的字
+  text: 空地上有人拿大笔蘸水写字。写完一行，头一个字已经干了。
+  options:
+    - id: write
+      text: 也写一个字
+      tags: [adventure]
+      effects: { self: { mind: 1 } }
+    - id: watch
+      text: 看着它干
+      tags: [patient]
+      effects: { self: { mood: 4 } }
+  resonance:
+    write:
+      text: 你们写的是同一个字。还没写完，它就干了。
+      memory: 同一个字
+      bond: { sync: 2, close: 1 }
+    watch:
+      text: 一行字一个一个没了。你们都没说话。
+      memory: 干了的字
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个蹲下写，一个站着看。写的那个回头，字已经干了。
+    bond: { close: 0 }
+
+- id: pl_pk_choir
+  kind: mirror
+  stage: old
+  where: pavilion
+  when: [480, 720]
+  hint: 亭子里有人在起调。
+  weight: 2
+  title: 起调
+  text: 亭子里的合唱队缺两个人。指挥冲你们招手：「会唱的都来。」
+  options:
+    - id: sing
+      text: 跟着唱
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+    - id: mouth
+      text: 站后排张张嘴
+      tags: [patient]
+      effects: { self: { mood: 4 } }
+  resonance:
+    sing:
+      text: 你们一开口，调起高了。指挥没停，全队跟着往上够。
+      memory: 起高的调
+      bond: { sync: 2, close: 1 }
+    mouth:
+      text: 两个人站在最后一排，都只张嘴不出声，被对方看出来了。
+      memory: 只张嘴
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个唱得最响，一个在后排对口型。散了以后，两个人都夸对方唱得好。
+    bond: { close: 0 }
+
+- id: pl_pk_stroller
+  kind: solo
+  stage: old
+  where: lake_path
+  when: [390, 720]
+  hint: 有人推着婴儿车过来。
+  weight: 2
+  title: 婴儿车
+  text: 绕湖第三圈，旁边推过一辆婴儿车。车里的孩子盯着你看。
+  options:
+    - id: face
+      text: 冲他做个鬼脸
+      tags: [adventure]
+      effects: { self: { mood: 6 } }
+    - id: walk
+      text: 接着走第四圈
+      tags: [patient]
+      effects: { self: { body: 1 } }

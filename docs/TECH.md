@@ -38,6 +38,7 @@
 - 贴左右边的东西用锚点或 `hud.left()` / `hud.right()` 算，不写死 1920。刘海和圆角在左右两侧，让开的宽度用 `Kit.safe_sides()` 取（电脑上是 0）。
 - 河畔里的 HUD（`ui/hud.gd`）是「对门」构图：顶上一条横带（y 40~196），左边是我的（日历牌、四个圆表、零花钱），右边是对门的（两个圆、对门的牌：TA 在哪、在做什么），中间是常驻的关口纸带（`ui/goal_panel.gd`：我的分在左、尺在中间、对门的分在右）。右下角是行动按钮。对门走出画面时屏幕边上有个箭头指着 TA。
 - 菜单页：`_show_screen()` 之后用 `_columns(body)` 拿左右两栏，左边写「这是什么」，右边放「要你做什么」。
+- 传承（`legacy_ui.gd`）跟着两栏走：投胎页对门的老物件在右栏，我面前的三件在两栏下面通栏并排（`my_offer(body)`），定下来的按钮跟到它下面；结局页「留给河畔里」在右栏（`left_behind`），「再来一世」在左栏（`again`）。
 - 弹窗：`_open_modal(宽度)`；选项用 `_options(box, 个数)` + `_option()` 并排成票（三个以内一行，四个 2×2，五六个三列）；左图右文用 `_columns(modal_body)`。内容比屏幕高时卡片内部滚动。
 - 版面的规矩有单测看着：`client/tests/unit_layout.gd`（方向设置、HUD 各块在 16:9 到 21:9 和带刘海时不叠、选项列数）。
 - 截图：`bash tools/shots/run.sh <目录>`，`RES=2400x1080` 看长屏，`NOTCH=110` 假装两边有刘海。
@@ -60,6 +61,7 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 ### 规则只写一份（服务器为准）
 
 - `server/src/sim.ts`：人生层，投胎、事件结算、一天结束、生老病死。
+- `server/src/legacy.ts`：传承，一世走完留下什么、再来一世、投胎时带一件老物件（[LEGACY.md](LEGACY.md)）。
 - `server/src/world.ts`：一天之内的实时世界，共享时钟、走动限速、行动、需求衰减、同框、地点触发事件、影子。
 - 两个文件都是纯函数，不依赖 Nakama，Node 里可以直接单测（`server/test/life.test.mjs`）。
 - 客户端不做任何结算，只负责画、走、发指令。自己的角色走动由客户端预测，服务器限速后广播；对方的角色按广播插值。
@@ -74,20 +76,20 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | `lifeline_create {name}` | 青 | 新建人生线，返回 6 位配对码 |
 | `lifeline_join {code, name}` | 梅 | 输入配对码加入，同时为两人各投一次胎 |
 | `lifeline_open {lifelineId, protocol}` | 任意一方 | 返回正在运行的房间 id，没有就从存档拉起（两人同时打开也只会有一个房间）。回复里带服务器的 `protocol` 和内容指纹 `content` |
-| `lifeline_list` | 任意 | 我参与的人生线：两人名字、是否已配对、阶段、走到哪一天（大厅的「继续」） |
+| `lifeline_list` | 任意 | 我参与的人生线：两人名字、是否已配对、阶段、第几世、走到哪一天（大厅的「继续」） |
 | `content_get {offset}` | 任意 | 分块取服务器这一版的剧情内容：`{version, total, offset, chunk, done}` |
 | `server_info` | 任意 | `{protocol, minClientProtocol, content, lifeVersion, events}`，部署后自检用 |
 
 梅输入配对码后，服务器给青发一条通知（code 101 `partner_joined`），青的客户端收到就自动进房间开始投胎；
 通知万一丢了，青的等待页每 5 秒也会问一次 `lifeline_open`。有人进房而对方不在房间里时发 code 102 `partner_online`。
 
-房间（`lifeline` 权威 match，10 tick/秒）的阶段：`roll`（投胎）→ `life`（河畔里）→ `ended`。
+房间（`lifeline` 权威 match，10 tick/秒）的阶段：`roll`（投胎）→ `life`（河畔里）→ `ended`；两个人都点了「再来一世」，同一条人生线回到 `roll`（[LEGACY.md](LEGACY.md)）。
 
 | op | 方向 | 内容 |
 | --- | --- | --- |
-| 1 SNAPSHOT | s→c | `{lifelineId, names, life, you, online, tick}` 进房（含断线重连）、开局、每天结束时发。`life.world` 只带时钟、人物和事件（`event.chosen` 只说谁选了，`event.mine` 是我自己选的），不带 TA 的选项、今天的命运和随机数状态 |
-| 2 ROLL | c→s | `{reroll: true}` 或 `{confirm: true}` |
-| 3 ROLL_STATE | s→c | `{rolls}` 两人当前抽到的家庭、天赋、属性、剩余次数 |
+| 1 SNAPSHOT | s→c | `{lifelineId, names, life, you, online, protocols, tick}` 进房（含断线重连）、开局、每天结束、换世时发。`protocols` 是两边安装包的协议版本（不在线是 0）。`life.world` 只带时钟、人物和事件（`event.chosen` 只说谁选了，`event.mine` 是我自己选的），不带 TA 的选项、今天的命运和随机数状态 |
+| 2 ROLL | c→s | `{reroll: true}`、`{confirm: true}`，或 `{heirloom: id \| null}` 挑一件老物件带上 / 放下 |
+| 3 ROLL_STATE | s→c | `{rolls}` 两人当前抽到的家庭、天赋、属性、剩余次数，以及家业传了几代（`house`）、面前摆着的老物件（`offer`）、挑中的那件（`heirloomId`） |
 | 4 MOVE | c→s | `{x, y, seq}` 约 10 Hz，seq 递增；服务器丢掉乱序旧包，限速（360 px/s，间隔最多按 1 秒算）和边界 |
 | 5 ACT | c→s | `{spot}` 在某个点开始行动（距离、年龄、时间、家、钱都会校验） |
 | 6 CHOOSE | c→s | `{optionId, guess?}` 事件里的选择，结算前可以改。`guess`：默契事件里猜 TA 选了哪一项，可以不带（见 [DUET.md](DUET.md)） |
@@ -95,12 +97,13 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | 8 EVENT | s→c | `{event, locks}` 有事件开始了（只告诉谁参与、是否已选，不告诉选了什么）。关口（`kind: milestone`）带 `locks: {role: {optionId: 原因}}`，够不着的路客户端画成灰的 |
 | 9 ERROR | s→c | `{message}` |
 | 10 LOG | s→c | `{entries}` 事件结算、搭伴、一天结束、死亡、终局。关口的结算带 `results: {role: {score, unit, grade, option, track}}`，一天结束带 `gains`（每人今天长了多少） |
-| 11 PRESENCE | s→c | `{online}` |
+| 11 PRESENCE | s→c | `{online, protocols}` |
 | 12 PING | c→s | `{t}` 每 2 秒，测延迟 |
 | 13 PONG | s→c | `{t, tick}` 只回给发的人 |
 | 20 GAME | s→c | `{game}` 搭伴小游戏的状态：`{gameId, phase: offer/play, left, ready, t, d}`；局关掉时发 `{game: null, result}`，打完了 `result = {gameId, score, boost}`，没玩成是 `null` |
 | 21 GAME_INPUT | c→s | `{k}`：问的时候 `ready` / `pass`；玩的时候 `quit`，或各款自己的输入（放风筝：`{k: "line", v}` 攥线的人报线长，`{k: "run", v}` 另一个人报跑到哪，都是 0~1） |
 | 30 ECHO | c→s | `{turn, optionId}` 回话：补答影子替我选过的默契事件（`turn` 是那天的序号，`optionId` 为 null 是「不提了」）。结算作为一条 LOG 发给两个人 |
+| 31 AGAIN | 双向 | c→s `{yes}` 一世走完以后点「再来一世」（`false` 是收回），票记在存档里；s→c `{again: {qing, mei}}` 谁点了，只发给协议 3 以上的连接。两人都点了，服务器把这一世归档、换成新的一世，改发 SNAPSHOT（见 docs/LEGACY.md） |
 
 - 事件进行中时钟暂停；没选的人都离线时，等 30 秒后由影子代选。
 - 搭伴小游戏（`games.ts`）问和玩的时候时钟也暂停。它只在两人都真在线、同时做 `GAME_ACTIONS` 里的行动时问一次（每天一次），结果只写成这一次行动的成长倍率 `Actor.boost`，`worldFinish` 用掉就清；没玩成（不了、没理、掉线、中途退出）什么都不留。物理在服务器上跑，客户端只报手指位置；`client/scripts/games/kite_sim.gd` 是照抄的一份，只给离线试玩用，改规则先改服务器。
@@ -114,6 +117,8 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 - **协议版本**（`main.ts` 的 `PROTOCOL_VERSION` / `MIN_CLIENT_PROTOCOL`，`protocol.gd` 的 `VERSION` / `MIN_SERVER`）。
   客户端在 `lifeline_open` 里报自己的版本：低于 `MIN_CLIENT_PROTOCOL` 的直接被拒，界面上显示「安装包太旧」；服务器比客户端要求的还旧则提示更新服务器。
   改了消息的含义就把两边的版本一起加一；旧包确实不能用了才提高 `MIN_CLIENT_PROTOCOL`。
+  新旧安装包可以进同一个房间：3 版起客户端进房时在 `join_match` 的 metadata 里报 `protocol`，房间记着每个连接的版本（`LifelineMatch.protocols`，不进存档），
+  新消息用 `sendSince` 只发给版本够的连接，快照和 `PRESENCE` 把两边的版本告诉客户端，界面上才说得清「等 TA 更新安装包」。
 - **内容指纹**（`CONTENT.version`，`npm run content` 时对内容算的 SHA-256 前 12 位）。
   客户端发现服务器的指纹和手里的不一样，就用 `content_get` 把服务器这一版下载下来（约 17 万字符，分 4 块），
   缓存到 `user://content_cache.json`，然后才进房间（`content_store.gd`）。**改剧情只需要更新服务器，手机不用重装**；没联网时用安装包里带的那份。
@@ -124,6 +129,8 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 - 一条人生线一个存储对象（`lifelines/<id>`），里面的 `life` 就是全部状态（`LifeState`，含随机数状态）。**规则代码不能把状态放在 `LifeState` 以外**（模块级变量、闭包），`arch.test.mjs` 的「存档往返」会查：同一个种子，中途任意时刻存档再读档，结果必须和一口气跑完一模一样。
 - **结构升级**：`save.ts` 的 `LIFE_VERSION` 和 `lifeUpgrade`。改 `LifeState` 的结构时版本加一，在 `lifeUpgrade` 里补一段从上一版升上来的代码。存档比服务器新（服务器被回滚）时拒绝打开。
 - **内容修复**：`lifeRepair`。存档里记着事件、行动、点位的 id，剧情改了以后这些 id 可能已经不在了；房间拉起时把悬空的引用摘掉（今天的命运作废、卡着的事件取消、做到一半的行动停下、抽卡阶段抽到的人家没了就重抽），并写进服务器日志。新加「指向内容 id」的存档字段时，在这里加一条。
+- **走完的一世单独归档**：两个人都点了「再来一世」，房间先把走完的那份 `LifeState` 写到 `lifeline_past/<id>.<第几世>`，再把存档换成新的一世。
+  存档里跨世带着的只有 `LifeState.legacy`（有界），长卷不摞在存档里。票（`LifeState.again`）在存档里，归档完没存就断了的，重新拉起后接着换，结果一样。
 - **单写者**：房间是存档唯一的写入者，每次带着上次写入的版本号做条件写入。写不进去而存档里的 matchId 已经是别的房间时，这个房间不再写、下一跳退场，不会把对方的进度盖回去。
 - **出错回滚**：`matchLoop` 里规则代码抛错时（`faultClose`），内存里的状态可能只改了一半，不存；存档停在上一个存档点（最多丢 30 秒），记下 `faults` 和 `lastFault`，清掉 matchId 后关房。客户端自动重连，从存档重新拉起。日志里搜 `room fault` 能看到人生线 id、回合、时刻、卡着的事件和调用栈。
 - 客户端发来的消息先验形状（必须是 JSON 对象、消息号必须是客户端该发的），不合格只回 `ERROR`。
@@ -218,6 +225,8 @@ npm run server:test      # 编译 + 投胎规则 + 60 条全影子人生 + 世�
                          #   出错回滚 / 单写者 / 两端契约（消息号、协议版本、年龄阶段表、走动限速这些两边各抄一份的东西有没有走样）
 npm run balance          # 平衡模拟：机器人按真实规则过 1200 条人生，打印成长曲线、寿命、结局的分布（改了 rules.yaml 以后跑，见 GROWTH.md）
                          # + 接话测试（duet.test.mjs）：搭上了 / 猜 TA / 回话 / 存档修复 / 带猜测和回话的联机流程
+                         # + 传承测试（legacy.test.mjs）：留下什么 / 再来一世的票和可复现 / 摆和挑 / 带上以后多了什么 / v5 存档升级 /
+                         #   房间里的归档、断在半路接着换、新旧安装包混搭 / 老物件压不过活法
 GODOT=godot bash tools/ci/client_unit.sh      # 客户端单测 client/tests/unit_*.gd，不需要服务器
 
 # 下面两个要先起一台本地 Nakama（docker compose，见 README）

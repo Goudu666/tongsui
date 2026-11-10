@@ -50,6 +50,8 @@ func _run() -> void:
 	await _wait(1.8)
 	await _snap("02_roll")
 
+	await _legacy_roll(fams, tals)
+
 	main._on_net_created("482913", "demo")
 	await _wait(1.5)
 	await _snap("16_code")
@@ -231,6 +233,7 @@ func _run() -> void:
 			"locks": {"qing": {"key": "心智 60 分，线是 64 分"}, "mei": {}}})
 		await _wait(1.5)
 		await _snap("24_milestone_choice")
+		await _many_paths()
 		main.my_role = "qing"
 		main._on_log_entries({"entries": [{"kind": "milestone", "label": "12 岁 · 上学期", "events": {"qing": "m_junior", "mei": "m_junior"},
 			"choices": {"qing": "normal", "mei": "normal"}, "shadow": [], "resonance": true, "text": "三点半，校门口，还是你们俩。",
@@ -266,6 +269,7 @@ func _run() -> void:
 	main._show_ending()
 	await _wait(1.8)
 	await _snap("11_ending")
+	await _legacy_ending()
 	quit()
 
 
@@ -326,3 +330,90 @@ func _duet_cards() -> void:
 	main._close_modal()
 	main.my_role = "qing"
 	main.life = life_was
+
+
+## 截图用的假联机（服务器是懂传承的那一版）
+func _fake_net() -> Node:
+	var fake: Node = load((get_script() as Script).resource_path.get_base_dir().path_join("fake_net.gd")).new()
+	main.add_child(fake)
+	fake.server_protocol = 3
+	return fake
+
+
+func _scroll_to(px: int) -> void:
+	var sc := main.body.get_parent().get_parent() as ScrollContainer
+	if sc != null:
+		sc.scroll_vertical = px
+
+
+## 传承：第二世的投胎页（页头、家业、两边面前的老物件），见 docs/LEGACY.md
+func _legacy_roll(fams: Array, tals: Array) -> void:
+	if main.get("legacy") == null or not main.content.has("heirlooms"):
+		return
+	var pair: Dictionary = main.content.endings.pair[0]
+	for e in main.content.endings.pair:
+		if str(e.id) == "e_neighbors":
+			pair = e
+	main.life = {"phase": "roll", "turn": 0, "life": 2,
+		"legacy": {"lives": 1, "families": {}, "heirlooms": [], "past": [{"life": 1, "pair": pair.id, "close": 71, "memories": [],
+			"persons": {"qing": {"name": "小满", "diedAtAge": 79}, "mei": {"name": "阿蘅", "diedAtAge": 81}}}]},
+		"rolls": {
+			"qing": {"familyId": fams[0].id, "talentId": tals[0].id, "stats": {"body": 6, "mind": 5, "charm": 4, "luck": 3}, "confirmed": false, "rerollsLeft": 3,
+				"house": 1, "offer": ["h_whistle", "h_books", "h_tiger_shoes"], "heirloomId": "h_whistle"},
+			"mei": {"familyId": fams[1].id, "talentId": tals[1].id, "stats": {"body": 4, "mind": 5, "charm": 6, "luck": 3}, "confirmed": false, "rerollsLeft": 2,
+				"house": 0, "offer": ["h_erhu", "h_candy_box", "h_mug"], "heirloomId": "h_erhu"},
+		}}
+	main._show_roll()
+	await _wait(1.8)
+	await _snap("40_legacy_roll")
+	_scroll_to(100000)
+	await _wait(0.4)
+	await _snap("41_legacy_roll_theirs")
+
+
+## 传承：结局页多出来的「留给河畔里」和「再来一世」（TA 先点了头）
+func _legacy_ending() -> void:
+	if main.get("legacy") == null or not main.content.has("heirlooms"):
+		return
+	var fake := _fake_net()
+	main.net = fake
+	main.life["life"] = 1
+	main.life["left"] = {"qing": "h_whistle", "mei": "h_erhu"}
+	main.life["again"] = {"qing": false, "mei": true}
+	main.legacy.on_protocols({"qing": 3, "mei": 3})
+	main._show_ending()
+	await _wait(1.6)
+	_scroll_to(100000)
+	await _wait(0.4)
+	await _snap("42_legacy_ending")
+	main.legacy.on_again({"again": {"qing": true, "mei": false}})
+	await _wait(0.4)
+	_scroll_to(100000)
+	await _wait(0.3)
+	await _snap("43_legacy_waiting")
+	main.net = null
+	fake.queue_free()
+
+
+## 路多的关口（找工作那样六条、上小学那样四条）：选项折成三列 / 两列，不挤出弹窗
+func _many_paths() -> void:
+	var texts := ["进厂，接爸的班", "考出去，念大学", "去南方闯一闯", "在街口支个摊", "当兵去", "先在家待一年"]
+	for n in [6, 4]:
+		var opts: Array = []
+		var locks: Dictionary = {}
+		for i in n:
+			var o := {"id": "p%d" % i, "text": texts[i]}
+			if i == 1 or i == 4:
+				o["min"] = 60
+			opts.append(o)
+		locks["p1"] = "心智 58 分，线是 64 分"
+		main.events_by_id["m_shots_paths"] = {"id": "m_shots_paths", "kind": "milestone", "title": "找工作", "options": opts,
+			"text": "毕业证揣在兜里，街上的招工启事贴了一墙。往哪走，今天得有个说法。"}
+		main._close_modal()
+		main.my_role = "qing"
+		main._on_event_started({"event": {"roles": ["qing", "mei"], "eventId": "m_shots_paths", "kind": "milestone", "choices": {}, "swing": {"qing": -0.2, "mei": 0.1}},
+			"locks": {"qing": locks, "mei": {}}})
+		await _wait(1.5)
+		await _snap("37_paths_%d" % n)
+	main._close_modal()
+	main.events_by_id.erase("m_shots_paths")

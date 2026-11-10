@@ -1,0 +1,75 @@
+# 外地：一座不叫名字的城。只有走了那条路的人来（在外地念大学、在外地工作、出国），另一个人看不见这张图。
+# 过年那天两张图合一张（主线管）。写信、打电话的机制归地图线程，这里只放点位。
+# 租的屋在 rental.yaml。写法见 building.yaml 文件头。
+
+id: away
+name: 外地
+width: 4000
+far: true
+unlock:
+  any:
+    - { minAge: 18, flags: [ uni_away ] }
+    - { minAge: 18, flags: [ uni_abroad ] }
+    - { minAge: 22, flags: [ left_city ], notFlags: [ came_back ] }
+
+areas:
+  - { id: station, name: 车站, span: [ 0, 630 ], floor: 0 }
+  - { id: campus, name: 学校, span: [ 630, 1600 ], floor: 0 }
+  - { id: market, name: 夜市, span: [ 1600, 2570 ], floor: 0 }
+  - { id: worksite, name: 上班的地方, span: [ 2570, 3400 ], floor: 0 }
+  - { id: post, name: 邮局, span: [ 3400, 4000 ], floor: 0 }
+
+exits:
+  - { id: to_rental, at: 2080, to: rental, arrive: 1880, label: 回住的地方 }
+
+spots:
+  - { id: away_gate, at: 1040, area: campus, actions: [ duty ] }
+  - { id: away_desk, at: 1390, area: campus, actions: [ read ] }
+  - { id: market_stall, at: 2150, area: market, actions: [ night_snack ] }
+  - { id: away_work, at: 2990, area: worksite, actions: [ duty ] }
+  - { id: post_box, at: 3680, area: post, actions: [ letter ] }
+
+npcs:
+  - id: dorm_ayi
+    name: 宿管阿姨
+    at: 760
+    eras: [ young ]
+    slots: [ night ]
+    lines:
+      default:
+        - 十一点锁门，过了点儿我可不给开。
+        - 你家里寄的包裹，在我这儿放两天了。
+        - 你说话这个口音，北边来的吧？
+  - id: stall_owner
+    name: 夜市摆摊的
+    at: 2220
+    eras: [ young, middle ]
+    slots: [ evening, night ]
+    lines:
+      default:
+        - 辣不辣？微辣就是不辣。
+        - 又是一个人？坐这边，这边有风。
+        - 下回带朋友来，给你多加个蛋。
+  - id: coworker
+    name: 一起上班的
+    at: 3060
+    eras: [ young, middle ]
+    lines:
+      default:
+        - 过年回不回？票抢着了吗？
+        - 你那边冬天有暖气？真好。
+  - id: postal
+    name: 邮局柜台的
+    at: 3680
+    eras: [ young, middle ]
+    lines:
+      young:
+        - 平信还是挂号？挂号的慢不了。
+        - 现在还寄信的人不多了。
+      middle:
+        - 又是寄那个地址？我都背下来了。
+
+art: |
+  这座城和河畔里反着画：没有河，楼都是新的，街上的招牌认不全；夏天潮，冬天没有暖气。
+  车站是来和走的地方；学校一栋宿舍楼，晚上窗户一格一格亮；夜市一条街的灯泡和油烟；
+  上班的地方是一排一样的窗户；邮局一个绿色的信筒。过年那天这张图和河畔里拼回一张（主线）。

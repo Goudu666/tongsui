@@ -1,0 +1,70 @@
+# 出租屋的支线（pl_rt_ 前缀）。where 用 content/maps/rental.yaml 的 areas。写法见 places/building.yaml 文件头。
+
+- id: pl_rt_stove
+  kind: solo
+  stage: young
+  where: rent_hall
+  when: [1020, 1260]
+  hint: 走廊里谁家在炝锅。
+  weight: 2
+  title: 一个灶眼
+  text: 一层楼合用一个厨房，灶眼排着号。你的锅刚坐上，隔壁屋的端着菜站在后头。
+  options:
+    - id: yield
+      text: 让他先炒
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+    - id: quick
+      text: 三分钟炒完
+      tags: [competitive]
+      effects: { self: { mood: 3 } }
+    - id: share
+      text: 干脆一块儿吃
+      tags: [adventure]
+      effects: { self: { charm: 1, mood: 5 } }
+
+- id: pl_rt_window
+  kind: solo
+  stage: young
+  where: rent_room
+  when: [1110, 1320]
+  hint: 对面楼的灯亮了。
+  weight: 2
+  title: 对面的窗
+  text: 出租屋的窗户正对着别人家的窗户，近得看得清那家吃什么。那家两个孩子，在一张桌上写作业。
+  options:
+    - id: watch
+      text: 多看一会儿
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+    - id: curtain
+      text: 拉上窗帘
+      tags: [solitude]
+      effects: { self: { energy: 3 } }
+    - id: wave
+      text: 冲那边招招手
+      tags: [adventure]
+      effects: { self: { charm: 1 } }
+
+- id: pl_rt_note
+  kind: solo
+  stage: young
+  where: rent_room
+  weight: 2
+  requires: { minAge: 22 }
+  title: 门缝里的条
+  hint: 门缝里塞着张条。
+  text: 房东在门缝里塞了张条：下个月起，房租涨一成。背面是去年的水电账。
+  options:
+    - id: pay
+      text: 认了
+      tags: [responsible]
+      effects: { self: { mood: -4 } }
+    - id: talk
+      text: 找房东说说
+      tags: [competitive]
+      effects: { self: { charm: 1 } }
+    - id: move
+      text: 开始看房子
+      tags: [adventure]
+      effects: { self: { mind: 1, mood: -2 } }

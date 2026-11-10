@@ -95,6 +95,10 @@ function lifeRepair(s: LifeState, c: Content): string[] {
         }
       }
     }
+    if (w.game && !GAME_RULES[w.game.gameId]) {
+      notes.push("game " + w.game.gameId + " 已不存在，取消");
+      w.game = null;
+    }
     for (var j = 0; j < ROLES.length; j++) {
       var a = w.actors[ROLES[j]];
       if (!a) continue;

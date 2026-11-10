@@ -557,8 +557,11 @@ var matchInit: nkruntime.MatchInitFunction<LifelineMatch> = function (ctx, logge
 var matchJoinAttempt: nkruntime.MatchJoinAttemptFunction<LifelineMatch> = function (ctx, logger, nk, dispatcher, tick, state, presence, metadata) {
   var role = roleOf(state.record, presence.userId);
   if (!role) return { state: state, accept: false, rejectMessage: "not a member" };
-  // 进房时报上安装包的协议版本（3 起才报）。没报的按能进来的最旧版本算
-  state.protocols[role] = Math.max(MIN_CLIENT_PROTOCOL, Math.floor(Number(metadata && metadata.protocol)) || 0);
+  // 进房时报上安装包的协议版本（3 起才报）。报了又比能进来的最旧版本还旧的挡在门外（lifeline_open 已经拦过一道，这里防绕过去的）；
+  // 没报的按能进来的最旧版本算
+  var told = Math.floor(Number(metadata && metadata.protocol)) || 0;
+  if (told > 0 && told < MIN_CLIENT_PROTOCOL) return { state: state, accept: false, rejectMessage: "请装最新版" };
+  state.protocols[role] = Math.max(MIN_CLIENT_PROTOCOL, told);
   return { state: state, accept: true };
 };
 

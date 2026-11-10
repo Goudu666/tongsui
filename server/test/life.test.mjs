@@ -151,8 +151,21 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
     z.world.fate = { mirror: null, qing: null, mei: null, milestone: null };
     G("worldShadowAct")(z, C, "mei");
     assert.equal(G("worldReady")(z, "mei"), true);
+    z.world.wait = 85;
     assert.equal(G("worldReclaim")(z, "mei"), true);
     assert.equal(G("worldReady")(z, "mei"), false);
+    assert.equal(z.world.wait, 0, "本人回来，重新开始等他");
+    // v7 的存档：做到一半的事（这里是睡下了）是前面那段开始的，升上来撤不回
+    const old = JSON.parse(JSON.stringify(z));
+    old.version = 7;
+    for (const k of ["slot", "ready", "playing", "wait", "quick"]) delete old.world[k];
+    const bed = C.map.spots.find((sp) => sp.id === "bed_qing");
+    Object.assign(old.world.actors.qing, { x: bed.at[0], y: bed.at[1], action: "sleep", spot: "bed_qing", until: null, asleep: true });
+    old.world.minute = 800;
+    G("lifeUpgrade")(old);
+    assert.equal(old.world.slot, 2);
+    assert.equal(old.world.actors.qing.from, -1);
+    assert.match(G("worldCancel")(old, C, "qing"), /已经/, "升上来之前就开始的事撤不回");
   }
   console.log("✓ 世界：距离判定 / 不能睡别人家 / 限速 / 顺手的事不花时间 / 两人都定了才过 / 搭伴 / 改主意和歇着 / 等人 / 睡觉换天 / 地点和那一段 / 选择时停表 / 共鸣回忆");
 }
@@ -178,6 +191,7 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   const R = room(nk, openB.matchId);
   const pa = { userId: "user-a", sessionId: "sa" }, pb = { userId: "user-b", sessionId: "sb" };
   assert.equal(R.attempt({ userId: "intruder", sessionId: "x" }).accept, false);
+  assert.equal(R.attempt({ userId: "user-a", sessionId: "sa" }, { protocol: "3" }).accept, false, "报了版本又太旧的挡在门外");
   R.join([pb]);
   assert.ok(nk.notifications.some((n) => n.userId === "user-a" && n.subject === "partner_online"), "梅进房、青不在时通知青");
   R.leave([pb]); // 触发一次房间存档

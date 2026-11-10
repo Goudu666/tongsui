@@ -75,7 +75,10 @@ function lifeUpgrade(s: any): string[] {
       delete w.game;
       for (var ai = 0; ai < ROLES.length; ai++) {
         var actor = w.actors ? w.actors[ROLES[ai]] : null;
-        if (actor) delete actor.boost;
+        if (!actor) continue;
+        delete actor.boost;
+        // 正在做的事（上学上班、睡觉）是在前面哪一段就开始了的：撤不回，不然这一天的日程就没了
+        if (actor.action || actor.asleep) actor.from = -1;
       }
     }
     v = 8;

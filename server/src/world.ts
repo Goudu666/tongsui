@@ -570,6 +570,7 @@ function worldReclaim(s: LifeState, role: Role): boolean {
   var a = w.actors[role];
   if (!a || !a.shadow) return false;
   a.shadow = false;
+  w.wait = 0; // 本人回来了：重新开始等他，不接着掉线前的钟算
   if (w.playing) return false;
   if (w.ready[role] && !a.action) {
     delete w.ready[role];

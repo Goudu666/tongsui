@@ -236,7 +236,7 @@ for (const file of eventFiles) {
 }
 
 // ---------- 主线：七章、每章三件一定会发生的事（content/story.yaml） ----------
-// 引擎接上之前只原样带进 content.story，不进随机池（content.events），游戏里不会发生。
+// 原样带进 content.story，不进随机池（content.events）。怎么排、什么时候发生见 server/src/story.ts；replaces 的旧事件由引擎从随机池里摘掉。
 // 字段和写法见 story.yaml 文件头。字数上限按文风手册（docs/tianjin_style.md §4.1、§9.1）。
 const STORY_SCENES = ["building", "street", "river", "primary", "middle", "across", "away", "newhome", "rental", "park", "hospital"];
 const STORY_SLOTS = ["morning", "am", "pm", "evening", "night"];

@@ -2,11 +2,11 @@ extends RefCounted
 ## 与 server/src/main.ts 中的 OP 保持一致（server/test/arch.test.mjs 会逐项比对，改一边忘了另一边测试会挂）
 
 ## 协议版本：和 main.ts 的 PROTOCOL_VERSION 一起改。进房间前双方互报版本，对不上就提示更新，而不是进去以后卡住
-const VERSION := 5
+const VERSION := 6
 ## 能用的最旧的服务器。连到比这还旧的服务器时提示「服务器需要更新」
 ## 4：一天五段。旧服务器的钟一直在跑，这个安装包没有那套按钮了
 ## 5：一张张横着的图，人只左右走。旧服务器还是原来那张大地图
-const MIN_SERVER := 5
+const MIN_SERVER := 6
 
 const SNAPSHOT := 1    ## s→c 完整状态 {lifelineId, names, life, you, online, protocols, tick}  protocols：两人安装包的协议版本，不在线是 0
 const ROLL := 2        ## c→s {reroll: true} | {confirm: true} | {heirloom: 老物件 id | null}  挑一件老物件带上 / 放下
@@ -14,8 +14,8 @@ const ROLL_STATE := 3  ## s→c {rolls}  每人多了 house（家业传了几代
 const MOVE := 4        ## c→s {x, y, seq}
 const ACT := 5         ## c→s {spot}
 const CHOOSE := 6      ## c→s {optionId, guess?}  guess：默契事件里猜 TA 选了哪一项
-const WORLD := 7       ## s→c {tick, minute, slot, ready{qing,mei}, playing, wait, rest, actors{x,y,act,spot,sleep,seq,tg}, needs, money, event, bond, hints, stats, eff, goals, tracks}
-const EVENT := 8       ## s→c {event}
+const WORLD := 7       ## s→c {tick, minute, slot, ready{qing,mei}, playing, wait, rest, actors{x,y,act,spot,sleep,seq,tg}, needs, money, event, bond, hints, stats, eff, goals, tracks, story{chapter, title, intro, next{qing,mei}, force}}
+const EVENT := 8       ## s→c {event, locks}  locks：关口和主线上走不了的选项 {role: {optionId: 原因}}
 const ERROR := 9       ## s→c {message}
 const LOG := 10        ## s→c {entries}
 const PRESENCE := 11   ## s→c {online, protocols}

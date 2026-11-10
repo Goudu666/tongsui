@@ -435,7 +435,11 @@ interface WorldState {
   actors: { [R in Role]: Actor | null };
   event: PendingEvent | null;
   /** 今天命运准备好的事件：要走到对的地方才会发生 */
-  fate: { mirror: string | null; qing: string | null; mei: string | null; milestone?: string | null };
+  fate: {
+    mirror: string | null; qing: string | null; mei: string | null; milestone?: string | null;
+    /** 今天的主线事件（mirror / qing / mei 里是主线的那几件）到了章末还没碰上：一早就发生，不等人走过去（server/src/story.ts） */
+    force?: string[];
+  };
   /** 已经触发过的 fate */
   done: string[];
   /** 今天有没有同框或共鸣过：没有的话，一天结束时亲近会淡一点 */

@@ -55,11 +55,13 @@ function worldSceneAt(c: Content, y: number): Scene | null {
  * 这个人现在去不去得了这张图。unlock 顶上写的条件都要满足；any 里满足一条就行（河对岸：18 岁，或者 15 岁考上了市重点……）。
  * 今天要去这张图上报到的人（上学、上班）总去得了。去不了返回原因
  */
-function worldSceneLock(s: LifeState, c: Content, sc: Scene, role: Role, today?: Duty | null): string | null {
+function worldSceneLock(s: LifeState, c: Content, sc: Scene, role: Role, today?: { duty: Duty | null; story: string | null }): string | null {
   var u = sc.unlock;
   if (!u) return null;
-  var duty = today === undefined ? worldDuty(s, c, role) : today;
+  var duty = today ? today.duty : worldDuty(s, c, role);
   if (duty && lifeFind(c.map.spots, duty.spot).scene === sc.id) return null;
+  // 主线今天在这张图上等着他：第一次自己过桥看灯，就是主线带过去的
+  if ((today ? today.story : storySceneToday(s, c, role)) === sc.id) return null;
   var age = lifeTimeAt(s.turn).age;
   var p = s.persons![role];
   var why = function (q: SceneUnlock): string | null {
@@ -159,11 +161,20 @@ function worldStartDay(s: LifeState, c: Content) {
   // 命运给今天准备的事：mirror 一件（两人都在世时），每人 solo 一件。要走到对的地方才会发生。
   var seen = lifeSeenIds(s);
   var fate: WorldState["fate"] = { mirror: null, qing: null, mei: null };
+  // 主线（story.ts）：今天排上的那一件占掉命运的那一格。先算它，不吃随机数
+  var story = storyToday(s, c, t);
+  var storyScene = function (r: Role): string | null {
+    var id = story[r] || story.mirror;
+    return id ? storyFindEvent(c, id)!.scene : null;
+  };
+  // 被主线顶替掉的旧事件不再进随机池
+  var replaced = storyReplaced(c);
   // 事情出在哪张图上，那张图这个人得去得了：八岁的孩子遇不上少年宫走廊里的事（除非家里送去学琴），不然这一天命运准备的事白白落空
   var reach = function (e: LifeEvent, r: Role): boolean {
+    if (replaced[e.id]) return false;
     if (!e.where) return true;
     var z = lifeFind(c.map.zones, e.where);
-    return !worldSceneLock(s, c, lifeFind(c.map.scenes, z.scene), r, lifeTrack(c, persons[r], t.age).duty);
+    return !worldSceneLock(s, c, lifeFind(c.map.scenes, z.scene), r, { duty: lifeTrack(c, persons[r], t.age).duty, story: storyScene(r) });
   };
   var together: EligibleCtx = { bond: s.bond, alone: false };
   if (persons.qing.alive && persons.mei.alive) {
@@ -189,6 +200,10 @@ function worldStartDay(s: LifeState, c: Content) {
       fate[role] = pick.id;
     }
   }
+
+  if (story.mirror) fate.mirror = story.mirror;
+  for (var sr = 0; sr < ROLES.length; sr++) if (story[ROLES[sr]]) fate[ROLES[sr]] = story[ROLES[sr]];
+  if (story.force.length > 0) fate.force = story.force;
 
   // 关口：到了年纪的第一天。还有人没过、而且轮得到他，今天早上就发生
   var ms = lifeMilestoneAt(c, t.age);
@@ -619,6 +634,14 @@ function worldShadowStep(s: LifeState, c: Content, role: Role) {
     if (out && worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("eat")))) return;
   }
   if (p.needs.clean < 30 && worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("wash")))) return;
+  // 主线今天（晚上的那几件也去：睡觉往后挪）这一段在哪张图上等着：去那儿找件事做（到了那儿，worldFate 会让它发生）
+  var stId = w.fate[role] && storyFindEvent(c, w.fate[role]!) ? w.fate[role] : w.fate.mirror && storyFindEvent(c, w.fate.mirror) ? w.fate.mirror : null;
+  var stEv = stId && w.done.indexOf(stId) < 0 ? storyFindEvent(c, stId) : null;
+  var dutyNow = worldDutyOpen(s, c, role);
+  if (stEv && storyNow(stEv, w.slot) && !(dutyNow && w.slot === worldDutySlots(dutyNow)[0])) { // 上学上班不逃
+    var stScene = stEv.scene;
+    if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, function (act, sp) { return sp.scene === stScene && !act.duty && !act.sleep && act.money >= 0; }))) return;
+  }
   if (p.needs.energy < 25 || w.slot >= SLOTS.length - 1) {
     if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("sleep")))) return;
   }
@@ -802,47 +825,11 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
 
   // 关口躲不掉：一天一开头，轮得到的人放下手里的事（睡着的叫起来）一起面对
   if (worldMilestoneDue(s) && worldMilestone(s, c, out)) return out;
+  // 主线到了章末还没碰上：一早就发生，不等人走过去
+  if (worldStoryForce(s, c, out)) return out;
 
-  // 触发命运（先于影子定这一段：影子一定下来就不空闲了）：mirror 需要两人都空闲、都在 where、这一段碰得上它的钟点
-  if (w.fate.mirror && w.done.indexOf(w.fate.mirror) < 0) {
-    var mev = lifeFindEvent(c, w.fate.mirror);
-    // 在线的人要自己走到那里；离线的影子只要没睡着，就会被「叫过来」
-    var anyOnline = roles.some(function (r) { return online[r]; });
-    var host: Actor | null = null;
-    for (var h0 = 0; h0 < roles.length; h0++) if (online[roles[h0]]) host = w.actors[roles[h0]];
-    var hostScene = host ? worldSceneAt(c, host.y) : null;
-    var available = function (r: Role) {
-      var x = w.actors[r]!;
-      if (online[r]) return worldIdle(x) && worldInZone(c, x, mev.where);
-      // 叫过来也得是他去得了的图（四岁的影子不会被叫到海河边）
-      if (anyOnline) return !x.asleep && (x.from === undefined || x.from === w.slot) && !!hostScene && !worldSceneLock(s, c, hostScene, r);
-      return !x.asleep && worldInZone(c, x, mev.where);
-    };
-    if (roles.length === 2 && worldOverlaps(mev.when, w.slot) && roles.every(available)) {
-      var anchor: Actor | null = null;
-      for (var q0 = 0; q0 < roles.length; q0++) if (online[roles[q0]]) anchor = w.actors[roles[q0]];
-      for (var q = 0; q < roles.length; q++) {
-        var ax = w.actors[roles[q]]!;
-        if (ax.action) worldCancel(s, c, roles[q]);
-        if (!online[roles[q]] && anchor) { ax.x = anchor.x + 50; ax.y = anchor.y; delete w.ready[roles[q]]; }
-      }
-      w.event = { eventId: mev.id, kind: "mirror", roles: roles.slice(), choices: {}, shadow: [] };
-      out.started = w.event;
-      return out;
-    }
-  }
-  for (var k = 0; k < roles.length; k++) {
-    var role = roles[k];
-    var id = w.fate[role];
-    if (!id || w.done.indexOf(id) >= 0) continue;
-    var sev = lifeFindEvent(c, id);
-    var ok = sev.where ? worldInZone(c, w.actors[role], sev.where) : true;
-    if (ok && worldIdle(w.actors[role]) && worldOverlaps(sev.when, w.slot)) {
-      w.event = { eventId: sev.id, kind: "solo", roles: [role], choices: {}, shadow: [] };
-      out.started = w.event;
-      return out;
-    }
-  }
+  // 触发命运（先于影子定这一段：影子一定下来就不空闲了）
+  if (worldFate(s, c, online, out, false)) return out;
 
   // 影子：等在线的那个人定了再替不在的人定，这样才跟得上去搭伴；两个人都不在就直接定
   for (var i = 0; i < roles.length; i++) {
@@ -851,6 +838,8 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
     var o = lifeOther(r);
     if (roles.indexOf(o) < 0 || !online[o] || worldReady(s, o)) worldShadowAct(s, c, r);
   }
+  // 影子刚走到主线那张图上：这一段就发生（随机的事不这样，免得影子过的日子比人过的事多）
+  if (worldFate(s, c, online, out, true)) return out;
   // 等人：对门在线却一直不定，等够了影子替他定这一段（人可能走开了）
   var waiting = roles.filter(function (r) { return !worldReady(s, r); });
   if (waiting.length > 0 && waiting.length < roles.length) {
@@ -870,6 +859,85 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
   return out;
 }
 
+/** 章末强制发生的主线：放下手里的事（同关口），在一早就开始。一次一件 */
+function worldStoryForce(s: LifeState, c: Content, out: WorldTick): boolean {
+  var w = s.world!;
+  var list = w.fate.force || [];
+  for (var i = 0; i < list.length; i++) {
+    var id = list[i];
+    if (w.done.indexOf(id) >= 0) continue;
+    var ev = storyFindEvent(c, id);
+    if (!ev) continue;
+    var roles = ev.kind === "mirror" ? worldAliveRoles(s) : ROLES.filter(function (r) { return w.fate[r] === id && s.persons![r].alive; });
+    if (roles.length === 0 || (ev.kind === "mirror" && roles.length < 2)) { w.done.push(id); continue; }
+    for (var k = 0; k < roles.length; k++) {
+      var a = w.actors[roles[k]]!;
+      if (a.action && a.from !== undefined && a.from < w.slot) worldFinish(s, c, roles[k]);
+      else if (a.action) worldCancel(s, c, roles[k]);
+      worldClearAction(a);
+      delete w.ready[roles[k]];
+    }
+    w.event = { eventId: id, kind: ev.kind, roles: roles, choices: {}, shadow: [] };
+    out.started = w.event;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * 命运准备的事这时候发不发生。mirror 需要两人都空闲、都在那儿（随机的看地点，主线看图）、这一段碰得上；solo 只看当事人。
+ * storyOnly：影子刚替人定完这一段，只再看一眼主线
+ */
+function worldFate(s: LifeState, c: Content, online: { [R in Role]: boolean }, out: WorldTick, storyOnly: boolean): boolean {
+  var w = s.world!;
+  var roles = worldAliveRoles(s);
+  if (w.fate.mirror && w.done.indexOf(w.fate.mirror) < 0 && (!storyOnly || storyFindEvent(c, w.fate.mirror))) {
+    var mev = lifeFindEvent(c, w.fate.mirror);
+    // 在线的人要自己走到那里；离线的影子只要没睡着，就会被「叫过来」
+    var anyOnline = roles.some(function (r) { return online[r]; });
+    var host: Actor | null = null;
+    for (var h0 = 0; h0 < roles.length; h0++) if (online[roles[h0]]) host = w.actors[roles[h0]];
+    var hostScene = host ? worldSceneAt(c, host.y) : null;
+    var available = function (r: Role) {
+      var x = w.actors[r]!;
+      if (online[r]) return worldIdle(x) && storyHere(c, mev, x);
+      // 叫过来也得是他去得了的图（四岁的影子不会被叫到海河边）
+      if (anyOnline) return !x.asleep && (x.from === undefined || x.from === w.slot) && !!hostScene && !worldSceneLock(s, c, hostScene, r);
+      return !x.asleep && storyHere(c, mev, x);
+    };
+    if (roles.length === 2 && storyNow(mev, w.slot) && roles.every(available)) {
+      var anchor: Actor | null = null;
+      for (var q0 = 0; q0 < roles.length; q0++) if (online[roles[q0]]) anchor = w.actors[roles[q0]];
+      for (var q = 0; q < roles.length; q++) {
+        var ax = w.actors[roles[q]]!;
+        if (ax.action) worldCancel(s, c, roles[q]);
+        if (!online[roles[q]] && anchor) { ax.x = anchor.x + 50; ax.y = anchor.y; delete w.ready[roles[q]]; }
+      }
+      w.event = { eventId: mev.id, kind: "mirror", roles: roles.slice(), choices: {}, shadow: [] };
+      out.started = w.event;
+      return true;
+    }
+  }
+  for (var k = 0; k < roles.length; k++) {
+    var role = roles[k];
+    var id = w.fate[role];
+    if (!id || w.done.indexOf(id) >= 0) continue;
+    var sev = lifeFindEvent(c, id);
+    var st = storyIs(sev);
+    if (storyOnly && !st) continue;
+    var ok = st || sev.where ? storyHere(c, sev, w.actors[role]) : true;
+    // 影子刚替他定了这一段（主线那张图上的事）：撤下来去过主线
+    var idle = worldIdle(w.actors[role]) || (storyOnly && !online[role] && !w.actors[role]!.asleep && w.actors[role]!.from === w.slot);
+    if (ok && idle && storyNow(sev, w.slot)) {
+      if (w.actors[role]!.action) { delete w.ready[role]; worldCancel(s, c, role); worldClearAction(w.actors[role]!); }
+      w.event = { eventId: sev.id, kind: "solo", roles: [role], choices: {}, shadow: [] };
+      out.started = w.event;
+      return true;
+    }
+  }
+  return false;
+}
+
 /** 在事件里做选择。全部人选完后结算并返回日志 */
 function worldChoose(s: LifeState, c: Content, role: Role, optionId: string, fromShadow: boolean): { error: string | null; entry: LogEntry | null } {
   var w = s.world;
@@ -877,7 +945,7 @@ function worldChoose(s: LifeState, c: Content, role: Role, optionId: string, fro
   var ev = lifeFindEvent(c, w.event.eventId);
   var opt = lifeFindOption(ev, optionId);
   if (!opt) return { error: "没有这个选项", entry: null };
-  if (w.event.kind === "milestone") {
+  if (w.event.kind === "milestone" || storyIs(ev)) {
     var lock = lifeOptionLock(ev, opt, s.persons![role], (w.event.swing && w.event.swing[role]) || 0, lifePairBond(s, role));
     if (lock) return { error: "这条路现在走不了（" + lock + "）", entry: null };
   }

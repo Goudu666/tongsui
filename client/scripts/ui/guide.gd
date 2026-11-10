@@ -46,6 +46,8 @@ var _last_next := ""
 var _last_turn := -1
 var _marks: Control
 var _route_exit: Dictionary = {}  ## 主线路标指着的出口
+var _route_key := ""
+var _route_cache: Dictionary = {}
 var _target: Dictionary = {}      ## 今天主线在哪 { scene, slot, next }
 var _t := 0.0
 
@@ -199,7 +201,12 @@ func _follow_story(world, w: Dictionary) -> void:
 		return
 	var here := str(world.scene.get("id", ""))
 	if here != _target.scene:
-		_route_exit = route(main.content.get("map", {}), me.position, _target.scene)
+		# 找路不每帧跑：换了目标、换了一层，或者横着走出去一截才重找
+		var key := "%s|%d|%d" % [_target.scene, int(me.position.y), int(me.position.x / 60.0)]
+		if key != _route_key:
+			_route_key = key
+			_route_cache = route(main.content.get("map", {}), me.position, _target.scene)
+		_route_exit = _route_cache
 
 
 ## 从这儿去那张图要先走哪个出口（出口连成的图上找横着走得最少的路；走出口不算路）

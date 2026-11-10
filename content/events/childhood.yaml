@@ -18,7 +18,7 @@
   seasons: [summer]
   weight: 3
   title: 楼顶的夏夜
-  text: 夏天晚上，楼顶比屋里凉快。远处海河对岸的灯一盏一盏亮起来，楼下有人在收音机里听相声。
+  text: 三伏天，屋里待不住人。楼顶上凉席挨着凉席，谁家的收音机开着，没人认真听。
   options:
     - id: stars
       text: 躺在凉席上数星星
@@ -46,7 +46,7 @@
       memory: 明儿见
       bond: { sync: 2, close: 1 }
   dissonance:
-    text: 一个人在楼顶等了很久，另一个人已经在楼下了。
+    text: 一个在楼顶占着两个人的凉席，一个在楼下攥着两根冰棍。冰棍化了，凉席也没人躺。
     bond: { close: 1 }
 
 - id: c_stray_cat
@@ -57,7 +57,7 @@
   weight: 2
   requires: { minAge: 5 }
   title: 暖气片后面的猫
-  text: 楼道的暖气片后面缩着一只受伤的小猫。楼长说过不许在楼道里养东西。
+  text: 楼道暖气片后头缩着一只瘸腿的小猫，叫得比蚊子还细。楼长贴过条子：楼道里不许养活物。白菜不算。
   options:
     - id: hide
       text: 偷偷拿纸箱给它搭个窝
@@ -77,7 +77,7 @@
       memory: 暖暖
       bond: { sync: 3, close: 4 }
     tell:
-      text: 你们一起去敲了楼长的门。小猫后来被自行车铺的爷爷收养了。
+      text: 你们去敲了楼长的门。楼长嘴上说净给他找事儿，转脸把猫抱去了车铺：逮耗子，顶半个伙计。
       memory: 车铺的猫
       bond: { sync: 2, close: 2 }
   dissonance:
@@ -93,7 +93,7 @@
   seasons: [winter]
   weight: 2
   title: 除夕的鞭炮
-  text: 除夕夜，楼下满地红纸屑。你攥着一盒偷来的火柴，兜里揣着三个"二踢脚"。
+  text: 大年三十，楼下一地红纸屑。你攥着一盒从灶台上顺来的火柴，兜里揣着三个「二踢脚」，捻儿都让你搓软了。
   options:
     - id: together
       text: 喊上对门一起放
@@ -105,7 +105,7 @@
       effects: { self: { mind: 1 } }
   resonance:
     together:
-      text: "「砰——啪！」你们的眉毛都被燎掉了一点，楼上有人推开窗户骂了一句，然后也乐了。"
+      text: "「砰——啪！」眉毛燎没了半截。楼上有人推开窗户：「谁家倒霉孩子！」骂完自己先乐了：「过年好！」"
       memory: 燎掉的眉毛
       bond: { sync: 3, close: 3 }
     save:
@@ -124,7 +124,7 @@
   seasons: [winter]
   weight: 2
   title: 冻上的海河
-  text: 海河冻上了。冰面上有人抽冰嘎，有人推着冰车跑，岸边大人喊着"别往中间去"。
+  text: 海河冻结实了。冰面上抽冰嘎的、推冰车的、凿窟窿钓鱼的，各占一块地方。岸上的大人就会喊一句：「别往中间去！」
   options:
     - id: skate
       text: 下去推冰车
@@ -155,7 +155,7 @@
   weight: 2
   requires: { minAge: 7 }
   title: 第一次打架
-  text: 放学路上，隔壁楼的几个大孩子拦住你，说你"天天跟对门那个玩，丢人"。
+  text: 放学路上，隔壁楼几个大孩子把你堵在墙根儿，说你「天天跟对门那个混在一块儿，没出息」。
   options:
     - id: fight
       text: 冲上去
@@ -175,7 +175,7 @@
   stage: childhood
   weight: 3
   title: 下雨天
-  text: 雨下了一整天，楼下的路成了河。
+  text: 雨从夜里下到晌午，楼下的路成了河，有人拿洗衣裳的大盆当船划。出不去了。
   options:
     - id: read
       text: 翻出一本没看完的小人书
@@ -197,7 +197,7 @@
   weight: 1
   requires: { minAge: 8 }
   title: 车铺里的旧二胡
-  text: 修车爷爷的墙上挂着一把落满灰的二胡。他说，想学就来。
+  text: 修车爷爷的墙上，扳手和车圈中间挂着一把落灰的二胡。「想学就来。不收钱，收耳朵：头仨月那动静，你得受得了。」
   options:
     - id: learn
       text: 每天放学来学一会儿
@@ -214,7 +214,7 @@
   weight: 2
   requires: { minAge: 9 }
   title: 期末考试
-  text: 明天期末考试，你的数学还有两个单元没看。
+  text: 明天期末考试，数学还有两个单元一眼没看。大人放了话：考好了吃捞面，考砸了吃笤帚疙瘩。
   options:
     - id: cram
       text: 熬夜看书
@@ -407,7 +407,7 @@
   weight: 3
   requires: { minAge: 6 }
   title: 一只灰鸽子
-  text: 楼顶养鸽子的刘大爷说，这只灰鸽子翅膀伤了，跟不上群了，谁要就给谁。它在纸箱里缩成一团，咕咕地叫。
+  text: 楼顶养鸽子的刘大爷托着个纸箱：「翅膀伤了，跟不上群了。谁要谁抱走，不要钱，给口小米就行。」里头一只灰鸽子，缩成一团。
   options:
     - id: raise
       text: 我们俩一起养
@@ -974,7 +974,7 @@
   seasons: [summer]
   weight: 2
   title: 收音机里的相声
-  text: 楼下乘凉的大爷把收音机搁在棋盘边上，里头正说一段贯口，一口气报了几十道菜名。大爷们摇着蒲扇，乐得直拍腿。
+  text: 楼下乘凉的大爷把收音机搁在棋盘边上，里头正说一段贯口，一口气报了几十道菜名，愣没换气。大爷们的蒲扇都忘了摇。
   options:
     - id: learn
       text: 蹲在边上偷偷学
@@ -1089,7 +1089,7 @@
   weight: 3
   requires: { minAge: 9, flags: [erhu] }
   title: 楼下的二胡
-  text: 秋天傍晚，楼下乘凉的人还没散。修车爷爷把那把二胡递到你手里：「练了这么久了，拉一段给街坊听听。」
+  text: 秋天傍晚，楼下乘凉的人还没散。修车爷爷把二胡递到你手里：「拉一段。街坊的耳朵早让你磨出茧子了，不怕。」
   options:
     - id: play
       text: 拉学得最熟的那段

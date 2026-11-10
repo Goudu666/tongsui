@@ -22,4 +22,4 @@ def draw(ctx: Ctx):
     # 西边、北边的邻居
     roofs(ctx, -10, -10, 118, 718, seed=3, ridge="v")
     roofs(ctx, 1372, -10, 66, 718, seed=5, ridge="v")
-    roofs(ctx, 1450, -10, 440, 290, seed=7)
+    # 东北角原来也是一片屋顶，现在是河畔茶社（teahouse.py）

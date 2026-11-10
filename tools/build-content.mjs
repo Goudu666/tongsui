@@ -3,6 +3,7 @@
 //   client/data/content.json         客户端读取（画地图、显示文字）
 //   server/src/content.generated.ts  服务端结算（Nakama JS 运行时不方便读文件，直接内联）
 // 包含：events/*.yaml 剧情事件、families.yaml 家庭、talents.yaml 天赋、map.yaml 地图与行动、endings.yaml 结局
+//   client/data/street.json          街景（street.yaml：街坊、车，随年代更替；只给客户端，不进结算也不进内容版本）
 // 同时做基础校验，写剧情时出错能第一时间看到。
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { createHash } from "node:crypto";
@@ -228,6 +229,42 @@ for (const ev of events) if (ev.where && ev.where.startsWith("home_") && ev.kind
 const orphan = consumed.filter(([, f]) => !produced.has(f));
 for (const [where, f] of orphan) errors.push(`${where}: 要求标记 "${f}"，但没有任何人家、天赋、选项或共鸣会打上它（多半是拼错了）`);
 
+// ---------- 街景：街坊、摊子、车，随年代更替（只给客户端，不进服务端） ----------
+const street = load("street.yaml");
+{
+  const spritesPath = join(root, "client", "art", "street", "sprites.json");
+  let sprites = null;
+  try { sprites = JSON.parse(readFileSync(spritesPath, "utf8")).sprites; } catch { /* 美术还没生成时不查精灵名 */ }
+  const checkCommon = (at, o) => {
+    if (!o.id) errors.push(`${at}: 缺少 id`);
+    if (!o.sprite) errors.push(`${at}: 缺少 sprite`);
+    else if (sprites && !sprites[o.sprite]) errors.push(`${at}: 没有精灵 ${o.sprite}（先在 tools/art/street.py 里画，再运行它）`);
+    for (const e of o.eras ?? []) if (!STAGES.includes(e)) errors.push(`${at}: eras 里的 ${e} 不是人生阶段（${STAGES.join(" / ")}）`);
+    if (o.hours && !(Array.isArray(o.hours) && o.hours.length === 2)) errors.push(`${at}: hours 应为 [起始分钟, 结束分钟]`);
+    for (const k of Object.keys(o.lines ?? {})) if (k !== "default" && !STAGES.includes(k)) errors.push(`${at}: lines.${k} 不是人生阶段，也不是 default`);
+    if (o.lines && !o.name) errors.push(`${at}: 会说话的要有 name`);
+  };
+  const ids = new Set();
+  for (const st of STAGES) if (!street.eras?.[st]?.name) errors.push(`street.eras.${st}: 缺少 name`);
+  for (const [part, list] of [["npcs", street.npcs ?? []], ["props", street.props ?? []]]) {
+    for (const o of list) {
+      const at = `street.${part}#${o.id ?? "?"}`;
+      checkCommon(at, o);
+      if (ids.has(o.id)) errors.push(`${at}: id 重复`);
+      ids.add(o.id);
+      if (!(Array.isArray(o.at) && o.at.length === 2)) errors.push(`${at}: at 应为 [x, y]`);
+      if (o.hide_when && !actionIds.has(o.hide_when)) errors.push(`${at}: hide_when 未知行动 ${o.hide_when}`);
+    }
+  }
+  for (const t of street.traffic ?? []) {
+    const at = `street.traffic#${t.id ?? "?"}`;
+    checkCommon(at, t);
+    if (!["pass", "taxi"].includes(t.kind)) errors.push(`${at}: kind 必须是 pass / taxi`);
+    if (!(t.speed > 0) || typeof t.lane !== "number") errors.push(`${at}: 需要 lane（y 坐标）和 speed`);
+    if (!(Array.isArray(t.gap) && t.gap.length === 2)) errors.push(`${at}: gap 应为 [最短秒, 最长秒]`);
+  }
+}
+
 if (errors.length) {
   console.error(`内容校验失败（${errors.length} 处）：\n  - ` + errors.join("\n  - "));
   process.exit(1);
@@ -245,6 +282,7 @@ writeFileSync(
   `// 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content\n` +
     `var CONTENT: Content = ${json};\n`,
 );
+writeFileSync(join(root, "client", "data", "street.json"), JSON.stringify(street, null, 1) + "\n");
 const by = (k) => events.filter((e) => e.stage === k).length;
 console.log(`✓ ${events.length} 个事件  ` + STAGES.map((s) => `${s}:${by(s)}`).join("  ") +
   `  |  ${families.length} 户人家  ${talents.length} 种天赋  ${map.zones.length} 个地点  ${map.actions.length} 种行动` +

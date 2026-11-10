@@ -12,9 +12,11 @@
 var GAME_OFFER_SECONDS = 8; // 问了以后等多久
 var GAME_LEAD_IN = 3; // 开局先留三秒，看清自己管哪一头
 /** 哪个行动带哪款小游戏（行动 id → 小游戏 id） */
-var GAME_ACTIONS: { [actionId: string]: string } = { play_river: "kite" };
+// walk_river 是长大以后同一个点位上的「河边走走」（玩法重构里加的行动；这里先挂上，内容里还没有时不起作用）
+var GAME_ACTIONS: { [actionId: string]: string } = { play_river: "kite", walk_river: "kite" };
 /** 玩得最差和最好时的搭伴倍率；不玩时不写，用世界规则里的默认值 */
-var GAME_BOOST = [1.3, 1.8];
+// 下限等于默认的搭伴倍率：玩了不会比不玩差
+var GAME_BOOST = [1.5, 2.0];
 
 interface GameSession {
   gameId: string;

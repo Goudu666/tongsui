@@ -1,10 +1,9 @@
 extends RefCounted
-## 「接话」的界面：猜 TA、三种结算（共鸣 / 搭上了 / 错位）、回话、结局多出来的几句。
+## 「接话」的界面：三种结算（共鸣 / 搭上了 / 错位）、回话、结局多出来的几句。（猜 TA 2026-11 砍了）
 ## 规则都在服务端（server/src/duet.ts），文案在 content/duet.yaml，这里只管画。设计见 docs/DUET.md。
 ## 用的都是 kit.gd 的部件；两个圆是 ui/resonance.gd。
 ##
 ## main.gd 在这几处调进来：
-##   _pick                 默契事件里选完自己的 → ask_guess
 ##   _show_mirror_result   mirror 结算 → show_result
 ##   _on_log_entries       回话的结算（solo 且带 duet.echo）→ show_echo
 ##   _on_snapshot          进了世界以后 → on_snapshot（有欠着的话就问）
@@ -62,28 +61,6 @@ func _head(box: Container, outcome: String, when: String) -> void:
 	Kit.chip(head, HEADLINE[outcome], P.INK_SOFT if outcome == "miss" else P.OVERLAP)
 	var l: Label = m._label(head, when, 30, P.INK_SOFT)
 	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-
-
-# ----------------------------------------------------------------------
-# 猜 TA
-# ----------------------------------------------------------------------
-
-## 选完自己的，再猜对门选了哪个。猜不猜都行；猜了才和自己的选择一起发出去
-func ask_guess(event_id: String, option_id: String, option_text: String) -> void:
-	var ev: Dictionary = m.events_by_id.get(event_id, {})
-	var box: VBoxContainer = m.modal_body
-	var other: String = m._other()
-	m._clear(box)
-	m._label(box, "你选了", 32, P.INK_SOFT)
-	m._label(box, option_text, 48, P.role_color(m.my_role))
-	Kit.rule(box, Color(P.INK, 0.25))
-	Kit.chip(box, "猜猜 %s 选了哪个" % _name(other), P.role_color(other))
-	var opts: Array = ev.get("options", [])
-	var grid: Container = m._options(box, opts.size())
-	for o in opts:
-		var b: Button = m._option(grid, str(o.text), m._pick_send.bind(option_id, option_text, str(o.id)))
-		Kit.tint(b, P.role_color(other))
-	m._quiet(box, "不猜", m._pick_send.bind(option_id, option_text, ""))
 
 
 # ----------------------------------------------------------------------

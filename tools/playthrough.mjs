@@ -71,7 +71,8 @@ function route(s, role, x, y, tx, ty) {
       if (ex.at[1] !== cy) continue;
       if (G("worldSceneLock")(s, C, sceneOf.get(ex.to), role)) continue;
       const nk = `${ex.arrive[0]},${ex.arrive[1]}`;
-      const nd = d0 + Math.abs(cx - ex.at[0]) + 40;
+      // 过桥、坐车要花掉这一段的时间（world.ts 的 worldExit）：按一分钟 40 像素算进路程，能走过去就不绕桥
+      const nd = d0 + Math.abs(cx - ex.at[0]) + 40 + (ex.ride || 0) * 40;
       if (!dist.has(nk) || nd < dist.get(nk)) {
         dist.set(nk, nd);
         first.set(nk, first.get(key) || ex);
@@ -346,6 +347,8 @@ function playLife(seed) {
         // 走到了
         if (plan.walkTo && plan.linger) { P.plan = null; P.wait = 3 * TICK; continue; } // 站一会儿，没事就接着干别的
         if (plan.walkTo) { P.plan = { pass: true, why: plan.why + "-arrived" }; P.wait = 5; continue; }
+        // 客户端在按钮上写着做不了的原因（比如过了两趟桥，「路上把这一段花掉了」），真人不会再按：这一段歇着
+        if (!plan.sent && G("worldCanAct")(s, C, r, plan.spot.id)) { P.plan = { pass: true, why: plan.why + "-greyed" }; P.did = P.plan.why; continue; }
         msgs.push(R.msg(P.presence, OP.ACT, { spot: plan.spot.id }));
         if (plan.quick) { P.plan = null; P.wait = THINK.quick * TICK; } else { P.wait = 5; P.plan = { ...plan, sent: true }; }
         if (plan.sent) { P.plan = { pass: true, why: plan.why + "-failed" }; } // 做不了：歇着

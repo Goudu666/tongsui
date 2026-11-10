@@ -232,7 +232,8 @@
       effects: { bond: { distance: 2 }, flags: [uni_away] }
     - id: abroad
       text: 家里送你出国念书
-      min: 6.3
+      # 比考外地（8.3）低半分多，留给差一口气的人。6.3 的时候等于花钱买了最好的那所大学（玩法评审）
+      min: 7.7
       cost: 60
       requires: { flags: [fam_rich] }
       lock: 家里供不起
@@ -296,14 +297,15 @@
       effects: { flags: [job_desk] }
     - id: pull
       text: 托家里的关系进单位
-      score: { charm: 0.6, mind: 0.4 }
-      min: 6.7
+      # 自己一份营生（tracks.yaml 的 job_pull），不算考进去的办公室：一天少几块，往后三道要钱的关不跟着坐办公室走。
+      # 魅力只占四成：占六成的时候嘴甜的殷实孩子 85% 进得去，同样嘴甜的小康 19%，成了「魅力换办公室」（玩法评审）
+      score: { mind: 0.6, charm: 0.4 }
+      min: 7.8
       cost: 15
       requires: { flags: [fam_rich] }
       lock: 家里没有这层关系
-      joins: desk
       tags: [competitive]
-      effects: { self: { mood: -3 }, flags: [job_desk, job_pull] }
+      effects: { self: { mood: -3 }, flags: [job_pull] }
     - id: teach
       text: 回小学教书
       score: { mind: 0.6, charm: 0.4 }
@@ -366,6 +368,10 @@
       text: 一根杠子两头抬，走了一天，步子是一样的。
       memory: 一根杠子
       bond: { sync: 3, close: 2 }
+    pull:
+      text: 两家托的是同一个人。报到那天在传达室碰上了，谁也没问对方是怎么进来的。
+      memory: 传达室
+      bond: { sync: 2, close: 1 }
     succeed:
       text: 同一个厂门，同一种蓝工装。下了班在澡堂门口等，谁先出来谁去买汽水。
       memory: 两身蓝工装

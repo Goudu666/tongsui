@@ -87,7 +87,7 @@ func _tips() -> void:
 	for id in Guide.TIPS:
 		var t: Array = Guide.TIPS[id]
 		_check(str(t[0]).length() >= 8 and str(t[0]).length() <= 70, "小纸条 %s 的字数（8~70）：%d" % [id, str(t[0]).length()])
-		_check(["walk", "act", "story", "partner", "goal", "top"].has(str(t[1])), "小纸条 %s 贴的位置认不得：%s" % [id, t[1]])
+		_check(["walk", "act", "story", "partner", "goal", "top", "modal"].has(str(t[1])), "小纸条 %s 贴的位置认不得：%s" % [id, t[1]])
 
 
 class _FakeMain extends RefCounted:

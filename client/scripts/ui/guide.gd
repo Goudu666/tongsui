@@ -4,7 +4,7 @@ extends CanvasLayer
 ##      和「长大了」那张卡撞在同一天（12、18、30、60 岁）就并成一张（fx.card_hook）。
 ##   2. 主线路标：纸带上的「下一件事」在别的图上，就在去那儿的第一个出口上套一圈墨色的波纹，
 ##      出口不在画面里就贴着屏幕边一个「主」字的箭头。到了那张图、还没到那一段，脚下写一句「到了傍晚就在这儿」。
-##   3. 小纸条：头一世的头几天，碰到第一次的事（第一次能定、第一次等 TA、第一次搭伴、第一次过完一天……）
+##   3. 小纸条：头一世的头几天，碰到第一次的事（第一次能定、第一次等 TA、第一次搭伴、第一次过完一天、第一道关口……）
 ##      贴一张小纸条说一句怎么玩。每条只出一次，记在 user://guide.cfg，点一下或者过几秒就收。
 ##   4. 过完一件主线，提示条写下一件在哪儿。
 ## main.gd 只挂两处：_build_layers 里 new 一个，_enter_world 里 enter()。
@@ -15,6 +15,8 @@ const SAVE := "user://guide.cfg"
 const SLOT_IDS := ["morning", "am", "pm", "evening", "night"]
 const SLOT_NAME := ["早上", "上午", "下午", "傍晚", "晚上"]
 const CHAPTER_NUM := ["", "一", "二", "三", "四", "五", "六", "七"]
+## 每一章两个人大概隔多远（章首卡上两个圆的间距，按半径算）：一起长大挨着，第四章各奔东西分得最开，老了又挨上
+const CHAPTER_PAIR := [0.9, 0.7, 1.25, 2.5, 1.6, 1.2, 0.5]
 const TIP_SECONDS := 9.0
 const TIP_GAP := 2.5  ## 两张纸条之间至少隔这么久
 
@@ -25,10 +27,10 @@ const TIPS := {
 	"slot": ["一天分五段：早上、上午、下午、傍晚、晚上。每段挑一件正经事，或者「就这么过」。吃饭、洗澡这些顺手的事不占时间。", "act"],
 	"wait": ["定下了。两个人都定了，这一段才过去。右上角是对门的牌：TA 在哪儿、定没定。", "partner"],
 	"together": ["和 TA 在一块儿做同一件事就是搭伴：长得快一半，两个人也更近。", "act"],
-	"exit": ["门口、楼梯口、街口是出口。站过去，按钮就变成「下楼」「去河边」。", "act"],
+	"gate": ["这是一道关口。选的路管接下来几年。和 TA 选了同一条，两条线就并在一起。", "modal"],
 	"need": ["圆表红了：饿了回家吃饭，脏了去洗，累了就早点睡。不管它，做什么都事倍功半。", "top"],
 	"night": ["晚上了。回家上床睡下，这一天就到头了。", "act"],
-	"day": ["这一天过去了。这辈子只过被记住的日子：小时候一年四天，长大了一年一天，再往后几年一天。", "top"],
+	"day": ["这一天过去了。这辈子只过被记住的日子：小时候一年四天，上了中学一年两天，长大了一年一天，再往后三年一天。", "top"],
 	"goal": ["最上面那条是下一道关口：还有几个日子、分数线在哪。平时做的事都在往上攒。", "goal"],
 }
 
@@ -124,7 +126,34 @@ func card_lines() -> Array:
 	_seen_chapter = ch
 	_card_chapter = ch
 	var c: Dictionary = chapters()[ch - 1]
-	return [["第%s章 · %s" % [CHAPTER_NUM[ch] if ch < CHAPTER_NUM.size() else str(ch), str(c.get("title", ""))], 56, P.PAPER], [str(c.get("intro", "")), 34, Color(P.PAPER, 0.8)], [_dots(ch), 34, Color(P.PAPER, 0.7)]]
+	var out: Array = [["第%s章 · %s" % [CHAPTER_NUM[ch] if ch < CHAPTER_NUM.size() else str(ch), str(c.get("title", ""))], 56, P.PAPER], [str(c.get("intro", "")), 34, Color(P.PAPER, 0.8)]]
+	var less := chapter_more(ch)
+	if less != "":
+		out.append([less, 26, Color(P.PAPER, 0.6)])
+	out.append([_dots(ch), 34, Color(P.PAPER, 0.7)])
+	return out
+
+
+## 章首卡底下那行小字：这一章新开的图、这一章走到哪道关（story.yaml 的 opens / closes）
+func chapter_more(ch: int) -> String:
+	var c: Dictionary = chapters()[ch - 1]
+	var map: Dictionary = main.content.get("map", {})
+	var names: Array = []
+	for id in c.get("opens", []):
+		for sc in map.get("scenes", []):
+			if str(sc.id) == str(id):
+				names.append(str(sc.name))
+	var gates: Array = []
+	for id in c.get("closes", []):
+		for e in main.content.get("events", []):
+			if str(e.id) == str(id):
+				gates.append("%d 岁%s" % [int(e.get("age", 0)), str(e.get("title", ""))])
+	var parts: Array = []
+	if not names.is_empty():
+		parts.append("新去处　" + "　".join(names))
+	if not gates.is_empty():
+		parts.append("这一章到　" + "　".join(gates))
+	return "　·　".join(parts)
 
 
 func _dots(ch: int) -> String:
@@ -137,7 +166,7 @@ func _dots(ch: int) -> String:
 func _chapter_card(ch: int, small: String) -> void:
 	var c: Dictionary = chapters()[ch - 1]
 	var num := "第%s章" % (CHAPTER_NUM[ch] if ch < CHAPTER_NUM.size() else str(ch))
-	main.fx.chapter_card(num, str(c.get("title", "")), str(c.get("intro", "")), _dots(ch), small)
+	main.fx.chapter_card(num, str(c.get("title", "")), str(c.get("intro", "")), _dots(ch), small, CHAPTER_PAIR[ch - 1] if ch <= CHAPTER_PAIR.size() else -1.0, chapter_more(ch))
 
 
 # ---------- 每帧 ----------
@@ -257,7 +286,13 @@ static func route(map: Dictionary, from: Vector2, scene_id: String) -> Dictionar
 # ---------- 第一次 ----------
 
 func _first_times(world, w: Dictionary) -> void:
-	if not _first_life or main.modal.visible or main.fx.is_busy():
+	if not _first_life or main.fx.is_busy():
+		return
+	if main.modal.visible:
+		# 第一道关口（六岁上学那天）：这个选择的分量要说一句
+		var ev: Dictionary = main.events_by_id.get(str(main.modal.get_meta("waiting_event", "")), {})
+		if str(ev.get("kind", "")) == "milestone":
+			want("gate")
 		return
 	var me = world.me()
 	if me == null or not me.visible:
@@ -269,8 +304,6 @@ func _first_times(world, w: Dictionary) -> void:
 			want("story")
 		if _done.has("story"):
 			want("slot")
-		if not world.nearest_exit().is_empty():
-			want("exit")
 		if int(w.get("slot", 0)) == 4:
 			want("night")
 		var needs: Dictionary = (w.get("needs", {}) as Dictionary).get(main.my_role, {}) if w.get("needs") is Dictionary else {}
@@ -336,6 +369,8 @@ func _place_tip() -> void:
 			at = Vector2(clampf(g.get_center().x - sz.x / 2.0, 40.0, view.x - sz.x - 40.0), g.end.y + 80.0)
 		"top":
 			at = Vector2((view.x - sz.x) / 2.0, 300.0)
+		"modal":
+			at = Vector2((view.x - sz.x) / 2.0, 24.0)
 	_tip.position = at.round()
 	_tip.rotation = -0.01
 

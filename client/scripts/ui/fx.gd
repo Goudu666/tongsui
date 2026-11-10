@@ -5,6 +5,7 @@ extends CanvasLayer
 ##   chapter_card() 进了新的一章（没赶上长大的那几章：6 岁、45 岁，还有头一天）
 
 const P := preload("res://scripts/ui/palette.gd")
+const Kit := preload("res://scripts/ui/kit.gd")
 const SHADER := preload("res://shaders/print_in.gdshader")
 
 var _sheet: ColorRect
@@ -79,16 +80,21 @@ func stage_card(big: String, small: String, color: Color, swap := Callable()) ->
 
 
 ## 进了新的一章：上面一行小字（几岁），然后「第几章」、章名、章首那一句，最底下七个点
-func chapter_card(num: String, title: String, intro: String, dots: String, small := "") -> void:
+## pair：两个圆隔多远（按半径算，0.5 叠得多、2.5 分得最开），这一章两个人大概的远近；less 是底下一行小字（新去处、这一章到哪道关）
+func chapter_card(num: String, title: String, intro: String, dots: String, small := "", pair := -1.0, less := "") -> void:
 	_busy_card = true
 	var specs: Array = []
 	if small != "":
 		specs.append([small, 36, Color(P.PAPER, 0.7)])
+	if pair >= 0.0:
+		specs.append(["@pair", pair])
 	specs.append([num, 44, Color(P.PAPER, 0.8)])
 	specs.append([title, 150, P.PAPER])
 	specs.append([intro, 38, Color(P.PAPER, 0.85)])
+	if less != "":
+		specs.append([less, 28, Color(P.PAPER, 0.6)])
 	specs.append([dots, 34, Color(P.PAPER, 0.6)])
-	_show_card(specs, P.INK, Callable(), 2.4)
+	_show_card(specs, P.INK, Callable(), 2.6)
 
 
 func _show_card(specs: Array, color: Color, swap: Callable, hold: float) -> void:
@@ -96,6 +102,11 @@ func _show_card(specs: Array, color: Color, swap: Callable, hold: float) -> void
 		c.queue_free()
 	var f := P.font()
 	for spec in specs:
+		if str(spec[0]) == "@pair":
+			var pd := _Pair.new()
+			pd.gap = float(spec[1])
+			_card.add_child(pd)
+			continue
 		var l := Label.new()
 		l.text = spec[0]
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -117,3 +128,17 @@ func _show_card(specs: Array, color: Color, swap: Callable, hold: float) -> void
 		_sheet.visible = false
 		_sheet.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_busy_card = false)
+
+
+## 章首卡上的两个圆：这一章两个人隔多远
+class _Pair extends Control:
+	var gap := 1.0
+
+	func _init() -> void:
+		custom_minimum_size = Vector2(240, 90)
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func _draw() -> void:
+		var r := 30.0
+		Kit.draw_pair(self, size / 2.0, r, r * gap, 0.95, 0.0)
+

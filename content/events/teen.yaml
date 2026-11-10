@@ -7,7 +7,7 @@
   where: school
   weight: 2
   title: 课本上的纸条
-  text: 上课时，一张纸条从后排传了过来，上面只有一个问号。
+  text: 物理课，老师背着身画滑轮。一张纸条从后排一站一站传过来，传到你手里，就一个问号。没写给谁，也没落款。
   options:
     - id: reply
       text: 在问号后面画一个笑脸
@@ -32,7 +32,7 @@
   weight: 2
   requires: { minAge: 15, notFlags: [dropout] }
   title: 志愿
-  text: 中考志愿表发下来了。市里的重点高中要住校，离家很远。
+  text: 中考志愿表发下来了。市重点得住校，离家隔着大半个城。街坊都说孩子还是守着家好，可那是重点啊。
   options:
     - id: far
       text: 报市重点
@@ -306,7 +306,7 @@
   weight: 2
   requires: { minAge: 13 }
   title: 第一次挣钱
-  text: 车铺爷爷今天腰疼，让你替他补了一下午的胎。收摊时，他从铁盒里数出五块钱，拍在你满是黑油的手心里。
+  text: 车铺爷爷腰疼，你替他补了一下午胎。收摊，他从铁盒里数出五块钱，拍在你的黑手心里：「拿着。手艺钱，花着硬气。」
   options:
     - id: tape
       text: 去买一盘新磁带

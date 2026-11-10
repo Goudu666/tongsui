@@ -5,10 +5,10 @@ extends RefCounted
 ## 用的都是 kit.gd 的部件；投票的两个圆和别处一样用 Kit.draw_pair。
 ##
 ## main.gd 在这几处调进来：
-##   _show_roll        → roll_head / my_offer / their_offer
+##   _show_roll        → roll_head（左栏）/ my_offer（两栏下面通栏的一排）/ their_offer（右栏，对门的）
 ##   _roll_card        → house_line
 ##   _on_roll_state    → same_cards / refresh_roll（只是换了手里的东西就原地改，不整页重画）
-##   _show_ending      → ending
+##   _show_ending      → left_behind（右栏）/ again（左栏）
 ##   _on_snapshot、_on_presence → on_protocols；net.again_state → on_again
 ##   _on_lifelines     → life_text
 
@@ -116,12 +116,26 @@ func house_line(col: Container, r: Dictionary) -> void:
 	m._label(col, text, 30, P.OVERLAP)
 
 
-## 我面前摆着的老物件：点一件带上，再点一下放下
+## 我面前摆着的老物件：点一件带上，再点一下放下。横屏里是通栏的一排，三件并排摆着
 func my_offer(body: Container) -> void:
 	_mine_box = VBoxContainer.new()
 	_mine_box.add_theme_constant_override("separation", 22)
 	body.add_child(_mine_box)
 	_fill_mine()
+
+
+## 这一世我面前有没有摆东西（有的话投胎页多一排，按钮跟到那一排下面）
+func has_offer() -> bool:
+	var rolls: Variant = m.life.get("rolls")
+	if not rolls is Dictionary or not rolls.get(m.my_role) is Dictionary:
+		return false
+	var offer: Variant = rolls[m.my_role].get("offer")
+	if not offer is Array:
+		return false
+	for id in offer:
+		if not heirloom(id).is_empty():
+			return true
+	return false
 
 
 ## 对门面前摆着的：只看，不能替 TA 挑
@@ -164,13 +178,23 @@ func _fill_mine() -> void:
 		return
 	var picked: Variant = mine.get("heirloomId")
 	var locked := bool(mine.get("confirmed", false))
-	m._label(_mine_box, "河畔里留着的老物件", 36, P.INK)
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 24)
+	_mine_box.add_child(head)
+	var title: Label = m._label(head, "河畔里留着的老物件", 36, P.INK)
+	title.autowrap_mode = TextServer.AUTOWRAP_OFF
+	title.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	var hint := "带一件走，或者空着手。"
 	if locked:
 		hint = "空着手出生。" if picked == null else "带着「%s」出生。" % str(heirloom(picked).get("name", ""))
-	m._label(_mine_box, hint, 30, P.INK_SOFT)
+	var sub: Label = m._label(head, hint, 30, P.INK_SOFT)
+	sub.size_flags_vertical = Control.SIZE_SHRINK_END
+	# 并排摆着，一样高
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 28)
+	_mine_box.add_child(row)
 	for id in shown:
-		_tag(_mine_box, heirloom(id), str(picked) == str(id), locked)
+		_tag(row, heirloom(id), str(picked) == str(id), locked)
 
 
 func _fill_theirs() -> void:
@@ -201,6 +225,8 @@ func _fill_theirs() -> void:
 func _tag(box: Container, h: Dictionary, picked: bool, locked: bool) -> void:
 	var color := P.role_color(m.my_role)
 	var panel := PanelContainer.new()
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.size_flags_stretch_ratio = 1.0
 	var sb := RisoBox.make(color if picked else Color(color, 0.0), 9.0, 30.0)
 	sb.line = 3.0
 	sb.content_margin_left = 74.0
@@ -208,31 +234,25 @@ func _tag(box: Container, h: Dictionary, picked: bool, locked: bool) -> void:
 	if locked and not picked:
 		panel.modulate.a = 0.45
 	box.add_child(panel)
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 20)
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(row)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 8)
-	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(col)
-	# 名字和「带上它多了什么」一行，下面是物件本身的一句话
+	panel.add_child(col)
+	# 名字一行（挑中的右边盖「带上」），「带上它多了什么」一行，下面是物件本身的一句话
 	var head := HBoxContainer.new()
-	head.add_theme_constant_override("separation", 24)
+	head.add_theme_constant_override("separation", 16)
 	head.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(head)
 	var nm: Label = m._label(head, str(h.get("name", "")), 42, P.INK)
 	nm.autowrap_mode = TextServer.AUTOWRAP_OFF
-	nm.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	nm.clip_text = true
+	if picked:
+		var seal := Kit.chip(head, "带上", color, 30)
+		seal.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var eff := effect_text(h)
 	if eff != "":
-		var e: Label = m._label(head, eff, 28, color)
-		e.size_flags_vertical = Control.SIZE_SHRINK_END
+		m._label(col, eff, 28, color)
 	m._label(col, str(h.get("desc", "")), 30, P.INK_SOFT)
-	if picked:
-		var seal := Kit.chip(row, "带上", color, 30)
-		seal.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	panel.add_child(_TagHole.new(color, picked))
 	if locked:
 		return
@@ -269,8 +289,8 @@ class _TagHole extends Control:
 # 结局页
 # ----------------------------------------------------------------------
 
-## 「留给河畔里」和「再来一世」。画了再来一世就返回 true（那样「回到标题」退成小字）
-func ending(body: Container) -> bool:
+## 「留给河畔里」：两个人各自留下的老物件（没有就什么都不画）。横屏里跟共同回忆放右栏
+func left_behind(box: Container) -> void:
 	var left: Variant = m.life.get("left")
 	var rows: Array = []
 	if left is Dictionary:
@@ -278,24 +298,29 @@ func ending(body: Container) -> bool:
 			var h := heirloom(left.get(r))
 			if not h.is_empty():
 				rows.append([r, h])
-	if not rows.is_empty():
-		var card := Kit.card(P.INK_SOFT, 44.0)
-		body.add_child(card)
-		var col := VBoxContainer.new()
-		col.add_theme_constant_override("separation", 20)
-		card.add_child(col)
-		Kit.chip(col, "留给河畔里", P.INK, 32)
-		for it in rows:
-			var head := HBoxContainer.new()
-			head.add_theme_constant_override("separation", 18)
-			col.add_child(head)
-			Kit.chip(head, _name(it[0]), P.role_color(it[0]), 30)
-			var nm: Label = m._label(head, str(it[1].name), 42, P.INK)
-			nm.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			m._label(col, str(it[1].get("desc", "")), 32, P.INK_SOFT)
+	if rows.is_empty():
+		return
+	var card := Kit.card(P.INK_SOFT, 44.0)
+	box.add_child(card)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 20)
+	card.add_child(col)
+	Kit.chip(col, "留给河畔里", P.INK, 32)
+	for it in rows:
+		var head := HBoxContainer.new()
+		head.add_theme_constant_override("separation", 18)
+		col.add_child(head)
+		Kit.chip(head, _name(it[0]), P.role_color(it[0]), 30)
+		var nm: Label = m._label(head, str(it[1].name), 42, P.INK)
+		nm.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		m._label(col, str(it[1].get("desc", "")), 32, P.INK_SOFT)
+
+
+## 「再来一世」：两个圆和按钮，在左栏这一生的收尾下面。画了就返回 true（那样「回到标题」退成小字）
+func again(box: Container) -> bool:
 	_again_box = VBoxContainer.new()
 	_again_box.add_theme_constant_override("separation", 24)
-	body.add_child(_again_box)
+	box.add_child(_again_box)
 	return _fill_again()
 
 

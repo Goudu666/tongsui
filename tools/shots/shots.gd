@@ -11,6 +11,10 @@ func _initialize() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--out="):
 			out_dir = a.trim_prefix("--out=")
+		if a.begins_with("--notch=") and float(a.trim_prefix("--notch=")) > 0.0:
+			# 假装左右都有刘海 / 圆角，看 HUD 和菜单页让没让开
+			var n := float(a.trim_prefix("--notch="))
+			load("res://scripts/ui/kit.gd").safe_override = Vector2(n, n)
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	_run()
 
@@ -170,8 +174,30 @@ func _run() -> void:
 		main.world.set_stage("childhood")
 		main.world.set_minute(462.0)
 	main._refresh_hud()
+	# 对门在线，正在自己家写作业（HUD 右上那张牌）
+	main._partner_online = true
+	if main.world != null:
+		var mei: Node2D = main.world.actors.mei
+		mei.doing = "study"
+		mei.action_label = "写作业"
 	await _walk(Vector2(1630, 500), 3.2)
 	await _snap("14_hud_online")
+	# 走到河边：对门出了画面，屏幕边上一个箭头指着 TA
+	if main.world != null:
+		var far: Node2D = main.world.actors.mei
+		far.position = Vector2(330, 1210)
+		far.walk_target = far.position
+		far.net_target = far.position
+		far.doing = "duty"
+		far.action_label = "上学"
+	await _walk(Vector2(2140, 840), 4.0)
+	await _snap("28_partner_pointer")
+	await _walk(Vector2(1630, 500), 3.6)
+	main._toast("同框 · 「俩鸡蛋，多放葱花。」你们说的是同一句。")
+	main.banner.visible = true
+	await _wait(0.8)
+	await _snap("36_toast_banner")
+	main.banner.visible = false
 	main._close_modal()
 
 	# 核心玩法：目标纸带点开、人生关口（有一条路够不着）、揭晓（同路 / 各走各的）、带成长的日结
@@ -207,6 +233,7 @@ func _run() -> void:
 			"locks": {"qing": {"key": "心智 60 分，线是 64 分"}, "mei": {}}})
 		await _wait(1.5)
 		await _snap("24_milestone_choice")
+		await _many_paths()
 		main.my_role = "qing"
 		main._on_log_entries({"entries": [{"kind": "milestone", "label": "12 岁 · 上学期", "events": {"qing": "m_junior", "mei": "m_junior"},
 			"choices": {"qing": "normal", "mei": "normal"}, "shadow": [], "resonance": true, "text": "三点半，校门口，还是你们俩。",
@@ -224,6 +251,16 @@ func _run() -> void:
 		await _snap("27_day_gains")
 		main._close_modal()
 		main.life = {"turn": 17}
+
+	# 搭伴小游戏：放风筝（试玩，不联网）
+	if main.get("games") != null and main.world != null:
+		main.games.my_role = "qing"
+		main.games.names = main.names
+		main.games.start_practice(true)
+		await _wait(5.5)
+		await _snap("29_kite")
+		main.games.close()
+		await _wait(0.3)
 
 	# 一生
 	main.life = {"phase": "ended", "turn": 200, "log": [{"kind": "end", "text": "七十九岁那年冬天，两个人前后脚走了。楼下的槐树还在。"}],
@@ -356,3 +393,22 @@ func _legacy_ending() -> void:
 	await _snap("43_legacy_waiting")
 	main.net = null
 	fake.queue_free()
+
+
+## 路多的关口（找工作六条、上小学四条）：选项折成三列 / 两列，不挤出弹窗。带线的路第一条锁住，写差多少
+func _many_paths() -> void:
+	for id in ["m_job", "m_school"]:
+		var ev: Dictionary = main.events_by_id.get(id, {})
+		if ev.get("options", []).size() < 4:
+			continue
+		var locks: Dictionary = {}
+		for o in ev.options:
+			if o.has("min") and locks.is_empty():
+				locks[o.id] = "心智 58 分，线是 64 分"
+		main._close_modal()
+		main.my_role = "qing"
+		main._on_event_started({"event": {"roles": ["qing", "mei"], "eventId": id, "kind": "milestone", "choices": {}, "swing": {"qing": -0.2, "mei": 0.1}, "steady": {"qing": 0.3}},
+			"locks": {"qing": locks, "mei": {}}})
+		await _wait(1.5)
+		await _snap("37_paths_%d" % ev.options.size())
+	main._close_modal()

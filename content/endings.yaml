@@ -47,7 +47,7 @@ pair:
   # 藏着：上一世拉过钩，这一世又拉了一回
   - id: e_again
     title: 又是对门
-    text: 这两扇门里，早先也有两个孩子拉过钩。新楼分房那天，你们又抓到了对门。楼长翻着住户本，半天没说话。
+    text: 这两扇门里，早先也有两个孩子拉过钩。这一回拉钩的，还是住对门的两个。楼长翻着住户本，半天没说话。
     requires: { flags: [leg_p_promise, p_promise], maxDistance: 1, minClose: 45 }
 
   - id: e_neighbors

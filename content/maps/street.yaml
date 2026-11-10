@@ -1,0 +1,99 @@
+# 楼下：河畔里的一条街。从左到右：去学校的街口、早点铺、小卖部、楼门口（下棋的、告示栏）、自行车铺、茶社、去河边的街口。
+# 写法见 building.yaml 文件头。
+# 这条街上原有的街坊和车（早点铺、茶社、修车铺、遛鸟下棋的、卖糖葫芦的、街上的车流）还在 content/street.yaml，
+# 换成横版时按这里的 areas 重排横坐标；这里只写新添的人和地方。
+
+id: street
+name: 楼下
+width: 4000
+unlock: {}
+
+areas:
+  - { id: breakfast, name: 早点铺, span: [ 210, 830 ], floor: 0 }
+  - { id: shop, name: 小卖部, span: [ 830, 1320 ], floor: 0 }
+  - { id: alley, name: 河畔里, span: [ 1320, 2430 ], floor: 0 }
+  - { id: bikeshop, name: 自行车铺, span: [ 2430, 3060 ], floor: 0 }
+  - { id: teahouse, name: 河畔茶社, span: [ 3060, 3820 ], floor: 0 }
+
+exits:
+  - { id: to_primary, at: 60, to: primary, arrive: 60, label: 去小学 }
+  - { id: to_middle, at: 160, to: middle, arrive: 60, label: 去中学 }
+  - { id: upstairs, at: 1700, to: building, arrive: 1560, arriveFloor: 1, label: 上楼 }
+  - { id: to_park, at: 2300, to: park, arrive: 60, label: 去公园 }
+  - { id: to_river, at: 3940, to: river, arrive: 60, label: 去海河边 }
+
+spots:
+  - { id: breakfast_stall, at: 530, area: breakfast, actions: [ duty, help_out, eat_out, dine ] }
+  - { id: shop_counter, at: 1080, area: shop, actions: [ help_out ] }
+  - { id: alley_rope, at: 1530, area: alley, actions: [ play_alley, chat ] }
+  - { id: chess_table, at: 2010, area: alley, actions: [ chess ] }
+  - { id: bike_bench, at: 2710, area: bikeshop, actions: [ duty, help_out, work ] }
+  - { id: tea_stage, at: 3310, area: teahouse, actions: [ club_art, perform ] }
+  - { id: tea_seat, at: 3580, area: teahouse, actions: [ listen ] }
+
+npcs:
+  - id: shop_ayi
+    name: 小卖部的阿姨
+    at: 1080
+    eras: [ childhood, teen, young ]
+    lines:
+      childhood:
+        - 一毛钱两块，挑吧。
+        - 钱不够？先拿着，回头让你妈给。
+      teen:
+        - 汽水瓶子记得还回来，押着两毛呢。
+        - 你俩一个要橘子味儿一个要草莓的，我都记着。
+      young:
+        - 对过开了超市，我这儿还是开着。
+  - id: shop_clerk
+    name: 便利店的小伙子
+    at: 1080
+    eras: [ middle, old ]
+    lines:
+      middle:
+        - 原来这儿是个小卖部？我听说过。
+        - 门口那条长凳是老板让留的。
+      old:
+        - 您二位又来坐了。汽水还是那两样？
+  - id: grinder
+    name: 磨剪子的
+    at: 1810
+    eras: [ childhood, teen ]
+    slots: [ am, pm ]
+    lines:
+      default:
+        - 磨剪子嘞——戗菜刀——
+        - 刀口薄了，再磨就该换了。
+  - id: barber
+    name: 剃头的
+    at: 1420
+    eras: [ childhood, teen, young, middle, old ]
+    slots: [ am ]
+    lines:
+      childhood:
+        - 坐稳了，别乱动，动了我可不管。
+      teen:
+        - 想剪个什么样的？说吧，我照着剪。
+      young:
+        - 一块钱涨到十块，手艺还是这个手艺。
+      middle:
+        - 我就在这儿剃到剃不动为止。
+      old:
+        - 来了？老样子，推短点儿。
+
+props:
+  - id: shop_bench
+    name: 小卖部门口的长凳
+    at: 1220
+    lines:
+      default:
+        - 一条长凳，漆掉了一半。
+      old:
+        - 长凳换过一回腿，凳面还是原来那块。
+
+art: |
+  一条三屏长的老街，街面在下，楼的一层门脸在上。早点铺的鏊子和价钱牌（每个年代改一次数）；
+  小卖部的冰柜、玻璃柜台、门口一条长凳——小卖部到中年改成便利店，长凳不撤；
+  楼门口一棵树、下棋的小桌、告示栏（告示随年代换，内容见 street.yaml 的 notice_*）；
+  修车铺墙上一把旧二胡；茶社的小台子。二月二上午楼门口支个剃头摊（barber）。
+  少年时多一块网吧招牌，青年时门口一排共享单车，中年满街送外卖的，老年清静。

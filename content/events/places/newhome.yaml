@@ -1,0 +1,88 @@
+# 新家的支线（pl_nh_ 前缀）。where 用 content/maps/newhome.yaml 的 areas。写法见 places/building.yaml 文件头。
+# 回迁新楼、新楼底下已经有了。这里写的是买在对岸、住进老厂那块地的人。
+
+- id: pl_nh_neighbor
+  kind: solo
+  stage: middle
+  where: landing
+  weight: 2
+  requires: { flags: [home_own] }
+  title: 对门姓什么
+  hint: 电梯间里没有人说话。
+  text: 住进新楼三年，还不知道对门姓什么。今天电梯里碰上了，两个人一齐看着数字往上跳。
+  options:
+    - id: ask
+      text: 问一句贵姓
+      tags: [gentle]
+      effects: { self: { charm: 1, mood: 3 } }
+    - id: nod
+      text: 点个头
+      tags: [patient]
+      effects: { self: { mood: 1 } }
+    - id: stairs
+      text: 下回走楼梯
+      tags: [solitude]
+      effects: { self: { body: 1 } }
+
+- id: pl_nh_balcony
+  kind: solo
+  stage: middle
+  where: flat
+  when: [1110, 1320]
+  weight: 2
+  requires: { flags: [home_own] }
+  title: 阳台
+  hint: 阳台的门开着。
+  text: 新家的阳台朝着河。晚上站出去，看得见对岸老楼那一片，亮着的窗比从前少了。
+  options:
+    - id: stay
+      text: 多站一会儿
+      tags: [patient]
+      effects: { self: { mood: 4 } }
+    - id: call
+      text: 打给对门的
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 3 }, bond: { close: 1 } }
+    - id: in
+      text: 回屋
+      tags: [solitude]
+      effects: { self: { energy: 3 } }
+
+- id: pl_nh_garden
+  kind: mirror
+  stage: middle
+  where: garden
+  when: [1080, 1260]
+  hint: 花园里有人在遛狗。
+  weight: 2
+  title: 又在楼下
+  text: 两家买在了同一个小区，隔着两栋楼。晚饭后在花园里碰上，跟小时候在楼下一个点儿。
+  options:
+    - id: walk
+      text: 一起绕一圈
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: bench
+      text: 找条长椅坐
+      tags: [patient]
+      effects: { self: { energy: 3 } }
+    - id: race
+      text: 比谁先走到河边
+      tags: [competitive]
+      effects: { self: { body: 1 } }
+  resonance:
+    walk:
+      text: 绕了一圈又一圈，说的全是小时候那栋楼。
+      memory: 一圈又一圈
+      bond: { sync: 3, close: 2 }
+    bench:
+      text: 长椅太新，坐着有点硌。你们都说，还是楼道的台阶好坐。
+      memory: 楼道的台阶
+      bond: { sync: 3, close: 2 }
+    race:
+      text: 两个人都快走，谁也不肯跑。到了河边，都喘了。
+      memory: 都喘了
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个往长椅走，一个已经迈开步子绕圈。绕回来，长椅上那个正给他留着座。
+    bond: { close: 0 }

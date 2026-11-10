@@ -1,0 +1,64 @@
+# 公园：一个湖，一圈路，一座亭子，一片空地。六十岁以后的早上和傍晚多半在这儿（中年也能来，就是不常有空）。
+# 写法见 building.yaml 文件头。
+
+id: park
+name: 公园
+width: 3200
+unlock: { minAge: 45 }
+
+areas:
+  - { id: park_gate, name: 公园门口, span: [ 0, 580 ], floor: 0 }
+  - { id: lake_path, name: 环湖路, span: [ 580, 1670 ], floor: 0 }
+  - { id: pavilion, name: 亭子, span: [ 1670, 2330 ], floor: 0 }
+  - { id: square, name: 空地, span: [ 2330, 3200 ], floor: 0 }
+
+exits:
+  - { id: to_street, at: 60, to: street, arrive: 2300, label: 回去 }
+  - { id: to_hospital, at: 500, to: hospital, arrive: 60, label: 去医院 }
+
+spots:
+  - { id: lake_walk, at: 1080, area: lake_path, actions: [ morning_walk ] }
+  - { id: pavilion_choir, at: 2000, area: pavilion, actions: [ choir ] }
+  - { id: square_ground, at: 2750, area: square, actions: [ ground_write ] }
+
+npcs:
+  - id: conductor
+    name: 合唱队的指挥
+    at: 1960
+    eras: [ middle, old ]
+    slots: [ am ]
+    lines:
+      default:
+        - 女声高一点，男声别抢。
+        - 缺人，会唱不会唱的都来。
+  - id: writer
+    name: 拿水写字的
+    at: 2830
+    eras: [ middle, old ]
+    slots: [ morning, am ]
+    lines:
+      default:
+        - 写完就干，不怕写错。
+        - 一桶水，写一早上。
+  - id: stroller
+    name: 推婴儿车的
+    at: 920
+    eras: [ old ]
+    slots: [ am, evening ]
+    lines:
+      default:
+        - 刚一岁，不认生。
+        - 跟爷爷奶奶摆摆手。
+  - id: kite_old
+    name: 放风筝的
+    at: 2580
+    eras: [ old ]
+    slots: [ pm, evening ]
+    lines:
+      default:
+        - 线放到头了，它还想往上走。
+        - 小时候在河边放过，后来就没工夫了。
+
+art: |
+  一个椭圆的湖占下半屏，一圈路绕着走；亭子里早上唱歌，下午下棋；空地上有人拿大笔蘸水在地上写字，写完就干。
+  公园门口一侧通到医院（hospital.yaml）。树比河畔里的老，长椅一条一条，椅背上钉着小铜牌。

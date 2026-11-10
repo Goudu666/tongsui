@@ -241,7 +241,7 @@ function storyAfter(s: LifeState, c: Content, eventId: string) {
   for (var i = 0; i < slots.length; i++) {
     var cur = w.fate[slots[i]];
     var mine = cur ? storyFindEvent(c, cur) : null;
-    // 还没发生的随机事件不动；主线的那一格（已经过了的）换成下一件
+    // 排得上下一件，那一格就换成它（哪怕那一格还是没发生的随机事件）；排不上，只把过完的主线清掉，没发生的随机事件留着
     if (next[slots[i]]) w.fate[slots[i]] = next[slots[i]];
     else if (mine && w.done.indexOf(mine.id) >= 0) w.fate[slots[i]] = null;
   }

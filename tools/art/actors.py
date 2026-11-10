@@ -1,1171 +1,681 @@
 #!/usr/bin/env python3
-"""《同岁》角色精灵表生成器（孔版套色 + 墨线简笔）。
+"""《同岁》角色精灵表：侧视横版，骨骼摆姿势，孔版套色印出来。
 
-    python3 tools/art/actors.py      →  client/art/actors/{qing,mei}_{child,teen,young,middle,old}.png
+    python3 tools/art/actors.py            →  client/art/actors/{qing,mei}_{child,teen,young,middle,old}.png
+    python3 tools/art/actors.py --preview  →  /tmp/actors_preview.png（十张表拼一张，调手感用）
 
-每张 6 列 × 4 行，每格 96×128 世界像素（scale=2 → 192×256 像素），整张 1152×1024。
-  行 0 朝下 / 行 1 朝上 / 行 2 朝右（朝左由引擎水平翻转）
-    列 0 站立；列 1–4 走路（迈左脚、并拢、迈右脚、并拢）；列 5 在忙（双手在胸前端东西）
-  行 3：列 0 睡觉，列 1 挥手（朝下），列 2 坐着（朝下），列 3–5 空
-脚底中点固定在每格的 (48, 120) 世界像素处。
+每张 8 列 × 3 行，每格 CELL_W×CELL_H 世界像素（SCALE 倍输出），脚底中点在每格的 FOOT。人一律朝右，朝左由引擎翻转。
+  行 0：走路一整步 8 帧（近腿相位 0, 1/8 … 7/8；远腿差半步）
+  行 1：列 0–3 站着喘气（列 3 眨眼）；列 4–7 在忙（两手在身前做事）
+  行 2：列 0–1 坐着；列 2–3 躺着睡（被子盖着）；列 4–7 挥手
+人身上有一副骨架：髋、膝、踝、脚尖；肩、肘、手。走路的关键帧取的是真人步态的大致曲线
+（脚跟着地时大腿前摆、蹬地时膝盖弯得最深），髋的高度由「哪只脚最低」反算，所以身体的起伏是自己出来的。
 
-画法：每个部件"先挖空、再铺纸版、再上色、最后描墨线"，按从后往前的顺序叠，
-所以前面的部件会盖住后面的（孔版上就是专色版挖空）。局部坐标以脚底为原点、y 向上为负。
+画法：每个部件先描一圈墨（宽一点）、再把里面挖空、铺纸版、上色。从后往前画，前面的自然压住后面的。
+远侧的胳膊腿用同一种颜色的网点（浅一档），一眼看出前后。
 """
 from __future__ import annotations
 
+import argparse
 import math
 import os
 import sys
-from contextlib import contextmanager
-from dataclasses import dataclass
 
 import cairo
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from riso import ROOT, Sheet, ellipse_pts, rect_pts, wobble  # noqa: E402
+from riso import COLORS, ROOT, Sheet  # noqa: E402
 
-CELL_W, CELL_H = 96, 128
-COLS, ROWS = 6, 4
-FOOT = (48, 120)
+CELL_W, CELL_H = 200, 220
+COLS, ROWS = 8, 3
+FOOT = (100, 206)
 SCALE = 2.0
 OUT_DIR = os.path.join(ROOT, "client", "art", "actors")
 ROLES = ("qing", "mei")
-STAGE_ORDER = ("child", "teen", "young", "middle", "old")
-INKS = ("ink", "qing", "mei")
-
-SKIN = ("paper", None)  # 留白：只进纸版，不印墨
-
-
-def solid(c):
-    return (c, None)
+STAGES = ("child", "teen", "young", "middle", "old")
+OUTLINE = 2.3  # 墨线（世界像素）
+INKS = tuple(COLORS)
 
 
-def tint(c, d):
-    return (c, d)
+# ----------------------------------------------------------------------
+# 体型和衣着
+# ----------------------------------------------------------------------
+
+def build(role: str, stage: str) -> dict:
+    """一个人在某个年纪的样子：身高、各段长度、穿什么。颜色写成 (版, 网点浓度或 None=实地)。"""
+    q = role == "qing"
+    me = role
+    H = {"child": 112, "teen": 152, "young": 172, "middle": 170, "old": 160}[stage] - (0 if q else 6)
+    head = {"child": 19.5, "teen": 17.0, "young": 16.5, "middle": 16.8, "old": 16.3}[stage]
+    leg = {"child": 0.37, "teen": 0.47, "young": 0.48, "middle": 0.47, "old": 0.45}[stage] * H
+    neck = {"child": 3.0, "teen": 6.0, "young": 7.0, "middle": 6.0, "old": 4.5}[stage]
+    torso = H - leg - neck - head * 2 + 2
+    w = {"child": 25, "teen": 25, "young": 27, "middle": 31, "old": 29}[stage] - (0 if q else 2)
+    b = dict(role=role, stage=stage, H=H, head=head, leg=leg, thigh=leg * 0.5, shin=leg * 0.43, ankle=leg * 0.07,
+             neck=neck, torso=torso, waist=w, chest=w + (2 if stage != "child" else 0),
+             upper=H * 0.17 if stage != "child" else H * 0.16, fore=H * 0.155 if stage != "child" else H * 0.15,
+             limb=(10.5 if stage == "child" else 11.5), shin_w=9.5 if stage == "child" else 10.0,
+             foot=13.0 if stage == "child" else 18.0,
+             lean=6.0 if stage == "old" else 1.5, walk_lean=4.0, swing=1.0, stride=1.0,
+             hair="ink", skin=("paper",))
+    paper_tint = ("ink", 0.0)
+    if stage == "child":
+        b.update(shirt=(me, None), pants=("ink", 0.62, "flat") if q else (me, 0.45), shoes=(me if not q else "ink", None),
+                 skirt=not q, collar=("paper",), stripes=q, stride=0.95, swing=1.2)
+    elif stage == "teen":
+        # 校服：一身运动服，袖子和裤腿一道白杠
+        b.update(shirt=(me, None), pants=(me, None), shoes=("paper",), stripe=True, collar=("paper",), bag=True)
+    elif stage == "young":
+        if q:
+            b.update(shirt=(me, None), coat=None, pants=("ink", 0.75, "flat"), shoes=("ink", None), collar=("paper",))
+        else:
+            b.update(shirt=("paper",), coat=(me, None), pants=("ink", 0.7, "flat"), shoes=("ink", None), long_coat=True)
+    elif stage == "middle":
+        if q:
+            b.update(shirt=("paper",), coat=(me, None), pants=("ink", 0.8, "flat"), shoes=("ink", None), bag=False, stride=0.95)
+        else:
+            b.update(shirt=(me, None), cardigan=("mei", 0.5), pants=("ink", 0.72, "flat"), shoes=("ink", None), stride=0.95)
+        b["hair"] = "ink"
+    else:  # old
+        b.update(shirt=(me, 0.55), coat=(me, None) if q else None, cardigan=None if q else (me, None),
+                 pants=("ink", 0.58, "flat"), shoes=("ink", None), stride=0.72, swing=0.55, cane=q, hair="grey")
+    b["paper_tint"] = paper_tint
+    return b
 
 
 # ----------------------------------------------------------------------
 # 几何
 # ----------------------------------------------------------------------
 
-def lerp(a, b, t):
-    return (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
-
-
-def add(p, dx, dy):
-    return (p[0] + dx, p[1] + dy)
-
-
-def chaikin(pts, it=2, closed=True):
-    """削角：把多边形磨圆一点，Q 版的身体都是软的。"""
-    pts = list(pts)
-    for _ in range(it):
-        out = []
-        n = len(pts)
-        if not closed:
-            out.append(pts[0])
-        for i in range(n if closed else n - 1):
-            p, q = pts[i], pts[(i + 1) % n]
-            out.append(lerp(p, q, 0.25))
-            out.append(lerp(p, q, 0.75))
-        if not closed:
-            out.append(pts[-1])
-        pts = out
-    return pts
-
-
-def ell(cx, cy, rx, ry, n=None):
-    return ellipse_pts(cx, cy, rx, ry, n or max(20, int(max(rx, ry) * 1.8)))
-
-
-def arc_pts(cx, cy, rx, ry, a0, a1, n=None):
-    """椭圆弧上的点，角度用度，屏幕坐标（0° 朝右，90° 朝下）。"""
-    n = n or max(6, int(abs(a1 - a0) / 8))
-    out = []
-    for i in range(n + 1):
-        a = math.radians(a0 + (a1 - a0) * i / n)
-        out.append((cx + rx * math.cos(a), cy + ry * math.sin(a)))
-    return out
-
-
-def rrect(x, y, w, h, r):
-    r = max(0.1, min(r, w / 2, h / 2))
-    pts = []
-    for cx, cy, a0 in ((x + w - r, y + r, -90), (x + w - r, y + h - r, 0), (x + r, y + h - r, 90), (x + r, y + r, 180)):
-        pts += arc_pts(cx, cy, r, r, a0, a0 + 90, 4)
-    return pts
-
-
 def polar(p, ang, length):
-    """从 p 出发、与竖直向下夹角 ang 度（正 = 往 +x 方向）走 length。四肢都这样摆。"""
+    """从 p 出发，与竖直向下夹角 ang 度（正 = 往前，+x）走 length。"""
     a = math.radians(ang)
     return (p[0] + length * math.sin(a), p[1] + length * math.cos(a))
 
 
-def capsule(p0, p1, r0, r1=None):
-    r1 = r0 if r1 is None else r1
-    ang = math.degrees(math.atan2(p1[1] - p0[1], p1[0] - p0[0]))
-    return arc_pts(p1[0], p1[1], r1, r1, ang - 90, ang + 90, 8) + arc_pts(p0[0], p0[1], r0, r0, ang + 90, ang + 270, 8)
+def lerp(a, b, t):
+    return (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
 
 
-def rotate(pts, deg, c=(0.0, 0.0)):
+def arc_pts(cx, cy, rx, ry, a0, a1, n=None):
+    n = n or max(6, int(abs(a1 - a0) / 7))
+    return [(cx + rx * math.cos(math.radians(a0 + (a1 - a0) * i / n)), cy + ry * math.sin(math.radians(a0 + (a1 - a0) * i / n)))
+            for i in range(n + 1)]
+
+
+def ell(cx, cy, rx, ry, n=40):
+    return [(cx + rx * math.cos(i * math.tau / n), cy + ry * math.sin(i * math.tau / n)) for i in range(n)]
+
+
+def chaikin(pts, it=2):
+    for _ in range(it):
+        out = []
+        n = len(pts)
+        for i in range(n):
+            p, q = pts[i], pts[(i + 1) % n]
+            out += [lerp(p, q, 0.25), lerp(p, q, 0.75)]
+        pts = out
+    return pts
+
+
+def rot(pts, deg, c):
     a = math.radians(deg)
     ca, sa = math.cos(a), math.sin(a)
     return [(c[0] + (x - c[0]) * ca - (y - c[1]) * sa, c[1] + (x - c[0]) * sa + (y - c[1]) * ca) for x, y in pts]
 
 
-def slice_path(pts, t0, t1):
-    """折线按长度取 [t0, t1] 那一段。"""
-    seg = [math.dist(pts[i], pts[i + 1]) for i in range(len(pts) - 1)]
-    total = sum(seg) or 1.0
+def periodic(keys, t):
+    """关键帧 [(相位, 值)]（相位 0~1，首尾相接），Catmull-Rom 插值。"""
+    t %= 1.0
+    ks = sorted(keys)
+    n = len(ks)
+    for i in range(n):
+        t0, v0 = ks[i]
+        t1, v1 = ks[(i + 1) % n]
+        span = (t1 - t0) % 1.0 or 1.0
+        if (t - t0) % 1.0 <= span:
+            u = ((t - t0) % 1.0) / span
+            vm = ks[(i - 1) % n][1]
+            vp = ks[(i + 2) % n][1]
+            return 0.5 * ((2 * v0) + (-vm + v1) * u + (2 * vm - 5 * v0 + 4 * v1 - vp) * u * u + (-vm + 3 * v0 - 3 * v1 + vp) * u ** 3)
+    return ks[0][1]
 
-    def at(t):
-        d = t * total
-        for i, L in enumerate(seg):
-            if d <= L or i == len(seg) - 1:
-                return lerp(pts[i], pts[i + 1], 0 if L == 0 else min(1.0, d / L))
-            d -= L
-        return pts[-1]
 
-    out = [at(t0)]
-    acc = 0.0
-    for i, L in enumerate(seg):
-        acc += L
-        if t0 * total < acc < t1 * total:
-            out.append(pts[i + 1])
-    out.append(at(t1))
-    return out
+# 一条腿一步的关键帧（相位 0 = 这只脚的脚跟着地）
+THIGH = [(0.0, 24), (0.15, 17), (0.5, -13), (0.62, -9), (0.8, 18), (0.92, 25)]
+KNEE = [(0.0, 3), (0.12, 15), (0.4, 4), (0.6, 36), (0.72, 58), (0.88, 18)]
+FOOT_PITCH = [(0.0, -14), (0.1, 0), (0.42, 0), (0.6, 32), (0.74, 14), (0.9, -6)]
 
 
 # ----------------------------------------------------------------------
-# 印刷动作
+# 印张上的部件：先墨圈，再挖空，再铺纸、上色
 # ----------------------------------------------------------------------
 
-def _all_ctx(s):
-    return [s.plates[c][l] for c in INKS for l in ("solid", "tint")] + [s.plates["paper"]["solid"]]
+class Painter:
+    def __init__(self, sheet: Sheet):
+        self.s = sheet
+        self.ox = 0.0
+        self.oy = 0.0
 
+    def _ctx(self, color, layer):
+        return self.s.plates[color][layer]
 
-@contextmanager
-def place(s, x, y, rot=0.0, k=1.0):
-    """把接下来所有版的坐标系移到 (x, y)，可选旋转（度）。"""
-    cs = _all_ctx(s)
-    for c in cs:
-        c.save()
-        c.translate(x, y)
-        if rot:
-            c.rotate(math.radians(rot))
-        if k != 1.0:
-            c.scale(k, k)
-    try:
-        yield
-    finally:
-        for c in cs:
-            c.restore()
+    def _path(self, ctx, pts, closed=True):
+        ctx.new_path()
+        ctx.move_to(pts[0][0] + self.ox, pts[0][1] + self.oy)
+        for x, y in pts[1:]:
+            ctx.line_to(x + self.ox, y + self.oy)
+        if closed:
+            ctx.close_path()
 
-
-def _trace(ctx, pts, closed=False):
-    ctx.new_path()
-    ctx.move_to(*pts[0])
-    for p in pts[1:]:
-        ctx.line_to(*p)
-    if closed:
-        ctx.close_path()
-
-
-def stroke_clear(s, pts, w, colors=INKS):
-    """沿折线挖空一条（粗线形状的"挖空"）。"""
-    for c in colors:
-        for layer in ("solid", "tint"):
-            ctx = s.plates[c][layer]
-            ctx.save()
-            _trace(ctx, pts)
-            ctx.set_line_width(w)
+    def _fill(self, color, density, pts, closed=True, stroke_w=None, op=cairo.OPERATOR_OVER):
+        layer = "solid" if density is None else "tint"
+        ctx = self._ctx(color, layer)
+        ctx.save()
+        ctx.set_operator(op)
+        ctx.set_source_rgba(0, 0, 0, 1.0 if density is None else density)
+        self._path(ctx, pts, closed)
+        if stroke_w is None:
+            ctx.fill()
+        else:
+            ctx.set_line_width(stroke_w)
             ctx.set_line_cap(cairo.LINE_CAP_ROUND)
             ctx.set_line_join(cairo.LINE_JOIN_ROUND)
-            ctx.set_operator(cairo.OPERATOR_CLEAR)
             ctx.stroke()
-            ctx.restore()
+        ctx.restore()
 
+    def _clear(self, pts, closed=True, stroke_w=None):
+        for c in INKS:
+            for layer in ("solid", "tint"):
+                ctx = self._ctx(c, layer)
+                ctx.save()
+                ctx.set_operator(cairo.OPERATOR_CLEAR)
+                self._path(ctx, pts, closed)
+                if stroke_w is None:
+                    ctx.fill()
+                else:
+                    ctx.set_line_width(stroke_w)
+                    ctx.set_line_cap(cairo.LINE_CAP_ROUND)
+                    ctx.set_line_join(cairo.LINE_JOIN_ROUND)
+                    ctx.stroke()
+                ctx.restore()
 
-def paint(s, pts, spec):
-    s.pen("paper").fill(pts)
-    if spec is not None and spec[0] != "paper":
-        s.pen(spec[0], spec[1]).fill(pts)
-
-
-def part(s, pts, spec=SKIN, lw=2.6, amp=0.5, outline=True, occlude=True):
-    """一个不透明部件：挖空 → 纸版 → 上色 → 墨线。"""
-    if occlude:
-        s.clear(pts)
-    paint(s, pts, spec)
-    if outline and lw > 0:
-        s.ink.poly(pts, w=lw, amp=amp)
-
-
-def tube(s, pts, w, spec, lw=2.6, amp=0.45, shade=0.0):
-    """一根带墨边的管子（胳膊、腿、袖子）。w 是里面颜色的宽度。"""
-    pw = wobble(pts, amp, step=10, seed=s.next_seed())
-    stroke_clear(s, pw, w + 2 * lw)
-    if lw > 0:
-        s.ink.line(pw, w=w + 2 * lw, amp=0)
-    stroke_clear(s, pw, w)
-    s.pen("paper").line(pw, w=w + 2 * lw, amp=0)
-    if spec is not None and spec[0] != "paper":
-        s.pen(spec[0], spec[1]).line(pw, w=w, amp=0)
-    if shade:
-        s.pen("ink", shade).line(pw, w=w, amp=0)
-    return pw
-
-
-# ----------------------------------------------------------------------
-# 角色设定
-# ----------------------------------------------------------------------
-
-# L 胯高（含鞋）  T 躯干（胯到肩）  n 脖子  r 头半径  sw/hw 肩/胯半宽  aw/lgw 胳膊/腿的颜色宽
-# A 胳膊长  hand 手半径  lw 墨线宽  hunch 驼背（侧面肩往前探）
-STAGES = {
-    "child": dict(L=14, T=19, n=1.0, r=13.0, sw=9.0, hw=8.5, aw=5.0, lgw=5.5, A=15, hr=2.9, lw=2.5, hunch=0.0, belly=1.6),
-    "teen": dict(L=26, T=27, n=1.0, r=14.0, sw=10.5, hw=8.6, aw=5.0, lgw=6.0, A=22, hr=3.0, lw=2.6, hunch=0.0, belly=0.0),
-    "young": dict(L=32, T=31, n=2.0, r=14.5, sw=11.5, hw=9.2, aw=5.6, lgw=6.6, A=26, hr=3.2, lw=2.7, hunch=0.0, belly=0.0),
-    "middle": dict(L=31, T=31, n=1.5, r=14.25, sw=12.5, hw=11.2, aw=6.2, lgw=7.2, A=26, hr=3.3, lw=2.7, hunch=0.0, belly=1.2),
-    "old": dict(L=29, T=28, n=1.0, r=14.0, sw=11.5, hw=10.6, aw=5.8, lgw=6.8, A=24, hr=3.2, lw=2.7, hunch=3.0, belly=0.8),
-}
-
-
-@dataclass
-class Look:
-    top: tuple
-    sleeve: tuple
-    pants: tuple
-    sleeve_len: float = 1.0          # <1：短袖/挽袖，露出小臂
-    sleeve_upper: tuple | None = None  # 上半截袖子换色（校服）
-    cuff: tuple | None = None        # 袖口罗纹
-    pants_len: float = 1.0           # <1：短裤
-    shoes: tuple = ("ink", None)
-    hem: float = 2.0                 # 衣摆比胯低多少
-    coat: bool = False               # 风衣：衣摆盖到膝
-    hair: tuple = ("ink", None)
-
-
-LOOKS = {
-    ("qing", "child"): Look(top=solid("qing"), sleeve=solid("qing"), sleeve_len=0.42, pants=tint("ink", 0.34), pants_len=0.5, hem=1.5),
-    ("qing", "teen"): Look(top=solid("qing"), sleeve=solid("qing"), sleeve_upper=SKIN, pants=solid("qing"), shoes=SKIN),
-    ("qing", "young"): Look(top=tint("qing", 0.78), sleeve=tint("qing", 0.78), sleeve_len=0.62, pants=tint("ink", 0.32), hem=0.5),
-    ("qing", "middle"): Look(top=solid("qing"), sleeve=solid("qing"), pants=tint("ink", 0.34), hem=3.0),
-    ("qing", "old"): Look(top=tint("qing", 0.8), sleeve=tint("qing", 0.8), pants=tint("ink", 0.3), hem=3.0, hair=tint("ink", 0.22)),
-    ("mei", "child"): Look(top=solid("mei"), sleeve=solid("mei"), sleeve_len=0.42, pants=tint("ink", 0.34), pants_len=0.5, hem=1.5),
-    ("mei", "teen"): Look(top=solid("mei"), sleeve=solid("mei"), sleeve_upper=SKIN, pants=solid("mei"), shoes=SKIN),
-    ("mei", "young"): Look(top=solid("mei"), sleeve=solid("mei"), pants=tint("ink", 0.32), coat=True),
-    ("mei", "middle"): Look(top=tint("mei", 0.78), sleeve=tint("mei", 0.78), cuff=solid("mei"), pants=tint("ink", 0.32), hem=2.5),
-    ("mei", "old"): Look(top=tint("mei", 0.3), sleeve=tint("mei", 0.3), pants=tint("ink", 0.32), hem=2.5, hair=tint("ink", 0.22)),
-}
-
-
-class Fig:
-    def __init__(self, s: Sheet, role: str, stage: str):
-        self.s, self.role, self.stage = s, role, stage
-        for k, v in STAGES[stage].items():
-            setattr(self, k, v)
-        self.C = role
-        self.look = LOOKS[(role, stage)]
-        self.dw = self.sw * (0.86 if stage == "child" else 0.74)
-        self.H = self.L + self.T + self.n + 2 * self.r
-        if self.look.coat:
-            self.look.hem = self.L * 0.46
-        self.cane = role == "mei" and stage == "old"
-        self.behind = role == "qing" and stage == "old"  # 背着手
-
-    # ------------------------------------------------------------------
-    # 四肢
-    # ------------------------------------------------------------------
-    def hand(self, W, prev=None, k=1.0):
-        part(self.s, ell(W[0], W[1], self.hr * k, self.hr * k * 1.05), SKIN, self.lw * 0.85)
-
-    def arm(self, pts, hand=True, shade=0.0, hand_k=1.0):
-        s, lk, lw = self.s, self.look, self.lw
-        if lk.sleeve_len < 1:
-            tube(s, pts, self.aw - 1.4, SKIN, lw, shade=shade)
-            tube(s, slice_path(pts, 0, lk.sleeve_len), self.aw + 0.8, lk.sleeve, lw, shade=shade)
-        else:
-            tube(s, pts, self.aw, lk.sleeve, lw, shade=shade)
-            if lk.sleeve_upper:
-                tube(s, slice_path(pts, 0, 0.42), self.aw, lk.sleeve_upper, lw, shade=shade)
-            if lk.cuff:
-                tube(s, slice_path(pts, 0.84, 1.0), self.aw + 0.4, lk.cuff, lw * 0.8)
-            elif self.stage in ("middle", "old") and self.role == "qing":
-                a, b = slice_path(pts, 0.82, 0.86)[0], pts[-1]
-                d = math.dist(a, b) or 1
-                nx, ny = -(b[1] - a[1]) / d, (b[0] - a[0]) / d
-                h = (self.aw + lw) / 2
-                s.ink.line([(a[0] - nx * h, a[1] - ny * h), (a[0] + nx * h, a[1] + ny * h)], w=1.2, amp=0)
-        if hand:
-            self.hand(pts[-1], k=hand_k)
-
-    def leg(self, pts, view, foot_rot=0.0, shade=0.0, side=1):
-        s, lk, lw = self.s, self.look, self.lw
-        ankle = pts[-1]
-        # 管子的圆头别从鞋底下冒出来：末端往回收一点
-        cut = max(0.0, (self.lgw + 1.2) / 2 + lw - 3.0)
-        a, b = pts[-2], pts[-1]
-        d = math.dist(a, b) or 1.0
-        pts = pts[:-1] + [(b[0] - (b[0] - a[0]) / d * cut, b[1] - (b[1] - a[1]) / d * cut)]
-        if lk.pants_len < 1:
-            tube(s, pts, self.lgw - 1.6, SKIN, lw, shade=shade)
-            tube(s, slice_path(pts, 0, lk.pants_len), self.lgw + 1.2, lk.pants, lw, shade=shade)
-        else:
-            pw = tube(s, pts, self.lgw, lk.pants, lw, shade=shade)
-            if self.stage == "teen":  # 校服裤的白杠
-                off = side * self.lgw * 0.28 if view in ("front", "back") else 0.0
-                stroke_clear(s, [(x + off, y) for x, y in pw[1:-1]] if len(pw) > 3 else [(x + off, y) for x, y in pw], 1.5, colors=(self.C,))
-        self.shoe(ankle, view, foot_rot)
-
-    def shoe(self, A, view, rot=0.0):
-        s, lw = self.s, self.lw
-        ry = 2.3 if self.stage != "child" else 2.2
-        if view in ("front", "back"):
-            rx = (self.lgw + lw) / 2 + 0.9
-            pts = ell(A[0], A[1] - 0.4, rx, ry)
-        else:
-            pts = capsule((A[0] - 1.6, A[1] - 0.4), (A[0] + 3.4 + self.lgw * 0.25, A[1] - 0.4), ry)
-            if rot:
-                pts = rotate(pts, rot, A)
-        part(s, pts, self.look.shoes, lw * 0.9)
-
-    # ------------------------------------------------------------------
-    # 躯干
-    # ------------------------------------------------------------------
-    def torso_front(self, sy, hy, hem, flare=0.0):
-        sw, hw, T = self.sw, self.hw, hy - sy
-        xm = hw + (sw - hw) * 0.35 + self.belly
-        pts = [(-sw + 3.5, sy - 0.6), (sw - 3.5, sy - 0.6), (sw + 0.3, sy + 3.5), (xm, sy + T * 0.6),
-               (hw + 0.6 + flare, hem), (-hw - 0.6 - flare, hem), (-xm, sy + T * 0.6), (-sw - 0.3, sy + 3.5)]
-        if self.look.coat:
-            wy = sy + T * 0.8
-            pts = pts[:3] + [(hw + 0.4, wy), (hw + 3.5 + flare, hem), (-hw - 3.5 - flare, hem), (-hw - 0.4, wy)] + pts[-1:]
-        return chaikin(pts, 2)
-
-    def torso_side(self, sy, hy, hem, shx, flare=0.0):
-        d, T = self.dw, hy - sy
-
-        def X(x, y):
-            t = min(1.0, max(0.0, (hy - y) / T))
-            return (x + shx * t, y)
-
-        b = self.belly
-        pts = [X(-d + 3, sy - 0.6), X(d - 3, sy - 0.6), X(d + 0.2, sy + 3.5), X(d + b, sy + T * 0.62),
-               (d + 0.4 + flare, hem), (-d - 0.4 - flare * 0.6, hem), X(-d - 0.3 - shx * 0.45, sy + T * 0.32), X(-d, sy + 3.0)]
-        if self.look.coat:
-            wy = sy + T * 0.8
-            pts = pts[:4] + [(d + 0.3, wy), (d + 3.2 + flare, hem), (-d - 2.6 - flare * 0.6, hem), (-d - 0.2, wy)] + pts[-2:]
-        return chaikin(pts, 2)
-
-    def neck(self, x, sy):
-        n = self.n
-        part(self.s, rrect(x - 2.7, sy - n - 5, 5.4, n + 7, 1.5), SKIN, self.lw * 0.8)
-
-    # ------------------------------------------------------------------
-    # 头
-    # ------------------------------------------------------------------
-    def head(self, view, eyes="open", mouth="smile"):
-        s, r, lw = self.s, self.r, self.lw
-        rx, ry = r * 1.06, r * 0.97
-        hair = self.look.hair
-        hl = lw * 0.8
-        R = r + 1.8          # 青的短发
-        Rb = r + 2.4         # 梅的波波头
-        if self.role == "mei" and self.stage == "old":
-            return self.perm_head(view, eyes, mouth)
-        if view == "front":
-            if self.role == "mei":
-                back = arc_pts(0, 0, Rb * 1.03, Rb, 180, 360) + [(Rb * 1.03, 0.56 * r), (0.55 * r, 0.74 * r), (-0.55 * r, 0.74 * r), (-Rb * 1.03, 0.56 * r)]
-                part(s, chaikin(back, 1), hair, hl)
-            else:
-                for sd in (-1, 1):
-                    part(s, ell(sd * (rx + 0.3), 0.16 * r, 0.25 * r, 0.3 * r), SKIN, hl)
-            part(s, ell(0, 0, rx, ry), SKIN, lw)
-            self.face_front(eyes, mouth)
-            if self.role == "qing":
-                inner = [(0.92, 0.20), (0.84, -0.16), (0.63, -0.40), (0.47, -0.15), (0.27, -0.47), (0.05, -0.13),
-                         (-0.17, -0.48), (-0.40, -0.19), (-0.60, -0.45), (-0.84, -0.17), (-0.92, 0.20)]
-                pts = arc_pts(0, 0, R * 1.04, R, 166, 374, 26) + [(x * rx, y * r) for x, y in inner]
-                part(s, pts, hair, hl, amp=0.3)
-            else:
-                inner = [(0.75, 0.62), (0.79, -0.02), (0.66, -0.30), (0.33, -0.36), (0.0, -0.33), (-0.33, -0.36), (-0.66, -0.30), (-0.79, -0.02), (-0.75, 0.62)]
-                pts = arc_pts(0, 0, Rb * 1.03, Rb, 180, 360, 26) + [(Rb * 1.03, 0.56 * r)] + [(x * rx, y * r) for x, y in inner] + [(-Rb * 1.03, 0.56 * r)]
-                part(s, pts, hair, hl, amp=0.3)
-            self.shine(R if self.role == "qing" else Rb, 222, 250)
-            if self.role == "qing":
-                self.ahoge(0.08 * r, -R + 1.5, 1)
-            if self.role == "mei" and self.stage == "child":
-                self.clip_pin(0.52 * rx, -0.62 * r, -28)
-            if self.stage == "old" and self.role == "qing":
-                self.glasses_front()
-        elif view == "back":
-            part(s, ell(0, 0, rx, ry), SKIN, lw)
-            if self.role == "qing":
-                bottom = [(0.80, 0.52), (0.46, 0.46), (0.16, 0.62), (-0.14, 0.48), (-0.46, 0.60), (-0.80, 0.50)]
-                pts = arc_pts(0, 0, R * 1.04, R, 154, 386, 28) + [(x * rx, y * r) for x, y in bottom]
-                part(s, pts, hair, hl, amp=0.3)
-                for sd in (-1, 1):
-                    part(s, ell(sd * (rx + 0.2), 0.24 * r, 0.16 * r, 0.22 * r), SKIN, hl * 0.85)
-                if self.stage == "old":  # 老花镜的镜腿
-                    for sd in (-1, 1):
-                        s.ink.line([(sd * (rx + 0.2), 0.02 * r), (sd * (rx - 1.5), 0.16 * r)], w=1.2, amp=0)
-                self.ahoge(0.08 * r, -R + 1.5, 1)
-            else:
-                pts = arc_pts(0, 0, Rb * 1.03, Rb, 174, 366, 28) + [(Rb * 1.03, 0.62 * r), (0.5 * rx, 0.72 * r), (-0.5 * rx, 0.72 * r), (-Rb * 1.03, 0.62 * r)]
-                part(s, chaikin(pts, 1), hair, hl, amp=0.3)
-                if self.stage == "child":
-                    self.clip_pin(-0.52 * rx, -0.62 * r, 28)
-            self.shine(R if self.role == "qing" else Rb, 290, 318)
-        else:  # side，朝 +x
-            if self.role == "mei":
-                back = arc_pts(0, 0, Rb * 1.02, Rb, 300, 172, 24) + [(-Rb * 1.05, 0.62 * r), (-0.2 * rx, 0.74 * r)]
-                part(s, chaikin(back, 1), hair, hl)
-            part(s, ell(0, 0, rx, ry), SKIN, lw)
-            self.face_side(eyes, mouth)
-            if self.role == "qing":
-                inner = [(-0.52, 0.52), (-0.32, 0.12), (0.0, -0.18), (0.22, -0.06), (0.40, -0.40), (0.60, -0.18), (0.78, -0.44), (0.98, -0.34)]
-                pts = arc_pts(0, 0, R * 1.03, R, 336, 146, 26) + [(x * rx, y * r) for x, y in inner]
-                part(s, pts, hair, hl, amp=0.3)
-                part(s, ell(-0.3 * rx, 0.3 * r, 0.17 * r, 0.22 * r), SKIN, hl * 0.85)
-                self.ahoge(0.05 * r, -R + 1.5, 1)
-                if self.stage == "old":
-                    self.glasses_side()
-            else:
-                pts = arc_pts(0, 0, Rb * 1.02, Rb, 332, 172, 26) + [(-Rb * 1.05, 0.62 * r), (0.08 * rx, 0.7 * r), (0.15 * rx, 0.1 * r),
-                                                                     (0.3 * rx, -0.26 * r), (0.62 * rx, -0.34 * r), (0.98 * rx, -0.30 * r)]
-                part(s, pts, hair, hl, amp=0.3)
-                if self.stage == "child":
-                    self.clip_pin(0.22 * rx, -0.8 * r, -10)
-            self.shine(R if self.role == "qing" else Rb, 222, 252)
-
-    def perm_head(self, view, eyes, mouth):
-        """梅·老年：一头短短的小卷（烫过的银发）。"""
-        s, r, lw = self.s, self.r, self.lw
-        rx, ry = r * 1.06, r * 0.97
-        hair, hl = self.look.hair, lw * 0.8
-        Rp = r + 2.6
-
-        def cloud(a0, a1, nb, amp=0.09, k=1.0):
-            out = []
-            n = nb * 6
-            for i in range(n + 1):
-                tt = i / n
-                a = math.radians(a0 + (a1 - a0) * tt)
-                m = 1 + amp * abs(math.sin(math.pi * tt * nb))
-                out.append((Rp * 1.04 * k * m * math.cos(a), Rp * k * m * math.sin(a)))
-            return out
-
-        def bumps(p0, p1, nb, amp=1.6):
-            out = []
-            n = nb * 5
-            dx, dy = p1[0] - p0[0], p1[1] - p0[1]
-            L = math.hypot(dx, dy) or 1
-            nx, ny = dy / L, -dx / L
-            for i in range(n + 1):
-                tt = i / n
-                b = amp * abs(math.sin(math.pi * tt * nb))
-                out.append((p0[0] + dx * tt + nx * b, p0[1] + dy * tt + ny * b))
-            return out
-
-        if view == "front":
-            part(s, cloud(150, 390, 9), hair, hl)
-            part(s, ell(0, 0, rx, ry), SKIN, lw)
-            self.face_front(eyes, mouth)
-            fr = cloud(168, 372, 8) + bumps((0.88 * rx, 0.12 * r), (0.62 * rx, -0.3 * r), 1) + bumps((0.62 * rx, -0.3 * r), (-0.62 * rx, -0.3 * r), 4) + bumps((-0.62 * rx, -0.3 * r), (-0.88 * rx, 0.12 * r), 1)
-            part(s, fr, hair, hl, amp=0.2)
-            spots = [(-0.5, -0.66), (0.15, -0.8), (0.62, -0.55)]
-        elif view == "back":
-            part(s, ell(0, 0, rx, ry), SKIN, lw)
-            pts = cloud(150, 390, 10) + bumps((0.97 * Rp, 0.4 * r), (-0.97 * Rp, 0.4 * r), 5, -1.6)
-            part(s, pts, hair, hl, amp=0.2)
-            spots = [(-0.5, -0.5), (0.1, -0.7), (0.55, -0.35), (-0.2, 0.05), (0.35, 0.15)]
-        else:
-            part(s, ell(0, 0, rx, ry), SKIN, lw)
-            self.face_side(eyes, mouth)
-            pts = cloud(336, 150, 9) + [(-0.6 * rx, 0.5 * r), (-0.1 * rx, 0.3 * r)] + bumps((0.0, 0.05 * r), (0.98 * rx, -0.32 * r), 3)
-            part(s, pts, hair, hl, amp=0.2)
-            spots = [(-0.5, -0.45), (0.0, -0.72), (-0.65, 0.05)]
-        for x, y in spots:
-            s.ink.line(arc_pts(x * rx, y * r, 1.6, 1.5, 200, 470, 8), w=1.0, amp=0, density=0.9)
-        if eyes != "closed" and view == "front":
-            pass
-
-    def shine(self, R, a0, a1):
-        """头发上一道留白的高光（只在墨实地的头发上）。"""
-        if self.look.hair[1] is not None:
-            # 白头发：几道细细的发丝
-            for da in (-16, 4, 22):
-                self.s.ink.line(arc_pts(0, 0, R * 0.68, R * 0.64, a0 + da, a1 + da - 6, 5), w=0.9, amp=0, density=0.85)
+    def _paint(self, spec, pts, closed=True, stroke_w=None):
+        if spec is None:
             return
-        stroke_clear(self.s, arc_pts(0, 0, R * 0.74, R * 0.72, a0, a1, 6), 1.3, colors=("ink",))
-
-    def ahoge(self, x, y, d=1):
-        k = self.r / 14.0
-        pts = [(x, y + 1), (x + d * 1.8 * k, y - 3.5 * k), (x + d * 0.6 * k, y - 7.2 * k), (x - d * 2.2 * k, y - 7.6 * k), (x - d * 3.0 * k, y - 5.4 * k)]
-        hair = self.look.hair
-        if hair[0] == "paper":
-            tube(self.s, pts, 1.3, SKIN, self.lw * 0.55, amp=0)
-        else:
-            self.s.ink.line(pts, w=self.lw * 0.95, amp=0.2)
-
-    def clip_pin(self, x, y, ang):
-        """梅小时候的发夹：一颗小小的青色。"""
-        pts = rotate(rrect(x - 3.2, y - 1.5, 6.4, 3.0, 1.4), ang, (x, y))
-        part(self.s, pts, solid("qing"), 1.1, amp=0)
-
-    def eye(self, x, y, kind):
-        s, r = self.s, self.r
-        er = r * (0.14 if self.stage == "child" else 0.12)
-        if kind == "open":
-            s.ink.dot(x, y, er)
-        elif kind == "happy":
-            s.ink.line(arc_pts(x, y + 0.9, 2.1, 2.0, 200, 340, 6), w=1.4, amp=0)
-        else:  # closed
-            s.ink.line(arc_pts(x, y - 0.9, 2.1, 1.8, 20, 160, 6), w=1.4, amp=0)
-
-    def face_front(self, eyes, mouth):
-        s, r = self.s, self.r
-        rx = r * 1.06
-        ex = rx * (0.40 if self.stage != "child" else 0.42)
-        ey = r * (0.2 if self.stage == "child" else 0.13)
-        for sd in (-1, 1):
-            self.eye(sd * ex, ey, eyes)
-            s.pen("mei", 0.25).fill(ell(sd * rx * 0.54, r * 0.46, r * 0.18, r * 0.12))
-        my = r * (0.5 if self.stage == "child" else 0.45)
-        if mouth == "open":
-            pts = [(-2.3, my - 0.4), (2.3, my - 0.4)] + arc_pts(0, my - 0.4, 2.3, 2.4, 0, 180, 8)
-            s.ink.poly(pts, w=0.8, fill=True, amp=0)
-        else:
-            s.ink.line(arc_pts(0, my - 1.3, 1.7, 1.4, 30, 150, 6), w=1.3, amp=0)
-
-    def face_side(self, eyes, mouth):
-        s, r = self.s, self.r
-        rx = r * 1.06
-        ey = r * (0.2 if self.stage == "child" else 0.13)
-        self.eye(rx * 0.56, ey, eyes)
-        s.pen("mei", 0.25).fill(ell(rx * 0.5, r * 0.46, r * 0.17, r * 0.12))
-        my = r * (0.5 if self.stage == "child" else 0.45)
-        s.ink.line(arc_pts(rx * 0.84, my - 1.2, 1.3, 1.2, 40, 140, 5), w=1.2, amp=0)
-
-    def glasses_front(self):
-        s, r = self.s, self.r
-        rx = r * 1.06
-        ex, ey = rx * 0.40, r * 0.13
-        g = r * 0.27
-        for sd in (-1, 1):
-            s.ink.poly(ell(sd * ex, ey + 0.5, g, g * 0.85, 18), w=1.2, amp=0)
-            s.ink.line([(sd * (ex + g), ey), (sd * (rx + 0.3), ey - 1.0)], w=1.1, amp=0)
-        s.ink.line(arc_pts(0, ey + 0.2, ex - g, 1.2, 200, 340, 4), w=1.1, amp=0)
-
-    def glasses_side(self):
-        s, r = self.s, self.r
-        rx = r * 1.06
-        ex, ey = rx * 0.58, r * 0.13
-        g = r * 0.25
-        s.ink.poly(ell(ex, ey + 0.5, g * 0.7, g * 0.85, 16), w=1.2, amp=0)
-        s.ink.line([(ex - g * 0.7, ey), (-0.12 * rx, ey - 0.5)], w=1.1, amp=0)
-
-    # ------------------------------------------------------------------
-    # 手里的东西
-    # ------------------------------------------------------------------
-    def prop(self, cx, cy):
-        s, lw = self.s, self.lw * 0.85
-        w = self.prop_w()
-        if self.role == "qing":
-            # 一碗热汤面：碗沿一道梅色，冒热气，插着筷子
-            h = w * 0.48
-            rim = cy - h * 0.3
-            for k in (-1, 1):
-                s.ink.line([(cx + 1.5 * k, rim - 2.5), (cx + 0.2 * k + 0.5, rim - 5.5), (cx + 1.8 * k, rim - 8.5), (cx + 0.6 * k, rim - 11.5)], w=1.2, amp=0, density=0.7)
-            s.ink.line([(cx + w * 0.05, rim + 1), (cx + w * 0.55, rim - 9.5)], w=1.4, amp=0)
-            s.ink.line([(cx + w * 0.16, rim + 1), (cx + w * 0.68, rim - 8.0)], w=1.4, amp=0)
-            part(s, rrect(cx - w * 0.17, rim + h - 1.2, w * 0.34, 2.6, 0.8), SKIN, lw)
-            body = arc_pts(cx, rim, w / 2, h, 180, 0, 14)
-            part(s, body, SKIN, lw)
-            with s.clip(body):
-                s.pen("mei").fill(rect_pts(cx - w, rim + h * 0.28, 2 * w, 2.0))
-            part(s, ell(cx, rim, w / 2, 1.9, 18), tint("ink", 0.4), lw * 0.8, occlude=False)
-        else:
-            # 一小盆绿植：青色的叶子
-            top = cy - 1.5
-            bot = cy + w * 0.5
-            for ang, L in ((-38, w * 0.55), (32, w * 0.6), (-4, w * 0.75)):
-                base = (cx, top - 1)
-                tip = polar(base, 180 + ang, L)
-                mid = lerp(base, tip, 0.5)
-                d = math.dist(base, tip)
-                leaf = rotate(ell(mid[0], mid[1], d / 2, d * 0.2, 14), math.degrees(math.atan2(tip[1] - base[1], tip[0] - base[0])) - 0, mid)
-                part(s, leaf, solid("qing"), 1.3, amp=0.2)
-                s.ink.line([base, lerp(base, tip, 0.8)], w=0.9, amp=0)
-            pot = [(cx - w / 2, top), (cx + w / 2, top), (cx + w * 0.36, bot), (cx - w * 0.36, bot)]
-            part(s, pot, tint("ink", 0.45), lw)
-            part(s, rrect(cx - w / 2 - 1, top - 2.2, w + 2, 3.2, 1.0), SKIN, lw * 0.9)
-
-    def prop_w(self):
-        return max(15.0, self.sw * 1.6)
-
-    def cane_draw(self, top, tip, d):
-        """拐杖：墨实地，弯钩朝 d 一侧。"""
-        s = self.s
-        tip = (tip[0], tip[1] - 1.2)
-        s.ink.line([top, tip], w=2.4, amp=0.2)
-        c = (top[0] + d * 2.3, top[1])
-        hook = arc_pts(c[0], c[1], 2.3, 2.3, 180, 360, 8) if d > 0 else arc_pts(c[0], c[1], 2.3, 2.3, 0, -180, 8)
-        s.ink.line(hook + [(c[0] + d * 2.3, top[1] + 1.8)], w=2.4, amp=0)
-
-    # ------------------------------------------------------------------
-    # 服装细节
-    # ------------------------------------------------------------------
-    def deco_torso(self, view, tp, sy, hy, hem, shx=0.0):
-        """画在躯干上、胳膊下面的东西。"""
-        s, lw, T, C = self.s, self.lw, hy - sy, self.C
-        st, role = self.stage, self.role
-        thin = lw * 0.55
-        side = view == "side"
-        d = self.dw
-        fx = (d + shx) if side else 0.0  # 侧面时衣服前襟的位置
-        with s.clip(tp):
-            if st == "teen":
-                yk = sy + T * 0.32
-                s.clear(rect_pts(-40, sy - 8, 80, yk - sy + 8), colors=(C,))
-                s.ink.line([(-30, yk), (30, yk)], w=thin, amp=0.3)
-                if view == "front":
-                    s.ink.line([(0, sy + 4), (0, hem + 1)], w=1.3, amp=0)
-                elif side:
-                    s.ink.line([(fx - 1.5, sy + 4), (d - 1.2, hem + 1)], w=1.3, amp=0)
-            elif st == "young" and role == "qing":
-                s.ink.line([(-30, hy - 0.8), (30, hy - 0.8)], w=2.0, amp=0.2)
-                if view == "front":
-                    s.ink.line([(0, sy + 3), (0, hy - 1.5)], w=1.0, amp=0, density=0.8)
-                    for k in range(4):
-                        y = sy + 6 + k * (T - 8) / 3.5
-                        if y < hy - 2.5:
-                            s.ink.dot(1.4, y, 0.75)
-                    part(s, rrect(-2, hy - 2.2, 4, 3, 0.6), SKIN, 1.0)
-                elif view == "back":
-                    s.ink.line([(-30, sy + T * 0.22), (30, sy + T * 0.22)], w=thin, amp=0.3)
-            elif st == "middle" and role == "qing":
-                band = hem - 3.4
-                s.pen("ink", 0.35).fill(rect_pts(-40, band, 80, 6))
-                s.ink.line([(-40, band), (40, band)], w=thin, amp=0.2)
-                if view == "front":
-                    s.ink.line([(0, sy + 5), (0, hem + 1)], w=1.3, amp=0)
-                    for sd in (-1, 1):
-                        s.ink.line([(sd * (self.hw - 4.5), hy - 9), (sd * (self.hw - 2.0), hy - 3.5)], w=1.2, amp=0)
-                elif side:
-                    s.ink.line([(fx - 1.6, sy + 4), (d - 1.3, hem + 1)], w=1.3, amp=0)
-                    s.ink.line([(shx * 0.3 + 0.5, hy - 9), (shx * 0.2 + 2.5, hy - 3.5)], w=1.2, amp=0)
-                else:
-                    s.ink.line([(-30, sy + T * 0.25), (30, sy + T * 0.25)], w=thin, amp=0.3)
-            elif st == "old" and role == "qing":
-                s.ink.line([(-40, hem - 3), (40, hem - 3)], w=thin, amp=0.2)
-                if view == "front":
-                    vy = sy + T * 0.45
-                    s.ink.line([(0, vy), (0, hem + 1)], w=1.1, amp=0)
-                    for k in range(3):
-                        s.ink.dot(1.6, vy + 2.5 + k * 5, 0.9)
-                    for sd in (-1, 1):
-                        x0 = sd * (self.hw - 1.2) - (5.5 if sd > 0 else 0)
-                        part(s, rrect(x0, hy - 9, 5.5, 5, 1), self.look.top, thin, occlude=False)
-                elif side:
-                    s.ink.line([(fx - 1.6, sy + 4), (d - 1.2, hem + 1)], w=1.1, amp=0)
-                    part(s, rrect(shx * 0.2 - 1, hy - 9, 5.5, 5, 1), self.look.top, thin, occlude=False)
-            elif st == "young" and role == "mei":
-                wy = sy + T * 0.8
-                for yy in (wy - 1.6, wy + 1.6):
-                    s.ink.line([(-40, yy), (40, yy)], w=1.1, amp=0.2)
-                if view == "front":
-                    for yy in (sy + T * 0.48, sy + T * 0.64):
-                        for sd in (-1, 1):
-                            s.ink.dot(sd * 3.0, yy, 0.9)
-                    s.ink.line([(0.5, wy + 1.6), (1.2, hem + 1)], w=1.1, amp=0)
-                    part(s, rrect(-2.3, wy - 2.3, 4.6, 4.6, 0.8), SKIN, 1.1)
-                    s.ink.line([(1.6, wy + 1.5), (3.0, wy + 6.5)], w=1.6, amp=0)
-                elif view == "back":
-                    s.ink.line([(0, hy + 1), (0, hem + 1)], w=1.1, amp=0)
-                    s.ink.line([(-30, sy + T * 0.25), (30, sy + T * 0.25)], w=thin, amp=0.3)
-                else:
-                    s.ink.line([(d + 0.2, wy + 1.6), (d + 2.0, hem + 1)], w=1.1, amp=0)
-                    part(s, rrect(d * 0.1 - 2.3, wy - 2.3, 4.6, 4.6, 0.8), SKIN, 1.1)
-            elif st == "middle" and role == "mei":
-                band = hem - 3.6
-                s.pen("mei").fill(rect_pts(-40, band, 80, 6))
-                s.ink.line([(-40, band), (40, band)], w=thin, amp=0.2)
-                yy = sy + T * 0.34
-                for k in range(-6, 7):
-                    s.pen("mei").dot(k * 3.4 + (0 if view != "side" else shx * 0.6), yy, 1.15)
-                for k in range(-6, 7):
-                    s.pen("mei").dot(k * 3.4 + 1.7 + (0 if view != "side" else shx * 0.6), yy + 3.0, 0.7)
-            elif st == "old" and role == "mei":
-                s.ink.line([(-40, hem - 3), (40, hem - 3)], w=thin, amp=0.2)
-
-        # 衣领、领口（盖在躯干上面）
-        if view == "front":
-            if st == "teen":
-                part(s, [(-3.8, sy - 1.0), (3.8, sy - 1.0), (0, sy + 4.4)], SKIN, thin)
-            elif st == "young" and role == "qing":
-                for sd in (-1, 1):
-                    part(s, [(sd * 0.4, sy + 0.6), (sd * 5.8, sy - 1.0), (sd * 4.4, sy + 4.2)], SKIN, thin)
-            elif st == "middle" and role == "qing":
-                part(s, [(-3.6, sy - 1.0), (3.6, sy - 1.0), (0, sy + 6)], SKIN, thin)
-                for sd in (-1, 1):
-                    part(s, [(sd * 3.4, sy - 1.6), (sd * 7.6, sy + 0.2), (sd * 1.2, sy + 6.8)], solid("qing"), thin)
-            elif st == "old" and role == "qing":
-                part(s, [(-4.4, sy - 1.0), (4.4, sy - 1.0), (0, sy + T * 0.45)], SKIN, thin)
-            elif st == "young" and role == "mei":
-                part(s, [(-4.4, sy - 1.0), (4.4, sy - 1.0), (0, sy + T * 0.38)], SKIN, thin)
-                for sd in (-1, 1):
-                    part(s, [(sd * 4.2, sy - 1.6), (sd * (self.sw - 2.2), sy + 1.2), (sd * 1.0, sy + T * 0.37)], solid("mei"), thin)
-            elif st == "middle" and role == "mei":
-                part(s, rrect(-5.0, sy - 1.8, 10.0, 3.4, 1.6), solid("mei"), thin)
-            elif st == "old" and role == "mei":
-                pass
-        elif view == "side":
-            if st == "teen" or (st == "young" and role == "qing"):
-                part(s, [(fx - 3.6, sy - 1.2), (fx + 0.4, sy - 0.2), (fx - 1.4, sy + 3.2)], SKIN, thin)
-            elif st == "middle" and role == "qing":
-                part(s, [(fx - 5.0, sy - 1.8), (fx + 0.2, sy - 0.4), (fx - 2.6, sy + 5.5)], solid("qing"), thin)
-            elif st == "middle" and role == "mei":
-                part(s, rrect(fx - 7.5, sy - 1.8, 7.0, 3.2, 1.5), solid("mei"), thin)
-            elif st == "young" and role == "mei":
-                part(s, [(fx - 5.5, sy - 1.8), (fx + 0.6, sy - 0.2), (fx - 1.2, sy + T * 0.34)], solid("mei"), thin)
-        else:  # back
-            if st == "middle" and role == "mei":
-                part(s, rrect(-5.0, sy - 1.8, 10.0, 3.0, 1.4), solid("mei"), thin)
-            elif st == "middle" and role == "qing":
-                part(s, rrect(-6.0, sy - 2.2, 12.0, 4.0, 1.6), solid("qing"), thin)
-            elif st == "young" and role == "qing":
-                part(s, rrect(-5.0, sy - 2.0, 10.0, 3.2, 1.2), tint("qing", 0.78), thin)
-            elif st == "young" and role == "mei":
-                part(s, rrect(-6.0, sy - 2.2, 12.0, 4.0, 1.6), solid("mei"), thin)
-
-        # 书包背带（梅·童年，在胳膊下）
-        if role == "mei" and st == "child":
-            if view == "front":
-                for sd in (-1, 1):
-                    tube(s, [(sd * self.sw * 0.36, sy - 0.8), (sd * self.sw * 0.3, sy + T * 0.5)], 1.8, solid("qing"), 1.1, amp=0)
-            elif side:
-                self.backpack_side(sy, hy, shx)
-                tube(s, [(-d * 0.4 + shx, sy + 0.2), (shx + 1.5, sy + 0.6), (fx - 1.2, sy + T * 0.55)], 1.8, solid("qing"), 1.1, amp=0)
-
-    def backpack_side(self, sy, hy, shx):
-        s, T, d = self.s, hy - sy, self.dw
-        x0 = -d - 5.8 + shx * 0.35
-        body = rrect(x0, sy + 1.2, 7.2, T - 2.0, 3.0)
-        part(s, body, tint("qing", 0.72), self.lw * 0.8)
-        part(s, rrect(x0 - 0.4, sy + 0.8, 7.6, T * 0.45, 3.0), solid("qing"), self.lw * 0.7)
-
-    def deco_over(self, view, sy, hy, shx=0.0):
-        """盖在胳膊上面、头下面的东西（红领巾、书包、披肩）。"""
-        s, lw, T = self.s, self.lw, hy - sy
-        st, role = self.stage, self.role
-        d = self.dw
-        if role == "qing" and st == "child":
-            m = solid("mei")
-            if view == "front":
-                part(s, rrect(-5.8, sy - 1.8, 11.6, 3.4, 1.6), m, 1.2)
-                part(s, [(0, sy + 1.0), (-4.2, sy + 8.6), (-1.0, sy + 9.0)], m, 1.2)
-                part(s, [(0.6, sy + 1.0), (3.4, sy + 9.6), (5.6, sy + 8.0)], m, 1.2)
-                part(s, ell(0.3, sy + 1.4, 2.1, 1.9), m, 1.2)
-            elif view == "back":
-                part(s, [(-7.0, sy - 1.2), (7.0, sy - 1.2), (0, sy + 8.5)], m, 1.2)
+        if spec[0] == "paper":
+            return
+        color, density = spec[0], spec[1] if len(spec) > 1 else None
+        if density is not None and density <= 0:
+            return
+        if len(spec) > 2 and spec[2] == "flat":
+            # 平涂：实地版上一层半透明（不出网点），裤子、头发这种大块深色用
+            ctx = self._ctx(color, "solid")
+            ctx.save()
+            ctx.set_source_rgba(0, 0, 0, density)
+            self._path(ctx, pts, closed)
+            if stroke_w is None:
+                ctx.fill()
             else:
-                fx = d + shx
-                part(s, [(-1.0 + shx * 0.5, sy - 1.0), (-d - 1.2, sy), (-d * 0.4, sy + 6.5)], m, 1.2)
-                part(s, rrect(-d * 0.2 + shx * 0.6, sy - 2.0, d + 1.5, 3.2, 1.4), m, 1.2)
-                part(s, [(fx - 1.5, sy + 0.5), (fx + 2.2, sy + 8.0), (fx + 0.2, sy + 8.8)], m, 1.2)
-                part(s, ell(fx - 1.0, sy + 0.8, 2.0, 1.8), m, 1.2)
-        if role == "mei" and st == "child" and view == "back":
-            sw = self.sw
-            body = rrect(-sw + 1.6, sy + 1.6, 2 * sw - 3.2, T - 2.6, 3.5)
-            part(s, body, tint("qing", 0.72), lw * 0.85)
-            part(s, rrect(-sw + 1.2, sy + 1.2, 2 * sw - 2.4, T * 0.42, 3.5), solid("qing"), lw * 0.8)
-            part(s, rrect(-1.6, sy + T * 0.36, 3.2, 3.4, 0.8), SKIN, 1.0)
-        if role == "mei" and st == "old":
-            self.shawl(view, sy, hy, shx)
+                ctx.set_line_width(stroke_w)
+                ctx.set_line_cap(cairo.LINE_CAP_ROUND)
+                ctx.set_line_join(cairo.LINE_JOIN_ROUND)
+                ctx.stroke()
+            ctx.restore()
+            return
+        self._fill(color, density, pts, closed, stroke_w)
 
-    def shawl(self, view, sy, hy, shx):
-        s, lw, T, sw, d = self.s, self.lw, hy - sy, self.sw, self.dw
-        m = solid("mei")
-        if view == "front":
-            pts = [(-sw * 0.42, sy - 1.4), (-sw - 2.6, sy + 1.6), (-sw - 4.2, sy + T * 0.5), (-sw * 0.3, sy + T * 0.58),
-                   (0, sy + T * 0.7), (sw * 0.3, sy + T * 0.58), (sw + 4.2, sy + T * 0.5), (sw + 2.6, sy + 1.6), (sw * 0.42, sy - 1.4), (0, sy + 1.2)]
-            edge = [pts[2], pts[3], pts[4], pts[5], pts[6]]
-        elif view == "back":
-            pts = [(-sw * 0.42, sy - 1.8), (sw * 0.42, sy - 1.8), (sw + 2.6, sy + 1.6), (sw + 4.2, sy + T * 0.5), (0, sy + T * 0.72), (-sw - 4.2, sy + T * 0.5), (-sw - 2.6, sy + 1.6)]
-            edge = [pts[3], pts[4], pts[5]]
+    def shape(self, pts, spec, line=OUTLINE, line_color="ink"):
+        """一块面：墨圈 + 挖空 + 纸 + 色。"""
+        if line > 0:
+            self._fill(line_color, None, pts, True, stroke_w=line * 2)
+        self._clear(pts)
+        self._fill("paper", None, pts, True, stroke_w=line * 2 if line > 0 else None)
+        self._fill("paper", None, pts)
+        self._paint(spec, pts)
+
+    def limb(self, pts, width, spec, line=OUTLINE):
+        """一根胳膊或腿：一条圆头粗线，关节处自然连上，没有接缝。"""
+        self._fill("ink", None, pts, False, stroke_w=width + line * 2)
+        self._clear(pts, False, stroke_w=width)
+        self._fill("paper", None, pts, False, stroke_w=width + line * 2)
+        self._paint(spec, pts, False, stroke_w=width)
+
+    def line(self, pts, w=OUTLINE, color="ink", density=None, closed=False):
+        self._fill(color, density, pts, closed, stroke_w=w)
+
+    def dot(self, x, y, r, color="ink", density=None):
+        self._fill(color, density, ell(x, y, r, r, 16))
+
+    def blot(self, pts, color, density=None, flat=False):
+        """只上色、不挖空不描边（花纹、高光、腮红）。"""
+        if flat:
+            self._paint((color, density, "flat"), pts)
         else:
-            pts = [(-d * 0.6 + shx, sy - 1.8), (d * 0.3 + shx, sy - 1.6), (d + shx + 1.6, sy + 1.0), (d + shx * 0.6 + 2.6, sy + T * 0.46),
-                   (shx * 0.4, sy + T * 0.5), (-d - 2.4, sy + T * 0.56), (-d - 1.8 + shx * 0.3, sy + 1.0)]
-            edge = [pts[3], pts[4], pts[5]]
-        sm = chaikin(pts, 1)
-        part(s, sm, m, lw * 0.9)
-        # 流苏
-        for i in range(len(edge) - 1):
-            a, b = edge[i], edge[i + 1]
-            n = max(2, int(math.dist(a, b) / 2.6))
-            for k in range(n):
-                p = lerp(a, b, (k + 0.5) / n)
-                s.ink.line([add(p, 0, 0.6), add(p, 0, 3.2)], w=1.0, amp=0)
-        if view == "front":
-            part(s, ell(0, sy + 3.4, 1.9, 1.9), solid("qing"), 1.0)
-
-    # ------------------------------------------------------------------
-    # 姿势：正面 / 背面
-    # ------------------------------------------------------------------
-    def draw_front(self, kind="stand", phase=0, back=False):
-        s, lk, lw = self.s, self.look, self.lw
-        L, T, sw, A = self.L, self.T, self.sw, self.A
-        walk = kind == "walk"
-        stride = walk and phase in (0, 2)
-        bob = 1.5 if stride else 0.0
-        hy = -L + bob
-        sy = hy - T
-        hem = hy + lk.hem
-        lx = self.hw * 0.45
-        view = "back" if back else "front"
-
-        # 腿：迈步时后脚跟抬起
-        lift = {-1: 0.0, 1: 0.0}
-        fwd = 0
-        if stride:
-            fwd = 1 if phase == 0 else -1  # 正面：角色的左 = 画面 +x
-            if back:
-                fwd = -fwd
-            lift[-fwd] = 2.4
-        for sd in sorted((-1, 1), key=lambda k: -lift[k]):
-            hip = (sd * lx, hy - 2.5)
-            ank = (sd * lx * 1.06, -4.0 - lift[sd])
-            self.leg([hip, lerp(hip, ank, 0.5), ank], view, side=sd)
-
-        # 胳膊
-        arms = []  # (pts, under_torso, hand)
-        cs = (-1 if not back else 1) if self.cane else 0
-        busy = kind == "busy"
-        for sd in (-1, 1):
-            S = (sd * (sw - 2.6), sy + 3.6)
-            if busy:
-                E = (sd * (sw + 1.2), sy + 3.6 + A * 0.5)
-                W = (sd * (self.prop_w() / 2 + 0.5), sy + 3.6 + A * 0.4)
-                if back:
-                    arms.append(([S, E, (sd * (sw - 1.5), E[1] - 1.5)], True, False))
-                else:
-                    arms.append(([S, E, W], False, False))
-                continue
-            if kind == "wave" and sd == 1:
-                E = (sw + 6.0, sy + 0.5)
-                W = (sw + 7.5, sy - A * 0.42)
-                arms.append(([S, E, W], False, "wave"))
-                continue
-            if sd == cs:
-                cl = 2.0 if (walk and not stride) else 0.0
-                E = (sd * (sw + 2.4), sy + 3.6 + A * 0.45 - cl * 0.5)
-                W = (sd * (sw + 3.6), sy + 3.6 + A * 0.8 - cl)
-                arms.append(([S, E, W], False, "cane"))
-                continue
-            if self.behind:
-                E = (sd * (sw + 0.8), sy + 3.6 + A * 0.42)
-                if back:
-                    W = (sd * 2.2, hy - 3.0)
-                    arms.append(([S, E, W], False, "clasp"))
-                else:
-                    arms.append(([S, E, (sd * (self.hw * 0.4), hy - 3.0)], True, False))
-                continue
-            W = (sd * (sw + 1.2), sy + 3.6 + A)
-            if stride:
-                if sd == -fwd:   # 和迈出的腿相反的手往前摆：看起来短一点
-                    W = (W[0] - sd * 1.4, W[1] - 3.6)
-                else:
-                    W = (W[0] + sd * 0.6, W[1] - 1.0)
-            E = lerp(S, W, 0.5)
-            E = (E[0] + sd * 0.9, E[1])
-            arms.append(([S, E, W], False, True))
-
-        for pts, under, hd in arms:
-            if under:
-                self.arm(pts, hand=False)
-        self.neck(0, sy)
-        tp = self.torso_front(sy, hy, hem)
-        part(s, tp, lk.top, lw)
-        self.deco_torso(view, tp, sy, hy, hem)
-        clasp = None
-        for pts, under, hd in arms:
-            if under:
-                continue
-            if hd == "cane":
-                W = pts[-1]
-                self.arm(pts, hand=False)
-                self.cane_draw((W[0], W[1] - 2.5), (W[0] + cs * 1.4, -((2.0 if (walk and not stride) else 0.0))), -cs if not back else -cs)
-                self.hand(W)
-            elif hd == "wave":
-                self.arm(pts, hand=False)
-                self.hand(pts[-1], k=1.15)
-                W = pts[-1]
-                for rr in (4.5, 7.0):
-                    s.ink.line(arc_pts(W[0], W[1], rr, rr, -60, 10, 6), w=1.2, amp=0, density=0.85)
-            elif hd == "clasp":
-                self.arm(pts, hand=False)
-                clasp = pts[-1]
-            else:
-                self.arm(pts, hand=bool(hd))
-        if clasp is not None:
-            part(s, ell(0, clasp[1], self.hr * 1.5, self.hr * 1.1), SKIN, lw * 0.85)
-        self.deco_over(view, sy, hy)
-        if busy and not back:
-            cy = sy + 3.6 + A * 0.4 - 1.0
-            self.prop(0, cy)
-            for pts, _, _ in arms:
-                self.hand(pts[-1])
-            if self.cane:  # 拐杖挂在小臂上
-                W = arms[0][0][-1]
-                s.ink.line([(W[0] - 2.5, W[1] + 1.0), (W[0] - 3.2, W[1] + 30)], w=2.4, amp=0.2)
-        hcy = sy - self.n - self.r * 0.95 + self.hunch * 0.5
-        eyes = "happy" if kind == "wave" else "open"
-        mouth = "open" if kind == "wave" else "smile"
-        with place(s, 0, hcy):
-            self.head(view, eyes, mouth)
-
-    # ------------------------------------------------------------------
-    # 侧面（朝右）
-    # ------------------------------------------------------------------
-    def draw_side(self, kind="stand", phase=0):
-        s, lk, lw = self.s, self.look, self.lw
-        L, T, A = self.L, self.T, self.A
-        walk = kind == "walk"
-        stride = walk and phase in (0, 2)
-        bob = 1.5 if stride else 0.0
-        hy = -L + bob
-        sy = hy - T
-        shx = self.hunch
-        hem = hy + lk.hem
-        Lleg = L - 4.0
-        hip = (0.0, hy - 1.0)
-        Lleg_eff = Lleg - 1.0
-
-        def straight(ang, x0=0.0):
-            h = (hip[0] + x0, hip[1])
-            k = polar(h, ang, Lleg_eff / 2)
-            return [h, k, polar(k, ang, Lleg_eff / 2)]
-
-        # 腿
-        legs = {}
-        if stride:
-            th = math.degrees(math.acos(max(-1, min(1, (Lleg_eff - bob) / Lleg_eff))))
-            th = max(th, 14.0)
-            near_fwd = phase == 0
-            legs["near"] = (straight(th if near_fwd else -th), 0.0)
-            legs["far"] = (straight(-th if near_fwd else th), 0.0)
-        elif walk:
-            swing = "far" if phase == 1 else "near"
-            sup = "near" if swing == "far" else "far"
-            legs[sup] = (straight(0.0), 0.0)
-            h = hip
-            k = polar(h, 22, Lleg_eff / 2)
-            legs[swing] = ([h, k, polar(k, -38, Lleg_eff / 2)], 28.0)
-        else:
-            legs["far"] = (straight(0.0, -1.6), 0.0)
-            legs["near"] = (straight(0.0, 1.0), 0.0)
-        # 腿脚落地：直腿的脚踝钉在 y=-4
-        for key, (pts, rot) in legs.items():
-            if rot == 0.0:
-                dy = -4.0 - pts[-1][1]
-                legs[key] = ([pts[0]] + [(x, y + dy * (i / (len(pts) - 1))) for i, (x, y) in enumerate(pts[1:], 1)], rot)
-
-        # 胳膊
-        S = (shx * 0.9 + 0.3, sy + 3.6)
-        Sf = (S[0] - 1.4, S[1] - 0.4)
-        busy = kind == "busy"
-        if busy:
-            near = (6.0, 80.0)
-            far = (2.0, 78.0)
-        elif stride:
-            a = -32.0 if phase == 0 else 32.0
-            near = (a, a + (18.0 if a > 0 else 6.0))
-            far = (-a, -a + (18.0 if -a > 0 else 6.0))
-        elif walk:
-            near, far = (4.0, 12.0), (-3.0, 3.0)
-        else:
-            near, far = (2.0, 9.0), (-2.0, 5.0)
-        if self.behind and not busy:
-            near = (-12.0, -78.0)
-            far = None
-        cane_tip = None
-        if self.cane and not busy:
-            sw_ = {0: -4.0, 1: 2.0, 2: 6.0, 3: 2.0}.get(phase, 0.0) if walk else 0.0
-            near = (16.0 + sw_, 30.0 + sw_)
-            if walk and stride:
-                far = (-8.0 if phase == 0 else 8.0, (-8.0 if phase == 0 else 8.0) + 10)
-            elif walk:
-                far = (0.0, 6.0)
-
-        def arm_pts(S0, ang):
-            E = polar(S0, ang[0], A * 0.5)
-            return [S0, E, polar(E, ang[1], A * 0.5)]
-
-        if far is not None:
-            self.arm(arm_pts(Sf, far), hand=not busy, shade=0.18)
-        for key in ("far", "near"):
-            pts, rot = legs[key]
-            self.leg(pts, "side", rot, shade=0.18 if key == "far" else 0.0)
-        self.neck(shx * 1.1 + 0.3, sy)
-        flare = 1.2 if (lk.coat and stride) else 0.0
-        tp = self.torso_side(sy, hy, hem, shx, flare)
-        part(s, tp, lk.top, lw)
-        self.deco_torso("side", tp, sy, hy, hem, shx)
-        npts = arm_pts(S, near)
-        if busy:
-            W = npts[-1]
-            self.arm(npts, hand=False)
-            self.deco_over("side", sy, hy, shx)
-            self.prop(W[0] + self.prop_w() * 0.32, W[1] - 1.0)
-            self.hand(W)
-            if self.cane:
-                s.ink.line([(W[0] - 1.0, W[1] + 1.0), (W[0] - 1.6, W[1] + 30)], w=2.4, amp=0.2)
-        elif self.cane:
-            W = npts[-1]
-            lift = 1.8 if (walk and not stride) else 0.0
-            cane_tip = (W[0] + 3.5, -lift)
-            self.arm(npts, hand=False)
-            self.cane_draw((W[0], W[1] - 2.5), cane_tip, 1)
-            self.hand(W)
-        else:
-            self.arm(npts, hand=True)
-        if not busy:
-            self.deco_over("side", sy, hy, shx)
-        hcx = shx * 1.35 + 1.4
-        hcy = sy - self.n - self.r * 0.95 + self.hunch * 0.5
-        with place(s, hcx, hcy):
-            self.head("side")
-
-    # ------------------------------------------------------------------
-    # 行 3
-    # ------------------------------------------------------------------
-    def draw_sleep(self):
-        with place(self.s, 0, -1.4):
-            self._sleep()
-
-    def _sleep(self):
-        s, lw, r = self.s, self.lw, self.r
-        Lq = min(self.H * 0.92, 76.0)
-        x0 = -Lq / 2
-        # 枕头
-        pil = rrect(x0 - 3, -7.5, 2 * r + 6, 7.5, 3.2)
-        part(s, pil, SKIN, lw * 0.85)
-        for k in (0.35, 0.65):
-            s.ink.line([(x0 - 3 + (2 * r + 6) * k, -5.6), (x0 - 3 + (2 * r + 6) * k + 2.5, -2.0)], w=1.0, amp=0, density=0.7)
-        hk = 0.86
-        r = r * hk
-        hcx, hcy = x0 + r + 1.5, -7.0 - r * 0.8
-        with place(s, hcx, hcy, -58, hk):
-            self.head("front", "closed", "smile")
-        # 被子：角色色，留白小花点
-        hq = self.sw * 2.2 + 5
-        qx0 = hcx + r * 0.42
-        qx1 = Lq / 2 + 1.5
-        W = qx1 - qx0
-        ctrl = [(qx0, 0.0), (qx0 - 1.5, -hq * 0.55), (qx0 + 1.5, -hq * 0.92), (qx0 + W * 0.22, -hq * 1.02), (qx0 + W * 0.48, -hq * 0.74),
-                (qx0 + W * 0.72, -hq * 0.9), (qx0 + W * 0.92, -hq * 0.62), (qx1 + 1.0, -hq * 0.25), (qx1, 0.0)]
-        quilt = chaikin(ctrl, 3)
-        part(s, quilt, solid(self.C), lw)
-        with s.clip(quilt):
-            for iy in range(0, 6):
-                for ix in range(0, 16):
-                    x = qx0 + 4 + ix * 5.6 + (2.8 if iy % 2 else 0)
-                    y = -3.5 - iy * 5.0
-                    if self.role == "qing":
-                        s.clear(rect_pts(x - 1.4, y - 0.4, 2.8, 0.8), colors=(self.C,))
-                        s.clear(rect_pts(x - 0.4, y - 1.4, 0.8, 2.8), colors=(self.C,))
-                    else:
-                        s.clear(ell(x, y, 0.95, 0.95, 8), colors=(self.C,))
-            s.ink.line([(qx0 - 5, -0.8), (qx1 + 5, -0.8)], w=lw, amp=0.2)
-        # 被头翻过来的一道白边
-        fold = chaikin([(qx0 - 1.0, -0.5), (qx0 - 2.2, -hq * 0.55), (qx0 + 0.8, -hq * 0.95), (qx0 + 5.0, -hq * 0.98), (qx0 + 3.2, -hq * 0.5), (qx0 + 4.0, -0.5)], 2)
-        part(s, fold, SKIN, lw * 0.85)
-        self.hand((qx0 + 4.5, -hq * 0.62), k=0.95)
-
-    def draw_sit(self):
-        s, lk, lw = self.s, self.look, self.lw
-        L, T, sw, A = self.L, self.T, self.sw, self.A
-        hs = round(L * 0.6 + 1.5)
-        hy = -hs
-        sy = hy - T
-        lx = self.hw * 0.48
-        # 小腿
-        for sd in (-1, 1):
-            kn = (sd * lx * 1.15, hy + 3.0)
-            ank = (sd * lx * 1.25, -4.0)
-            spec = SKIN if lk.pants_len < 1 else lk.pants
-            tube(s, [kn, (ank[0], ank[1] - max(0.0, (self.lgw + 1.2) / 2 + lw - 3.0))], self.lgw - (1.6 if lk.pants_len < 1 else 0), spec, lw)
-            if self.stage == "teen":
-                stroke_clear(s, [(kn[0] + sd * self.lgw * 0.28, kn[1] + 2), (ank[0] + sd * self.lgw * 0.28, ank[1] - 1)], 1.5, colors=(self.C,))
-            self.shoe(ank, "front")
-        if self.cane:
-            self.cane_draw((-(sw + 2.5), hy - 7.0), (-(sw + 5.5), -0.5), 1)
-        arms = []
-        for sd in (-1, 1):
-            S = (sd * (sw - 2.6), sy + 3.6)
-            E = (sd * (sw + 1.6), sy + 3.6 + A * 0.5)
-            W = (sd * (lx * 1.1 + 0.5), hy - 0.5)
-            arms.append([S, E, W])
-        self.neck(0, sy)
-        tp = self.torso_front(sy, hy, hy + 1.5)
-        part(s, tp, lk.top, lw)
-        self.deco_torso("front", tp, sy, hy, hy + 1.5)
-        # 大腿朝镜头：一块圆圆的"膝盖面"，中间一道缝（风衣就是衣摆）
-        spec = lk.top if lk.coat else lk.pants
-        kw = lx * 1.15 + (self.lgw + lw) / 2 + 0.6
-        lap = rrect(-kw, hy - 2.5, 2 * kw, 7.0, 3.2)
-        part(s, lap, spec, lw)
-        s.ink.line([(0, hy - 1.0), (0, hy + 4.0)], w=1.3, amp=0)
-        for pts in arms:
-            self.arm(pts)
-        self.deco_over("front", sy, hy)
-        hcy = sy - self.n - self.r * 0.95 + self.hunch * 0.5
-        with place(s, 0, hcy):
-            self.head("front")
+            self._fill(color, density, pts)
 
 
 # ----------------------------------------------------------------------
-# 出图
+# 一个姿势
 # ----------------------------------------------------------------------
 
-def build(role, stage, out_dir=OUT_DIR):
-    s = Sheet(CELL_W * COLS, CELL_H * ROWS, scale=SCALE, seed=11)
-    f = Fig(s, role, stage)
-
-    def cell(col, row, fn, *a, **kw):
-        s._seed = 1000  # 每格同一套抖动种子：走路时线条不会"沸腾"
-        with place(s, col * CELL_W + FOOT[0], row * CELL_H + FOOT[1]):
-            fn(*a, **kw)
-
-    for row, back in ((0, False), (1, True)):
-        cell(0, row, f.draw_front, "stand", 0, back)
-        for ph in range(4):
-            cell(1 + ph, row, f.draw_front, "walk", ph, back)
-        cell(5, row, f.draw_front, "busy", 0, back)
-    cell(0, 2, f.draw_side, "stand")
-    for ph in range(4):
-        cell(1 + ph, 2, f.draw_side, "walk", ph)
-    cell(5, 2, f.draw_side, "busy")
-    cell(0, 3, f.draw_sleep)
-    cell(1, 3, f.draw_front, "wave", 0, False)
-    cell(2, 3, f.draw_sit)
-    path = os.path.join(out_dir, f"{role}_{stage}.png")
-    s.save_rgba(path)
-    return path
+def far_spec(spec):
+    """远侧的胳膊腿：同色浅一档（实地变网点、网点再淡一点），像隔着一层空气。"""
+    if spec is None or spec[0] == "paper":
+        return ("ink", 0.12)
+    c, d = spec[0], spec[1] if len(spec) > 1 else None
+    if len(spec) > 2:
+        return (c, min(0.95, d + 0.12), "flat")
+    return (c, 0.62 if d is None else max(0.2, d * 0.7))
 
 
-def main(argv):
-    roles = [a for a in argv if a in ROLES] or list(ROLES)
-    stages = [a for a in argv if a in STAGE_ORDER] or list(STAGE_ORDER)
-    for role in roles:
-        for stage in stages:
-            p = build(role, stage)
-            print(os.path.relpath(p, ROOT), os.path.getsize(p) // 1024, "KB")
+def leg_points(hip, thigh_deg, knee_deg, pitch_deg, b):
+    knee = polar(hip, thigh_deg, b["thigh"])
+    ankle = polar(knee, thigh_deg - knee_deg, b["shin"])
+    heel = (ankle[0] - b["foot"] * 0.22, ankle[1] + b["ankle"])
+    # 脚：脚后跟到脚尖，按 pitch 绕脚踝转
+    toe = (ankle[0] + b["foot"] * 0.85, ankle[1] + b["ankle"])
+    heel, toe = rot([heel, toe], pitch_deg, ankle)
+    return knee, ankle, heel, toe
+
+
+def pose_walk(b, phase):
+    """走路这一帧：两条腿、两只胳膊的角度和髋的位置。"""
+    st, sw = b["stride"], b["swing"]
+    legs = []
+    for side, ph in (("near", phase), ("far", phase + 0.5)):
+        legs.append(dict(side=side, thigh=periodic(THIGH, ph) * st, knee=periodic(KNEE, ph) * (0.6 + 0.4 * st),
+                         pitch=periodic(FOOT_PITCH, ph) * st))
+    arms = []
+    for side, leg in (("near", legs[1]), ("far", legs[0])):  # 手和对侧的腿一起往前
+        a = leg["thigh"] * 0.95 * sw
+        arms.append(dict(side=side, shoulder=a, elbow=12 + max(0.0, a) * 0.9))
+    return dict(legs=legs, arms=arms, lean=b["lean"] + b["walk_lean"], bob=0.0, tilt=0.0)
+
+
+def pose_stand(b, breathe=0.0):
+    legs = [dict(side="near", thigh=3, knee=4, pitch=0), dict(side="far", thigh=-4, knee=3, pitch=0)]
+    arms = [dict(side="near", shoulder=4 + breathe, elbow=10), dict(side="far", shoulder=-3 - breathe, elbow=8)]
+    return dict(legs=legs, arms=arms, lean=b["lean"], bob=breathe * 0.6, tilt=0.0)
+
+
+def place_hip(b, pose):
+    """髋放多高：两只脚里最低的那一点正好踩在地上（y=0）。"""
+    hip0 = (0.0, 0.0)
+    low = -1e9
+    for leg in pose["legs"]:
+        knee, ankle, heel, toe = leg_points(hip0, leg["thigh"], leg["knee"], leg["pitch"], b)
+        low = max(low, heel[1], toe[1], ankle[1] + b["ankle"] * 0.8)
+    return (0.0, -low)
+
+
+def draw_person(p: Painter, b, pose, x0, y0, blink=False, busy=None, wave=None, sit=False):
+    """把一个姿势画到 (x0, y0) 为脚底的位置。"""
+    p.ox, p.oy = x0, y0
+    if sit:
+        hip = (-4.0, -44.0)
+    else:
+        hip = place_hip(b, pose)
+        hip = (hip[0], hip[1] - pose.get("bob", 0.0))
+    lean = pose["lean"]
+    # 躯干：髋到肩，往前倾 lean 度
+    shoulder = polar(hip, 180 - lean, b["torso"])
+    neck_top = polar(shoulder, 180 - lean * 0.6, b["neck"])
+    head_c = (neck_top[0] + 2.0 + lean * 0.25, neck_top[1] - b["head"] * 0.92)
+    w, cw = b["waist"], b["chest"]
+
+    # ---- 远侧：胳膊、腿 ----
+    def leg_poly(leg):
+        return leg_points(hip, leg["thigh"], leg["knee"], leg["pitch"], b)
+
+    def draw_leg(leg, far):
+        knee, ankle, heel, toe = leg_poly(leg)
+        pants = far_spec(b["pants"]) if far else b["pants"]
+        p.limb([hip, knee, ankle], b["limb"] if not sit else b["limb"], pants)
+        if b.get("stripe"):
+            p.line([lerp(hip, knee, 0.1), knee, lerp(knee, ankle, 0.85)], 2.2, "ink", 0.0)
+            _stripe(p, [lerp(hip, knee, 0.15), knee, lerp(knee, ankle, 0.8)], far)
+        shoe = far_spec(b["shoes"]) if far and b["shoes"][0] != "paper" else b["shoes"]
+        # 鞋：一块圆头的面
+        ang = math.degrees(math.atan2(toe[1] - heel[1], toe[0] - heel[0]))
+        sole = 6.5 if b["stage"] != "child" else 5.5
+        pts = arc_pts(toe[0] - sole * 0.7, toe[1] - sole * 0.75, sole, sole * 0.95, -80 + ang, 90 + ang, 8) + \
+            arc_pts(heel[0] + sole * 0.4, heel[1] - sole * 0.7, sole * 0.75, sole * 0.75, 90 + ang, 230 + ang, 6) + \
+            [polar(ankle, 180 + ang * 0.5, sole * 0.6)]
+        p.shape(pts, shoe)
+
+    def draw_arm(arm, far):
+        sh = (shoulder[0] + (-3 if far else 1), shoulder[1] + 4)
+        elbow = polar(sh, arm["shoulder"], b["upper"])
+        hand = polar(elbow, arm["shoulder"] + arm["elbow"], b["fore"])
+        if "hand_to" in arm:
+            hand = arm["hand_to"]
+            # 按手的位置反算肘：两段长不变，肘往下弯
+            elbow = _ik(sh, hand, b["upper"], b["fore"], bend=arm.get("bend", 1))
+        sleeve = b.get("coat") or b.get("cardigan") or b["shirt"]
+        spec = far_spec(sleeve) if far else sleeve
+        p.limb([sh, elbow, hand], b["limb"] - 1.0, spec)
+        if b.get("stripe"):
+            _stripe(p, [lerp(sh, elbow, 0.2), elbow, lerp(elbow, hand, 0.7)], far)
+        p.shape(ell(hand[0], hand[1], 4.6, 4.6, 14), ("paper",) if not far else ("ink", 0.1, "flat"), line=1.8)
+        return hand
+
+    far_leg = [l for l in pose["legs"] if l["side"] == "far"][0]
+    near_leg = [l for l in pose["legs"] if l["side"] == "near"][0]
+    far_arm = [a for a in pose["arms"] if a["side"] == "far"][0]
+    near_arm = [a for a in pose["arms"] if a["side"] == "near"][0]
+
+    if b.get("bag") and b["stage"] == "teen":
+        # 书包：背在身后，远侧
+        bx, by = polar(hip, 180 - lean, b["torso"] * 0.55)
+        p.shape(chaikin([(bx - w * 0.5 - 15, by - 18), (bx - w * 0.5 + 2, by - 22), (bx - w * 0.5 + 2, by + 22), (bx - w * 0.5 - 14, by + 18)], 2),
+                ("ink", 0.55))
+    draw_arm(far_arm, True)
+    if b.get("cane"):
+        pass
+    draw_leg(far_leg, True)
+    draw_leg(near_leg, False)
+
+    # ---- 躯干 ----
+    up = (math.sin(math.radians(lean)), -math.cos(math.radians(lean)))  # 沿躯干往上
+    rt = (-up[1], up[0])  # 往前
+
+    def at(t, side):  # 躯干上 t（0 髋 ~ 1 肩）处、side（-1 后 ~ 1 前）处的点
+        width = w + (cw - w) * t
+        c = (hip[0] + up[0] * b["torso"] * t, hip[1] + up[1] * b["torso"] * t)
+        return (c[0] + rt[0] * side * width / 2, c[1] + rt[1] * side * width / 2)
+
+    hem = -0.1
+    body = [at(hem, -1.05), at(0.55, -1.0), at(0.92, -0.85), at(1.02, -0.3), at(1.02, 0.45), at(0.9, 0.95), at(0.5, 1.0), at(hem, 1.0)]
+    body = chaikin(body, 2)
+    outer = b.get("coat") or b.get("cardigan")
+    shirt = b["shirt"]
+    if b.get("skirt"):
+        # 小裙子：从腰往下撒开，盖住大腿
+        sk = [at(0.35, -1.0), at(0.35, 1.0), (hip[0] + w * 0.78, hip[1] + b["thigh"] * 0.62), (hip[0] - w * 0.82, hip[1] + b["thigh"] * 0.66)]
+        p.shape(chaikin(sk, 1), b["shirt"])
+    if b.get("long_coat"):
+        coat = [at(1.0, -0.9), at(1.0, 0.9), at(0.0, 1.05), (hip[0] + w * 0.62, hip[1] + b["thigh"] * 0.95),
+                (hip[0] - w * 0.75, hip[1] + b["thigh"] * 0.95), at(0.0, -1.1)]
+        p.shape(chaikin(coat, 1), outer)
+        # 门襟里露出一条衬衫
+        p.shape([at(0.99, 0.3), at(0.99, 0.75), at(0.55, 0.75)], ("paper",), line=1.4)
+        p.line([at(0.55, 0.85), (hip[0] + w * 0.58, hip[1] + b["thigh"] * 0.9)], 1.4)
+        # 腰带和背后的阴影
+        p.line([at(0.3, -1.02), at(0.3, 1.02)], 2.4)
+        p.blot(chaikin([at(0.98, -0.85), at(0.6, -0.62), at(0.0, -0.75), (hip[0] - w * 0.6, hip[1] + b["thigh"] * 0.9),
+                        (hip[0] - w * 0.75, hip[1] + b["thigh"] * 0.93), at(0.0, -1.08), at(0.9, -1.0)], 1), "ink", 0.22)
+    else:
+        p.shape(body, outer if outer else shirt)
+        # 背后一道阴影（墨网点），身体就圆起来了
+        p.blot(chaikin([at(hem + 0.02, -1.0), at(0.5, -0.98), at(0.9, -0.8), at(0.85, -0.45), at(0.45, -0.6), at(hem + 0.05, -0.62)], 1), "ink", 0.24)
+        if outer:
+            # 敞着的外套：前襟露出里面的衣服
+            inner = [at(0.98, 0.15), at(0.98, 0.95), at(0.05, 1.0), at(0.05, 0.62), at(0.6, 0.45)]
+            p.shape(chaikin(inner, 1), shirt, line=1.6)
+            if b.get("cardigan"):
+                for t in (0.3, 0.55, 0.8):
+                    p.dot(*at(t, 0.58), 1.4)
+        if b.get("stripes"):
+            # 海魂衫一样的横道（只是道道，不是海魂衫）
+            for k in range(4):
+                t = 0.12 + k * 0.21
+                _paper_band(p, [at(t, -0.98), at(t, 0.98), at(t + 0.075, 0.98), at(t + 0.075, -0.98)])
+        if b.get("stripe"):
+            # 校服前襟的拉链
+            p.line([at(0.05, 0.92), at(0.98, 0.7)], 1.3)
+    collar = b.get("collar")
+    if collar and not b.get("long_coat"):
+        c0 = at(1.0, -0.2)
+        c1 = at(1.0, 0.55)
+        p.shape([c0, c1, at(0.86, 0.35)], collar, line=1.5)
+
+    # ---- 头 ----
+    hr = b["head"]
+    hx, hy = head_c
+    # 脖子
+    p.limb([neck_top, (neck_top[0], neck_top[1] + 3), shoulder], 8.5 if b["stage"] != "child" else 7.5, b["skin"], line=1.8)
+    _head(p, b, hx, hy, hr, blink, pose.get("tilt", 0.0))
+
+    # ---- 近侧胳膊（压在身前） ----
+    if busy is not None:
+        k = busy
+        tgt = (shoulder[0] + b["upper"] * 0.95, shoulder[1] + b["upper"] * 0.75 - 4 * math.sin(k * math.tau))
+        near_arm = dict(near_arm, hand_to=tgt, bend=1)
+        h = draw_arm(near_arm, False)
+        # 手里的东西：一只碗 / 一块抹布 / 一本书，都画成一个小方块
+        p.shape([(h[0] - 3, h[1] - 8), (h[0] + 13, h[1] - 10), (h[0] + 14, h[1] + 2), (h[0] - 2, h[1] + 4)], (b["role"], 0.35), line=1.6)
+    elif wave is not None:
+        ang = 128 + 8 * math.sin(wave * math.tau)
+        near_arm = dict(near_arm, shoulder=ang, elbow=-30 - 22 * math.sin(wave * math.tau))
+        draw_arm(near_arm, False)
+    else:
+        h = draw_arm(near_arm, False)
+        if b.get("cane"):
+            tip = (h[0] + 10, 0.0)
+            p.line([h, (h[0] - 2, h[1] - 6)], 3.2)
+            p.line([(h[0] - 3, h[1] - 6), tip], 3.2)
+
+
+def _paper_band(p: Painter, pts):
+    """在衣服上挖出一道纸白（横条纹）。"""
+    p._clear(pts)
+    p._fill("paper", None, pts)
+
+
+def _stripe(p: Painter, pts, far):
+    """校服袖子、裤腿上那道白杠。"""
+    p._clear(pts, False, stroke_w=2.6)
+    p._fill("paper", None, pts, False, stroke_w=2.6)
+
+
+def _ik(a, c, l1, l2, bend=1):
+    d = min(math.dist(a, c), l1 + l2 - 0.01)
+    ang = math.atan2(c[1] - a[1], c[0] - a[0])
+    cos_a = (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d)
+    off = math.acos(max(-1.0, min(1.0, cos_a)))
+    t = ang + off * bend
+    return (a[0] + l1 * math.cos(t), a[1] + l1 * math.sin(t))
+
+
+def _head(p: Painter, b, hx, hy, r, blink, tilt):
+    st = b["stage"]
+    q = b["role"] == "qing"
+    grey = b["hair"] == "grey"
+    hair = ("ink", 0.38) if grey else ("ink", None)
+    # 后面的头发（梅的短发、马尾）
+    if not q:
+        if st in ("child", "teen"):
+            # 马尾 / 小辫
+            tail = [(hx - r * 0.7, hy - r * 0.35), (hx - r * 1.55, hy - r * 0.05), (hx - r * 1.65, hy + r * 0.75), (hx - r * 1.05, hy + r * 0.35)]
+            p.shape(chaikin(tail, 2), hair)
+            p.shape(ell(hx - r * 0.85, hy - r * 0.2, 3.2, 3.2, 12), ("mei", None), line=1.5)
+        elif st in ("young",):
+            back = [(hx - r * 1.08, hy - r * 0.4), (hx - r * 1.12, hy + r * 1.25), (hx - r * 0.1, hy + r * 1.3), (hx + r * 0.2, hy + r * 0.2)]
+            p.shape(chaikin(back, 2), hair)
+        elif st == "middle":
+            back = [(hx - r * 1.05, hy - r * 0.3), (hx - r * 1.0, hy + r * 0.95), (hx - r * 0.2, hy + r * 1.0), (hx + r * 0.1, hy)]
+            p.shape(chaikin(back, 2), hair)
+        else:
+            # 盘起来的发髻
+            p.shape(ell(hx - r * 0.85, hy - r * 0.55, r * 0.48, r * 0.44, 18), hair)
+    # 脸
+    face = ell(hx, hy, r, r * 1.02, 36)
+    # 下巴往前一点点
+    face = [(x + max(0.0, (y - hy)) * 0.12 * (1 if x > hx else 0), y) for x, y in face]
+    p.shape(face, b["skin"])
+    # 耳朵
+    ex, ey = hx - r * 0.18, hy + r * 0.16
+    p.shape(ell(ex, ey, r * 0.16, r * 0.22, 12), b["skin"], line=1.4)
+    # 头发（前面这一片）：盖住头顶和后脑勺，前面留出脸
+    if q:
+        if grey:
+            cap = [(hx - r * 1.04, hy + r * 0.25), (hx - r * 1.08, hy - r * 0.5), (hx - r * 0.4, hy - r * 1.12), (hx + r * 0.5, hy - r * 1.02),
+                   (hx + r * 0.95, hy - r * 0.45), (hx + r * 0.25, hy - r * 0.62), (hx - r * 0.35, hy - r * 0.2), (hx - r * 0.55, hy + r * 0.3)]
+        else:
+            cap = [(hx - r * 1.06, hy + r * 0.38), (hx - r * 1.1, hy - r * 0.55), (hx - r * 0.45, hy - r * 1.18), (hx + r * 0.55, hy - r * 1.1),
+                   (hx + r * 1.08, hy - r * 0.42), (hx + r * 0.6, hy - r * 0.5), (hx + r * 0.32, hy - r * 0.32), (hx - r * 0.1, hy - r * 0.48),
+                   (hx - r * 0.45, hy - r * 0.05), (hx - r * 0.62, hy + r * 0.42)]
+        p.shape(chaikin(cap, 2), hair)
+        if not grey and st in ("child", "teen"):
+            # 头顶一撮翘毛（青的标志，从小到大）
+            p.line([(hx - r * 0.05, hy - r * 1.08), (hx + r * 0.15, hy - r * 1.5), (hx + r * 0.42, hy - r * 1.42)], 2.4)
+        if st in ("middle", "old"):
+            # 眼镜
+            p.line(ell(hx + r * 0.55, hy - r * 0.02, r * 0.27, r * 0.22, 16), 1.6, closed=True)
+            p.line([(hx + r * 0.28, hy - r * 0.05), (hx - r * 0.05, hy - r * 0.1)], 1.4)
+    else:
+        if st == "old":
+            cap = [(hx - r * 1.05, hy + r * 0.2), (hx - r * 1.05, hy - r * 0.5), (hx - r * 0.3, hy - r * 1.12), (hx + r * 0.6, hy - r * 0.95),
+                   (hx + r * 0.95, hy - r * 0.4), (hx + r * 0.2, hy - r * 0.62), (hx - r * 0.4, hy - r * 0.1)]
+        else:
+            # 齐刘海 + 盖住耳朵的短发
+            cap = [(hx - r * 1.08, hy + (r * 0.9 if st in ("child", "young", "middle") else r * 0.4)), (hx - r * 1.12, hy - r * 0.5),
+                   (hx - r * 0.4, hy - r * 1.2), (hx + r * 0.6, hy - r * 1.1), (hx + r * 1.1, hy - r * 0.45), (hx + r * 1.05, hy - r * 0.18),
+                   (hx + r * 0.42, hy - r * 0.26), (hx + r * 0.05, hy - r * 0.1), (hx - r * 0.12, hy + (r * 0.95 if st != "teen" else r * 0.5)),
+                   (hx - r * 0.55, hy + (r * 1.05 if st != "teen" else r * 0.55))]
+        p.shape(chaikin(cap, 2), hair)
+        if st != "old":
+            # 头发上一道高光（纸白）
+            hl = [(hx - r * 0.45, hy - r * 0.95), (hx + r * 0.1, hy - r * 1.02), (hx + r * 0.05, hy - r * 0.88), (hx - r * 0.45, hy - r * 0.8)]
+            _paper_band(p, chaikin(hl, 1))
+        if st in ("middle", "old"):
+            p.line(ell(hx + r * 0.56, hy - r * 0.0, r * 0.26, r * 0.21, 16), 1.5, closed=True)
+    if q and not grey:
+        hl = [(hx - r * 0.55, hy - r * 0.9), (hx - r * 0.05, hy - r * 1.03), (hx - r * 0.08, hy - r * 0.9), (hx - r * 0.55, hy - r * 0.76)]
+        _paper_band(p, chaikin(hl, 1))
+    # 眼睛、腮红、嘴
+    exx, eyy = hx + r * 0.56, hy - r * 0.02
+    if blink:
+        p.line([(exx - 2.6, eyy + 0.5), (exx + 2.6, eyy + 0.5)], 1.6)
+    else:
+        p.dot(exx, eyy, 2.2 if st == "child" else 1.9)
+    p.blot(ell(hx + r * 0.4, hy + r * 0.4, r * 0.24, r * 0.15, 14), "mei", 0.35, flat=True)
+    p.line([(hx + r * 0.78, hy + r * 0.52), (hx + r * 0.9, hy + r * 0.5)], 1.3)
+    if st == "old":
+        # 皱纹两道
+        p.line([(hx + r * 0.75, hy - r * 0.3), (hx + r * 0.9, hy - r * 0.18)], 1.0)
+
+
+def draw_sleep(p: Painter, b, x0, y0, k):
+    """躺着睡：人横过来，被子盖到肩膀，被子跟着呼吸起伏。"""
+    p.ox, p.oy = x0, y0
+    L = b["H"]
+    r = b["head"]
+    breathe = 1.5 * math.sin(k * math.pi)
+    hx = -L * 0.42 + r
+    hy = -r - 4
+    # 枕头
+    p.shape(chaikin([(hx - r * 1.5, -4), (hx - r * 1.4, -r * 1.3), (hx + r * 1.2, -r * 1.25), (hx + r * 1.3, -4)], 2), ("paper",), line=1.8)
+    _head_lying(p, b, hx, hy, r)
+    quilt = [(hx + r * 0.5, -1), (hx + r * 0.55, -r * 1.7 - breathe), (hx + r * 2.5, -r * 2.3 - breathe * 1.4), (hx + L * 0.45, -r * 2.1 - breathe * 1.2),
+             (L * 0.52, -r * 1.6 - breathe), (L * 0.58, -1)]
+    p.shape(chaikin(quilt, 2), (b["role"], 0.55))
+    # 被面的花：几个小圆点
+    for i in range(5):
+        p.dot(hx + r * 1.9 + i * L * 0.12, -r * 1.0 - breathe * 0.8 + (i % 2) * 7, 2.6, b["role"], None)
+
+
+def _head_lying(p, b, hx, hy, r):
+    # 侧着躺的头：就是普通的头转了 -90 度太费事，直接画一张闭眼的侧脸，头发朝左
+    face = ell(hx, hy, r, r, 30)
+    p.shape(face, b["skin"])
+    hair = ("ink", 0.38) if b["hair"] == "grey" else ("ink", None)
+    cap = [(hx - r * 1.05, hy + r * 0.6), (hx - r * 1.1, hy - r * 0.5), (hx - r * 0.3, hy - r * 1.1), (hx + r * 0.6, hy - r * 0.95),
+           (hx + r * 0.9, hy - r * 0.5), (hx + r * 0.2, hy - r * 0.45), (hx - r * 0.3, hy + r * 0.1)]
+    p.shape(chaikin(cap, 2), hair)
+    p.line(arc_pts(hx + r * 0.45, hy + r * 0.05, 3.0, 2.0, 10, 170, 6), 1.6)
+    p.blot(ell(hx + r * 0.38, hy + r * 0.42, r * 0.22, r * 0.14, 12), "mei", 0.35, flat=True)
+
+
+def draw_sit(p: Painter, b, x0, y0, k):
+    """坐着：坐在一个 44 高的凳子上（场景里的凳子、长椅都是这个高度）；小孩脚够不着地，晃荡。"""
+    swing = math.sin(k * math.pi) * (10 if b["stage"] == "child" else 2)
+    seat = -44.0
+    hip = (-4.0, seat)
+    # 大腿水平往前，小腿往下垂
+    th = 90 - 4
+    knee_x = b["thigh"] * math.sin(math.radians(th))
+    reach = -seat - b["ankle"] - 2  # 脚踩地需要的小腿竖直长度
+    if b["shin"] >= reach:
+        knee_deg_near = th - math.degrees(math.acos(min(1.0, reach / b["shin"]))) + 0
+    else:
+        knee_deg_near = th - 8
+    legs = [dict(side="near", thigh=th, knee=knee_deg_near + swing, pitch=0), dict(side="far", thigh=th - 3, knee=knee_deg_near - swing * 0.5 + 6, pitch=0)]
+    arms = [dict(side="near", shoulder=28, elbow=48), dict(side="far", shoulder=22, elbow=50)]
+    pose = dict(legs=legs, arms=arms, lean=b["lean"] + 3, bob=0.0)
+    draw_person(p, b, pose, x0, y0, sit=True)
+
+
+# ----------------------------------------------------------------------
+# 一整张表
+# ----------------------------------------------------------------------
+
+def sheet_for(role, stage) -> Sheet:
+    b = build(role, stage)
+    sh = Sheet(CELL_W * COLS, CELL_H * ROWS, scale=SCALE, seed=11 + len(role) * 7 + STAGES.index(stage))
+    p = Painter(sh)
+
+    def cell(r, c):
+        return c * CELL_W + FOOT[0], r * CELL_H + FOOT[1]
+
+    for i in range(8):
+        x, y = cell(0, i)
+        draw_person(p, b, pose_walk(b, i / 8.0), x, y)
+    for i in range(4):
+        x, y = cell(1, i)
+        br = math.sin(i / 4.0 * math.tau)
+        draw_person(p, b, pose_stand(b, br), x, y, blink=(i == 3))
+    for i in range(4):
+        x, y = cell(1, 4 + i)
+        pose = pose_stand(b, 0.4 * math.sin(i / 4.0 * math.tau))
+        pose["lean"] += 4
+        draw_person(p, b, pose, x, y, busy=i / 4.0)
+    for i in range(2):
+        x, y = cell(2, i)
+        draw_sit(p, b, x, y, i)
+    for i in range(2):
+        x, y = cell(2, 2 + i)
+        draw_sleep(p, b, x, y, i)
+    for i in range(4):
+        x, y = cell(2, 4 + i)
+        draw_person(p, b, pose_stand(b, 0.3), x, y, wave=i / 4.0)
+    return sh
+
+
+def save_rgba_small(sh: Sheet, path):
+    """RGBA 量化成 96 色调色板（带透明），一张 600 KB → 130 KB 左右，看不出差别。"""
+    import numpy as np
+    from PIL import Image
+    rgb = sh.composite(True, True)
+    a = np.clip(sh.alpha() * 255.0 + 0.5, 0, 255).astype(np.uint8)
+    img = Image.fromarray(np.dstack([rgb, a]), "RGBA")
+    img.quantize(colors=96, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(path, optimize=True)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--preview", nargs="?", const="/tmp/actors_preview.png")
+    ap.add_argument("--only", default="")
+    a = ap.parse_args()
+    os.makedirs(OUT_DIR, exist_ok=True)
+    stages = a.only.split(",") if a.only else STAGES
+    sheets = []
+    for stage in stages:
+        for role in ROLES:
+            sh = sheet_for(role, stage)
+            path = os.path.join(OUT_DIR, f"{role}_{stage}.png")
+            if a.preview:
+                sheets.append(sh.composite())
+            else:
+                save_rgba_small(sh, path)
+                print("✓", os.path.relpath(path, ROOT))
+    if a.preview:
+        import numpy as np
+        from PIL import Image
+        Image.fromarray(np.concatenate(sheets, axis=0)).save(a.preview)
+        print("✓", a.preview)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()

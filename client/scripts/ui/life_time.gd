@@ -12,6 +12,24 @@ const STAGES := [
 ]
 
 
+## 这一回合画面上是什么季节（只管画面：树、天气）。童年一年四回合按立春立夏立秋立冬；
+## 少年上学期是秋、下学期是春；再往后一回合一年、几年，没有季节可言，就按回合轮着来
+static func season_of(turn: int) -> String:
+	var start := 0
+	for i in STAGES.size():
+		var st: Dictionary = STAGES[i]
+		var turns := int(round(st.years * st.tpy))
+		if turn < start + turns or i == STAGES.size() - 1:
+			var k := turn - start
+			if st.stage == "childhood":
+				return SEASONS[k % 4]
+			if st.stage == "teen":
+				return "autumn" if k % 2 == 0 else "spring"
+			return SEASONS[turn % 4]
+		start += turns
+	return "spring"
+
+
 static func at(turn: int) -> Dictionary:
 	var start := 0
 	for i in STAGES.size():

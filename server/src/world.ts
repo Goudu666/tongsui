@@ -1044,7 +1044,7 @@ function worldFate(s: LifeState, c: Content, online: { [R in Role]: boolean }, o
       var x = w.actors[r]!;
       if (online[r]) return worldIdle(x) && storyHere(c, mev, x);
       // 叫过来也得是他去得了的图（四岁的影子不会被叫到海河边）
-      if (anyOnline) return !x.asleep && (x.from === undefined || x.from === w.slot) && !!hostScene && !worldSceneLock(s, c, hostScene, r);
+      if (anyOnline) return !x.asleep && (x.from === undefined || x.from === w.slot) && !!hostScene && !!hostScene.far === worldFarAt(c, x) && !worldSceneLock(s, c, hostScene, r); // 两片之间叫不过来
       return !x.asleep && storyHere(c, mev, x);
     };
     if (roles.length === 2 && storyNow(mev, w.slot) && roles.every(available)) {

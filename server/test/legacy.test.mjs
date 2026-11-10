@@ -689,7 +689,7 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
   const nearL = runN(64, "搭伴念书", "linked", 71), nearO = runN(64, "搭伴念书", "owl", 71), farL = run("各顾各的", "linked", 71);
   assert.ok(pairUp(nearL) >= pairUp(nearO) - 0.05, "连心的两个人搭伴过，老了不该比别人更难并一家");
   assert.ok(pairUp(nearL) <= 0.6, `搭伴的连心七十岁能并一家的有 ${Math.round(pairUp(nearL) * 100)}%，超过六成就是白给了（linkedDrift 调得太低）`);
-  assert.equal(pairUp(farL), 0, "各顾各的连心也够得着并一家：它不该替人把搭伴省了");
+  assert.equal(pairUp(farL), 0, `各顾各的连心也够得着并一家（${Math.round(pairUp(farL) * 100)}%，${farL.length} 条）：它不该替人把搭伴省了`);
 
   // 老灵魂：检定多一点把握，小时候魅力长得慢
   const old = run("嘴甜人缘好", "oldsoul", 13), kid = run("嘴甜人缘好", "owl", 13);

@@ -647,6 +647,15 @@ for (const ex of exits) {
   const back = exits.find((o) => o.scene === ex.to && o.to === ex.scene && o.at[1] === ex.arrive[1] && Math.abs(o.at[0] - ex.arrive[0]) <= 200);
   if (!back) errors.push(`maps/${ex.scene}.yaml: 出口 ${ex.id} 到了 ${ex.to} 那边，落脚点 200 像素内没有回来的出口`);
 }
+// 同一张图同一层的两个出口要拉开：出口的半径是 110（world.ts 的 SPOT_RADIUS），站在中间两个都够得着就会迷路
+const EXIT_GAP = 220;
+for (let i = 0; i < exits.length; i++) {
+  for (let j = i + 1; j < exits.length; j++) {
+    const a = exits[i], b = exits[j];
+    if (a.scene === b.scene && a.at[1] === b.at[1] && Math.abs(a.at[0] - b.at[0]) < EXIT_GAP)
+      errors.push(`maps/${a.scene}.yaml: 出口 ${a.id} 和 ${b.id} 只隔 ${Math.abs(a.at[0] - b.at[0])}，至少要 ${EXIT_GAP}（两个都够得着）`);
+  }
+}
 const bedOf = (role) => spots.find((sp) => sp.action === "sleep" && sp.scene === "building" && zones.find((z) => z.id === sp.zone)?.owner === role);
 for (const r of ["qing", "mei"]) if (!bedOf(r)) errors.push(`maps/building.yaml: 没有 ${r} 家的床（每天早上从这儿起）`);
 map.scenes = scenes;

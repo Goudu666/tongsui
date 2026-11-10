@@ -1,5 +1,5 @@
 {
- "version": "9bfd37aae25e",
+ "version": "c9f80f438aba",
  "events": [
   {
    "id": "c_roof_summer",
@@ -28281,7 +28281,7 @@
        ]
       },
       {
-       "minAge": 4,
+       "minAge": 5,
        "flags": [
         "fam_factory"
        ]
@@ -28403,7 +28403,7 @@
      20760
     ],
     "unlock": {
-     "minAge": 40
+     "minAge": 45
     },
     "far": false
    }
@@ -29941,7 +29941,7 @@
     ],
     "to": "street",
     "arrive": [
-     160,
+     2540,
      2760
     ],
     "label": "回楼下"
@@ -30062,7 +30062,7 @@
     "id": "street.to_middle",
     "scene": "street",
     "at": [
-     160,
+     2540,
      2760
     ],
     "to": "middle",
@@ -31395,7 +31395,7 @@
    "lateEarly": 0.75,
    "lateAfter": 1.8,
    "lateRoom": 3,
-   "linkedDrift": 0.5,
+   "linkedDrift": 0.6,
    "linkedMood": 0.3,
    "oldSoul": 0.08,
    "oldSoulCharm": 0.8

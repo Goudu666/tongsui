@@ -336,6 +336,11 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
   try { sp = lifeFind(c.map.spots, spotId); } catch (e) { return "没有这个地方"; }
   var dx = sp.at[0] - a.x, dy = sp.at[1] - a.y;
   if (!anywhere && dx * dx + dy * dy > SPOT_RADIUS * SPOT_RADIUS) return "走近一点";
+  // 影子找事、跟着对门、睡觉都是直接到点位上的（anywhere）：那张图这个人去不了，就不能去（上学上班 worldSceneLock 自己放行）
+  if (anywhere) {
+    var lock = worldSceneLock(s, c, lifeFind(c.map.scenes, sp.scene), role);
+    if (lock) return lock;
+  }
   var pick = worldPickAction(s, c, role, sp);
   if (!pick.act) return pick.why;
   var act = pick.act;
@@ -790,10 +795,14 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
     var mev = lifeFindEvent(c, w.fate.mirror);
     // 在线的人要自己走到那里；离线的影子只要没睡着，就会被「叫过来」
     var anyOnline = roles.some(function (r) { return online[r]; });
+    var host: Actor | null = null;
+    for (var h0 = 0; h0 < roles.length; h0++) if (online[roles[h0]]) host = w.actors[roles[h0]];
+    var hostScene = host ? worldSceneAt(c, host.y) : null;
     var available = function (r: Role) {
       var x = w.actors[r]!;
       if (online[r]) return worldIdle(x) && worldInZone(c, x, mev.where);
-      if (anyOnline) return !x.asleep && (x.from === undefined || x.from === w.slot);
+      // 叫过来也得是他去得了的图（四岁的影子不会被叫到海河边）
+      if (anyOnline) return !x.asleep && (x.from === undefined || x.from === w.slot) && !!hostScene && !worldSceneLock(s, c, hostScene, r);
       return !x.asleep && worldInZone(c, x, mev.where);
     };
     if (roles.length === 2 && worldOverlaps(mev.when, w.slot) && roles.every(available)) {

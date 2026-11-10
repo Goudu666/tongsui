@@ -94,6 +94,8 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   w.actors.qing.x = ex.at[0]; w.actors.qing.y = ex.at[1];
   assert.match(G("worldExit")(s, C, "qing", "street.to_river"), /还太小/);
   assert.equal(G("worldSceneAt")(C, w.actors.qing.y).id, "street");
+  // 影子（anywhere）也不能直接到锁着的图上找事
+  assert.match(G("worldCanAct")(s, C, "qing", "river_bank", true) || "", /还太小/, "影子去不了锁着的图");
   C.map.scenes = keep;
   // 顺手的事：两人都去楼下早点铺买煎饼果子 → 同框，当场做完，不占这一段；钱不够买不了，一段里只买一回
   for (const r of ["qing", "mei"]) { put(r, "breakfast_stall"); s.persons[r].money = 10; s.persons[r].needs.hunger = 40; }

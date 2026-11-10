@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "05cdb5be9204",
+ "version": "71a35e64ddfe",
  "events": [
   {
    "id": "c_roof_summer",
@@ -103,7 +103,22 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": [
+    {
+     "pair": [
+      "stars",
+      "popsicle"
+     ],
+     "text": "一个躺着数星星，一个举着两根冰棍上来了。数到哪儿不要紧，冰棍先吃。",
+     "memory": "楼顶的冰棍",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   ]
   },
   {
    "id": "c_stray_cat",
@@ -195,7 +210,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_new_year",
@@ -272,7 +288,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_river_ice",
@@ -347,7 +364,22 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": [
+    {
+     "pair": [
+      "skate",
+      "shore"
+     ],
+     "text": "一个在冰上抽冰嘎，一个在岸上给抱着棉袄。棉袄捂热了，人也上来了。",
+     "memory": "捂热的棉袄",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   ]
   },
   {
    "id": "c_first_fight",
@@ -421,7 +453,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_rainy_day",
@@ -489,7 +522,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_guitar",
@@ -539,7 +573,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_exam",
@@ -606,7 +641,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_first_name",
@@ -708,7 +744,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_wall_names",
@@ -813,7 +850,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_spring_kite",
@@ -906,7 +944,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_capsule",
@@ -1015,7 +1054,8 @@ var CONTENT: Content = {
     "flags": [
      "p_capsule"
     ]
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_xiaohui",
@@ -1114,7 +1154,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_promise",
@@ -1211,7 +1252,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_river_swim",
@@ -1309,7 +1351,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_last_jianbing",
@@ -1418,7 +1461,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_goldfish",
@@ -1523,7 +1567,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_summer_storm",
@@ -1601,7 +1646,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_first_school",
@@ -1705,7 +1751,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_paper_cards",
@@ -1787,7 +1834,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_moving_classmate",
@@ -1882,7 +1930,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_ride_lesson",
@@ -1963,7 +2012,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_xiaohui_gone",
@@ -2061,7 +2111,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_stove_bikeshop",
@@ -2164,7 +2215,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "c_learn_walk",
@@ -2234,7 +2286,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_bite_spring",
@@ -2304,7 +2357,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_wronged",
@@ -2376,7 +2430,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_willow_whistle",
@@ -2443,7 +2498,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_watermelon",
@@ -2513,7 +2569,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_crosstalk_radio",
@@ -2582,7 +2639,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_cicada",
@@ -2654,7 +2712,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_tongxuelu",
@@ -2722,7 +2781,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_mooncake",
@@ -2791,7 +2851,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_book_cover",
@@ -2861,7 +2922,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_erhu_downstairs",
@@ -2939,7 +3001,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_grandma_pigeon",
@@ -3009,7 +3072,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_frozen_persimmon",
@@ -3078,7 +3142,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_tanghulu",
@@ -3151,7 +3216,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_bingga",
@@ -3220,7 +3286,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_diaoqian",
@@ -3291,7 +3358,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_quarrel",
@@ -3359,7 +3427,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_nuannuan_kittens",
@@ -3433,7 +3502,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "c_nuannuan_gone",
@@ -3512,7 +3582,700 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "d_kite_tree",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "spring"
+   ],
+   "weight": 2,
+   "where": "river",
+   "when": null,
+   "hint": "河边的杨树上挂着个东西。",
+   "requires": {
+    "minAge": 5
+   },
+   "title": "挂在树上的风筝",
+   "text": "风筝挂在了河边的杨树上，线还攥在手里。树底下钓鱼的头也不回：「别拽，越拽越紧。」",
+   "options": [
+    {
+     "id": "climb",
+     "text": "爬上去够",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "clean": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "hold",
+     "text": "在树底下张手接着",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "等风把它吹下来",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "climb": {
+     "text": "俩人都上了树。风筝够着了，底下没人接。钓鱼的叹了口气，把竿放下了。",
+     "memory": "树上的俩人",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "hold": {
+     "text": "俩人都在底下举着手，等了半天。风筝没下来，胳膊先酸了。",
+     "memory": "举酸的胳膊",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "你俩在河边坐到天擦黑。起风了，风筝自己下来了，落在钓鱼的桶里。",
+     "memory": "桶里的风筝",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个上了树，一个说等风。树上的喊了三声「接着」，末了是钓鱼的伸手接的。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": [
+    {
+     "pair": [
+      "climb",
+      "hold"
+     ],
+     "text": "一个上树，一个在底下张着手。风筝先下来的，人后下来的，都接住了。",
+     "memory": "都接住了",
+     "bond": {
+      "sync": 3,
+      "close": 1
+     },
+     "flags": []
+    }
+   ]
+  },
+  {
+   "id": "d_broken_window",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "alley",
+   "when": [
+    900,
+    1200
+   ],
+   "hint": "楼下「哗啦」一声。",
+   "requires": {
+    "minAge": 6
+   },
+   "title": "一楼的玻璃",
+   "text": "皮球把一楼马奶奶家的玻璃砸了个窟窿。球是你俩一块儿踢的，最后那一脚是谁的，说不清。",
+   "options": [
+    {
+     "id": "own",
+     "text": "上去敲门认了",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "cover",
+     "text": "说是自己一个人踢的",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {
+       "mood": 5
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "run",
+     "text": "抱起球就跑",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "own": {
+     "text": "你俩并排站在门口。马奶奶看了半天：「一块玻璃，来俩认的。得，一人半块。」",
+     "memory": "一人半块玻璃",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "cover": {
+     "text": "俩人抢着说「是我一个人踢的」。马奶奶乐了：「一个球，俩人都是一个人踢的？」",
+     "memory": "一个人踢的",
+     "bond": {
+      "sync": 3,
+      "close": 4
+     },
+     "flags": []
+    },
+    "run": {
+     "text": "你俩跑出去两条街才停下。球忘在马奶奶窗根底下了，上头写着俩人的名字。",
+     "memory": "写着名字的球",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个站在门口认了，一个已经跑没影了。马奶奶说：「那个跑的，鞋掉了一只。」",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": [
+    {
+     "pair": [
+      "own",
+      "cover"
+     ],
+     "text": "一个刚说「是我们俩」，一个抢着说「是我一个人」。马奶奶：「你俩先对对词儿。」",
+     "memory": "没对上的词儿",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   ]
+  },
+  {
+   "id": "d_radio_show",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "summer",
+    "autumn"
+   ],
+   "weight": 2,
+   "where": "roof",
+   "when": [
+    1080,
+    1300
+   ],
+   "hint": "楼顶的收音机说到一半。",
+   "requires": {
+    "minAge": 6
+   },
+   "title": "没电的收音机",
+   "text": "楼顶的收音机正说着相声，说到一半，电池没电了。逗哏的那句刚抛出来，还悬在半空。",
+   "options": [
+    {
+     "id": "pick",
+     "text": "你来往下编",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "clap",
+     "text": "在边上「嗯、啊、是」",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "fix",
+     "text": "下楼找电池去",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "pick": {
+     "text": "俩人抢着往下编，编的不是一个包袱。楼顶乘凉的都乐了，比原来那段还逗。",
+     "memory": "两个包袱",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "clap": {
+     "text": "你俩一个「嗯」，一个「啊」，等了半天，没人说正文。",
+     "memory": "没人说正文",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "fix": {
+     "text": "你俩翻遍了两家的抽屉，凑了四节旧电池。装上，那段早说完了，正报天气。",
+     "memory": "四节旧电池",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个接着往下说，一个下楼找电池去了。说的人回头一看，捧着的是马爷爷。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": [
+    {
+     "pair": [
+      "pick",
+      "clap"
+     ],
+     "text": "一个往下编，一个在边上「嗯、啊、别挨骂了」。马爷爷说：「行，这俩能上台了。」",
+     "memory": "楼顶那一段",
+     "bond": {
+      "sync": 4,
+      "close": 1
+     },
+     "flags": []
+    }
+   ]
+  },
+  {
+   "id": "d_teen_bike",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "bikeshop",
+   "when": null,
+   "hint": "车铺门口支着一辆车。",
+   "requires": {},
+   "title": "一辆车俩人",
+   "text": "放学，车铺门口。一辆二八大杠，俩人，一个书包。后座的铁架子硌得慌。",
+   "options": [
+    {
+     "id": "ride",
+     "text": "你来蹬",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "seat",
+     "text": "你坐后座",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "walk",
+     "text": "推着走吧",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "ride": {
+     "text": "俩人都要蹬，一人攥着一边车把，谁也不撒手。车没动，天黑了。",
+     "memory": "一人一边车把",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "seat": {
+     "text": "俩人都往后座上挤。修车爷爷从铺子里探出头：「前头没人，这车自己认路？」",
+     "memory": "没人蹬的车",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "walk": {
+     "text": "你俩推着车走了四站地，车铃一路没响。到楼下才想起来，车胎是有气的。",
+     "memory": "四站地",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个蹬上走了，一个还在说「推着走吧」。蹬出去半条街，又拐回来了。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": [
+    {
+     "pair": [
+      "ride",
+      "seat"
+     ],
+     "text": "一个蹬，一个坐后座上扶着书包。上桥那段是下来推的，谁也没提。",
+     "memory": "上桥那一段",
+     "bond": {
+      "sync": 3,
+      "close": 1
+     },
+     "flags": []
+    }
+   ]
+  },
+  {
+   "id": "d_wheel_steps",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "alley",
+   "when": null,
+   "hint": "楼门口有人喊「搭把手」。",
+   "requires": {},
+   "title": "三级台阶",
+   "text": "老楼长的轮椅卡在楼门口。就三级台阶，你俩小时候一步就蹦下去了。",
+   "options": [
+    {
+     "id": "front",
+     "text": "你抬前头",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back",
+     "text": "你抬后头",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "喊个年轻的来",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "front": {
+     "text": "俩人都去抬前头，轮椅差点翻过去。老楼长：「我还没走呢，你俩倒先抢上了。」",
+     "memory": "抢着抬前头",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "back": {
+     "text": "俩人都在后头推。前头没人把着，轮椅自己下去了，老楼长坐得稳稳的。",
+     "memory": "自己下去的轮椅",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "call": {
+     "text": "你俩站在楼门口喊了半天，没喊来人。末了还是你俩抬的，歇了两回。",
+     "memory": "歇了两回",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个弯下腰了，一个还在喊人。老楼长自己攥着扶手站了起来：「别抬了，我下来。」",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": [
+    {
+     "pair": [
+      "front",
+      "back"
+     ],
+     "text": "一个前头，一个后头，三级台阶，没人喊一二三。老楼长说：「你俩打小就这么抬白菜。」",
+     "memory": "三级台阶",
+     "bond": {
+      "sync": 4,
+      "close": 1
+     },
+     "flags": []
+    }
+   ]
+  },
+  {
+   "id": "d_old_bench",
+   "kind": "mirror",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "river",
+   "when": null,
+   "hint": "河边的长椅空着。",
+   "requires": {},
+   "title": "河边的长椅",
+   "text": "河边的长椅。坐下，就不大想起来。对岸的灯比去年又高了一截。",
+   "options": [
+    {
+     "id": "talk",
+     "text": "说点什么",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "quiet",
+     "text": "就这么坐着",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "go",
+     "text": "该回了",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "energy": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "talk": {
+     "text": "俩人同时开的口，说的是同一件事。说完了，都没想起来是哪年的事。",
+     "memory": "同一件事",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "quiet": {
+     "text": "坐到路灯亮。谁也没说话，也没觉得缺什么。",
+     "memory": "路灯亮了",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "go": {
+     "text": "你俩一块儿撑着膝盖站起来，一块儿「哎哟」了一声。",
+     "memory": "一声哎哟",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个起身了，一个还坐着。走出去十来步，又回来坐下了。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": [
+    {
+     "pair": [
+      "talk",
+      "quiet"
+     ],
+     "text": "一个说，一个听。说的那个说岔了年头，听的那个没给纠正。",
+     "memory": "说岔的年头",
+     "bond": {
+      "sync": 3,
+      "close": 1
+     },
+     "flags": []
+    }
+   ]
   },
   {
    "id": "f_chen_patch",
@@ -3585,7 +4348,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_chen_old_bike",
@@ -3689,7 +4453,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_chen_wrench",
@@ -3764,7 +4529,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_lin_copybook",
@@ -3841,7 +4607,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_lin_class",
@@ -3954,7 +4721,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_lin_podium",
@@ -4028,7 +4796,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_zhou_dough",
@@ -4104,7 +4873,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_zhou_stall",
@@ -4181,7 +4951,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_zhou_taste",
@@ -4263,7 +5034,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_xu_ships",
@@ -4375,7 +5147,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_xu_retire",
@@ -4451,7 +5224,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_xu_logbook",
@@ -4525,7 +5299,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_he_story99",
@@ -4638,7 +5413,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_he_gone",
@@ -4718,7 +5494,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_he_hundredth",
@@ -4790,7 +5567,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_su_doll",
@@ -4865,7 +5643,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_su_same_cloth",
@@ -4975,7 +5754,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_su_machine",
@@ -5052,7 +5832,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tang_rope",
@@ -5163,7 +5944,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_tang_south",
@@ -5241,7 +6023,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tang_where_from",
@@ -5310,7 +6093,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_wu_key",
@@ -5393,7 +6177,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_wu_hire",
@@ -5471,7 +6256,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_wu_chimney",
@@ -5577,7 +6363,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_gu_backstage",
@@ -5648,7 +6435,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_gu_first_stage",
@@ -5759,7 +6547,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_gu_fan",
@@ -5834,7 +6623,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_jiang_floor",
@@ -5947,7 +6737,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_jiang_tuition",
@@ -6022,7 +6813,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_jiang_room",
@@ -6094,7 +6886,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_poor_shoes",
@@ -6169,7 +6962,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_rich_toycar",
@@ -6242,7 +7036,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_trip_money",
@@ -6340,7 +7135,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "m_demolish",
@@ -6404,7 +7200,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "m_reunion_far",
@@ -6513,7 +7310,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "m_reunion_estranged",
@@ -6623,7 +7421,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "m_grandpa_funeral",
@@ -6727,7 +7526,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "m_breakfast_third",
@@ -6820,7 +7620,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "m_two_mothers",
@@ -6926,7 +7727,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "m_partners_shop",
@@ -7032,7 +7834,8 @@ var CONTENT: Content = {
      "close": -2
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "m_bridge_words",
@@ -7109,7 +7912,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "m_moving_day",
@@ -7213,7 +8017,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "m_sign",
@@ -7288,7 +8093,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "m_new_building",
@@ -7357,7 +8163,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "m_parent_ill",
@@ -7436,7 +8243,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "m_parent_gone",
@@ -7510,7 +8318,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "m_after_parent",
@@ -7580,7 +8389,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "m_kid_leaves",
@@ -7647,7 +8457,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "m_layoff",
@@ -7718,7 +8529,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "m_checkup",
@@ -7788,7 +8600,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "m_class_reunion",
@@ -7858,7 +8671,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "m_stayed",
@@ -7935,7 +8749,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "m_far_call",
@@ -8011,7 +8826,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "m_married_other",
@@ -8080,7 +8896,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "m_unanswered",
@@ -8153,7 +8970,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "o_last_letter",
@@ -8204,7 +9022,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "o_capsule",
@@ -8307,7 +9126,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "o_promise",
@@ -8388,7 +9208,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "o_chess",
@@ -8487,7 +9308,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "o_winter_swim",
@@ -8581,7 +9403,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "o_jianbing",
@@ -8682,7 +9505,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "o_pigeon_roof",
@@ -8761,7 +9585,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "o_erhu_river",
@@ -8835,7 +9660,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "o_grandkid",
@@ -8903,7 +9729,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "o_come_home",
@@ -8981,7 +9808,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "o_alone_breakfast",
@@ -9050,7 +9878,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "o_alone_pigeon",
@@ -9114,7 +9943,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "o_alone_names",
@@ -9181,7 +10011,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_head_keys",
@@ -9280,7 +10111,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_head_meter",
@@ -9359,7 +10191,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_head_handover",
@@ -9431,7 +10264,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_ma_names",
@@ -9532,7 +10366,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_ma_sell",
@@ -9607,7 +10442,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_ma_coop",
@@ -9681,7 +10517,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_meng_ride",
@@ -9781,7 +10618,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_meng_night",
@@ -9854,7 +10692,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_meng_directions",
@@ -9923,7 +10762,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_liu_freezer",
@@ -10025,7 +10865,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_liu_friends",
@@ -10097,7 +10938,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_liu_ledger",
@@ -10170,7 +11012,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tal_memory_patter",
@@ -10242,7 +11085,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tal_memory_alone",
@@ -10311,7 +11155,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tal_strong_gas",
@@ -10386,7 +11231,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tal_strong_moving",
@@ -10457,7 +11303,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tal_sunny_roof",
@@ -10530,7 +11377,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tal_koi_popsicle",
@@ -10630,7 +11478,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_tal_koi_coin",
@@ -10699,7 +11548,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tal_owl_dawn",
@@ -10775,7 +11625,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tal_foodie_taster",
@@ -10854,7 +11705,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tal_foodie_alone",
@@ -10911,7 +11763,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tal_pigeon_shoulder",
@@ -11011,7 +11864,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_tal_pigeon_alone",
@@ -11081,7 +11935,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tal_loud_name",
@@ -11186,7 +12041,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_tal_loud_old",
@@ -11239,7 +12095,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tal_crafty_bike",
@@ -11334,7 +12191,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_tal_kind_weekend",
@@ -11407,7 +12265,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tal_kind_fever",
@@ -11480,7 +12339,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_tal_stubborn_kite",
@@ -11579,7 +12439,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "f_tal_stubborn_bow",
@@ -11673,7 +12534,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_note",
@@ -11736,7 +12598,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_choose_school",
@@ -11794,7 +12657,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_new_class",
@@ -11893,7 +12757,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_blackboard",
@@ -11994,7 +12859,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_growth_spurt",
@@ -12063,7 +12929,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_diary",
@@ -12164,7 +13031,8 @@ var CONTENT: Content = {
      "close": -2
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_walkman",
@@ -12234,7 +13102,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_misjudged",
@@ -12302,7 +13171,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_netcafe_door",
@@ -12407,7 +13277,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_netcafe_night",
@@ -12481,7 +13352,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_first_money",
@@ -12551,7 +13423,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_layoff",
@@ -12619,7 +13492,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_roof_fireworks",
@@ -12720,7 +13594,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_pigeon_old",
@@ -12822,7 +13697,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_wall_names",
@@ -12924,7 +13800,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_empty_flat",
@@ -12996,7 +13873,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_seaside",
@@ -13101,7 +13979,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_pager",
@@ -13172,7 +14051,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_home_fight",
@@ -13240,7 +14120,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_zhongkao_morning",
@@ -13351,7 +14232,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_near_morning",
@@ -13460,7 +14342,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_near_school",
@@ -13528,7 +14411,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_far_dorm",
@@ -13600,7 +14484,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_far_weekend",
@@ -13704,7 +14589,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_ball_game",
@@ -13777,7 +14663,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_highrise",
@@ -13880,7 +14767,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_family_trouble",
@@ -13955,7 +14843,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_first_paycheck",
@@ -14028,7 +14917,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "t_gate_dropout",
@@ -14134,7 +15024,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "t_gaokao",
@@ -14213,7 +15104,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_letter_city",
@@ -14274,7 +15166,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_zhiyuan",
@@ -14355,7 +15248,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_station",
@@ -14425,7 +15319,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_last_jianbing",
@@ -14530,7 +15425,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "y_dorm_good",
@@ -14604,7 +15500,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_retake",
@@ -14678,7 +15575,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_kitchen",
@@ -14753,7 +15651,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_dorm_first",
@@ -14826,7 +15725,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_homesick",
@@ -14895,7 +15795,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_hallway_29",
@@ -14999,7 +15900,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "y_unanswered",
@@ -15084,7 +15986,8 @@ var CONTENT: Content = {
     "flags": [
      "p_unanswered"
     ]
-   }
+   },
+   "catches": []
   },
   {
    "id": "y_chuyi_breakfast",
@@ -15189,7 +16092,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "y_seaside_again",
@@ -15296,7 +16200,8 @@ var CONTENT: Content = {
      "close": 0
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "y_fireworks",
@@ -15384,7 +16289,8 @@ var CONTENT: Content = {
     "flags": [
      "p_missed"
     ]
-   }
+   },
+   "catches": []
   },
   {
    "id": "y_missed_photo",
@@ -15459,7 +16365,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_tower",
@@ -15541,7 +16448,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "y_grandpa_retire",
@@ -15643,7 +16551,8 @@ var CONTENT: Content = {
      "close": 1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "y_overtime",
@@ -15720,7 +16629,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_shared_flat",
@@ -15791,7 +16701,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_gas_tank",
@@ -15858,7 +16769,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_left_ticket",
@@ -15931,7 +16843,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_stayed_dinner",
@@ -16001,7 +16914,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_partners",
@@ -16109,7 +17023,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "y_big_fight",
@@ -16218,7 +17133,8 @@ var CONTENT: Content = {
     "flags": [
      "p_estranged"
     ]
-   }
+   },
+   "catches": []
   },
   {
    "id": "y_blind_date",
@@ -16290,7 +17206,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_wedding",
@@ -16407,7 +17324,8 @@ var CONTENT: Content = {
     "flags": [
      "p_married"
     ]
-   }
+   },
+   "catches": []
   },
   {
    "id": "y_other_wedding",
@@ -16516,7 +17434,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "y_promise_door",
@@ -16600,7 +17519,8 @@ var CONTENT: Content = {
      "close": -1
     },
     "flags": []
-   }
+   },
+   "catches": []
   },
   {
    "id": "y_come_back",
@@ -16678,7 +17598,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_crossroad",
@@ -16748,7 +17669,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "y_kid",
@@ -16819,7 +17741,8 @@ var CONTENT: Content = {
     }
    ],
    "resonance": null,
-   "dissonance": null
+   "dissonance": null,
+   "catches": []
   }
  ],
  "families": [
@@ -18104,5 +19027,43 @@ var CONTENT: Content = {
     "requires": {}
    }
   ]
+ },
+ "duet": {
+  "lines": {
+   "knew_both_same": "而且谁也不意外。",
+   "knew_both_diff": "没选到一块儿，可谁也没猜错谁。",
+   "knew_one": "{a}猜着了{b}，{b}没猜着{a}。",
+   "knew_none": "你俩把对方都猜错了，也算扯平。",
+   "knew_single": "{a}猜着了。"
+  },
+  "echo": {
+   "ask": "你不在的那天，是影子替你去的。换了你，你会？",
+   "res": "这句话在半空悬了{gap}，接上了。",
+   "catch": "隔了{gap}，还是搭上了。",
+   "miss": "换了本人，也没选到一块儿。倒省得后悔。",
+   "like": "影子选的也是这个。它学得挺像。",
+   "unlike": "影子替你选的是「{o}」。它还得学。",
+   "knew": "{b}当时猜的就是这个。{b}比影子懂你。",
+   "kept": "这一回是影子替{b}去的。话先悬着，等本人回来接。",
+   "told": "{b}回了「{o}」那天的话。"
+  },
+  "epitaph": {
+   "know": "{a}猜中{b} {x} 回，{b}猜中{a} {y} 回。",
+   "shadow": "影子替{a}去过 {x} 回，有 {y} 回选得跟本人一样。",
+   "last": [
+    {
+     "minRate": 70,
+     "text": "这二位，对门住了一辈子，正经话没说过几句，话也没掉地上过几回。"
+    },
+    {
+     "minRate": 40,
+     "text": "这二位，一个抛的另一个不一定接得住，可回回都伸手了。"
+    },
+    {
+     "minRate": 0,
+     "text": "这二位，各说各的说了一辈子，倒也没耽误当对门。"
+    }
+   ]
+  }
  }
 };

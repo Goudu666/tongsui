@@ -4,6 +4,7 @@
 //   server/src/content.generated.ts  服务端结算（Nakama JS 运行时不方便读文件，直接内联）
 // 另有 duet.yaml：两个人之间一抛一接的内容（搭上了 / 猜 TA / 回话），挂到事件的 catches 和 content.duet 上
 // 包含：events/*.yaml 剧情事件、families.yaml 家庭、talents.yaml 天赋、map.yaml 地图与行动、endings.yaml 结局
+// 传承（server/src/legacy.ts）：heirlooms.yaml 老物件
 //   client/data/street.json          街景（street.yaml：街坊、车，随年代更替；只给客户端，不进结算也不进内容版本）
 // 同时做基础校验，写剧情时出错能第一时间看到。
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
@@ -26,6 +27,15 @@ const TAGS = ["gentle", "adventure", "solitude", "responsible", "competitive", "
 const REQ_KEYS = ["minAge", "maxAge", "flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "alone"];
 const PAIR_REQ_KEYS = ["flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "minMemories", "maxMemories", "minRate", "maxRate", "minTogether"];
 const LIFE_REQ_KEYS = ["flags", "notFlags", "stats", "minDiedAge", "maxDiedAge"];
+// 老物件的条件比一生小结多两样（server/src/legacy.ts → legacyPersonOk）
+const HEIRLOOM_REQ_KEYS = [...LIFE_REQ_KEYS, "anyStat", "minMoney"];
+const HEIRLOOM_KEYS = ["id", "name", "desc", "from", "bonus", "money", "close", "flags"];
+// 老物件不占投胎的点数，所以要小（见 content/heirlooms.yaml 文件头）
+const HEIRLOOM_MAX_BONUS = 0.5;
+// 开局从上一世带来的钱，老物件和家业加起来的上限。买房那条线很陡（十块钱在线附近差十来个点），钱得是这辈子挣的
+const LEGACY_MAX_MONEY = 10;
+// 传承的规则（server/src/legacy.ts）按名字读的标记：接了家业、找工作那一关走的路。内容里改了名，家业和小传会悄悄失效
+const LEGACY_ENGINE_FLAGS = ["took_over", "job_desk", "job_teach", "job_trade", "job_craft", "job_labor", "job_odd"];
 
 // 每一层允许出现的字段。写错字段名（比如 require / option / effect）以前会被悄悄丢掉，
 // 事件就变成「没有条件」「没有效果」；现在直接报错。加新字段时先加到这里，再去 types.ts 和 sim.ts 里用它。
@@ -238,6 +248,7 @@ const rules = load("rules.yaml");
     check: ["base", "perPoint", "luck", "min", "max", "help"],
     lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max"],
     bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "drift", "driftDistance", "driftFloor"],
+    legacy: ["pastKept", "heirloomOffer", "houseMax", "houseMoney"],
   };
   checkKeys("rules", rules, Object.keys(need));
   for (const [sec, keys] of Object.entries(need)) {
@@ -294,6 +305,28 @@ const checks = [];
     checks.push({ event: ck.event, option: ck.option, stat: ck.stat, dc: ck.dc, pass: ck.pass ?? "", fail: { text: ck.fail?.text ?? "", self: ck.fail?.self ?? null, flags: ck.fail?.flags ?? null } });
   }
 }
+
+// ---------- 传承：老物件 ----------
+const heirlooms = (load("heirlooms.yaml") ?? []).map((h) => {
+  const at = `heirlooms#${h.id ?? "?"}`;
+  checkKeys(at, h, HEIRLOOM_KEYS);
+  if (!h.id || !h.name || !h.desc) errors.push(`${at}: 需要 id / name / desc`);
+  checkRequires(at, h.from, HEIRLOOM_REQ_KEYS);
+  checkDeltas(`${at}.bonus`, h.bonus, STAT_KEYS);
+  const sum = Object.values(h.bonus ?? {}).reduce((a, b) => a + b, 0);
+  if (sum > HEIRLOOM_MAX_BONUS || Object.values(h.bonus ?? {}).some((v) => v < 0)) errors.push(`${at}: bonus 合计不能超过 ${HEIRLOOM_MAX_BONUS}，也不能是负的`);
+  if ((h.money ?? 0) < 0 || (h.money ?? 0) > LEGACY_MAX_MONEY) errors.push(`${at}: money 要在 0~${LEGACY_MAX_MONEY} 之间`);
+  for (const f of h.flags ?? []) produced.add(f);
+  return { id: h.id, name: h.name, desc: h.desc, from: h.from ?? {}, bonus: h.bonus ?? {}, money: h.money ?? 0, close: h.close ?? 0, flags: h.flags ?? [] };
+});
+if (heirlooms.length === 0 || Object.keys(heirlooms.at(-1).from).length > 0) errors.push("heirlooms.yaml: 最后一件是兜底，不能有 from 条件（每个人都得留下点什么）");
+if (new Set(heirlooms.map((h) => h.id)).size !== heirlooms.length) errors.push("heirlooms.yaml: id 重复");
+{
+  const lg = rules.legacy ?? {};
+  const most = (lg.houseMoney ?? 0) * (lg.houseMax ?? 0) + Math.max(0, ...heirlooms.map((h) => h.money));
+  if (most > LEGACY_MAX_MONEY) errors.push(`传承：家业（${lg.houseMoney} × ${lg.houseMax}）加上最值钱的老物件，开局一共能多 ${most} 块，超过了 ${LEGACY_MAX_MONEY} 块`);
+}
+for (const f of LEGACY_ENGINE_FLAGS) if (!produced.has(f)) errors.push(`传承：没有任何选项会打上标记 "${f}"（规则代码按这个名字读它，见 server/src/legacy.ts）`);
 
 // ---------- 地图 ----------
 const map = load("map.yaml");
@@ -462,7 +495,7 @@ if (errors.length) {
 
 // 内容版本 = 内容本身的指纹。服务器在 lifeline_open 里报出它的版本，客户端发现和自己带的不一样，
 // 就用 content_get 把服务器这份下载下来用（改剧情只需要更新服务器，不用两台手机重装 APK）。
-const body = { events, families, talents, map, tracks, endings, rules, checks, duet };
+const body = { events, families, talents, map, tracks, endings, rules, checks, duet, heirlooms };
 const version = createHash("sha256").update(JSON.stringify(body)).digest("hex").slice(0, 12);
 const content = { version, ...body };
 const json = JSON.stringify(content, null, 1);
@@ -476,4 +509,5 @@ writeFileSync(join(root, "client", "data", "street.json"), JSON.stringify(street
 const by = (k) => events.filter((e) => e.stage === k).length;
 console.log(`✓ ${events.length} 个事件  ` + STAGES.map((s) => `${s}:${by(s)}`).join("  ") +
   `  |  ${families.length} 户人家  ${talents.length} 种天赋  ${map.zones.length} 个地点  ${map.actions.length} 种行动  ${tracks.length} 条路  ${milestones.length} 个关口` +
-  `  |  结局 ${endings.pair.length} 种 · 一生 ${endings.lives.length} 种  |  检定 ${checks.length} 处  |  搭上了 ${catchCount} 组  |  版本 ${version}`);
+  `  |  结局 ${endings.pair.length} 种 · 一生 ${endings.lives.length} 种  |  检定 ${checks.length} 处  |  搭上了 ${catchCount} 组` +
+  `  |  老物件 ${heirlooms.length} 件  |  版本 ${version}`);

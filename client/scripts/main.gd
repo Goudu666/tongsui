@@ -23,6 +23,7 @@ const ServerSettings := preload("res://scripts/ui/server_settings.gd")
 const ContentStore := preload("res://scripts/net/content_store.gd")
 const DuetUI := preload("res://scripts/duet/duet_ui.gd")
 const GameLayer := preload("res://scripts/games/game_layer.gd")
+const LegacyUI := preload("res://scripts/ui/legacy_ui.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -60,6 +61,7 @@ var life: Dictionary = {}
 var last_world: Dictionary = {}
 var offline_preview := false
 var duet: DuetUI  ## 「接话」的界面：猜 TA / 搭上了 / 回话（见 docs/DUET.md）
+var legacy: LegacyUI  ## 传承的界面：投胎页的老物件、结局页的再来一世（见 docs/LEGACY.md）
 var _preview_minute := 390.0
 const PRACTICE_ACTION := "play_river"
 const PAGE_WIDTH := 1560.0    ## 菜单页内容最宽这么多，再宽就居中（两栏）
@@ -72,6 +74,7 @@ var _practice_count := 0
 
 func _ready() -> void:
 	duet = DuetUI.new(self)
+	legacy = LegacyUI.new(self)
 	_load_content()
 	_build_layers()
 	games = GameLayer.new()
@@ -577,6 +580,7 @@ func _show_online() -> void:
 		net.log_entries.connect(_on_log_entries)
 		net.presence.connect(_on_presence)
 		net.game_state.connect(_on_game_state)
+		net.again_state.connect(legacy.on_again)
 	_status(body)
 	var ok: bool = await net.connect_server()
 	if not ok:
@@ -708,7 +712,7 @@ func _on_lifelines(items: Array) -> void:
 				where = str(it.label)
 			elif str(it.phase) == "ended":
 				where = "一生已经过完"
-			text = "%s & %s · %s" % [me, str(nm.get(other_role, "")), where]
+			text = "%s & %s · %s%s" % [me, str(nm.get(other_role, "")), legacy.life_text(it), where]
 		var id := str(it.lifelineId)
 		# 色块用这条人生线里自己的颜色：一眼看出当时是青还是梅
 		Kit.tint(_button(lobby_list, text, func(): net.open_lifeline(id)), P.role_color(role))
@@ -760,6 +764,7 @@ var _partner_online: Variant = null
 
 
 func _on_presence(data: Dictionary) -> void:
+	legacy.on_protocols(data.get("protocols"))
 	var now_online := bool(data.online[_other()])
 	# PRESENCE 每次有人进出房间都会广播，只在 TA 的状态真的变了时提示
 	if _partner_online != null and now_online == _partner_online:
@@ -779,9 +784,11 @@ func _on_snapshot(data: Dictionary) -> void:
 	_set_role(str(data.you))
 	life = data.life
 	_partner_online = bool(data.online[_other()])
+	legacy.on_protocols(data.get("protocols"))
 	match str(life.phase):
 		"roll":
 			_leave_world()
+			last_world = {}  # 再来一世：上一世的属性、关口都不作数了
 			_show_roll()
 		"life":
 			if world == null:
@@ -822,8 +829,14 @@ func _resume_event(pe: Variant) -> void:
 # ======================================================================
 
 func _on_roll_state(data: Dictionary) -> void:
+	# 只是谁换了手里的老物件：原地改那几行，不整页重画（不然页面会跳回顶上，出生证也会再落一回）
+	var same: bool = _page_id == "roll" and legacy.same_cards(life.get("rolls"), data.rolls)
 	life.rolls = data.rolls
-	if str(life.get("phase", "")) == "roll":
+	if str(life.get("phase", "")) != "roll":
+		return
+	if same:
+		legacy.refresh_roll()
+	else:
 		_show_roll()
 
 
@@ -835,27 +848,43 @@ func _show_roll() -> void:
 	var cols := _columns(body, 1.25, 1.0)
 	var left: VBoxContainer = cols[0]
 	var right: VBoxContainer = cols[1]
-	_label(left, "你出生在……", 40, P.INK_SOFT)
+	legacy.roll_head(left)
 	var card := _roll_card(left, my_role, mine, true)
-	# 每抽一次，新卡片"啪"地落下来
-	card.modulate.a = 0.0
-	var tw := card.create_tween().set_parallel(true)
-	tw.tween_property(card, "modulate:a", 1.0, 0.2)
-	tw.tween_method(func(v: float): card.position.y = v, -28.0, 0.0, 0.32).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_drop_in(card)  # 每抽一次，新卡片"啪"地落下来
+	_label(right, "对门是", 40, P.INK_SOFT)
+	_roll_card(right, _other(), theirs, false)
+	legacy.their_offer(right)
+	_label(right, "TA 已经定下来了" if bool(theirs.confirmed) else "TA 还在犹豫", 30, P.INK_SOFT)
+	_status(right)
+	# 第二世起，我面前摆着的老物件在两栏下面通栏排开，定下来的按钮跟到它下面；头一世按钮就在出生证下面
+	legacy.my_offer(body)
+	var foot: Container = left
+	if legacy.has_offer():
+		foot = _columns(body, 1.25, 1.0)[0]  # 和出生证一样宽，对齐在我这一边
 	if bool(mine.confirmed):
-		_label(left, "就这样了。等 TA 也定下来……", 36, P.INK_SOFT)
+		_label(foot, "就这样了。等 TA 也定下来……", 36, P.INK_SOFT)
 	else:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 30)
-		left.add_child(row)
+		foot.add_child(row)
 		var b := _button(row, "重新投胎 · 剩 %d 次" % int(mine.rerollsLeft), func(): net.reroll())
 		b.disabled = int(mine.rerollsLeft) <= 0
 		b.autowrap_mode = TextServer.AUTOWRAP_OFF
 		_primary(row, "就这样，出生吧", func(): net.confirm_roll())
-	_label(right, "对门是", 40, P.INK_SOFT)
-	_roll_card(right, _other(), theirs, false)
-	_label(right, "TA 已经定下来了" if bool(theirs.confirmed) else "TA 还在犹豫", 30, P.INK_SOFT)
-	_status(right)
+
+## 卡片从上面一点落到它本来的位置。等容器排好版再动：位置是相对它自己该在的地方算的，
+## 不然会把卡片挪到页面最顶上，盖住页头
+func _drop_in(card: Control) -> void:
+	card.modulate.a = 0.0
+	await get_tree().process_frame
+	if not is_instance_valid(card) or not card.is_inside_tree():
+		return
+	var y0 := card.position.y
+	var box := card.get_parent() as Container
+	var tw := card.create_tween().set_parallel(true)
+	tw.tween_property(card, "modulate:a", 1.0, 0.2)
+	tw.tween_method(func(v: float): card.position.y = y0 + v, -28.0, 0.0, 0.32).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.chain().tween_callback(func(): box.queue_sort())  # 落的时候版面要是又变了，最后按容器的摆
 
 
 ## 一张"出生证"：色条上是名字和人家，下面是家境、天赋（盖的章）、四项属性
@@ -875,6 +904,7 @@ func _roll_card(parent: Container, role: String, r: Dictionary, full: bool) -> C
 	var fam_label := _label(head, str(fam.get("name", r.familyId)), 50 if full else 36)
 	fam_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_label(col, "%s · 零花钱 %d 块" % [P.WEALTH_NAME[int(fam.get("wealth", 1))], int(fam.get("money", 0))], 30, P.INK_SOFT)
+	legacy.house_line(col, r)
 	if full:
 		_label(col, str(fam.get("desc", "")), 36)
 		Kit.rule(col, Color(P.INK, 0.25))
@@ -1472,8 +1502,14 @@ func _show_ending() -> void:
 		_label(col, "（你们没有在同一件事上选到一起过）", 36, P.INK_SOFT)
 	else:
 		col.add_child(_MemoryLine.new(memories))
+	# 各自留给河畔里的老物件，跟共同回忆放一栏：都是这一世剩下的东西
+	legacy.left_behind(right)
 	_label(right, "人生长卷（M3）会在这里生成一张双色长图。", 30, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
-	_primary(left, "回到标题", _show_title)
+	# 服务器支持的话，再来一世；那样「回到标题」退成小字
+	if legacy.again(left):
+		_quiet(left, "回到标题", _show_title)
+	else:
+		_primary(left, "回到标题", _show_title)
 
 
 ## 结局页顶上：两个圆完全叠在一起

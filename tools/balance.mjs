@@ -266,7 +266,7 @@ for (let i = 0; i < LIVES; i++) {
     people.push({
       seed, role: r, bot: cfg.bots[r], pairing: cfg.pairing, family: p.familyId, talent: p.talentId, born: out.born[r], final: { ...p.stats },
       died: p.diedAtAge, money: p.money, mood: out.mood[r], ending: s.ending.lives[r], track: out.track[r],
-      wealth: C.families.find((f) => f.id === p.familyId).wealth, heirloom: out.rolls[r].heirloomId ?? null,
+      wealth: C.families.find((f) => f.id === p.familyId).wealth, heirloom: out.rolls[r].heirloomId ?? null, left: s.left ? s.left[r] : null,
     });
   }
 }
@@ -394,7 +394,20 @@ strength("talents", (p) => p.talent, (id) => C.talents.find((t) => t.id === id).
   if (missP.length || missL.length) log("  没走到的：" + [...missP, ...missL].join("、"));
 }
 
-// 8. 成就（有的话）
+// 8. 传承：一世走完各自留下的老物件（docs/LEGACY.md）。留下什么看的是怎么过的，所以兜底那件不该占大头，也不该有谁都留不下的
+if (C.heirlooms) {
+  const m = new Map(C.heirlooms.map((h) => [h.id, 0]));
+  for (const p of people) if (p.left) m.set(p.left, (m.get(p.left) ?? 0) + 1);
+  report.heirlooms = Object.fromEntries([...m].map(([id, n]) => [id, n / people.length]));
+  const same = pairs.filter((_, i) => people[i * 2].left === people[i * 2 + 1].left).length;
+  report.heirloomsSame = same / pairs.length;
+  log(`\n【留下的老物件】共 ${C.heirlooms.length} 件；两个人留下同一件的人生 ${pct(same, pairs.length)}`);
+  log("  " + [...m].sort((a, b) => b[1] - a[1]).map(([id, n]) => `${C.heirlooms.find((h) => h.id === id).name} ${pct(n, people.length)}`).join("  "));
+  const never = [...m].filter(([, n]) => n === 0).map(([id]) => C.heirlooms.find((h) => h.id === id).name);
+  if (never.length) log("  没人留下的：" + never.join("、"));
+}
+
+// 9. 成就（有的话）
 if (C.achievements) {
   const m = new Map(C.achievements.map((a) => [a.id, 0]));
   for (const p of pairs) for (const id of p.achievements) m.set(id, (m.get(id) ?? 0) + 1);

@@ -10,13 +10,14 @@ const Kit := preload("res://scripts/ui/kit.gd")
 const Hud := preload("res://scripts/ui/hud.gd")
 const Fx := preload("res://scripts/ui/fx.gd")
 const TitleArt := preload("res://scripts/ui/title_art.gd")
-const Resonance := preload("res://scripts/ui/resonance.gd")
 const LifeTime := preload("res://scripts/ui/life_time.gd")
 const NetClient := preload("res://scripts/net/lifeline_client.gd")
 const WorldView := preload("res://scripts/world/world_view.gd")
 const ServerConfig := preload("res://scripts/net/config.gd")
 const ServerSettings := preload("res://scripts/ui/server_settings.gd")
 const ContentStore := preload("res://scripts/net/content_store.gd")
+const DuetUI := preload("res://scripts/duet/duet_ui.gd")
+const GameLayer := preload("res://scripts/games/game_layer.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -41,6 +42,7 @@ var _stage_shown := ""   ## 河畔里现在显示的人生阶段
 var banner: Label        ## 顶部「连接断了，正在重连」
 var lobby_list: VBoxContainer  ## 大厅里「继续」的人生线列表
 
+var games: GameLayer     ## 搭伴小游戏（放风筝）的界面层
 var world: WorldView
 var net: NetClient
 var names: Dictionary = {"qing": "青", "mei": "梅"}
@@ -48,12 +50,20 @@ var my_role := "qing"
 var life: Dictionary = {}
 var last_world: Dictionary = {}
 var offline_preview := false
+var duet: DuetUI  ## 「接话」的界面：猜 TA / 搭上了 / 回话（见 docs/DUET.md）
 var _preview_minute := 390.0
+const PRACTICE_ACTION := "play_river"
+var _practice_count := 0
 
 
 func _ready() -> void:
+	duet = DuetUI.new(self)
 	_load_content()
 	_build_layers()
+	games = GameLayer.new()
+	add_child(games)
+	games.set_theme(ui.theme)
+	games.send.connect(_on_game_send)
 	_show_title()
 
 
@@ -359,9 +369,9 @@ func _process(delta: float) -> void:
 		_preview_minute = fmod(_preview_minute + delta * 4.0 - 390.0, 930.0) + 390.0
 		hud.minute = _preview_minute
 		world.set_minute(_preview_minute)
-	world.controllable = not modal.visible and not screen.visible
+	world.controllable = not modal.visible and not screen.visible and not games.busy()
 	var spot := world.nearest_spot()
-	if spot.is_empty() or modal.visible:
+	if spot.is_empty() or modal.visible or games.busy():
 		action_btn.visible = false
 		return
 	var act := world.action_of(spot)
@@ -377,6 +387,10 @@ func _process(delta: float) -> void:
 	action_btn.text = str(act.get("label", "")) + cost
 	action_btn.set_meta("spot", spot.id)
 	action_btn.disabled = offline_preview
+	if offline_preview and str(act.get("id", "")) == PRACTICE_ACTION:
+		# 不联网也能试一局放风筝（跟陪练放，不算数）
+		action_btn.text = "试玩放风筝"
+		action_btn.disabled = false
 	action_btn.visible = true
 
 
@@ -387,6 +401,12 @@ func _ping_text() -> String:
 
 
 func _on_action_pressed() -> void:
+	if offline_preview:
+		_practice_count += 1
+		games.my_role = my_role
+		games.names = names
+		games.start_practice(_practice_count % 2 == 1)  # 两头轮着试
+		return
 	if net != null and action_btn.has_meta("spot"):
 		net.act(str(action_btn.get_meta("spot")))
 
@@ -427,6 +447,7 @@ func _show_online() -> void:
 		net.event_started.connect(_on_event_started)
 		net.log_entries.connect(_on_log_entries)
 		net.presence.connect(_on_presence)
+		net.game_state.connect(_on_game_state)
 	_status(body)
 	var ok: bool = await net.connect_server()
 	if not ok:
@@ -633,6 +654,7 @@ func _on_snapshot(data: Dictionary) -> void:
 				last_world["schoolDay"] = w.get("schoolDay", false)
 				_resume_event(w.get("event"))
 			_refresh_hud()
+			duet.on_snapshot()  # 我不在的时候影子替我选过的，现在问我
 		"ended":
 			_show_ending()
 
@@ -761,6 +783,8 @@ func _enter_world() -> void:
 
 func _leave_world() -> void:
 	offline_preview = false
+	if games != null:
+		games.close()
 	if world != null:
 		world.queue_free()
 		world = null
@@ -833,6 +857,19 @@ func _on_world_state(data: Dictionary) -> void:
 			s.text = "TA 已经选好了" if ev.chosen[_other()] else "TA 还在想……"
 
 
+func _on_game_send(body: Dictionary) -> void:
+	if net != null:
+		net.game_input(body)
+
+
+func _on_game_state(data: Dictionary) -> void:
+	if world == null:
+		return
+	games.my_role = my_role
+	games.names = names
+	games.on_state(data)
+
+
 # ======================================================================
 # 事件
 # ======================================================================
@@ -860,8 +897,17 @@ func _on_event_started(data: Dictionary) -> void:
 
 
 func _pick(option_id: String, option_text: String, mirror: bool) -> void:
+	if mirror:
+		# 默契事件：选完自己的，再猜 TA 选了哪个，两样一起发
+		duet.ask_guess(str(modal.get_meta("waiting_event", "")), option_id, option_text)
+		return
 	net.choose(option_id)
 	_pick_shown(option_id, option_text, mirror)
+
+
+func _pick_send(option_id: String, option_text: String, guess: String) -> void:
+	net.choose(option_id, guess)
+	_pick_shown(option_id, option_text, true)
 
 
 func _pick_shown(_option_id: String, option_text: String, mirror: bool) -> void:
@@ -900,6 +946,7 @@ func _close_modal() -> void:
 	modal.visible = false
 	if modal.has_meta("waiting_event"):
 		modal.remove_meta("waiting_event")
+	duet.check_owed()  # 还有欠着的话就接着问
 
 
 func _option_text(event_id: Variant, option_id: Variant) -> String:
@@ -919,6 +966,8 @@ func _on_log_entries(data: Dictionary) -> void:
 			_toast("同框 · " + str(e.text))
 		elif kind == "mirror":
 			_show_mirror_result(e)
+		elif kind == "solo" and e.get("duet") is Dictionary and e.duet.get("echo") == true:
+			duet.show_echo(e)
 		elif kind == "solo":
 			if e.events[my_role] != null:
 				_close_modal()
@@ -945,35 +994,9 @@ func _on_log_entries(data: Dictionary) -> void:
 			_gap(modal_body, 4)
 
 
+## 默契事件的结算卡：共鸣 / 搭上了 / 错位（画在 duet_ui.gd 里）
 func _show_mirror_result(e: Dictionary) -> void:
-	_open_modal()
-	var ev: Dictionary = events_by_id.get(e.events.qing, {})
-	var hit := bool(e.resonance)
-	var head := HBoxContainer.new()
-	head.add_theme_constant_override("separation", 16)
-	modal_body.add_child(head)
-	Kit.chip(head, "共鸣" if hit else "错位", P.OVERLAP if hit else P.INK_SOFT)
-	var when := _label(head, "%s · %s" % [str(e.label), str(ev.get("title", ""))], 30, P.INK_SOFT)
-	when.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	# 两个圆靠拢：叠住 = 共鸣，错开 = 错位
-	modal_body.add_child(Resonance.new(hit))
-	var checks: Dictionary = e.get("checks", {})
-	for r in ["qing", "mei"]:
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 18)
-		modal_body.add_child(row)
-		Kit.chip(row, str(names.get(r, P.ROLE_NAME[r])), P.role_color(r), 30)
-		var mark := "（影子）" if e.shadow.has(r) else ""
-		var pick := _label(row, _option_text(e.events[r], e.choices[r]) + mark, 38, P.INK)
-		pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		# 这一项挂着检定：成没成，写在选择下面
-		if checks.get(r) != null:
-			var c: Dictionary = checks[r]
-			_label(modal_body, "%s　%s" % [_check_verdict(c), str(c.get("text", ""))], 30, P.INK_SOFT)
-	Kit.rule(modal_body, Color(P.INK, 0.25))
-	_label(modal_body, str(e.text), 44, P.OVERLAP if hit else P.INK)
-	_primary(modal_body, "嗯", _close_modal)
-	_gap(modal_body, 4)
+	duet.show_result(e)
 
 
 ## 检定：有些选项成不成要看本事和运气（服务端 growth.ts 掷的，结果跟着日志过来）。
@@ -1018,6 +1041,8 @@ func _show_ending() -> void:
 	for e in life.get("log", []):
 		if e.kind == "end":
 			_label(body, str(e.text), 40, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
+	for line in duet.ending_lines():
+		_label(body, str(line), 34, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
 	_gap(body, 30)
 	var memories: Array = life.get("memories", [])
 	var card := Kit.card(P.OVERLAP, 44.0)

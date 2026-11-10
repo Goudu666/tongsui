@@ -95,6 +95,10 @@ function lifeRepair(s: LifeState, c: Content): string[] {
         }
       }
     }
+    if (w.game && !GAME_RULES[w.game.gameId]) {
+      notes.push("game " + w.game.gameId + " 已不存在，取消");
+      w.game = null;
+    }
     for (var j = 0; j < ROLES.length; j++) {
       var a = w.actors[ROLES[j]];
       if (!a) continue;
@@ -112,6 +116,8 @@ function lifeRepair(s: LifeState, c: Content): string[] {
       a.y = lifeClamp(a.y, 0, c.map.size[1]);
     }
   }
+
+  duetRepair(s, c, notes); // 欠着没回的话（duet.ts）也记着事件和选项的 id
 
   if (s.contentVersion !== c.version) {
     if (notes.length === 0 && s.contentVersion) notes.push("内容 " + s.contentVersion + " → " + c.version + "，存档不用改");

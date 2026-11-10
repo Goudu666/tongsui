@@ -37,7 +37,7 @@ pair:
 
   - id: e_neighbors
     title: 还住对门
-    text: 拆了，迁了，换了新楼。抓阄分房那天，你们又抓到了对门的两套。
+    text: 拆了，迁了，换了新楼。抓阄分房那天，你们又抓到了对门的两套。街坊说是缘分，你们说，这叫赖上了。
     requires: { flags: [p_promise], maxDistance: 1, minClose: 45 }
 
   - id: e_unsaid
@@ -138,6 +138,22 @@ lives:
     title: 小卖部
     text: "{name} 守着楼下的小卖部。冰柜换了三台，五毛钱的画片，一直进货。"
     requires: { flags: [fam_shop, took_over] }
+  - id: l_heir_dale
+    title: 送行的
+    text: "{name} 张罗了一辈子红白事，送走了半个河畔里。轮到自己那天，事办得一丝不乱：单子是 {name} 早就开好的。"
+    requires: { flags: [fam_dale, took_over] }
+  - id: l_heir_oldmoney
+    title: 怀里的葫芦
+    text: "{name} 一入冬，怀里就揣着葫芦。公交车上有人让座，以为是捂着心口不舒服。葫芦里叫了一声，一车人都乐了。"
+    requires: { flags: [fam_oldmoney, took_over] }
+  - id: l_heir_wrestle
+    title: 会倒的人
+    text: "{name} 教了一帮孩子摔跤，头一课永远是怎么倒。{name} 说：会倒的人，摔不坏。"
+    requires: { flags: [fam_wrestle, took_over] }
+  - id: l_heir_kite
+    title: 沙燕
+    text: "{name} 扎了一辈子风筝。开春河边天上的沙燕，十只里有三只出自 {name} 的手。剩下七只塑料的，线也是 {name} 给理顺的。"
+    requires: { flags: [fam_kite, took_over] }
 
   # ---- 活成了什么样 ----
   - id: l_early

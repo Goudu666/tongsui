@@ -322,7 +322,10 @@ function worldTogetherBonus(s: LifeState, c: Content, act: Action): LogEntry | n
   for (var nk in act.together.needs) (needs as any)[nk] = ((act.together.needs as any)[nk] as number) * (nk === "mood" ? lift : 1);
   lifeApplySelf(s.persons!.qing, needs);
   lifeApplySelf(s.persons!.mei, needs);
-  lifeApplyBond(s, c, act.together.bond);
+  var tb: any = {};
+  var tk = act.quick ? 1 : c.rules.bond.slotTogether || 1;
+  for (var bk in act.together.bond) tb[bk] = bk === "close" || bk === "sync" ? (act.together.bond as any)[bk] * tk : (act.together.bond as any)[bk];
+  lifeApplyBond(s, c, tb);
   var entry = lifeEntry(s, "together", act.together.text || "你们一起" + act.label + "。");
   s.log.push(entry);
   return entry;

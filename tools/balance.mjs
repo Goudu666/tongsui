@@ -183,7 +183,7 @@ function simulate(seed, cfg) {
   const moodSum = { qing: 0, mei: 0 }, moodN = { qing: 0, mei: 0 };
   const bondTrack = [];
   const online = { qing: true, mei: true };
-  let day = null, lastTurn = -1, guard = 0;
+  let day = null, lastTurn = -1, guard = 0, lastSlot = null;
   while (s.phase !== "ended") {
     if (s.turn !== lastTurn) {
       lastTurn = s.turn;
@@ -203,6 +203,9 @@ function simulate(seed, cfg) {
       }
       continue;
     }
+    // 每一段开头先让世界看一眼（真人也是先站在那儿再定）：命运给的事这时候才碰得上
+    const slotKey = s.turn + ":" + w.slot;
+    if (!w.playing && slotKey !== lastSlot) { lastSlot = slotKey; worldAdvance(s, C, 0, online); continue; }
     for (const r of ROLES) {
       const a = w.actors[r];
       const idle = a && s.persons[r].alive && !w.playing && !worldReady(s, r);

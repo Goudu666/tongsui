@@ -105,7 +105,7 @@ export function live(seed, way, untilAge, pickOption, setup) {
   G("lifeConfirm")(s, C, "qing", { qing: "青", mei: "梅" });
   G("lifeConfirm")(s, C, "mei", { qing: "青", mei: "梅" });
   const marks = {}; // 关口 id → { role: { stats, money, open:[能走的路], chose } }
-  let guard = 0;
+  let guard = 0, lastSlot = null;
   while (s.phase === "life" && G("lifeTimeAt")(s.turn).age < untilAge) {
     if (++guard > 2e6) throw new Error("人生没有往前走");
     const w = s.world;
@@ -132,6 +132,9 @@ export function live(seed, way, untilAge, pickOption, setup) {
       }
       continue;
     }
+    // 每一段开头先让世界看一眼（真人也是先站在那儿再定）：命运给的事这时候才碰得上
+    const slotKey = s.turn + ":" + w.slot;
+    if (!w.playing && slotKey !== lastSlot) { lastSlot = slotKey; G("worldAdvance")(s, C, 0, online); continue; }
     for (const r of ROLES) {
       const a = w.actors[r];
       if (!a || w.playing || G("worldReady")(s, r) || !s.persons[r].alive || !online[r]) continue;

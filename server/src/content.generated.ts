@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "90fcccad5047",
+ "version": "f337ce5a033e",
  "events": [
   {
    "id": "c_roof_summer",
@@ -25610,7 +25610,7 @@ var CONTENT: Content = {
    "bodyEnergy": 0.04,
    "charmTogether": 0.04,
    "luckFate": 0.02,
-   "slotUse": 0.9,
+   "slotUse": 1,
    "wageFlags": {
     "mid_post": 1.5
    }
@@ -25651,6 +25651,7 @@ var CONTENT: Content = {
    "closeScale": 1,
    "syncSoft": 110,
    "syncFloor": 0.15,
+   "slotTogether": 1.5,
    "syncSteady": 0.8,
    "drift": {
     "childhood": 0.4,

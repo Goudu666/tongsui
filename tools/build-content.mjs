@@ -417,7 +417,7 @@ const rules = load("rules.yaml");
     daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "wageFlags"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],
     lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max", "flags"],
-    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "drift", "driftDistance", "driftFloor"],
+    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "slotTogether", "drift", "driftDistance", "driftFloor"],
     legacy: ["pastKept", "heirloomOffer", "houseMax", "houseMoney", "lateEarly", "lateAfter", "lateRoom", "linkedDrift", "linkedMood", "oldSoul", "oldSoulCharm"],
   };
   checkKeys("rules", rules, Object.keys(need));

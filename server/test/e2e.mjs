@@ -2,7 +2,9 @@
 // 需要一台跑着本模块的 Nakama（docker compose 或 CI 里的容器）：
 //   NAKAMA_HOST=127.0.0.1 NAKAMA_PORT=7350 NAKAMA_KEY=defaultkey npm --prefix server run e2e
 // 覆盖：配对通知 / 并发打开同一个房间 / 进房快照 / 投胎开局 / 走动同步与序号回执 / 心跳 /
-//      断线换连接（旧连接被顶掉、旧连接的消息作废）/ 掉线存档 / 重新打开回到同一个房间 / 人生线列表
+//      断线换连接（旧连接被顶掉、旧连接的消息作废）/ 掉线存档 / 重新打开回到同一个房间 / 人生线列表 /
+//      版本握手（旧安装包被拦下）/ 从真服务器分块下载剧情内容，和安装包里那份一致
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import WebSocket from "ws";
 
@@ -12,6 +14,7 @@ const { Client } = await import("@heroiclabs/nakama-js");
 const HOST = process.env.NAKAMA_HOST || "127.0.0.1";
 const PORT = process.env.NAKAMA_PORT || "7350";
 const KEY = process.env.NAKAMA_KEY || "defaultkey";
+const PROTOCOL = 1; // 和 main.ts 的 PROTOCOL_VERSION 一起改（arch.test.mjs 的契约测试会比对）
 const OP = { SNAPSHOT: 1, ROLL: 2, ROLL_STATE: 3, MOVE: 4, ACT: 5, CHOOSE: 6, WORLD: 7, EVENT: 8, ERROR: 9, LOG: 10, PRESENCE: 11, PING: 12, PONG: 13 };
 const run = Date.now().toString(36);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -30,7 +33,8 @@ async function phone(name) {
     p.socket = socket;
     return socket;
   };
-  p.rpc = async (id, body) => (await client.rpc(session, id, body)).payload;
+  // 像真客户端一样，打开人生线时报上自己的协议版本
+  p.rpc = async (id, body) => (await client.rpc(session, id, id === "lifeline_open" ? { protocol: PROTOCOL, ...body } : body)).payload;
   p.join = async (matchId) => { p.matchId = matchId; await p.socket.joinMatch(matchId); };
   p.send = (op, body, socket = p.socket) => socket.sendMatchState(p.matchId, op, JSON.stringify(body));
   /** 等到收到满足条件的消息 */
@@ -165,6 +169,24 @@ const list2 = (await fresh.rpc(newPhone, "lifeline_list", {})).payload.lifelines
 assert.ok(list2.some((l) => l.lifelineId === created.lifelineId), "新手机上能看到原来的人生线");
 await assert.rejects(fresh.authenticateCustom("tongsui-recover-WRONGCODE0", false), "错的找回码不能新建账号");
 console.log("✓ 换手机找回：找回码登回同一个账号，人生线还在 / 错码登不进");
+
+// 10. 版本握手与内容下发
+const info = await qing.rpc("server_info", {});
+assert.equal(info.protocol, PROTOCOL, "e2e.mjs 的 PROTOCOL 要和服务器的 PROTOCOL_VERSION 一致");
+await assert.rejects(qing.rpc("lifeline_open", { lifelineId: created.lifelineId, protocol: 0 }), "不报协议版本的旧安装包不能进房间");
+assert.equal(reopen.content, info.content, "lifeline_open 的回复带内容指纹");
+let text = "", parts = 0;
+for (;;) {
+  const part = await mei.rpc("content_get", { offset: text.length });
+  assert.equal(part.version, info.content);
+  text += part.chunk;
+  parts++;
+  if (part.done) { assert.equal(text.length, part.total); break; }
+  assert.ok(part.chunk.length > 0 && parts < 50);
+}
+const bundled = JSON.parse(readFileSync(new URL("../../client/data/content.json", import.meta.url), "utf8"));
+assert.deepEqual(JSON.parse(text), bundled, "从服务器下载的内容要和 client/data/content.json 一模一样");
+console.log(`✓ 版本握手：服务器协议 ${info.protocol} / 旧安装包被拦下 / 内容 ${info.content} 分 ${parts} 块下载，${text.length} 字符，与安装包一致`);
 
 qing.socket.disconnect(false);
 mei.socket.disconnect(false);

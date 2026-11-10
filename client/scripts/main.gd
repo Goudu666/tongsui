@@ -11,6 +11,7 @@ const NetClient := preload("res://scripts/net/lifeline_client.gd")
 const WorldView := preload("res://scripts/world/world_view.gd")
 const ServerConfig := preload("res://scripts/net/config.gd")
 const ServerSettings := preload("res://scripts/ui/server_settings.gd")
+const ContentStore := preload("res://scripts/net/content_store.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -49,15 +50,27 @@ func _ready() -> void:
 
 
 func _load_content() -> void:
-	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/content.json"))
-	if parsed is Dictionary:
-		content = parsed
-		for ev in content.events:
-			events_by_id[ev.id] = ev
-		for f in content.families:
-			families[f.id] = f
-		for t in content.talents:
-			talents[t.id] = t
+	_apply_content(ContentStore.load_bundled())
+
+
+## 换一份内容：开机时用安装包里带的；联机后服务器的内容不一样，就换成服务器下发的那一版
+func _apply_content(c: Dictionary) -> void:
+	if c.is_empty():
+		return
+	content = c
+	events_by_id.clear()
+	families.clear()
+	talents.clear()
+	for ev in content.events:
+		events_by_id[ev.id] = ev
+	for f in content.families:
+		families[f.id] = f
+	for t in content.talents:
+		talents[t.id] = t
+	if net != null:
+		net.content_version = ContentStore.version_of(content)
+	if world != null and not offline_preview:
+		_leave_world()  # 地图和行动表可能也变了：下一个快照到了按新内容重建
 
 
 func _other() -> String:
@@ -437,6 +450,8 @@ func _show_online() -> void:
 		net.partner_joined.connect(_on_partner_joined)
 		net.connection_changed.connect(_on_connection_changed)
 		net.recovered.connect(_on_recovered)
+		net.content_updated.connect(_apply_content)
+		net.content_version = ContentStore.version_of(content)
 		net.snapshot.connect(_on_snapshot)
 		net.roll_state.connect(_on_roll_state)
 		net.world_state.connect(_on_world_state)

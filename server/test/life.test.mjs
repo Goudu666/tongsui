@@ -1,16 +1,8 @@
-// 冒烟测试：把编译好的 build/index.js 放进一个假的 Nakama 环境里。
+// 冒烟测试：把编译好的 build/index.js 放进一个假的 Nakama 环境里（见 harness.mjs）。
 // 1) 抽卡规则；2) 用「影子」跑完 60 条完整人生（两人都离线，全靠影子过日子）；
 // 3) 走一遍联机：配对 → 抽卡 → 走动 → 行动/同框 → 事件 → 一天结束 → 影子代选 → 关房。
-import { readFileSync } from "node:fs";
-import vm from "node:vm";
 import assert from "node:assert/strict";
-
-const code = readFileSync(new URL("../build/index.js", import.meta.url), "utf8");
-const ctx = vm.createContext({ console, JSON, Math });
-vm.runInContext(code, ctx);
-const G = (name) => vm.runInContext(name, ctx);
-const C = G("CONTENT");
-const J = (x) => JSON.parse(JSON.stringify(x));
+import { G, C, J, fakeNakama, room } from "./harness.mjs";
 
 // ---------- 1. 抽卡 ----------
 {
@@ -120,77 +112,7 @@ const J = (x) => JSON.parse(JSON.stringify(x));
   console.log("✓ 世界：距离判定 / 不能睡别人家 / 限速 / 同框 / 快进 / 行动结算 / 睡觉换天 / 地点触发 / 选择时停表 / 共鸣回忆");
 }
 
-// ---------- 4. 联机流程（假 Nakama） ----------
-// 假 Nakama 尽量贴近真的：存储带版本号（条件写入会冲突）、matchCreate 同步调用 matchInit 并带 ctx.matchId、
-// 房间关闭后 matchGet 返回 null、通知会被记下来。
-const logger = { info() {}, warn() {}, error() {}, debug() {} };
-function fakeNakama() {
-  const store = new Map(); // key -> { value, version, updateTime }
-  const k = (c, key, u) => `${c}/${u}/${key}`;
-  let ver = 0, matchSeq = 0, clock = 1000;
-  const matches = new Map(); // id -> { state }
-  const notifications = [];
-  const nk = {
-    store, matches, notifications, k,
-    uuidv4: () => `uuid-${Math.random().toString(16).slice(2)}`,
-    storageRead: (reqs) => reqs.flatMap((r) => {
-      const o = store.get(k(r.collection, r.key, r.userId));
-      return o ? [{ key: r.key, value: structuredClone(o.value), version: o.version, updateTime: o.updateTime }] : [];
-    }),
-    storageWrite: (ws) => {
-      for (const w of ws) {
-        const cur = store.get(k(w.collection, w.key, w.userId));
-        if (w.version !== undefined) {
-          const ok = w.version === "*" ? !cur : cur && cur.version === w.version;
-          if (!ok) throw new Error("Storage write rejected - version check failed.");
-        }
-      }
-      ws.forEach((w) => store.set(k(w.collection, w.key, w.userId), { value: structuredClone(w.value), version: `v${++ver}`, updateTime: ++clock }));
-    },
-    storageList: (u, c) => ({
-      objects: [...store.entries()].filter(([key]) => key.startsWith(`${c}/${u}/`)).map(([key, o]) => ({ key: key.split("/")[2], value: o.value, updateTime: o.updateTime })),
-    }),
-    matchCreate: (name, params) => {
-      const id = `m${++matchSeq}.node`;
-      const init = G("matchInit")({ matchId: id }, logger, nk, params); // 失败就抛出，和真的一样
-      matches.set(id, { state: init.state });
-      return id;
-    },
-    matchGet: (id) => (matches.has(id) ? { matchId: id } : null),
-    notificationsSend: (ns) => notifications.push(...ns),
-    binaryToString: (b) => Buffer.from(b).toString("utf8"),
-  };
-  const rpc = (name, userId, payload) => JSON.parse(G(name)({ userId }, logger, nk, JSON.stringify(payload)));
-  const record = (id) => store.get(k("lifelines", id, "00000000-0000-0000-0000-000000000000")).value;
-  return { nk, rpc, record };
-}
-
-/** 一个房间的驱动器：收发消息、推进 tick */
-function room(nk, matchId) {
-  const sent = [];
-  const dispatcher = { broadcastMessage: (op, data, to) => sent.push({ op, data: JSON.parse(data), to: to ? to.map((p) => p.sessionId) : null }) };
-  const m = nk.matches.get(matchId);
-  let tick = 1;
-  const msg = (p, op, body) => ({ sender: p, opCode: op, data: new TextEncoder().encode(JSON.stringify(body)) });
-  const r = {
-    sent, dispatcher, msg,
-    get state() { return m.state; },
-    life: () => m.state.record.life,
-    join: (ps) => { m.state = G("matchJoin")({}, logger, nk, dispatcher, tick, m.state, ps).state; },
-    leave: (ps) => { m.state = G("matchLeave")({}, logger, nk, dispatcher, tick, m.state, ps).state; },
-    attempt: (p) => G("matchJoinAttempt")({}, logger, nk, dispatcher, tick, m.state, p),
-    loop: (msgs = []) => {
-      const res = G("matchLoop")({}, logger, nk, dispatcher, tick++, m.state, msgs);
-      if (res === null) { nk.matches.delete(matchId); return false; }
-      m.state = res.state;
-      return true;
-    },
-    /** 发给某个连接的消息（含广播） */
-    to: (p, op) => sent.filter((x) => x.op === op && (x.to === null || x.to.includes(p.sessionId))),
-  };
-  return r;
-}
-
+// ---------- 4. 联机流程（假 Nakama，见 harness.mjs） ----------
 {
   const { nk, rpc, record } = fakeNakama();
   const a = rpc("rpcLifelineCreate", "user-a", { name: "小青" });

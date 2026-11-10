@@ -180,12 +180,13 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   var a = s.world!.actors[role]!;
   var act = worldFindAction(c, a.action!);
   var p = s.persons![role];
-  var fam = lifeFind(c.families, p.familyId);
+  var wealth = 1; // 这户人家在新内容里没了（见 save.ts）就按普通家境算
+  for (var fi = 0; fi < c.families.length; fi++) if (c.families[fi].id === p.familyId) wealth = c.families[fi].wealth;
   var stats: SelfDelta = {};
   for (var k in act.stats) (stats as any)[k] = ((act.stats as any)[k] as number) * (act.id === "study" && lifeHasFlag(p, "tal_memory") ? 2 : 1);
   lifeApplySelf(p, stats);
   lifeApplySelf(p, act.needs);
-  if (act.id === "eat") lifeApplySelf(p, { mood: fam.wealth * 3 + (lifeHasFlag(p, "tal_foodie") ? 6 : 0) });
+  if (act.id === "eat") lifeApplySelf(p, { mood: wealth * 3 + (lifeHasFlag(p, "tal_foodie") ? 6 : 0) });
   p.money += act.money;
   a.action = null;
   a.spot = null;

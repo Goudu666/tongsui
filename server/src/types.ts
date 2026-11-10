@@ -175,6 +175,8 @@ interface GameMap {
 }
 
 interface Content {
+  /** 内容指纹（tools/build-content.mjs 算的）。客户端拿它判断要不要从服务器下载新内容 */
+  version: string;
   events: LifeEvent[];
   families: Family[];
   talents: Talent[];
@@ -264,7 +266,10 @@ interface LogEntry {
 }
 
 interface LifeState {
-  version: 2;
+  /** 存档结构版本，见 save.ts 的 LIFE_VERSION / lifeUpgrade */
+  version: number;
+  /** 这份存档上次是在哪一版内容下跑的；和当前内容不一样时 lifeRepair 会检查悬空引用 */
+  contentVersion?: string;
   seed: number;
   rng: number;
   phase: "roll" | "life" | "ended";

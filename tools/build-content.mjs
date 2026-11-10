@@ -447,7 +447,7 @@ const rules = load("rules.yaml");
     daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "needsUse", "wageFlags"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],
     lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max", "flags"],
-    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "slotTogether", "drift", "driftDistance", "driftFloor"],
+    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "syncSteadyFrom", "syncSteadyFull", "slotTogether", "drift", "driftDistance", "driftFloor"],
     legacy: ["pastKept", "heirloomOffer", "houseMax", "houseMoney", "lateEarly", "lateAfter", "lateRoom", "linkedDrift", "linkedMood", "oldSoul", "oldSoulCharm"],
   };
   checkKeys("rules", rules, Object.keys(need));
@@ -459,6 +459,7 @@ const rules = load("rules.yaml");
   if (rules?.daily && rules.daily.needsUse !== undefined && !(typeof rules.daily.needsUse === "number" && rules.daily.needsUse >= 0 && rules.daily.needsUse <= 1)) errors.push("rules.yaml: daily.needsUse 是一段里多做的那几遍按几成算需求，要在 0 到 1 之间");
   if (rules?.daily && !(typeof rules.daily.slotUse === "number" && rules.daily.slotUse > 0 && rules.daily.slotUse <= 1)) errors.push("rules.yaml: daily.slotUse 是一段里真花在那件事上的一份，要在 0 到 1 之间");
   if (rules?.bond && (typeof rules.bond.syncSteady !== "number" || rules.bond.syncSteady < 0 || rules.bond.syncSteady > 1)) errors.push("rules.yaml: bond.syncSteady 是默契替考场托住的那一份，要在 0 到 1 之间");
+  if (rules?.bond && (rules.bond.syncSteadyFull !== undefined || rules.bond.syncSteadyFrom !== undefined) && !(typeof rules.bond.syncSteadyFull === "number" && typeof rules.bond.syncSteadyFrom === "number" && rules.bond.syncSteadyFull > rules.bond.syncSteadyFrom && rules.bond.syncSteadyFrom >= 0 && rules.bond.syncSteadyFull <= 100)) errors.push("rules.yaml: bond.syncSteadyFrom / syncSteadyFull 是默契从几开始托、到几托满，两个要一起写（只写一个引擎会退回默契 / 100 的老算法），并且 0 ≤ From < Full ≤ 100");
   for (const [f, mul] of Object.entries(rules?.daily?.wageFlags ?? {})) {
     consumed.push(["rules.daily.wageFlags", f]);
     if (typeof mul !== "number" || mul < 1 || mul > 2) errors.push(`rules.yaml: daily.wageFlags.${f} 是工钱的倍数，要在 1 到 2 之间`);

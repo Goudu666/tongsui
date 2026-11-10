@@ -1,0 +1,366 @@
+# 河畔里的街坊、街上过的车，和它们随年代的更替。
+#
+# 这些都是"活的街景"：只在客户端显示，不参与结算（能做的事在 map.yaml 的 spots / actions 里）。
+# 走到街坊跟前，TA 会跟你搭一句话；人生换阶段的时候，街上的车、对岸的天际线、公告栏、摊子后面站的人都跟着换。
+# 美术由 tools/art/street.py 生成（client/art/street/），这里的 sprite 就是那边的精灵名。
+#
+# 写法：
+#   eras    在哪几个人生阶段出现：childhood / teen / young / middle / old；不写 = 一直都在
+#   hours   [起, 止] 当天的分钟（390 = 06:30，1320 = 22:00）；不写 = 全天
+#   lines   走近时说的话。按年代写，default 是兜底；一次说一句，轮着来
+#   hide_when  有人在做这个行动时让开（比如你们上台，说书的先生就下去喝茶了）
+#
+# 分寸：这是一条普通的老街，不是景点。不摆城市名片，不堆方言；
+#       地方味儿从过日子里带出来——谁家的摊子传给了谁，哪年街上的车换了样。
+#       台词只说家常话。
+
+# 年代：两位主角生在九十年代初。
+eras:
+  childhood:
+    name: 九十年代
+    note: 面的一块钱一公里，下班的车铃响成一片。对岸是老厂的烟囱。
+  teen:
+    name: 千禧年
+    note: 面的换成了红色的小出租，街角立起了电话亭。有人家装了宽带。
+  young:
+    name: 一〇年代
+    note: 对岸的烟囱没了，起了一排楼。修车铺门口挤满了共享单车。
+  middle:
+    name: 二〇年代往后
+    note: 街上跑的都是送外卖的。老楼没拆，说要加电梯，贴了三回公示。
+  old:
+    name: 很多年以后
+    note: 街还是这条街。车少了，树粗了一圈，摊子后头换了人。
+
+# ---------------------------------------------------------------- 街坊
+npcs:
+  # 早点铺（不起姓：周家是玩家可能投胎到的人家，街坊只叫行当）
+  - id: zhou_shen
+    name: 早点铺的婶子
+    sprite: zhou_shen
+    at: [1596, 412]
+    eras: [childhood, teen, young]
+    hours: [390, 840]
+    lines:
+      childhood:
+        - 长个儿呢，给你多磕一个鸡蛋，不要钱。
+        - 慢点儿吃，烫。
+        - 你妈今天上早班？那你俩一块儿在我这儿吃。
+      teen:
+        - 上学别迟到。酱给你抹匀了，拿好。
+        - 又蹿个儿了，校服袖子都短了。
+      young:
+        - 多少年了还是这口儿。
+        - 我这鏊子，比你岁数都大。
+  - id: zhou_son
+    name: 早点铺的小老板
+    sprite: zhou_son
+    at: [1596, 412]
+    eras: [middle, old]
+    hours: [390, 840]
+    lines:
+      middle:
+        - 我姨退了，手艺没退，天天在后头盯着我摊。
+        - 扫码行，现金也收。
+        - 你小时候在这儿赊过账，我姨记着呢。
+      old:
+        - 您二位打小就吃我们家的，我都六十了。
+        - 味儿没变。变了我姨得从相片儿里出来数落我。
+
+  # 茶社：下午有人说书，街坊也上去来一段
+  - id: gu_ye
+    name: 说书的老先生
+    sprite: gu_ye
+    at: [1630, 116]
+    eras: [childhood, teen]
+    hours: [840, 1260]
+    hide_when: perform
+    lines:
+      childhood:
+        - 上回书说到哪儿了？你们俩谁记得？
+        - 想听？搬个小板凳坐前头，小孩儿不要钱。
+        - 说书跟过日子一样，得留个扣儿，明天才有人来。
+      teen:
+        - 现在家家有电视了，来的人少了。少了我也说。
+        - 我那徒弟嫌这个土。他爱听的那些，我也听不懂。
+  - id: gu_xiao
+    name: 接班的年轻人
+    sprite: gu_xiao
+    at: [1630, 116]
+    eras: [young, middle, old]
+    hours: [840, 1260]
+    hide_when: perform
+    lines:
+      young:
+        - 师父说了，台下坐仨人也得说。
+        - 今天人少，往前坐。
+      middle:
+        - 现在周末能坐满，还有举着手机拍的。师父要在该多好。
+        - 小时候嫌土，现在轮到我站这儿了。
+      old:
+        - 现在他们也管我叫老先生了。
+        - 故事还是那几个，听的人换了三茬。
+  - id: pang
+    name: 胖叔
+    sprite: pang
+    at: [1704, 104]
+    eras: [childhood, teen, young]
+    hours: [840, 1260]
+    hide_when: perform
+    lines:
+      default:
+        - 嗯。
+        - 后来呢？
+        - 我就是来搭个腔的。
+  - id: guest_a
+    name: 茶客
+    sprite: guest_a
+    at: [1540, 252]
+    hours: [600, 1260]
+    lines:
+      default:
+        - 这壶我能喝一下午。
+        - 家里太吵，这儿清静。
+      middle:
+        - 我听他师父说的时候，你还没出生呢。
+  - id: guest_b
+    name: 茶客
+    sprite: guest_b
+    at: [1786, 248]
+    hours: [780, 1260]
+    lines:
+      default:
+        - 嘘——正说到要紧的地方。
+        - 茶凉了，续上。
+
+  # 河边
+  - id: fisher
+    name: 钓鱼的大爷
+    sprite: fisher
+    at: [2132, 1112]
+    hours: [390, 1140]
+    lines:
+      childhood:
+        - 嘘——别嚷，鱼都让你们吓跑了。
+        - 钓上来的小鲫鱼，回家熬汤。
+      teen:
+        - 我钓的不是鱼，是清静。
+      young:
+        - 对岸拆烟囱那天，鱼三天没咬钩。
+      middle:
+        - 年轻人问我一天钓几条。我说钓一天，够了。
+      old:
+        - 我爸就在这儿钓。水还是这水。
+  - id: swimmer
+    name: 游泳的大爷
+    sprite: diver
+    at: [2352, 714]
+    eras: [childhood, teen, young]
+    hours: [660, 1080]
+    fx: dive
+    lines:
+      childhood:
+        - 这桥不高，我像你们这么大就往下跳了。
+        - 小孩儿不许学，回头我告诉你妈。
+      teen:
+        - 下去凉快凉快，比吹电扇强。
+      young:
+        - 岁数大了？岁数大了更得游。
+  - id: dama_1
+    name: 跳舞的大姐
+    sprite: dama
+    at: [1944, 880]
+    eras: [young, middle, old]
+    hours: [1110, 1260]
+    lines:
+      default:
+        - 来来来，跟上点儿！
+        - 九点准收，不扰民。
+  - id: dama_2
+    sprite: dama
+    at: [2064, 912]
+    eras: [young, middle, old]
+    hours: [1110, 1260]
+    phase: 0.5
+  - id: dama_3
+    sprite: dama
+    at: [1960, 952]
+    eras: [young, middle, old]
+    hours: [1110, 1260]
+    phase: 0.25
+
+  # 自行车铺
+  - id: bike_ye
+    name: 修车的爷爷
+    sprite: bike_ye
+    at: [1176, 1318]
+    eras: [childhood, teen, young]
+    lines:
+      childhood:
+        - 这车啊，除了铃不响，哪儿都响。
+        - 气门芯两毛，打气不要钱。
+      teen:
+        - 现在小年轻都骑山地车，我这儿还是修二八。
+      young:
+        - 满大街的共享单车，坏了就扔。车不是这么使的。
+  - id: bike_tu
+    name: 修车铺的徒弟
+    sprite: bike_tu
+    at: [1176, 1318]
+    eras: [middle, old]
+    lines:
+      middle:
+        - 师傅走了，摊儿我接着。现在修电动车，换电瓶。
+        - 那辆二八还挂在墙上，不卖。
+      old:
+        - 还有人推着老车来。我一分钱不收。
+
+  # 小花园
+  - id: bird_ye
+    name: 遛鸟的大爷
+    sprite: bird_ye
+    at: [704, 1392]
+    eras: [childhood, teen, young, middle]
+    hours: [390, 720]
+    lines:
+      childhood:
+        - 我这百灵，会十三套。
+        - 鸟不能见生人，见了就不叫。
+      teen:
+        - 养鸟的越来越少喽。
+      young:
+        - 笼子比鸟贵。
+      middle:
+        - 孙子让我养电子宠物。我说那玩意儿会叫吗？
+  - id: chess_n
+    name: 下棋的大爷
+    sprite: chess_n
+    at: [770, 1262]
+    hours: [780, 1170]
+    lines:
+      default:
+        - 将！
+        - 观棋不语。
+        - 悔棋？落子无悔。
+      old:
+        - 对面换了仨人了，我还在这儿。
+  - id: chess_s
+    sprite: chess_s
+    at: [770, 1346]
+    hours: [780, 1170]
+
+  # 校门口
+  - id: candy
+    name: 卖糖葫芦的
+    sprite: candy
+    at: [432, 1056]
+    eras: [childhood, teen]
+    hours: [870, 1080]
+    lines:
+      childhood:
+        - 放学喽？一毛五一串。
+        - 山楂的，夹豆馅儿的，挑一串。
+      teen:
+        - 涨价了，五毛。山楂都贵了。
+
+# ---------------------------------------------------------------- 摆在街上的东西
+props:
+  - { id: stage_table, sprite: stage_table, at: [1690, 124] }
+  # 公告栏：每个年代贴的东西不一样，走近能看
+  - id: notice_child
+    name: 黑板报
+    sprite: notice_child
+    at: [926, 754]
+    eras: [childhood]
+    lines:
+      default:
+        - 居委会通知：冬储大白菜到货，每户限购二百斤。
+        - 三号楼收电费，周六晚饭后，带零钱。
+        - 本周六楼下放露天电影，自带板凳。
+  - id: notice_teen
+    name: 公告栏
+    sprite: notice_teen
+    at: [926, 754]
+    eras: [teen]
+    lines:
+      default:
+        - 迎奥运，讲文明，树新风。
+        - 寻猫启事：黄白花，短尾巴，喊"咪咪"会答应。
+        - 三号楼装宽带，报名找楼长。
+  - id: notice_young
+    name: 公告栏
+    sprite: notice_young
+    at: [926, 754]
+    eras: [young]
+    lines:
+      default:
+        - 拆迁意向摸底，请各户周日前签字。
+        - 旁边贴着一张手写的条：不搬。
+        - 二楼出租，一室一厅，限女生。
+  - id: notice_middle
+    name: 公告栏
+    sprite: notice_middle
+    at: [926, 754]
+    eras: [middle]
+    lines:
+      default:
+        - 老楼不拆了，改成加固修缮。施工期间请勿在楼道堆放杂物。
+        - 三号楼加装电梯公示。一楼的不同意，贴了三回。
+  - id: notice_old
+    name: 公告栏
+    sprite: notice_old
+    at: [926, 754]
+    eras: [old]
+    lines:
+      default:
+        - 征集老照片：你和这条街。
+        - 有人贴了一张两个小孩儿的合影，背后是这栋楼。
+  - { id: phone_booth, sprite: phone_booth, at: [1404, 756], eras: [teen] }
+  - { id: locker, sprite: locker, at: [1026, 757], eras: [young, middle, old] }
+  - { id: shared_bikes, sprite: shared_bikes, at: [972, 1036], eras: [young, middle] }
+  - { id: river_warn, sprite: river_warn, at: [2206, 720], eras: [middle, old] }
+  # 对岸：先是老厂的烟囱，后来是一排楼（layer: far = 贴在地面上，不参与遮挡）
+  - id: far_factory
+    sprite: far_factory
+    at: [2190, 104]
+    layer: far
+    eras: [childhood, teen]
+    smoke: [[2250, 6], [2290, 20]]
+  - id: far_towers
+    sprite: far_towers
+    at: [2190, 104]
+    layer: far
+    eras: [young, middle, old]
+
+# ---------------------------------------------------------------- 街上过的车
+# kind: pass 从一头骑到另一头；taxi 从西头开进来，停一下，掉头开走（东头是河，有石墩子，车过不去）
+# gap: [最短, 最长] 秒；rush 里的时段换成 rush_gap（上下班的车流）
+traffic:
+  - { id: dafa, sprite: dafa, kind: taxi, eras: [childhood], lane: 836, speed: 190, gap: [26, 60], say: 嘀嘀—— }
+  - { id: xiali, sprite: xiali, kind: taxi, eras: [teen, young], lane: 836, speed: 210, gap: [20, 48], say: 嘀—— }
+  - id: worker
+    sprite: rider_worker
+    kind: pass
+    eras: [childhood, teen]
+    lane: 986
+    dir: 1
+    speed: 150
+    gap: [14, 34]
+    rush: [[420, 510], [1020, 1110]]
+    rush_gap: [2.5, 6]
+    say: 叮铃铃
+  - id: lady
+    sprite: rider_lady
+    kind: pass
+    eras: [childhood, teen, young]
+    lane: 790
+    dir: -1
+    speed: 135
+    gap: [18, 40]
+    rush: [[420, 510], [1020, 1110]]
+    rush_gap: [4, 9]
+  - { id: share, sprite: rider_share, kind: pass, eras: [young, middle], lane: 986, dir: 1, speed: 140, gap: [10, 26] }
+  - { id: waimai_e, sprite: waimai, kind: pass, eras: [middle], lane: 986, dir: 1, speed: 250, gap: [9, 24], rush: [[660, 780], [1050, 1170]], rush_gap: [3, 8] }
+  - { id: waimai_w, sprite: waimai, kind: pass, eras: [middle], lane: 790, dir: -1, speed: 250, gap: [16, 40] }
+  # 很多年以后只写不变的：街上清静了，偶尔还有人骑着老车慢慢过去
+  - { id: old_bike, sprite: rider_worker, kind: pass, eras: [old], lane: 986, dir: 1, speed: 90, gap: [30, 70] }

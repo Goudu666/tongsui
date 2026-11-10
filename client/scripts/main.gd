@@ -21,6 +21,7 @@ const ServerSettings := preload("res://scripts/ui/server_settings.gd")
 const ContentStore := preload("res://scripts/net/content_store.gd")
 const DuetUI := preload("res://scripts/duet/duet_ui.gd")
 const GameLayer := preload("res://scripts/games/game_layer.gd")
+const LegacyUI := preload("res://scripts/ui/legacy_ui.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -55,6 +56,7 @@ var life: Dictionary = {}
 var last_world: Dictionary = {}
 var offline_preview := false
 var duet: DuetUI  ## 「接话」的界面：猜 TA / 搭上了 / 回话（见 docs/DUET.md）
+var legacy: LegacyUI  ## 传承的界面：投胎页的老物件、结局页的再来一世（见 docs/LEGACY.md）
 var _preview_minute := 390.0
 const PRACTICE_ACTION := "play_river"
 var _practice_count := 0
@@ -62,6 +64,7 @@ var _practice_count := 0
 
 func _ready() -> void:
 	duet = DuetUI.new(self)
+	legacy = LegacyUI.new(self)
 	_load_content()
 	_build_layers()
 	games = GameLayer.new()
@@ -464,6 +467,7 @@ func _show_online() -> void:
 		net.log_entries.connect(_on_log_entries)
 		net.presence.connect(_on_presence)
 		net.game_state.connect(_on_game_state)
+		net.again_state.connect(legacy.on_again)
 	_status(body)
 	var ok: bool = await net.connect_server()
 	if not ok:
@@ -585,7 +589,7 @@ func _on_lifelines(items: Array) -> void:
 				where = str(it.label)
 			elif str(it.phase) == "ended":
 				where = "一生已经过完"
-			text = "%s & %s · %s" % [me, str(nm.get(other_role, "")), where]
+			text = "%s & %s · %s%s" % [me, str(nm.get(other_role, "")), legacy.life_text(it), where]
 		var id := str(it.lifelineId)
 		# 色块用这条人生线里自己的颜色：一眼看出当时是青还是梅
 		Kit.tint(_button(lobby_list, text, func(): net.open_lifeline(id)), P.role_color(role))
@@ -635,6 +639,7 @@ var _partner_online: Variant = null
 
 
 func _on_presence(data: Dictionary) -> void:
+	legacy.on_protocols(data.get("protocols"))
 	var now_online := bool(data.online[_other()])
 	# PRESENCE 每次有人进出房间都会广播，只在 TA 的状态真的变了时提示
 	if _partner_online != null and now_online == _partner_online:
@@ -654,9 +659,11 @@ func _on_snapshot(data: Dictionary) -> void:
 	_set_role(str(data.you))
 	life = data.life
 	_partner_online = bool(data.online[_other()])
+	legacy.on_protocols(data.get("protocols"))
 	match str(life.phase):
 		"roll":
 			_leave_world()
+			last_world = {}  # 再来一世：上一世的属性、关口都不作数了
 			_show_roll()
 		"life":
 			if world == null:
@@ -697,8 +704,14 @@ func _resume_event(pe: Variant) -> void:
 # ======================================================================
 
 func _on_roll_state(data: Dictionary) -> void:
+	# 只是谁换了手里的老物件：原地改那几行，不整页重画（不然页面会跳回顶上，出生证也会再落一回）
+	var same: bool = _page_id == "roll" and legacy.same_cards(life.get("rolls"), data.rolls)
 	life.rolls = data.rolls
-	if str(life.get("phase", "")) == "roll":
+	if str(life.get("phase", "")) != "roll":
+		return
+	if same:
+		legacy.refresh_roll()
+	else:
 		_show_roll()
 
 
@@ -706,13 +719,10 @@ func _show_roll() -> void:
 	_show_screen("roll")
 	var mine: Dictionary = life.rolls[my_role]
 	var theirs: Dictionary = life.rolls[_other()]
-	_label(body, "你出生在……", 40, P.INK_SOFT)
+	legacy.roll_head(body)
 	var card := _roll_card(body, my_role, mine, true)
-	# 每抽一次，新卡片"啪"地落下来
-	card.modulate.a = 0.0
-	var tw := card.create_tween().set_parallel(true)
-	tw.tween_property(card, "modulate:a", 1.0, 0.2)
-	tw.tween_method(func(v: float): card.position.y = v, -28.0, 0.0, 0.32).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_drop_in(card)  # 每抽一次，新卡片"啪"地落下来
+	legacy.my_offer(body)
 	if bool(mine.confirmed):
 		_label(body, "就这样了。等 TA 也定下来……", 36, P.INK_SOFT)
 	else:
@@ -725,8 +735,24 @@ func _show_roll() -> void:
 	_gap(body, 6)
 	_label(body, "对门是", 32, P.INK_SOFT)
 	_roll_card(body, _other(), theirs, false)
+	legacy.their_offer(body)
 	_label(body, "TA 已经定下来了" if bool(theirs.confirmed) else "TA 还在犹豫", 30, P.INK_SOFT)
 	_status(body)
+
+
+## 卡片从上面一点落到它本来的位置。等容器排好版再动：位置是相对它自己该在的地方算的，
+## 不然会把卡片挪到页面最顶上，盖住页头
+func _drop_in(card: Control) -> void:
+	card.modulate.a = 0.0
+	await get_tree().process_frame
+	if not is_instance_valid(card) or not card.is_inside_tree():
+		return
+	var y0 := card.position.y
+	var box := card.get_parent() as Container
+	var tw := card.create_tween().set_parallel(true)
+	tw.tween_property(card, "modulate:a", 1.0, 0.2)
+	tw.tween_method(func(v: float): card.position.y = y0 + v, -28.0, 0.0, 0.32).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.chain().tween_callback(func(): box.queue_sort())  # 落的时候版面要是又变了，最后按容器的摆
 
 
 ## 一张"出生证"：色条上是名字和人家，下面是家境、天赋（盖的章）、四项属性
@@ -746,6 +772,7 @@ func _roll_card(parent: Container, role: String, r: Dictionary, full: bool) -> C
 	var fam_label := _label(head, str(fam.get("name", r.familyId)), 50 if full else 36)
 	fam_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_label(col, "%s · 零花钱 %d 块" % [P.WEALTH_NAME[int(fam.get("wealth", 1))], int(fam.get("money", 0))], 30, P.INK_SOFT)
+	legacy.house_line(col, r)
 	if full:
 		_label(col, str(fam.get("desc", "")), 36)
 		Kit.rule(col, Color(P.INK, 0.25))
@@ -1270,7 +1297,11 @@ func _show_ending() -> void:
 		col.add_child(_MemoryLine.new(memories))
 	_gap(body, 20)
 	_label(body, "人生长卷（M3）会在这里生成一张双色长图。", 30, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
-	_primary(body, "回到标题", _show_title)
+	# 各自留给河畔里的老物件；服务器支持的话，再来一世
+	if legacy.ending(body):
+		_quiet(body, "回到标题", _show_title)
+	else:
+		_primary(body, "回到标题", _show_title)
 
 
 ## 结局页顶上：两个圆完全叠在一起

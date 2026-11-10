@@ -178,3 +178,54 @@ jobs:
           fail_on_unmatched_files: true
           generate_release_notes: true
           prerelease: ${{ needs.android.outputs.signing != 'release' }}
+
+  latest:
+    # main 每次全绿，就把这次的 APK 换到固定的「最新版」Release 上，下载链接永远不变：
+    #   https://github.com/<仓库>/releases/download/latest/tongsui.apk
+    name: 发布 · 最新版 APK（固定下载链接）
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [server, e2e, client-unit, deploy, android]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    concurrency:
+      group: latest-apk
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      APK_NAME: ${{ needs.android.outputs.apk_name }}
+      SIGNING: ${{ needs.android.outputs.signing }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.android.outputs.apk_name }}
+          path: dist
+      - name: 更新「最新版」Release
+        run: |
+          set -euo pipefail
+          # 固定文件名，链接才能一直不变；版本号写在说明里
+          cp "dist/${APK_NAME}" dist/tongsui.apk
+          short="${GITHUB_SHA::7}"
+          if [ "$SIGNING" = "release" ]; then sig="正式签名"; else sig="调试签名（换成正式签名前，卸载重装会丢本机账号）"; fi
+          cat > notes.md <<NOTES
+          **${APK_NAME%.apk}** · main 最新一次全绿构建（${short}，$(date -u +'%Y-%m-%d %H:%M') UTC）· ${sig}
+
+          **装到安卓手机**
+          1. 手机浏览器登录 GitHub 后点下面的 \`tongsui.apk\`；或者电脑上下载，用微信/QQ「文件传输助手」发到手机。
+          2. 在手机上点开这个文件，提示「允许安装未知来源应用」就点允许。
+          3. 装过旧版的直接覆盖安装，不用先卸载。
+
+          服务器没部署之前，只能离线看画面和走动；联机配对和完整的一生要等服务器上线（见 docs/DEPLOY.md）。
+          NOTES
+          if gh release view latest >/dev/null 2>&1; then
+            # 把 latest 标签挪到这次提交，再换文件和说明
+            gh api -X PATCH "repos/${GH_REPO}/git/refs/tags/latest" -f sha="$GITHUB_SHA" -F force=true >/dev/null
+            gh release upload latest dist/tongsui.apk --clobber
+            gh release edit latest --title "同岁 · 最新版（${APK_NAME%.apk}）" --notes-file notes.md --prerelease
+          else
+            gh api -X DELETE "repos/${GH_REPO}/git/refs/tags/latest" >/dev/null 2>&1 || true
+            gh release create latest dist/tongsui.apk --target "$GITHUB_SHA" \
+              --title "同岁 · 最新版（${APK_NAME%.apk}）" --notes-file notes.md --prerelease
+          fi
+          echo "下载：https://github.com/${GH_REPO}/releases/download/latest/tongsui.apk" >> "$GITHUB_STEP_SUMMARY"

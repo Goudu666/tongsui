@@ -86,7 +86,8 @@ docker compose -f deploy/docker-compose.yml up -d
 #    两台手机在局域网里联调：电脑上起服务器，手机的联机大厅「服务器设置」填电脑的局域网 IP（如 192.168.1.5）
 ```
 
-打包 APK：push 到 GitHub 后，在 Actions → `build` 页面底部 Artifacts 下载 `tongsui-*.apk`；
+下载 APK：<https://github.com/Goudu666/tongsui/releases/download/latest/tongsui.apk>（main 每次 CI 全绿自动更新，需登录 GitHub）；
+每次 push 的包也在 Actions → `build` 页面底部 Artifacts 里（`tongsui-*.apk`）；
 打 tag（`git tag v0.2.0 && git push --tags`）会自动发 GitHub Release。
 本地出包：`docker run --rm -v "$PWD":/w -w /w barichello/godot-ci:4.7.2 bash tools/ci/build_apk.sh`。
 APK 连哪台服务器、怎么配正式签名，见 [docs/DEPLOY.md](docs/DEPLOY.md)。

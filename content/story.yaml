@@ -515,7 +515,7 @@ events:
       bond: { close: 0 }
 
   # ======================= 第四章 · 远近（18–29） =======================
-  # 走没走看 18 岁的关口：uni_away（外地念书）、left_city（出国、当兵、去外地工作）。
+  # 走没走看 18 岁的关口：uni_away（外地念书）、uni_abroad（出国）、army（当兵）；left_city 是 20 岁以后去外地工作。
   # 第一件：有人走 → 楼门口送；都没走 → 路口分开。
   # 第二件：都没走 → 两个人一块儿收到一封寄错的信（mirror，排最前）；
   #         有人走了 → 走的人在外地写（solo），留下的人在楼里收（solo）。
@@ -568,7 +568,87 @@ events:
     scene: street
     slot: morning
     next: 早上，楼门口
-    requires: { flags: [left_city], notFlags: [uni_away] }
+    requires: { flags: [uni_abroad], notFlags: [uni_away] }
+    title: 后备箱
+    text: 楼门口停着车。这一走，就不是放假能回来的了。箱子立在地上，比人还高。早点铺刚出锅。
+    options:
+      - id: write
+        text: 说一句「到了来信」
+        tags: [gentle]
+        effects: { self: { mood: 3 } }
+      - id: give
+        text: 塞过去一包东西
+        tags: [responsible]
+        effects: { self: { mood: 3 }, other: { hunger: 15 } }
+      - id: wave
+        text: 什么也不说，摆摆手
+        tags: [solitude]
+        effects: { self: { mood: -2 } }
+    resonance:
+      write:
+        text: 两句「到了来信」撞在一块儿。车拐过早点铺，鏊子还在响。
+        memory: 到了来信
+        bond: { sync: 3, close: 2 }
+      give:
+        text: 一个塞过去一包，一个也塞过来一包。打开一看，都是早点铺的果子，还热着。
+        memory: 两包果子
+        bond: { sync: 3, close: 3 }
+      wave:
+        text: 都没说话。车开了，各摆了摆手，摆到看不见。
+        memory: 两只手
+        bond: { sync: 3, close: 2 }
+    dissonance:
+      text: 一个要说的话还没想好，车已经开了。
+      bond: { close: 0 }
+
+  - id: s4_leave_army
+    kind: mirror
+    chapter: 4
+    beat: 1
+    scene: street
+    slot: morning
+    next: 早上，楼门口
+    requires: { flags: [army], notFlags: [uni_away, uni_abroad] }
+    title: 后备箱
+    text: 楼门口停着车。这一走，就不是放假能回来的了。箱子立在地上，比人还高。早点铺刚出锅。
+    options:
+      - id: write
+        text: 说一句「到了来信」
+        tags: [gentle]
+        effects: { self: { mood: 3 } }
+      - id: give
+        text: 塞过去一包东西
+        tags: [responsible]
+        effects: { self: { mood: 3 }, other: { hunger: 15 } }
+      - id: wave
+        text: 什么也不说，摆摆手
+        tags: [solitude]
+        effects: { self: { mood: -2 } }
+    resonance:
+      write:
+        text: 两句「到了来信」撞在一块儿。车拐过早点铺，鏊子还在响。
+        memory: 到了来信
+        bond: { sync: 3, close: 2 }
+      give:
+        text: 一个塞过去一包，一个也塞过来一包。打开一看，都是早点铺的果子，还热着。
+        memory: 两包果子
+        bond: { sync: 3, close: 3 }
+      wave:
+        text: 都没说话。车开了，各摆了摆手，摆到看不见。
+        memory: 两只手
+        bond: { sync: 3, close: 2 }
+    dissonance:
+      text: 一个要说的话还没想好，车已经开了。
+      bond: { close: 0 }
+
+  - id: s4_leave_gone
+    kind: mirror
+    chapter: 4
+    beat: 1
+    scene: street
+    slot: morning
+    next: 早上，楼门口
+    requires: { flags: [left_city], notFlags: [uni_away, uni_abroad, army] }
     title: 后备箱
     text: 楼门口停着车。这一走，就不是放假能回来的了。箱子立在地上，比人还高。早点铺刚出锅。
     options:
@@ -608,7 +688,7 @@ events:
     scene: street
     slot: morning
     next: 早上，楼门口
-    requires: { notFlags: [uni_away, left_city] }
+    requires: { notFlags: [uni_away, uni_abroad, army, left_city] }
     title: 路口
     text: 九月头一天，楼里走了好几个同学，你俩都没走。早上在楼门口碰上，一块儿走到了路口。
     options:
@@ -648,7 +728,7 @@ events:
     scene: building
     slot: evening
     next: 傍晚，楼道里
-    requires: { notFlags: [uni_away, left_city] }
+    requires: { notFlags: [uni_away, uni_abroad, army, left_city] }
     title: 寄错的信
     text: 楼长拿来一封信，地址是三楼，收信人的名字谁也没听过。邮戳是好多年前的，信封都黄了。
     options:
@@ -729,6 +809,31 @@ events:
         tags: [solitude]
         effects: { self: { mood: -3 }, bond: { distance: 1 } }
 
+  - id: s4_letter_army
+    kind: solo
+    chapter: 4
+    beat: 2
+    scene: away
+    slot: night
+    next: 晚上，写封信回去
+    requires: { flags: [army] }
+    title: 一封信
+    text: 营房熄了灯。你借着走廊的光写信，一页纸写了撕，撕了写。信要走好几天。
+    options:
+      - id: home
+        text: 写楼里的事问问
+        tags: [gentle]
+        effects: { self: { mood: 3 }, bond: { close: 2 } }
+      - id: money
+        text: 夹两张津贴给家里
+        tags: [responsible]
+        cost: 5
+        effects: { self: { mood: 5 }, bond: { close: 1 } }
+      - id: unsent
+        text: 写完了，没寄
+        tags: [solitude]
+        effects: { self: { mood: -3 }, bond: { distance: 1 } }
+
   - id: s4_letter_gone
     kind: solo
     chapter: 4
@@ -761,7 +866,7 @@ events:
     scene: building
     slot: evening
     next: 傍晚，楼里
-    requires: { alone: false, notFlags: [uni_away, left_city] }
+    requires: { alone: false, notFlags: [uni_away, uni_abroad, army, left_city] }
     title: 信到了
     text: 信到了，走了好几天。信封上的字你认得，三楼的门牌号写得比名字还大。
     options:

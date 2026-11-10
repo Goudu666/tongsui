@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "3533f0e52e2d",
+ "version": "a3ffc109b152",
  "events": [
   {
    "id": "c_roof_summer",
@@ -34242,14 +34242,14 @@ var CONTENT: Content = {
     "chapter": 1,
     "beat": 3,
     "scene": "building",
-    "slot": "night",
-    "next": "晚上，楼顶",
+    "slot": "evening",
+    "next": "傍晚，楼顶",
     "replaces": [
      "c_promise"
     ],
     "requires": {},
     "title": "对岸的灯",
-    "text": "晚上大人上楼顶收床单，你俩趴在栏杆上。河对岸的灯一片一片亮起来，比这边多，也比这边高。",
+    "text": "天快黑的时候，大人上楼顶收床单，你俩趴在栏杆上。河对岸的灯一片一片亮起来，比这边多，也比这边高。",
     "options": [
      {
       "id": "hook",

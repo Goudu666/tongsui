@@ -1006,8 +1006,12 @@ function worldStoryForce(s: LifeState, c: Content, out: WorldTick): boolean {
     var roles = ev.kind === "mirror" ? worldAliveRoles(s) : ROLES.filter(function (r) { return w.fate[r] === id && s.persons![r].alive; });
     if (roles.length === 0 || (ev.kind === "mirror" && roles.length < 2)) { w.done.push(id); continue; }
     var spot0: Spot | null = null;
+    // 硬塞：有人被叫醒、手上的事被撤下来、或者被挪到那张图上。人本来就在那张图上、闲着，就是照常碰上的，不算
+    var pulled = sleeping;
     for (var k = 0; k < roles.length; k++) {
       var a = w.actors[roles[k]]!;
+      var at = worldSceneAt(c, a.y);
+      if (a.action || a.asleep || !at || at.id !== ev.scene) pulled = true;
       if (a.action && a.from !== undefined && a.from < w.slot) worldFinish(s, c, roles[k]);
       else if (a.action) { delete w.ready[roles[k]]; worldCancel(s, c, roles[k]); }
       worldClearAction(a);
@@ -1020,6 +1024,7 @@ function worldStoryForce(s: LifeState, c: Content, out: WorldTick): boolean {
       }
     }
     w.event = { eventId: id, kind: ev.kind, roles: roles, choices: {}, shadow: [] };
+    if (pulled) w.event.forced = true;
     out.started = w.event;
     return true;
   }

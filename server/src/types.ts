@@ -418,6 +418,8 @@ interface PendingEvent {
   swing?: { [R in Role]?: number };
   /** 关口：默契替这个人托住的分（已经算在 swing 里了，单拿出来是给他看的） */
   steady?: { [R in Role]?: number };
+  /** 章末躲不过的主线是硬塞的：有人被叫醒、撤下手上的事、或者被挪过去（world.ts 的 worldStoryForce）。人本来就在那儿就没有 */
+  forced?: boolean;
 }
 
 interface WorldState {

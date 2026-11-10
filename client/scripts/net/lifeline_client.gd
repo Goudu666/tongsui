@@ -584,6 +584,11 @@ func pass_slot() -> void:
 	_send(Op.PASS, {})
 
 
+## 走出口（门、楼梯、街口）。带上最后一条 MOVE 的序号：路上还没到的旧 MOVE 是上一张图里的横坐标，服务器不再拿来挪人
+func exit(exit_id: String) -> void:
+	_send(Op.EXIT, {"exit": exit_id, "seq": _move_seq})
+
+
 ## 改主意：撤回这一段定下的事（还没开始过的）
 func cancel_slot() -> void:
 	_send(Op.CANCEL, {})

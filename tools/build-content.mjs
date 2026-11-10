@@ -65,9 +65,24 @@ const DISSONANCE_KEYS = ["text", "bond", "flags"];
 const FAMILY_KEYS = ["id", "name", "wealth", "weight", "money", "desc", "bonus", "traits"];
 const TALENT_KEYS = ["id", "name", "weight", "desc", "bonus", "flags", "unlock"];
 const ENDING_KEYS = ["id", "title", "text", "requires"];
-const MAP_KEYS = ["size", "spawn", "zones", "spots", "actions"];
-const ZONE_KEYS = ["id", "name", "rect", "owner"];
-const SPOT_KEYS = ["id", "zone", "at", "action", "actions"];
+const MAP_KEYS = ["actions"];
+// content/maps/<图>.yaml：一张图一个文件，横着的一条剖面 / 街景，人只左右走
+const SCENE_KEYS = ["id", "name", "width", "floors", "unlock", "far", "areas", "exits", "spots", "npcs", "props", "art"];
+const AREA_KEYS = ["id", "name", "span", "floor", "owner"];
+const EXIT_KEYS = ["id", "at", "floor", "to", "arrive", "arriveFloor", "label"];
+const SPOT_KEYS = ["id", "area", "at", "action", "actions", "owner"];
+const UNLOCK_KEYS = ["minAge", "maxAge", "flags", "notFlags", "any"];
+const UNLOCK_ANY_KEYS = ["minAge", "maxAge", "flags", "notFlags"];
+// 地图上先挂着、等别的线程加进 map.yaml 的行动（资源差异线程：琴、补课、帮家里、厂里澡堂）。
+// 加进来以前从点位上摘掉，不报错；加进来以后从这里删掉
+const PENDING_ACTIONS = ["piano", "tutor", "help_out", "factory_bath"];
+// 地图和地点支线先读着、等别的线程发的标记：资源差异（fam_factory、uni_abroad、school_paid、job_pull、job_succeed、home_unit）。发标记的合进来以后从这里删掉
+const PENDING_FLAGS = ["fam_factory", "uni_abroad", "school_paid", "job_pull", "job_succeed", "home_unit"];
+// 每张图在世界坐标里占一条：第 i 张图的 y 从 i × SCENE_STRIDE 起。服务器的距离、地点判定都还是二维的，
+// 不同的图隔得远，自然够不着。顺序钉死在这张表里（存档里的坐标靠它），新图往后加，不要插队
+const SCENE_ORDER = ["building", "street", "river", "primary", "middle", "across", "away", "rental", "newhome", "park", "hospital"];
+const SCENE_STRIDE = 2000;
+const AREA_HEIGHT = 400; // 地点在世界坐标里的框：地面往上这么高（判定「人在不在这儿」用，美术不看它）
 const ACTION_KEYS = ["id", "label", "minutes", "quick", "sleep", "duty", "requires", "needs", "stats", "money", "together"];
 const ACTION_REQ_KEYS = ["minAge", "maxAge", "owner", "hours", "flags", "notFlags"];
 const TOGETHER_KEYS = ["needs", "bond", "text"];
@@ -121,7 +136,10 @@ function checkDeltas(where, obj, allowed) {
   }
 }
 
-for (const file of readdirSync(dir).filter((f) => f.endsWith(".yaml")).sort()) {
+// 事件：events/*.yaml，加上 events/places/<图>.yaml（各个地方的支线，where 用那张图的 areas）
+const eventFiles = readdirSync(dir).filter((f) => f.endsWith(".yaml")).sort()
+  .concat(readdirSync(join(dir, "places")).filter((f) => f.endsWith(".yaml")).sort().map((f) => `places/${f}`));
+for (const file of eventFiles) {
   const list = parse(readFileSync(join(dir, file), "utf8")) ?? [];
   for (const ev of list) {
     const at = `${file}#${ev.id ?? "?"}`;
@@ -528,23 +546,117 @@ if (new Set(remembered.map((a) => a.id)).size !== remembered.length) errors.push
 if (remembered.length > REMEMBERED_MAX) errors.push(`remembered.yaml: ${remembered.length} 条，超过 ${REMEMBERED_MAX} 条（要的是十几条记得住的事，不是一张清单）`);
 
 // ---------- 地图 ----------
+for (const f of PENDING_FLAGS) produced.add(f);
 const map = load("map.yaml");
-const zoneIds = new Set(map.zones.map((z) => z.id));
 const actionIds = new Set(map.actions.map((a) => a.id));
 checkKeys("map", map, MAP_KEYS);
-for (const z of map.zones) checkKeys(`map.zones#${z.id}`, z, ZONE_KEYS);
-for (const z of map.zones) if (!Array.isArray(z.rect) || z.rect.length !== 4) errors.push(`map.zones#${z.id}: rect 应为 [x, y, w, h]`);
 for (const id of ENGINE_ACTIONS) if (!actionIds.has(id)) errors.push(`map.actions: 缺少行动 "${id}"（规则代码按这个名字找它，见 server/src/world.ts）`);
 for (const f of ENGINE_FLAGS) if (!produced.has(f)) errors.push(`talents: 没有任何天赋带标记 "${f}"（规则代码按这个名字给天赋效果，见 server/src/sim.ts、world.ts）`);
-for (const sp of map.spots) {
-  checkKeys(`map.spots#${sp.id}`, sp, SPOT_KEYS);
-  if (!zoneIds.has(sp.zone)) errors.push(`map.spots#${sp.id}: 未知 zone ${sp.zone}`);
-  // action: x 是 actions: [x] 的简写。两种写法都输出成 actions（规则用）+ action（= 第一个，给旧代码）
-  sp.actions = sp.actions ?? (sp.action ? [sp.action] : []);
-  if (sp.actions.length === 0) errors.push(`map.spots#${sp.id}: 需要 action 或 actions`);
-  for (const a of sp.actions) if (!actionIds.has(a)) errors.push(`map.spots#${sp.id}: 未知 action ${a}`);
-  sp.action = sp.actions[0];
+const mapDir = join(root, "content", "maps");
+const sceneFiles = readdirSync(mapDir).filter((f) => f.endsWith(".yaml")).sort();
+const rawScenes = sceneFiles.map((f) => ({ file: f, ...parse(readFileSync(join(mapDir, f), "utf8")) }));
+const orderOf = (id) => { const i = SCENE_ORDER.indexOf(id); return i < 0 ? SCENE_ORDER.length + rawScenes.filter((x) => !SCENE_ORDER.includes(x.id)).map((x) => x.id).sort().indexOf(id) : i; };
+const scenes = [], zones = [], spots = [], exits = [];
+const isNum = (v) => typeof v === "number" && isFinite(v);
+for (const sc of rawScenes) {
+  const at = `maps/${sc.file}`;
+  const { file, ...body } = sc;
+  checkKeys(at, body, SCENE_KEYS);
+  if (sc.id + ".yaml" !== file) errors.push(`${at}: id 要和文件名一样（${sc.id}）`);
+  if (!isNum(sc.width) || sc.width < 800) errors.push(`${at}: width 应为不小于 800 的数`);
+  const floors = sc.floors ?? [760];
+  if (!Array.isArray(floors) || !floors.length || !floors.every(isNum)) errors.push(`${at}: floors 应为地面高度的列表`);
+  for (let i = 1; i < floors.length; i++) if (!(floors[i] - floors[i - 1] > AREA_HEIGHT + 20)) errors.push(`${at}: floors 要从上往下写，相邻两层至少差 ${AREA_HEIGHT + 20}`);
+  if (Math.max(...floors) >= SCENE_STRIDE - 100) errors.push(`${at}: 地面太低了（最多 ${SCENE_STRIDE - 100}）`);
+  // unlock：写在顶上的条件都要满足；any 是几条路，满足其中一条就开（河对岸：18 岁，或者 15 岁考上了市重点……）
+  checkKeys(`${at}.unlock`, sc.unlock, UNLOCK_KEYS);
+  if (sc.unlock?.any !== undefined && !(Array.isArray(sc.unlock.any) && sc.unlock.any.length)) errors.push(`${at}.unlock.any: 应为条件的列表`);
+  for (const [w, u] of [[`${at}.unlock`, sc.unlock], ...(sc.unlock?.any ?? []).map((u, i) => [`${at}.unlock.any[${i}]`, u])]) {
+    if (!u) continue;
+    if (w !== `${at}.unlock`) checkKeys(w, u, UNLOCK_ANY_KEYS);
+    for (const k of ["flags", "notFlags"]) if (u[k] && !Array.isArray(u[k])) errors.push(`${w}.${k}: 必须是列表`);
+    for (const k of ["minAge", "maxAge"]) if (u[k] !== undefined && !isNum(u[k])) errors.push(`${w}.${k}: 必须是数字`);
+    for (const f of u.flags ?? []) consumed.push([w, f]);
+  }
+  const index = orderOf(sc.id);
+  const top = index * SCENE_STRIDE;
+  const fy = (f, where) => {
+    const n = f ?? 0;
+    if (!Number.isInteger(n) || n < 0 || n >= floors.length) { errors.push(`${where}: floor 应为 0~${floors.length - 1}`); return top + floors[0]; }
+    return top + floors[n];
+  };
+  const unlock = sc.unlock && Object.keys(sc.unlock).length ? sc.unlock : null;
+  scenes.push({ id: sc.id, name: sc.name ?? sc.id, index, top, width: sc.width, floors: floors.map((y) => top + y), unlock, far: !!sc.far });
+  const mine = [];
+  for (const ar of sc.areas ?? []) {
+    const w = `${at}.areas#${ar.id}`;
+    checkKeys(w, ar, AREA_KEYS);
+    if (!(Array.isArray(ar.span) && ar.span.length === 2 && ar.span.every(isNum) && ar.span[0] < ar.span[1] && ar.span[0] >= 0 && ar.span[1] <= sc.width)) errors.push(`${w}: span 应为 [起, 止]，在 0~width 里`);
+    if (ar.owner && !["qing", "mei"].includes(ar.owner)) errors.push(`${w}: owner 只能是 qing / mei`);
+    const y = fy(ar.floor, w);
+    for (const o of mine) if (o.floor === (ar.floor ?? 0) && o.span[0] < ar.span[1] && ar.span[0] < o.span[1]) errors.push(`${w}: 和 ${o.id} 在同一层上重叠`);
+    mine.push({ id: ar.id, floor: ar.floor ?? 0, span: ar.span });
+    const z = { id: ar.id, name: ar.name ?? ar.id, scene: sc.id, floor: ar.floor ?? 0, span: ar.span, rect: [ar.span[0], y - AREA_HEIGHT, ar.span[1] - ar.span[0], AREA_HEIGHT + 20] };
+    if (ar.owner) z.owner = ar.owner;
+    zones.push(z);
+  }
+  for (const ex of sc.exits ?? []) {
+    const w = `${at}.exits#${ex.id}`;
+    checkKeys(w, ex, EXIT_KEYS);
+    if (!isNum(ex.at) || ex.at < 0 || ex.at > sc.width) errors.push(`${w}: at 应在 0~width 里`);
+    if (!isNum(ex.arrive)) errors.push(`${w}: 需要 arrive（到了那边站在哪）`);
+    if (!ex.label) errors.push(`${w}: 需要 label（按钮上写的字，比如「下楼」）`);
+    exits.push({ id: `${sc.id}.${ex.id}`, scene: sc.id, at: [ex.at, fy(ex.floor, w)], to: ex.to, arrive: ex.arrive, arriveFloor: ex.arriveFloor ?? 0, label: ex.label });
+  }
+  for (const sp of sc.spots ?? []) {
+    const w = `${at}.spots#${sp.id}`;
+    checkKeys(w, sp, SPOT_KEYS);
+    const ar = (sc.areas ?? []).find((a) => a.id === sp.area);
+    if (!ar) { errors.push(`${w}: 未知 area ${sp.area}`); continue; }
+    if (!isNum(sp.at) || sp.at < ar.span[0] || sp.at > ar.span[1]) errors.push(`${w}: at 应是一个数，落在 ${sp.area} 的 span 里`);
+    if (sp.owner !== undefined && sp.owner !== ar.owner) errors.push(`${w}: owner 要和 ${sp.area} 的一样（谁家的东西看它在谁家屋里）`);
+    // action: x 是 actions: [x] 的简写。两种写法都输出成 actions（规则用）+ action（= 第一个，给旧代码）
+    const acts = (sp.actions ?? (sp.action ? [sp.action] : [])).filter((a) => actionIds.has(a) || !PENDING_ACTIONS.includes(a));
+    if (acts.length === 0) {
+      if ((sp.actions ?? [sp.action]).some((a) => PENDING_ACTIONS.includes(a))) continue; // 只挂着还没加进来的行动：先不放这个点位
+      errors.push(`${w}: 需要 action 或 actions`);
+    }
+    for (const a of acts) if (!actionIds.has(a)) errors.push(`${w}: 未知 action ${a}`);
+    spots.push({ id: sp.id, zone: sp.area, scene: sc.id, at: [sp.at, fy(ar.floor, w)], actions: acts, action: acts[0] });
+  }
 }
+scenes.sort((a, b) => a.index - b.index);
+const sceneById = new Map(scenes.map((sc) => [sc.id, sc]));
+for (const k of ["building", "street"]) if (!sceneById.has(k)) errors.push(`maps: 缺少 ${k}.yaml（规则代码按这个名字找家和楼下）`);
+for (const [kind, list] of [["地点", zones], ["点位", spots]]) {
+  const seen = new Set();
+  for (const x of list) { if (seen.has(x.id)) errors.push(`maps: ${kind} id 重复 ${x.id}`); seen.add(x.id); }
+}
+for (const ex of exits) {
+  const to = sceneById.get(ex.to);
+  if (!to) { errors.push(`maps/${ex.scene}.yaml: 出口 ${ex.id} 通往未知的图 ${ex.to}`); continue; }
+  const local = to.floors.map((y) => y - to.top);
+  if (!(ex.arriveFloor >= 0 && ex.arriveFloor < local.length)) { errors.push(`maps/${ex.scene}.yaml: 出口 ${ex.id} 的 arriveFloor 超出 ${ex.to} 的层数`); continue; }
+  if (ex.arrive < 0 || ex.arrive > to.width) errors.push(`maps/${ex.scene}.yaml: 出口 ${ex.id} 的 arrive 超出 ${ex.to} 的宽度`);
+  ex.arrive = [ex.arrive, to.floors[ex.arriveFloor]];
+  delete ex.arriveFloor;
+}
+// 每个出口都得有回来的路：到了那边，离落脚点不远就有一个通回这张图的出口
+for (const ex of exits) {
+  if (!Array.isArray(ex.arrive)) continue;
+  const back = exits.find((o) => o.scene === ex.to && o.to === ex.scene && o.at[1] === ex.arrive[1] && Math.abs(o.at[0] - ex.arrive[0]) <= 200);
+  if (!back) errors.push(`maps/${ex.scene}.yaml: 出口 ${ex.id} 到了 ${ex.to} 那边，落脚点 200 像素内没有回来的出口`);
+}
+const bedOf = (role) => spots.find((sp) => sp.action === "sleep" && sp.scene === "building" && zones.find((z) => z.id === sp.zone)?.owner === role);
+for (const r of ["qing", "mei"]) if (!bedOf(r)) errors.push(`maps/building.yaml: 没有 ${r} 家的床（每天早上从这儿起）`);
+map.scenes = scenes;
+map.zones = zones;
+map.spots = spots;
+map.exits = exits;
+map.stride = SCENE_STRIDE;
+map.size = [Math.max(...scenes.map((s) => s.width)), (Math.max(...scenes.map((s) => s.index)) + 1) * SCENE_STRIDE];
+map.spawn = { qing: bedOf("qing")?.at, mei: bedOf("mei")?.at };
+const zoneIds = new Set(zones.map((z) => z.id));
 map.actions = map.actions.map((a) => {
   checkKeys(`map.actions#${a.id}`, a, ACTION_KEYS);
   checkKeys(`map.actions#${a.id}.requires`, a.requires, ACTION_REQ_KEYS);

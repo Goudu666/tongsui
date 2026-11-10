@@ -29,9 +29,10 @@ var SHADOW_GRACE_SECONDS = 10; // 掉线这么久之内不交给影子：切网�
  * - 旧客户端没法再用了：把 MIN_CLIENT_PROTOCOL 提到能用的最低版本，旧包会看到「请装新版」，而不是卡在看不懂的界面里
  * 剧情内容不走这个：内容有自己的指纹 CONTENT.version，客户端发现不一样会自己下载（content_get）。
  */
-var PROTOCOL_VERSION = 4; // 2：关口（上锁的选项）、日程、目标、属性进了 WORLD；schoolDay 没了  3：传承（老物件、再来一世），旧包可以忽略
+var PROTOCOL_VERSION = 5; // 2：关口（上锁的选项）、日程、目标、属性进了 WORLD；schoolDay 没了  3：传承（老物件、再来一世），旧包可以忽略
 // 4：一天五段（WORLD 多了 slot / ready / playing，新消息 PASS / CANCEL）；放风筝小游戏（20 / 21）拿掉。旧包不会按「就这么过」，一段都过不去
-var MIN_CLIENT_PROTOCOL = 4;
+// 5：一张张横着的图（世界坐标按图分条，人只左右走，新消息 EXIT 走出口）。旧包画的还是原来那张大地图，对不上
+var MIN_CLIENT_PROTOCOL = 5;
 /** 从这个协议版本起，安装包才认识传承的消息（31 AGAIN）。和 protocol.gd 的 LEGACY_SINCE 是同一个数 */
 var LEGACY_SINCE_PROTOCOL = 3;
 var CONTENT_CHUNK = 48000; // content_get 一次回多少个字符：整份内容约 17 万字符，分几次取，不撞单条消息的大小上限
@@ -53,11 +54,12 @@ var OP = {
   PONG: 13, // s→c { t, tick } 原样带回 t，附上服务器 tick
   PASS: 22, // c→s {} 这一段歇着（不做正经事，等这一段过去）
   CANCEL: 23, // c→s {} 改主意：撤回这一段定下的事（还没开始过的）
+  EXIT: 24, // c→s {exit, seq} 走出口（门、楼梯、街口）。seq 是走之前最后一条 MOVE，比它旧的 MOVE 不再算
   ECHO: 30, // c→s { turn, optionId } 回话：补答影子替我选过的默契事件；optionId 为 null 是「不提了」
   AGAIN: 31, // c→s { yes } 一世走完以后：再来一世（false 是收回）  s→c { again: { qing, mei } } 谁点了；两人都点了改发 SNAPSHOT
 };
 /** c→s 的消息号：只有这些会被处理，其余的回一个 ERROR */
-var CLIENT_OPS = [OP.ROLL, OP.MOVE, OP.ACT, OP.CHOOSE, OP.PING, OP.PASS, OP.CANCEL, OP.ECHO, OP.AGAIN];
+var CLIENT_OPS = [OP.ROLL, OP.MOVE, OP.ACT, OP.CHOOSE, OP.PING, OP.PASS, OP.CANCEL, OP.EXIT, OP.ECHO, OP.AGAIN];
 
 interface LifelineRecord {
   id: string;
@@ -736,6 +738,14 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
     } else if (msg.opCode === OP.CANCEL) {
       var ce = worldCancel(life, CONTENT, role);
       if (ce) sendError(dispatcher, msg.sender, ce);
+    } else if (msg.opCode === OP.EXIT) {
+      var xe = worldExit(life, CONTENT, role, String(body.exit));
+      if (xe) sendError(dispatcher, msg.sender, xe);
+      else {
+        // 走之前路上发出去的 MOVE 还会陆续到：那是上一张图里的横坐标，不能拿来挪这边的人
+        var xs = Number(body.seq) || 0;
+        if (xs > (state.moveSeq[role] || 0)) state.moveSeq[role] = xs;
+      }
     } else if (msg.opCode === OP.ECHO) {
       var echo = duetEcho(life, CONTENT, role, Number(body.turn), body.optionId);
       if (echo.error) sendError(dispatcher, msg.sender, echo.error);

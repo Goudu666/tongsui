@@ -189,7 +189,12 @@ for (let seed = 1; seed <= LIVES; seed++) {
   turns += s.turn; evs += seen.length; mems += s.memories.length;
 }
 {
-  const never = [...hit].filter(([, n]) => n === 0).map(([id]) => id);
+  // 等别的线程发的标记（tools/build-content.mjs 的 PENDING_FLAGS）：发标记的合进来以前，要它的事件出不来
+  const PENDING = ["fam_factory", "uni_abroad", "school_paid", "job_pull", "job_succeed", "home_unit"];
+  // 这里不走地图，也就不攒钱：三十岁买不起房（m_settle 的 buy 要 200 块），要 home_own 的事件在这儿出不来，由 paths.test 那种过日子的模拟兜着
+  const NO_MONEY = ["home_own"];
+  const waits = (id) => (byId.get(id).requires?.flags ?? []).some((f) => PENDING.includes(f) || NO_MONEY.includes(f));
+  const never = [...hit].filter(([id, n]) => n === 0 && !waits(id)).map(([id]) => id);
   assert.deepEqual(never, [], `${never.length} 个事件在 ${LIVES} 条人生里一次也没出现：${never.join(", ")}`);
   const deadPair = [...pairEnd].filter(([, n]) => n === 0).map(([id]) => id);
   assert.deepEqual(deadPair, [], `走不到的结局：${deadPair.join(", ")}`);

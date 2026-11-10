@@ -673,7 +673,9 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
   assert.ok(Math.abs(gap60) < 1.2, `大器晚成 60 岁三项合计和别人差了 ${gap60.toFixed(2)}，换一种活法不该差出一大截`);
 
   // 连心：各顾各的也不容易生分；属性一点不多，心情跟着对门走
-  const linked = run("各顾各的", "linked", 31), apart = run("各顾各的", "owl", 31);
+  // 24 条亲近差得太吵（地点支线多了以后，谁碰上几件事起伏更大），这一条用 64 条
+  const run64 = (way, talent, until) => Array.from({ length: 64 }, (_, i) => live((i + 1) * 7919, WAYS[way], until, climb, as(talent)));
+  const linked = run64("各顾各的", "linked", 31), apart = run64("各顾各的", "owl", 31);
   const close = (runs) => avg(runs, (x) => x.s.bond.close);
   assert.ok(close(linked) > close(apart) + 2, `连心的亲近 ${close(linked).toFixed(1)}，和别人（${close(apart).toFixed(1)}）没差`);
   const gapL = avg(at(linked, "m_settle"), total3) - avg(at(apart, "m_settle"), total3);

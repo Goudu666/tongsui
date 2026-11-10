@@ -1,12 +1,13 @@
 extends Control
 ## 标题页的画面（横屏；按钮由 main.gd 摆在 buttons_rect() 里）：
 ##   左边是标志：青、梅两个圆从两边滑进来、叠住，"同""岁"反白在圆里；下面一句话，再下面是按钮
-##   右边是一扇"窗"：真的河畔里地图在里面慢慢横移，鸽子照飞，天会黑、灯会亮
+##   右边是一扇"窗"：楼下那条老街（侧视横版的底图）在里面慢慢横移，天会黑、灯会亮
 ##   窗的四角有裁切线，下面一排色标：这是一张还没裁的印刷打样
 
 const P := preload("res://scripts/ui/palette.gd")
 const Kit := preload("res://scripts/ui/kit.gd")
-const MapArt := preload("res://scripts/world/map_art.gd")
+const SceneArt := preload("res://scripts/world/scene_art.gd")
+const ContentStore := preload("res://scripts/net/content_store.gd")
 const PrintLight := preload("res://scripts/world/print_light.gd")
 
 const LEFT := 96.0       ## 左栏离屏幕左边
@@ -16,7 +17,8 @@ const LOGO_R := 150.0
 const WIN_TOP := 190.0
 const WIN_H := 640.0
 const VIEW_SCALE := 0.62
-const VIEW_TOP := 250.0  ## 窗里从地图的哪一行看起
+const VIEW_TOP := 0.0  ## 窗里从这张图的哪一行看起（图自己的坐标）
+const SCENE := "street"
 const DAY := 70.0  ## 窗里的一整天（秒）
 
 var _t := 0.0
@@ -24,7 +26,8 @@ var _inset := Vector2.ZERO
 var _window: Control
 var _frame: Control
 var _holder: Node2D
-var _art: MapArt
+var _art: SceneArt
+var _width := 2400.0
 var _light: PrintLight
 
 
@@ -39,13 +42,19 @@ func _ready() -> void:
 	_holder = Node2D.new()
 	_holder.scale = Vector2.ONE * VIEW_SCALE
 	_window.add_child(_holder)
-	_art = MapArt.new()
-	_art.plate_lighting = true
+	_art = SceneArt.new()
 	_holder.add_child(_art)
+	var map: Dictionary = ContentStore.load_bundled().get("map", {})
+	for sc in map.get("scenes", []):
+		if str(sc.id) == SCENE:
+			_art.show_scene(sc, map.get("zones", []), map.get("exits", []))
+			_width = float(sc.width)
+	_art.position = Vector2.ZERO  # 窗里只放这一张，不按世界坐标摆
 	if _art.has_art:
 		_light = PrintLight.new()
 		_holder.add_child(_light)
-		_light.setup(Vector2(2400, 1600), _art.anchors)
+		_light.setup(Vector2(_width, SceneArt.BOTTOM - SceneArt.TOP), SceneArt.anchors_for(SCENE))
+		_light.position = Vector2(0, SceneArt.TOP)
 	else:
 		_window.visible = false
 	_frame = _Frame.new()
@@ -88,14 +97,13 @@ func _process(delta: float) -> void:
 	_place()
 	if _window.visible:
 		# 镜头：沿着老街来回走一趟
-		var span := maxf(0.0, 2400.0 - _window.size.x / VIEW_SCALE)
+		var span := maxf(0.0, _width - _window.size.x / VIEW_SCALE)
 		var k := 0.5 - 0.5 * cos(_t / 95.0 * TAU)
 		_holder.position = Vector2(-span * k * VIEW_SCALE, -VIEW_TOP * VIEW_SCALE)
 		# 时钟：清早 → 夜里 → 再倒回清早（倒着看的晚霞就是朝霞）
 		var d := fmod(_t + 8.0, DAY * 2.0) / DAY
 		var day := d if d < 1.0 else 2.0 - d
 		var m := lerpf(420.0, 1300.0, smoothstep(0.08, 0.92, day))
-		_art.set_minute(m)
 		if _light != null:
 			_light.set_minute(m)
 	queue_redraw()

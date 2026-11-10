@@ -58,7 +58,7 @@ for (const e of S.events) for (const r of e.replaces) assert.ok(C.events.some((x
 // ---------- 1) 变体覆盖 ----------
 // 两个人可能的样子：出身 × 走没走 × 成没成家 × 埋没埋盒子、刻没刻名字（这些是前面主线里可能没发生的共鸣）
 const FAMS = [["fam_rich"], ["fam_poor"], []];
-const ROUTES = [[], ["uni_away"], ["uni_abroad", "left_city"], ["left_city"]];
+const ROUTES = [[], ["uni_away"], ["uni_abroad"], ["army"], ["left_city"]];
 const PAIR = [[], ["p_married"], ["p_capsule", "p_wall_names", "p_knock", "p_note"], ["p_estranged"]];
 let combos = 0;
 for (const [ci, ch] of S.chapters.entries()) {
@@ -91,8 +91,13 @@ for (const [ci, ch] of S.chapters.entries()) {
   const got = pick(variants, 19, { qing: { alive: true, flags: ["uni_away"] }, mei: { alive: true, flags: [] } }, { close: 40, sync: 30, distance: 2 });
   assert.equal(got.qing.scene, "away", "走的人在外地写信");
   assert.notEqual(got.mei.scene, "away", "留下的人在河畔里收信");
-  const abroad = pick(variants, 19, { qing: { alive: true, flags: ["uni_abroad", "left_city"] }, mei: { alive: true, flags: [] } }, { close: 40, sync: 30, distance: 3 });
-  assert.equal(abroad.qing.id, "s4_letter_abroad", "出国的人拿到的是出国那一份");
+  for (const [flag, id] of [["uni_abroad", "s4_letter_abroad"], ["army", "s4_letter_army"]]) {
+    const got2 = pick(variants, 19, { qing: { alive: true, flags: [flag] }, mei: { alive: true, flags: [] } }, { close: 40, sync: 30, distance: 3 });
+    assert.equal(got2.qing.id, id, `${flag} 的人拿到的是自己那一份`);
+    assert.equal(got2.mei.id, "s4_letter_home", `对门 ${flag} 了，留下的人收信`);
+    const send = pick(beatsOf(4)[0], 18, { qing: { alive: true, flags: [flag] }, mei: { alive: true, flags: [] } }, { close: 40, sync: 30, distance: 3 });
+    assert.ok(send.mirror && send.mirror.id.startsWith("s4_leave"), `${flag}：楼门口送行，不是「都没走」`);
+  }
 }
 
 // ---------- 2) 选项和出身 ----------

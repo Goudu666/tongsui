@@ -12,6 +12,7 @@ const WorldView := preload("res://scripts/world/world_view.gd")
 const ServerConfig := preload("res://scripts/net/config.gd")
 const ServerSettings := preload("res://scripts/ui/server_settings.gd")
 const ContentStore := preload("res://scripts/net/content_store.gd")
+const GameLayer := preload("res://scripts/games/game_layer.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -33,6 +34,7 @@ var _toast_tween: Tween
 var banner: Label        ## 顶部「连接断了，正在重连」
 var lobby_list: VBoxContainer  ## 大厅里「继续」的人生线列表
 
+var games: GameLayer     ## 搭伴小游戏（放风筝）的界面层
 var world: WorldView
 var net: NetClient
 var names: Dictionary = {"qing": "青", "mei": "梅"}
@@ -41,11 +43,17 @@ var life: Dictionary = {}
 var last_world: Dictionary = {}
 var offline_preview := false
 var _preview_minute := 390.0
+const PRACTICE_ACTION := "play_river"
+var _practice_count := 0
 
 
 func _ready() -> void:
 	_load_content()
 	_build_layers()
+	games = GameLayer.new()
+	add_child(games)
+	games.set_theme(ui.theme)
+	games.send.connect(_on_game_send)
 	_show_title()
 
 
@@ -390,9 +398,9 @@ func _process(delta: float) -> void:
 		_preview_minute = fmod(_preview_minute + delta * 4.0 - 390.0, 930.0) + 390.0
 		hud_time.text = "%s · %s · 预览" % [LifeTime.at(0).label, P.clock(_preview_minute)]
 		world.set_minute(_preview_minute)
-	world.controllable = not modal.visible and not screen.visible
+	world.controllable = not modal.visible and not screen.visible and not games.busy()
 	var spot := world.nearest_spot()
-	if spot.is_empty() or modal.visible:
+	if spot.is_empty() or modal.visible or games.busy():
 		action_btn.visible = false
 		return
 	var act := world.action_of(spot)
@@ -408,6 +416,10 @@ func _process(delta: float) -> void:
 	action_btn.text = str(act.get("label", "")) + cost
 	action_btn.set_meta("spot", spot.id)
 	action_btn.disabled = offline_preview
+	if offline_preview and str(act.get("id", "")) == PRACTICE_ACTION:
+		# 不联网也能试一局放风筝（跟陪练放，不算数）
+		action_btn.text = "试玩放风筝"
+		action_btn.disabled = false
 	action_btn.visible = true
 
 
@@ -418,6 +430,12 @@ func _ping_text() -> String:
 
 
 func _on_action_pressed() -> void:
+	if offline_preview:
+		_practice_count += 1
+		games.my_role = my_role
+		games.names = names
+		games.start_practice(_practice_count % 2 == 1)  # 两头轮着试
+		return
 	if net != null and action_btn.has_meta("spot"):
 		net.act(str(action_btn.get_meta("spot")))
 
@@ -458,6 +476,7 @@ func _show_online() -> void:
 		net.event_started.connect(_on_event_started)
 		net.log_entries.connect(_on_log_entries)
 		net.presence.connect(_on_presence)
+		net.game_state.connect(_on_game_state)
 	_status(body)
 	var ok: bool = await net.connect_server()
 	if not ok:
@@ -742,6 +761,8 @@ func _enter_world() -> void:
 
 func _leave_world() -> void:
 	offline_preview = false
+	if games != null:
+		games.close()
 	if world != null:
 		world.queue_free()
 		world = null
@@ -779,6 +800,19 @@ func _on_world_state(data: Dictionary) -> void:
 		var s := modal_body.get_node_or_null("Status") as Label
 		if s != null and ev.roles.has(_other()):
 			s.text = "TA 已经选好了" if ev.chosen[_other()] else "TA 还在想……"
+
+
+func _on_game_send(body: Dictionary) -> void:
+	if net != null:
+		net.game_input(body)
+
+
+func _on_game_state(data: Dictionary) -> void:
+	if world == null:
+		return
+	games.my_role = my_role
+	games.names = names
+	games.on_state(data)
 
 
 # ======================================================================

@@ -152,6 +152,7 @@ function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error
   a.action = act.id;
   a.spot = sp.id;
   a.shadow = false;
+  delete a.boost; // 上一件事没用掉的搭伴倍率不带过来（见 games.ts）
   if (act.sleep) {
     a.asleep = true;
     a.until = null;
@@ -183,7 +184,9 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   var wealth = 1; // 这户人家在新内容里没了（见 save.ts）就按普通家境算
   for (var fi = 0; fi < c.families.length; fi++) if (c.families[fi].id === p.familyId) wealth = c.families[fi].wealth;
   var stats: SelfDelta = {};
-  for (var k in act.stats) (stats as any)[k] = ((act.stats as any)[k] as number) * (act.id === "study" && lifeHasFlag(p, "tal_memory") ? 2 : 1);
+  var boost = a.boost || 1; // 搭伴小游戏打出来的倍率，只乘这一次行动长的属性（见 games.ts）
+  delete a.boost;
+  for (var k in act.stats) (stats as any)[k] = ((act.stats as any)[k] as number) * (act.id === "study" && lifeHasFlag(p, "tal_memory") ? 2 : 1) * boost;
   lifeApplySelf(p, stats);
   lifeApplySelf(p, act.needs);
   if (act.id === "eat") lifeApplySelf(p, { mood: wealth * 3 + (lifeHasFlag(p, "tal_foodie") ? 6 : 0) });
@@ -274,6 +277,7 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
   if (s.phase !== "life") return out;
   var w = s.world!;
   if (w.event) return out; // 有人在做选择时，时间停住
+  if (w.game) return out; // 搭伴小游戏（问 / 玩）的时候也停住，见 games.ts
   var roles = worldAliveRoles(s);
 
   for (var i = 0; i < roles.length; i++) {

@@ -4,7 +4,7 @@
 //   server/src/content.generated.ts  服务端结算（Nakama JS 运行时不方便读文件，直接内联）
 // 另有 duet.yaml：两个人之间一抛一接的内容（搭上了 / 猜 TA / 回话），挂到事件的 catches 和 content.duet 上
 // 包含：events/*.yaml 剧情事件、families.yaml 家庭、talents.yaml 天赋、map.yaml 地图与行动、endings.yaml 结局
-// 传承（server/src/legacy.ts）：heirlooms.yaml 老物件
+// 传承（server/src/legacy.ts）：heirlooms.yaml 老物件、remembered.yaml 街坊记住的事、events/legacy.yaml 隔世的事
 //   client/data/street.json          街景（street.yaml：街坊、车，随年代更替；只给客户端，不进结算也不进内容版本）
 // 同时做基础校验，写剧情时出错能第一时间看到。
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
@@ -36,6 +36,16 @@ const HEIRLOOM_MAX_BONUS = 0.5;
 const LEGACY_MAX_MONEY = 10;
 // 传承的规则（server/src/legacy.ts）按名字读的标记：接了家业、找工作那一关走的路。内容里改了名，家业和小传会悄悄失效
 const LEGACY_ENGINE_FLAGS = ["took_over", "job_desk", "job_teach", "job_trade", "job_craft", "job_labor", "job_odd"];
+// 人生结束时规则算出来的标记（legacyDerive），结局和街坊记住的事可以读；出生时带上的 leg_any / leg_house（legacyBirth）
+const LEGACY_DERIVED_FLAGS = ["x_same_year", "x_opposites", "x_many_mirrors", "x_same_trade", "x_plain_life"];
+const LEGACY_BIRTH_FLAGS = ["leg_any", "leg_house"];
+// 藏着的天赋的效果按这几个标记给（legacy.ts 末尾那几个函数）
+const LEGACY_TALENT_FLAGS = ["tal_late", "tal_linked", "tal_oldsoul"];
+// 街坊记住的事：十几条，记的是活法。条件里不许出现属性和钱；标题和那一句话都要短
+const REMEMBERED_KEYS = ["id", "title", "desc", "who", "requires"];
+const REMEMBERED_PAIR_KEYS = [...PAIR_REQ_KEYS, "minHelps", "minJobs"];
+const REMEMBERED_PERSON_KEYS = ["flags", "notFlags", "minDiedAge", "maxDiedAge"];
+const REMEMBERED_MAX = 19;
 
 // 每一层允许出现的字段。写错字段名（比如 require / option / effect）以前会被悄悄丢掉，
 // 事件就变成「没有条件」「没有效果」；现在直接报错。加新字段时先加到这里，再去 types.ts 和 sim.ts 里用它。
@@ -53,7 +63,7 @@ const EFFECT_KEYS = ["self", "other", "bond", "flags"];
 const RESONANCE_KEYS = ["text", "memory", "bond", "flags"];
 const DISSONANCE_KEYS = ["text", "bond", "flags"];
 const FAMILY_KEYS = ["id", "name", "wealth", "weight", "money", "desc", "bonus", "traits"];
-const TALENT_KEYS = ["id", "name", "weight", "desc", "bonus", "flags"];
+const TALENT_KEYS = ["id", "name", "weight", "desc", "bonus", "flags", "unlock"];
 const ENDING_KEYS = ["id", "title", "text", "requires"];
 const MAP_KEYS = ["size", "spawn", "zones", "spots", "actions"];
 const ZONE_KEYS = ["id", "name", "rect", "owner"];
@@ -211,8 +221,14 @@ const families = load("families.yaml").map((f) => {
 const talents = load("talents.yaml").map((t) => {
   checkDeltas(`talents#${t.id}.bonus`, t.bonus, STAT_KEYS);
   checkKeys(`talents#${t.id}`, t, TALENT_KEYS);
-  return { id: t.id, name: t.name, weight: t.weight ?? 1, desc: t.desc ?? "", bonus: t.bonus ?? {}, flags: t.flags ?? [] };
+  // 藏着的天赋：unlock 是一个标记，这条人生线上有人带过它，往后才抽得到
+  if (t.unlock != null) {
+    if (typeof t.unlock !== "string") errors.push(`talents#${t.id}.unlock: 必须是一个标记`);
+    else consumed.push([`talents#${t.id}.unlock`, t.unlock]);
+  }
+  return { id: t.id, name: t.name, weight: t.weight ?? 1, desc: t.desc ?? "", bonus: t.bonus ?? {}, flags: t.flags ?? [], unlock: t.unlock ?? null };
 });
+if (talents.filter((t) => !t.unlock).length === 0) errors.push("talents.yaml: 至少要有一种不用解开的天赋（头一世要抽得到）");
 if (families.length < 2) errors.push("families.yaml 至少需要两户人家");
 for (const f of families) for (const x of f.traits) produced.add(x);
 for (const x of talents) for (const f of x.flags) produced.add(f);
@@ -248,7 +264,7 @@ const rules = load("rules.yaml");
     check: ["base", "perPoint", "luck", "min", "max", "help"],
     lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max", "flags"],
     bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "drift", "driftDistance", "driftFloor"],
-    legacy: ["pastKept", "heirloomOffer", "houseMax", "houseMoney"],
+    legacy: ["pastKept", "heirloomOffer", "houseMax", "houseMoney", "lateEarly", "lateAfter", "lateRoom", "linkedDrift", "linkedMood", "oldSoul", "oldSoulCharm"],
   };
   checkKeys("rules", rules, Object.keys(need));
   for (const [sec, keys] of Object.entries(need)) {
@@ -337,6 +353,24 @@ if (new Set(heirlooms.map((h) => h.id)).size !== heirlooms.length) errors.push("
   if (most > LEGACY_MAX_MONEY) errors.push(`传承：家业（${lg.houseMoney} × ${lg.houseMax}）加上最值钱的老物件，开局一共能多 ${most} 块，超过了 ${LEGACY_MAX_MONEY} 块`);
 }
 for (const f of LEGACY_ENGINE_FLAGS) if (!produced.has(f)) errors.push(`传承：没有任何选项会打上标记 "${f}"（规则代码按这个名字读它，见 server/src/legacy.ts）`);
+for (const f of LEGACY_TALENT_FLAGS) if (!produced.has(f)) errors.push(`传承：没有任何天赋带标记 "${f}"（藏着的天赋的效果按这个名字给，见 server/src/legacy.ts）`);
+
+// ---------- 传承：街坊记住的事 ----------
+const remembered = (load("remembered.yaml") ?? []).map((a) => {
+  const at = `remembered#${a.id ?? "?"}`;
+  checkKeys(at, a, REMEMBERED_KEYS);
+  const who = a.who ?? "pair";
+  if (!["pair", "each", "both"].includes(who)) errors.push(`${at}: who 必须是 pair / each / both`);
+  checkRequires(at, a.requires, who === "pair" ? REMEMBERED_PAIR_KEYS : REMEMBERED_PERSON_KEYS);
+  const count = (t) => [...String(t ?? "")].length;
+  if (!a.id || !a.title || !a.desc) errors.push(`${at}: 需要 id / title / desc`);
+  if (count(a.title) > 7) errors.push(`${at}.title: ${count(a.title)} 字，超过 7 字`);
+  if (count(a.desc) > 32) errors.push(`${at}.desc: ${count(a.desc)} 字，超过 32 字`);
+  if (Object.keys(a.requires ?? {}).length === 0) errors.push(`${at}: 需要 requires（白给的不叫记住）`);
+  return { id: a.id, title: a.title, desc: a.desc, who, requires: a.requires ?? {} };
+});
+if (new Set(remembered.map((a) => a.id)).size !== remembered.length) errors.push("remembered.yaml: id 重复");
+if (remembered.length > REMEMBERED_MAX) errors.push(`remembered.yaml: ${remembered.length} 条，超过 ${REMEMBERED_MAX} 条（要的是十几条记得住的事，不是一张清单）`);
 
 // ---------- 地图 ----------
 const map = load("map.yaml");
@@ -467,6 +501,27 @@ for (const ev of milestones) {
   if (!ev.options.some((o) => !o.min && !o.cost && !hasKeys(o.requires))) errors.push(`milestones#${ev.id}: 至少要有一个不带 min / cost / requires 的选项（兜底的路）`);
 }
 
+// ---------- 传承：留给下一世的痕迹、能解开天赋的事 ----------
+// 规则自己会打的标记，内容里不能发（发了分不清是谁打的）
+for (const f of produced) {
+  if (String(f).startsWith("leg_") || String(f).startsWith("x_")) errors.push(`标记 "${f}"：leg_ 和 x_ 开头的由规则打（server/src/legacy.ts），内容里不能发`);
+}
+for (const f of [...LEGACY_DERIVED_FLAGS, ...LEGACY_BIRTH_FLAGS]) produced.add(f);
+// 内容里谁要求了 leg_<共同标记>，那个共同标记就会留给下一世（上一世两个人一起做过，这一世出生就带着 leg_ 标记）
+const legacyTraces = [];
+for (const [where, f] of consumed) {
+  if (!String(f).startsWith("leg_") || LEGACY_BIRTH_FLAGS.includes(f)) continue;
+  const from = String(f).slice(4);
+  if (!from.startsWith("p_")) errors.push(`${where}: "${f}" 只能接共同标记（leg_p_…），上一世两个人一起做过的事才留得下来`);
+  else if (!produced.has(from)) errors.push(`${where}: "${f}" 对应的共同标记 "${from}" 没有任何共鸣会打上`);
+  else {
+    if (!legacyTraces.includes(from)) legacyTraces.push(from);
+    produced.add(f);
+  }
+}
+legacyTraces.sort();
+const legacyMarks = [...new Set(talents.filter((t) => t.unlock).map((t) => t.unlock))].sort();
+
 const orphan = consumed.filter(([, f]) => !produced.has(f));
 for (const [where, f] of orphan) errors.push(`${where}: 要求标记 "${f}"，但没有任何人家、天赋、选项或共鸣会打上它（多半是拼错了）`);
 
@@ -513,7 +568,7 @@ if (errors.length) {
 
 // 内容版本 = 内容本身的指纹。服务器在 lifeline_open 里报出它的版本，客户端发现和自己带的不一样，
 // 就用 content_get 把服务器这份下载下来用（改剧情只需要更新服务器，不用两台手机重装 APK）。
-const body = { events, families, talents, map, tracks, endings, rules, checks, duet, heirlooms };
+const body = { events, families, talents, map, tracks, endings, rules, checks, duet, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks } };
 const version = createHash("sha256").update(JSON.stringify(body)).digest("hex").slice(0, 12);
 const content = { version, ...body };
 const json = JSON.stringify(content, null, 1);
@@ -528,4 +583,4 @@ const by = (k) => events.filter((e) => e.stage === k).length;
 console.log(`✓ ${events.length} 个事件  ` + STAGES.map((s) => `${s}:${by(s)}`).join("  ") +
   `  |  ${families.length} 户人家  ${talents.length} 种天赋  ${map.zones.length} 个地点  ${map.actions.length} 种行动  ${tracks.length} 条路  ${milestones.length} 个关口` +
   `  |  结局 ${endings.pair.length} 种 · 一生 ${endings.lives.length} 种  |  检定 ${checks.length} 处  |  搭上了 ${catchCount} 组` +
-  `  |  老物件 ${heirlooms.length} 件  |  版本 ${version}`);
+  `  |  老物件 ${heirlooms.length} 件  街坊记住的事 ${remembered.length} 条  痕迹 ${legacyTraces.length} 种  藏着的天赋 ${talents.filter((t) => t.unlock).length} 种  |  版本 ${version}`);

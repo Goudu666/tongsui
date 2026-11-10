@@ -1,6 +1,6 @@
 extends RefCounted
 ## 传承的界面：投胎页上摆着的老物件（自己的能挑，对门的看得见）、家业那一行，
-## 结局页的「留给河畔里」和「再来一世」，大厅里的「第几世」。
+## 结局页的「留给河畔里」「街坊记住了」和「再来一世」，大厅里的「第几世」；翻住户本（ledger_ui.gd）的入口也在这儿。
 ## 规则都在服务端（server/src/legacy.ts），老物件的文字在 content/heirlooms.yaml，这里只管画。设计见 docs/LEGACY.md。
 ## 用的都是 kit.gd 的部件；投票的两个圆和别处一样用 Kit.draw_pair。
 ##
@@ -16,6 +16,7 @@ const P := preload("res://scripts/ui/palette.gd")
 const Kit := preload("res://scripts/ui/kit.gd")
 const RisoBox := preload("res://scripts/ui/riso_box.gd")
 const Op := preload("res://scripts/net/protocol.gd")
+const Ledger := preload("res://scripts/ui/ledger_ui.gd")
 
 var m: Node  ## main.gd
 ## 两边安装包的协议版本（不在线是 0）。服务器 3 版起在快照和 PRESENCE 里带
@@ -23,6 +24,7 @@ var protocols: Dictionary = {}
 var _mine_box: VBoxContainer
 var _their_box: VBoxContainer
 var _again_box: VBoxContainer
+var _ledger: Control
 
 
 func _init(main: Node) -> void:
@@ -80,6 +82,7 @@ func roll_head(body: Container) -> void:
 	var line := past_line()
 	if line != "":
 		m._label(body, line, 30, P.INK_SOFT)
+	ledger_button(body)
 
 
 ## 上一世的一行小传：结局的名字、两个人各活到多少岁
@@ -339,6 +342,7 @@ func _fill_again() -> bool:
 	var theirs := bool(again.get(other, false))
 	var their_protocol := int(protocols.get(other, 0))
 	var here := their_protocol > 0
+	_noted(_again_box)
 	Kit.gap(_again_box, 10)
 	_again_box.add_child(_AgainMark.new({"qing": bool(again.get("qing", false)), "mei": bool(again.get("mei", false))}))
 	if here and their_protocol < Op.LEGACY_SINCE:
@@ -357,6 +361,7 @@ func _fill_again() -> bool:
 		else:
 			m._label(_again_box, "两个人都点头，就在河畔里重新投胎。留下的东西，下一世可以各带一件。", 32, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
 		m._primary(_again_box, "再来一世", func(): m.net.again(true))
+	ledger_button(_again_box)
 	return true
 
 
@@ -399,6 +404,53 @@ func on_protocols(p: Variant) -> void:
 	protocols = p
 	if _alive(_again_box):
 		_fill_again()
+
+
+# ----------------------------------------------------------------------
+# 街坊记住的事、住户本
+# ----------------------------------------------------------------------
+
+## 这一世街坊新记住的事：一枚章一句话。没有就什么都不画（不写「这一世没有」，也不提还有别的）
+func _noted(box: Container) -> void:
+	var noted: Variant = m.life.get("noted")
+	if not noted is Array:
+		return
+	var rows: Array = []
+	for id in noted:
+		for a in m.content.get("remembered", []):
+			if str(a.id) == str(id):
+				rows.append(a)
+	if rows.is_empty():
+		return
+	var col := VBoxContainer.new()
+	col.name = "Noted"
+	col.add_theme_constant_override("separation", 16)
+	box.add_child(col)
+	Kit.chip(col, "街坊记住了", P.INK, 30)
+	for a in rows:
+		Ledger.seal_row(col, a, "")
+
+
+## 这条人生线上走完过至少一世，才有住户本可翻
+func has_ledger() -> bool:
+	var lg: Variant = m.life.get("legacy")
+	return lg is Dictionary and int(lg.get("lives", 0)) >= 1
+
+
+func ledger_button(box: Container) -> void:
+	if not has_ledger():
+		return
+	var b: Button = m._quiet(box, "翻翻住户本", open_ledger)
+	b.name = "OpenLedger"
+
+
+func open_ledger() -> void:
+	if _ledger != null and is_instance_valid(_ledger):
+		return
+	_ledger = Ledger.new(m)
+	m.ui.add_child(_ledger)
+	# 盖住页面和弹窗，提示条和断线横幅还在它上面
+	m.ui.move_child(_ledger, m.modal.get_index() + 1)
 
 
 # ----------------------------------------------------------------------

@@ -1,0 +1,47 @@
+# 医院：挂号的大厅、走廊和开水房、病房。中年来这儿多半是陪家里的老人，老了是自己来。
+# 主线「医院那一夜」和同屋陪床的人归主线剧情，这里只写平常的日子。写法见 building.yaml 文件头。
+
+id: hospital
+name: 医院
+width: 2800
+unlock: { minAge: 40 }
+
+areas:
+  - { id: lobby, name: 挂号大厅, span: [ 0, 950 ], floor: 0 }
+  - { id: ward_hall, name: 走廊, span: [ 950, 1900 ], floor: 0 }
+  - { id: ward, name: 病房, span: [ 1900, 2800 ], floor: 0 }
+
+exits:
+  - { id: to_park, at: 60, to: park, arrive: 500, label: 出门 }
+
+spots:
+  - { id: ward_chair, at: 2330, area: ward, actions: [ accompany ] }
+
+npcs:
+  - id: nurse
+    name: 护士
+    at: 1460
+    lines:
+      middle:
+        - 家属在外头等，一次进一个。
+        - 打水去尽头，开水房十点关。
+      old:
+        - 今天气色不错。量个血压。
+  - id: porter
+    name: 推车的师傅
+    at: 1090
+    lines:
+      default:
+        - 借过借过，车来了。
+  - id: queue_old
+    name: 排队的老人
+    at: 360
+    slots: [ morning ]
+    lines:
+      default:
+        - 五点来的，还排在后头。
+        - 你替谁排？我替我老伴儿。
+
+art: |
+  挂号大厅一排窗口，天不亮就排到门外；走廊两边长椅，尽头开水房冒白气；病房三张床，窗户朝着河。
+  病房里那把陪床的折叠椅是这张图上最要紧的东西：中年坐它的是你，老年坐它的是别人。

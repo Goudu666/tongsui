@@ -1,0 +1,59 @@
+# 海河边：一段河堤，栏杆、台阶、钓鱼的地方，右头是铁桥。过了桥是河对岸（过一回这一段少一个钟头）。
+# 写法见 building.yaml 文件头。钓鱼的、游泳的、跳舞的大姐在 content/street.yaml，这里只写新添的。
+
+id: river
+name: 海河边
+width: 3600
+unlock: { minAge: 5 }
+
+areas:
+  - { id: river, name: 海河边, span: [ 0, 2630 ], floor: 0 }
+  - { id: bridge, name: 铁桥, span: [ 2630, 3600 ], floor: 0 }
+
+exits:
+  - { id: to_street, at: 60, to: street, arrive: 3940, label: 回楼下 }
+  - { id: to_across, at: 3560, to: across, arrive: 60, label: 过桥 }
+
+spots:
+  - { id: river_bank, at: 560, area: river, actions: [ play_river, walk_river ] }
+  - { id: river_rail, at: 1310, area: river, actions: [ rail_talk ] }
+  - { id: river_fish, at: 2000, area: river, actions: [ fish ] }
+  - { id: river_bridge, at: 2940, area: bridge, actions: [ duty ] }
+
+npcs:
+  - id: yam
+    name: 烤山芋的
+    at: 940
+    eras: [ childhood, teen ]
+    slots: [ evening, night ]
+    lines:
+      childhood:
+        - 刚出炉的，烫手，揣兜里焐着。
+        - 小的五毛，大的八毛。两个人买一个大的，划算。
+      teen:
+        - 涨了，一块。炭贵了。
+  - id: photog
+    name: 拍照的
+    at: 1500
+    eras: [ young, middle ]
+    slots: [ am, pm ]
+    lines:
+      young:
+        - 让一让啊，借这块栏杆拍两张。
+        - 这河边光好，下午四点最好。
+      middle:
+        - 现在拍照的都自己拿手机，我来得少了。
+  - id: runner
+    name: 夜跑的
+    at: 2250
+    eras: [ middle, old ]
+    slots: [ night ]
+    lines:
+      default:
+        - 借过——
+        - 到桥头一个来回，五公里。
+
+art: |
+  横着的一段河堤，水在下半屏，对岸的天际线贴在远景（childhood/teen 老厂烟囱，young 以后一排楼，street.yaml 的 far_*）。
+  栏杆一段一段，river_rail 那一段漆色跟着年代换（老年刷了新漆）；台阶通到水边，钓鱼的坐在台阶上。
+  铁桥占最右一屏多，桥上走人走车，桥下过船。冬天河面冻上，有人推冰车；夏天有人从桥上往下跳。

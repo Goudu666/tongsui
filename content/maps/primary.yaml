@@ -1,0 +1,70 @@
+# 小学：校门和传达室、一间教室、操场。六岁开学；教书的大人上班也来这儿，老了来接孙辈。
+# 写法见 building.yaml 文件头。卖糖葫芦的在 content/street.yaml（校门口）。
+
+id: primary
+name: 小学
+width: 2800
+unlock: { minAge: 6 }
+
+areas:
+  - { id: school, name: 校门口, span: [ 0, 800 ], floor: 0 }
+  - { id: classroom, name: 教室, span: [ 800, 1820 ], floor: 0 }
+  - { id: yard, name: 操场, span: [ 1820, 2800 ], floor: 0 }
+
+exits:
+  - { id: to_street, at: 60, to: street, arrive: 60, label: 回楼下 }
+
+spots:
+  - { id: school_gate, at: 380, area: school, actions: [ duty, club_math ] }
+  - { id: class_board, at: 1090, area: classroom, actions: [ blackboard ] }
+  - { id: class_desk, at: 1530, area: classroom, actions: [ study ] }
+  - { id: school_yard, at: 2260, area: yard, actions: [ club_sport, ball ] }
+
+npcs:
+  - id: guard
+    name: 传达室的大爷
+    at: 220
+    eras: [ childhood, teen, young, middle ]
+    lines:
+      childhood:
+        - 跑什么，又没人追你。
+        - 你是三楼那家的吧？我认得你。
+      teen:
+        - 上中学了？个头都蹿过我了。
+      young:
+        - 回来看老师？进去吧，不用登记。
+      middle:
+        - 送孩子？下午四点一刻放，别来早了。
+  - id: teacher
+    name: 教数学的老师
+    at: 1240
+    eras: [ childhood ]
+    slots: [ am, pm ]
+    lines:
+      default:
+        - 作业本交上来，名字写清楚。
+        - 你们俩一个错法，商量好的？
+  - id: grandparents
+    name: 接孩子的老人
+    at: 510
+    eras: [ middle, old ]
+    slots: [ evening ]
+    lines:
+      default:
+        - 出来了出来了，戴黄帽子那个。
+        - 我们那会儿，都是自己走回去的。
+
+props:
+  - id: honor_board
+    name: 光荣榜
+    at: 660
+    eras: [ childhood ]
+    lines:
+      default:
+        - 三好学生、优秀干部，一排红纸。
+        - 角上贴着一张流动红旗，这礼拜归二班。
+
+art: |
+  一层的教室剖开，前头黑板、讲台，一排排课桌；窗户朝操场。校门是两扇铁栅门，旁边传达室的小窗户。
+  操场一圈煤渣跑道、一副篮球架、一根旗杆。放学时校门口的车随年代换：自行车、电动车、轿车，老年是一排老人。
+  黑板报（class_board）每个学期换一版，画报头的粉笔颜色只有红黄白三种。

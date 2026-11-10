@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "3e9f5285d742",
+ "version": "d2c3d5418035",
  "events": [
   {
    "id": "c_roof_summer",
@@ -24757,7 +24757,7 @@ var CONTENT: Content = {
    "help": 1
   },
   "lifespan": {
-   "base": 76,
+   "base": 74,
    "spread": 17,
    "body": 1,
    "moodMid": 85,

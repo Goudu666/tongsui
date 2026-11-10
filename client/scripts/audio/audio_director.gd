@@ -32,6 +32,10 @@ const STEP_PITCH := {"child": 1.18, "teen": 1.06, "young": 1.0, "middle": 0.96, 
 const ACT_ALIAS := {"read": "study", "walk_river": "play_river", "dine": "eat_out", "ball": "play_alley"}
 ## 设置按钮的三档：全开 → 只关音乐 → 静音
 const LEVELS := ["乐", "响", "静"]
+## 按钮和 HUD 右上角「亲近 / 默契」卡片（ui/hud.gd 的 _bond：宽 128，y 64~220）一样宽，在河畔里排在它下面
+const BUTTON_SIZE := Vector2(128, 68)
+const BUTTON_TOP_MENU := 64.0
+const BUTTON_TOP_WORLD := 240.0
 
 var music: MusicPlayer
 var scape: Soundscape
@@ -45,6 +49,8 @@ var _cache: Dictionary = {}
 var _walked := {}
 var _stage := "child"
 var _button: Button
+var _boxes: Array[StyleBox] = []
+var _map: Dictionary = {}
 var _focus := 0.0
 
 
@@ -121,32 +127,23 @@ func _apply_level() -> void:
 	AudioServer.set_bus_mute(AudioServer.get_bus_index("Sfx"), level >= 2)
 	if _button != null:
 		_button.text = LEVELS[level]
-		_button.modulate.a = 0.85 if level == 0 else 0.5
+		for c in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+			_button.add_theme_color_override(c, P.INK if level == 0 else P.INK_SOFT)
 
 
+## 音量按钮。自己占一层：在主界面（第 1 层）上面，在搭伴小游戏（第 5 层）和转场（第 50 层）下面。
+## 放哪儿、什么时候藏由观察者说了算（place_button）；样式跟主界面的主题走（adopt_theme）。
 func _make_button() -> void:
 	var layer := CanvasLayer.new()
-	layer.layer = 5
+	layer.layer = 2
 	add_child(layer)
 	_button = Button.new()
 	_button.focus_mode = Control.FOCUS_NONE
+	_button.set_meta("sfx", "none")  # 自己出声，不用观察者再配一遍
 	_button.anchor_left = 1.0
 	_button.anchor_right = 1.0
-	_button.offset_left = -136
-	_button.offset_right = -48
-	_button.offset_top = 76
-	_button.offset_bottom = 164
 	_button.add_theme_font_override("font", P.font())
-	_button.add_theme_font_size_override("font_size", 40)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(P.PAPER, 0.9)
-	sb.border_color = P.INK
-	sb.set_border_width_all(3)
-	sb.set_corner_radius_all(44)
-	for st in ["normal", "hover", "pressed", "focus"]:
-		_button.add_theme_stylebox_override(st, sb)
-	for c in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
-		_button.add_theme_color_override(c, P.INK)
+	_button.add_theme_font_size_override("font_size", 34)
 	_button.pressed.connect(func():
 		level = (level + 1) % LEVELS.size()
 		_apply_level()
@@ -155,6 +152,41 @@ func _make_button() -> void:
 		cfg.set_value("audio", "level", level)
 		cfg.save(SETTINGS))
 	layer.add_child(_button)
+	place_button(false, false)
+
+
+## 用主界面的主题（ui/kit.gd 的孔版框）。框的留白收小一点，按钮才塞得进卡片的宽度
+func adopt_theme(theme: Theme) -> void:
+	_button.theme = theme
+	_boxes.clear()
+	for st in ["normal", "hover", "pressed"]:
+		if not theme.has_stylebox(st, "Button"):
+			continue
+		var sb: StyleBox = theme.get_stylebox(st, "Button").duplicate()
+		sb.content_margin_left = 16
+		sb.content_margin_right = 16
+		sb.content_margin_top = 10
+		sb.content_margin_bottom = 10
+		_button.add_theme_stylebox_override(st, sb)
+		_boxes.append(sb)
+
+
+## 框后面那块错开的颜色：玩家自己的颜色
+func tint_button(color: Color) -> void:
+	for sb in _boxes:
+		if "block" in sb:
+			sb.block = color
+			sb.emit_changed()
+
+
+## in_world：在河畔里（上面有 HUD）还是在菜单页；hidden：弹窗、小游戏出来了
+func place_button(in_world: bool, hidden: bool) -> void:
+	_button.visible = not hidden
+	var top := BUTTON_TOP_WORLD if in_world else BUTTON_TOP_MENU
+	_button.offset_left = -40 - BUTTON_SIZE.x
+	_button.offset_right = -40
+	_button.offset_top = top
+	_button.offset_bottom = top + BUTTON_SIZE.y
 
 
 # ---------------------------------------------------------------- 接口 ----
@@ -167,7 +199,8 @@ func set_scene(scene: String) -> void:
 ## 河畔里每帧的状态
 func set_life(map: Dictionary, my_role: String, me_pos: Vector2, other_pos: Variant, partner_live: bool,
 		turn: int, stage: String, season: String, minute: float, school_day: bool, sync: float, focus: bool) -> void:
-	if not scape.is_setup:
+	if not scape.is_setup or not is_same(map, _map):  # 内容热更新后地图会换一份（比如多了茶馆）
+		_map = map
 		scape.setup(map)
 	_stage = STAGE_FILE.get(stage, "child")
 	music.set_stage(_stage)

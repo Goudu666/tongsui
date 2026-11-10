@@ -25,6 +25,7 @@ var _pool_i := 0
 var _cache: Dictionary = {}
 var _minute := -1.0
 var _clock := 0.0
+var _zw: Dictionary = {}        ## 这一帧里按 reach 缓存的地点分量（听的人这一帧只在一个地方）
 
 
 func setup(map: Dictionary) -> void:
@@ -107,7 +108,10 @@ func _weight(cfg: Dictionary, pos: Vector2, minute: float, stage_i: int, season:
 	var f := float(stages[clampi(stage_i, 0, stages.size() - 1)]) * _hours(cfg, minute)
 	if f <= 0.0:
 		return 0.0
-	var zw := zone_weights(pos, float(cfg.get("reach", _reach)))
+	var reach := float(cfg.get("reach", _reach))
+	if not _zw.has(reach):
+		_zw[reach] = zone_weights(pos, reach)
+	var zw: Dictionary = _zw[reach]
 	var best := 0.0
 	for zid in cfg.get("zones", {}):
 		best = maxf(best, float(cfg.zones[zid]) * float(zw.get(zid, 0.0)))
@@ -120,6 +124,7 @@ func update(delta: float, pos: Vector2, minute: float, stage: String, season: St
 	var prev := _minute
 	_minute = minute
 	_clock += delta
+	_zw.clear()
 	for b in _beds:
 		var w := _weight(b.cfg, pos, minute, stage_i, season) if active else 0.0
 		var want := float(b.cfg.get("db", 0.0)) + linear_to_db(w) if w > 0.003 else SILENT

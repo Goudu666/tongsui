@@ -5,11 +5,13 @@ extends SceneTree
 ##   - 声景表引用的声音和地点都存在，五个阶段的密度都填了
 ##   - 地点权重：站在里面是 1，走远了归 0
 ##   - 配乐播放器：一段放完会歇，换阶段不报错
+##   - 观察者依赖的主场景属性、联机信号、按钮字样都还在
 ## 跑法：godot --headless --path client -s res://tests/unit_audio.gd
 
 const Soundscape := preload("res://scripts/audio/soundscape.gd")
 const MusicPlayer := preload("res://scripts/audio/music_player.gd")
 const Director := preload("res://scripts/audio/audio_director.gd")
+const Observer := preload("res://scripts/audio/main_observer.gd")
 
 var _failures := 0
 
@@ -64,6 +66,21 @@ func _run() -> void:
 	# 行动音：地图上的每个行动都有声音
 	for a in content.map.actions:
 		_ok(manifest.files.has("sfx/act_%s.ogg" % a.id), "行动没有声音：" + str(a.id))
+
+	# 观察者的依赖：它读的属性、听的信号、认的按钮字样都还在。
+	# 观察者对不上就不出声、不报错，所以改名要在这里变成红的，不能等人发现游戏哑了一块
+	var main_src := FileAccess.get_file_as_string("res://scripts/main.gd")
+	var net_src := FileAccess.get_file_as_string("res://scripts/net/lifeline_client.gd")
+	var handlers := (Observer as Script).get_script_method_list().map(func(m): return m.name)
+	for prop in Observer.READS:
+		_ok(_declares(main_src, "var", prop), "main.gd 里没有属性 %s 了（见 main_observer.gd 的 READS）" % prop)
+	for sig in Observer.SIGNALS:
+		_ok(_declares(net_src, "signal", sig), "lifeline_client.gd 里没有信号 %s 了（见 main_observer.gd 的 SIGNALS）" % sig)
+		_ok(handlers.has("_on_" + sig), "main_observer.gd 少了 _on_%s" % sig)
+	for page in Observer.PAGE_SCENE:
+		_ok(main_src.contains("\"%s\"" % page), "main.gd 里没有叫 %s 的页面了（见 main_observer.gd 的 PAGE_SCENE）" % page)
+	for pair in Observer.TEXT_KINDS:
+		_ok(main_src.contains(pair[0]), "main.gd 里没有带「%s」的按钮了（见 main_observer.gd 的 TEXT_KINDS）" % pair[0])
 
 	# 地点权重
 	var scape := Soundscape.new()
@@ -125,6 +142,12 @@ func _check_cfg(cfg: Dictionary, zone_ids: Array) -> void:
 		_ok(zid in zone_ids, "声景表里的地点不存在：" + str(zid))
 	for win in cfg.get("hours", []):
 		_ok(float(win[0]) < float(win[1]), "时段写反了：" + str(win))
+
+
+## 源码里有没有在行首声明 var / signal <name>
+func _declares(src: String, keyword: String, ident: String) -> bool:
+	var re := RegEx.create_from_string("(?m)^%s\\s+%s\\b" % [keyword, ident])
+	return re.search(src) != null
 
 
 func _ok(cond: bool, msg: String) -> void:

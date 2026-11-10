@@ -1,0 +1,135 @@
+# 海河边的支线（pl_rv_ 前缀）。where 用 content/maps/river.yaml 的 areas。写法见 places/building.yaml 文件头。
+# 冻上的海河、立春的风筝、偷着下河、铁皮盒子已经有了，这里不重复。
+
+- id: pl_rv_boat
+  kind: solo
+  stage: childhood
+  where: river
+  when: [780, 1110]
+  hint: 河边台阶上有人蹲着。
+  weight: 1
+  requires: { minAge: 6, flags: [fam_rich] }
+  title: 船模
+  text: 家里人从外地给你带回一只船模，帆是真布的。你蹲在河边台阶上，想放下去，又怕它漂走。
+  options:
+    - id: float
+      text: 拴根线放下去
+      tags: [adventure]
+      effects: { self: { mood: 6 } }
+    - id: show
+      text: 先拿给对门看
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 4 }, bond: { close: 1 } }
+    - id: keep
+      text: 抱回家搁柜顶上
+      tags: [solitude]
+      effects: { self: { mind: 1 } }
+
+- id: pl_rv_horn
+  kind: mirror
+  stage: teen
+  where: river
+  when: [930, 1200]
+  hint: 河上有船在拉笛。
+  weight: 2
+  title: 船笛
+  text: 傍晚一条船从下游开上来，拉了一声长笛。栏杆边的人都停了一下，像在等它拉第二声。
+  options:
+    - id: wait
+      text: 等第二声
+      tags: [patient]
+      effects: { self: { mood: 4 } }
+    - id: guess
+      text: 猜它从哪儿来
+      tags: [adventure]
+      effects: { self: { mind: 1 } }
+    - id: home
+      text: 该回家吃饭了
+      tags: [responsible]
+      effects: { self: { hunger: 5 } }
+  resonance:
+    wait:
+      text: 第二声拉得更长。你们一直等到船过了桥，谁也没说话。
+      memory: 第二声笛
+      bond: { sync: 3, close: 2 }
+    guess:
+      text: 你说从海上来，对门的说要到海上去。说着说着，两个人都想跟着去。
+      memory: 海上来的船
+      bond: { sync: 3, close: 2 }
+    home:
+      text: 你们一齐转身往回走。走出好远，笛又响了，两个人都回了头。
+      memory: 回头那一下
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个趴在栏杆上等，一个已经走到了街口。第二声笛响的时候，两个人隔着半条街。
+    bond: { close: 0 }
+
+- id: pl_rv_veil
+  kind: mirror
+  stage: young
+  where: river
+  when: [600, 1020]
+  hint: 栏杆边有人举着反光板。
+  weight: 2
+  title: 反光板
+  text: 一对新人在栏杆边拍照，风大，纱裙老往一边飘。拍照的冲你们招手：「搭把手，帮着拽一下。」
+  options:
+    - id: hold
+      text: 一人拽一边
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: board
+      text: 帮着举反光板
+      tags: [responsible]
+      effects: { self: { charm: 1 } }
+    - id: walk
+      text: 笑笑，走开
+      tags: [solitude]
+      effects: { self: { mood: 2 } }
+  resonance:
+    hold:
+      text: 你们一人拽一边，拽了十几张。新人走的时候塞给你们两块喜糖，你们站在风里剥。
+      memory: 两块喜糖
+      bond: { sync: 3, close: 2 }
+    board:
+      text: 反光板一晃，光晃到了对方脸上。拍照的说：「别动，这张给你俩。」
+      memory: 晃过来的光
+      bond: { sync: 3, close: 2 }
+    walk:
+      text: 走开几步，你们又一齐回头。纱裙飘起来的那一下，像风筝。
+      memory: 像风筝
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个在帮着拽纱，一个替人看着包。照片里露出一只手，是谁的说不清。
+    bond: { close: 0 }
+
+- id: pl_rv_paint
+  kind: mirror
+  stage: old
+  where: river
+  when: [390, 720]
+  hint: 河边的栏杆刷了新漆。
+  weight: 2
+  title: 新漆
+  text: 河边栏杆刷了新漆，挂着「别碰」。你们隔着一步站着。
+  options:
+    - id: touch
+      text: 拿手指碰一下
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: wait
+      text: 等漆干
+      tags: [patient]
+      effects: { self: { energy: 3 } }
+  resonance:
+    touch:
+      text: 两个指印，一高一低，留在栏杆上了。
+      memory: 两个指印
+      bond: { sync: 2, close: 1 }
+    wait:
+      text: 站到漆干了。手搭上去，还是那个凉。
+      memory: 那个凉
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个碰了一下，一个掏出手绢去擦。指印擦花了，还看得出是两个。
+    bond: { close: 0 }

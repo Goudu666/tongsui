@@ -1,0 +1,52 @@
+# 出租屋：十八到二十九岁在外地念书、上班的人租的一间屋（外地那座城的城区在 away.yaml）。
+# 一层楼几户合用一个厨房。写法见 building.yaml 文件头。
+
+id: rental
+name: 出租屋
+width: 1920
+far: true
+unlock:
+  any:
+    - { minAge: 18, flags: [ uni_away ] }
+    - { minAge: 18, flags: [ uni_abroad ] }
+    - { minAge: 22, flags: [ left_city ], notFlags: [ came_back ] }
+
+areas:
+  - { id: rent_room, name: 屋里, span: [ 0, 1000 ], floor: 0 }
+  - { id: rent_hall, name: 走廊, span: [ 1000, 1920 ], floor: 0 }
+
+exits:
+  - { id: to_away, at: 1880, to: away, arrive: 2080, label: 出门 }
+
+spots:
+  - { id: rent_bed, at: 260, area: rent_room, actions: [ sleep ] }
+  - { id: rent_desk, at: 700, area: rent_room, actions: [ read ] }
+  - { id: rent_basin, at: 1150, area: rent_hall, actions: [ wash ] }
+  - { id: rent_stove, at: 1500, area: rent_hall, actions: [ cook ] }
+
+npcs:
+  - id: landlord
+    name: 房东
+    at: 1700
+    eras: [ young, middle ]
+    slots: [ evening ]
+    lines:
+      young:
+        - 押一付三，水电另算。
+        - 热水器别开太久，费电。
+      middle:
+        - 楼下那户退了，你要换大一间的不？
+  - id: neighbor_rent
+    name: 隔壁屋的
+    at: 1400
+    eras: [ young, middle ]
+    slots: [ evening, night ]
+    lines:
+      default:
+        - 你锅里炖的什么？闻着像我家那边的。
+        - 灶你先用，我等会儿。
+        - 下个月我搬了，那盆花留给你。
+
+art: |
+  一间十来平的屋：一张床、一张折叠桌、墙上一块镜子；窗户正对着另一栋楼的窗户。
+  走廊尽头一间合用的厨房，四个灶眼贴着四户的门牌号。墙上的挂钩一年比一年多。

@@ -1,0 +1,150 @@
+# 楼里的支线（地点内容，pl_bd_ 前缀）。where 用 content/maps/building.yaml 的 areas。
+# 这个目录现在不进 build-content，等横版多地图的 loader 接上（见 content/maps/building.yaml 文件头）。
+# 写法守 docs/tianjin_style.md：字数按阶段（童年 60 / 少年 55 / 青年 50 / 中年 45 / 老年 30），旁白和选项不用方言。
+# 新加的 mirror 错位亲近给 0，童年默契权重给 2（见剧情写法的平衡约定）。
+# 主线（敲对门、楼顶拉钩、刻名字、拆迁、搬空的楼道）归主线剧情，这里不写。
+
+- id: pl_bd_coal
+  kind: mirror
+  stage: childhood
+  where: hallway
+  when: [480, 900]
+  hint: 楼下停着一车蜂窝煤。
+  seasons: [autumn, winter]
+  weight: 2
+  requires: { minAge: 5 }
+  title: 蜂窝煤
+  text: 送煤的车停在楼下。楼里的孩子排成一串，一人捧两块，从一楼递到三楼。送煤的说，摔一块赔一块。
+  options:
+    - id: four
+      text: 一次捧四块
+      tags: [competitive]
+      effects: { self: { body: 1, clean: -10 } }
+    - id: slow
+      text: 两块，走慢点
+      tags: [patient]
+      effects: { self: { mood: 3, clean: -5 } }
+    - id: count
+      text: 站在楼梯口数数
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+  resonance:
+    four:
+      text: 你们一人捧四块，在二楼拐角撞了个满怀。煤一块没碎，两张脸全黑了。
+      memory: 两张黑脸
+      bond: { sync: 3, close: 2 }
+    slow:
+      text: 你们走得最慢。送煤的走前塞给你俩一人一块糖，糖纸上也是黑手印。
+      memory: 黑手印糖纸
+      bond: { sync: 3, close: 2 }
+    count:
+      text: 一个在楼下喊，一个在楼上应，二百一十块，一块不差。送煤的让你们在账本上画了个圈。
+      memory: 二百一十块
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个抢着往上跑，一个守在楼梯口数。数到一半就乱了，送煤的说不要紧，他心里有数。
+    bond: { close: 0 }
+
+- id: pl_bd_stool
+  kind: solo
+  stage: childhood
+  where: hallway
+  when: [1110, 1290]
+  hint: 楼道里有人借着灯写字。
+  weight: 2
+  requires: { minAge: 7, flags: [fam_poor] }
+  title: 小板凳
+  text: 屋里一张桌子，吃饭用，写字也用。晚上你搬个小板凳去楼道，暖气片上铺张报纸，就是书桌。
+  options:
+    - id: write
+      text: 趴着写到熄灯
+      tags: [responsible]
+      effects: { self: { mind: 1, energy: -5 } }
+    - id: knock
+      text: 敲开对门借个亮
+      tags: [gentle]
+      effects: { self: { mood: 4 }, bond: { close: 1 } }
+    - id: hum
+      text: 一边写一边哼歌
+      tags: [solitude]
+      effects: { self: { mood: 5 } }
+
+- id: pl_bd_aircon
+  kind: solo
+  stage: childhood
+  seasons: [summer]
+  weight: 1
+  requires: { minAge: 6, flags: [fam_rich] }
+  title: 头一台空调
+  text: 家里装了空调，外机一开，整个楼道都听得见。三伏天，楼里的孩子都爱往你家门口凑。
+  options:
+    - id: share
+      text: 叫对门的进来写作业
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 5 }, bond: { close: 1 } }
+    - id: remote
+      text: 让大家轮着按遥控器
+      tags: [adventure]
+      effects: { self: { charm: 1 } }
+    - id: roof
+      text: 关了，一块儿上楼顶
+      tags: [solitude]
+      effects: { self: { mood: 4, energy: -3 } }
+
+- id: pl_bd_blackout
+  kind: mirror
+  stage: teen
+  where: hallway
+  when: [1110, 1320]
+  hint: 楼道里有人在喊保险丝。
+  weight: 2
+  title: 停电
+  text: 整栋楼一下子黑了。各家都开了门，楼道里一串手电筒，有人说是总闸，有人说整片都停了。
+  options:
+    - id: candle
+      text: 回屋找蜡烛
+      tags: [responsible]
+      effects: { self: { mood: 2 } }
+    - id: stairs
+      text: 坐楼梯上等来电
+      tags: [patient]
+      effects: { self: { mood: 4 } }
+    - id: roof
+      text: 上楼顶看看
+      tags: [adventure]
+      effects: { self: { mood: 6 } }
+  resonance:
+    candle:
+      text: 两家同时点着了蜡烛，门都开着，楼道里一边一个亮。你们隔着楼道写完了作业。
+      memory: 两根蜡烛
+      bond: { sync: 3, close: 2 }
+    stairs:
+      text: 你们坐在同一级台阶上。灯亮的时候全楼一声欢呼，你们谁都没动。
+      memory: 同一级台阶
+      bond: { sync: 3, close: 3 }
+    roof:
+      text: 楼顶上看出去整片都黑着，只有河对岸还亮。你们看了很久，楼下喊来电了。
+      memory: 对岸的亮
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个在屋里翻抽屉找蜡烛，一个已经摸黑上了楼顶。来电的时候，两个人都在找对方。
+    bond: { close: 0 }
+
+- id: pl_bd_stairs
+  kind: solo
+  stage: old
+  where: hallway
+  weight: 2
+  requires: { minAge: 65 }
+  title: 一层一歇
+  hint: 楼梯上有人在喘气。
+  text: 三楼爬到一半，你在二楼拐角歇一歇。窗台上换了一盆花。
+  options:
+    - id: rest
+      text: 歇够了再走
+      tags: [patient]
+      effects: { self: { energy: 5 } }
+    - id: push
+      text: 一口气上去
+      tags: [competitive]
+      effects: { self: { body: 1, energy: -5 } }

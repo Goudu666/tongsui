@@ -19,6 +19,8 @@ const SNAP_DIST := 220.0        ## 差太多（换天回家、被叫去事件）
 var map: Dictionary = {}
 var actions: Dictionary = {}
 var my_role := "qing"
+var age := 3                 ## 现在几岁（main 喂）：一个点位上挂着几件事，按年纪取第一件合适的
+var duties: Dictionary = {}  ## role -> 今天该去的地方 { label, spot, arrive, until, done, open }，没有是 null（服务器 WORLD 里的 tracks）
 var actors: Dictionary = {}  ## role -> Actor
 var hints: Array = []
 var controllable := true
@@ -172,6 +174,10 @@ func apply_snapshot_actors(server_actors: Variant) -> void:
 ## 服务器 5Hz 的世界广播
 func apply_world(view: Dictionary) -> void:
 	hints = view.get("hints", [])
+	var tracks: Variant = view.get("tracks")
+	if tracks is Dictionary:
+		for r in tracks:
+			duties[r] = tracks[r].get("duty") if tracks[r] is Dictionary else null
 	if view.has("minute"):
 		set_minute(float(view.minute))
 	var t := float(view.get("tick", 0)) / TICK_RATE
@@ -185,7 +191,10 @@ func apply_world(view: Dictionary) -> void:
 		var server_pos := Vector2(s.x, s.y)
 		var act: Variant = s.get("act")
 		a.asleep = bool(s.get("sleep", false))
-		a.action_label = "" if act == null or a.asleep else str(actions.get(act, {}).get("label", act))
+		a.doing = "" if act == null else str(act)
+		a.at_spot = str(s.get("spot", "")) if s.get("spot") != null else ""
+		a.action_label = "" if act == null or a.asleep else _doing_label(r, str(act))
+		a.together = bool(s.get("tg", false)) and a.action_label != ""
 		if a.is_local:
 			_reconcile(a, server_pos, act != null or a.asleep, int(s.get("seq", 0)))
 		else:
@@ -229,7 +238,16 @@ func _reconcile(a: Actor, server_pos: Vector2, busy: bool, seq: int) -> void:
 		_corrected_upto = net.last_move_seq()
 
 
-## 离自己最近、够得着的互动点
+## 头顶上写的「正在做什么」。日程（duty）的名字跟着这个人走的路：上学 / 出摊 / 过桥上班
+func _doing_label(role: String, act: String) -> String:
+	if bool(actions.get(act, {}).get("duty", false)):
+		var d: Variant = duties.get(role)
+		if d is Dictionary:
+			return str(d.get("label", "忙"))
+	return str(actions.get(act, {}).get("label", act))
+
+
+## 离自己最近、够得着、现在有事可做的互动点
 func nearest_spot() -> Dictionary:
 	var a := me()
 	if a == null or not a.visible or a.action_label != "" or a.asleep:
@@ -238,14 +256,53 @@ func nearest_spot() -> Dictionary:
 	var best_d := SPOT_RADIUS
 	for sp in map.spots:
 		var d := a.position.distance_to(Vector2(sp.at[0], sp.at[1]))
-		if d < best_d:
+		if d < best_d and not action_of(sp).is_empty():
 			best_d = d
 			best = sp
 	return best
 
 
+## 我今天该去的地方（还去得了才算）。没有返回 {}
+func my_duty() -> Dictionary:
+	var d: Variant = duties.get(my_role)
+	if d is Dictionary and bool(d.get("open", false)):
+		return d
+	return {}
+
+
+## 我现在在这个点位上能做的事。和服务器 world.ts 的 worldPickAction 一个规则：
+## 点位上的行动按顺序看，日程只给今天该来这儿、还来得及的人，其余按年纪取第一件合适的。没有就是 {}
 func action_of(spot: Dictionary) -> Dictionary:
-	return actions.get(spot.get("action", ""), {})
+	var ids: Array = spot.get("actions", [])
+	if ids.is_empty() and spot.has("action"):
+		ids = [spot.action]
+	for id in ids:
+		var act: Dictionary = actions.get(id, {})
+		if act.is_empty():
+			continue
+		if bool(act.get("duty", false)):
+			var d := my_duty()
+			if not d.is_empty() and str(d.get("spot", "")) == str(spot.id):
+				var mine := act.duplicate()
+				mine["label"] = str(d.get("label", act.get("label", "")))
+				mine["until"] = d.get("until")
+				return mine
+			continue
+		var rq: Dictionary = act.get("requires", {})
+		if rq.has("minAge") and age < int(rq.minAge):
+			continue
+		if rq.has("maxAge") and age > int(rq.maxAge):
+			continue
+		return act
+	return {}
+
+
+## 对门正在这个点位上做同一件事：现在过去就是搭伴
+func partner_doing(spot: Dictionary, act: Dictionary) -> bool:
+	var other: Actor = actors.get("mei" if my_role == "qing" else "qing")
+	if other == null or not other.visible or other.asleep or act.is_empty():
+		return false
+	return other.doing == str(act.get("id", "")) and other.at_spot == str(spot.get("id", ""))
 
 
 # ======================================================================
@@ -262,16 +319,27 @@ func draw_marks(c: CanvasItem) -> void:
 	# 点击落点：一个墨圈散开
 	if _tap_fx != Vector2.INF and t < 0.6:
 		c.draw_arc(_tap_fx, 10.0 + t * 40.0, 0, TAU, 24, Color(P.INK, 0.6 * (1.0 - t / 0.6)), 2.0)
+	var duty := my_duty()
 	for sp in map.spots:
 		var at := Vector2(sp.at[0], sp.at[1])
+		var act := action_of(sp)
+		if act.is_empty():
+			continue  # 这个年纪、这个时候在这儿没事可做：不画，免得走过去扑个空
 		var is_near: bool = not near.is_empty() and near.id == sp.id
+		var is_duty: bool = not duty.is_empty() and str(duty.get("spot", "")) == str(sp.id)
 		var r := 9.0 + (sin(Time.get_ticks_msec() / 220.0) * 2.0 if is_near else 0.0)
+		if is_duty and not is_near:
+			# 今天该去的地方：一圈自己颜色的波纹往外散，远远就看得见
+			var k := fmod(Time.get_ticks_msec() / 1400.0, 1.0)
+			c.draw_arc(at, 14.0 + k * 34.0, 0, TAU, 32, Color(P.role_color(my_role), 0.9 * (1.0 - k)), 4.0, true)
 		c.draw_circle(at, r, Color(P.PAPER, 0.85))
 		c.draw_arc(at, r, 0, TAU, 20, P.MEI if is_near else Color(P.INK, 0.7), 2.4)
 		c.draw_circle(at, 3.0, P.MEI if is_near else Color(P.INK, 0.7))
 		if is_near:
 			continue  # 走近了由底部按钮显示，不重复
-		var label := str(action_of(sp).get("label", ""))
+		var label := str(act.get("label", ""))
+		if is_duty:
+			label += " · %s 前到" % P.clock(float(duty.arrive[1]))
 		var dup := false
 		for l in labeled:
 			if l[0] == label and (l[1] as Vector2).distance_to(at) < 120.0:

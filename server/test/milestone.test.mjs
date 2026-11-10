@@ -177,3 +177,36 @@ function sleep(s, r) {
   assert.throws(() => G("lifeUpgrade")({ version: G("LIFE_VERSION") + 1 }));
   console.log("✓ v4 存档升 v5：schoolDay 换成 rest / 补上 dutyDone 和关口 / 没有了的 school 行动和择校事件摘掉 / 接着过到小升初");
 }
+
+// ---------- 5. 成年后歇班那天工钱照发 ----------
+{
+  // 成年以后一个日子就是一年：歇班（三成的日子）要是没有工钱，八年里拿几年全看运气，三十岁安家那一关就成了碰运气
+  const day = (age, flags, wantRest) => {
+    for (let seed = 1; seed < 400; seed++) {
+      const s = lifeAt(seed, age);
+      const before = {};
+      for (const r of ROLES) { s.persons[r].flags.push(...flags); before[r] = s.persons[r].money; }
+      s.turn = turnAtAge(age);
+      G("worldStartDay")(s, C);
+      if (s.world.fate.milestone || s.world.rest !== wantRest) continue;
+      return { s, before };
+    }
+    assert.fail("没抽到要的日子");
+  };
+  const desk = C.tracks.find((t) => t.id === "job_desk").duty;
+  const off = day(25, ["job_desk"], true);
+  for (const r of ROLES) {
+    assert.equal(G("lifeTrack")(C, off.s.persons[r], 25).id, "job_desk");
+    assert.equal(off.s.persons[r].money - off.before[r], desk.money, "歇班的那一年工钱照发");
+    assert.equal(G("worldDuty")(off.s, C, r), null, "歇班就是歇班，不用去");
+  }
+  const on = day(25, ["job_desk"], false);
+  for (const r of ROLES) assert.equal(on.s.persons[r].money, on.before[r], "上班的日子，钱是下班时候拿的，不会一早先发一遍");
+  // 小时候和少年不算：一年有好几个日子，歇一天就是歇一天（辍学打工的少年歇了也没有工钱）
+  const kid = day(13, ["dropout"], true);
+  for (const r of ROLES) {
+    assert.ok(G("lifeTrack")(C, kid.s.persons[r], 13).duty.money > 0);
+    assert.equal(kid.s.persons[r].money, kid.before[r]);
+  }
+  console.log("✓ 歇班日：成年后工钱照发、不用去 / 上班日不多发 / 小时候和少年歇了就没有");
+}

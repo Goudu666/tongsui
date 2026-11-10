@@ -695,9 +695,12 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
       if (echo.entry) broadcastLog(dispatcher, [echo.entry]);
     } else if (msg.opCode === OP.AGAIN) {
       if (life.phase !== "ended") { sendError(dispatcher, msg.sender, "这一世还没走完"); continue; }
-      // 票记在存档里（重连、重启、回滚都不丢），马上存一次；换世在下面，两票齐了就换
-      legacyAgain(life, role, body.yes !== false);
-      save(nk, logger, state, tick);
+      // 票记在存档里（重连、重启、回滚都不丢），变了就马上存一次；换世在下面，两票齐了就换。
+      // 没变的（连着点）不写存储，回执照发：客户端拿它对齐自己的按钮
+      var want = body.yes !== false;
+      var had = !!(life.again && life.again[role]);
+      legacyAgain(life, role, want);
+      if (had !== want) save(nk, logger, state, tick);
       sendSince(dispatcher, state, LEGACY_SINCE_PROTOCOL, OP.AGAIN, { again: life.again });
     }
   }

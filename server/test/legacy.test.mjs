@@ -395,6 +395,17 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   assert.deepEqual(acks[0].data, { again: { qing: true, mei: false } });
   assert.equal(R.life().phase, "ended");
   assert.equal(past(1), undefined, "还没换世，不归档");
+  // 连着点：票没变就不写存储，回执照发
+  const stored = () => env.nk.store.get(env.nk.k("lifelines", id, "00000000-0000-0000-0000-000000000000")).version;
+  const v0 = stored();
+  R.loop([R.msg(pa, OP.AGAIN, {}), R.msg(pa, OP.AGAIN, { yes: true })]);
+  assert.equal(stored(), v0, "票没变不该再写一次存档");
+  assert.equal(R.sent.filter((m) => m.op === OP.AGAIN).length, againBefore + 3);
+  R.loop([R.msg(pa, OP.AGAIN, { yes: false })]);
+  assert.notEqual(stored(), v0, "收回是变了，要存");
+  assert.deepEqual(env.record(id).life.again, { qing: false, mei: false });
+  R.loop([R.msg(pa, OP.AGAIN, {})]);
+  assert.deepEqual(env.record(id).life.again, { qing: true, mei: false });
 
   // 服务器重启。梅更新了安装包，重新进来：快照里看得见青已经点了
   restart();

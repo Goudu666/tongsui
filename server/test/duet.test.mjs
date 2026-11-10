@@ -1,4 +1,4 @@
-// 「接话」的测试：搭上了 / 猜 TA / 回话。规则见 src/duet.ts，设计见 docs/DUET.md。
+// 「接话」的测试：搭上了 / 回话（猜 TA 砍了：CHOOSE 带的 guess 不认）。规则见 src/duet.ts，设计见 docs/DUET.md。
 import assert from "node:assert/strict";
 import { G, C, J, fakeNakama, room } from "./harness.mjs";
 
@@ -13,10 +13,9 @@ function life(seed = 11) {
   s.world.fate = { mirror: null, qing: null, mei: null };
   return s;
 }
-/** 直接摆出一个默契事件，两人各选各的（可带猜测 / 影子），返回结算日志 */
-function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
+/** 直接摆出一个默契事件，两人各选各的（可带影子），返回结算日志 */
+function play(s, eventId, pick, { shadow = [] } = {}) {
   s.world.event = { eventId, kind: "mirror", roles: ["qing", "mei"], choices: {}, shadow: [] };
-  for (const r of ["qing", "mei"]) if (guess[r]) G("duetGuess")(s, C, r, guess[r]);
   assert.equal(G("worldChoose")(s, C, "qing", pick.qing, shadow.includes("qing")).entry, null);
   const entry = G("worldChoose")(s, C, "mei", pick.mei, shadow.includes("mei")).entry;
   assert.ok(entry && s.world.event === null);
@@ -41,7 +40,9 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   assert.ok(n >= 8, "至少 8 组搭上了");
   const stages = new Set(C.events.filter((e) => (e.catches ?? []).length > 0).map((e) => e.stage));
   for (const st of ["childhood", "teen", "middle", "old"]) assert.ok(stages.has(st), `${st} 没有能搭上的事`);
-  for (const k of ["lines", "echo", "epitaph"]) assert.ok(C.duet[k], `内容里缺 duet.${k}`);
+  for (const k of ["echo", "epitaph"]) assert.ok(C.duet[k], `内容里缺 duet.${k}`);
+  assert.equal(C.duet.lines, undefined, "猜 TA 的旁白砍了");
+  assert.throws(() => G("duetGuess"), undefined, "猜 TA 砍了");
   console.log(`✓ 内容：${n} 组搭上了，都指向真的选项 / 童年到老年都有 / 文案 48 字内、回忆 8 字内`);
 }
 
@@ -77,62 +78,19 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   console.log("✓ 搭上了：算默契、留回忆、进默契率 / 不分谁抛谁接 / 没写的组合仍是错位 / 共鸣照旧 / 老事件也能挂");
 }
 
-// ---------- 2. 猜 TA：懂是有方向的 ----------
-{
-  const s = life();
-  // 都猜中、选得一样
-  let e = play(s, "d_old_bench", { qing: "talk", mei: "talk" }, { guess: { qing: "talk", mei: "talk" } });
-  assert.deepEqual(J(e.duet.knew), { qing: true, mei: true });
-  assert.equal(e.duet.line, C.duet.lines.knew_both_same);
-  // 只有青猜中
-  e = play(s, "d_kite_tree", { qing: "climb", mei: "wait" }, { guess: { qing: "wait", mei: "hold" } });
-  assert.deepEqual(J(e.duet.knew), { qing: true, mei: false });
-  assert.equal(e.duet.line, "青猜着了梅，梅没猜着青。");
-  assert.deepEqual(J(s.duet.know), { qing: [2, 2], mei: [1, 2] });
-  // 选得不一样，可谁也没猜错谁：亲近 +1
-  // （关系的涨幅有递减，不比具体数字：和一份「同样的选择、但没猜」的对照比）
-  const ctl = J(s);
-  play(ctl, "d_wheel_steps", { qing: "front", mei: "call" });
-  e = play(s, "d_wheel_steps", { qing: "front", mei: "call" }, { guess: { qing: "call", mei: "front" } });
-  assert.equal(e.resonance, false);
-  assert.equal(e.duet.line, C.duet.lines.knew_both_diff);
-  assert.ok(s.bond.close > ctl.bond.close, "都猜中但选得不一样：亲近多涨一点");
-  assert.ok(s.bond.sync > ctl.bond.sync, "猜中了默契多涨一点");
-  // 都没猜中
-  e = play(s, "d_teen_bike", { qing: "ride", mei: "seat" }, { guess: { qing: "walk", mei: "walk" } });
-  assert.equal(e.duet.outcome, "catch");
-  assert.equal(e.duet.line, C.duet.lines.knew_none);
-  // 只有一个人猜：猜中才说话；不猜不记数
-  e = play(s, "d_radio_show", { qing: "pick", mei: "fix" }, { guess: { mei: "pick" } });
-  assert.equal(e.duet.line, "梅猜着了。");
-  assert.equal(e.duet.guess.qing, null);
-  assert.deepEqual(J(s.duet.know), { qing: [3, 4], mei: [3, 5] });
-  // 乱填的猜测当没猜；不在事件里时猜也没用
-  s.world.event = { eventId: "d_broken_window", kind: "mirror", roles: ["qing", "mei"], choices: {}, shadow: [] };
-  G("duetGuess")(s, C, "qing", "no_such_option");
-  G("duetGuess")(s, C, "mei", 42);
-  assert.equal(s.world.event.guess, undefined);
-  s.world.event = null;
-  G("duetGuess")(s, C, "qing", "own");
-  // 一生的闲话
-  assert.ok(s.duet.epitaph[0].includes("青猜中梅 3 回") && s.duet.epitaph[0].includes("梅猜中青 3 回"));
-  assert.ok(C.duet.epitaph.last.some((l) => l.text === s.duet.epitaph.at(-1)), "最后一句按默契率取");
-  console.log("✓ 猜 TA：分别记谁懂谁 / 四种旁白 / 选得不一样但都猜中亲近 +1 / 不猜不记 / 乱填当没猜 / 结局闲话");
-}
-
 // ---------- 3. 回话：影子替你选过的，本人回来补答 ----------
 {
   const s = life();
   const turn0 = s.turn;
-  // 梅不在，影子替她选了 wait；青选 climb，还猜她会 hold → 当时是错位
-  let e = play(s, "d_kite_tree", { qing: "climb", mei: "wait" }, { guess: { qing: "hold", mei: "climb" }, shadow: ["mei"] });
+  // 梅不在，影子替她选了 wait；青选 climb → 当时是错位
+  let e = play(s, "d_kite_tree", { qing: "climb", mei: "wait" }, { shadow: ["mei"] });
   assert.equal(e.duet.outcome, "miss");
   assert.equal(e.duet.owed, "mei");
-  assert.equal(e.duet.guess.mei, null, "影子不猜");
-  assert.deepEqual(J(s.duet.know), { qing: [0, 1], mei: [0, 0] });
+  assert.equal(e.duet.guess, undefined, "不再有猜 TA");
+  assert.deepEqual(J(s.duet.know), { qing: [0, 0], mei: [0, 0] });
   assert.equal(s.duet.owed.mei.length, 1);
-  assert.deepEqual(J(s.duet.owed.mei[0]), { turn: turn0, age: e.age, label: e.label, eventId: "d_kite_tree", shadow: "wait", partner: "climb", guess: "hold", outcome: "miss" });
-  // 快照里只看得到自己欠的，而且不带对门当时的猜测
+  assert.deepEqual(J(s.duet.owed.mei[0]), { turn: turn0, age: e.age, label: e.label, eventId: "d_kite_tree", shadow: "wait", partner: "climb", guess: null, outcome: "miss" });
+  // 快照里只看得到自己欠的
   const view = G("duetView")(s, "mei");
   assert.equal(view.owed.mei.length, 1);
   assert.equal(view.owed.mei[0].guess, undefined);
@@ -147,10 +105,12 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   assert.match(G("duetEcho")(s, C, "qing", turn0, "hold").error, /接不上/, "不是你欠的话");
   assert.match(G("duetEcho")(s, C, "mei", turn0, "nope").error, /没有这个选项/);
   const tags0 = s.persons.mei.tags.gentle ?? 0, sync0 = s.bond.sync, rate0 = G("lifeStats")(s).rate, log0 = s.log.length;
-  // 对照：同样的回话，但青当时没猜
-  const noGuess = J(s);
-  noGuess.duet.owed.mei[0].guess = null;
-  assert.equal(G("duetEcho")(noGuess, C, "mei", turn0, "hold").entry.duet.partnerKnew, null);
+  // 旧存档里青当时猜过（猜 TA 砍掉以前）：回话照旧把「青比影子懂你」说出来
+  const oldSave = J(s);
+  oldSave.duet.owed.mei[0].guess = "hold";
+  const ro = G("duetEcho")(oldSave, C, "mei", turn0, "hold");
+  assert.equal(ro.entry.duet.partnerKnew, true);
+  assert.ok(ro.entry.duet.lines.at(-1).includes("比影子懂你"));
   const r = G("duetEcho")(s, C, "mei", turn0, "hold");
   assert.equal(r.error, null);
   const d = r.entry.duet;
@@ -158,15 +118,13 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   assert.equal(d.outcome, "catch");
   assert.equal(d.was, "miss");
   assert.equal(d.like, false);
-  assert.equal(d.partnerKnew, true, "青当时猜的就是 hold");
+  assert.equal(d.partnerKnew, null, "没人猜过");
   assert.equal(r.entry.text, byId.get("d_kite_tree").catches[0].text);
-  assert.deepEqual(J(d.lines), ["隔了三个日子，还是搭上了。", "影子替你选的是「等风把它吹下来」。它还得学。", "青当时猜的就是这个。青比影子懂你。"]);
+  assert.deepEqual(J(d.lines), ["隔了三个日子，还是搭上了。", "影子替你选的是「等风把它吹下来」。它还得学。"]);
   assert.equal(s.memories.at(-1).title, "都接住了");
   assert.equal(s.memories.at(-1).vivid, 2, "补的回忆淡一级");
   assert.equal(s.memories.at(-1).turn, turn0, "回忆记在当年");
-  assert.ok(noGuess.bond.sync > sync0, "接上了默契涨");
-  assert.ok(s.bond.sync > noGuess.bond.sync, "青其实猜中了，再涨一点");
-  assert.deepEqual(J(s.duet.know.qing), [1, 1]);
+  assert.ok(s.bond.sync > sync0, "接上了默契涨");
   assert.deepEqual(J(s.duet.like.mei), [0, 1]);
   assert.equal(s.persons.mei.tags.gentle, tags0 + 1, "本人的回答接着教影子");
   assert.equal(s.duet.owed.mei.length, 0);
@@ -180,7 +138,7 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
 
   // 影子选对了：本人回的和影子一样，什么也不用改
   const t1 = s.turn;
-  play(s, "d_old_bench", { qing: "talk", mei: "talk" }, { guess: { qing: "talk" }, shadow: ["mei"] });
+  play(s, "d_old_bench", { qing: "talk", mei: "talk" }, { shadow: ["mei"] });
   const mem1 = s.memories.length, b1 = J(s.bond);
   const r2 = G("duetEcho")(s, C, "mei", t1, "talk");
   assert.equal(r2.entry.duet.outcome, "res");
@@ -190,15 +148,13 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   assert.deepEqual(J(s.bond), b1, "也不重复加关系");
   assert.deepEqual(J(s.duet.like.mei), [1, 2]);
 
-  // 影子蒙对了、本人其实不这么选：对门当时的「猜中」要收回
+  // 影子蒙对了、本人其实不这么选：当时搭上的不收回
   const t2 = s.turn;
-  play(s, "d_wheel_steps", { qing: "front", mei: "back" }, { guess: { qing: "back" }, shadow: ["mei"] });
-  const k0 = s.duet.know.qing[0];
+  play(s, "d_wheel_steps", { qing: "front", mei: "back" }, { shadow: ["mei"] });
   const r3 = G("duetEcho")(s, C, "mei", t2, "call");
   assert.equal(r3.entry.duet.outcome, "miss");
-  assert.equal(r3.entry.duet.partnerKnew, false);
+  assert.equal(r3.entry.duet.partnerKnew, null);
   assert.equal(r3.entry.text, C.duet.echo.miss);
-  assert.equal(s.duet.know.qing[0], k0 - 1);
   const pastCatch = s.log.find((x) => x.kind === "mirror" && x.events.qing === "d_wheel_steps");
   assert.equal(pastCatch.resonance, true, "当时搭上的不因为回话收回：那天确实接住了");
 
@@ -229,7 +185,7 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   const mirrors = C.events.filter((x) => x.kind === "mirror").slice(0, G("DUET_OWED_MAX") + 2);
   for (const ev of mirrors) play(many, ev.id, { qing: ev.options[0].id, mei: ev.options[1].id }, { shadow: ["qing"] });
   assert.equal(many.duet.owed.qing.length, G("DUET_OWED_MAX"));
-  console.log("✓ 回话：影子替选的欠着 / 接上了补回忆、改长卷、进默契率 / 影子像不像 / 对门的猜测按本人重算 / 不提了 / 过期 / 最多欠 6 句");
+  console.log("✓ 回话：影子替选的欠着 / 接上了补回忆、改长卷、进默契率 / 影子像不像 / 旧存档里的猜测照读 / 不提了 / 过期 / 最多欠 6 句");
 }
 
 // ---------- 4. 存档：旧存档没有 duet；剧情改了以后欠着的话放下 ----------
@@ -239,7 +195,8 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   const e = play(s, "d_kite_tree", { qing: "climb", mei: "hold" });
   assert.equal(e.duet.outcome, "catch");
   assert.ok(s.duet, "用到时才建，不用升存档版本");
-  play(s, "d_old_bench", { qing: "talk", mei: "go" }, { guess: { qing: "quiet" }, shadow: ["mei"] });
+  play(s, "d_old_bench", { qing: "talk", mei: "go" }, { shadow: ["mei"] });
+  s.duet.owed.mei[0].guess = "quiet"; // 旧存档：猜 TA 砍掉以前猜过
   play(s, "d_teen_bike", { qing: "ride", mei: "walk" }, { shadow: ["mei"] });
   assert.equal(s.duet.owed.mei.length, 2);
   // 存档往返
@@ -299,23 +256,21 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   const stage = (eventId) => { L.world.event = { eventId, kind: "mirror", roles: ["qing", "mei"], choices: {}, shadow: [] }; };
   const lastLog = () => R.sent.filter((m) => m.op === OP.LOG).at(-1).data.entries.at(-1);
 
-  // 两人都在：选 + 猜一起发
+  // 两人都在：旧客户端还会带 guess，服务器不认
   stage("d_kite_tree");
   R.loop([R.msg(pa, OP.CHOOSE, { optionId: "climb", guess: "hold" })]);
   const mid = R.sent.filter((m) => m.op === OP.SNAPSHOT).length;
-  assert.equal(L.world.event.guess.qing, "hold");
+  assert.equal(L.world.event.guess, undefined, "猜 TA 砍了");
   R.loop([R.msg(pb, OP.CHOOSE, { optionId: "hold", guess: "wait" })]);
   let e = lastLog();
   assert.equal(e.duet.outcome, "catch");
-  assert.deepEqual(e.duet.knew, { qing: true, mei: false });
-  assert.equal(e.duet.line, "小青猜着了小梅，小梅没猜着小青。");
+  assert.equal(e.duet.knew, undefined);
+  assert.equal(e.duet.line, undefined);
   assert.equal(R.sent.filter((m) => m.op === OP.SNAPSHOT).length, mid);
-  // 不带 guess 的旧客户端照常
   stage("d_old_bench");
   R.loop([R.msg(pa, OP.CHOOSE, { optionId: "talk" }), R.msg(pb, OP.CHOOSE, { optionId: "talk" })]);
   e = lastLog();
   assert.equal(e.duet.outcome, "res");
-  assert.equal(e.duet.line, null);
 
   // 梅掉线；青遇到默契事件，等够了影子替她选
   R.leave([pb]);
@@ -323,11 +278,7 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   assert.equal(R.state.presences.mei, undefined);
   stage("d_wheel_steps");
   const turn = L.turn;
-  R.loop([R.msg(pa, OP.CHOOSE, { optionId: "front", guess: "back" })]);
-  // 快照不泄露猜测
-  R.join([{ userId: "user-a", sessionId: "sa" }]);
-  const snapA = R.to(pa, OP.SNAPSHOT).at(-1).data;
-  assert.equal(JSON.stringify(snapA.life.world.event).includes("guess"), false, "进行中的猜测不能进快照");
+  R.loop([R.msg(pa, OP.CHOOSE, { optionId: "front" })]);
   for (let i = 0; i < 2000 && L.world.event; i++) R.loop();
   assert.equal(L.world.event, null, "影子应该替梅选了");
   e = lastLog();
@@ -344,13 +295,8 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   assert.equal(snapB.life.duet.owed.mei[0].eventId, "d_wheel_steps");
   assert.equal(snapB.life.duet.owed.mei[0].guess, undefined);
   assert.equal(snapB.life.duet.keep, DUET_ECHO_KEEP);
-  // 日志尾巴里那天的记录也不带青的猜测：等梅回完话才揭晓。青自己的快照里照常有
   const dayB = snapB.life.log.find((x) => x.kind === "mirror" && x.turn === turn && x.events.qing === "d_wheel_steps");
   assert.deepEqual(dayB.duet, { outcome: e.duet.outcome, owed: "mei" });
-  R.join([pa]);
-  const dayA = R.to(pa, OP.SNAPSHOT).at(-1).data.life.log.find((x) => x.kind === "mirror" && x.turn === turn && x.events.qing === "d_wheel_steps");
-  assert.equal(dayA.duet.guess.qing, "back");
-  assert.equal(L.log.find((x) => x.kind === "mirror" && x.turn === turn && x.events.qing === "d_wheel_steps").duet.guess.qing, "back", "存档里的日志不动");
   // 青不能替梅回
   R.loop([R.msg(pa, OP.ECHO, { turn, optionId: "back" })]);
   assert.ok(R.to(pa, OP.ERROR).at(-1).to[0] === "sa");
@@ -361,17 +307,13 @@ function play(s, eventId, pick, { guess = {}, shadow = [] } = {}) {
   assert.equal(e.duet.role, "mei");
   assert.equal(e.duet.outcome, "catch");
   assert.equal(e.duet.like, shadowPick === "back");
-  assert.equal(e.duet.partnerKnew, true);
+  assert.equal(e.duet.partnerKnew, null);
   assert.equal(R.sent.filter((m) => m.op === OP.LOG).at(-1).to, null, "回话的结果两个人都看得到");
   assert.equal(L.duet.owed.mei.length, 0);
-  // 回完话，那天的猜测就可以看了
-  R.join([pb2]);
-  const after = R.to(pb2, OP.SNAPSHOT).at(-1).data.life.log.find((x) => x.kind === "mirror" && x.turn === turn && x.events.qing === "d_wheel_steps");
-  assert.equal(after.duet.guess.qing, "back");
   // 乱发：不崩，只回错误
   const errs = R.to(pb2, OP.ERROR).length;
   R.loop([R.msg(pb2, OP.ECHO, { turn: "x", optionId: {} }), R.msg(pb2, OP.ECHO, {})]);
   assert.equal(R.to(pb2, OP.ERROR).length, errs + 2);
   assert.ok(nk.matches.size === 1, "房间还在");
-  console.log("✓ 联机：CHOOSE 带猜测 / 旧客户端不带也行 / 快照不泄露猜测 / 影子代选记欠 / 重连快照带欠的话 / ECHO 只有本人能回、结果两人都收到 / 乱发只回 ERROR");
+  console.log("✓ 联机：旧客户端带的猜测不认 / 影子代选记欠 / 重连快照带欠的话 / ECHO 只有本人能回、结果两人都收到 / 乱发只回 ERROR");
 }

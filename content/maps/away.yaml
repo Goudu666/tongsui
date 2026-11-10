@@ -1,4 +1,5 @@
-# 外地：一座不叫名字的城。只有走了那条路的人来（在外地念大学、在外地工作、出国），另一个人看不见这张图。
+# 外地：一座不叫名字的城。只有走了那条路的人来（在外地念大学、出国、当兵、在外地工作），另一个人看不见这张图。
+# 走了这条路的人每天早上在出租屋醒来（world.ts 的 worldHomeBed），车站坐车回河畔里要花掉一整段。
 # 过年那天两张图合一张（主线管）。写信、打电话的机制归地图线程，这里只放点位。
 # 租的屋在 rental.yaml。写法见 building.yaml 文件头。
 
@@ -8,9 +9,10 @@ width: 4000
 far: true
 unlock:
   any:
-    - { minAge: 18, flags: [ uni_away ] }
-    - { minAge: 18, flags: [ uni_abroad ] }
-    - { minAge: 22, flags: [ left_city ], notFlags: [ came_back ] }
+    - { minAge: 18, maxAge: 21, flags: [ uni_away ] }
+    - { minAge: 18, maxAge: 21, flags: [ uni_abroad ] }
+    - { minAge: 18, maxAge: 21, flags: [ army ] }
+    - { minAge: 22, maxAge: 59, flags: [ left_city ], notFlags: [ came_back ] }
 
 areas:
   - { id: station, name: 车站, span: [ 0, 630 ], floor: 0 }
@@ -20,12 +22,17 @@ areas:
   - { id: post, name: 邮局, span: [ 3400, 4000 ], floor: 0 }
 
 exits:
+  # 坐车回河畔里：路上一整段（ride 240）。人只能自己坐回去，影子不坐车；那天要上学上班就是逃了
+  - { id: to_home, at: 200, to: street, arrive: 330, label: 坐车回河畔里, ride: 240 }
   - { id: to_rental, at: 2080, to: rental, arrive: 1880, label: 回住的地方 }
 
 spots:
+  - { id: away_field, at: 820, area: campus, actions: [ ball ] }
   - { id: away_gate, at: 1040, area: campus, actions: [ duty ] }
-  - { id: away_desk, at: 1390, area: campus, actions: [ read ] }
+  - { id: away_club, at: 1250, area: campus, actions: [ club_campus ] }
+  - { id: away_desk, at: 1470, area: campus, actions: [ read ] }
   - { id: market_stall, at: 2150, area: market, actions: [ night_snack ] }
+  - { id: market_bench, at: 2420, area: market, actions: [ chat ] }
   - { id: away_work, at: 2990, area: worksite, actions: [ duty ] }
   - { id: post_box, at: 3680, area: post, actions: [ letter ] }
 

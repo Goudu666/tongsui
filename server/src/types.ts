@@ -243,6 +243,8 @@ interface Exit {
   to: string;
   arrive: [number, number];
   label: string;
+  /** 路上花掉的分钟（过桥坐车 60、去外地 240），从这一段里扣；0 = 走过去，不花时间 */
+  ride: number;
 }
 
 interface Zone {
@@ -401,6 +403,9 @@ interface Actor {
   scale?: number;
   /** 这件事是对门带着做的（means.ts）：钱记在带的人头上 */
   guest?: boolean;
+  /** 这一段（rideSlot）在路上花掉的分钟：过桥、坐车（worldExit）。这一段再做事，只剩下扣掉以后的那些 */
+  ride?: number;
+  rideSlot?: number;
 }
 
 interface PendingEvent {
@@ -430,6 +435,10 @@ interface WorldState {
   quick: string[];
   /** 今天歇着：不上学也不上班 */
   rest: boolean;
+  /** 只给这一个人放的一天（回来了、主线落在上班的钟点上）。可选：旧存档没有 */
+  off?: { [R in Role]?: boolean };
+  /** 有人从另一片回来一趟（主线在这边）：这一天挡不住亲近淡下去（growth.ts）。可选：旧存档没有 */
+  back?: boolean;
   /** 今天的日程去过了没有 */
   dutyDone: { [R in Role]?: boolean };
   actors: { [R in Role]: Actor | null };

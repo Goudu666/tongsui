@@ -309,28 +309,25 @@ func _walk(to: Vector2, sec: float) -> void:
 	await _wait(sec)
 
 
-## 「接话」的几张卡：猜 TA、搭上了、都猜中的共鸣、影子替选的错位、回来被问到、回话的结算（见 docs/DUET.md）
+## 「接话」的几张卡：搭上了、共鸣、影子替选的错位、回来被问到、回话的结算（见 docs/DUET.md）
 func _duet_cards() -> void:
 	if not main.events_by_id.has("d_kite_tree") or main.get("duet") == null:
 		return
 	var ev: Dictionary = main.events_by_id["d_kite_tree"]
 	var roles := {"qing": "d_kite_tree", "mei": "d_kite_tree"}
 	main._on_event_started({"event": {"roles": ["qing", "mei"], "eventId": "d_kite_tree", "kind": "mirror"}})
-	main.duet.ask_guess("d_kite_tree", "climb", str(ev.options[0].text))
-	await _wait(1.2)
-	await _snap("30_duet_guess")
 	main._show_mirror_result({"label": "8 岁 · 春", "events": roles, "choices": {"qing": "climb", "mei": "hold"}, "shadow": [],
 		"resonance": true, "text": ev.catches[0].text,
-		"duet": {"outcome": "catch", "knew": {"qing": true, "mei": false}, "line": "小满猜着了阿蘅，阿蘅没猜着小满。"}})
+		"duet": {"outcome": "catch"}})
 	await _wait(2.2)
 	await _snap("31_duet_catch")
 	main._show_mirror_result({"label": "8 岁 · 春", "events": roles, "choices": {"qing": "wait", "mei": "wait"}, "shadow": [],
 		"resonance": true, "text": ev.resonance.wait.text,
-		"duet": {"outcome": "res", "knew": {"qing": true, "mei": true}, "line": "而且谁也不意外。"}})
+		"duet": {"outcome": "res"}})
 	await _wait(2.4)
 	await _snap("32_duet_res")
 	main._show_mirror_result({"label": "8 岁 · 春", "events": roles, "choices": {"qing": "climb", "mei": "wait"}, "shadow": ["mei"],
-		"resonance": false, "text": ev.dissonance.text, "duet": {"outcome": "miss", "knew": {"qing": false, "mei": null}, "line": null, "owed": "mei"}})
+		"resonance": false, "text": ev.dissonance.text, "duet": {"outcome": "miss", "owed": "mei"}})
 	await _wait(2.2)
 	await _snap("33_duet_miss_shadow")
 	main._close_modal()
@@ -347,7 +344,7 @@ func _duet_cards() -> void:
 		"events": {"qing": null, "mei": "d_kite_tree"}, "choices": {"qing": null, "mei": "hold"}, "text": ev.catches[0].text,
 		"duet": {"echo": true, "role": "mei", "outcome": "catch", "was": "miss", "like": false, "shadow": "wait", "partner": "climb",
 			"partnerKnew": true, "turn": 9, "label": "8 岁 · 春",
-			"lines": ["隔了三个日子，还是搭上了。", "影子替你选的是「等风把它吹下来」。它还得学。", "小满当时猜的就是这个。小满比影子懂你。"]}}]})
+			"lines": ["隔了三个日子，还是搭上了。", "影子替你选的是「等风把它吹下来」。它还得学。"]}}]})
 	await _wait(2.2)
 	await _snap("35_duet_echo")
 	main._close_modal()

@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "179ee56aa0ab",
+ "version": "3533f0e52e2d",
  "events": [
   {
    "id": "c_roof_summer",
@@ -18018,7 +18018,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "old",
    "seasons": [],
-   "weight": 3,
+   "weight": 5,
    "where": "roof",
    "when": null,
    "hint": null,
@@ -29371,6 +29371,41 @@ var CONTENT: Content = {
     "money": 0,
     "together": null,
     "bring": false
+   },
+   {
+    "id": "club_campus",
+    "label": "去社团",
+    "minutes": 45,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 18,
+     "maxAge": 25,
+     "hours": [
+      930,
+      1320
+     ]
+    },
+    "needs": {
+     "mood": 6,
+     "energy": -8
+    },
+    "stats": {
+     "charm": 0.4
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "社团里没人知道你们是一条街上长大的。你们也没说。"
+    },
+    "bring": false
    }
   ],
   "scenes": [
@@ -29496,18 +29531,28 @@ var CONTENT: Content = {
      "any": [
       {
        "minAge": 18,
+       "maxAge": 21,
        "flags": [
         "uni_away"
        ]
       },
       {
        "minAge": 18,
+       "maxAge": 21,
        "flags": [
         "uni_abroad"
        ]
       },
       {
+       "minAge": 18,
+       "maxAge": 21,
+       "flags": [
+        "army"
+       ]
+      },
+      {
        "minAge": 22,
+       "maxAge": 59,
        "flags": [
         "left_city"
        ],
@@ -29532,18 +29577,28 @@ var CONTENT: Content = {
      "any": [
       {
        "minAge": 18,
+       "maxAge": 21,
        "flags": [
         "uni_away"
        ]
       },
       {
        "minAge": 18,
+       "maxAge": 21,
        "flags": [
         "uni_abroad"
        ]
       },
       {
+       "minAge": 18,
+       "maxAge": 21,
+       "flags": [
+        "army"
+       ]
+      },
+      {
        "minAge": 22,
+       "maxAge": 59,
        "flags": [
         "left_city"
        ],
@@ -30416,6 +30471,19 @@ var CONTENT: Content = {
     "action": "duty"
    },
    {
+    "id": "away_field",
+    "zone": "campus",
+    "scene": "away",
+    "at": [
+     820,
+     12760
+    ],
+    "actions": [
+     "ball"
+    ],
+    "action": "ball"
+   },
+   {
     "id": "away_gate",
     "zone": "campus",
     "scene": "away",
@@ -30429,11 +30497,24 @@ var CONTENT: Content = {
     "action": "duty"
    },
    {
+    "id": "away_club",
+    "zone": "campus",
+    "scene": "away",
+    "at": [
+     1250,
+     12760
+    ],
+    "actions": [
+     "club_campus"
+    ],
+    "action": "club_campus"
+   },
+   {
     "id": "away_desk",
     "zone": "campus",
     "scene": "away",
     "at": [
-     1390,
+     1470,
      12760
     ],
     "actions": [
@@ -30453,6 +30534,19 @@ var CONTENT: Content = {
      "night_snack"
     ],
     "action": "night_snack"
+   },
+   {
+    "id": "market_bench",
+    "zone": "market",
+    "scene": "away",
+    "at": [
+     2420,
+     12760
+    ],
+    "actions": [
+     "chat"
+    ],
+    "action": "chat"
    },
    {
     "id": "away_work",
@@ -30904,6 +30998,19 @@ var CONTENT: Content = {
     "action": "sleep"
    },
    {
+    "id": "rent_table",
+    "zone": "rent_room",
+    "scene": "rental",
+    "at": [
+     480,
+     14760
+    ],
+    "actions": [
+     "eat"
+    ],
+    "action": "eat"
+   },
+   {
     "id": "rent_desk",
     "zone": "rent_room",
     "scene": "rental",
@@ -31025,6 +31132,19 @@ var CONTENT: Content = {
     "action": "help_out"
    },
    {
+    "id": "mailbox",
+    "zone": "shop",
+    "scene": "street",
+    "at": [
+     1250,
+     2760
+    ],
+    "actions": [
+     "letter"
+    ],
+    "action": "letter"
+   },
+   {
     "id": "alley_rope",
     "zone": "alley",
     "scene": "street",
@@ -31106,7 +31226,8 @@ var CONTENT: Content = {
      3560,
      4760
     ],
-    "label": "过桥回去"
+    "label": "过桥回去",
+    "ride": 60
    },
    {
     "id": "across.to_newhome",
@@ -31120,7 +31241,23 @@ var CONTENT: Content = {
      2740,
      16760
     ],
-    "label": "进小区"
+    "label": "进小区",
+    "ride": 0
+   },
+   {
+    "id": "away.to_home",
+    "scene": "away",
+    "at": [
+     200,
+     12760
+    ],
+    "to": "street",
+    "arrive": [
+     330,
+     2760
+    ],
+    "label": "坐车回河畔里",
+    "ride": 240
    },
    {
     "id": "away.to_rental",
@@ -31134,7 +31271,8 @@ var CONTENT: Content = {
      1880,
      14760
     ],
-    "label": "回住的地方"
+    "label": "回住的地方",
+    "ride": 0
    },
    {
     "id": "building.hall_down",
@@ -31148,7 +31286,8 @@ var CONTENT: Content = {
      1700,
      2760
     ],
-    "label": "下楼"
+    "label": "下楼",
+    "ride": 0
    },
    {
     "id": "building.hall_up",
@@ -31162,7 +31301,8 @@ var CONTENT: Content = {
      1740,
      260
     ],
-    "label": "上楼顶"
+    "label": "上楼顶",
+    "ride": 0
    },
    {
     "id": "building.roof_down",
@@ -31176,7 +31316,8 @@ var CONTENT: Content = {
      1740,
      720
     ],
-    "label": "下楼道"
+    "label": "下楼道",
+    "ride": 0
    },
    {
     "id": "hospital.to_park",
@@ -31190,7 +31331,8 @@ var CONTENT: Content = {
      500,
      18760
     ],
-    "label": "出门"
+    "label": "出门",
+    "ride": 0
    },
    {
     "id": "middle.to_street",
@@ -31204,7 +31346,8 @@ var CONTENT: Content = {
      2540,
      2760
     ],
-    "label": "回楼下"
+    "label": "回楼下",
+    "ride": 0
    },
    {
     "id": "newhome.to_across",
@@ -31218,7 +31361,8 @@ var CONTENT: Content = {
      880,
      10760
     ],
-    "label": "出小区"
+    "label": "出小区",
+    "ride": 0
    },
    {
     "id": "park.to_street",
@@ -31232,7 +31376,8 @@ var CONTENT: Content = {
      2300,
      2760
     ],
-    "label": "回去"
+    "label": "回去",
+    "ride": 0
    },
    {
     "id": "park.to_hospital",
@@ -31246,7 +31391,8 @@ var CONTENT: Content = {
      60,
      20760
     ],
-    "label": "去医院"
+    "label": "去医院",
+    "ride": 0
    },
    {
     "id": "primary.to_street",
@@ -31260,7 +31406,8 @@ var CONTENT: Content = {
      60,
      2760
     ],
-    "label": "回楼下"
+    "label": "回楼下",
+    "ride": 0
    },
    {
     "id": "rental.to_away",
@@ -31274,7 +31421,8 @@ var CONTENT: Content = {
      2080,
      12760
     ],
-    "label": "出门"
+    "label": "出门",
+    "ride": 0
    },
    {
     "id": "river.to_street",
@@ -31288,7 +31436,8 @@ var CONTENT: Content = {
      3940,
      2760
     ],
-    "label": "回楼下"
+    "label": "回楼下",
+    "ride": 0
    },
    {
     "id": "river.to_across",
@@ -31302,7 +31451,8 @@ var CONTENT: Content = {
      60,
      10760
     ],
-    "label": "过桥"
+    "label": "过桥",
+    "ride": 60
    },
    {
     "id": "street.to_primary",
@@ -31316,7 +31466,23 @@ var CONTENT: Content = {
      60,
      6760
     ],
-    "label": "去小学"
+    "label": "去小学",
+    "ride": 0
+   },
+   {
+    "id": "street.to_away",
+    "scene": "street",
+    "at": [
+     330,
+     2760
+    ],
+    "to": "away",
+    "arrive": [
+     200,
+     12760
+    ],
+    "label": "坐车去外地",
+    "ride": 240
    },
    {
     "id": "street.to_middle",
@@ -31330,7 +31496,8 @@ var CONTENT: Content = {
      60,
      8760
     ],
-    "label": "去中学"
+    "label": "去中学",
+    "ride": 0
    },
    {
     "id": "street.upstairs",
@@ -31344,7 +31511,8 @@ var CONTENT: Content = {
      1500,
      720
     ],
-    "label": "上楼"
+    "label": "上楼",
+    "ride": 0
    },
    {
     "id": "street.to_park",
@@ -31358,7 +31526,8 @@ var CONTENT: Content = {
      60,
      18760
     ],
-    "label": "去公园"
+    "label": "去公园",
+    "ride": 0
    },
    {
     "id": "street.to_river",
@@ -31372,7 +31541,8 @@ var CONTENT: Content = {
      60,
      4760
     ],
-    "label": "去海河边"
+    "label": "去海河边",
+    "ride": 0
    }
   ],
   "stride": 2000,
@@ -31708,8 +31878,8 @@ var CONTENT: Content = {
    },
    "group": null,
    "duty": {
-    "label": "回学校",
-    "spot": "river_bridge",
+    "label": "去上课",
+    "spot": "away_gate",
     "arrive": [
      390,
      480
@@ -31740,7 +31910,7 @@ var CONTENT: Content = {
    "group": null,
    "duty": {
     "label": "出操",
-    "spot": "river_bridge",
+    "spot": "away_work",
     "arrive": [
      390,
      420
@@ -31770,8 +31940,8 @@ var CONTENT: Content = {
    },
    "group": null,
    "duty": {
-    "label": "回学校",
-    "spot": "river_bridge",
+    "label": "去上课",
+    "spot": "away_gate",
     "arrive": [
      390,
      480
@@ -31859,8 +32029,8 @@ var CONTENT: Content = {
    },
    "group": null,
    "duty": {
-    "label": "过桥上班",
-    "spot": "river_bridge",
+    "label": "上班",
+    "spot": "away_work",
     "arrive": [
      390,
      480
@@ -32211,6 +32381,20 @@ var CONTENT: Content = {
     }
    },
    {
+    "id": "e_same_death",
+    "title": "搭个伴",
+    "text": "同一年来的，同一年走的。楼里人说，这俩连走都得搭个伴，怕路上没人说话。",
+    "requires": {
+     "flags": [
+      "x_same_year"
+     ],
+     "minClose": 60,
+     "notFlags": [
+      "p_estranged"
+     ]
+    }
+   },
+   {
     "id": "e_unsaid",
     "title": "那句话",
     "text": "有一句话，两个人里只有一个说出了口。后来的几十年，谁也没再提，谁也没忘。",
@@ -32252,20 +32436,6 @@ var CONTENT: Content = {
      ],
      "maxRate": 30,
      "minClose": 60
-    }
-   },
-   {
-    "id": "e_same_death",
-    "title": "搭个伴",
-    "text": "同一年来的，同一年走的。楼里人说，这俩连走都得搭个伴，怕路上没人说话。",
-    "requires": {
-     "flags": [
-      "x_same_year"
-     ],
-     "minClose": 60,
-     "notFlags": [
-      "p_estranged"
-     ]
     }
    },
    {
@@ -33014,13 +33184,6 @@ var CONTENT: Content = {
   }
  ],
  "duet": {
-  "lines": {
-   "knew_both_same": "而且谁也不意外。",
-   "knew_both_diff": "没选到一块儿，可谁也没猜错谁。",
-   "knew_one": "{a}猜着了{b}，{b}没猜着{a}。",
-   "knew_none": "你俩把对方都猜错了，也算扯平。",
-   "knew_single": "{a}猜着了。"
-  },
   "echo": {
    "ask": "你不在的那天，是影子替你去的。换了你，你会？",
    "res": "这句话在半空悬了{gap}，接上了。",
@@ -33050,6 +33213,91 @@ var CONTENT: Content = {
     }
    ]
   }
+ },
+ "letters": {
+  "lines": {
+   "uni_away": [
+    "宿舍楼下有棵树，叫不出名字，开的花有点像槐花。",
+    "食堂的馒头是甜的，吃了一个月也没吃惯。",
+    "这边下雨不打雷，一下就是好几天。",
+    "图书馆十点关门，我总是最后几个走的。",
+    "这边的人说话快，我学了两句，一说他们就笑。",
+    "上课的教室比咱们中学的礼堂还大。",
+    "生活费还剩一点，在旧书摊买了一本书。",
+    "社团里有人会拉胡琴，拉的调子我在茶社听过。"
+   ],
+   "uni_abroad": [
+    "这边比家里晚好几个钟头，我写信的时候你那边睡了。",
+    "超市里找不着挂面，拿别的面凑合。",
+    "同屋的人问我家在哪儿，我在纸上画了一条河。",
+    "这边的冬天天黑得早，下午四点就点灯。",
+    "上课听不全，我录下来晚上再听一遍。",
+    "学校边上有座桥，比咱们那座铁桥新，不好看。"
+   ],
+   "army": [
+    "早上五点半吹哨，被子要叠成方块，我叠了三回才过。",
+    "班长是南方人，吃饭不放醋。",
+    "晚上站岗，天上的星星比楼顶上看得多。",
+    "发了一双新鞋，磨脚，过几天就好了。",
+    "跑五公里，我跑在中间。",
+    "连里有个人也会下棋，下不过楼下的大爷。"
+   ],
+   "work": [
+    "这个月加了几天班，工钱多了一点。",
+    "住的地方离上班的地方要坐四站车。",
+    "楼下有家面馆，老板记得我不要香菜。",
+    "过年的票还没抢着，再等等。",
+    "同事问我老家在哪儿，我说在一条河边上。",
+    "屋里没有暖气，晚上灌个热水袋。",
+    "窗户对着别人家的窗户，那家天天炖肉。"
+   ],
+   "home": [
+    "楼下的早点铺换了招牌，味道没变。",
+    "你家窗台上那盆花，你妈天天浇。",
+    "修车的爷爷问你什么时候回来。",
+    "楼道的灯又坏了，楼长说过两天修。",
+    "今年冬天暖气来得早。",
+    "楼顶的鸽子少了几只，大爷说是飞丢了。",
+    "我还是每天走那条路，路边的树又高了一截。",
+    "河边新修了一段栏杆，刷的绿漆。",
+    "小卖部的阿姨问起你，我说你挺好的。"
+   ]
+  },
+  "ends": [
+   {
+    "text": "先写到这儿。",
+    "in": null
+   },
+   {
+    "text": "你那边冷不冷？",
+    "in": null
+   },
+   {
+    "text": "回信寄到老地方。",
+    "in": "away"
+   },
+   {
+    "text": "早点别老买着吃。",
+    "in": null
+   },
+   {
+    "text": "等你回来。",
+    "in": "home"
+   },
+   {
+    "text": "有空写信。",
+    "in": null
+   },
+   {
+    "text": "替我看看楼顶的鸽子。",
+    "in": "away"
+   },
+   {
+    "text": "过年回来吗？",
+    "in": "home"
+   }
+  ],
+  "crossed": "两封信在路上错过去了，说的差不多是同一件事。"
  },
  "heirlooms": [
   {

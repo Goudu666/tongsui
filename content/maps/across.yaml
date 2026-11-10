@@ -30,7 +30,7 @@ areas:
   - { id: office, name: 写字楼, span: [ 4810, 5600 ], floor: 0 }
 
 exits:
-  - { id: to_river, at: 60, to: river, arrive: 3560, label: 过桥回去 }
+  - { id: to_river, at: 60, to: river, arrive: 3560, label: 过桥回去, ride: 60 }
   - { id: to_newhome, at: 880, to: newhome, arrive: 2740, label: 进小区 }
 
 spots:

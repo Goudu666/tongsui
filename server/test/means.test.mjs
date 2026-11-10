@@ -211,7 +211,8 @@ const pick = (s, r, id) => G("worldPickAction")(s, C, r, spot(id)).act?.id ?? nu
   const RICH = ["xu", "tang", "dong", "zheng"], MID = ["lin", "zhou", "su", "gu"];
   const job = (way, fams, opts) => {
     const ps = [];
-    for (let seed = 1; seed <= 16; seed++) {
+    // 32 条人生（64 个人）一边：16 条时一个人进没进单位就是 3 个点，线又卡在 15，换一下外地那几年做什么就来回跳
+    for (let seed = 1; seed <= 32; seed++) {
       const { marks } = live(seed * 7919, WAYS[way], 23, climb, (s) => { s.rolls.qing.familyId = fams[seed % 4]; s.rolls.mei.familyId = fams[(seed + 1) % 4]; });
       ps.push(...Object.values(marks.m_job || {}));
     }

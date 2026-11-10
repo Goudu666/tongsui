@@ -2,12 +2,14 @@
 //
 // 一条 lifeline = 两个人的一生。存档在 storage(lifelines/<id>)，房间只是它在线时的载体：
 // 两人都下线后房间会关闭，下次 lifeline_open 时从存档重新拉起。
-// 房间流程：抽卡（roll）→ 人生（life：河畔里实时走动、行动、事件）→ 结束（ended）
+// 房间流程：抽卡（roll）→ 人生（life：河畔里实时走动、行动、事件）→ 结束（ended）→ 两人都点了「再来一世」→ 抽卡……
+// 再来一世还是同一条 lifeline、同一份存档：上一世攒下的东西在 life.legacy 里跟着走（legacy.ts）。
 
 var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
 var COL_LIFELINES = "lifelines";
 var COL_CODES = "pair_codes";
 var COL_MINE = "my_lifelines";
+var COL_PAST = "lifeline_past"; // 走完的一世（长卷在这儿）：键是 人生线 id + "." + 第几世，换世时从存档里挪过来
 var MATCH_NAME = "lifeline";
 var TICK_RATE = 10; // 走动需要实时，一秒十跳
 var WORLD_BROADCAST_EVERY = 2; // 每 2 跳（5Hz）广播一次世界状态，客户端插值
@@ -27,15 +29,17 @@ var SHADOW_GRACE_SECONDS = 10; // 掉线这么久之内不交给影子：切网�
  * - 旧客户端没法再用了：把 MIN_CLIENT_PROTOCOL 提到能用的最低版本，旧包会看到「请装新版」，而不是卡在看不懂的界面里
  * 剧情内容不走这个：内容有自己的指纹 CONTENT.version，客户端发现不一样会自己下载（content_get）。
  */
-var PROTOCOL_VERSION = 2; // 2：关口（上锁的选项）、日程、目标、属性进了 WORLD；schoolDay 没了
+var PROTOCOL_VERSION = 3; // 2：关口（上锁的选项）、日程、目标、属性进了 WORLD；schoolDay 没了  3：传承（老物件、再来一世），旧包可以忽略
 var MIN_CLIENT_PROTOCOL = 2;
+/** 从这个协议版本起，安装包才认识传承的消息（31 AGAIN）。和 protocol.gd 的 LEGACY_SINCE 是同一个数 */
+var LEGACY_SINCE_PROTOCOL = 3;
 var CONTENT_CHUNK = 48000; // content_get 一次回多少个字符：整份内容约 17 万字符，分几次取，不撞单条消息的大小上限
 
 /** 客户端 ↔ 服务端消息号，client/scripts/net/protocol.gd 里保持一致 */
 var OP = {
-  SNAPSHOT: 1, // s→c 完整状态 { lifelineId, names, life, you, online }
-  ROLL: 2, // c→s { reroll: true } | { confirm: true }
-  ROLL_STATE: 3, // s→c { rolls }
+  SNAPSHOT: 1, // s→c 完整状态 { lifelineId, names, life, you, online, protocols }  protocols：两人安装包的协议版本，不在线是 0
+  ROLL: 2, // c→s { reroll: true } | { confirm: true } | { heirloom: 老物件 id | null } 挑一件老物件带上 / 放下
+  ROLL_STATE: 3, // s→c { rolls }  每人带着 house（家业传了几代）、offer（摆在面前的老物件）、heirloomId（挑中的）
   MOVE: 4, // c→s { x, y }
   ACT: 5, // c→s { spot }
   CHOOSE: 6, // c→s { optionId, guess? } guess：默契事件里猜 TA 选了哪一项（可以不猜）
@@ -49,9 +53,10 @@ var OP = {
   GAME: 20, // s→c { game: 视图 | null, result? } 搭伴小游戏的状态（games.ts）
   GAME_INPUT: 21, // c→s { k: "ready" | "pass" | "quit" | 小游戏自己的输入 }
   ECHO: 30, // c→s { turn, optionId } 回话：补答影子替我选过的默契事件；optionId 为 null 是「不提了」
+  AGAIN: 31, // c→s { yes } 一世走完以后：再来一世（false 是收回）  s→c { again: { qing, mei } } 谁点了；两人都点了改发 SNAPSHOT
 };
 /** c→s 的消息号：只有这些会被处理，其余的回一个 ERROR */
-var CLIENT_OPS = [OP.ROLL, OP.MOVE, OP.ACT, OP.CHOOSE, OP.PING, OP.GAME_INPUT, OP.ECHO];
+var CLIENT_OPS = [OP.ROLL, OP.MOVE, OP.ACT, OP.CHOOSE, OP.PING, OP.GAME_INPUT, OP.ECHO, OP.AGAIN];
 
 interface LifelineRecord {
   id: string;
@@ -89,6 +94,8 @@ interface LifelineMatch {
   tick: number;
   /** 各自掉线时的 tick（重连宽限期用） */
   leftAt: { [R in Role]?: number };
+  /** 各自这次连接的安装包协议版本（join 时报的；没报的是 3 以前的旧包）。连接状态，不进存档 */
+  protocols: { [R in Role]?: number };
 }
 
 // ---------- 存储 ----------
@@ -127,6 +134,20 @@ function saveLifeline(nk: nkruntime.Nakama, rec: LifelineRecord, version?: strin
   if (version) w.version = version;
   var acks = nk.storageWrite([w]);
   return acks && acks.length ? acks[0].version : "";
+}
+
+/**
+ * 换世之前把走完的这一世挪到单独的存储对象里：长卷占了存档的绝大部分，而存档每天整份重写，不能跟着世数涨。
+ * 键由人生线和世数定，内容由存档定，所以重跑一遍写下的是同一份（先归档、再换存档，中途断了下次接着来）。
+ */
+function archiveLife(nk: nkruntime.Nakama, rec: LifelineRecord) {
+  var life = rec.life!;
+  var past: { [k: string]: any } = {};
+  for (var k in life) if (k !== "legacy" && k !== "again" && k !== "rng" && k !== "seed") past[k] = (life as any)[k];
+  nk.storageWrite([{
+    collection: COL_PAST, key: rec.id + "." + (life.life || 1), userId: SYSTEM_USER,
+    value: { lifelineId: rec.id, life: life.life || 1, names: rec.names, past: past }, permissionRead: 0, permissionWrite: 0,
+  }]);
 }
 
 function roleOf(rec: LifelineRecord, userId: string): Role | null {
@@ -309,6 +330,8 @@ var rpcLifelineList: nkruntime.RpcFunction = function (ctx, logger, nk) {
       paired: !!(rec && rec.members.mei),
       phase: life ? life.phase : "waiting",
       turn: life ? life.turn : 0,
+      /** 第几世 */
+      life: life ? life.life || 1 : 1,
       label: life && life.phase !== "roll" ? lifeTimeAt(life.turn).label : null,
       updateTime: o.updateTime,
     };
@@ -321,6 +344,21 @@ var rpcLifelineList: nkruntime.RpcFunction = function (ctx, logger, nk) {
 
 function online(s: LifelineMatch): { [R in Role]: boolean } {
   return { qing: !!s.presences.qing, mei: !!s.presences.mei };
+}
+
+/** 在线的人各自的安装包协议版本（不在线的是 0）。客户端据此知道对门的包懂不懂新东西，比如「再来一世」 */
+function protocols(s: LifelineMatch): { [R in Role]: number } {
+  return { qing: s.presences.qing ? s.protocols.qing || 0 : 0, mei: s.presences.mei ? s.protocols.mei || 0 : 0 };
+}
+
+/** 只发给安装包够新的连接：旧包不认识的消息号不往它那儿送 */
+function sendSince(d: nkruntime.MatchDispatcher, s: LifelineMatch, minProtocol: number, op: number, body: any) {
+  var to: nkruntime.Presence[] = [];
+  for (var i = 0; i < ROLES.length; i++) {
+    var p = s.presences[ROLES[i]];
+    if (p && (s.protocols[ROLES[i]] || 0) >= minProtocol) to.push(p);
+  }
+  if (to.length > 0) send(d, op, body, to);
 }
 
 /** 给世界用的「在不在」：刚掉线的宽限期内还算在，影子不接手 */
@@ -374,7 +412,7 @@ function snapshot(s: LifelineMatch, role: Role) {
   } else {
     view.world = null;
   }
-  return { lifelineId: s.lifelineId, names: s.record.names, life: view, you: role, online: online(s), tick: s.tick };
+  return { lifelineId: s.lifelineId, names: s.record.names, life: view, you: role, online: online(s), protocols: protocols(s), tick: s.tick };
 }
 
 function worldView(s: LifelineMatch) {
@@ -469,16 +507,18 @@ var matchInit: nkruntime.MatchInitFunction<LifelineMatch> = function (ctx, logge
   return {
     state: {
       lifelineId: rec.id, matchId: ctx.matchId || null, record: rec, version: version, superseded: false,
-      presences: {}, lastMoveTick: {}, moveSeq: {}, eventWaitSince: null, lastSaveTick: 0, emptyTicks: 0, tick: 0, leftAt: {},
+      presences: {}, lastMoveTick: {}, moveSeq: {}, eventWaitSince: null, lastSaveTick: 0, emptyTicks: 0, tick: 0, leftAt: {}, protocols: {},
     },
     tickRate: TICK_RATE,
     label: JSON.stringify({ lifeline: rec.id }),
   };
 };
 
-var matchJoinAttempt: nkruntime.MatchJoinAttemptFunction<LifelineMatch> = function (ctx, logger, nk, dispatcher, tick, state, presence) {
+var matchJoinAttempt: nkruntime.MatchJoinAttemptFunction<LifelineMatch> = function (ctx, logger, nk, dispatcher, tick, state, presence, metadata) {
   var role = roleOf(state.record, presence.userId);
   if (!role) return { state: state, accept: false, rejectMessage: "not a member" };
+  // 进房时报上安装包的协议版本（3 起才报）。没报的按能进来的最旧版本算
+  state.protocols[role] = Math.max(MIN_CLIENT_PROTOCOL, Math.floor(Number(metadata && metadata.protocol)) || 0);
   return { state: state, accept: true };
 };
 
@@ -511,7 +551,7 @@ var matchJoin: nkruntime.MatchJoinFunction<LifelineMatch> = function (ctx, logge
     send(dispatcher, OP.SNAPSHOT, snapshot(state, roleOf(state.record, presences[j].userId)!), [presences[j]]);
   }
   state.emptyTicks = 0;
-  send(dispatcher, OP.PRESENCE, { online: online(state) });
+  send(dispatcher, OP.PRESENCE, { online: online(state), protocols: protocols(state) });
   return { state: state };
 };
 
@@ -523,7 +563,7 @@ var matchLeave: nkruntime.MatchLeaveFunction<LifelineMatch> = function (ctx, log
       state.leftAt[role] = tick;
     }
   }
-  send(dispatcher, OP.PRESENCE, { online: online(state) });
+  send(dispatcher, OP.PRESENCE, { online: online(state), protocols: protocols(state) });
   save(nk, logger, state, tick);
   return { state: state };
 };
@@ -614,6 +654,10 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
         var err = lifeReroll(life, CONTENT, role);
         if (err) sendError(dispatcher, msg.sender, err);
         send(dispatcher, OP.ROLL_STATE, { rolls: life.rolls });
+      } else if (body.heirloom !== undefined) {
+        var perr = legacyPick(life, role, body.heirloom === null ? null : String(body.heirloom));
+        if (perr) sendError(dispatcher, msg.sender, perr);
+        send(dispatcher, OP.ROLL_STATE, { rolls: life.rolls });
       } else if (body.confirm) {
         var started = lifeConfirm(life, CONTENT, role, state.record.names);
         send(dispatcher, OP.ROLL_STATE, { rolls: life.rolls });
@@ -649,7 +693,24 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
       var echo = duetEcho(life, CONTENT, role, Number(body.turn), body.optionId);
       if (echo.error) sendError(dispatcher, msg.sender, echo.error);
       if (echo.entry) broadcastLog(dispatcher, [echo.entry]);
+    } else if (msg.opCode === OP.AGAIN) {
+      if (life.phase !== "ended") { sendError(dispatcher, msg.sender, "这一世还没走完"); continue; }
+      // 票记在存档里（重连、重启、回滚都不丢），马上存一次；换世在下面，两票齐了就换
+      legacyAgain(life, role, body.yes !== false);
+      save(nk, logger, state, tick);
+      sendSince(dispatcher, state, LEGACY_SINCE_PROTOCOL, OP.AGAIN, { again: life.again });
     }
+  }
+
+  // 两个人都点了「再来一世」：先把走完的这一世归档，再在同一份存档上换成新的一世，像翻天那样马上存。
+  // 放在这里而不是消息处理里：票在存档里，上次归档完没来得及换就断了的，房间重新拉起后接着换
+  if (legacyAgainReady(life)) {
+    archiveLife(nk, state.record);
+    life = state.record.life = legacyRebirth(life, CONTENT);
+    state.eventWaitSince = null;
+    save(nk, logger, state, tick);
+    logger.info("lifeline %s: life %d begins", state.lifelineId, life.life || 1);
+    for (var ar in state.presences) send(dispatcher, OP.SNAPSHOT, snapshot(state, ar as Role), [state.presences[ar as Role]!]);
   }
 
   if (life.phase === "life") {

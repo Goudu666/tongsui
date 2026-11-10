@@ -82,7 +82,8 @@ export function room(nk, matchId) {
     life: () => m.state.record.life,
     join: (ps) => { m.state = G("matchJoin")({}, logger, nk, dispatcher, tick, m.state, ps).state; },
     leave: (ps) => { m.state = G("matchLeave")({}, logger, nk, dispatcher, tick, m.state, ps).state; },
-    attempt: (p) => G("matchJoinAttempt")({}, logger, nk, dispatcher, tick, m.state, p),
+    /** 进房前的那一步。metadata 是客户端进房时带的（3 版起带 protocol） */
+    attempt: (p, metadata) => G("matchJoinAttempt")({}, logger, nk, dispatcher, tick, m.state, p, metadata),
     loop: (msgs = []) => {
       const res = G("matchLoop")({}, logger, nk, dispatcher, tick++, m.state, msgs);
       if (res === null) { nk.matches.delete(matchId); return false; }

@@ -8,7 +8,7 @@
 //
 // 纯函数，不依赖 Nakama。
 
-var LIFE_VERSION = 5;
+var LIFE_VERSION = 6;
 
 /** 结构升级。返回做了什么（写服务器日志用）；存档比服务器还新时抛错（服务器被回滚了，不能硬读） */
 function lifeUpgrade(s: any): string[] {
@@ -49,6 +49,12 @@ function lifeUpgrade(s: any): string[] {
     v = 5;
     notes.push("v4→v5");
   }
+  if (v === 5) {
+    // v6：传承（legacy.ts）。老存档当作头一世：没有攒下的东西，抽卡和人身上补上空的老物件栏
+    legacyUpgrade(s);
+    v = 6;
+    notes.push("v5→v6");
+  }
   s.version = v;
   return notes;
 }
@@ -74,6 +80,7 @@ function lifeRepair(s: LifeState, c: Content): string[] {
       roll.familyId = next.familyId;
       roll.talentId = next.talentId;
       roll.stats = next.stats;
+      roll.house = legacyHouse(c, s.legacy, next.familyId);
       roll.confirmed = false;
     }
   }
@@ -132,6 +139,7 @@ function lifeRepair(s: LifeState, c: Content): string[] {
   }
 
   duetRepair(s, c, notes); // 欠着没回的话（duet.ts）也记着事件和选项的 id
+  legacyRepair(s, c, notes); // 攒下的老物件（legacy.ts）记着内容里的 id
 
   if (s.contentVersion !== c.version) {
     if (notes.length === 0 && s.contentVersion) notes.push("内容 " + s.contentVersion + " → " + c.version + "，存档不用改");

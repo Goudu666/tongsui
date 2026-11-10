@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "baa88200fd05",
+ "version": "f0bd153b1ffd",
  "events": [
   {
    "id": "c_roof_summer",
@@ -9041,7 +9041,7 @@ var CONTENT: Content = {
     {
      "id": "key",
      "text": "去重点班",
-     "min": 6.4,
+     "min": 7,
      "tags": [
       "competitive"
      ],
@@ -9237,7 +9237,7 @@ var CONTENT: Content = {
     {
      "id": "away",
      "text": "去外地念大学",
-     "min": 8,
+     "min": 8.3,
      "tags": [
       "adventure",
       "competitive"
@@ -9407,7 +9407,7 @@ var CONTENT: Content = {
       "charm": 0.7,
       "luck": 0.3
      },
-     "min": 6,
+     "min": 6.9,
      "tags": [
       "adventure"
      ],
@@ -9561,8 +9561,8 @@ var CONTENT: Content = {
     {
      "id": "buy",
      "text": "买下一套自己的房",
-     "min": 140,
-     "cost": 140,
+     "min": 150,
+     "cost": 150,
      "tags": [
       "responsible"
      ],
@@ -23247,7 +23247,7 @@ var CONTENT: Content = {
     "stats": {
      "body": 0.19
     },
-    "money": 8
+    "money": 12
    }
   },
   {
@@ -23277,7 +23277,7 @@ var CONTENT: Content = {
      "mood": -3
     },
     "stats": {},
-    "money": 18
+    "money": 16
    }
   },
   {
@@ -23306,7 +23306,7 @@ var CONTENT: Content = {
     "stats": {
      "mind": 0.1
     },
-    "money": 14
+    "money": 24
    }
   },
   {
@@ -23335,7 +23335,7 @@ var CONTENT: Content = {
      "mind": 0.07,
      "charm": 0.07
     },
-    "money": 10
+    "money": 15
    }
   },
   {
@@ -23363,7 +23363,7 @@ var CONTENT: Content = {
     "stats": {
      "charm": 0.12
     },
-    "money": 11
+    "money": 19
    }
   },
   {
@@ -23392,7 +23392,7 @@ var CONTENT: Content = {
      "body": 0.07,
      "mind": 0.05
     },
-    "money": 10
+    "money": 14
    }
   },
   {
@@ -23421,7 +23421,7 @@ var CONTENT: Content = {
     "stats": {
      "body": 0.14
     },
-    "money": 11
+    "money": 16
    }
   },
   {
@@ -23825,7 +23825,7 @@ var CONTENT: Content = {
     "text": "{name} 八十多岁还在海河里冬泳。上岸的时候冒着白气，冲岸上的年轻人喊：「下来！不冷！」",
     "requires": {
      "stats": {
-      "body": 9
+      "body": 8
      },
      "minDiedAge": 85
     }
@@ -23932,6 +23932,7 @@ var CONTENT: Content = {
    "actionScale": 0.1,
    "room": 5,
    "floor": 0.06,
+   "bornWeight": 0.4,
    "plasticity": {
     "childhood": {
      "body": 1,
@@ -24020,7 +24021,7 @@ var CONTENT: Content = {
   "bond": {
    "closeSoft": 100,
    "closeFloor": 0.12,
-   "closeScale": 0.65,
+   "closeScale": 1,
    "syncSoft": 110,
    "syncFloor": 0.15,
    "drift": {

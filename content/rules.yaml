@@ -13,12 +13,14 @@ roll:
 # 长多少 = 经历 × 年纪 × 底子
 #   经历：事件里写的 +1、行动里写的 +0.3
 #   年纪：下面的 plasticity，每个阶段每项属性长得多快
-#   底子：离出生时的水平越远，长得越慢。超出 room 以后只剩 floor
+#   底子：离「底子」越远，长得越慢。超出 room 以后只剩 floor。
+#         底子 = 平均数 + (出生时的属性 − 平均数) × bornWeight：出身决定从哪开始，活法决定走到哪
 growth:
   eventScale: 0.15      # 事件里的 +1 实际长多少（往下掉也按这个数，但不看年纪和底子）
   actionScale: 0.1      # 行动（上学、写作业、玩、打工）里的数实际长多少
-  room: 5.0             # 一辈子最多比出生时高出这么多（之后只能一点点蹭）
+  room: 5.0             # 一辈子最多比底子高出这么多（之后只能一点点蹭）
   floor: 0.06
+  bornWeight: 0.4       # 底子里出身占多少：1 = 完全看出生时的属性，0 = 人人一样（按平均数算）
   plasticity:
     childhood: { body: 1.0, mind: 1.0, charm: 1.0, luck: 1.0 }
     teen:      { body: 1.3, mind: 1.3, charm: 1.1, luck: 1.0 }
@@ -78,7 +80,7 @@ lifespan:
 bond:
   closeSoft: 100        # 亲近越接近这个数，涨得越慢：实际涨幅 = 写的数 × (1 − 亲近 / closeSoft)，最少 closeFloor
   closeFloor: 0.12
-  closeScale: 0.65      # 整体系数
+  closeScale: 1.0       # 整体系数。有了日程以后两个人能凑到一起的时间少了，从 0.65 调回 1
   syncSoft: 110
   syncFloor: 0.15
   # 一个日子过完，要是这天既没同框也没共鸣，亲近按阶段往下掉（日子之间隔得越久掉得越多），再乘 (1 + 距离 × distance)

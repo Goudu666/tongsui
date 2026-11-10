@@ -118,7 +118,8 @@ function lifeRollOnce(s: { rng: number }, c: Content, exceptFamily: string | nul
   return { familyId: fam.id, talentId: tal.id, stats: stats };
 }
 
-function lifeCreate(seed: number, c: Content): LifeState {
+/** legacy：这条人生线之前几世留下的东西（legacy.ts）。头一世不传 */
+function lifeCreate(seed: number, c: Content, legacy?: Legacy): LifeState {
   var s: LifeState = {
     version: LIFE_VERSION,
     contentVersion: c.version,
@@ -132,6 +133,7 @@ function lifeCreate(seed: number, c: Content): LifeState {
     memories: [],
     log: [],
     world: null,
+    legacy: legacy || legacyNew(),
   };
   var q = lifeRollOnce(s, c, null);
   var m = lifeRollOnce(s, c, q.familyId);
@@ -139,6 +141,7 @@ function lifeCreate(seed: number, c: Content): LifeState {
     qing: { familyId: q.familyId, talentId: q.talentId, stats: q.stats, rerollsLeft: c.rules.roll.rerolls, confirmed: false },
     mei: { familyId: m.familyId, talentId: m.talentId, stats: m.stats, rerollsLeft: c.rules.roll.rerolls, confirmed: false },
   };
+  legacyRoll(s, c); // 第几世、家业、摆在面前的老物件
   return s;
 }
 
@@ -152,6 +155,7 @@ function lifeReroll(s: LifeState, c: Content, role: Role): string | null {
   r.familyId = next.familyId;
   r.talentId = next.talentId;
   r.stats = next.stats;
+  r.house = legacyHouse(c, s.legacy, next.familyId);
   r.rerollsLeft -= 1;
   return null;
 }
@@ -162,6 +166,7 @@ function lifeConfirm(s: LifeState, c: Content, role: Role, names: { [R in Role]:
   s.rolls[role].confirmed = true;
   if (!s.rolls.qing.confirmed || !s.rolls.mei.confirmed) return false;
   s.persons = { qing: lifeNewPerson(s, c, s.rolls.qing, names.qing), mei: lifeNewPerson(s, c, s.rolls.mei, names.mei) };
+  legacyBirth(s, c); // 家业、带着的老物件
   s.phase = "life";
   worldStartDay(s, c);
   return true;
@@ -599,6 +604,7 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
     s.phase = "ended";
     s.world = null;
     s.ending = lifeEnding(s, c);
+    legacyAbsorb(s, c); // 记进传承：这一世各自给河畔里留下了什么
     var end = lifeEntry(s, "end", lifeEndingText(s, c, s.ending) + lifeEpitaph(s));
     out.push(end);
     s.log.push(end);

@@ -95,3 +95,14 @@ bond:
   drift: { childhood: 0.4, teen: 0.9, young: 1.6, middle: 2.4, old: 1.5 }
   driftDistance: 0.35
   driftFloor: 5         # 最多淡到这儿：住过对门，总归认识
+
+# ---------- 传承 ----------
+# 一世走完留下的东西怎么带到下一世（server/src/legacy.ts，设计说明见 docs/LEGACY.md）。
+# 老物件的加成写在 content/heirlooms.yaml 里：属性最多半点。
+# 钱：家业加上最值钱的老物件，开局一共最多多十块（内容构建会拦）。买房的线很陡，十块钱在线附近差七到九个点，
+# 所以钱只能是个零头：这辈子挣不挣，才是买不买得起的原因。
+legacy:
+  pastKept: 6           # 记得最近几世的小传
+  heirloomOffer: 3      # 第二世起，每人面前摆几件攒下的老物件（挑一件带上，也可以不带）
+  houseMax: 2           # 家业最多传几代算数
+  houseMoney: 2         # 每一代家业，开局的零花钱多几块（两代封顶，一共四块）

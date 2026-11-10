@@ -155,6 +155,9 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
     assert.equal(G("worldReclaim")(z, "mei"), true);
     assert.equal(G("worldReady")(z, "mei"), false);
     assert.equal(z.world.wait, 0, "本人回来，重新开始等他");
+    z.world.wait = 85;
+    G("worldReclaim")(z, "qing");
+    assert.equal(z.world.wait, 0, "宽限期里断了又回来、影子没接过手的，也重新等");
     // v7 的存档：做到一半的事（这里是睡下了）是前面那段开始的，升上来撤不回
     const old = JSON.parse(JSON.stringify(z));
     old.version = 7;

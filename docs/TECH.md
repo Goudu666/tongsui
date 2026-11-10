@@ -79,7 +79,7 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | 3 ROLL_STATE | s→c | `{rolls}` 两人当前抽到的家庭、天赋、属性、剩余次数 |
 | 4 MOVE | c→s | `{x, y, seq}` 约 10 Hz，seq 递增；服务器丢掉乱序旧包，限速（360 px/s，间隔最多按 1 秒算）和边界 |
 | 5 ACT | c→s | `{spot}` 在某个点开始行动（距离、年龄、时间、家、钱都会校验） |
-| 6 CHOOSE | c→s | `{optionId}` 事件里的选择，结算前可以改 |
+| 6 CHOOSE | c→s | `{optionId, guess?}` 事件里的选择，结算前可以改。`guess`：默契事件里猜 TA 选了哪一项，可以不带（见 [DUET.md](DUET.md)） |
 | 7 WORLD | s→c | 5 Hz：`{tick, minute, schoolDay, actors{x,y,act,spot,sleep,seq}, needs, money, event, bond, hints}`；`actors[r].seq` 是服务器处理到的最后一条 MOVE |
 | 8 EVENT | s→c | `{event}` 有事件开始了（只告诉谁参与、是否已选，不告诉选了什么） |
 | 9 ERROR | s→c | `{message}` |
@@ -87,6 +87,7 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | 11 PRESENCE | s→c | `{online}` |
 | 12 PING | c→s | `{t}` 每 2 秒，测延迟 |
 | 13 PONG | s→c | `{t, tick}` 只回给发的人 |
+| 30 ECHO | c→s | `{turn, optionId}` 回话：补答影子替我选过的默契事件（`turn` 是那天的序号，`optionId` 为 null 是「不提了」）。结算作为一条 LOG 发给两个人 |
 
 - 事件进行中时钟暂停；没选的人都离线时，等 30 秒后由影子代选。
 - 掉线 10 秒之内影子不接手（切网络、进电梯）；超过 10 秒影子替他过日子；本人回来时影子手上的事（睡觉、上学除外）停下，把身体还给他。
@@ -143,6 +144,7 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | `talents.yaml` | 先天天赋 |
 | `map.yaml` | 地图：地点（矩形区域）、互动点、行动（时长、需求/属性变化、花钱挣钱、同框效果、条件） |
 | `endings.yaml` | 结局：两个人的结局（pair）和每个人的一生小结（lives），按顺序匹配，最后一条兜底 |
+| `duet.yaml` | 接话：「搭上了」（按事件 id 挂上去的互补选项组合）、猜 TA 和回话的旁白。格式见文件头和 [DUET.md](DUET.md) |
 
 事件格式：
 
@@ -172,6 +174,7 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
   resonance:                             # mirror 专用：两人选到同一项
     stars: { text: ……, memory: 第四十七颗星, bond: { sync: 3 }, flags: [p_stars] }   # flags：共同标记，两人都得到，必须 p_ 开头
   dissonance: { text: ……, bond: { close: 1 }, flags: [] }   # mirror 专用：选得不一样
+  # 选得不一样、但正好一个抛一个接的组合（「搭上了」）不写在这里，写在 content/duet.yaml 的 catches 里
 ```
 
 `npm run content` 的校验除了格式，还会检查：性格标签只能是 gentle / adventure / solitude / responsible / competitive / patient；
@@ -189,6 +192,7 @@ npm run server:test      # 编译 + 投胎规则 + 60 条全影子人生 + 世�
                          # + 剧情测试：1500 条随机人生，保证每个事件、每个结局都走得到
                          # + 架构测试（arch.test.mjs）：版本握手与内容下载 / 坏消息 / 存档往返 / 剧情改了以后旧存档还能打开 /
                          #   出错回滚 / 单写者 / 两端契约（消息号、协议版本、年龄阶段表、走动限速这些两边各抄一份的东西有没有走样）
+                         # + 接话测试（duet.test.mjs）：搭上了 / 猜 TA / 回话 / 存档修复 / 带猜测和回话的联机流程
 GODOT=godot bash tools/ci/client_unit.sh      # 客户端单测 client/tests/unit_*.gd，不需要服务器
 
 # 下面两个要先起一台本地 Nakama（docker compose，见 README）

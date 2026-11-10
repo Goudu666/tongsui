@@ -8,7 +8,7 @@
 //
 // 纯函数，不依赖 Nakama。
 
-var LIFE_VERSION = 4;
+var LIFE_VERSION = 5;
 
 /** 结构升级。返回做了什么（写服务器日志用）；存档比服务器还新时抛错（服务器被回滚了，不能硬读） */
 function lifeUpgrade(s: any): string[] {
@@ -23,15 +23,31 @@ function lifeUpgrade(s: any): string[] {
     notes.push("v2→v3");
   }
   if (v === 3) {
-    // v4：日程按人生路线走。schoolDay 换成 rest（今天歇着），多了 dutyDone 和关口
+    // v4：成长规则（growth.ts）要的字段。出生时的属性没记过，就拿现在的当底子：
+    // 老存档里的人往后长得和新规则下的新生儿一样慢，不会凭空多出或少掉属性
+    for (var i = 0; i < ROLES.length; i++) {
+      var p = s.persons ? s.persons[ROLES[i]] : null;
+      if (!p) continue;
+      if (!p.born) p.born = { body: p.stats.body, mind: p.stats.mind, charm: p.stats.charm, luck: p.stats.luck };
+      if (p.moodSum === undefined) { p.moodSum = 0; p.moodDays = 0; }
+      if (!p.active) p.active = { body: false, mind: false };
+      // 「普通的孩子」以前没有标记（标记是出生时拷进 flags 的），补上才长得匀、才遇得到它的专属事件
+      if (p.talentId === "none" && p.flags && p.flags.indexOf("tal_plain") < 0) p.flags.push("tal_plain");
+    }
+    if (s.world && s.world.warm === undefined) s.world.warm = false;
+    v = 4;
+    notes.push("v3→v4");
+  }
+  if (v === 4) {
+    // v5：日程按人生路线走。schoolDay 换成 rest（今天歇着），多了 dutyDone 和关口
     if (s.world) {
       s.world.rest = !s.world.schoolDay;
       delete s.world.schoolDay;
       s.world.dutyDone = {};
       if (s.world.fate) s.world.fate.milestone = null;
     }
-    v = 4;
-    notes.push("v3→v4");
+    v = 5;
+    notes.push("v4→v5");
   }
   s.version = v;
   return notes;

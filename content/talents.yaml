@@ -1,14 +1,14 @@
 # 先天天赋，开局随家庭一起抽。flags 会影响世界规则或事件（见 server/src/world.ts）。
 
-- { id: none, name: 普通的孩子, weight: 8, desc: 没有什么特别的。但普通也挺好的。, bonus: {}, flags: [] }
-- { id: memory, name: 过目不忘, weight: 1, desc: 看一遍就记住了，念书比别人快一半。, bonus: { mind: 2 }, flags: [tal_memory] }
-- { id: strong, name: 天生神力, weight: 1, desc: 三岁就能把水桶从井里提上来。, bonus: { body: 2 }, flags: [tal_strong] }
-- { id: sunny, name: 乐天派, weight: 1, desc: 天生乐呵，谁见了都想笑。心情掉得比别人慢。, bonus: { charm: 2 }, flags: [tal_sunny] }
-- { id: koi, name: 锦鲤, weight: 1, desc: 运气好得离谱。, bonus: { luck: 3 }, flags: [tal_koi] }
-- { id: owl, name: 夜猫子, weight: 1, desc: 晚上精神特别好，早上起不来。, bonus: {}, flags: [tal_owl] }
-- { id: foodie, name: 小馋猫, weight: 1, desc: 饿得快，但每顿饭都吃得特别开心。, bonus: { charm: 1 }, flags: [tal_foodie] }
-- { id: pigeon, name: 鸽子缘, weight: 1, desc: 楼顶的鸽子愿意落在你肩上，丢了的鸽子也会飞回你的窗台。, bonus: { luck: 1 }, flags: [tal_pigeon] }
-- { id: loud, name: 大嗓门, weight: 1, desc: 在楼下喊一声，六楼都听得见。, bonus: { body: 1, charm: 1 }, flags: [tal_loud] }
-- { id: crafty, name: 巧手, weight: 1, desc: 什么都能拆开，再原样装回去，还多出来一个螺丝。, bonus: { mind: 1, body: 1 }, flags: [tal_crafty] }
-- { id: kind, name: 老好人, weight: 1, desc: 谁的忙都帮，从来不会说不。, bonus: { charm: 1, luck: 1 }, flags: [tal_kind] }
-- { id: stubborn, name: 犟脾气, weight: 1, desc: 认准的事，九头牛也拉不回来。, bonus: { body: 2, charm: -1 }, flags: [tal_stubborn] }
+- { id: none, name: 普通的孩子, weight: 8, desc: 没什么特别的。可平平常常的日子，过好了也是能耐。, bonus: {}, flags: [tal_plain] }
+- { id: memory, name: 过目不忘, weight: 1, desc: 看一遍就印在脑子里，写作业比别人快一倍。忘不掉，有时候也是个事儿。, bonus: { mind: 2 }, flags: [tal_memory] }
+- { id: strong, name: 天生神力, weight: 1, desc: 三岁就能把一桶水拎上三楼，一滴不洒。, bonus: { body: 2 }, flags: [tal_strong] }
+- { id: sunny, name: 乐天派, weight: 1, desc: 天生的乐呵人，谁见了都想笑。心情掉得比别人慢。, bonus: { charm: 2 }, flags: [tal_sunny] }
+- { id: koi, name: 锦鲤, weight: 1, desc: 运气好得没地方讲理。, bonus: { luck: 3 }, flags: [tal_koi] }
+- { id: owl, name: 夜猫子, weight: 1, desc: 夜里比谁都精神，早上谁叫都不醒。, bonus: {}, flags: [tal_owl] }
+- { id: foodie, name: 小馋猫, weight: 1, desc: 饿得快，可吃什么都香，一碗面汤也能美半天。, bonus: { charm: 1 }, flags: [tal_foodie] }
+- { id: pigeon, name: 鸽子缘, weight: 1, desc: 楼顶的鸽子爱往你肩膀上落，飞丢了的，过几天也会找到你的窗台。, bonus: { luck: 1 }, flags: [tal_pigeon] }
+- { id: loud, name: 大嗓门, weight: 1, desc: 在楼下喊一嗓子，六楼的玻璃都跟着颤。, bonus: { body: 1, charm: 1 }, flags: [tal_loud] }
+- { id: crafty, name: 巧手, weight: 1, desc: 什么都敢拆，拆了还能原样装回去，手里还多一颗螺丝。, bonus: { mind: 1, body: 1 }, flags: [tal_crafty] }
+- { id: kind, name: 老好人, weight: 1, desc: 谁的忙都帮，「不」字到了嘴边，总是咽回去。, bonus: { charm: 1, luck: 1 }, flags: [tal_kind] }
+- { id: stubborn, name: 犟脾气, weight: 1, desc: 认准的事，九头牛拉不回来。十头也白搭。, bonus: { body: 2, charm: -1 }, flags: [tal_stubborn] }

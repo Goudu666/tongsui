@@ -83,6 +83,28 @@ func _initialize() -> void:
 	var empty: Dictionary = LifeScroll.build({}, content)
 	check(empty.stations.is_empty() and empty.deaths.is_empty(), "空的也画得出来")
 
+	# 键在、值是 null 的半截快照也不报错
+	var holes: Dictionary = LifeScroll.build({"log": null, "memories": null, "persons": null, "bond": null, "ending": null}, {"events": null, "endings": null})
+	check(holes.stations.is_empty() and int(holes.counts.memories) == 0, "值是 null 的也画得出来")
+
+	# 存图：拿不回图（这里没有显卡）要老实报错，不能说存好了；临时的画布也要收走
+	var saver: Control = LifeScroll.new()
+	saver.setup(life, content, {"qing": "小满", "mei": "阿蘅"})
+	check(await saver.save_png("user://unit_scroll_save.png") != OK, "不在场景树里存图要报错")
+	root.add_child(saver)
+	await process_frame
+	var before := saver.get_child_count()
+	var out := "user://unit_scroll_save.png"
+	var err: Error = await saver.save_png(out)
+	await process_frame
+	check(err == OK or not FileAccess.file_exists(out), "存图没成不说成了")
+	if err == OK:
+		var img := Image.load_from_file(ProjectSettings.globalize_path(out))
+		check(img != null and img.get_width() <= LifeScroll.MAX_TEXTURE and img.get_width() > 1000, "存下来的图不超过纹理上限")
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(out))
+	check(saver.get_child_count() == before, "存完把临时画布收走")
+	saver.queue_free()
+
 	if fails == 0:
-		print("✓ 人生长卷：同路 / 各走各的 / 一个人过的关 / 影子 / 回忆 / 先走的人 / 题词 / 线的并和分")
+		print("✓ 人生长卷：同路 / 各走各的 / 一个人过的关 / 影子 / 回忆 / 先走的人 / 题词 / 线的并和分 / 半截快照 / 存图")
 	quit(1 if fails > 0 else 0)

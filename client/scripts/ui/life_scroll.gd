@@ -30,15 +30,24 @@ var names: Dictionary = {}
 var _anchors: Array = []   ## [{ turn, x }]，turn 递增：卷首、每一站、卷尾
 
 
+## 键在、值却是 null 的时候（半截的快照）当空的用
+static func _list(v: Variant) -> Array:
+	return v if v is Array else []
+
+
+static func _dict(v: Variant) -> Dictionary:
+	return v if v is Dictionary else {}
+
+
 ## 把 life 整理成长卷要画的东西（纯数据，单测用）。
 ## 返回 { last, close, stations, stitches, memories, deaths, pair, lives, counts }
 static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 	var events := {}
-	for ev in content.get("events", []):
+	for ev in _list(content.get("events")):
 		events[str(ev.id)] = ev
 	var gate_memory := {}  # 关口 id → 这一关留下的回忆
 	var memories: Array = []
-	for m in life.get("memories", []):
+	for m in _list(life.get("memories")):
 		var is_gate := str(m.get("eventId", "")).begins_with("m_") and events.has(str(m.eventId)) and str(events[str(m.eventId)].get("kind", "")) == "milestone"
 		if is_gate:
 			gate_memory[str(m.eventId)] = m
@@ -47,9 +56,9 @@ static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 	var stations: Array = []
 	var stitches: Array = []
 	var deaths := {}
-	var counts := {"days": 0, "together": 0, "same": 0, "apart": 0, "memories": life.get("memories", []).size()}
+	var counts := {"days": 0, "together": 0, "same": 0, "apart": 0, "memories": _list(life.get("memories")).size()}
 	var last := 0
-	for e in life.get("log", []):
+	for e in _list(life.get("log")):
 		var turn := int(e.get("turn", 0))
 		match str(e.get("kind", "")):
 			"day":
@@ -61,7 +70,7 @@ static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 				stitches.append(turn + clampf((float(e.get("minute", 390)) - 390.0) / 930.0, 0.0, 0.95))
 			"death":
 				for r in ROLES:
-					var p: Dictionary = life.get("persons", {}).get(r, {})
+					var p: Dictionary = _dict(_dict(life.get("persons")).get(r))
 					if not deaths.has(r) and not bool(p.get("alive", true)) and str(e.get("text", "")).find("%d 岁" % int(p.get("diedAtAge", -1))) >= 0 and str(e.get("text", "")).begins_with(str(p.get("name", "？？"))):
 						deaths[r] = {"turn": turn, "age": int(p.diedAtAge)}
 				last = maxi(last, turn)
@@ -83,7 +92,7 @@ static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 						"score": res.get("score") if bool(res.get("scored", true)) else null,
 						"unit": str(res.get("unit", "分")),
 						"grade": res.get("grade"),
-						"shadow": (e.get("shadow", []) as Array).has(r),
+						"shadow": _list(e.get("shadow")).has(r),
 					}
 				var both := roads.size() == 2
 				var same: bool = both and str(roads.qing.option) == str(roads.mei.option)
@@ -97,7 +106,7 @@ static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 				})
 	# 服务器的 death 记录不带是谁：对不上文字的，按 persons 里的岁数补
 	for r in ROLES:
-		var p: Dictionary = life.get("persons", {}).get(r, {})
+		var p: Dictionary = _dict(_dict(life.get("persons")).get(r))
 		if not deaths.has(r) and not bool(p.get("alive", true)) and p.get("diedAtAge") != null:
 			deaths[r] = {"turn": _turn_of_age(int(p.diedAtAge), last), "age": int(p.diedAtAge)}
 	var pair := {}
@@ -110,7 +119,7 @@ static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 	for r in ROLES:
 		for it in table.get("lives", []):
 			if ending.get("lives") is Dictionary and str(it.id) == str(ending.lives.get(r, "")):
-				var nm := str(life.get("persons", {}).get(r, {}).get("name", P.ROLE_NAME[r]))
+				var nm := str(_dict(_dict(life.get("persons")).get(r)).get("name", P.ROLE_NAME[r]))
 				lives[r] = {"title": str(it.title), "text": str(it.text).replace("{name}", nm)}
 	var close := float(life.get("bond", {}).get("close", 0.0)) if life.get("bond") is Dictionary else 0.0
 	return {"last": last, "close": close, "stations": stations, "stitches": stitches, "memories": memories, "deaths": deaths, "pair": pair, "lives": lives, "counts": counts}
@@ -180,23 +189,42 @@ static func view(life: Dictionary, content: Dictionary, p_names: Dictionary, hei
 	return sc
 
 
-## 把整张长卷存成一张图（不只是屏幕上露出来的那一段）。要在场景树里调用
+## 存图时一边最多这么多像素：手机上用兼容渲染器，不少机型的纹理上限就是 4096，超了拿不回图
+const MAX_TEXTURE := 4096
+
+
+## 把整张长卷存成一张图（不只是屏幕上露出来的那一段）。要在场景树里调用。
+## 卷比 MAX_TEXTURE 宽就按比例缩着画；拿不回图、写不进去都老实返回错误
 func save_png(path: String) -> Error:
+	var full := custom_minimum_size
+	if full.x < 1.0 or full.y < 1.0 or not is_inside_tree():
+		return ERR_UNCONFIGURED
+	var k := minf(1.0, float(MAX_TEXTURE) / maxf(full.x, full.y))
 	var vp := SubViewport.new()
-	vp.size = Vector2i(custom_minimum_size)
+	vp.size = Vector2i(maxi(1, int(floor(full.x * k))), maxi(1, int(floor(full.y * k))))
+	vp.size_2d_override = Vector2i(full)
+	vp.size_2d_override_stretch = true
 	vp.transparent_bg = false
 	vp.render_target_update_mode = SubViewport.UPDATE_ONCE
 	var copy: Control = load("res://scripts/ui/life_scroll.gd").new()
 	copy.model = model
 	copy.names = names
 	copy._anchors = _anchors
-	copy.custom_minimum_size = custom_minimum_size
-	copy.size = custom_minimum_size
+	copy.custom_minimum_size = full
+	copy.size = full
 	vp.add_child(copy)
 	add_child(vp)
-	await RenderingServer.frame_post_draw
-	await RenderingServer.frame_post_draw
-	var err := vp.get_texture().get_image().save_png(path)
+	# 等两帧让它画完。不等 RenderingServer.frame_post_draw：没有显卡的环境里那个信号不来，会一直等下去
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if not is_inside_tree():
+		vp.queue_free()
+		return ERR_UNCONFIGURED
+	var err := ERR_CANT_CREATE
+	var tex := vp.get_texture()
+	var img: Image = tex.get_image() if tex != null else null
+	if img != null and not img.is_empty():
+		err = img.save_png(path)
 	vp.queue_free()
 	return err
 
@@ -284,6 +312,14 @@ func _text(f: Font, pos: Vector2, text: String, font_size: int, color: Color, al
 	var x := pos.x - (tw * 0.5 if align == 0 else (tw if align > 0 else 0.0))
 	draw_string(f, Vector2(x, pos.y), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 	return tw
+
+
+## 居中写一行，宽过 max_w 就把字缩小（最小 16），不让它压到隔壁那一站
+func _fit(f: Font, pos: Vector2, text: String, font_size: int, color: Color, max_w: float) -> void:
+	var fs := font_size
+	while fs > 16 and f.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > max_w:
+		fs -= 1
+	_text(f, pos, text, fs, color)
 
 
 ## 阶段的底：隔一段垫一层深一点的纸，角上写着这是哪一段
@@ -405,14 +441,15 @@ func _draw_station(f: Font, i: int) -> void:
 		# 同路：两个圆叠在一起，路名只写一遍，下面是这一关留下的回忆
 		Kit.draw_pair(self, Vector2(x, MID), 20.0, 12.0, 1.0, 2.0)
 		_text(f, Vector2(x, MID - 96), str(roads.qing.text), 30, P.OVERLAP)
+		# 两个人的分数各占一行：并排写的话，带着成绩档或「影子替选的」时会压到隔壁那一站
 		var sq := _score_text(roads.qing)
 		var sm := _score_text(roads.mei)
-		if sq != "" or sm != "":
-			var half := 14.0
-			if sq != "":
-				_text(f, Vector2(x - half, MID - 138), sq, 22, P.QING, 1)
-			if sm != "":
-				_text(f, Vector2(x + half, MID - 138), sm, 22, P.MEI, -1)
+		var row := MID - 138.0
+		if sm != "":
+			_fit(f, Vector2(x, row), sm, 22, P.MEI, STEP - 36.0)
+			row -= 30.0
+		if sq != "":
+			_fit(f, Vector2(x, row), sq, 22, P.QING, STEP - 36.0)
 		if str(st.memory) != "":
 			_text(f, Vector2(x, MID + 114), "「%s」" % str(st.memory), 26, P.OVERLAP if bool(st.vivid) else P.INK_SOFT)
 		return
@@ -431,7 +468,7 @@ func _draw_station(f: Font, i: int) -> void:
 		_text(f, Vector2(x, y - 34 if up else y + 52), str(road.text), 28, P.role_color(r))
 		var score := _score_text(road)
 		if score != "":
-			_text(f, Vector2(x, y - 70 if up else y + 84), score, 22, P.INK_SOFT)
+			_fit(f, Vector2(x, y - 70 if up else y + 84), score, 22, P.INK_SOFT, STEP - 36.0)
 
 
 ## 线的尽头：一个空圈，写着走的那一年

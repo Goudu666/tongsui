@@ -1,16 +1,19 @@
 extends RefCounted
 ## 「接话」的界面：猜 TA、三种结算（共鸣 / 搭上了 / 错位）、回话、结局多出来的几句。
 ## 规则都在服务端（server/src/duet.ts），文案在 content/duet.yaml，这里只管画。设计见 docs/DUET.md。
+## 用的都是 kit.gd 的部件；两个圆是 ui/resonance.gd。
 ##
 ## main.gd 在这几处调进来：
-##   _pick            默契事件里选完自己的 → ask_guess
-##   _on_log_entries  mirror 结算 → show_result；回话的结算（solo 且带 duet.echo）→ show_echo
-##   _on_snapshot     进了世界以后 → on_snapshot（有欠着的话就问）
-##   _close_modal     弹窗关了 → check_owed（下一句）
-##   _show_ending     → ending_lines
+##   _pick                 默契事件里选完自己的 → ask_guess
+##   _show_mirror_result   mirror 结算 → show_result
+##   _on_log_entries       回话的结算（solo 且带 duet.echo）→ show_echo
+##   _on_snapshot          进了世界以后 → on_snapshot（有欠着的话就问）
+##   _close_modal          弹窗关了 → check_owed（下一句）
+##   _show_ending          → ending_lines
 
 const P := preload("res://scripts/ui/palette.gd")
-const Seal := preload("res://scripts/duet/seal.gd")
+const Kit := preload("res://scripts/ui/kit.gd")
+const Resonance := preload("res://scripts/ui/resonance.gd")
 
 const HEADLINE := {"res": "共鸣", "catch": "搭上了", "miss": "错位"}
 
@@ -37,6 +40,30 @@ func _fill(tpl: String, vars: Dictionary) -> String:
 	return out
 
 
+func _name(role: String) -> String:
+	return str(m.names.get(role, P.ROLE_NAME.get(role, "TA")))
+
+
+## 一行：名字的色签 + 他选的那一项
+func _pick_row(box: Container, role: String, text: String) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 18)
+	box.add_child(row)
+	Kit.chip(row, _name(role), P.role_color(role), 30)
+	var pick: Label = m._label(row, text, 38, P.INK)
+	pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+
+## 卡片最上面一行：结果的色签 + 哪一天、哪件事
+func _head(box: Container, outcome: String, when: String) -> void:
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 16)
+	box.add_child(head)
+	Kit.chip(head, HEADLINE[outcome], P.INK_SOFT if outcome == "miss" else P.OVERLAP)
+	var l: Label = m._label(head, when, 30, P.INK_SOFT)
+	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+
 # ----------------------------------------------------------------------
 # 猜 TA
 # ----------------------------------------------------------------------
@@ -45,26 +72,16 @@ func _fill(tpl: String, vars: Dictionary) -> String:
 func ask_guess(event_id: String, option_id: String, option_text: String) -> void:
 	var ev: Dictionary = m.events_by_id.get(event_id, {})
 	var box: VBoxContainer = m.modal_body
+	var other: String = m._other()
 	m._clear(box)
 	m._label(box, "你选了", 32, P.INK_SOFT)
 	m._label(box, option_text, 48, P.role_color(m.my_role))
-	m._gap(box, 12)
-	var other: String = m._other()
-	m._label(box, "猜猜 %s 选了哪个？" % m._role_text(other), 40, P.role_color(other))
+	Kit.rule(box, Color(P.INK, 0.25))
+	Kit.chip(box, "猜猜 %s 选了哪个" % _name(other), P.role_color(other))
 	for o in ev.get("options", []):
-		m._button(box, str(o.text), m._pick_send.bind(option_id, option_text, str(o.id)))
-	_quiet_button(box, "不猜", m._pick_send.bind(option_id, option_text, ""))
-
-
-## 不抢戏的按钮：没有边框，字是淡的
-func _quiet_button(box: Container, text: String, on_press: Callable) -> Button:
-	var b: Button = m._button(box, text, on_press)
-	b.flat = true
-	b.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	b.add_theme_font_size_override("font_size", 34)
-	for c in ["font_color", "font_hover_color", "font_focus_color"]:
-		b.add_theme_color_override(c, P.INK_SOFT)
-	return b
+		var b: Button = m._button(box, str(o.text), m._pick_send.bind(option_id, option_text, str(o.id)))
+		Kit.tint(b, P.role_color(other))
+	m._quiet(box, "不猜", m._pick_send.bind(option_id, option_text, ""))
 
 
 # ----------------------------------------------------------------------
@@ -84,19 +101,23 @@ func show_result(e: Dictionary) -> void:
 	var ev: Dictionary = m.events_by_id.get(e.events.qing, {})
 	var box: VBoxContainer = m.modal_body
 	m._open_modal()
-	m._label(box, str(e.label), 30, P.INK_SOFT)
-	m._label(box, str(ev.get("title", "")), 64)
-	box.add_child(Seal.new(outcome, d.get("knew")))
+	_head(box, outcome, "%s · %s" % [str(e.label), str(ev.get("title", ""))])
+	box.add_child(Resonance.new(outcome, d.get("knew")))
 	for r in ["qing", "mei"]:
 		var mark := "（影子）" if e.shadow.has(r) else ""
-		m._label(box, "%s %s%s" % [m._role_text(r), m._option_text(e.events[r], e.choices[r]), mark], 38, P.role_color(r))
-	m._label(box, "%s · %s" % [HEADLINE[outcome], str(e.text)], 44, P.INK_SOFT if outcome == "miss" else P.OVERLAP)
+		_pick_row(box, r, m._option_text(e.events[r], e.choices[r]) + mark)
+	Kit.rule(box, Color(P.INK, 0.25))
+	m._label(box, str(e.text), 44, P.INK if outcome == "miss" else P.OVERLAP)
+	var notes := []
 	if d.get("line") is String:
-		m._label(box, str(d.line), 34, P.INK_SOFT)
+		notes.append(str(d.line))
 	var owed: Variant = d.get("owed")
 	if owed is String and owed != m.my_role and _texts("echo").has("kept"):
-		m._label(box, _fill(str(_texts("echo").kept), {"b": m.names.get(owed, "TA")}), 32, P.role_color(owed))
-	m._button(box, "嗯", m._close_modal)
+		notes.append(_fill(str(_texts("echo").kept), {"b": _name(owed)}))
+	if not notes.is_empty():
+		m._label(box, "\n".join(notes), 32, P.INK_SOFT)
+	m._primary(box, "嗯", m._close_modal)
+	m._gap(box, 4)
 
 
 # ----------------------------------------------------------------------
@@ -135,17 +156,18 @@ func _show_owed(o: Dictionary) -> void:
 	var turn := int(o.turn)
 	var box: VBoxContainer = m.modal_body
 	m._open_modal()
-	m._label(box, "你不在的那天 · %s" % str(o.label), 30, P.role_color(m.my_role))
+	Kit.chip(box, "你不在的那天 · %s" % str(o.label), P.role_color(m.my_role))
 	m._label(box, str(ev.get("title", "")), 64)
+	Kit.rule(box)
 	m._label(box, str(ev.get("text", "")), 38)
-	m._label(box, str(_texts("echo").get("ask", "换了你，你会？")), 36, P.INK_SOFT)
+	m._label(box, str(_texts("echo").get("ask", "换了你，你会？")), 34, P.INK_SOFT)
 	for opt in ev.get("options", []):
 		m._button(box, str(opt.text), _answer.bind(turn, str(opt.id), str(opt.text)))
 	var row := HBoxContainer.new()
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	box.add_child(row)
-	_quiet_button(row, "先不说", _later)
-	_quiet_button(row, "不提了", _drop.bind(turn))
+	m._quiet(row, "先不说", _later)
+	m._quiet(row, "不提了", _drop.bind(turn))
 
 
 func _forget(turn: int) -> void:
@@ -161,6 +183,7 @@ func _answer(turn: int, option_id: String, option_text: String) -> void:
 	m._clear(box)
 	m._label(box, "你说", 32, P.INK_SOFT)
 	m._label(box, option_text, 48, P.role_color(m.my_role))
+	Kit.rule(box, Color(P.INK, 0.25))
 	m._label(box, "话递过去了……", 36, P.INK_SOFT)
 
 
@@ -184,22 +207,23 @@ func show_echo(e: Dictionary) -> void:
 	var ev: Dictionary = m.events_by_id.get(e.events[role], {})
 	var mended: bool = outcome != "miss" and str(d.get("was", "")) == "miss"
 	if not mine and (m.modal.visible or not mended):
-		var told := _fill(str(_texts("echo").get("told", "{b}回了「{o}」那天的话。")), {"b": m.names.get(role, "TA"), "o": ev.get("title", "")})
+		var told := _fill(str(_texts("echo").get("told", "{b}回了「{o}」那天的话。")), {"b": _name(role), "o": ev.get("title", "")})
 		m._toast(told + (HEADLINE[outcome] + "。" if mended else ""))
 		return
 	var other := "mei" if role == "qing" else "qing"
 	var box: VBoxContainer = m.modal_body
 	m._open_modal()
-	m._label(box, "回话 · %s" % str(d.get("label", "")), 30, P.role_color(role))
-	m._label(box, str(ev.get("title", "")), 64)
-	box.add_child(Seal.new(outcome, null, 0.72))
-	m._label(box, "%s %s" % [m._role_text(role), m._option_text(ev.get("id"), e.choices[role])], 38, P.role_color(role))
-	m._label(box, "%s %s" % [m._role_text(other), m._option_text(ev.get("id"), d.get("partner"))], 38, P.role_color(other))
-	m._label(box, "%s · %s" % [HEADLINE[outcome], str(e.text)], 44, P.INK_SOFT if outcome == "miss" else P.OVERLAP)
+	_head(box, outcome, "回话 · %s · %s" % [str(d.get("label", "")), str(ev.get("title", ""))])
+	box.add_child(Resonance.new(outcome, null, 0.78))
+	_pick_row(box, role, m._option_text(ev.get("id"), e.choices[role]))
+	_pick_row(box, other, m._option_text(ev.get("id"), d.get("partner")))
+	Kit.rule(box, Color(P.INK, 0.25))
+	m._label(box, str(e.text), 44, P.INK if outcome == "miss" else P.OVERLAP)
 	var lines: Array = d.get("lines", [])
 	if not lines.is_empty():
 		m._label(box, "\n".join(lines.map(func(l): return str(l))), 32, P.INK_SOFT)
-	m._button(box, "嗯", m._close_modal)
+	m._primary(box, "嗯", m._close_modal)
+	m._gap(box, 4)
 
 
 # ----------------------------------------------------------------------

@@ -14,7 +14,7 @@ const { Client } = await import("@heroiclabs/nakama-js");
 const HOST = process.env.NAKAMA_HOST || "127.0.0.1";
 const PORT = process.env.NAKAMA_PORT || "7350";
 const KEY = process.env.NAKAMA_KEY || "defaultkey";
-const PROTOCOL = 5; // 和 main.ts 的 PROTOCOL_VERSION 一起改（arch.test.mjs 的契约测试会比对）
+const PROTOCOL = 6; // 和 main.ts 的 PROTOCOL_VERSION 一起改（arch.test.mjs 的契约测试会比对）
 const OP = { SNAPSHOT: 1, ROLL: 2, ROLL_STATE: 3, MOVE: 4, ACT: 5, CHOOSE: 6, WORLD: 7, EVENT: 8, ERROR: 9, LOG: 10, PRESENCE: 11, PING: 12, PONG: 13, PASS: 22, CANCEL: 23, EXIT: 24, ECHO: 30, AGAIN: 31 };
 const run = Date.now().toString(36);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

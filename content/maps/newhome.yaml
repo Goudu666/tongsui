@@ -1,0 +1,60 @@
+# 新家：三十岁安家那一关买了房的人，住进河对岸的新楼小区——就是老厂原来那块地（见 across.yaml 的 factory）。
+# 电梯、物业、小区花园；阳台朝着河，看得见对岸河畔里那一片。写法见 building.yaml 文件头。
+
+id: newhome
+name: 新家
+width: 2800
+unlock: { minAge: 30, flags: [ home_own ] }
+
+areas:
+  - { id: flat, name: 屋里, span: [ 0, 1240 ], floor: 0 }
+  - { id: landing, name: 电梯间, span: [ 1240, 1680 ], floor: 0 }
+  - { id: garden, name: 小区花园, span: [ 1680, 2800 ], floor: 0 }
+
+exits:
+  - { id: to_across, at: 2740, to: across, arrive: 880, label: 出小区 }
+
+spots:
+  - { id: new_bed, at: 160, area: flat, actions: [ sleep ] }
+  - { id: new_table, at: 510, area: flat, actions: [ eat ] }
+  - { id: new_desk, at: 730, area: flat, actions: [ read ] }
+  - { id: new_balcony, at: 1060, area: flat, actions: [ balcony ] }
+  - { id: garden_path, at: 2190, area: garden, actions: [ walk_river ] }
+
+npcs:
+  - id: property
+    name: 物业的小伙子
+    at: 1460
+    eras: [ middle, old ]
+    lines:
+      middle:
+        - 快递我给您放门口了。
+        - 下周三停水，通知贴电梯里了。
+      old:
+        - 大爷，电梯修好了，慢点儿。
+  - id: next_door
+    name: 对门的邻居
+    at: 1390
+    eras: [ middle, old ]
+    slots: [ morning, night ]
+    lines:
+      middle:
+        - 您好。
+        - 上班去？
+      old:
+        - 您是对门的吧？住了这么多年，头一回说上话。
+  - id: dog_walker
+    name: 遛狗的
+    at: 2330
+    eras: [ middle, old ]
+    slots: [ morning, night ]
+    lines:
+      default:
+        - 它不咬人，就是爱闻。
+        - 天天这个点儿，它比我还准。
+
+art: |
+  新楼的一户剖开：客厅、阳台，墙白，地亮；屋里的东西都是新买的，只有一样从老楼搬来的旧物件（传承的老物件可以摆这儿）。
+  电梯间两扇对着的防盗门，门上没有春联也没有字。小区花园修得整齐，树是新栽的，比河畔里那棵细一大圈。
+  阳台远景是河和对岸那一片老楼顶；拆迁以后老楼那一块换成工地，再换成别的。
+  地面那一段的路砖底下，有一块是当年老厂的红砖（不点破，画出来就行）。

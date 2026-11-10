@@ -20,7 +20,8 @@ const WAVE_ACTIONS := ["开门喊一声"]
 var role := "qing"
 var display_name := ""
 var is_local := false
-var net_target := Vector2.ZERO   ## 远端：服务器给的位置
+var net_target := Vector2.ZERO   ## 远端：插值缓冲算出的位置（已经是平滑的）
+var snap_remote := false         ## 下一帧直接跳到 net_target（重连快照）
 var action_label := ""
 var asleep := false
 var walking := false
@@ -72,6 +73,13 @@ func set_path(points: PackedVector2Array) -> void:
 	_path = points
 
 
+## 服务器校正：人和还没走完的路一起平移，不会被拽回去再走一遍
+func nudge(step: Vector2) -> void:
+	position += step
+	for i in _path.size():
+		_path[i] += step
+
+
 func _process(delta: float) -> void:
 	_t += delta
 	var before := position
@@ -88,7 +96,13 @@ func _process(delta: float) -> void:
 				position += to.normalized() * budget
 				budget = 0.0
 	else:
-		position = position.lerp(net_target, 1.0 - exp(-8.0 * delta))
+		if snap_remote or position.distance_to(net_target) > 500.0:
+			position = net_target
+			before = position  # 瞬移不算走路
+			snap_remote = false
+		else:
+			# 缓冲给出的已经是匀速轨迹，这里只做很轻的平滑，抹掉帧间的小抖动
+			position = position.lerp(net_target, 1.0 - exp(-25.0 * delta))
 	var v := (position - before) / maxf(delta, 0.001)
 	walking = v.length() > 25.0
 	if walking:

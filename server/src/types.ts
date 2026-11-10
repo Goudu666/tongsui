@@ -226,6 +226,8 @@ interface Actor {
   /** 行动结束的游戏分钟 */
   until: number | null;
   asleep: boolean;
+  /** 这个行动是影子替他开始的（本人回来时可以收回） */
+  shadow?: boolean;
 }
 
 interface PendingEvent {

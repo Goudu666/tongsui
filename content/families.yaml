@@ -92,3 +92,39 @@
   desc: 上面有个哥哥，下面有个妹妹。家里什么都得抢，但从来不冷清。
   bonus: { luck: 2 }
   traits: [fam_poor, fam_siblings]
+
+- id: zhao
+  name: 赵家 · 楼长家
+  wealth: 1
+  weight: 2
+  money: 25
+  desc: 父亲是这栋楼的楼长，腰上挂着全楼的钥匙。谁家漏水、谁家欠电费、楼道里谁堆了白菜，他都知道。
+  bonus: { mind: 1, charm: 1, luck: -1 }
+  traits: [fam_head]
+
+- id: ma
+  name: 马家 · 楼顶鸽子棚
+  wealth: 0
+  weight: 2
+  money: 6
+  desc: 爷爷在楼顶搭了个鸽子棚，三十多只鸽子，每只都有名字。家里的钱一半买了鸽粮。
+  bonus: { luck: 1, body: 1 }
+  traits: [fam_pigeon, fam_poor]
+
+- id: meng
+  name: 孟家 · 开出租的
+  wealth: 1
+  weight: 2
+  money: 28
+  desc: 爸爸一个人带你，白天黑夜都在开出租。车后座是你的另一张床，收音机里的相声你都会背。
+  bonus: { charm: 1, body: 1, mind: -1 }
+  traits: [fam_taxi, fam_single]
+
+- id: liu
+  name: 刘家 · 楼下小卖部
+  wealth: 1
+  weight: 2
+  money: 40
+  desc: 楼下的小卖部是你家开的。冰柜、汽水、泡泡糖、五毛钱的画片，全楼的孩子都想跟你好。
+  bonus: { luck: 1, mind: 1, body: -1 }
+  traits: [fam_shop]

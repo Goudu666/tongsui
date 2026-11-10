@@ -1,10 +1,27 @@
 name: build
 
+# push 到 main / 开 PR：测服务端 + 端到端联机 + 部署脚本冒烟 + 出 APK（Artifacts 下载）
+# 打 tag（git tag v0.2.0 && git push --tags）：再额外发一个 GitHub Release，APK 挂在上面
+#
+# 仓库里可选的配置（Settings → Secrets and variables → Actions），全不填也能出能装的调试包：
+#   Variables  TONGSUI_SERVER             部署脚本最后打印的那段 JSON，打进 APK 当默认服务器
+#   Secrets    ANDROID_KEYSTORE_BASE64    正式签名，tools/make_release_keystore.sh 生成
+#              ANDROID_KEYSTORE_PASSWORD
+#              ANDROID_KEY_ALIAS
+
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   server:
@@ -20,8 +37,8 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - name: 内容校验，并确认生成文件已提交
@@ -45,6 +62,8 @@ jobs:
           curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
             -d '"{\"name\":\"ci\"}"' http://127.0.0.1:7350/v2/rpc/lifeline_create | tee rpc.json
           jq -e '.payload | fromjson | .code | length == 6' rpc.json
+      - name: 联机端到端（两个机器人：配对、并发开房、同框走动、断线重连、版本握手、内容下载）
+        run: npm --prefix server run e2e
       - name: Nakama 日志
         if: failure()
         run: docker logs nakama || true
@@ -53,44 +72,109 @@ jobs:
           name: server-module
           path: server/build/index.js
 
-  android:
-    name: 客户端 · 导出 Android 调试 APK
+  e2e:
+    name: 端到端 · 两个真 Godot 客户端联机
+    needs: server
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          name: server-module
+          path: server/build
+      - name: 拉 nakama-godot 插件
+        run: bash tools/fetch_addons.sh --no-font
+      - name: 开线 → 配对 → 进房间 → 重抽 → 投胎 → 收到实时世界
+        run: bash tools/ci/e2e_online.sh
+
+  client-unit:
+    name: 客户端 · 单测（不需要服务器）
     runs-on: ubuntu-24.04
     container:
       image: barichello/godot-ci:4.7.2
-    env:
-      GODOT_VERSION: 4.7.2
     steps:
-      - uses: actions/checkout@v4
-      - name: 准备导出模板与编辑器设置
+      - uses: actions/checkout@v5
+      - name: 插值缓冲 / 服务器时钟 / 地址解析 / 内容仓库
+        run: bash tools/ci/client_unit.sh
+
+  deploy:
+    name: 部署 · 一键安装脚本冒烟（HTTPS / 登录 / 备份恢复 / 更新）
+    needs: server
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          name: server-module
+          path: server/build
+      - name: 用 localhost 自签证书把 install.sh 全流程跑一遍
+        run: bash deploy/ci-smoke.sh --module server/build/index.js
+
+  android:
+    name: 客户端 · 导出 Android APK
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.7.2
+    outputs:
+      apk_name: ${{ steps.apk.outputs.apk_name }}
+      signing: ${{ steps.apk.outputs.signing }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: 版本号
+        id: ver
         run: |
-          # GitHub 容器里 HOME=/github/home，镜像把模板和设置放在 /root 下
-          mkdir -p ~/.local/share/godot/export_templates ~/.config
-          cp -r /root/.config/godot ~/.config/godot || true
-          cp -r /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/ || true
-          if [ ! -f /root/debug.keystore ]; then
-            keytool -genkeypair -v -keystore /root/debug.keystore -storepass android -alias androiddebugkey \
-              -keypass android -keyalg RSA -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-          fi
-          ls ~/.config/godot ~/.local/share/godot/export_templates
-      - name: 导入资源
-        run: timeout 300 godot --headless --editor --quit --path client || true
-      - name: 冒烟运行游戏（脚本有解析/运行错误就失败）
-        run: |
-          timeout 60 godot --headless --path client --quit-after 300 2>&1 | tee run.log || true
-          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script|Invalid call|Invalid access" run.log; then
-            echo "::error::GDScript 报错，见上方日志" && exit 1
-          fi
-      - name: 导出 APK
+          # versionCode 只增不减，手机上才能覆盖安装；tag v1.2.3 → 1.2.3，其他 → 0.1.<序号>
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then name="${GITHUB_REF_NAME#v}"; else name="0.1.${GITHUB_RUN_NUMBER}"; fi
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "code=${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+      - name: 打包（插件 / 字体 / 服务器地址 / 冒烟测试 / 签名）
+        id: apk
         env:
-          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /root/debug.keystore
-          GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
-          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
-        run: |
-          mkdir -p build
-          godot --headless --path client --export-debug "Android" "$PWD/build/tongsui-debug.apk"
-          ls -la build
+          VERSION_NAME: ${{ steps.ver.outputs.name }}
+          VERSION_CODE: ${{ steps.ver.outputs.code }}
+          TONGSUI_SERVER: ${{ vars.TONGSUI_SERVER }}
+          # PR 里拿不到 Secrets，会自动退回调试签名
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: bash tools/ci/build_apk.sh
       - uses: actions/upload-artifact@v4
         with:
-          name: tongsui-debug-apk
-          path: build/tongsui-debug.apk
+          name: ${{ steps.apk.outputs.apk_name }}
+          path: ${{ steps.apk.outputs.apk }}
+          compression-level: 0 # APK 本身就是压缩包
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-logs
+          path: |
+            build/*.log
+            build/signature.txt
+          if-no-files-found: ignore
+
+  release:
+    name: 发布 · GitHub Release
+    if: github.ref_type == 'tag'
+    needs: [server, e2e, client-unit, deploy, android]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.android.outputs.apk_name }}
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: server-module
+          path: dist
+      - name: 发 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: 同岁 ${{ github.ref_name }}
+          files: |
+            dist/*.apk
+            dist/index.js
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          prerelease: ${{ needs.android.outputs.signing != 'release' }}

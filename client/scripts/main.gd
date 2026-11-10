@@ -9,6 +9,9 @@ const P := preload("res://scripts/ui/palette.gd")
 const LifeTime := preload("res://scripts/ui/life_time.gd")
 const NetClient := preload("res://scripts/net/lifeline_client.gd")
 const WorldView := preload("res://scripts/world/world_view.gd")
+const ServerConfig := preload("res://scripts/net/config.gd")
+const ServerSettings := preload("res://scripts/ui/server_settings.gd")
+const ContentStore := preload("res://scripts/net/content_store.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -27,6 +30,8 @@ var modal: ColorRect
 var modal_body: VBoxContainer
 var toast: Label
 var _toast_tween: Tween
+var banner: Label        ## 顶部「连接断了，正在重连」
+var lobby_list: VBoxContainer  ## 大厅里「继续」的人生线列表
 
 var world: WorldView
 var net: NetClient
@@ -45,15 +50,27 @@ func _ready() -> void:
 
 
 func _load_content() -> void:
-	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/content.json"))
-	if parsed is Dictionary:
-		content = parsed
-		for ev in content.events:
-			events_by_id[ev.id] = ev
-		for f in content.families:
-			families[f.id] = f
-		for t in content.talents:
-			talents[t.id] = t
+	_apply_content(ContentStore.load_bundled())
+
+
+## 换一份内容：开机时用安装包里带的；联机后服务器的内容不一样，就换成服务器下发的那一版
+func _apply_content(c: Dictionary) -> void:
+	if c.is_empty():
+		return
+	content = c
+	events_by_id.clear()
+	families.clear()
+	talents.clear()
+	for ev in content.events:
+		events_by_id[ev.id] = ev
+	for f in content.families:
+		families[f.id] = f
+	for t in content.talents:
+		talents[t.id] = t
+	if net != null:
+		net.content_version = ContentStore.version_of(content)
+	if world != null and not offline_preview:
+		_leave_world()  # 地图和行动表可能也变了：下一个快照到了按新内容重建
 
 
 func _other() -> String:
@@ -165,6 +182,23 @@ func _build_layers() -> void:
 	toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	toast.modulate.a = 0.0
 	ui.add_child(toast)
+
+	banner = Label.new()
+	banner.anchor_left = 0.0
+	banner.anchor_right = 1.0
+	banner.offset_top = 0
+	banner.offset_bottom = 64
+	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	banner.add_theme_font_size_override("font_size", 30)
+	banner.add_theme_color_override("font_color", P.PAPER)
+	var bsb := StyleBoxFlat.new()
+	bsb.bg_color = Color(P.MEI, 0.92)
+	banner.add_theme_stylebox_override("normal", bsb)
+	banner.text = "连接断了，正在重连……你的影子先替你过着"
+	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner.visible = false
+	ui.add_child(banner)
 
 
 func _scroll_column(parent: Control, side: int, top: int) -> VBoxContainer:
@@ -309,6 +343,9 @@ func _show_screen() -> void:
 
 func _show_title() -> void:
 	_leave_world()
+	if net != null:
+		net.go_offline()
+	banner.visible = false
 	_show_screen()
 	_gap(body, 240)
 	var row := HBoxContainer.new()
@@ -352,6 +389,7 @@ func _process(delta: float) -> void:
 	if offline_preview:
 		_preview_minute = fmod(_preview_minute + delta * 4.0 - 390.0, 930.0) + 390.0
 		hud_time.text = "%s · %s · 预览" % [LifeTime.at(0).label, P.clock(_preview_minute)]
+		world.set_minute(_preview_minute)
 	world.controllable = not modal.visible and not screen.visible
 	var spot := world.nearest_spot()
 	if spot.is_empty() or modal.visible:
@@ -373,6 +411,12 @@ func _process(delta: float) -> void:
 	action_btn.visible = true
 
 
+func _ping_text() -> String:
+	if net == null or offline_preview or net.rtt_ms < 0.0:
+		return ""
+	return " · %d ms" % int(net.rtt_ms)
+
+
 func _on_action_pressed() -> void:
 	if net != null and action_btn.has_meta("spot"):
 		net.act(str(action_btn.get_meta("spot")))
@@ -392,7 +436,7 @@ func _show_online() -> void:
 	_gap(body, 120)
 	_label(body, "联机", 96)
 	if not NetClient.addon_available():
-		_label(body, "还没有安装 nakama-godot 插件。\n在仓库根目录运行 tools/fetch_addons.sh，然后用 Godot 重新打开项目。", 36, P.MEI)
+		_label(body, "没有找到 nakama-godot 插件（client/addons/com.heroiclabs.nakama）。\n确认 project.godot 里注册了 autoload「Nakama」，然后用 Godot 重新打开项目。", 36, P.MEI)
 		_button(body, "返回", _show_title)
 		return
 	if net == null:
@@ -401,22 +445,42 @@ func _show_online() -> void:
 		net.status.connect(_set_status)
 		net.failed.connect(_on_net_failed)
 		net.created.connect(_on_net_created)
+		net.opened.connect(_on_net_opened)
+		net.lifelines.connect(_on_lifelines)
+		net.partner_joined.connect(_on_partner_joined)
+		net.connection_changed.connect(_on_connection_changed)
+		net.recovered.connect(_on_recovered)
+		net.content_updated.connect(_apply_content)
+		net.content_version = ContentStore.version_of(content)
 		net.snapshot.connect(_on_snapshot)
 		net.roll_state.connect(_on_roll_state)
 		net.world_state.connect(_on_world_state)
 		net.event_started.connect(_on_event_started)
 		net.log_entries.connect(_on_log_entries)
 		net.presence.connect(_on_presence)
-		var ok: bool = await net.connect_server()
-		if not ok:
-			_button(body, "返回", _show_title)
-			return
+	_status(body)
+	var ok: bool = await net.connect_server()
+	if not ok:
+		_server_row(body)
+		_button(body, "重试", _show_online)
+		_button(body, "返回", _show_title)
+		return
+	_clear(body)
+	_gap(body, 120)
+	_label(body, "联机", 96)
 
+	# 继续之前的人生线
+	lobby_list = VBoxContainer.new()
+	lobby_list.add_theme_constant_override("separation", 20)
+	body.add_child(lobby_list)
+	net.list_lifelines()
+
+	_gap(body, 20)
 	var name_edit := LineEdit.new()
 	name_edit.placeholder_text = "你的名字（最多 12 个字）"
 	name_edit.max_length = 12
 	body.add_child(name_edit)
-	_button(body, "开一条人生线（我是青）", func(): net.create_lifeline(name_edit.text))
+	_button(body, "开一条新的人生线（我是青）", func(): net.create_lifeline(name_edit.text))
 	_gap(body, 20)
 	var code_edit := LineEdit.new()
 	code_edit.placeholder_text = "输入 TA 发给你的 6 位配对码"
@@ -425,7 +489,110 @@ func _show_online() -> void:
 	_button(body, "加入（我是梅）", func(): net.join_lifeline(code_edit.text.strip_edges(), name_edit.text))
 	_gap(body, 20)
 	_status(body)
+	_button(body, "换手机找回", _show_recovery)
+	_server_row(body)
 	_button(body, "返回", _show_title)
+
+
+func _show_server_settings() -> void:
+	_show_screen()
+	_gap(body, 120)
+	var panel := ServerSettings.new()
+	panel.done.connect(func(changed: bool):
+		if changed:
+			_drop_net()
+		_show_online())
+	body.add_child(panel)
+
+
+func _drop_net() -> void:
+	if net != null:
+		net.go_offline()
+		net.queue_free()
+		net = null
+
+
+## 服务器地址 + 设置入口（大厅和连不上时都显示）
+func _server_row(parent: Container) -> void:
+	_label(parent, "服务器：%s" % ServerConfig.url(), 28, P.INK_SOFT)
+	_button(parent, "服务器设置", _show_server_settings)
+
+
+## 换手机找回：显示这台手机的找回码；或者输入旧手机的找回码
+func _show_recovery() -> void:
+	_show_screen()
+	_gap(body, 120)
+	_label(body, "换手机找回", 72)
+	_label(body, "把下面的找回码记下来。换手机、卸载重装之后，在新手机上输入它，就能回到你们的人生线。", 34, P.INK_SOFT)
+	var code_label := _label(body, "生成中……", 88, P.QING, HORIZONTAL_ALIGNMENT_CENTER)
+	var code: String = await net.recovery_code()
+	if not is_instance_valid(code_label):
+		return
+	code_label.text = code if code != "" else "（生成失败）"
+	if code != "":
+		_button(body, "复制找回码", func():
+			DisplayServer.clipboard_set(code)
+			_set_status("已复制，存到备忘录里"))
+	_gap(body, 40)
+	_label(body, "我是从旧手机过来的", 36)
+	var edit := LineEdit.new()
+	edit.placeholder_text = "输入旧手机上的 10 位找回码"
+	edit.max_length = 12
+	body.add_child(edit)
+	_button(body, "找回", func(): net.recover(edit.text))
+	_status(body)
+	_button(body, "返回", _show_online)
+
+
+func _on_recovered(ok: bool, text: String) -> void:
+	_set_status(text)
+	if ok:
+		_show_online()
+
+
+func _on_lifelines(items: Array) -> void:
+	if lobby_list == null or not is_instance_valid(lobby_list):
+		return
+	_clear(lobby_list)
+	if items.is_empty():
+		return
+	_label(lobby_list, "继续", 40, P.INK_SOFT)
+	var last := net.last_lifeline()
+	# 上次玩的放最上面
+	items.sort_custom(func(a, b): return str(a.lifelineId) == last and str(b.lifelineId) != last)
+	for it in items:
+		var role := str(it.role)
+		var nm: Dictionary = it.names if it.names is Dictionary else {}
+		var me := str(nm.get(role, P.ROLE_NAME.get(role, role)))
+		var other_role := "mei" if role == "qing" else "qing"
+		var text := ""
+		if not bool(it.paired):
+			text = "%s · 等 TA 输入配对码 %s" % [me, str(it.code)]
+		else:
+			var where := "投胎中"
+			if str(it.phase) == "life":
+				where = str(it.label)
+			elif str(it.phase) == "ended":
+				where = "一生已经过完"
+			text = "%s & %s · %s" % [me, str(nm.get(other_role, "")), where]
+		var id := str(it.lifelineId)
+		var b := _button(lobby_list, text, func(): net.open_lifeline(id))
+		b.add_theme_color_override("font_color", P.role_color(role))
+
+
+func _on_net_opened(info: Dictionary) -> void:
+	if info.get("matchId") == null and info.has("code"):
+		_on_net_created(str(info.code), str(info.lifelineId))
+
+
+func _on_partner_joined(_lifeline_id: String, partner_name: String) -> void:
+	_set_status("%s 来了，正在进屋……" % (partner_name if partner_name != "" else "TA"))
+
+
+func _on_connection_changed(is_online: bool) -> void:
+	banner.visible = not is_online
+	if is_online and world != null:
+		_toast("连回来了")
 
 
 func _on_net_failed(text: String) -> void:
@@ -440,15 +607,28 @@ func _on_net_created(code: String, lifeline_id: String) -> void:
 	_gap(body, 240)
 	_label(body, "把配对码发给 TA", 40, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
 	_label(body, code, 140, P.QING, HORIZONTAL_ALIGNMENT_CENTER)
-	_label(body, "TA 加入后，点下面进入", 34, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
+	_label(body, "TA 输入之后，这里会自己进屋", 34, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
 	_gap(body, 80)
-	_button(body, "进入", func(): net.open_lifeline(lifeline_id))
+	_button(body, "复制配对码", func():
+		DisplayServer.clipboard_set(code)
+		_set_status("已复制，去微信粘贴给 TA"))
+	_button(body, "TA 已经输好了，进去", func(): net.open_lifeline(lifeline_id))
+	_button(body, "先回大厅", _show_online)
 	_status(body)
 
 
+var _partner_online: Variant = null
+
+
 func _on_presence(data: Dictionary) -> void:
-	if world != null and not offline_preview:
-		_toast("TA 上线了" if data.online[_other()] else "TA 下线了，TA 的影子会替 TA 过日子")
+	var now_online := bool(data.online[_other()])
+	# PRESENCE 每次有人进出房间都会广播，只在 TA 的状态真的变了时提示
+	if _partner_online != null and now_online == _partner_online:
+		return
+	var first := _partner_online == null
+	_partner_online = now_online
+	if world != null and not offline_preview and not (first and now_online):
+		_toast("TA 上线了" if now_online else "TA 下线了，TA 的影子会替 TA 过日子")
 
 
 # ======================================================================
@@ -459,15 +639,41 @@ func _on_snapshot(data: Dictionary) -> void:
 	names = data.names
 	my_role = str(data.you)
 	life = data.life
+	_partner_online = bool(data.online[_other()])
 	match str(life.phase):
 		"roll":
+			_leave_world()
 			_show_roll()
 		"life":
 			if world == null:
 				_enter_world()
+			world.set_stage(LifeTime.at(int(life.get("turn", 0))).stage)
+			var w: Variant = life.get("world")
+			if w is Dictionary:
+				world.apply_snapshot_actors(w.get("actors"))
+				last_world["minute"] = w.get("minute", 390)
+				last_world["schoolDay"] = w.get("schoolDay", false)
+				_resume_event(w.get("event"))
 			_refresh_hud()
 		"ended":
 			_show_ending()
+
+
+## 重连时如果正卡在一件事里：把选择框弹回来（选过了就显示「等 TA」）
+func _resume_event(pe: Variant) -> void:
+	if not pe is Dictionary or not pe.roles.has(my_role):
+		if modal.has_meta("waiting_event"):
+			_close_modal()
+		return
+	if modal.visible and str(modal.get_meta("waiting_event", "")) == str(pe.eventId):
+		return
+	var mine: Variant = pe.get("mine")
+	if mine == null:
+		_on_event_started({"event": pe})
+	else:
+		_open_modal()
+		modal.set_meta("waiting_event", pe.eventId)
+		_pick_shown(str(mine), _option_text(pe.eventId, mine), pe.kind == "mirror")
 
 
 # ======================================================================
@@ -528,6 +734,8 @@ func _enter_world() -> void:
 	world = WorldView.new()
 	add_child(world)
 	world.setup(content, my_role, names)
+	world.set_stage(LifeTime.at(int(life.get("turn", 0))).stage)
+	world.net = null if offline_preview else net
 	world.move_report.connect(_on_move_report)
 	_refresh_hud()
 
@@ -548,7 +756,7 @@ func _refresh_hud() -> void:
 	var t := LifeTime.at(int(life.get("turn", 0)))
 	var minute := float(last_world.get("minute", 390))
 	var school := " · 上学日" if bool(last_world.get("schoolDay", false)) else ""
-	hud_time.text = "%s · %s%s" % [t.label, P.clock(minute), school]
+	hud_time.text = "%s · %s%s%s" % [t.label, P.clock(minute), school, _ping_text()]
 	var needs: Dictionary = last_world.get("needs", {}).get(my_role, {})
 	if needs.is_empty() and life.get("persons") != null:
 		needs = life.persons[my_role].needs
@@ -599,6 +807,10 @@ func _on_event_started(data: Dictionary) -> void:
 
 func _pick(option_id: String, option_text: String, mirror: bool) -> void:
 	net.choose(option_id)
+	_pick_shown(option_id, option_text, mirror)
+
+
+func _pick_shown(_option_id: String, option_text: String, mirror: bool) -> void:
 	_clear(modal_body)
 	_label(modal_body, "你选了", 32, P.INK_SOFT)
 	_label(modal_body, option_text, 48, P.role_color(my_role))

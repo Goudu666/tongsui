@@ -1,0 +1,371 @@
+# 老年篇事件（60 岁起，一回合 = 五年里被记住的一天）
+# alone: true 的事件只在对方已经离开以后出现。
+
+- id: o_last_letter
+  kind: solo
+  stage: old
+  weight: 1
+  title: 最后一封信
+  text: 你翻出一叠旧信。有一封，当年写好了却没有寄出去。
+  options:
+    - id: send
+      text: 现在寄出去
+      tags: [gentle]
+      effects: { self: { mood: 10 }, other: { mood: 10 }, bond: { close: 2 } }
+    - id: keep
+      text: 放回抽屉
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+
+# ---------- 两个人 ----------
+
+- id: o_capsule
+  kind: mirror
+  stage: old
+  where: river
+  when: [600, 1080]
+  hint: 海河边那棵老树还在。
+  weight: 3
+  requires: { flags: [p_capsule] }
+  title: 铁皮盒子
+  text: 老树还在。铁皮盒子锈死了，最后拿钥匙撬开：两颗玻璃球，一颗乳牙，一张折了四折的纸。
+  options:
+    - id: open
+      text: 把纸展开
+      tags: [adventure]
+      effects: { self: { mood: 10 } }
+    - id: pocket
+      text: 先不看，揣兜里
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+    - id: bury
+      text: 原样埋回去
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+  resonance:
+    open:
+      text: 纸上画着两个小人站在楼顶，头发涂成了白的。底下一行歪字：「老了也这样」。
+      memory: 老了也这样
+      bond: { sync: 4, close: 4 }
+    pocket:
+      text: 那张纸谁也没展开。回家的路上，两颗玻璃球在两个兜里，一路叮当响。
+      memory: 两颗玻璃球
+      bond: { sync: 3, close: 3 }
+    bury:
+      text: 盒子埋回原处，比当年深一点。「留给下一拨孩子。」
+      memory: 再埋一回
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个已经把纸展开了，一个伸手想拦。河风吹得纸哗哗响，谁也没念出来。
+    bond: { close: 0 }
+
+- id: o_promise
+  kind: mirror
+  stage: old
+  where: hallway
+  when: [900, 1260]
+  hint: 楼道里有人在说搬家。
+  weight: 3
+  requires: { flags: [p_promise] }
+  title: 还住对门
+  text: 家里人都说，岁数大了，该搬去离他们近点的地方。新楼的楼道里，两扇门还对着。小时候拉过钩的。
+  options:
+    - id: stay
+      text: 不走了
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: go
+      text: 听家里的
+      tags: [responsible]
+      effects: { self: { mood: -5 }, bond: { distance: 1 } }
+  resonance:
+    stay:
+      text: 隔着楼道，你们各喊了一嗓子「不走了」。勾过的那根小拇指，有点伸不直了。
+      memory: 不走了
+      bond: { sync: 4, close: 4 }
+    go:
+      text: 走之前那晚，两扇门都开着，灯亮到很晚。「拉过的钩，不算了啊。」「算。」
+      memory: 算
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个留下了，一个搬走了。对门住进一户年轻人，门上贴了新的福字。
+    bond: { close: -1 }
+
+- id: o_chess
+  kind: mirror
+  stage: old
+  where: alley
+  when: [600, 1080]
+  hint: 树荫底下摆开了棋盘。
+  weight: 2
+  title: 一盘棋
+  text: 楼下树荫底下，一盘象棋。看棋的比下棋的多，嘴上都说观棋不语，没一个闭着嘴的。
+  options:
+    - id: yield
+      text: 让一步
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: fight
+      text: 一步不让
+      tags: [competitive]
+      effects: { self: { mind: 1 } }
+    - id: talk
+      text: 下着下着聊别的
+      tags: [patient]
+      effects: { self: { mood: 10 } }
+  resonance:
+    yield:
+      text: 你们都让，让到最后，棋盘上就剩俩老将对着脸。看棋的急得直跺脚。
+      memory: 对脸的老将
+      bond: { sync: 3, close: 3 }
+    fight:
+      text: 杀到天黑，谁也没赢。约好明儿接着下。
+      memory: 明儿接着下
+      bond: { sync: 3, close: 2 }
+    talk:
+      text: 一盘棋下了一下午，棋子没动几个。说的全是六十年前的事。
+      memory: 一下午
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个让了一步，一个吃了个车。「你介是让我？」「没让。」
+    bond: { close: 0 }
+
+- id: o_winter_swim
+  kind: mirror
+  stage: old
+  where: river
+  when: [420, 720]
+  hint: 河面上冒着白气。
+  weight: 2
+  title: 冬泳的人
+  text: 河面冒着白气。一拨老爷子光着膀子往水里跳，喊得整条河都听得见。你们裹着棉袄，站在栏杆边。
+  options:
+    - id: jump
+      text: 脱了外套也下去
+      tags: [adventure]
+      effects: { self: { body: 1, mood: 10, energy: -20 } }
+    - id: count
+      text: 数数一共几个
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+    - id: cheer
+      text: 在岸上叫好
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 5 } }
+  resonance:
+    jump:
+      text: 你们俩一人挨了家里一顿数落，鼻涕流了三天。值。
+      memory: 三天的鼻涕
+      bond: { sync: 3, close: 3 }
+    count:
+      text: 数到第九个，你们想起小时候在这儿看过的那拨老爷子。现在往下跳的，是同岁的人了。
+      memory: 同岁的人
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个在水里喊「下来」，一个在岸上喊「上来」。跟小时候一模一样。
+    bond: { close: 1 }
+
+- id: o_jianbing
+  kind: mirror
+  stage: old
+  where: breakfast
+  when: [390, 600]
+  hint: 鏊子上滋啦一声。
+  weight: 2
+  title: 老样子
+  text: 排队买煎饼果子。摊主是当年那家的孙子，鬓角也白了。轮到你们，他没问，直接磕了俩鸡蛋。
+  options:
+    - id: scallion
+      text: 「多放葱花。」
+      tags: [gentle]
+      effects: { self: { hunger: 20, mood: 5 } }
+    - id: one_egg
+      text: 「改一个鸡蛋吧。」
+      tags: [responsible]
+      effects: { self: { hunger: 15, body: 1 } }
+    - id: quiet
+      text: 什么也不说
+      tags: [patient]
+      effects: { self: { hunger: 20 } }
+  resonance:
+    scallion:
+      text: 你们俩同时说了。他头也不抬：「知道。」
+      memory: 知道
+      bond: { sync: 3, close: 3 }
+    one_egg:
+      text: 你们同时说「改一个吧」，说完都笑了。他也笑：「岁数到了啊。」
+      memory: 一个鸡蛋
+      bond: { sync: 3, close: 2 }
+    quiet:
+      text: 葱花已经撒上去了，多多的。
+      memory: 多多的葱花
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个开了口，一个没开口。他手在半空停了一下，还是照老样子撒了葱花。
+    bond: { close: 0 }
+
+- id: o_pigeon_roof
+  kind: mirror
+  stage: old
+  where: roof
+  when: [900, 1140]
+  hint: 楼顶有鸽哨响。
+  weight: 2
+  requires: { flags: [p_pigeon] }
+  title: 灰鸽子
+  text: 新楼顶上有人养了一群鸽子。鸽哨一响，你们都抬头。里面有一只灰的，翅膀尖儿是白的。
+  options:
+    - id: whistle
+      text: 吹那声叫小灰的口哨
+      tags: [gentle]
+      effects: { self: { mood: 10 } }
+    - id: watch
+      text: 就这么看着
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+  resonance:
+    whistle:
+      text: 你们同时吹了那声口哨，跑调都跑得一样。那只灰鸽子绕回来，在头顶转了三圈。
+      memory: 跑调的口哨
+      bond: { sync: 4, close: 3 }
+    watch:
+      text: 你们仰着头，看它飞远，看它飞回来。脖子酸了，也没低头。
+      memory: 仰着头
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一声口哨吹出去。鸽子没回头，旁边的人回了头。
+    bond: { close: 1 }
+
+# ---------- 一个人 ----------
+
+- id: o_erhu_river
+  kind: solo
+  stage: old
+  where: river
+  when: [960, 1200]
+  weight: 2
+  requires: { flags: [erhu] }
+  title: 河边的二胡
+  text: 傍晚，你在海河边支开马扎，拉起二胡。指头比当年慢了，路过的孩子停下来听。
+  options:
+    - id: old
+      text: 拉车铺爷爷教的那支
+      tags: [patient]
+      effects: { self: { mood: 10 }, other: { mood: 5 }, flags: [erhu_life] }
+    - id: new
+      text: 拉支新学的
+      tags: [adventure]
+      effects: { self: { charm: 1, mood: 5 } }
+    - id: stop
+      text: 拉一半，停下听河
+      tags: [solitude]
+      effects: { self: { mood: 5 } }
+
+- id: o_grandkid
+  kind: solo
+  stage: old
+  weight: 2
+  requires: { minAge: 65, flags: [has_kid] }
+  title: 住哪儿
+  text: 孙辈问你小时候住哪儿。你指着窗外一片新楼：就那儿，三楼。对门住着一个同岁的。
+  options:
+    - id: tell
+      text: 从头讲起
+      tags: [gentle]
+      effects: { self: { mood: 10 } }
+    - id: walk
+      text: 领着去那片儿转转
+      tags: [adventure]
+      effects: { self: { mood: 10, energy: -10 } }
+    - id: short
+      text: 「早没了。」
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+
+- id: o_come_home
+  kind: solo
+  stage: old
+  weight: 2
+  requires: { minDistance: 2, flags: [left_city], notFlags: [came_back] }
+  title: 回天津
+  text: 在外地住了大半辈子。退了休，你在手机地图上把河畔里那片儿放大，放大，放大到看不清。
+  options:
+    - id: back
+      text: 搬回去
+      tags: [gentle]
+      effects: { self: { mood: 10 }, other: { mood: 10 }, bond: { distance: -2 }, flags: [came_back] }
+    - id: visit
+      text: 回去住一阵
+      tags: [patient]
+      effects: { self: { mood: 5 }, bond: { distance: -1 } }
+    - id: stay
+      text: 就在这儿吧
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+
+# ---------- 对方走了以后 ----------
+
+- id: o_alone_breakfast
+  kind: solo
+  stage: old
+  where: breakfast
+  when: [390, 600]
+  weight: 3
+  requires: { alone: true }
+  title: 两套
+  text: 你习惯地说了一声「两套」。说完，才想起来。
+  options:
+    - id: two
+      text: 就两套吧
+      tags: [gentle]
+      effects: { self: { hunger: 20, mood: -5 } }
+    - id: one
+      text: 改成一套
+      tags: [responsible]
+      effects: { self: { hunger: 20, mood: -10 } }
+    - id: sit
+      text: 不买了，坐会儿
+      tags: [solitude]
+      effects: { self: { mood: -5 } }
+
+- id: o_alone_pigeon
+  kind: solo
+  stage: old
+  weight: 3
+  requires: { alone: true }
+  title: 窗台
+  text: 一只灰鸽子落在窗台上。不怕人，歪着头看你。
+  options:
+    - id: millet
+      text: 撒一把小米
+      tags: [gentle]
+      effects: { self: { mood: 10 } }
+    - id: window
+      text: 推开窗
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: look
+      text: 就这么看着
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+
+- id: o_alone_names
+  kind: solo
+  stage: old
+  weight: 2
+  requires: { alone: true, flags: [p_wall_names] }
+  title: 描一遍
+  text: 你翻出老楼拆之前拍的那张照片。楼道墙上两个名字，小时候拿钥匙刻的。TA 的那个，淡了。
+  options:
+    - id: trace
+      text: 拿笔描一遍
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: both
+      text: 两个都描
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+    - id: leave
+      text: 就让它淡着
+      tags: [solitude]
+      effects: { self: { mood: -5 } }

@@ -1,5 +1,33 @@
-# 自动申请 HTTPS 证书，反代 Nakama 的 HTTP API 与 WebSocket
+# 自动申请 HTTPS 证书，反代 Nakama 的客户端 API 与 WebSocket（只有 7350）
+# 7351 管理控制台不经过这里，只能 ssh -L 7351:127.0.0.1:7351 访问
+{
+	# 有 ACME_EMAIL 时这里会变成 `email 你的邮箱`，没有就是空行
+	{$ACME_EMAIL_OPT}
+}
+
 {$DOMAIN} {
-	encode gzip
-	reverse_proxy nakama:7350
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
+	# 控制台相关路径一律不给（它本来就在 7351，这里再兜一层）
+	@console path /console* /v2/console*
+	respond @console 404
+
+	# WebSocket（/ws）Caddy 会自动处理升级，不用额外配置
+	reverse_proxy nakama:7350 {
+		header_up X-Real-IP {remote_host}
+	}
+
+	# 访问日志打到标准输出，由 Docker 日志滚动
+	log {
+		output stdout
+		format console
+	}
 }

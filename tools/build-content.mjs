@@ -210,6 +210,160 @@ for (const file of readdirSync(dir).filter((f) => f.endsWith(".yaml")).sort()) {
   }
 }
 
+// ---------- 主线：七章、每章三件一定会发生的事（content/story.yaml） ----------
+// 引擎接上之前只原样带进 content.story，不进随机池（content.events），游戏里不会发生。
+// 字段和写法见 story.yaml 文件头。字数上限按文风手册（docs/tianjin_style.md §4.1、§9.1）。
+const STORY_SCENES = ["building", "street", "river", "primary", "middle", "across", "away", "newhome", "rental", "park", "hospital"];
+const STORY_SLOTS = ["morning", "am", "pm", "evening", "night"];
+const STORY_CHAPTER_KEYS = ["id", "title", "ages", "opens", "intro", "closes"];
+const STORY_EVENT_KEYS = ["id", "kind", "chapter", "beat", "scene", "slot", "next", "replaces", "requires", "title", "text", "options", "resonance", "dissonance"];
+const STORY_OPTION_KEYS = ["id", "text", "tags", "effects", "requires", "cost"];
+const STORY_TEXT_MAX = { childhood: 60, teen: 55, young: 50, middle: 45, old: 30 };
+const STORY_MAX = { title: 7, next: 15, option: 15, resonance: 48, memory: 8, dissonance: 47, intro: 24 };
+// 「让出身体现资源差异」那边在关口上新加、还没合进 main 的路线标记。主线只读它们；那边合了以后从这里删掉
+const STORY_PENDING_FLAGS = ["uni_abroad"];
+const storyLen = (s) => [...String(s ?? "")].length;
+const story = { chapters: [], events: [] };
+{
+  const raw = load_story();
+  function load_story() {
+    try { return parse(readFileSync(join(root, "content", "story.yaml"), "utf8")) ?? {}; }
+    catch (e) { errors.push(`story.yaml: 读不了（${e.message}）`); return {}; }
+  }
+  checkKeys("story", raw, ["chapters", "events"]);
+  const tooLong = (at, field, s, max) => { if (storyLen(s) > max) errors.push(`${at}.${field}: ${storyLen(s)} 字，上限 ${max}`); };
+  const milestoneIds = new Set(events.filter((e) => e.kind === "milestone").map((e) => e.id));
+  const milestoneAge = Object.fromEntries(events.filter((e) => e.kind === "milestone").map((e) => [e.id, e.age]));
+  // 年纪落在哪个阶段（和 server/src/sim.ts 的 STAGE_TABLE 一致）
+  const stageAt = (age) => (age < 12 ? "childhood" : age < 18 ? "teen" : age < 30 ? "young" : age < 60 ? "middle" : "old");
+
+  const chapters = raw.chapters ?? [];
+  if (chapters.length === 0) errors.push("story.yaml: 至少要有一章");
+  let expectFrom = 3;
+  for (const [ci, ch] of chapters.entries()) {
+    const at = `story.chapters[${ci}]#${ch.id ?? "?"}`;
+    checkKeys(at, ch, STORY_CHAPTER_KEYS);
+    if (!ch.id || !ch.title || !ch.intro) errors.push(`${at}: 需要 id / title / intro`);
+    tooLong(at, "title", ch.title, STORY_MAX.title);
+    tooLong(at, "intro", ch.intro, STORY_MAX.intro);
+    if (!(Array.isArray(ch.ages) && ch.ages.length === 2 && Number.isInteger(ch.ages[0]) && Number.isInteger(ch.ages[1]) && ch.ages[0] <= ch.ages[1])) {
+      errors.push(`${at}.ages: 应为 [起始岁, 结束岁]`);
+      continue;
+    }
+    if (ch.ages[0] !== expectFrom) errors.push(`${at}.ages: 要从 ${expectFrom} 岁接上一章（章和章之间不能断、不能叠）`);
+    if (stageAt(ch.ages[0]) !== stageAt(ch.ages[1]) && ci < chapters.length - 1) errors.push(`${at}.ages: 一章不能跨两个人生阶段（正文字数按阶段算）`);
+    expectFrom = ch.ages[1] + 1;
+    for (const sc of ch.opens ?? []) if (!STORY_SCENES.includes(sc)) errors.push(`${at}.opens: 未知地图 ${sc}（可用：${STORY_SCENES.join(", ")}）`);
+    for (const m of ch.closes ?? []) {
+      if (!milestoneIds.has(m)) errors.push(`${at}.closes: 没有关口 ${m}`);
+      // 关口落在这一章里，或者正好是下一章的头一天（到了年纪的第一天早上发生）
+      else if (milestoneAge[m] <= ch.ages[0] || milestoneAge[m] > ch.ages[1] + 1) errors.push(`${at}.closes: ${m} 在 ${milestoneAge[m]} 岁，不在这一章（${ch.ages[0]}–${ch.ages[1]}，或下一章头一天）`);
+    }
+    if (!(ch.closes?.length > 0)) errors.push(`${at}: 每章要以一道关收尾（closes）`);
+    story.chapters.push({ id: ch.id, title: ch.title, ages: ch.ages, opens: ch.opens ?? [], intro: ch.intro, closes: ch.closes ?? [] });
+  }
+
+  const beats = new Map(); // "章.件" → 变体
+  for (const ev of raw.events ?? []) {
+    const at = `story#${ev.id ?? "?"}`;
+    checkKeys(at, ev, STORY_EVENT_KEYS);
+    if (!ev.id) errors.push(`${at}: 缺少 id`);
+    if (seen.has(ev.id)) errors.push(`${at}: id 和别的事件重复`);
+    seen.add(ev.id);
+    if (!["mirror", "solo"].includes(ev.kind)) errors.push(`${at}: 主线事件的 kind 只能是 mirror / solo（关口还写在 milestones.yaml）`);
+    const ch = story.chapters[ev.chapter - 1];
+    if (!Number.isInteger(ev.chapter) || !ch) { errors.push(`${at}: chapter 要是 1~${story.chapters.length}`); continue; }
+    if (!Number.isInteger(ev.beat) || ev.beat < 1) errors.push(`${at}: beat 要是从 1 起的整数`);
+    if (!STORY_SCENES.includes(ev.scene)) errors.push(`${at}: scene 未知 ${ev.scene}（可用：${STORY_SCENES.join(", ")}）`);
+    if (!STORY_SLOTS.includes(ev.slot)) errors.push(`${at}: slot 未知 ${ev.slot}（可用：${STORY_SLOTS.join(", ")}）`);
+    if (!ev.next) errors.push(`${at}: 缺少 next（纸带上「下一件事」那一句）`);
+    if (!ev.title || !ev.text) errors.push(`${at}: 缺少 title 或 text`);
+    const stage = stageAt(ch.ages[0]);
+    tooLong(at, "title", ev.title, STORY_MAX.title);
+    tooLong(at, "next", ev.next, STORY_MAX.next);
+    tooLong(at, "text", ev.text, STORY_TEXT_MAX[stage]);
+    for (const r of ev.replaces ?? []) if (!seen.has(r) || !events.some((e) => e.id === r)) errors.push(`${at}.replaces: 随机池里没有事件 ${r}`);
+    checkRequires(at, ev.requires, REQ_KEYS);
+    const rq = ev.requires ?? {};
+    if (rq.alone === true && ev.kind === "mirror") errors.push(`${at}: alone: true 只能用于 solo（mirror 需要两个人都在）`);
+    if (rq.minAge !== undefined && rq.minAge > ch.ages[1]) errors.push(`${at}: minAge ${rq.minAge} 超出了这一章（到 ${ch.ages[1]} 岁）`);
+    if (!Array.isArray(ev.options) || ev.options.length < 2) errors.push(`${at}: 至少两个选项`);
+    const optionIds = new Set();
+    for (const o of ev.options ?? []) {
+      const oat = `${at}.${o.id}`;
+      if (!o.id || !o.text) errors.push(`${oat}: 选项缺少 id 或 text`);
+      checkKeys(oat, o, STORY_OPTION_KEYS);
+      tooLong(oat, "text", o.text, STORY_MAX.option);
+      checkRequires(oat, o.requires, ["flags", "notFlags"]);
+      if (o.cost !== undefined && !(o.cost > 0)) errors.push(`${oat}.cost: 必须是正数`);
+      if (optionIds.has(o.id)) errors.push(`${oat}: 选项 id 重复`);
+      optionIds.add(o.id);
+      if (!(o.tags?.length > 0)) errors.push(`${oat}: 没有性格标签，影子不会学`);
+      for (const tag of o.tags ?? []) if (!TAGS.includes(tag)) errors.push(`${oat}: 未知性格标签 ${tag}`);
+      checkKeys(`${oat}.effects`, o.effects, EFFECT_KEYS);
+      const e = o.effects ?? {};
+      if (e.flags?.length) errors.push(`${oat}: 主线选项不发标记（路线标记由关口发，共同标记写在共鸣里）`);
+      checkDeltas(`${oat}.self`, e.self, SELF_KEYS);
+      checkDeltas(`${oat}.other`, e.other, SELF_KEYS);
+      checkDeltas(`${oat}.bond`, e.bond, BOND_KEYS);
+      o.tags = o.tags ?? [];
+      o.effects = { self: e.self ?? {}, other: e.other ?? {}, bond: e.bond ?? {}, flags: [] };
+      o.requires = o.requires ?? {};
+    }
+    // 不管家底和走过的路，谁来都得有得选
+    const open = (ev.options ?? []).filter((o) => !(o.requires && Object.values(o.requires).some((v) => (Array.isArray(v) ? v.length > 0 : v != null))) && !o.cost);
+    if (open.length < 2) errors.push(`${at}: 至少两个谁都能选的选项（不带 requires / cost）`);
+    if (ev.kind === "mirror") {
+      for (const [oid, r] of Object.entries(ev.resonance ?? {})) {
+        const rat = `${at}.resonance.${oid}`;
+        if (!optionIds.has(oid)) errors.push(`${rat}: 没有这个选项`);
+        if (!r.text) errors.push(`${rat}: 缺少 text`);
+        checkKeys(rat, r, RESONANCE_KEYS);
+        tooLong(rat, "text", r.text, STORY_MAX.resonance);
+        tooLong(rat, "memory", r.memory, STORY_MAX.memory);
+        checkDeltas(`${rat}.bond`, r.bond, BOND_KEYS);
+        r.bond = r.bond ?? {};
+        r.flags = checkPairFlags(rat, r.flags);
+      }
+      if (Object.keys(ev.resonance ?? {}).length === 0) errors.push(`${at}: 没有任何共鸣`);
+      if (!ev.dissonance?.text) errors.push(`${at}: mirror 事件需要 dissonance.text`);
+      checkKeys(`${at}.dissonance`, ev.dissonance, DISSONANCE_KEYS);
+      tooLong(`${at}.dissonance`, "text", ev.dissonance?.text, STORY_MAX.dissonance);
+      checkDeltas(`${at}.dissonance.bond`, ev.dissonance?.bond, BOND_KEYS);
+      if ((ev.dissonance?.bond?.close ?? 0) > 0) errors.push(`${at}.dissonance: 主线一生必经，错位的亲近变化只能是 0 或负的`);
+    } else if (ev.resonance || ev.dissonance) {
+      errors.push(`${at}: solo 事件不需要 resonance / dissonance`);
+    }
+    const key = `${ev.chapter}.${ev.beat}`;
+    if (!beats.has(key)) beats.set(key, []);
+    beats.get(key).push(ev);
+    story.events.push({
+      id: ev.id, kind: ev.kind, stage, seasons: [], weight: 1, where: null, when: null, hint: null, chapter: ev.chapter, beat: ev.beat, scene: ev.scene, slot: ev.slot, next: ev.next,
+      replaces: ev.replaces ?? [], requires: rq, title: ev.title, text: ev.text, options: ev.options,
+      resonance: ev.kind === "mirror" ? ev.resonance ?? {} : null,
+      dissonance: ev.kind === "mirror" ? { text: ev.dissonance?.text ?? "", bond: ev.dissonance?.bond ?? {}, flags: checkPairFlags(`${at}.dissonance`, ev.dissonance?.flags) } : null,
+    });
+  }
+  // 每章 1、2、3……连着；第五章往后（中年以后对门可能不在了），每件都要有对门不在时的变体
+  for (const [ci, ch] of story.chapters.entries()) {
+    const n = ci + 1;
+    const nums = [...beats.keys()].filter((k) => k.startsWith(`${n}.`)).map((k) => Number(k.split(".")[1])).sort((a, b) => a - b);
+    if (nums.length !== 3) errors.push(`story 第${n}章「${ch.title}」：应该正好三件事，现在 ${nums.length} 件`);
+    nums.forEach((b, i) => { if (b !== i + 1) errors.push(`story 第${n}章：件数要从 1 连着往下排，缺了第 ${i + 1} 件`); });
+    for (const b of nums) {
+      const list = beats.get(`${n}.${b}`);
+      if (new Set(list.filter((e) => e.kind === "mirror").map((e) => `${e.scene}/${e.slot}`)).size > 1) {
+        errors.push(`story 第${n}章第${b}件：两个人一起的几个变体要在同一个地方、同一段（两个人纸带上写的是同一句）`);
+      }
+      if (n >= 5 && !list.some((e) => e.requires?.alone === true)) errors.push(`story 第${n}章第${b}件：缺对门不在时的变体（solo，requires.alone: true）`);
+    }
+  }
+  for (const f of STORY_PENDING_FLAGS) {
+    if (produced.has(f)) errors.push(`story：${f} 已经有关口会发了，从 STORY_PENDING_FLAGS 里删掉`);
+    produced.add(f);
+  }
+}
+
 // ---------- 家庭 / 天赋 ----------
 const load = (f) => parse(readFileSync(join(root, "content", f), "utf8"));
 const families = load("families.yaml").map((f) => {
@@ -572,7 +726,7 @@ if (errors.length) {
 
 // 内容版本 = 内容本身的指纹。服务器在 lifeline_open 里报出它的版本，客户端发现和自己带的不一样，
 // 就用 content_get 把服务器这份下载下来用（改剧情只需要更新服务器，不用两台手机重装 APK）。
-const body = { events, families, talents, map, tracks, endings, rules, checks, duet, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks } };
+const body = { events, families, talents, map, tracks, endings, rules, checks, duet, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks }, story };
 const version = createHash("sha256").update(JSON.stringify(body)).digest("hex").slice(0, 12);
 const content = { version, ...body };
 const json = JSON.stringify(content, null, 1);
@@ -586,5 +740,6 @@ writeFileSync(join(root, "client", "data", "street.json"), JSON.stringify(street
 const by = (k) => events.filter((e) => e.stage === k).length;
 console.log(`✓ ${events.length} 个事件  ` + STAGES.map((s) => `${s}:${by(s)}`).join("  ") +
   `  |  ${families.length} 户人家  ${talents.length} 种天赋  ${map.zones.length} 个地点  ${map.actions.length} 种行动  ${tracks.length} 条路  ${milestones.length} 个关口` +
+  `  |  主线 ${story.chapters.length} 章 ${new Set(story.events.map((e) => e.chapter + "." + e.beat)).size} 件（${story.events.length} 个变体）` +
   `  |  结局 ${endings.pair.length} 种 · 一生 ${endings.lives.length} 种  |  检定 ${checks.length} 处  |  搭上了 ${catchCount} 组` +
   `  |  老物件 ${heirlooms.length} 件  街坊记住的事 ${remembered.length} 条  痕迹 ${legacyTraces.length} 种  藏着的天赋 ${talents.filter((t) => t.unlock).length} 种  |  版本 ${version}`);

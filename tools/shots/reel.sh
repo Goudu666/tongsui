@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# 录一段约 30 秒的演示视频（540×960，30 帧）。用法：bash tools/shots/reel.sh <输出.mp4>
+# 录一段约 30 秒的演示视频（横屏 960×540，30 帧）。用法：bash tools/shots/reel.sh <输出.mp4>
 #   GODOT=/path/to/godot   默认找 PATH 里的 godot；需要 ffmpeg
 set -euo pipefail
 root="$(cd "$(dirname "$0")/../.." && pwd)"
 out="${1:-$root/reel.mp4}"
 tmp="$(mktemp -d)"
 godot="${GODOT:-godot}"
-cmd=("$godot" --path "$root/client" --rendering-driver opengl3 --resolution 540x960 \
+cmd=("$godot" --path "$root/client" --rendering-driver opengl3 --resolution 960x540 \
   --write-movie "$tmp/reel.avi" --fixed-fps 30 --script "$root/tools/shots/reel.gd")
 if [[ -z "${DISPLAY:-}" ]] && command -v xvfb-run >/dev/null; then
-  xvfb-run -a -s "-screen 0 1200x2000x24" "${cmd[@]}"
+  xvfb-run -a -s "-screen 0 2000x1200x24" "${cmd[@]}"
 else
   "${cmd[@]}"
 fi

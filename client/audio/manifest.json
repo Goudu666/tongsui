@@ -1,0 +1,816 @@
+{
+ "files": {
+  "amb/air_day.ogg": {
+   "seconds": 17.0,
+   "lufs": -28.0,
+   "peak": -9.9,
+   "loop": true,
+   "bytes": 156513
+  },
+  "amb/air_night.ogg": {
+   "seconds": 17.0,
+   "lufs": -28.0,
+   "peak": -10.8,
+   "loop": true,
+   "bytes": 98264
+  },
+  "amb/beeper.ogg": {
+   "seconds": 1.443,
+   "lufs": -7.7,
+   "peak": -4.0,
+   "bytes": 16406
+  },
+  "amb/bell_a.ogg": {
+   "seconds": 2.283,
+   "lufs": -12.4,
+   "peak": -4.0,
+   "bytes": 17056
+  },
+  "amb/bell_b.ogg": {
+   "seconds": 2.712,
+   "lufs": -10.1,
+   "peak": -4.0,
+   "bytes": 20562
+  },
+  "amb/bell_c.ogg": {
+   "seconds": 2.921,
+   "lufs": -11.8,
+   "peak": -4.0,
+   "bytes": 22627
+  },
+  "amb/bowl.ogg": {
+   "seconds": 1.288,
+   "lufs": -12.5,
+   "peak": -4.0,
+   "bytes": 12416
+  },
+  "amb/cicada.ogg": {
+   "seconds": 17.0,
+   "lufs": -28.0,
+   "peak": -11.9,
+   "loop": true,
+   "bytes": 159922
+  },
+  "amb/clock.ogg": {
+   "seconds": 4.0,
+   "lufs": -28.0,
+   "peak": -8.2,
+   "loop": true,
+   "bytes": 16627
+  },
+  "amb/coo.ogg": {
+   "seconds": 1.995,
+   "lufs": -16.4,
+   "peak": -4.0,
+   "bytes": 14173
+  },
+  "amb/crickets.ogg": {
+   "seconds": 15.0,
+   "lufs": -28.0,
+   "peak": -15.0,
+   "loop": true,
+   "bytes": 84824
+  },
+  "amb/door_far.ogg": {
+   "seconds": 1.751,
+   "lufs": -22.6,
+   "peak": -4.0,
+   "bytes": 19497
+  },
+  "amb/egg.ogg": {
+   "seconds": 2.417,
+   "lufs": -19.6,
+   "peak": -4.0,
+   "bytes": 29378
+  },
+  "amb/erhu_a.ogg": {
+   "seconds": 4.861,
+   "lufs": -13.1,
+   "peak": -4.0,
+   "bytes": 51747
+  },
+  "amb/erhu_b.ogg": {
+   "seconds": 5.092,
+   "lufs": -11.7,
+   "peak": -4.0,
+   "bytes": 54095
+  },
+  "amb/erhu_c.ogg": {
+   "seconds": 5.254,
+   "lufs": -13.2,
+   "peak": -4.0,
+   "bytes": 55062
+  },
+  "amb/flap.ogg": {
+   "seconds": 1.559,
+   "lufs": -17.7,
+   "peak": -4.0,
+   "bytes": 20235
+  },
+  "amb/gust.ogg": {
+   "seconds": 4.482,
+   "lufs": -15.1,
+   "peak": -4.0,
+   "bytes": 46826
+  },
+  "amb/hallway.ogg": {
+   "seconds": 16.0,
+   "lufs": -28.0,
+   "peak": -13.9,
+   "loop": true,
+   "bytes": 107997
+  },
+  "amb/hammer.ogg": {
+   "seconds": 1.587,
+   "lufs": -13.6,
+   "peak": -4.0,
+   "bytes": 15864
+  },
+  "amb/horn.ogg": {
+   "seconds": 6.996,
+   "lufs": -13.9,
+   "peak": -4.0,
+   "bytes": 53837
+  },
+  "amb/iron.ogg": {
+   "seconds": 3.129,
+   "lufs": -17.5,
+   "peak": -4.0,
+   "bytes": 35466
+  },
+  "amb/keyboard.ogg": {
+   "seconds": 2.595,
+   "lufs": -21.3,
+   "peak": -4.0,
+   "bytes": 37523
+  },
+  "amb/keys.ogg": {
+   "seconds": 1.829,
+   "lufs": -15.3,
+   "peak": -4.0,
+   "bytes": 23318
+  },
+  "amb/kuaiban_a.ogg": {
+   "seconds": 4.435,
+   "lufs": -20.3,
+   "peak": -4.0,
+   "bytes": 56662
+  },
+  "amb/kuaiban_b.ogg": {
+   "seconds": 4.176,
+   "lufs": -20.7,
+   "peak": -4.0,
+   "bytes": 54763
+  },
+  "amb/pile.ogg": {
+   "seconds": 7.556,
+   "lufs": -20.9,
+   "peak": -4.0,
+   "bytes": 79314
+  },
+  "amb/plop.ogg": {
+   "seconds": 0.726,
+   "lufs": -17.8,
+   "peak": -4.0,
+   "bytes": 11133
+  },
+  "amb/popcorn.ogg": {
+   "seconds": 2.105,
+   "lufs": -21.9,
+   "peak": -4.0,
+   "bytes": 25716
+  },
+  "amb/pump.ogg": {
+   "seconds": 2.89,
+   "lufs": -16.8,
+   "peak": -4.0,
+   "bytes": 33592
+  },
+  "amb/radio.ogg": {
+   "seconds": 26.0,
+   "lufs": -28.0,
+   "peak": -15.5,
+   "loop": true,
+   "bytes": 215276
+  },
+  "amb/rasp.ogg": {
+   "seconds": 1.768,
+   "lufs": -17.9,
+   "peak": -4.0,
+   "bytes": 21870
+  },
+  "amb/ratchet.ogg": {
+   "seconds": 2.682,
+   "lufs": -20.1,
+   "peak": -4.0,
+   "bytes": 42292
+  },
+  "amb/river.ogg": {
+   "seconds": 17.0,
+   "lufs": -28.0,
+   "peak": -12.9,
+   "loop": true,
+   "bytes": 148944
+  },
+  "amb/roof_wind.ogg": {
+   "seconds": 17.0,
+   "lufs": -28.0,
+   "peak": -12.4,
+   "loop": true,
+   "bytes": 145318
+  },
+  "amb/school_bell.ogg": {
+   "seconds": 3.991,
+   "lufs": -10.1,
+   "peak": -4.0,
+   "bytes": 47105
+  },
+  "amb/school_din.ogg": {
+   "seconds": 16.0,
+   "lufs": -28.0,
+   "peak": -13.5,
+   "loop": true,
+   "bytes": 139974
+  },
+  "amb/scrape.ogg": {
+   "seconds": 1.664,
+   "lufs": -15.7,
+   "peak": -4.0,
+   "bytes": 20557
+  },
+  "amb/sizzle.ogg": {
+   "seconds": 12.0,
+   "lufs": -28.0,
+   "peak": -9.7,
+   "loop": true,
+   "bytes": 146933
+  },
+  "amb/sparrow_a.ogg": {
+   "seconds": 1.798,
+   "lufs": -16.5,
+   "peak": -4.0,
+   "bytes": 17166
+  },
+  "amb/sparrow_b.ogg": {
+   "seconds": 1.295,
+   "lufs": -16.2,
+   "peak": -4.0,
+   "bytes": 13417
+  },
+  "amb/spatula_a.ogg": {
+   "seconds": 2.782,
+   "lufs": -15.1,
+   "peak": -4.0,
+   "bytes": 34505
+  },
+  "amb/spatula_b.ogg": {
+   "seconds": 2.537,
+   "lufs": -15.4,
+   "peak": -4.0,
+   "bytes": 32165
+  },
+  "amb/traffic.ogg": {
+   "seconds": 17.0,
+   "lufs": -28.0,
+   "peak": -13.2,
+   "loop": true,
+   "bytes": 140578
+  },
+  "amb/whistle_a.ogg": {
+   "seconds": 8.772,
+   "lufs": -15.4,
+   "peak": -4.0,
+   "bytes": 82376
+  },
+  "amb/whistle_b.ogg": {
+   "seconds": 12.891,
+   "lufs": -16.1,
+   "peak": -4.0,
+   "bytes": 109906
+  },
+  "music/child_bed.ogg": {
+   "seconds": 40.0,
+   "lufs": -25.0,
+   "peak": -14.0,
+   "loop": true,
+   "bytes": 336663
+  },
+  "music/child_call_mei.ogg": {
+   "seconds": 3.853,
+   "lufs": -18.0,
+   "peak": -11.4,
+   "bytes": 32675
+  },
+  "music/child_call_qing.ogg": {
+   "seconds": 5.271,
+   "lufs": -18.0,
+   "peak": -7.9,
+   "bytes": 29045
+  },
+  "music/child_he.ogg": {
+   "seconds": 40.0,
+   "lufs": -36.2,
+   "peak": -21.7,
+   "loop": true,
+   "bytes": 125294
+  },
+  "music/child_mei.ogg": {
+   "seconds": 40.0,
+   "lufs": -23.0,
+   "peak": -10.4,
+   "loop": true,
+   "bytes": 190137
+  },
+  "music/child_mismatch.ogg": {
+   "seconds": 6.306,
+   "lufs": -17.0,
+   "peak": -5.6,
+   "bytes": 52041
+  },
+  "music/child_qing.ogg": {
+   "seconds": 40.0,
+   "lufs": -22.0,
+   "peak": -8.7,
+   "loop": true,
+   "bytes": 167307
+  },
+  "music/child_resonance.ogg": {
+   "seconds": 7.574,
+   "lufs": -17.0,
+   "peak": -5.3,
+   "bytes": 57885
+  },
+  "music/ending.ogg": {
+   "seconds": 61.369,
+   "lufs": -20.0,
+   "peak": -6.5,
+   "loop": false,
+   "bytes": 550998
+  },
+  "music/middle_bed.ogg": {
+   "seconds": 53.333,
+   "lufs": -25.7,
+   "peak": -12.8,
+   "loop": true,
+   "bytes": 351948
+  },
+  "music/middle_call_mei.ogg": {
+   "seconds": 5.968,
+   "lufs": -18.0,
+   "peak": -8.4,
+   "bytes": 47671
+  },
+  "music/middle_call_qing.ogg": {
+   "seconds": 5.702,
+   "lufs": -18.1,
+   "peak": -3.9,
+   "bytes": 41451
+  },
+  "music/middle_he.ogg": {
+   "seconds": 53.333,
+   "lufs": -35.4,
+   "peak": -20.1,
+   "loop": true,
+   "bytes": 166011
+  },
+  "music/middle_mei.ogg": {
+   "seconds": 53.333,
+   "lufs": -22.2,
+   "peak": -8.6,
+   "loop": true,
+   "bytes": 279814
+  },
+  "music/middle_mismatch.ogg": {
+   "seconds": 8.343,
+   "lufs": -17.0,
+   "peak": -6.2,
+   "bytes": 65648
+  },
+  "music/middle_qing.ogg": {
+   "seconds": 53.333,
+   "lufs": -21.2,
+   "peak": -7.3,
+   "loop": true,
+   "bytes": 252838
+  },
+  "music/middle_resonance.ogg": {
+   "seconds": 9.696,
+   "lufs": -17.9,
+   "peak": -2.0,
+   "bytes": 73898
+  },
+  "music/old_bed.ogg": {
+   "seconds": 60.952,
+   "lufs": -30.3,
+   "peak": -19.8,
+   "loop": true,
+   "bytes": 576191
+  },
+  "music/old_call_mei.ogg": {
+   "seconds": 6.58,
+   "lufs": -18.0,
+   "peak": -8.1,
+   "bytes": 57126
+  },
+  "music/old_call_qing.ogg": {
+   "seconds": 5.783,
+   "lufs": -18.6,
+   "peak": -3.0,
+   "bytes": 44017
+  },
+  "music/old_he.ogg": {
+   "seconds": 60.952,
+   "lufs": -39.6,
+   "peak": -25.5,
+   "loop": true,
+   "bytes": 299388
+  },
+  "music/old_mei.ogg": {
+   "seconds": 60.952,
+   "lufs": -21.3,
+   "peak": -11.4,
+   "loop": true,
+   "bytes": 352429
+  },
+  "music/old_mismatch.ogg": {
+   "seconds": 9.055,
+   "lufs": -17.0,
+   "peak": -5.6,
+   "bytes": 76210
+  },
+  "music/old_qing.ogg": {
+   "seconds": 60.952,
+   "lufs": -20.3,
+   "peak": -4.0,
+   "loop": true,
+   "bytes": 308811
+  },
+  "music/old_resonance.ogg": {
+   "seconds": 10.141,
+   "lufs": -17.0,
+   "peak": -2.5,
+   "bytes": 85093
+  },
+  "music/roll.ogg": {
+   "seconds": 20.87,
+   "lufs": -22.0,
+   "peak": -11.2,
+   "loop": true,
+   "bytes": 173378
+  },
+  "music/teen_bed.ogg": {
+   "seconds": 45.714,
+   "lufs": -24.9,
+   "peak": -13.7,
+   "loop": true,
+   "bytes": 412515
+  },
+  "music/teen_call_mei.ogg": {
+   "seconds": 4.328,
+   "lufs": -18.0,
+   "peak": -7.9,
+   "bytes": 40049
+  },
+  "music/teen_call_qing.ogg": {
+   "seconds": 4.363,
+   "lufs": -18.0,
+   "peak": -8.6,
+   "bytes": 37898
+  },
+  "music/teen_he.ogg": {
+   "seconds": 45.714,
+   "lufs": -36.0,
+   "peak": -21.0,
+   "loop": true,
+   "bytes": 142375
+  },
+  "music/teen_mei.ogg": {
+   "seconds": 45.714,
+   "lufs": -22.9,
+   "peak": -11.3,
+   "loop": true,
+   "bytes": 237807
+  },
+  "music/teen_mismatch.ogg": {
+   "seconds": 6.393,
+   "lufs": -17.0,
+   "peak": -6.6,
+   "bytes": 56550
+  },
+  "music/teen_qing.ogg": {
+   "seconds": 45.714,
+   "lufs": -21.8,
+   "peak": -8.9,
+   "loop": true,
+   "bytes": 241666
+  },
+  "music/teen_resonance.ogg": {
+   "seconds": 7.146,
+   "lufs": -17.0,
+   "peak": -2.0,
+   "bytes": 64141
+  },
+  "music/title.ogg": {
+   "seconds": 50.526,
+   "lufs": -23.0,
+   "peak": -10.9,
+   "loop": true,
+   "bytes": 391266
+  },
+  "music/young_bed.ogg": {
+   "seconds": 38.4,
+   "lufs": -24.8,
+   "peak": -13.3,
+   "loop": true,
+   "bytes": 411457
+  },
+  "music/young_call_mei.ogg": {
+   "seconds": 4.531,
+   "lufs": -18.0,
+   "peak": -10.8,
+   "bytes": 38393
+  },
+  "music/young_call_qing.ogg": {
+   "seconds": 4.622,
+   "lufs": -18.0,
+   "peak": -6.6,
+   "bytes": 35540
+  },
+  "music/young_he.ogg": {
+   "seconds": 38.4,
+   "lufs": -36.0,
+   "peak": -21.5,
+   "loop": true,
+   "bytes": 120546
+  },
+  "music/young_mei.ogg": {
+   "seconds": 38.4,
+   "lufs": -22.8,
+   "peak": -9.4,
+   "loop": true,
+   "bytes": 206015
+  },
+  "music/young_mismatch.ogg": {
+   "seconds": 6.61,
+   "lufs": -17.0,
+   "peak": -5.0,
+   "bytes": 53571
+  },
+  "music/young_qing.ogg": {
+   "seconds": 38.4,
+   "lufs": -21.8,
+   "peak": -7.3,
+   "loop": true,
+   "bytes": 204092
+  },
+  "music/young_resonance.ogg": {
+   "seconds": 7.517,
+   "lufs": -17.0,
+   "peak": -3.3,
+   "bytes": 59997
+  },
+  "sfx/act_eat.ogg": {
+   "seconds": 1.265,
+   "lufs": -12.5,
+   "peak": -4.0,
+   "bytes": 14269
+  },
+  "sfx/act_eat_out.ogg": {
+   "seconds": 2.397,
+   "lufs": -19.6,
+   "peak": -4.0,
+   "bytes": 33148
+  },
+  "sfx/act_knock.ogg": {
+   "seconds": 1.799,
+   "lufs": -20.3,
+   "peak": -4.0,
+   "bytes": 28427
+  },
+  "sfx/act_play_alley.ogg": {
+   "seconds": 2.22,
+   "lufs": -19.1,
+   "peak": -4.0,
+   "bytes": 30447
+  },
+  "sfx/act_play_river.ogg": {
+   "seconds": 2.4,
+   "lufs": -24.1,
+   "peak": -4.0,
+   "bytes": 32177
+  },
+  "sfx/act_play_roof.ogg": {
+   "seconds": 1.543,
+   "lufs": -17.7,
+   "peak": -4.0,
+   "bytes": 22958
+  },
+  "sfx/act_school.ogg": {
+   "seconds": 2.425,
+   "lufs": -10.5,
+   "peak": -4.0,
+   "bytes": 34871
+  },
+  "sfx/act_sleep.ogg": {
+   "seconds": 0.458,
+   "lufs": -20.8,
+   "peak": -4.0,
+   "bytes": 9858
+  },
+  "sfx/act_study.ogg": {
+   "seconds": 1.431,
+   "lufs": -16.9,
+   "peak": -4.0,
+   "bytes": 16150
+  },
+  "sfx/act_wash.ogg": {
+   "seconds": 2.257,
+   "lufs": -17.2,
+   "peak": -4.0,
+   "bytes": 29260
+  },
+  "sfx/act_work.ogg": {
+   "seconds": 1.712,
+   "lufs": -16.9,
+   "peak": -4.0,
+   "bytes": 22186
+  },
+  "sfx/bell_duet.ogg": {
+   "seconds": 2.725,
+   "lufs": -13.9,
+   "peak": -4.0,
+   "bytes": 26879
+  },
+  "sfx/birth.ogg": {
+   "seconds": 5.249,
+   "lufs": -17.0,
+   "peak": -4.0,
+   "bytes": 53435
+  },
+  "sfx/coin.ogg": {
+   "seconds": 0.71,
+   "lufs": -21.0,
+   "peak": -10.0,
+   "bytes": 8504
+  },
+  "sfx/cord.ogg": {
+   "seconds": 0.458,
+   "lufs": -20.8,
+   "peak": -4.0,
+   "bytes": 9858
+  },
+  "sfx/day_end.ogg": {
+   "seconds": 5.876,
+   "lufs": -15.3,
+   "peak": -4.0,
+   "bytes": 51158
+  },
+  "sfx/death.ogg": {
+   "seconds": 10.037,
+   "lufs": -16.9,
+   "peak": -4.0,
+   "bytes": 76112
+  },
+  "sfx/door_close.ogg": {
+   "seconds": 1.664,
+   "lufs": -24.8,
+   "peak": -4.0,
+   "bytes": 23319
+  },
+  "sfx/door_open.ogg": {
+   "seconds": 1.682,
+   "lufs": -21.1,
+   "peak": -4.0,
+   "bytes": 27538
+  },
+  "sfx/error.ogg": {
+   "seconds": 0.459,
+   "lufs": -21.3,
+   "peak": -8.0,
+   "bytes": 6094
+  },
+  "sfx/page.ogg": {
+   "seconds": 0.24,
+   "lufs": -23.1,
+   "peak": -12.0,
+   "bytes": 6452
+  },
+  "sfx/shake.ogg": {
+   "seconds": 1.422,
+   "lufs": -20.6,
+   "peak": -4.0,
+   "bytes": 28185
+  },
+  "sfx/stamp.ogg": {
+   "seconds": 0.2,
+   "lufs": -21.1,
+   "peak": -6.0,
+   "bytes": 5585
+  },
+  "sfx/step_indoor_0.ogg": {
+   "seconds": 0.16,
+   "lufs": -21.2,
+   "peak": -9.0,
+   "bytes": 5389
+  },
+  "sfx/step_indoor_1.ogg": {
+   "seconds": 0.16,
+   "lufs": -23.5,
+   "peak": -9.0,
+   "bytes": 5366
+  },
+  "sfx/step_indoor_2.ogg": {
+   "seconds": 0.16,
+   "lufs": -24.1,
+   "peak": -9.0,
+   "bytes": 5375
+  },
+  "sfx/step_indoor_3.ogg": {
+   "seconds": 0.16,
+   "lufs": -23.5,
+   "peak": -9.0,
+   "bytes": 5389
+  },
+  "sfx/step_outdoor_0.ogg": {
+   "seconds": 0.16,
+   "lufs": -22.3,
+   "peak": -9.0,
+   "bytes": 5616
+  },
+  "sfx/step_outdoor_1.ogg": {
+   "seconds": 0.16,
+   "lufs": -21.9,
+   "peak": -9.0,
+   "bytes": 5622
+  },
+  "sfx/step_outdoor_2.ogg": {
+   "seconds": 0.16,
+   "lufs": -21.1,
+   "peak": -9.0,
+   "bytes": 5625
+  },
+  "sfx/step_outdoor_3.ogg": {
+   "seconds": 0.16,
+   "lufs": -21.2,
+   "peak": -9.0,
+   "bytes": 5629
+  },
+  "sfx/tap.ogg": {
+   "seconds": 0.12,
+   "lufs": -20.3,
+   "peak": -8.0,
+   "bytes": 4977
+  },
+  "sfx/toast.ogg": {
+   "seconds": 0.3,
+   "lufs": -21.2,
+   "peak": -10.0,
+   "bytes": 5846
+  },
+  "sfx/type.ogg": {
+   "seconds": 0.05,
+   "lufs": -27.3,
+   "peak": -16.0,
+   "bytes": 4508
+  },
+  "sfx/xingmu.ogg": {
+   "seconds": 0.948,
+   "lufs": -15.2,
+   "peak": -4.0,
+   "bytes": 15089
+  }
+ },
+ "stages": {
+  "child": {
+   "bpm": 96,
+   "seconds": 40.0,
+   "bar": 2.5,
+   "bars": 16
+  },
+  "teen": {
+   "bpm": 84,
+   "seconds": 45.7143,
+   "bar": 2.8571,
+   "bars": 16
+  },
+  "young": {
+   "bpm": 100,
+   "seconds": 38.4,
+   "bar": 2.4,
+   "bars": 16
+  },
+  "middle": {
+   "bpm": 72,
+   "seconds": 53.3333,
+   "bar": 3.3333,
+   "bars": 16
+  },
+  "old": {
+   "bpm": 63,
+   "seconds": 60.9524,
+   "bar": 3.8095,
+   "bars": 16
+  }
+ },
+ "sample_rate": 44100
+}

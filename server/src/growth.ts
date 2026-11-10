@@ -158,9 +158,10 @@ function growthDayEnd(s: LifeState, c: Content) {
   var persons = s.persons!;
   var bothAlive = persons.qing.alive && persons.mei.alive;
 
-  // 不走动就淡了：这天既没同框也没共鸣，亲近往下掉一点。离得越远掉得越多，但住过对门，总归认识
+  // 不走动就淡了：这天既没同框也没共鸣，亲近往下掉一点。离得越远掉得越多，但住过对门，总归认识。
+  // 一个在外地、这天是回来一趟（world.ts 的 back）：一起做的事照样加亲近，可挡不住这一年（中年是三年）的生分
   var rb = c.rules.bond;
-  if (bothAlive && s.world && !s.world.warm && s.bond.close > rb.driftFloor) {
+  if (bothAlive && s.world && (!s.world.warm || s.world.back) && s.bond.close > rb.driftFloor) {
     var drift = legacyDrift(c, s, rb.drift[t.stage] * (1 + s.bond.distance * rb.driftDistance)); // 连心
     s.bond.close = Math.max(rb.driftFloor, Math.round((s.bond.close - drift) * 100) / 100);
   }

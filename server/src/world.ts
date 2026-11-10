@@ -109,6 +109,44 @@ function worldSpotFor(c: Content, action: string, role: Role): Spot | null {
   return any;
 }
 
+/**
+ * 这个人每天早上在哪张床上醒来：走了外地那条路的（上学上班的地方在外地那张图上）在出租屋，
+ * 三十岁安家买了房的在新家，别的在楼里自己家。放假的日子也一样在那边醒来，想回来得自己坐车
+ */
+function worldHomeBed(s: LifeState, c: Content, role: Role): Spot {
+  var p = s.persons![role];
+  var age = lifeTimeAt(s.turn).age;
+  var tr = lifeTrack(c, p, age);
+  var want: string | null = null;
+  if (tr.duty && worldSceneOf(c, lifeFind(c.map.spots, tr.duty.spot)).far) want = "rental";
+  else if (age >= 30 && lifeHasFlag(p, "home_own")) want = "newhome";
+  return (want ? worldBedIn(c, want) : null) || worldSpotFor(c, "sleep", role)!;
+}
+
+/** 一张图上的床（出租屋、新家：不分谁家） */
+function worldBedIn(c: Content, scene: string): Spot | null {
+  for (var i = 0; i < c.map.spots.length; i++) {
+    var sp = c.map.spots[i];
+    if (sp.scene === scene && sp.actions.indexOf("sleep") >= 0) return sp;
+  }
+  return null;
+}
+
+function worldSceneOf(c: Content, sp: Spot): Scene {
+  return lifeFind(c.map.scenes, sp.scene);
+}
+
+/** 人在不在外地那一片（外地、出租屋）。两片之间只能自己坐车（worldExit），影子和被叫过去的都过不去 */
+function worldFarAt(c: Content, a: Actor): boolean {
+  var sc = worldSceneAt(c, a.y);
+  return !!sc && sc.far;
+}
+
+/** 这一段在路上花掉的分钟（过桥、坐车） */
+function worldRide(a: Actor, slot: number): number {
+  return a.rideSlot === slot ? a.ride || 0 : 0;
+}
+
 // ---------- 一天五段 ----------
 
 /** 这个钟点在第几段（22:00 以后算最后一段） */
@@ -134,6 +172,11 @@ function worldDutySlots(d: Duty): [number, number] {
   return [from, to];
 }
 
+/** 这一段真能花在一件事上的分钟：一段的长度 × slotUse，再扣掉路上的（过桥、坐车） */
+function worldSlotLeft(c: Content, slot: number, ride: number): number {
+  return (SLOTS[slot][1] - SLOTS[slot][0]) * c.rules.daily.slotUse - ride;
+}
+
 /** 这个人这一段定了没有：按了「就这么过」、在做一件这一段还没完的事、睡了，或者已经不在了 */
 function worldReady(s: LifeState, role: Role): boolean {
   var w = s.world!;
@@ -152,8 +195,11 @@ function worldStartDay(s: LifeState, c: Content) {
   for (var i = 0; i < ROLES.length; i++) {
     var r = ROLES[i];
     if (!persons[r].alive) continue;
-    var sp = c.map.spawn[r];
-    actors[r] = { x: sp[0], y: sp[1], action: null, spot: null, until: null, asleep: false };
+    // 在自己的床边醒来（外地的在出租屋，买了房的在新家）；两个人睡同一处（都在外地念书）就错开一点
+    var bed = worldHomeBed(s, c, r);
+    var bx = bed.at[0];
+    if (r === "mei" && actors.qing && actors.qing.y === bed.at[1] && Math.abs(actors.qing.x - bx) < 60) bx += 80;
+    actors[r] = { x: bx, y: bed.at[1], action: null, spot: null, until: null, asleep: false };
     var st = persons[r].stats;
     persons[r].dayStart = { body: st.body, mind: st.mind, charm: st.charm, luck: st.luck };
   }
@@ -203,6 +249,27 @@ function worldStartDay(s: LifeState, c: Content) {
     }
   }
 
+  // 主线今天在另一片上（在外地念书的人，过年那天的楼里、临走那天的楼下）：这一天就在那一片醒来——放假回来了、要走的那天还在家。
+  // 回来的这一天不上学不上班（歇着）
+  var off: { [R in Role]?: boolean } = {};
+  var back = false;
+  for (var hr = 0; hr < ROLES.length; hr++) {
+    var hrole = ROLES[hr], ha = actors[hrole], hs = storyScene(hrole);
+    if (!ha || !hs) continue;
+    var far = lifeFind(c.map.scenes, hs).far;
+    if (far === worldFarAt(c, ha)) continue;
+    var hb = far ? worldBedIn(c, "rental") : worldSpotFor(c, "sleep", hrole);
+    if (!hb) continue;
+    ha.x = hb.at[0] + (hrole === "mei" && actors.qing && actors.qing.y === hb.at[1] && Math.abs(actors.qing.x - hb.at[0]) < 60 ? 80 : 0);
+    ha.y = hb.at[1];
+    off[hrole] = true;
+    back = true;
+  }
+  // 「回来一趟」只算平常分在两片的：两个人都在外地念书、一起回来过年的，平常就在一块儿
+  if (back && persons.qing.alive && persons.mei.alive) {
+    back = worldSceneOf(c, worldHomeBed(s, c, "qing")).far !== worldSceneOf(c, worldHomeBed(s, c, "mei")).far;
+  }
+
   if (story.mirror) fate.mirror = story.mirror;
   for (var sr = 0; sr < ROLES.length; sr++) if (story[ROLES[sr]]) fate[ROLES[sr]] = story[ROLES[sr]];
   if (story.force.length > 0) fate.force = story.force;
@@ -216,10 +283,26 @@ function worldStartDay(s: LifeState, c: Content) {
 
   // 关口那天不歇：考试、报到都在今天
   var rest = lifeRand(s) < REST_DAY_CHANCE && !fate.milestone;
+  // 只给碰上主线的那个人放一天（off），对门照常上学上班：不然两个人白白多出一整天凑在一起，亲近涨得比活法还快
+  //   - 回来的那一天（主线在另一片）
+  //   - 主线那件事落在大人上班的钟点上（傍晚的楼下、对岸）。上学上班不逃，不然只有碰上歇班日才过得上，
+  //     多半拖到章末强制。小孩上学的那几件（一路去上学）本来就写在上学的钟点，不算
+  if (fate.milestone) off = {};
+  else {
+    for (var sri = 0; sri < ROLES.length; sri++) {
+      var sr0 = ROLES[sri];
+      var sid = story[sr0] || story.mirror;
+      if (off[sr0] || !sid || !persons[sr0].alive || t.age < 18) continue;
+      var sd = lifeTrack(c, persons[sr0], t.age).duty;
+      var sk = storySlotIndex(storyFindEvent(c, sid)!);
+      if (sd && sk >= worldDutySlots(sd)[0] && sk <= worldDutySlots(sd)[1]) off[sr0] = true;
+    }
+  }
   // 成年以后一个日子就是一年（中年是三年）：歇班那天工钱照发。不然这一年有没有收入全看歇不歇，攒不攒得下钱成了碰运气
-  if (rest && t.stage !== "childhood" && t.stage !== "teen") {
+  if (t.stage !== "childhood" && t.stage !== "teen") {
     for (var pi = 0; pi < ROLES.length; pi++) {
       var pp = persons[ROLES[pi]];
+      if (!rest && !off[ROLES[pi]]) continue;
       var pd = pp.alive ? lifeTrack(c, pp, t.age).duty : null;
       if (pd && pd.money > 0) pp.money += worldWage(c, pp, pd);
     }
@@ -233,6 +316,8 @@ function worldStartDay(s: LifeState, c: Content) {
     wait: 0,
     quick: [],
     rest: rest,
+    off: off,
+    back: back,
     dutyDone: {},
     actors: actors,
     event: null,
@@ -279,6 +364,12 @@ function worldExit(s: LifeState, c: Content, role: Role, exitId: string): string
   if (lock) return lock;
   a.x = ex.arrive[0];
   a.y = ex.arrive[1];
+  // 过桥、坐车：路上的时间从这一段里扣（这一段再做事就只剩扣掉以后的那些；去外地一趟就是一整段）
+  if (ex.ride > 0) {
+    if (a.rideSlot !== w.slot) a.ride = 0;
+    a.ride = (a.ride || 0) + ex.ride;
+    a.rideSlot = w.slot;
+  }
   return null;
 }
 
@@ -286,7 +377,7 @@ function worldExit(s: LifeState, c: Content, role: Role, exitId: string): string
 
 /** 这个人今天的日程。没有（还没上学、退休了、今天歇着）返回 null */
 function worldDuty(s: LifeState, c: Content, role: Role): Duty | null {
-  if (s.world!.rest) return null;
+  if (s.world!.rest || (s.world!.off && s.world!.off[role])) return null;
   return lifeTrack(c, s.persons![role], lifeTimeAt(s.turn).age).duty;
 }
 
@@ -364,6 +455,8 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
   if (anywhere) {
     var lock = worldSceneLock(s, c, lifeFind(c.map.scenes, sp.scene), role);
     if (lock) return lock;
+    // 外地和河畔里之间隔着一趟车：影子、跟着对门过去的都过不去，得本人坐车
+    if (worldSceneOf(c, sp).far !== worldFarAt(c, a)) return "隔着老远";
   }
   var pick = worldPickAction(s, c, role, sp);
   if (!pick.act) return pick.why;
@@ -373,6 +466,9 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
   if (rq.owner && lifeFind(c.map.zones, sp.zone).owner !== role) return "这不是你的家";
   if (rq.hours && !worldOverlaps(rq.hours, w.slot)) return "现在不是时候";
   if (act.duty && w.slot < worldDutySlots(worldDuty(s, c, role)!)[0]) return "还没到点";
+  if (act.id === "letter" && !postApart(s, c, role)) return s.persons![lifeOther(role)].alive ? "TA 就在跟前，用不着写信" : "信寄不到了";
+  if (act.id === "letter" && postWroteToday(s, role)) return "今天写过了";
+  if (!act.quick && !act.duty && !act.sleep && worldSlotLeft(c, w.slot, worldRide(a, w.slot)) <= 0) return "路上把这一段花掉了";
   var broke = meansCantPay(s, role, act, meansNeedsHost(p, act)); // 被带着做的看对门兜里（means.ts）
   if (broke) return broke;
   if (act.quick) {
@@ -467,9 +563,8 @@ function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error
     w.dutyDone[role] = true;
   } else {
     // 一段做一件事，就是这件事做了几遍。use：一段里真花在这件事上的那一份（路上、吃饭、发呆占掉的不算）
-    var len = SLOTS[w.slot][1] - SLOTS[w.slot][0];
     a.until = SLOTS[w.slot][1];
-    a.scale = Math.round((len * c.rules.daily.slotUse / act.minutes) * 100) / 100;
+    a.scale = Math.round((worldSlotLeft(c, w.slot, worldRide(a, w.slot)) / act.minutes) * 100) / 100;
     a.guest = meansNeedsHost(p, act) || undefined; // 对门带着做的（means.ts）
     s.persons![a.guest ? lifeOther(role) : role].money += act.money < 0 ? act.money : 0; // 花的钱是进门的钱，坐一下午也只付一回；被带的那份对门出
   }
@@ -558,6 +653,7 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   lifeApplySelf(p, stats, growthCtx(s, c, "action"));
   lifeApplySelf(p, scaled);
   if (act.id === "eat") worldMealMood(c, p); // 老存档里还在吃的那一顿
+  if (act.id === "letter") postWrite(s, c, role); // 信第二天早上到对门（post.ts）
   p.money += Math.round(money * 10) / 10;
   worldClearAction(a);
 }
@@ -644,7 +740,11 @@ function worldShadowStep(s: LifeState, c: Content, role: Role) {
     var stScene = stEv.scene;
     if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, function (act, sp) { return sp.scene === stScene && !act.duty && !act.sleep && act.money >= 0; }))) return;
   }
-  if (p.needs.energy < 25 || w.slot >= SLOTS.length - 1) {
+  // 主线今天晚些时候还有一件（楼顶那一晚、过年那一夜）：困了也先撑着，别在那之前睡下
+  var later = !!stEv && storySlotIndex(stEv) > w.slot && p.needs.energy >= 8;
+  if ((p.needs.energy < 25 && !later) || w.slot >= SLOTS.length - 1) {
+    // 先回自己今天醒来的那张床（外地的回出租屋）；去不了（人在另一片）再找这一片里别的床
+    if (worldShadowGo(s, c, role, worldHomeBed(s, c, role))) return;
     if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("sleep")))) return;
   }
   var duty = worldDutyOpen(s, c, role);

@@ -566,12 +566,8 @@ func act(spot_id: String) -> void:
 	_send(Op.ACT, {"spot": spot_id})
 
 
-## guess：默契事件里猜 TA 选了哪一项，不猜就留空
-func choose(option_id: String, guess := "") -> void:
-	var body := {"optionId": option_id}
-	if guess != "":
-		body["guess"] = guess
-	_send(Op.CHOOSE, body)
+func choose(option_id: String) -> void:
+	_send(Op.CHOOSE, {"optionId": option_id})
 
 
 ## 回话：补答影子替我选过的那件事（turn 是那天的序号）。option_id 留空是「不提了」

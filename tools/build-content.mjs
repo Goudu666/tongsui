@@ -2,7 +2,8 @@
 // 把 content/ 下的 YAML 编译成：
 //   client/data/content.json         客户端读取（画地图、显示文字）
 //   server/src/content.generated.ts  服务端结算（Nakama JS 运行时不方便读文件，直接内联）
-// 另有 duet.yaml：两个人之间一抛一接的内容（搭上了 / 猜 TA / 回话），挂到事件的 catches 和 content.duet 上
+// 另有 duet.yaml：两个人之间一抛一接的内容（搭上了 / 回话），挂到事件的 catches 和 content.duet 上；
+// letters.yaml：分在两张图上的两个人写的信（content.letters，规则在 server/src/post.ts）
 // 包含：events/*.yaml 剧情事件、families.yaml 家庭、talents.yaml 天赋、map.yaml 地图与行动、endings.yaml 结局
 // 传承（server/src/legacy.ts）：heirlooms.yaml 老物件、remembered.yaml 街坊记住的事、events/legacy.yaml 隔世的事
 //   client/data/street.json          街景（street.yaml：街坊、车，随年代更替；只给客户端，不进结算也不进内容版本）
@@ -69,7 +70,7 @@ const MAP_KEYS = ["actions"];
 // content/maps/<图>.yaml：一张图一个文件，横着的一条剖面 / 街景，人只左右走
 const SCENE_KEYS = ["id", "name", "width", "floors", "unlock", "far", "areas", "exits", "spots", "npcs", "props", "art"];
 const AREA_KEYS = ["id", "name", "span", "floor", "owner"];
-const EXIT_KEYS = ["id", "at", "floor", "to", "arrive", "arriveFloor", "label"];
+const EXIT_KEYS = ["id", "at", "floor", "to", "arrive", "arriveFloor", "label", "ride"];
 const SPOT_KEYS = ["id", "area", "at", "action", "actions", "owner"];
 const UNLOCK_KEYS = ["minAge", "maxAge", "flags", "notFlags", "any"];
 const UNLOCK_ANY_KEYS = ["minAge", "maxAge", "flags", "notFlags"];
@@ -88,7 +89,7 @@ const ACTION_REQ_KEYS = ["minAge", "maxAge", "owner", "hours", "flags", "notFlag
 const TOGETHER_KEYS = ["needs", "bond", "text"];
 // 规则代码（server/src/sim.ts、world.ts）里按名字写死的行动和标记：影子靠这些行动过日子，天赋效果靠这些标记生效。
 // 在内容里改名或删掉它们，规则会悄悄失效，所以在这里钉住。
-const ENGINE_ACTIONS = ["eat", "eat_out", "sleep", "duty", "wash", "knock", "play_roof"];
+const ENGINE_ACTIONS = ["eat", "eat_out", "sleep", "duty", "wash", "knock", "play_roof", "letter"];
 const ENGINE_FLAGS = ["tal_sunny", "tal_memory", "tal_foodie", "tal_owl", "tal_plain"];
 
 const errors = [];
@@ -617,7 +618,9 @@ for (const sc of rawScenes) {
     if (!isNum(ex.at) || ex.at < 0 || ex.at > sc.width) errors.push(`${w}: at 应在 0~width 里`);
     if (!isNum(ex.arrive)) errors.push(`${w}: 需要 arrive（到了那边站在哪）`);
     if (!ex.label) errors.push(`${w}: 需要 label（按钮上写的字，比如「下楼」）`);
-    exits.push({ id: `${sc.id}.${ex.id}`, scene: sc.id, at: [ex.at, fy(ex.floor, w)], to: ex.to, arrive: ex.arrive, arriveFloor: ex.arriveFloor ?? 0, label: ex.label });
+    // ride：坐车、过桥路上花掉的分钟，从这一段里扣（world.ts 的 worldExit）。不写就是走过去，不花时间
+    if (ex.ride !== undefined && !(Number.isInteger(ex.ride) && ex.ride > 0 && ex.ride <= 240)) errors.push(`${w}: ride 是路上的分钟数（1~240 的整数）`);
+    exits.push({ id: `${sc.id}.${ex.id}`, scene: sc.id, at: [ex.at, fy(ex.floor, w)], to: ex.to, arrive: ex.arrive, arriveFloor: ex.arriveFloor ?? 0, label: ex.label, ride: ex.ride ?? 0 });
   }
   for (const sp of sc.spots ?? []) {
     const w = `${at}.spots#${sp.id}`;
@@ -707,7 +710,7 @@ map.actions = map.actions.map((a) => {
     bring: !!a.bring,
   };
 });
-// ---------- 接话（duet.yaml）：搭上了 / 猜 TA / 回话 ----------
+// ---------- 接话（duet.yaml）：搭上了 / 回话 ----------
 // 「搭上了」按事件 id 写在 duet.yaml 里（不改事件文件），这里挂到事件的 catches 上。
 const duetRaw = load("duet.yaml") ?? {};
 const len = (t) => [...String(t ?? "")].length;
@@ -715,7 +718,7 @@ const needText = (where, t, max) => {
   if (!t || typeof t !== "string") errors.push(`${where}: 缺少文字`);
   else if (len(t) > max) errors.push(`${where}: ${len(t)} 字，超过 ${max} 字（${t}）`);
 };
-checkKeys("duet.yaml", duetRaw, ["catches", "lines", "echo", "epitaph"]);
+checkKeys("duet.yaml", duetRaw, ["catches", "echo", "epitaph"]);
 const eventById = new Map(events.map((e) => [e.id, e]));
 for (const ev of events) ev.catches = [];
 let catchCount = 0;
@@ -747,7 +750,6 @@ const duetTexts = (name, keys) => {
   return out;
 };
 const duet = {
-  lines: duetTexts("lines", ["knew_both_same", "knew_both_diff", "knew_one", "knew_none", "knew_single"]),
   echo: duetTexts("echo", ["ask", "res", "catch", "miss", "like", "unlike", "knew", "kept", "told"]),
   epitaph: duetTexts("epitaph", ["know", "shadow"]),
 };
@@ -757,6 +759,27 @@ duet.epitaph.last = (duetRaw.epitaph?.last ?? []).map((l, i) => {
   return { minRate: l.minRate ?? 0, text: l.text ?? "" };
 });
 if (duet.epitaph.last.length === 0 || duet.epitaph.last.at(-1).minRate !== 0) errors.push("duet.epitaph.last: 最后一条的 minRate 必须是 0（兜底）");
+
+// ---------- 写信（letters.yaml）：两个人分在外地和河畔里，靠信 ----------
+const lettersRaw = load("letters.yaml") ?? {};
+checkKeys("letters.yaml", lettersRaw, ["lines", "ends", "crossed"]);
+const letters = { lines: {}, ends: [], crossed: lettersRaw.crossed ?? "" };
+needText("letters.crossed", lettersRaw.crossed, 30);
+const trackIds = new Set(load("tracks.yaml").map((t) => t.id));
+for (const [k, list] of Object.entries(lettersRaw.lines ?? {})) {
+  if (k !== "work" && k !== "home" && !trackIds.has(k)) errors.push(`letters.lines.${k}: 不是路线 id，也不是 work / home`);
+  if (!Array.isArray(list) || list.length < 4) { errors.push(`letters.lines.${k}: 至少四句（一封信用两句，轮着用）`); continue; }
+  list.forEach((t, i) => needText(`letters.lines.${k}[${i}]`, t, 24));
+  letters.lines[k] = list;
+}
+for (const k of ["work", "home"]) if (!letters.lines[k]) errors.push(`letters.lines: 缺少 ${k}（兜底的那一组）`);
+letters.ends = (lettersRaw.ends ?? []).map((e, i) => {
+  checkKeys(`letters.ends[${i}]`, e, ["text", "in"]);
+  needText(`letters.ends[${i}]`, e.text, 14);
+  if (e.in !== undefined && e.in !== "away" && e.in !== "home") errors.push(`letters.ends[${i}].in: 只能是 away 或 home`);
+  return { text: e.text ?? "", in: e.in ?? null };
+});
+for (const side of ["away", "home"]) if (!letters.ends.some((e) => e.in === null || e.in === side)) errors.push(`letters.ends: ${side} 那边没有能用的结尾`);
 
 for (const ev of events) if (ev.where && !zoneIds.has(ev.where)) errors.push(`${ev.id}: where 未知地点 ${ev.where}`);
 for (const ev of events) if (ev.where && ev.where.startsWith("home_") && ev.kind === "mirror") errors.push(`${ev.id}: mirror 不能放在某一家屋里（${ev.where}）`);
@@ -861,7 +884,7 @@ if (errors.length) {
 
 // 内容版本 = 内容本身的指纹。服务器在 lifeline_open 里报出它的版本，客户端发现和自己带的不一样，
 // 就用 content_get 把服务器这份下载下来用（改剧情只需要更新服务器，不用两台手机重装 APK）。
-const body = { events, families, talents, map, tracks, endings, rules, checks, duet, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks }, story };
+const body = { events, families, talents, map, tracks, endings, rules, checks, duet, letters, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks }, story };
 const version = createHash("sha256").update(JSON.stringify(body)).digest("hex").slice(0, 12);
 const content = { version, ...body };
 const json = JSON.stringify(content, null, 1);

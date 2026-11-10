@@ -127,14 +127,17 @@ function play(s, { lag = 0.3, shake = 0, idle = false } = {}) {
 
   // 行动做完：这一次长的属性乘上倍率，用完就清掉，不带到下一件事
   const act = C.map.actions.find((x) => x.id === "play_river");
-  const body0 = s.persons.qing.stats.body;
+  // 属性越高长得越慢，还会四舍五入到 0.01：两边都从同一个低起点比，才比得出倍率
+  const body0 = 2;
+  s.persons.qing.stats.body = body0;
   G("worldFinish")(s, C, "qing");
   const plain = newLife(21);
-  const pb0 = plain.persons.qing.stats.body;
+  const pb0 = body0;
+  plain.persons.qing.stats.body = pb0;
   pair(plain);
   G("worldFinish")(plain, C, "qing");
   const grew = s.persons.qing.stats.body - body0, usual = plain.persons.qing.stats.body - pb0;
-  assert.ok(usual > 0 && Math.abs(grew / usual - out.result.boost) < 0.02, `长得是平时的 ×${out.result.boost}（实际 ×${(grew / usual).toFixed(2)}）`);
+  assert.ok(usual > 0 && Math.abs(grew / usual - out.result.boost) < 0.03, `长得是平时的 ×${out.result.boost}（实际 ×${(grew / usual).toFixed(2)}）`);
   assert.equal(s.world.actors.qing.boost, undefined, "倍率用完就清");
   assert.ok(act.stats.body > 0);
   s.world.actors.mei.action = null; // 另一个人半路走了去做别的

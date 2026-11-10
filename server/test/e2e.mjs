@@ -15,7 +15,7 @@ const HOST = process.env.NAKAMA_HOST || "127.0.0.1";
 const PORT = process.env.NAKAMA_PORT || "7350";
 const KEY = process.env.NAKAMA_KEY || "defaultkey";
 const PROTOCOL = 1; // 和 main.ts 的 PROTOCOL_VERSION 一起改（arch.test.mjs 的契约测试会比对）
-const OP = { SNAPSHOT: 1, ROLL: 2, ROLL_STATE: 3, MOVE: 4, ACT: 5, CHOOSE: 6, WORLD: 7, EVENT: 8, ERROR: 9, LOG: 10, PRESENCE: 11, PING: 12, PONG: 13, GAME: 20, GAME_INPUT: 21 };
+const OP = { SNAPSHOT: 1, ROLL: 2, ROLL_STATE: 3, MOVE: 4, ACT: 5, CHOOSE: 6, WORLD: 7, EVENT: 8, ERROR: 9, LOG: 10, PRESENCE: 11, PING: 12, PONG: 13, GAME: 20, GAME_INPUT: 21, ECHO: 30 };
 const run = Date.now().toString(36);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const dec = new TextDecoder();

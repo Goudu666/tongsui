@@ -2,7 +2,7 @@
 # wealth: 0 清贫 / 1 小康 / 2 殷实 —— 影响零花钱、饭菜带来的心情，以及部分事件
 # bonus: 先天属性加成（body 体魄 / mind 心智 / charm 魅力 / luck 运气）
 # traits: 家庭标记，事件可以用 requires.flags 读取
-# desc: 每户写一样本事或一条规矩，再写一样摸得着的东西
+# desc: 每户写一个日常细节，再写一样摸得着的东西
 
 - id: chen
   name: 陈家 · 自行车铺
@@ -63,7 +63,7 @@
   wealth: 2
   weight: 1
   money: 120
-  desc: 刚从南方搬来，一张嘴没有天津味儿。楼里的孩子听你说话像听外国话，起先都不大跟你玩。
+  desc: 刚从南方搬来，口音跟全楼都不一样。楼里的孩子起先不大跟你玩。
   bonus: { mind: 1, charm: -1 }
   traits: [fam_rich, fam_outsider]
 
@@ -155,7 +155,7 @@
   wealth: 0
   weight: 2
   money: 8
-  desc: 你爸年轻时在跤场上有一号，如今在厂里看大门。褡裢还挂在门后头。他的规矩就一条：倒了地的人，不许再碰。
+  desc: 你爸年轻时摔过跤，有点名气，如今在厂里看大门。当年的跤衣还挂在门后头。他的规矩就一条：倒了地的人，不许再碰。
   bonus: { body: 2 }
   traits: [fam_wrestle, fam_poor]
 
@@ -164,6 +164,6 @@
   wealth: 1
   weight: 2
   money: 20
-  desc: 你家房梁上挂满没糊纸的沙燕骨架，一屋子竹篾和浆糊味儿。爷爷说：扎是手艺，放是能耐，起不起得来看老天爷。
+  desc: 你家房梁上挂满没糊纸的风筝骨架，一屋子竹篾和浆糊味儿。爷爷说：扎是手艺，放是能耐，起不起得来看老天爷。
   bonus: { mind: 1, luck: 1 }
   traits: [fam_kite]

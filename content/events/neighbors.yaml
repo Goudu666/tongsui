@@ -23,7 +23,7 @@
   weight: 2
   requires: { minAge: 5 }
   title: 耳朵
-  text: 修车的爷爷有一样绝的：不用眼。车打街口一拐，他头也不抬：「中轴缺珠子。」今天有人不信邪，推来一辆，要考他。
+  text: 修车的爷爷修车不大抬头。车从街口一拐，他就说：「中轴缺珠子。」今天有人不信，推来一辆让他听。
   options:
     - id: yes
       text: 押爷爷听得出来
@@ -51,7 +51,7 @@
       memory: 肚子叫唤
       bond: { sync: 3, close: 2 }
   dissonance:
-    text: 一个押能，一个押不能。爷爷就说了三个字：「没毛病。」车是好的，那人是专门来逗闷子的。
+    text: 一个押能，一个押不能。爷爷就说了三个字：「没毛病。」车是好的，那人是专门来找乐子的。
     bond: { close: 0 }
 
 - id: j_popcorn
@@ -266,7 +266,7 @@
   seasons: [winter]
   weight: 2
   requires: { minAge: 6 }
-  title: 冬储大白菜
+  title: 搬白菜
   text: 立冬，冬储大白菜进城。卡车往楼下一停，一家几百斤，得一趟趟抱上三楼，码在楼道里。大人说了：搬一棵，记一分。
   options:
     - id: three
@@ -470,6 +470,45 @@
 
 # ===================== 少年 =====================
 
+- id: j_rule_jianbing
+  kind: mirror
+  stage: teen
+  where: breakfast
+  when: [390, 600]
+  hint: 早点铺排队的人都扭着头。
+  weight: 2
+  title: 规矩
+  text: 早点铺来了个外地口音的：「能加根火腿肠吗？」老板娘手上没停：「我们这儿不加。」排队的都扭头看他。
+  options:
+    - id: explain
+      text: 小声给他讲讲规矩
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+    - id: join
+      text: 跟着说：「没这规矩。」
+      tags: [competitive]
+      effects: { self: { mood: 5 } }
+    - id: curious
+      text: 其实也想尝尝加肠的
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+  resonance:
+    explain:
+      text: 你们一左一右，把绿豆面、果子、果篦儿讲了个全套。那人听完，老老实实要了一套。
+      memory: 一套正经的
+      bond: { sync: 3, close: 2 }
+    join:
+      text: 数你们俩嗓门大。老板娘刮子一指：「就你俩懂？上回谁管我要番茄酱来着？」
+      memory: 番茄酱
+      bond: { sync: 3, close: 2 }
+    curious:
+      text: 你们对了个眼神，谁也没敢出声。那是你们头一回发现：对门跟自己一样，是个叛徒。
+      memory: 两个叛徒
+      bond: { sync: 4, close: 2 }
+  dissonance:
+    text: 一个喊没这规矩，一个嘀咕加一根也死不了人。排队的下了结论：这俩，早晚出一个离家的。
+    bond: { close: 0 }
+
 - id: j_bachuang
   kind: mirror
   stage: teen
@@ -479,7 +518,7 @@
   weight: 2
   requires: { minAge: 13 }
   title: 胡同口
-  text: 隔壁楼几个半大小子堵了胡同口，冲的是你们俩里的一个。领头的把车一横：「听说你挺能耐？」这时候往哪儿站，人家记你一辈子。
+  text: 隔壁楼几个半大小子堵了胡同口，冲的是你们俩里的一个。领头的把车一横：「听说你挺能耐？」
   options:
     - id: front
       text: 往前一步：「冲我来。」
@@ -517,14 +556,14 @@
   stage: young
   where: alley
   when: [600, 1080]
-  hint: 楼下支起大锅，卤子味儿飘老远。
+  hint: 楼下搭起棚子，摆了十来桌。
   weight: 2
   requires: { minAge: 19, notFlags: [p_married, married_other, p_estranged] }
-  title: 喜面
-  text: 楼里有人娶媳妇，中午先吃喜面。你们俩被抓了差，端面。一位大娘接过碗，上下打量你们：「什么时候吃你俩的？」
+  title: 喜酒
+  text: 楼里有人娶媳妇，楼下摆了席。你们俩被抓了差，端菜。一位大娘接过盘子，上下打量你们：「什么时候吃你俩的？」
   options:
     - id: serve
-      text: 装没听见，接着端面
+      text: 装没听见，接着端菜
       tags: [patient]
       effects: { self: { mood: 3, energy: -5 } }
     - id: retort
@@ -532,7 +571,7 @@
       tags: [adventure]
       effects: { self: { charm: 1, mood: 5 } }
     - id: blush
-      text: 脸一红，碗差点扣了
+      text: 脸一红，盘子差点扣了
       tags: [gentle]
       effects: { self: { mood: 3 } }
   resonance:
@@ -541,15 +580,15 @@
       memory: 备好的份子钱
       bond: { sync: 4, close: 3 }
     serve:
-      text: 端了四十多碗，谁也没接那个话茬。可从那天起，一个上楼，另一个准绕到那头下。
+      text: 端了四十多盘，谁也没接那个话茬。可从那天起，一个上楼，另一个准绕到那头下。
       memory: 绕着走
       bond: { sync: 3, close: 2 }
     blush:
-      text: 两张脸一块儿红，比新娘子的盖头还红。大娘扭头冲一桌人说：「瞧见没？我说什么来着。」
-      memory: 我说什么来着
+      text: 两张脸一块儿红，比新娘子的盖头还红。大娘看看这个，看看那个，光笑，不说话。
+      memory: 比盖头还红
       bond: { sync: 3, close: 3 }
   dissonance:
-    text: 一个回嘴回得山响，一个扭头进了楼。大娘咂咂嘴：「得，我多嘴了。」那碗面，坨了。
+    text: 一个回嘴回得山响，一个扭头进了楼。大娘咂咂嘴：「得，我多嘴了。」那盘菜，凉了。
     bond: { close: -2 }
 
 - id: j_first_wage
@@ -558,7 +597,7 @@
   weight: 2
   requires: { minAge: 19, maxAge: 26 }
   title: 一兜螃蟹
-  text: 头一个月工资到手。你妈早放了话：存着。可秋风一起，海螃蟹正顶盖儿肥，卖螃蟹的冲你一掀草帘子。
+  text: 头一个月工资到手。你妈早放了话：存着。可秋风一起，海螃蟹正肥，卖螃蟹的冲你一掀草帘子。
   options:
     - id: crab
       text: 一咬牙，全买了
@@ -584,14 +623,14 @@
   weight: 2
   requires: { minAge: 42 }
   title: 桥上的老几位
-  text: 伏天，桥栏杆外头站着一排光膀子的老爷子。跳之前先报花样：「我来个冰棍儿！」直着就下去了。桥上叫好，跟听戏一样。
+  text: 伏天，桥栏杆外头站着一排光膀子的老爷子。跳之前先报花样：「冰棍儿！」直着就下去了。
   options:
     - id: cheer
       text: 扯着嗓子叫一声「好」
       tags: [gentle]
       effects: { self: { mood: 8 } }
     - id: join
-      text: 把手机钥匙塞给对方
+      text: 把兜里的东西塞给对方
       tags: [adventure]
       effects: { self: { body: 1, mood: 10, energy: -10, clean: -10 } }
     - id: worry
@@ -600,7 +639,7 @@
       effects: { self: { mind: 1 } }
   resonance:
     cheer:
-      text: 你们那声「好」叫在了一个点儿上。水里的老爷子冒出头，冲桥上一抱拳：「二位，懂行！」
+      text: 你们那声「好」叫在了一个点儿上。水里的老爷子冒出头，朝桥上挥了挥手。
       memory: 叫在点儿上
       bond: { sync: 3, close: 2 }
     join:
@@ -612,7 +651,7 @@
       memory: 怕不让跳
       bond: { sync: 3, close: 2 }
   dissonance:
-    text: 一个已经在脱鞋，一个死死拽着胳膊。旁边的老爷子来劝：「让人家跳！跳完您再数落，两不耽误。」
+    text: 一个已经在脱鞋，一个死死拽着胳膊。旁边的老爷子看了一会儿，自己先翻出去了。
     bond: { close: 0 }
 
 - id: j_kid_dialect
@@ -621,7 +660,7 @@
   weight: 2
   requires: { minAge: 33, maxAge: 48, flags: [has_kid] }
   title: 口音
-  text: 孩子一口电视里的普通话。吃着饭忽然问：「同学说咱家说话有口音。口音是什么呀？」你张了张嘴。你从来没听见过自己的口音。
+  text: 孩子一口电视里的普通话，忽然问：「口音是什么呀？」你张了张嘴。你从来没听见过自己的口音。
   options:
     - id: teach
       text: 「就是家里的味儿。」
@@ -646,7 +685,7 @@
   hint: 楼道里有人在翻相册。
   weight: 2
   title: 那张相片
-  text: 岁数到了，老人讲究自己把「那张相片」先挑好，省得孩子们抓瞎。你们俩搬出相册，挑的是对方的。
+  text: 到了岁数，那张相片得自己先挑好。你俩搬出相册，挑的是对方的。
   options:
     - id: silly
       text: 挑TA笑得最没样儿的
@@ -685,7 +724,7 @@
   hint: 树底下摆了一圈马扎。
   weight: 2
   title: 树底下的马扎
-  text: 开春头一个暖和天，老几位没人招呼，就在树底下凑齐了。今年的马扎少了两个。没人提，可都往那两块空地上看了一眼。
+  text: 开春头一个暖和天，树底下的马扎少了两个。没人提。
   options:
     - id: seat
       text: 把空马扎照旧支上
@@ -722,14 +761,14 @@
   weight: 3
   requires: { alone: false, flags: [pingshu] }
   title: 大结局
-  text: 收音机里重播一部老书，就是小时候全楼一块儿「嗐」的那部。当年你到底没听着大结局。今天，它说到最后一回了。
+  text: 收音机重播那部老书，小时候没听着结局的那部。今天是最后一回。
   options:
     - id: listen
       text: 把声音拧大，听完
       tags: [patient]
       effects: { self: { mood: 10 } }
     - id: off
-      text: 关上，留个扣子
+      text: 关上，不听结局
       tags: [adventure]
       effects: { self: { mood: 5, luck: 1 } }
     - id: call
@@ -773,7 +812,7 @@
   hint: 楼道里摆了一张记账的小桌。
   weight: 3
   requires: { minAge: 13, flags: [fam_dale, bai_seat] }
-  title: 知客
+  title: 记账的小桌
   text: 楼里一位老人走了。白家伯伯张罗后事，人手不够，把你们俩抓了差：楼道里摆张小桌，记账，倒茶。来的全是街坊，都红着眼圈。
   options:
     - id: ledger
@@ -811,7 +850,7 @@
   weight: 3
   requires: { minAge: 36, flags: [fam_dale, bai_help] }
   title: 出山
-  text: 你爸站不了一整天了。来请的人直搓手：「如今都是『一条龙』，连老人姓什么都现问。你们家不出人，老礼儿就没人懂了。」他看你。
+  text: 你爸站不了一整天了。来请的人搓着手：「你们家不出人，老礼儿就没人懂了。」你爸看你。
   options:
     - id: take
       text: 「我去。」
@@ -832,7 +871,7 @@
   weight: 3
   requires: { flags: [fam_dale, bai_seat] }
   title: 给自己开的单子
-  text: 别人的事，你张罗了一辈子，或者看了一辈子。今天你铺开纸，给自己开单子：哪张相片，放什么曲子。
+  text: 别人的事，你看了一辈子。今天你铺开纸，给自己开一张单子。
   options:
     - id: simple
       text: 一切从简，别折腾孩子
@@ -901,7 +940,7 @@
       memory: 抱回楼上的箱子
       bond: { sync: 3, close: 4 }
     haggle:
-      text: 你一句我一句，愣让人多掏了二十块。老爷子背着手往回走：「搁早年间，你俩能开买卖。」
+      text: 你一句我一句，愣让人多掏了二十块。老爷子背着手往回走，走得比来的时候快。
       memory: 多出来的二十块
       bond: { sync: 3, close: 3 }
     quiet:
@@ -918,7 +957,7 @@
   weight: 3
   requires: { minAge: 36, flags: [fam_oldmoney, jin_box] }
   title: 末一条规矩
-  text: 樟木箱子传到了你手上：一只包了浆的蝈蝈葫芦，还有爷爷手订的十条规矩。头一条，吃饭不许吧唧嘴。末一条，日子再紧，脸要洗净。
+  text: 樟木箱子传到了你手上：一只蝈蝈葫芦，爷爷手订的十条规矩。末一条：日子再紧，脸要洗净。
   options:
     - id: keep
       text: 入了冬，怀里也揣只蝈蝈
@@ -944,7 +983,7 @@
   weight: 3
   requires: { minAge: 5, flags: [fam_wrestle] }
   title: 圈儿里
-  text: 佟家伯伯当年在跤场上有一号。他在楼下沙土地上画了个圈：「俩小孩儿，进来学个绊子。规矩说在前头：倒了地的人，不许再碰。」
+  text: 佟家伯伯年轻时摔过跤。他在楼下沙土地上画了个圈：「俩小孩儿，进来学个绊子。规矩说在前头：倒了地的人，不许再碰。」
   options:
     - id: learn
       text: 一招一式跟着学
@@ -960,12 +999,12 @@
       effects: { self: { mind: 1 } }
   resonance:
     learn:
-      text: 你绊我，我绊你，一块儿倒了，滚了一身土。佟伯伯一挥手：「平跤！下了场还是朋友，拉手。」
-      memory: 平跤
+      text: 你绊我，我绊你，一块儿倒了，滚了一身土。佟伯伯让你们拉了手，才许出圈。
+      memory: 一身土
       bond: { sync: 3, close: 4 }
     grab:
-      text: 同时扑上去抱对方的腿，脑袋磕脑袋，「咚」的一声。佟伯伯乐了：「这叫什么跤？这叫顶牛。」
-      memory: 顶牛
+      text: 同时扑上去抱对方的腿，脑袋磕脑袋，「咚」的一声。两个人捂着脑门，在圈里坐了半天。
+      memory: 咚的一声
       bond: { sync: 3, close: 3 }
   dissonance:
     text: 一个摆好架势，一个上来就抱腿，真撂倒了。「不算！」佟伯伯说：「算。街上没人讲规矩。可你得讲。」
@@ -998,10 +1037,10 @@
   weight: 3
   requires: { minAge: 36, flags: [fam_wrestle, tong_mat] }
   title: 先学倒
-  text: 你爸摔不动了，可每个礼拜天还去跤场边上坐着，看小年轻瞎抡。回来就生闷气：「没一个会倒的。不会倒，就敢往上冲。」
+  text: 你爸摔不动了，礼拜天还去跤场边上坐着。回来就生闷气：「没一个会倒的。不会倒，就敢往上冲。」
   options:
     - id: teach
-      text: 礼拜天，你披上了褡裢
+      text: 礼拜天，你下了场
       tags: [responsible]
       effects: { self: { body: 1, energy: -10 }, flags: [took_over, tong_kept] }
     - id: sit
@@ -1009,7 +1048,7 @@
       tags: [gentle]
       effects: { self: { mood: 5 } }
     - id: hang
-      text: 把褡裢收进柜子
+      text: 把他的跤衣收进柜子
       tags: [solitude]
       effects: { self: { mood: -5 } }
 
@@ -1020,12 +1059,12 @@
   stage: childhood
   where: river
   when: [600, 1080]
-  hint: 河边有只沙燕，还没画眼睛。
+  hint: 河边有只风筝，还没画眼睛。
   seasons: [spring]
   weight: 3
   requires: { minAge: 5, flags: [fam_kite] }
   title: 点睛
-  text: 傅家爷爷扎了一辈子风筝。这只沙燕，竹篾劈得比挂面还细，就差眼睛。他把笔一递：「点睛这一笔，手不能抖。你们俩，谁来？」
+  text: 傅家爷爷扎了一辈子风筝。这只燕子，竹篾劈得比挂面还细，就差眼睛。他把笔一递：「点睛这一笔，手不能抖。你们俩，谁来？」
   options:
     - id: take
       text: 接过笔
@@ -1042,14 +1081,14 @@
   resonance:
     take:
       text: 两只手攥着一支笔点了下去：一只眼大，一只眼小。爷爷端详半天：「行。像是冲人挤眼睛。」
-      memory: 挤眼睛的沙燕
+      memory: 挤眼睛的燕子
       bond: { sync: 4, close: 3 }
     hold:
       text: 都伸手去扶，没人拿笔。爷爷自己拿起笔，把你们俩的手按在风筝上。那两个黑点，算三个人点的。
       memory: 三个人点的睛
       bond: { sync: 3, close: 3 }
   dissonance:
-    text: 一个点，一个扶。扶的比点的还紧张，把竹篾攥出了一道印儿。爷爷说不碍事：「带伤的，认主。」
+    text: 一个点，一个扶。扶的比点的还紧张，把竹篾攥出了一道印儿。爷爷看了看，没换，就这么糊上了纸。
     bond: { close: 1 }
 
 - id: f_fu_plastic
@@ -1058,7 +1097,7 @@
   weight: 3
   requires: { minAge: 19, flags: [fam_kite, fu_kite] }
   title: 五块钱一只
-  text: 河边卖风筝的换了货：塑料布印的，五块钱一只。你家的沙燕扎三天，挂了一礼拜没开张。爷爷照旧劈篾子：「能上天的，都不寒碜。」
+  text: 河边卖风筝的换了货：塑料布印的，五块钱一只。你家的风筝扎三天，挂了一礼拜没开张。爷爷照旧劈篾子：「能上天的，都不寒碜。」
   options:
     - id: learn
       text: 坐他边上，从劈篾子学起
@@ -1069,7 +1108,7 @@
       tags: [responsible]
       effects: { self: { luck: 1, mood: -3 } }
     - id: fly
-      text: 拿只沙燕去河边放
+      text: 拿一只去河边放
       tags: [adventure]
       effects: { self: { charm: 1, mood: 8 } }
 
@@ -1079,7 +1118,7 @@
   weight: 3
   requires: { minAge: 36, flags: [fam_kite, fu_kite] }
   title: 传人
-  text: 爷爷的案子如今是你爸坐着。区里来人要给老手艺挂牌子，张嘴就问：「师傅，有传人吗？」你爸手上缠着胶布。他扭过脸，看你。
+  text: 区里来人要给老手艺挂牌子，问：「师傅，有传人吗？」你爸手上缠着胶布。他扭过脸，看你。
   options:
     - id: me
       text: 「有。我。」

@@ -151,8 +151,8 @@ lives:
     text: "{name} 教了一帮孩子摔跤，头一课永远是怎么倒。{name} 说：会倒的人，摔不坏。"
     requires: { flags: [fam_wrestle, took_over] }
   - id: l_heir_kite
-    title: 沙燕
-    text: "{name} 扎了一辈子风筝。开春河边天上的沙燕，十只里有三只出自 {name} 的手。剩下七只塑料的，线也是 {name} 给理顺的。"
+    title: 风筝
+    text: "{name} 扎了一辈子风筝。开春河边天上的风筝，十只里有三只出自 {name} 的手。剩下七只塑料的，线也是 {name} 给理顺的。"
     requires: { flags: [fam_kite, took_over] }
 
   # ---- 活成了什么样 ----

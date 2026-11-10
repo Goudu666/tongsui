@@ -677,7 +677,7 @@
   weight: 3
   requires: { minAge: 5, flags: [fam_crosstalk] }
   title: 茶馆后台
-  text: 茶馆后台一股茶叶末和烟卷味儿。你蹲在箱子后头听你爸说：铺平，垫稳，一翻，两翻，三翻，抖。台下「哗」的一声，你也乐。
+  text: 茶馆后台一股茶叶末和烟味儿。你蹲在箱子后面，听你爸在台上抖包袱，台下笑一阵，你也跟着笑一阵。
   options:
     - id: memorize
       text: 偷偷把包袱记下来
@@ -738,7 +738,7 @@
   weight: 3
   requires: { minAge: 39, flags: [fam_crosstalk, gu_stage] }
   title: 你接着说
-  text: 你爸嗓子哑了。他把用了四十年的扇子往你手里一塞：「下礼拜那场你接着说。规矩就一条：别让话掉地上。」
+  text: 你爸嗓子哑了。他把用了四十年的扇子往你手里一塞：「下礼拜那场你接着说。别让话掉地上。」
   options:
     - id: take
       text: 接过扇子上台

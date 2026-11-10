@@ -110,6 +110,9 @@ bash tools/make_release_keystore.sh --gh   # 装了 gh CLI：生成后直接写�
 
 ### 在哪下载
 
+- **最省事：固定下载链接** <https://github.com/Goudu666/tongsui/releases/download/latest/tongsui.apk>
+  main 每次 CI 全绿后自动换成最新的包（Releases 页面里叫「同岁 · 最新版」，标成预发布）。
+  仓库是私有的，要先在浏览器登录 GitHub；手机上没登录就在电脑上下载，用微信/QQ 文件传输助手发到手机。
 - **每次 push / Run workflow**：Actions → 这次运行 → 页面底部 Artifacts → `tongsui-0.1.N.apk`。
   版本号自动递增（versionCode = 运行序号），新包可以直接覆盖安装旧包。
 - **发版本**：`git tag v0.2.0 && git push --tags`，CI 会额外发一个 GitHub Release，APK 和服务端模块 `index.js` 都挂在上面。

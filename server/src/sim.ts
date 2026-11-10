@@ -501,8 +501,9 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       var scored = false;
       for (var swk in sw) scored = true;
       entry.results[role] = {
-        // 走的是不看分的路、这一关也没有统一的卷子：没有分数可记（不写 0 分）
-        score: scored ? shown : null,
+        score: shown,
+        // 走的是不看分的路、这一关也没有统一的卷子：没有分数可记。score 照旧是数字（旧安装包拿它当数字用），画不画看 scored
+        scored: scored,
         unit: sw.money ? "块" : "分",
         grade: grade ? grade.label : null,
         option: o.id,

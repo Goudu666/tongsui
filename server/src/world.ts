@@ -184,6 +184,7 @@ function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot): { act:
   var p = s.persons![role];
   var minute = s.world!.minute;
   var why = "这儿现在没什么可做的";
+  var late: Action | null = null;
   for (var i = 0; i < sp.actions.length; i++) {
     var act = worldFindAction(c, sp.actions[i]);
     if (act.duty) {
@@ -196,11 +197,12 @@ function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot): { act:
     if (rq.maxAge !== undefined && age > rq.maxAge) { why = "已经过了那个年纪"; continue; }
     // 关口上挣来的去处（少年宫、体校）：没走那条路的人看不见它，轮到下一个行动
     if (!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) continue;
-    // 不在钟点上也轮到下一个：体校四点开练，四点以前操场照样能踢球
-    if (rq.hours && (minute < rq.hours[0] || minute > rq.hours[1])) { why = "现在不是时候"; continue; }
+    // 不在钟点上先轮到下一个：体校四点开练，四点以前操场照样能踢球。
+    // 后面没有别的事可做，还是把它给出去：点位上有名字，点了回「现在不是时候」（worldCanAct），不会变成没反应
+    if (rq.hours && (minute < rq.hours[0] || minute > rq.hours[1])) { if (!late) late = act; continue; }
     return { act: act, why: "" };
   }
-  return { act: null, why: why };
+  return { act: late, why: late ? "" : why };
 }
 
 /**

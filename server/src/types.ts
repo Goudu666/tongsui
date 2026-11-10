@@ -396,7 +396,7 @@ interface LogEntry {
   resonance: boolean | null;
   text: string;
   /** 关口：每个人的得分（属性类按百分制，钱类按块）、成绩和走上的路 */
-  results?: { [R in Role]?: { score: number | null; unit: string; grade: string | null; option: string; track: string } };
+  results?: { [R in Role]?: { score: number; scored?: boolean; unit: string; grade: string | null; option: string; track: string } };
   /** 一天的小结：每个人今天涨了多少 */
   gains?: { [R in Role]?: Partial<Stats> };
   /** 这件事里做过的检定 */

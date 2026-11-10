@@ -1,6 +1,6 @@
 // 核心玩法的形状：时间花在哪，决定够得着哪条线。
-// 让机器人按几种活法把人生过到关口（tools/paths.mjs），钉住四件事。具体的数归 rules.yaml 和 milestones.yaml 调，
-// 这里只管调完以后这四件事还成立；哪条不成立了，这个游戏就没有取舍可言了。
+// 让机器人按几种活法把人生过到关口（tools/paths.mjs），钉住下面几件事。具体的数归 rules.yaml 和 milestones.yaml 调，
+// 这里只管调完以后这几件事还成立；哪条不成立了，这个游戏就没有取舍可言了。
 import assert from "node:assert/strict";
 import { WAYS, live, climb } from "../../tools/paths.mjs";
 
@@ -53,5 +53,20 @@ const purse = (marks) => { const ps = people(marks, "m_junior"); return ps.reduc
 assert.ok(purse(hustle) > purse(solo) + 10, `从小挣钱的人到 12 岁只比念书的多 ${(purse(hustle) - purse(solo)).toFixed(0)} 块，没人会去挣`);
 assert.ok(hk < rh, `从小挣钱的人有 ${Math.round(hk * 100)}% 进重点班，不比一半念书一半玩的（${Math.round(rh * 100)}%）少：钱是白捡的`);
 
+// 7. 每个阶段都以一道关收尾，头一道就有取舍：六岁、九岁的线，不上心的够不着、专心的大多够得着
+const [sl, ss] = [rate(lazy, "m_school", "study"), rate(solo, "m_school", "study")];
+const [cl, cs] = [rate(lazy, "m_club", "math"), rate(solo, "m_club", "math")];
+assert.ok(sl <= 0.5 && ss >= 0.7, `六岁的学习委员：不上心 ${Math.round(sl * 100)}%，专心 ${Math.round(ss * 100)}%`);
+assert.ok(cl <= 0.5 && cs >= 0.7, `九岁的数学小组：不上心 ${Math.round(cl * 100)}%，专心 ${Math.round(cs * 100)}%`);
+
+// 8. 最后一道关看的是两个人：一辈子搭伴的有一部分并得成一家，各过各的一个也并不成。
+//    亲近不是攒出来的，中年会淡，所以搭伴的人也不是个个够得着
+const oldDuo = run("搭伴练身体", 71), oldSolo = run("一个人练身体", 71);
+const [pd, ps] = [rate(oldDuo, "m_evening", "pair"), rate(oldSolo, "m_evening", "pair")];
+assert.ok(people(oldDuo, "m_evening").length >= N, "活到七十岁的人太少，最后一道关大多数人见不着");
+assert.ok(pd >= 0.15 && pd <= 0.9, `一辈子搭伴的人有 ${Math.round(pd * 100)}% 够得着搭伙过的线`);
+assert.ok(ps <= 0.05, `各过各的人有 ${Math.round(ps * 100)}% 够得着搭伙过的线：亲近成了白捡的`);
+
+console.log(`✓ 头尾的关：学习委员 不上心 ${Math.round(sl * 100)}% / 专心 ${Math.round(ss * 100)}%，数学小组 ${Math.round(cl * 100)}% / ${Math.round(cs * 100)}% / 七十岁搭伙过 搭伴 ${Math.round(pd * 100)}%，各过各的 ${Math.round(ps * 100)}%`);
 console.log(`✓ 影子和钱：影子 12 岁心智 ${shadowMind.toFixed(1)}（不上心 ${lazym.toFixed(1)}，本人专心 ${solom.toFixed(1)}）/ 从小挣钱多攒 ${(purse(hustle) - purse(solo)).toFixed(0)} 块，重点班 ${Math.round(hk * 100)}%`);
 console.log(`✓ 活法：重点班 不上心 ${Math.round(rl * 100)}% / 一半一半 ${Math.round(rh * 100)}% / 专心 ${Math.round(rs * 100)}% / 专心比不上心多 ${gap.toFixed(1)} 点心智 / 搭伴再多 ${lift.toFixed(1)} / 五条路全通的只有 ${Math.round(all * 100)}%`);

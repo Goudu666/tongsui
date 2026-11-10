@@ -38,6 +38,9 @@ func _project() -> void:
 
 
 func _hud() -> void:
+	# 刘海只在一边：两边让得一样宽（手机翻 180 度不会重排，刘海会换边）；再离谱的值也不超过 160
+	_check(Kit.even_sides(110.0, 0.0) == Vector2(110, 110) and Kit.even_sides(0.0, 96.0) == Vector2(96, 96), "刘海让位应左右取大的那个")
+	_check(Kit.even_sides(-5.0, 900.0) == Vector2(160, 160) and Kit.even_sides(0.0, 0.0) == Vector2.ZERO, "刘海让位应夹在 0~160")
 	# 16:9、18:9、20:9、21:9 的手机，4:3 的平板；有没有刘海（左右各 110）
 	for size in [Vector2(1920, 1080), Vector2(2160, 1080), Vector2(2400, 1080), Vector2(2520, 1080), Vector2(1920, 1440)]:
 		for notch in [0.0, 110.0]:

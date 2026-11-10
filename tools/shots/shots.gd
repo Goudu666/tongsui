@@ -395,25 +395,20 @@ func _legacy_ending() -> void:
 	fake.queue_free()
 
 
-## 路多的关口（找工作那样六条、上小学那样四条）：选项折成三列 / 两列，不挤出弹窗
+## 路多的关口（找工作六条、上小学四条）：选项折成三列 / 两列，不挤出弹窗。带线的路第一条锁住，写差多少
 func _many_paths() -> void:
-	var texts := ["进厂，接爸的班", "考出去，念大学", "去南方闯一闯", "在街口支个摊", "当兵去", "先在家待一年"]
-	for n in [6, 4]:
-		var opts: Array = []
+	for id in ["m_job", "m_school"]:
+		var ev: Dictionary = main.events_by_id.get(id, {})
+		if ev.get("options", []).size() < 4:
+			continue
 		var locks: Dictionary = {}
-		for i in n:
-			var o := {"id": "p%d" % i, "text": texts[i]}
-			if i == 1 or i == 4:
-				o["min"] = 60
-			opts.append(o)
-		locks["p1"] = "心智 58 分，线是 64 分"
-		main.events_by_id["m_shots_paths"] = {"id": "m_shots_paths", "kind": "milestone", "title": "找工作", "options": opts,
-			"text": "毕业证揣在兜里，街上的招工启事贴了一墙。往哪走，今天得有个说法。"}
+		for o in ev.options:
+			if o.has("min") and locks.is_empty():
+				locks[o.id] = "心智 58 分，线是 64 分"
 		main._close_modal()
 		main.my_role = "qing"
-		main._on_event_started({"event": {"roles": ["qing", "mei"], "eventId": "m_shots_paths", "kind": "milestone", "choices": {}, "swing": {"qing": -0.2, "mei": 0.1}},
+		main._on_event_started({"event": {"roles": ["qing", "mei"], "eventId": id, "kind": "milestone", "choices": {}, "swing": {"qing": -0.2, "mei": 0.1}, "steady": {"qing": 0.3}},
 			"locks": {"qing": locks, "mei": {}}})
 		await _wait(1.5)
-		await _snap("37_paths_%d" % n)
+		await _snap("37_paths_%d" % ev.options.size())
 	main._close_modal()
-	main.events_by_id.erase("m_shots_paths")

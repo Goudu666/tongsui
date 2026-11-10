@@ -37,11 +37,12 @@ spots:
   - { id: river_bridge, zone: river, at: [2360, 690], action: duty }
   - { id: alley_rope, zone: alley, at: [1260, 880], actions: [play_alley, chat] }
   - { id: bike_bench, zone: bikeshop, at: [1120, 1280], actions: [duty, work] }
-  - { id: school_gate, zone: school, at: [320, 1200], action: duty }
-  - { id: school_yard, zone: school, at: [470, 1400], action: ball }
+  # 三年级那一关（m_club）挣来的去处写在前面：进了的人下午四点前后看见的是它，别的人、别的钟点还是原来那件事
+  - { id: school_gate, zone: school, at: [320, 1200], actions: [duty, club_math] }
+  - { id: school_yard, zone: school, at: [470, 1400], actions: [club_sport, ball] }
   # 街坊的去处：茶社长魅力，河边钓鱼歇心
   - { id: tea_seat, zone: teahouse, at: [1716, 236], action: listen }
-  - { id: tea_stage, zone: teahouse, at: [1668, 104], action: perform }
+  - { id: tea_stage, zone: teahouse, at: [1668, 104], actions: [club_art, perform] }
   - { id: river_fish, zone: river, at: [2096, 1134], action: fish }
 
 # 行动。needs：hunger 饱腹 / energy 精力 / mood 心情 / clean 清洁（0~100）
@@ -145,6 +146,29 @@ actions:
     needs: { energy: -12, clean: -15 }
     stats: { body: 0.15, mind: 0.1 }
     together: { needs: { mood: 5 }, bond: { close: 1 }, text: 爷爷说你们俩加一块儿顶半个学徒。 }
+
+  # ---- 三年级挑上的（m_club）：只有进了的人做得了，只在放学以后那一阵，长得比自己练快三成 ----
+  - id: club_math
+    label: 数学小组
+    minutes: 90
+    requires: { minAge: 9, maxAge: 11, flags: [club_math], hours: [930, 1080] }
+    needs: { energy: -10, mood: -2 }
+    stats: { mind: 0.52 }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 一道题两种解法，你们各讲各的，讲到传达室的大爷来锁门。 }
+  - id: club_sport
+    label: 体校训练
+    minutes: 90
+    requires: { minAge: 9, maxAge: 11, flags: [club_sport], hours: [930, 1080] }
+    needs: { energy: -18, hunger: -8, mood: 2 }
+    stats: { body: 0.58 }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 压腿的时候背靠着背，谁也不敢先喊疼。 }
+  - id: club_art
+    label: 跟曲艺队排练
+    minutes: 60
+    requires: { minAge: 9, maxAge: 11, flags: [club_art], hours: [930, 1080] }
+    needs: { energy: -8, mood: 6 }
+    stats: { charm: 0.5 }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 茶社下午没有客人，台子借给孩子们。你们一个打板，一个数拍子。 }
 
   # ---- 魅力 ----
   - id: chat

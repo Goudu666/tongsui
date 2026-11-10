@@ -114,7 +114,7 @@ function worldStartDay(s: LifeState, c: Content) {
     for (var pi = 0; pi < ROLES.length; pi++) {
       var pp = persons[ROLES[pi]];
       var pd = pp.alive ? lifeTrack(c, pp, t.age).duty : null;
-      if (pd && pd.money > 0) pp.money += pd.money;
+      if (pd && pd.money > 0) pp.money += worldWage(c, pp, pd);
     }
   }
 
@@ -160,6 +160,14 @@ function worldDuty(s: LifeState, c: Content, role: Role): Duty | null {
   return lifeTrack(c, s.persons![role], lifeTimeAt(s.turn).age).duty;
 }
 
+/** 这一天的工钱：路上写的数，乘上关口挣来的那一级（rules.yaml → daily.wageFlags） */
+function worldWage(c: Content, p: Person, duty: Duty): number {
+  var m = duty.money;
+  var wf = c.rules.daily.wageFlags;
+  if (m > 0 && wf) for (var f in wf) if (lifeHasFlag(p, f)) m *= wf[f];
+  return Math.round(m * 10) / 10;
+}
+
 /** 日程现在还去不去得了：今天有、还没去过、没迟到 */
 function worldDutyOpen(s: LifeState, c: Content, role: Role): Duty | null {
   var d = worldDuty(s, c, role);
@@ -173,7 +181,10 @@ function worldDutyOpen(s: LifeState, c: Content, role: Role): Duty | null {
  */
 function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot): { act: Action | null; why: string } {
   var age = lifeTimeAt(s.turn).age;
+  var p = s.persons![role];
+  var minute = s.world!.minute;
   var why = "这儿现在没什么可做的";
+  var late: Action | null = null;
   for (var i = 0; i < sp.actions.length; i++) {
     var act = worldFindAction(c, sp.actions[i]);
     if (act.duty) {
@@ -184,9 +195,14 @@ function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot): { act:
     var rq = act.requires || {};
     if (rq.minAge !== undefined && age < rq.minAge) { why = "还太小了"; continue; }
     if (rq.maxAge !== undefined && age > rq.maxAge) { why = "已经过了那个年纪"; continue; }
+    // 关口上挣来的去处（少年宫、体校）：没走那条路的人看不见它，轮到下一个行动
+    if (!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) continue;
+    // 不在钟点上先轮到下一个：体校四点开练，四点以前操场照样能踢球。
+    // 后面没有别的事可做，还是把它给出去：点位上有名字，点了回「现在不是时候」（worldCanAct），不会变成没反应
+    if (rq.hours && (minute < rq.hours[0] || minute > rq.hours[1])) { if (!late) late = act; continue; }
     return { act: act, why: "" };
   }
-  return { act: null, why: why };
+  return { act: late, why: late ? "" : why };
 }
 
 /**
@@ -254,7 +270,8 @@ function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error
   var same = !!b && b.action === act.id && b.spot === sp.id && !act.sleep;
   if (same && act.duty) {
     var age = lifeTimeAt(s.turn).age;
-    same = lifeTrack(c, s.persons!.qing, age).id === lifeTrack(c, s.persons!.mei, age).id;
+    var tq = lifeTrack(c, s.persons!.qing, age), tm = lifeTrack(c, s.persons!.mei, age);
+    same = (tq.group || tq.id) === (tm.group || tm.id);
   }
   if (same) {
     a.together = true;
@@ -287,7 +304,7 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   var duty = act.duty ? lifeTrack(c, p, lifeTimeAt(s.turn).age).duty : null;
   var gains: Partial<Stats> = duty ? duty.stats : act.duty ? {} : act.stats;
   var needs: Partial<Needs> = duty ? duty.needs : act.duty ? {} : act.needs;
-  var money = duty ? duty.money : act.duty ? 0 : act.money;
+  var money = duty ? worldWage(c, p, duty) : act.duty ? 0 : act.money;
   var eff = a.eff === undefined ? 1 : a.eff;
   var stats: SelfDelta = {};
   for (var k in gains) {
@@ -354,9 +371,9 @@ function worldShadowNeed(s: LifeState, c: Content, role: Role): StatKey | null {
   for (var i = 0; i < ev.options.length; i++) {
     var o = ev.options[i];
     if (!o.min) continue;
-    var short = lifeScore(p, lifeOptionWeights(ev, o)) < o.min;
+    var short = lifeScore(p, lifeOptionWeights(ev, o), s.bond) < o.min;
     if (!target) { target = o; continue; }
-    var tShort = lifeScore(p, lifeOptionWeights(ev, target)) < target.min!;
+    var tShort = lifeScore(p, lifeOptionWeights(ev, target), s.bond) < target.min!;
     if (short && (!tShort || o.min < target.min!)) target = o;
     else if (!short && !tShort && o.min > target.min!) target = o;
   }
@@ -476,16 +493,23 @@ function worldMilestone(s: LifeState, c: Content, out: WorldTick): boolean {
     w.done.push(ms.id);
     return false;
   }
-  var pe: PendingEvent = { eventId: ms.id, kind: "milestone", roles: due, choices: {}, shadow: [], swing: {} };
+  var pe: PendingEvent = { eventId: ms.id, kind: "milestone", roles: due, choices: {}, shadow: [], swing: {}, steady: {} };
   var forced = true;
   for (var i = 0; i < due.length; i++) {
     var r = due[i];
     var a = w.actors[r]!;
     if (a.action || a.asleep) { a.action = null; a.spot = null; a.until = null; a.asleep = false; delete a.eff; delete a.together; delete a.boost; }
     var luck = s.persons![r].stats.luck;
-    var swing = ms.swing ? Math.round(((lifeRand(s) - 0.5) * SWING_RANGE + (luck - 5) * SWING_LUCK) * 100) / 100 : 0;
+    var swing = 0;
+    if (ms.swing) {
+      var hand = (lifeRand(s) - 0.5) * SWING_RANGE;
+      // 默契托底：知道对门在考场外头等着，手气差的那一半按默契折掉一些。手气好的时候不多给，属性也不动
+      var steady = hand < 0 && lifePairBond(s, r) ? Math.round(-hand * (s.bond.sync / 100) * c.rules.bond.syncSteady * 100) / 100 : 0;
+      if (steady > 0) pe.steady![r] = steady;
+      swing = Math.round((hand + steady + (luck - 5) * SWING_LUCK) * 100) / 100;
+    }
     pe.swing![r] = swing;
-    var open = ms.options.filter(function (o) { return !lifeOptionLock(ms, o, s.persons![r], swing); });
+    var open = ms.options.filter(function (o) { return !lifeOptionLock(ms, o, s.persons![r], swing, lifePairBond(s, r)); });
     // 一条都走不通（内容写漏了兜底的路）：走线最低的那条，不让这条人生卡在这里
     if (open.length === 0) pe.choices[r] = lifeMilestoneFallback(ms).id;
     else if (open.length === 1) pe.choices[r] = open[0].id;
@@ -588,7 +612,7 @@ function worldChoose(s: LifeState, c: Content, role: Role, optionId: string, fro
   var opt = lifeFindOption(ev, optionId);
   if (!opt) return { error: "没有这个选项", entry: null };
   if (w.event.kind === "milestone") {
-    var lock = lifeOptionLock(ev, opt, s.persons![role], (w.event.swing && w.event.swing[role]) || 0);
+    var lock = lifeOptionLock(ev, opt, s.persons![role], (w.event.swing && w.event.swing[role]) || 0, lifePairBond(s, role));
     if (lock) return { error: "这条路现在走不了（" + lock + "）", entry: null };
   }
   w.event.choices[role] = optionId; // 结算前可以改主意

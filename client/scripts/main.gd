@@ -39,6 +39,7 @@ var goal_panel: GoalPanel  ## 下一个人生关口（HUD 里日历牌下面那�
 var action_btn: Button
 var action_title: Label    ## 行动按钮上的大字：做什么
 var action_sub: Label      ## 下面一行小字：多久、多少钱、搭不搭伴
+var _action_dim: Variant = null  ## 行动按钮上的字现在是不是灰的（null：还没设过）
 var modal: ColorRect
 var modal_card: PanelContainer
 var modal_scroll: ScrollContainer  ## 弹窗比屏幕高时，卡片里面滚
@@ -46,6 +47,9 @@ var modal_body: VBoxContainer
 var toast: PanelContainer
 var toast_label: Label
 var _toast_tween: Tween
+var _toast_box := Vector2.ZERO  ## 提示条这一回的大小
+var _toast_over := false        ## 提示条是不是贴在顶上（开着弹窗）
+var _toast_drop := 0.0
 var _modal_tween: Tween
 var _page_id := ""       ## 现在是哪一页；换页时才播转场
 var _stage_shown := ""   ## 河畔里现在显示的人生阶段
@@ -69,6 +73,7 @@ const COLUMN_WIDTH := 1040.0  ## 只有一栏的页面
 const MODAL_WIDTH := 1040.0   ## 普通弹窗
 const MODAL_WIDE := 1500.0    ## 选项并排、左右分栏的弹窗
 const ACTION_SIZE := Vector2(640, 128)
+const TOAST_ANCHOR := 0.72  ## 提示条平时在屏高这么多的地方；开着弹窗时贴到顶上
 var _practice_count := 0
 
 
@@ -206,8 +211,8 @@ func _build_layers() -> void:
 	Kit._accent_boxes.append(toast.get_theme_stylebox("panel"))
 	toast.anchor_left = 0.5
 	toast.anchor_right = 0.5
-	toast.anchor_top = 0.72
-	toast.anchor_bottom = 0.72
+	toast.anchor_top = TOAST_ANCHOR
+	toast.anchor_bottom = TOAST_ANCHOR
 	toast.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	toast.grow_vertical = Control.GROW_DIRECTION_BOTH
 	toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -385,6 +390,16 @@ func _set_status(text: String) -> void:
 	s.text = text
 
 
+## 提示条摆在哪：平时在屏幕下半截；开着弹窗时那里正是弹窗的按钮，纸条贴到屏幕顶上。drop 是落下来那一下还差多少
+func _toast_place(drop: float) -> void:
+	_toast_drop = drop
+	toast.anchor_top = 0.0 if _toast_over else TOAST_ANCHOR
+	toast.anchor_bottom = toast.anchor_top
+	var mid := maxf(64.0, _toast_box.y / 2.0 + 8.0) if _toast_over else 0.0
+	toast.offset_top = mid + drop - _toast_box.y / 2.0
+	toast.offset_bottom = mid + drop + _toast_box.y / 2.0
+
+
 func _toast(text: String) -> void:
 	toast_label.text = text
 	# 短的一行写完；长的折行，纸条的大小自己算（自动换行的 Label 报不准最小尺寸）
@@ -403,13 +418,13 @@ func _toast(text: String) -> void:
 	if _toast_tween:
 		_toast_tween.kill()
 	toast.modulate.a = 0.0
-	toast.offset_top = 40 - box.y / 2.0
-	toast.offset_bottom = 40 + box.y / 2.0
+	_toast_box = box
+	_toast_over = modal.visible
+	_toast_place(40.0)
 	_toast_tween = create_tween()
 	_toast_tween.set_parallel(true)
 	_toast_tween.tween_property(toast, "modulate:a", 1.0, 0.18)
-	_toast_tween.tween_property(toast, "offset_top", -box.y / 2.0, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_toast_tween.tween_property(toast, "offset_bottom", box.y / 2.0, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_toast_tween.tween_method(_toast_place, 40.0, 0.0, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_toast_tween.set_parallel(false)
 	_toast_tween.tween_interval(2.6)
 	_toast_tween.tween_property(toast, "modulate:a", 0.0, 0.6)
@@ -522,8 +537,11 @@ func _process(delta: float) -> void:
 	action_title.text = title
 	action_sub.text = " · ".join(cost)
 	action_sub.visible = not cost.is_empty()
-	action_title.add_theme_color_override("font_color", P.INK_SOFT if action_btn.disabled else P.PAPER)
-	action_sub.add_theme_color_override("font_color", P.INK_SOFT if action_btn.disabled else Color(P.PAPER, 0.8))
+	# 字的颜色跟着按钮灰不灰走。只在变的时候设：同一个颜色再设一遍也会触发主题变更和重排，这里每帧都跑
+	if _action_dim != action_btn.disabled:
+		_action_dim = action_btn.disabled
+		action_title.add_theme_color_override("font_color", P.INK_SOFT if _action_dim else P.PAPER)
+		action_sub.add_theme_color_override("font_color", P.INK_SOFT if _action_dim else Color(P.PAPER, 0.8))
 	action_btn.visible = true
 
 
@@ -1223,6 +1241,10 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 	var swing := int(round(luck * 10.0))
 	if swing != 0:
 		_label(modal_body, "今天发挥得%s，%s %d 分。" % ["不错" if swing > 0 else "不大好", "多了" if swing > 0 else "少了", absi(swing)], 30, P.INK_SOFT)
+	# 默契托住的分：已经算在上面的数里了，这里只是告诉他是谁托的
+	var steady := int(round(float(_dict(pe.get("steady")).get(my_role, 0.0)) * 10.0))
+	if steady > 0:
+		_label(modal_body, "知道%s就在外头等着，心里踏实，少丢了 %d 分。" % [str(names.get(_other(), "TA")), steady], 30, P.INK_SOFT)
 	_gap(modal_body, 4)
 	var my_locks: Dictionary = _dict(locks.get(my_role))
 	var their_locks: Dictionary = _dict(locks.get(_other()))
@@ -1285,6 +1307,9 @@ func _open_modal(width := MODAL_WIDTH) -> void:
 		modal.remove_meta("waiting_event")
 	modal.visible = true
 	action_btn.visible = false
+	if not _toast_over:  # 还挂着的提示条让到顶上去，别压住这张卡的按钮
+		_toast_over = true
+		_toast_place(_toast_drop)
 	# 卡片像一张纸落在桌上：先歪一点、小一点，再放正
 	if _modal_tween:
 		_modal_tween.kill()
@@ -1417,7 +1442,7 @@ func _show_milestone_result(e: Dictionary) -> void:
 		var mark := "（影子）" if e.get("shadow", []).has(r) else ""
 		var pick := _label(row, _option_text(e.events[r], res.get("option")) + mark, 38, P.INK)
 		pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		if has_line:
+		if has_line and bool(res.get("scored", true)):
 			var score := "%d %s" % [int(res.get("score", 0)), str(res.get("unit", "分"))]
 			if res.get("grade") != null:
 				score += " · " + str(res.grade)

@@ -49,7 +49,7 @@ function story(seed, choose, rerolls = 0, near = 0.5) {
       if (due.length > 0) {
         const choices = {};
         for (const r of due) {
-          const open = ev.options.filter((o) => !lifeOptionLock(ev, o, s.persons[r], 0));
+          const open = ev.options.filter((o) => !lifeOptionLock(ev, o, s.persons[r], 0, G("lifePairBond")(s, r)));
           assert.ok(open.length >= 1, `${ev.id}: ${r} 没有任何一条路可走`);
           choices[r] = choose(s, r, { ...ev, options: open });
           assert.ok(open.some((o) => o.id === choices[r]), `${ev.id}: 选了一条走不了的路 ${choices[r]}`);

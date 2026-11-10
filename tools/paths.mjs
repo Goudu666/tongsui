@@ -81,10 +81,20 @@ export const WAYS = {
   "一半念书一半玩": { each: (s) => (s.turn % 2 ? grow("mind") : fun) },
   "各顾各的": { each: (s, role) => grow(role === "qing" ? "mind" : "body") },
   "混着来": { each: (s) => [grow("mind"), grow("body"), grow("charm"), fun][s.turn % 4] },
+  // 钱的活法：能挣钱的事优先（小时候帮爷爷修车）。钱该是拿成长换来的，不能白捡
+  "从小挣钱": { each: () => (act) => (act.money > 0 ? 10 : 0) + (act.stats.body || 0) },
+  // 梅不在线，影子替她过。影子是替人过日子的，不是替人拼的：梅应该落在「不上心」和「一半一半」之间，不能比真人专心还强
+  "青不上心，梅是影子": { each: () => fun, shadow: ["mei"] },
+  "青念书，梅是影子": { each: () => grow("mind"), shadow: ["mei"] },
 };
 
-/** 把一条人生过到 untilAge 岁。pickOption(s, role, ev, open) 决定关口和事件怎么选 */
+/**
+ * 把一条人生过到 untilAge 岁。pickOption(s, role, ev, open) 决定关口和事件怎么选。
+ * way.shadow 里的人不在线：机器人不管他，由引擎的影子替他过（worldShadowAct、lifeShadowChoose）。
+ */
 export function live(seed, way, untilAge, pickOption) {
+  const off = way.shadow || [];
+  const online = { qing: !off.includes("qing"), mei: !off.includes("mei") };
   const s = G("lifeCreate")(seed, C);
   G("lifeConfirm")(s, C, "qing", { qing: "青", mei: "梅" });
   G("lifeConfirm")(s, C, "mei", { qing: "青", mei: "梅" });
@@ -107,6 +117,7 @@ export function live(seed, way, untilAge, pickOption) {
       const pe = w.event, ev = C.events.find((e) => e.id === pe.eventId);
       for (const r of pe.roles) {
         if (pe.choices[r]) continue;
+        if (!online[r]) { G("worldChoose")(s, C, r, G("lifeShadowChoose")(s, C, r, ev.id), true); if (!s.world || s.world.event !== pe) break; continue; }
         const swing = (pe.swing && pe.swing[r]) || 0;
         const open = ev.options.filter((o) => ev.kind !== "milestone" || !G("lifeOptionLock")(ev, o, s.persons[r], swing));
         const id = pickOption ? pickOption(s, r, ev, open) : open[Math.floor(G("lifeRand")(s) * open.length)].id;
@@ -117,7 +128,7 @@ export function live(seed, way, untilAge, pickOption) {
     }
     for (const r of ROLES) {
       const a = w.actors[r];
-      if (!a || a.action || a.asleep || !s.persons[r].alive) continue;
+      if (!a || a.action || a.asleep || !s.persons[r].alive || !online[r]) continue;
       if (upkeep(s, r)) continue;
       const want = way.each(s, r);
       if (way.together && r === "mei") {
@@ -128,7 +139,7 @@ export function live(seed, way, untilAge, pickOption) {
       }
       free(s, r, want, way.together);
     }
-    G("worldAdvance")(s, C, 0.5, { qing: true, mei: true });
+    G("worldAdvance")(s, C, 0.5, online);
   }
   return { s, marks };
 }
@@ -145,7 +156,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const acc = {};
     for (let seed = 1; seed <= N; seed++) {
       const { marks } = live(seed * 7919, way, 31, climb);
-      for (const ev of stones) for (const r of ROLES) {
+      for (const ev of stones) for (const r of way.shadow || ROLES) {
         const m = marks[ev.id]?.[r];
         if (!m) continue;
         const a = (acc[ev.id] ||= { n: 0, open: {}, stat: { body: 0, mind: 0, charm: 0 }, money: 0 });

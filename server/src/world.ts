@@ -10,6 +10,13 @@ var WALK_SPEED = 360; // 像素/秒
 var SPOT_RADIUS = 110;
 var REST_DAY_CHANCE = 0.3; // 歇着的日子：不上学也不上班，两个人都有一整天
 var MILESTONE_AT = DAY_START + 10; // 关口在早上醒来不久发生
+/**
+ * 影子（不在线的人）替人过日子，不替人拼：吃饭睡觉、上学上班一样不落，
+ * 可空下来的时间只有一部分会跟着对门搭伴（FOLLOW）、一部分会朝下一个关口使劲（STRIVE），不挣外快也不花钱。
+ * 这两个数定的是「人不在的时候落下多少」：影子该落在不上心和一半一半之间，不能比本人在的时候还强（tools/paths.mjs 里有影子的活法）
+ */
+var SHADOW_FOLLOW = 0.2;
+var SHADOW_STRIVE = 0.2;
 /** 搭伴：两个人同时在同一个点做同一件事，这次的成长乘这个数 */
 var TOGETHER_BOOST = 1.5;
 var MEMORY_BOOST = 2;
@@ -100,10 +107,20 @@ function worldStartDay(s: LifeState, c: Content) {
     if (due) fate.milestone = ms.id;
   }
 
+  // 关口那天不歇：考试、报到都在今天
+  var rest = lifeRand(s) < REST_DAY_CHANCE && !fate.milestone;
+  // 成年以后一个日子就是一年（中年是三年）：歇班那天工钱照发。不然这一年有没有收入全看歇不歇，攒不攒得下钱成了碰运气
+  if (rest && t.stage !== "childhood" && t.stage !== "teen") {
+    for (var pi = 0; pi < ROLES.length; pi++) {
+      var pp = persons[ROLES[pi]];
+      var pd = pp.alive ? lifeTrack(c, pp, t.age).duty : null;
+      if (pd && pd.money > 0) pp.money += pd.money;
+    }
+  }
+
   s.world = {
     minute: DAY_START,
-    // 关口那天不歇：考试、报到都在今天
-    rest: lifeRand(s) < REST_DAY_CHANCE && !fate.milestone,
+    rest: rest,
     dutyDone: {},
     actors: actors,
     event: null,
@@ -373,16 +390,16 @@ function worldShadowAct(s: LifeState, c: Content, role: Role) {
   if (p.needs.clean < 30 && worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("wash")))) return;
   // 2. TA 正在做一件我也能做的事：过去搭伴
   var partner = w.actors[lifeOther(role)];
-  if (partner && partner.action && partner.spot && !partner.asleep && lifeRand(s) < 0.6) {
+  if (partner && partner.action && partner.spot && !partner.asleep && lifeRand(s) < SHADOW_FOLLOW) {
     var there = lifeFind(c.map.spots, partner.spot);
     var mine = worldPickAction(s, c, role, there).act;
     if (mine && mine.id === partner.action && !mine.duty && worldShadowGo(s, c, role, there)) return;
   }
   // 3. 心情差就去玩；不然朝下一个关口使劲；没有关口了就随便转转
   var need = p.needs.mood < 40 ? null : worldShadowNeed(s, c, role);
-  if (need && lifeRand(s) < 0.75) {
+  if (need && lifeRand(s) < SHADOW_STRIVE) {
     var k = need;
-    if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, function (act) { return !act.duty && (act.stats[k] || 0) > 0; }))) return;
+    if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, function (act) { return !act.duty && act.money === 0 && (act.stats[k] || 0) > 0; }))) return;
   }
   if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, function (act) { return !act.duty && !act.sleep && act.money >= 0 && (act.needs.mood || 0) >= 8; }))) return;
   // 4. 实在没事做：在楼道里站一会儿

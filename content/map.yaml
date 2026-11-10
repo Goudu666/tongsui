@@ -140,9 +140,10 @@ actions:
     label: 帮爷爷修车
     minutes: 120
     requires: { minAge: 8, maxAge: 17 }
-    money: 5
+    # 拿成长换钱：两个钟头挣 2 块，长的比踢球、写作业少一半。原来是 5 块外加两项属性都长，从小修车的人三十岁白捡一套房
+    money: 2
     needs: { energy: -12, clean: -15 }
-    stats: { body: 0.3, mind: 0.15 }
+    stats: { body: 0.15, mind: 0.1 }
     together: { needs: { mood: 5 }, bond: { close: 1 }, text: 爷爷说你们俩加一块儿顶半个学徒。 }
 
   # ---- 魅力 ----

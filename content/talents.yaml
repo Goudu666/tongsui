@@ -1,9 +1,14 @@
 # 先天天赋，开局随家庭一起抽。flags 会影响世界规则或事件（见 server/src/world.ts）。
 
-- { id: none, name: 普通的孩子, weight: 6, desc: 没有什么特别的。但普通也挺好的。, bonus: {}, flags: [] }
+- { id: none, name: 普通的孩子, weight: 8, desc: 没有什么特别的。但普通也挺好的。, bonus: {}, flags: [] }
 - { id: memory, name: 过目不忘, weight: 1, desc: 看一遍就记住了，写作业的效率是别人的两倍。, bonus: { mind: 2 }, flags: [tal_memory] }
 - { id: strong, name: 天生神力, weight: 1, desc: 三岁就能把水桶从井里提上来。, bonus: { body: 2 }, flags: [tal_strong] }
 - { id: sunny, name: 倍儿哏儿, weight: 1, desc: 天生乐呵，谁见了都想笑。心情掉得比别人慢。, bonus: { charm: 2 }, flags: [tal_sunny] }
 - { id: koi, name: 锦鲤, weight: 1, desc: 运气好得离谱。, bonus: { luck: 3 }, flags: [tal_koi] }
 - { id: owl, name: 夜猫子, weight: 1, desc: 晚上精神特别好，早上起不来。, bonus: {}, flags: [tal_owl] }
 - { id: foodie, name: 小馋猫, weight: 1, desc: 饿得快，但每顿饭都吃得特别开心。, bonus: { charm: 1 }, flags: [tal_foodie] }
+- { id: pigeon, name: 鸽子缘, weight: 1, desc: 楼顶的鸽子愿意落在你肩上，丢了的鸽子也会飞回你的窗台。, bonus: { luck: 1 }, flags: [tal_pigeon] }
+- { id: loud, name: 大嗓门, weight: 1, desc: 在楼下喊一声，六楼都听得见。, bonus: { body: 1, charm: 1 }, flags: [tal_loud] }
+- { id: crafty, name: 巧手, weight: 1, desc: 什么都能拆开，再原样装回去，还多出来一个螺丝。, bonus: { mind: 1, body: 1 }, flags: [tal_crafty] }
+- { id: kind, name: 老好人, weight: 1, desc: 谁的忙都帮，从来不会说不。, bonus: { charm: 1, luck: 1 }, flags: [tal_kind] }
+- { id: stubborn, name: 犟脾气, weight: 1, desc: 认准的事，九头牛也拉不回来。, bonus: { body: 2, charm: -1 }, flags: [tal_stubborn] }

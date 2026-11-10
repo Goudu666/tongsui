@@ -1,0 +1,859 @@
+# 家庭与天赋专属事件（f_ 前缀，跨所有人生阶段）
+#
+# 一、四户新人家：赵家（fam_head）、马家（fam_pigeon）、孟家（fam_taxi）、刘家（fam_shop）
+#     每户三件事：童年一件 → 少年/青年一件 → 中年一件，用个人标记串起来。
+# 二、天赋专属：requires.flags 绑定 tal_ 标记。天赋有回报，也有代价。
+#
+# mirror 事件读的是两个人标记的并集，所以文案不能假设「你」就是那户的孩子或那个有天赋的人：
+# 家里的大人写成「楼长」「楼顶养鸽子的爷爷」这类两个人都能叫的称呼；
+# 天赋写成「你们俩里嗓门大的那个」，让两个人都读得通。
+
+# ===================== 赵家 · 楼长家 =====================
+
+- id: f_head_keys
+  kind: mirror
+  stage: childhood
+  where: hallway
+  when: [930, 1140]
+  hint: 暖气片上搁着一大串钥匙。
+  weight: 2
+  requires: { minAge: 6, flags: [fam_head] }
+  title: 楼长的钥匙串
+  text: 楼长的钥匙串忘在了楼道暖气片上，叮当一大把，每把都缠着胶布写了字。最小的那把写着「顶」。
+  options:
+    - id: roof
+      text: 拿「顶」去开楼顶门
+      tags: [adventure]
+      effects: { self: { mood: 10 }, flags: [head_keys] }
+    - id: count
+      text: 一把一把数清楚送回去
+      tags: [responsible]
+      effects: { self: { mind: 1 }, flags: [head_keys] }
+    - id: leave
+      text: 别碰，大人的东西
+      tags: [solitude]
+      effects: { self: { mood: -3 } }
+  resonance:
+    roof:
+      text: 小铁门吱呀一声开了。楼顶只有你们俩和一院子床单，风把床单鼓得像船帆。钥匙后来原样搁回了暖气片。
+      memory: 「顶」字钥匙
+      bond: { sync: 3, close: 3 }
+    count:
+      text: 你们蹲在暖气片前一把一把数，数到第二十三把，楼长回来了，一人手心里放了一块水果糖。
+      memory: 二十三把钥匙
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一只手已经把钥匙串抄了起来，另一只手按住了它。钥匙在两只手中间叮当响了半天。
+    bond: { close: 0 }
+
+- id: f_head_meter
+  kind: solo
+  stage: teen
+  where: hallway
+  when: [930, 1200]
+  weight: 2
+  requires: { flags: [fam_head] }
+  title: 替爸抄电表
+  text: 楼长闪了腰，抄电表的本子到了你手上。挨家敲门，你第一次知道哪家的灯总亮到后半夜，哪家一个月只走了三度电。
+  options:
+    - id: honest
+      text: 一个数一个数照实抄
+      tags: [responsible]
+      effects: { self: { mind: 1, energy: -10 }, flags: [head_book] }
+    - id: apples
+      text: 往三度电那家门口搁俩苹果
+      tags: [gentle]
+      effects: { self: { mood: 5, charm: 1 }, flags: [head_book] }
+    - id: friend
+      text: 喊上对门陪你一层层敲
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 3 }, bond: { close: 1 } }
+
+- id: f_head_handover
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { flags: [fam_head, head_keys] }
+  title: 最后一串钥匙
+  text: 拆迁那年，老楼长把钥匙串放进你手心。胶布上的字都磨没了，只有最小那把「顶」还认得出。「楼里还剩六户，你管不管？」
+  options:
+    - id: take
+      text: 接过来，管到最后一户
+      tags: [responsible]
+      effects: { self: { charm: 1, mood: -5, energy: -10 }, flags: [took_over] }
+    - id: hand_in
+      text: 替他交到拆迁办
+      tags: [solitude]
+      effects: { self: { mood: -5, energy: 5 } }
+    - id: last_roof
+      text: 拿「顶」再上一趟楼顶
+      tags: [gentle]
+      effects: { self: { mood: 10 } }
+
+# ===================== 马家 · 楼顶鸽子棚 =====================
+
+- id: f_ma_names
+  kind: mirror
+  stage: childhood
+  where: roof
+  when: [960, 1200]
+  hint: 楼顶的鸽子棚咕咕直响。
+  weight: 2
+  requires: { minAge: 4, flags: [fam_pigeon] }
+  title: 三十七个名字
+  text: 楼顶养鸽子的爷爷，棚里三十七只鸽子，每只都有名字：大黑、铁蛋、二丫……今早刚出壳那只灰不溜秋，还没起名。
+  options:
+    - id: hui
+      text: 叫它「小灰」
+      tags: [gentle]
+      effects: { self: { mood: 5 }, flags: [pigeon_named] }
+    - id: jianbing
+      text: 叫它「煎饼果子」
+      tags: [adventure]
+      effects: { self: { mood: 8 }, flags: [pigeon_named] }
+    - id: wait
+      text: 让爷爷自己起
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+  resonance:
+    hui:
+      text: 你们同时喊出了「小灰」。爷爷乐了：「得，俩人起的名儿，那就是俩人的鸽子。」
+      memory: 小灰
+      bond: { sync: 3, close: 3 }
+      flags: [p_pigeon]
+    jianbing:
+      text: 「煎饼果子！」爷爷笑得直咳嗽。从此楼顶多了一只最不像煎饼果子的鸽子。
+      memory: 叫煎饼果子的鸽子
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个喊小灰，一个喊煎饼果子。爷爷说那就叫「小灰煎饼」，鸽子扑棱一下飞了，好像不太满意。
+    bond: { close: 1 }
+
+- id: f_ma_sell
+  kind: solo
+  stage: teen
+  where: roof
+  weight: 2
+  requires: { flags: [fam_pigeon] }
+  title: 卖鸽子
+  text: 学费差一截。爷爷在鸽子棚前蹲了一下午，说卖五只。他把记名字的小本递给你：「你念，念到谁是谁。」
+  options:
+    - id: read
+      text: 一个一个念给他听
+      tags: [responsible]
+      effects: { self: { mood: -10, mind: 1 }, flags: [pigeon_book] }
+    - id: bike
+      text: 卖我的自行车吧
+      tags: [gentle]
+      effects: { self: { mood: -5, body: -1 }, flags: [pigeon_book] }
+    - id: work
+      text: 去楼下打零工凑
+      tags: [competitive]
+      effects: { self: { energy: -15, body: 1 }, flags: [pigeon_book] }
+
+- id: f_ma_coop
+  kind: solo
+  stage: middle
+  where: roof
+  when: [1020, 1200]
+  weight: 2
+  requires: { flags: [fam_pigeon, pigeon_book] }
+  title: 空了一半的棚
+  text: 爷爷走了。鸽子每天傍晚还是绕楼飞三圈，落回棚门口，等那个撒玉米的人。小本最后一页还空着。
+  options:
+    - id: corn
+      text: 抓一把玉米走过去
+      tags: [patient]
+      effects: { self: { mood: 5, energy: -10 }, flags: [took_over] }
+    - id: open
+      text: 打开棚门，放它们走
+      tags: [solitude]
+      effects: { self: { mood: -10 } }
+    - id: write
+      text: 在最后一页写上爷爷
+      tags: [gentle]
+      effects: { self: { mood: 5, mind: 1 } }
+
+# ===================== 孟家 · 开出租的 =====================
+
+- id: f_meng_ride
+  kind: mirror
+  stage: childhood
+  where: alley
+  when: [1140, 1320]
+  hint: 楼下出租车的顶灯亮着。
+  weight: 2
+  requires: { minAge: 5, flags: [fam_taxi] }
+  title: 后座兜一圈
+  text: 夜里九点，楼下那辆出租车的顶灯亮着「空车」。车窗摇下来，是那张熬夜熬黄了的脸：「俩小崽儿，上来，兜一圈海河。」
+  options:
+    - id: back
+      text: 钻进后座
+      tags: [adventure]
+      effects: { self: { mood: 10, energy: -5 }, flags: [taxi_seat] }
+    - id: front
+      text: 抢副驾驶
+      tags: [competitive]
+      effects: { self: { mood: 8 }, flags: [taxi_seat] }
+    - id: nope
+      text: 明天还上学呢
+      tags: [responsible]
+      effects: { self: { energy: 10 } }
+  resonance:
+    back:
+      text: 后座的海绵垫漏了个洞，你们一人一边抠着。车过铁桥，对岸的灯一盏盏往后跑，你们歪着头睡着了。
+      memory: 后座的海河
+      bond: { sync: 3, close: 3 }
+    front:
+      text: 两个人挤一个副驾驶，安全带只勒得住一个。开车的人乐了：「后头空着，前头挤着，你俩是真哏儿。」
+      memory: 挤一个副驾
+      bond: { sync: 2, close: 3 }
+  dissonance:
+    text: 一个钻进了后座，一个转身上了楼。车开出去的时候，后车窗上贴着一张扁扁的脸。
+    bond: { close: 0 }
+
+- id: f_meng_night
+  kind: solo
+  stage: young
+  weight: 2
+  requires: { flags: [fam_taxi] }
+  title: 夜班
+  text: 爸爸的腰坏了，车的份子钱还押着。他把车钥匙搁在饭桌上，没说话，拿胶布把后座那个洞又粘了一遍。
+  options:
+    - id: drive
+      text: 考个本，接他的夜班
+      tags: [responsible]
+      effects: { self: { body: 1, mood: -5, energy: -15 }, flags: [took_over, taxi_driver] }
+    - id: sell
+      text: 劝他把车转出去
+      tags: [gentle]
+      effects: { self: { mind: 1, mood: -5 } }
+    - id: last_month
+      text: 陪他再跑最后一个月
+      tags: [patient]
+      effects: { self: { mood: 5, energy: -10 } }
+
+- id: f_meng_directions
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { flags: [fam_taxi, taxi_seat] }
+  title: 换你开
+  text: 爸爸记性坏了，叫不全楼里人的名字。可一坐进后座，哪个路口往哪拐他都记得。你开，他一个路口一个路口地指。
+  options:
+    - id: follow
+      text: 照他指的拐
+      tags: [patient]
+      effects: { self: { mood: 10, energy: -5 } }
+    - id: highway
+      text: 走新修的高架，快
+      tags: [competitive]
+      effects: { self: { mood: -5, energy: 5 } }
+    - id: bridge
+      text: 停在铁桥边坐一会儿
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+
+# ===================== 刘家 · 楼下小卖部 =====================
+
+- id: f_liu_freezer
+  kind: mirror
+  stage: childhood
+  where: alley
+  when: [840, 1140]
+  hint: 小卖部的冰柜嗡嗡响。
+  seasons: [summer]
+  weight: 2
+  requires: { flags: [fam_shop] }
+  title: 最后两根冰棍
+  text: 三伏天，小卖部的冰柜嗡嗡响，柜台后头没人。冰柜最底下压着最后两根奶油冰棍，蓝格子纸包着。
+  options:
+    - id: take
+      text: 拿出来，一人一根
+      tags: [adventure]
+      effects: { self: { mood: 10, hunger: 5 }, flags: [shop_ice] }
+    - id: owe
+      text: 拿了，在账本上记一笔
+      tags: [responsible]
+      effects: { self: { mood: 5, mind: 1 }, flags: [shop_ice] }
+    - id: wait
+      text: 等大人回来
+      tags: [patient]
+      effects: { self: { mood: -3 } }
+  resonance:
+    take:
+      text: 冰棍化得比你们吃得快，顺着手腕往下淌。大人回来了，看看两张花猫脸，往账本上画了个圈。
+      memory: 两张花猫脸
+      bond: { sync: 3, close: 3 }
+    owe:
+      text: 你们在账本最后一页画了两根冰棍，旁边写了个歪歪扭扭的「欠」。那个字很多年都没人擦。
+      memory: 账本上的「欠」
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一只手已经伸进冰柜，另一个人在门口喊了声「来人了」。柜门砰地合上，谁也没吃着。
+    bond: { close: 0 }
+
+- id: f_liu_friends
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { flags: [fam_shop] }
+  title: 突然的朋友
+  text: 这学期班里好几个人突然对你倍儿好，放学非跟你一道走，走到小卖部门口，就挪不动脚了。
+  options:
+    - id: treat
+      text: 一人请一瓶汽水
+      tags: [gentle]
+      effects: { self: { charm: 1, mood: 5 } }
+    - id: refuse
+      text: 账是账，谁也不赊
+      tags: [responsible]
+      effects: { self: { mind: 1, charm: -1 } }
+    - id: one
+      text: 只给对门留一瓶
+      tags: [solitude]
+      effects: { self: { mood: 3 }, other: { mood: 5 }, bond: { close: 1 } }
+
+- id: f_liu_ledger
+  kind: solo
+  stage: middle
+  where: alley
+  weight: 2
+  requires: { flags: [fam_shop, shop_ice] }
+  title: 折角的那一页
+  text: 街口开了大超市，小卖部一天卖不出十瓶汽水。妈妈翻着旧账本，翻到那年夏天，有一页折着角。
+  options:
+    - id: keep
+      text: 接过来，接着开
+      tags: [responsible]
+      effects: { self: { mood: -5, energy: -10 }, flags: [took_over] }
+    - id: close
+      text: 盘出去吧
+      tags: [solitude]
+      effects: { self: { mood: -10, energy: 10 } }
+    - id: deliver
+      text: 改成给楼里老人送货
+      tags: [gentle]
+      effects: { self: { charm: 1, energy: -15, mood: 5 } }
+
+# ===================== 天赋 · 过目不忘 =====================
+
+- id: f_tal_memory_patter
+  kind: solo
+  stage: childhood
+  where: alley
+  weight: 2
+  requires: { minAge: 6, flags: [tal_memory] }
+  title: 一百道菜
+  text: 楼下收音机里一段贯口，一口气报了一百多道菜。你只听了一遍，就一个字不差地记住了。
+  options:
+    - id: show
+      text: 站楼下给大伙来一段
+      tags: [adventure]
+      effects: { self: { charm: 1, mood: 5 } }
+    - id: tell
+      text: 只背给对门一个人听
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 5 }, bond: { close: 1 } }
+    - id: keep
+      text: 憋在肚子里不说
+      tags: [solitude]
+      effects: { self: { mind: 1 } }
+
+- id: f_tal_memory_alone
+  kind: solo
+  stage: old
+  weight: 2
+  requires: { alone: true, flags: [tal_memory] }
+  title: 每一样
+  text: 别人说，日子久了就淡了。你记得TA走那天的每一样：窗外第三只鸽子，床头半杯没喝完的水。
+  options:
+    - id: write
+      text: 一样一样写下来
+      tags: [patient]
+      effects: { self: { mood: 5, energy: -10 } }
+    - id: walk
+      text: 下楼走走，试着不想
+      tags: [solitude]
+      effects: { self: { mood: -5, body: 1 } }
+    - id: keep
+      text: 就这么记着吧
+      tags: [gentle]
+      effects: { self: { mood: -5 } }
+
+# ===================== 天赋 · 天生神力 =====================
+
+- id: f_tal_strong_gas
+  kind: solo
+  stage: childhood
+  where: hallway
+  weight: 2
+  requires: { minAge: 7, flags: [tal_strong] }
+  title: 扛煤气罐
+  text: 换煤气的三轮车停在楼下，家里的罐子得扛上三楼，大人都不在。你看看那个铁罐子，又看看楼梯。
+  options:
+    - id: carry
+      text: 一口气扛上三楼
+      tags: [competitive]
+      effects: { self: { body: 1, mood: 5, energy: -15 } }
+    - id: both
+      text: 顺手把对门的也扛了
+      tags: [gentle]
+      effects: { self: { body: 1, energy: -20, clean: -10 }, other: { mood: 5 }, bond: { close: 1 } }
+    - id: wait
+      text: 等大人回来
+      tags: [patient]
+      effects: { self: { mood: -3 } }
+
+- id: f_tal_strong_moving
+  kind: solo
+  stage: middle
+  where: alley
+  weight: 2
+  requires: { flags: [tal_strong] }
+  title: 搬家那天
+  text: 拆迁搬家那天，楼里一半是老人，谁家的大衣柜都往你这儿看。你的腰，早就不是二十岁的腰了。
+  options:
+    - id: all
+      text: 一家一家扛下来
+      tags: [gentle]
+      effects: { self: { charm: 1, body: -1, mood: 5, energy: -20 } }
+    - id: own
+      text: 只搬自家的
+      tags: [solitude]
+      effects: { self: { mood: -5, energy: -5 } }
+    - id: organize
+      text: 张罗着找搬家的人
+      tags: [responsible]
+      effects: { self: { mind: 1, energy: -5 } }
+
+# ===================== 天赋 · 倍儿哏儿 =====================
+
+- id: f_tal_sunny_roof
+  kind: solo
+  stage: middle
+  where: roof
+  when: [1140, 1320]
+  weight: 2
+  requires: { flags: [tal_sunny] }
+  title: 不哏儿的时候
+  text: 谁都说你没心没肺，天塌了也乐呵。只有这会儿，一个人在楼顶，你才不哏儿了。
+  options:
+    - id: call
+      text: 给对门打个电话
+      tags: [gentle]
+      effects: { self: { mood: 10 }, bond: { close: 1 } }
+    - id: stay
+      text: 就自己待一会儿
+      tags: [solitude]
+      effects: { self: { mood: 5, energy: -5 } }
+    - id: smile
+      text: 回屋，明儿接着乐
+      tags: [responsible]
+      effects: { self: { charm: 1, mood: -5 } }
+
+# ===================== 天赋 · 锦鲤 =====================
+
+- id: f_tal_koi_popsicle
+  kind: mirror
+  stage: childhood
+  where: alley
+  when: [840, 1140]
+  hint: 冰棍箱子的小棉被掀开了。
+  seasons: [summer]
+  weight: 2
+  requires: { minAge: 5, flags: [tal_koi] }
+  title: 再来一根
+  text: 冰棍棒上又是「再来一根」，第七回了。你们俩里总有一个人手气好得邪乎，另一个从来没中过。
+  options:
+    - id: give
+      text: 把中奖的棍儿给另一个
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: again
+      text: 去换，再换，再换
+      tags: [adventure]
+      effects: { self: { mood: 8, hunger: 5 } }
+    - id: split
+      text: 掰开两个人分着吃
+      tags: [patient]
+      effects: { self: { mood: 5 }, bond: { close: 1 } }
+  resonance:
+    give:
+      text: 中奖的棍儿换到另一只手里，再吃出来的，就都是空白了。两个人看着那根空棍，笑得直不起腰。
+      memory: 空白的冰棍棒
+      bond: { sync: 3, close: 3 }
+    split:
+      text: 一根冰棍掰成两半，断得一边长一边短。长的那半推来推去，化了。
+      memory: 推来推去的半根
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个把好运往外递，一个已经跑去换下一根了。小棉被掀开又盖上，中的还是那一个人。
+    bond: { close: 0 }
+
+- id: f_tal_koi_coin
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { flags: [tal_koi] }
+  title: 枕头底下
+  text: 你这辈子抽签抽上上签，排队排到最后一个，下雨总带着伞。那年妈妈住院，你把揣了半辈子的那枚硬币塞进她枕头底下。
+  options:
+    - id: wait
+      text: 守着，等它灵
+      tags: [patient]
+      effects: { self: { mood: -5, energy: -15 } }
+    - id: doctor
+      text: 去找大夫，不信这个了
+      tags: [responsible]
+      effects: { self: { mind: 1, luck: -1 } }
+    - id: night
+      text: 在走廊坐一宿
+      tags: [solitude]
+      effects: { self: { mood: -10, energy: -20 } }
+
+# ===================== 天赋 · 夜猫子 =====================
+
+- id: f_tal_owl_dawn
+  kind: solo
+  stage: young
+  weight: 2
+  requires: { flags: [tal_owl] }
+  title: 一宿没睡
+  text: 你一宿没合眼，越熬越精神。天蒙蒙亮，楼下早点铺的灯先亮了：你还没睡，他们已经起了。
+  options:
+    - id: eat
+      text: 下楼吃头一套煎饼果子
+      tags: [solitude]
+      effects: { self: { hunger: 30, mood: 10, energy: -10 } }
+    - id: help
+      text: 帮他们和面
+      tags: [responsible]
+      effects: { self: { body: 1, charm: 1, energy: -15 } }
+    - id: hang
+      text: 买两套挂对门门把手上
+      tags: [gentle]
+      effects: { self: { mood: 5, energy: -10 }, other: { hunger: 20, mood: 10 }, bond: { close: 1 } }
+
+# ===================== 天赋 · 小馋猫 =====================
+
+- id: f_tal_foodie_taster
+  kind: solo
+  stage: childhood
+  where: breakfast
+  when: [390, 600]
+  weight: 2
+  requires: { minAge: 4, flags: [tal_foodie] }
+  title: 试吃的
+  text: 早点铺的老板娘说，你是全河畔里吃得最香的孩子。她新琢磨了一种馅儿，想让你头一个尝。
+  options:
+    - id: bite
+      text: 张嘴就咬
+      tags: [adventure]
+      effects: { self: { hunger: 20, mood: 10 } }
+    - id: honest
+      text: 尝完说实话：不好吃
+      tags: [responsible]
+      effects: { self: { hunger: 10, mind: 1, mood: -3 } }
+    - id: share
+      text: 拉着对门一块儿尝
+      tags: [gentle]
+      effects: { self: { hunger: 10, mood: 5 }, other: { hunger: 10, mood: 5 }, bond: { close: 1 } }
+
+- id: f_tal_foodie_alone
+  kind: solo
+  stage: old
+  where: breakfast
+  when: [390, 600]
+  weight: 2
+  requires: { alone: true, flags: [tal_foodie] }
+  title: 摊得软点
+  text: 牙口不好了，还是馋。早点铺的小伙子不用问就知道：俩鸡蛋，多放葱花，摊得软点。
+  options:
+    - id: one
+      text: 一套，慢慢嚼
+      tags: [patient]
+      effects: { self: { hunger: 30, mood: 5 } }
+    - id: two
+      text: 还是要了两套
+      tags: [gentle]
+      effects: { self: { hunger: 20, mood: 5 } }
+
+# ===================== 天赋 · 鸽子缘 =====================
+
+- id: f_tal_pigeon_shoulder
+  kind: mirror
+  stage: childhood
+  where: roof
+  when: [900, 1200]
+  hint: 楼顶有只鸽子不肯走。
+  weight: 2
+  requires: { minAge: 4, flags: [tal_pigeon] }
+  title: 肩上的鸽子
+  text: 一只灰鸽子落下来，没落栏杆上，偏偏落在你们俩里那个招鸽子的人肩上。它一条腿上缠着断了的线。
+  options:
+    - id: keep
+      text: 带回去养着
+      tags: [gentle]
+      effects: { self: { mood: 8 } }
+    - id: untie
+      text: 解开线，放它走
+      tags: [patient]
+      effects: { self: { mood: 5, mind: 1 } }
+    - id: ask
+      text: 抱去问养鸽子的爷爷
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+  resonance:
+    keep:
+      text: 你们拿鞋盒给它搭了窝，商量了一晚上名字，最后叫「小灰」，因为它就是灰的。
+      memory: 小灰
+      bond: { sync: 3, close: 3 }
+      flags: [p_pigeon]
+    untie:
+      text: 线解开了，它绕着楼顶飞了三圈，又落回那个肩膀上。得，这是赖上了。那就叫它小灰吧。
+      memory: 赖上了
+      bond: { sync: 3, close: 2 }
+      flags: [p_pigeon]
+  dissonance:
+    text: 一个想留，一个想放。鸽子在两个人中间看了看，扑棱飞了。第二天傍晚，它又落回了那个肩膀。
+    bond: { close: 0 }
+
+- id: f_tal_pigeon_alone
+  kind: solo
+  stage: old
+  where: roof
+  weight: 2
+  requires: { alone: true, flags: [tal_pigeon, p_pigeon] }
+  title: 小灰
+  text: 一只灰鸽子落在你肩上，不走了。你喊了一声「小灰」，它歪了歪头。
+  options:
+    - id: stay
+      text: 就让它站着
+      tags: [patient]
+      effects: { self: { mood: 10 } }
+    - id: talk
+      text: 跟它说说话
+      tags: [gentle]
+      effects: { self: { mood: 5, charm: 1 } }
+    - id: sill
+      text: 送它去对门窗台上
+      tags: [solitude]
+      effects: { self: { mood: 5, energy: -5 } }
+
+# ===================== 天赋 · 大嗓门 =====================
+
+- id: f_tal_loud_name
+  kind: mirror
+  stage: teen
+  where: alley
+  when: [930, 1140]
+  hint: 楼下有人扯着嗓子喊。
+  weight: 2
+  requires: { flags: [tal_loud] }
+  title: 那一嗓子
+  text: 你们俩里嗓门大的那个，冲三楼喊了另一个的名字。可另一个就站在旁边。整栋楼的窗户一扇一扇推开了。
+  options:
+    - id: wave
+      text: 冲楼上挥手：没事儿！
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+    - id: again
+      text: 再喊一遍，更大声
+      tags: [adventure]
+      effects: { self: { mood: 10, energy: -5 } }
+    - id: run
+      text: 拽上对方就跑
+      tags: [solitude]
+      effects: { self: { body: 1, mood: 5 } }
+  resonance:
+    again:
+      text: 第二嗓子是两个人一块儿喊的，喊的是嘛谁也说不清。二楼的奶奶说，那天她的假牙都震掉了。
+      memory: 震掉的假牙
+      bond: { sync: 3, close: 3 }
+    run:
+      text: 你们一口气跑到海河边才停，喘得说不出话。回头看，六楼还有人探着脑袋。
+      memory: 跑到海河边
+      bond: { sync: 3, close: 2 }
+    wave:
+      text: 两只手一块儿挥，窗户一扇扇关上。最后一扇关之前，有人喊下来一句：「小点声儿！」
+      memory: 小点声儿
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个还仰着脖子喊，一个已经跑没影了。从那天起，整栋楼都记住了那个名字。
+    bond: { close: 1 }
+
+- id: f_tal_loud_old
+  kind: solo
+  stage: old
+  where: alley
+  weight: 2
+  requires: { flags: [tal_loud] }
+  title: 喊一声
+  text: 你的嗓门还是那么大。只是在楼下喊一声，应的人一年比一年少了。
+  options:
+    - id: call
+      text: 再喊一声
+      tags: [adventure]
+      effects: { self: { mood: 5, energy: -5 } }
+    - id: quiet
+      text: 不喊了，上楼
+      tags: [solitude]
+      effects: { self: { mood: -5, energy: 5 } }
+
+# ===================== 天赋 · 巧手 =====================
+
+- id: f_tal_crafty_bike
+  kind: mirror
+  stage: young
+  where: bikeshop
+  when: [600, 1080]
+  hint: 车铺的卷帘门半开着。
+  weight: 2
+  requires: { flags: [tal_crafty] }
+  title: 拆了一半的车
+  text: 过年回来，车铺爷爷的手抖得拿不住扳子了。他拆了一半的那辆二八车立在墙角，等了一冬。你们俩里手巧的那个已经蹲下了。
+  options:
+    - id: fix
+      text: 把它装回去
+      tags: [patient]
+      effects: { self: { mind: 1, clean: -15 } }
+    - id: bell
+      text: 拆下车铃留个念想
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: leave
+      text: 别动，等爷爷自己来
+      tags: [responsible]
+      effects: { self: { mood: -3 } }
+  resonance:
+    fix:
+      text: 一个扶车一个拧螺丝，装到最后多出一颗。谁也没扔，那颗螺丝后来一直挂在一个人的钥匙链上。
+      memory: 多出来的螺丝
+      bond: { sync: 3, close: 3 }
+    leave:
+      text: 你们把车擦了一遍，链条上了油，又靠回墙角。爷爷从里屋探头：「擦介么亮，有嘛用？」嘴角翘着。
+      memory: 擦亮的二八车
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个已经拧下了第一颗螺丝，一个说「别价」。螺丝在手心里攥热了，又拧了回去。
+    bond: { close: 0 }
+
+# ===================== 天赋 · 老好人 =====================
+
+- id: f_tal_kind_weekend
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { flags: [tal_kind] }
+  title: 谁的忙都帮
+  text: 一个周末，你替人抄了笔记、看了孩子、搬了煤、跑了药房、喂了楼顶的鸽子。周日晚上，自己的作业一个字没动。
+  options:
+    - id: night
+      text: 熬夜补
+      tags: [responsible]
+      effects: { self: { mind: 1, energy: -20 } }
+    - id: nope
+      text: 下回学着说「不」
+      tags: [competitive]
+      effects: { self: { mood: -5, charm: -1 }, flags: [kind_said_no] }
+    - id: copy
+      text: 去对门借作业抄
+      tags: [gentle]
+      effects: { self: { mood: 5, mind: -1 }, bond: { close: 1 } }
+
+- id: f_tal_kind_fever
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { flags: [tal_kind] }
+  title: 电话还在响
+  text: 楼里谁家有事都找你：换锁、跑医院、吵架评理。那天你自己烧到三十九度，电话还在响。
+  options:
+    - id: answer
+      text: 接，就说马上到
+      tags: [gentle]
+      effects: { self: { charm: 1, body: -1, energy: -15 } }
+    - id: off
+      text: 关机，睡一觉
+      tags: [solitude]
+      effects: { self: { energy: 20, mood: 5 } }
+    - id: call
+      text: 给对门打电话说难受
+      tags: [gentle]
+      effects: { self: { mood: 10 }, other: { mood: -3 }, bond: { close: 1 } }
+
+# ===================== 天赋 · 犟脾气 =====================
+
+- id: f_tal_stubborn_kite
+  kind: mirror
+  stage: childhood
+  where: river
+  when: [930, 1140]
+  hint: 铁桥的钢梁上挂着只风筝。
+  seasons: [spring]
+  weight: 2
+  requires: { minAge: 5, flags: [tal_stubborn] }
+  title: 钢梁上的风筝
+  text: 风筝挂在铁桥的钢梁上了。你们俩里那个犟的已经说了三遍「我非把它够下来不可」，天快黑了。
+  options:
+    - id: help
+      text: 陪着一块儿够
+      tags: [adventure]
+      effects: { self: { body: 1, energy: -10 } }
+    - id: home
+      text: 劝回家，明儿再说
+      tags: [patient]
+      effects: { self: { mood: -3 } }
+    - id: pole
+      text: 跑回家拿晾衣杆
+      tags: [responsible]
+      effects: { self: { mind: 1, energy: -5 } }
+  resonance:
+    help:
+      text: 够到天黑，没够着。第二天一早，风筝自己掉下来了，落在河边，好像在等你们。
+      memory: 自己掉下来的风筝
+      bond: { sync: 3, close: 3 }
+    pole:
+      text: 两根晾衣杆绑成一根，一个扶一个捅，风筝下来了，晾衣杆折了。回家两个人一块儿挨的骂。
+      memory: 折了的晾衣杆
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个踮着脚够，一个拽着胳膊往回拉。谁也没拗过谁，风筝在钢梁上挂了一整个春天。
+    bond: { close: 0 }
+
+- id: f_tal_stubborn_bow
+  kind: mirror
+  stage: middle
+  where: hallway
+  hint: 楼道里有人在搬纸箱。
+  weight: 2
+  requires: { flags: [tal_stubborn, p_estranged] }
+  title: 先开口
+  text: 拆迁前回来收拾东西，在楼道里撞了个正着。好些年没说过话了。你们俩里犟了半辈子的那个，攥着门把手站了很久。
+  options:
+    - id: speak
+      text: 先开口
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: wait
+      text: 等对方先开口
+      tags: [patient]
+      effects: { self: { mood: -3 } }
+    - id: leave
+      text: 抱着箱子下楼
+      tags: [solitude]
+      effects: { self: { mood: -10 } }
+  resonance:
+    speak:
+      text: 两个人同时开口，说的都是「那个……」。然后谁也没往下说，就在楼道里站着，乐了。
+      memory: 那个……
+      bond: { sync: 3, close: 4 }
+      flags: [p_reunited]
+    wait:
+      text: 你们各自等着，等到楼道的声控灯灭了。黑里不知道谁咳嗽了一声，灯又亮了。
+      memory: 声控灯
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个终于开了口，另一个已经抱着纸箱下了楼。那句话在楼道里撞了两下，没人接。
+    bond: { close: -1 }

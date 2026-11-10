@@ -59,9 +59,10 @@ function worldStartDay(s: LifeState, c: Content) {
   // 命运给今天准备的事：mirror 一件（两人都在世时），每人 solo 一件。要走到对的地方才会发生。
   var seen = lifeSeenIds(s);
   var fate: WorldState["fate"] = { mirror: null, qing: null, mei: null };
+  var together: EligibleCtx = { bond: s.bond, alone: false };
   if (persons.qing.alive && persons.mei.alive) {
     var both = persons.qing.flags.concat(persons.mei.flags);
-    var mirrors = c.events.filter(function (e) { return e.kind === "mirror" && lifeEligible(e, t, both, seen); });
+    var mirrors = c.events.filter(function (e) { return e.kind === "mirror" && lifeEligible(e, t, both, seen, together); });
     if (mirrors.length > 0 && lifeRand(s) < (t.stage === "childhood" ? 0.6 : 0.45)) {
       fate.mirror = lifePickWeighted(s, mirrors, function (e) { return e.weight; })!.id;
     }
@@ -70,11 +71,14 @@ function worldStartDay(s: LifeState, c: Content) {
     var role = ROLES[j];
     if (!persons[role].alive) continue;
     var flags = persons[role].flags;
-    var solos = c.events.filter(function (e) { return e.kind === "solo" && lifeEligible(e, t, flags, seen); });
+    var ctx: EligibleCtx = { bond: s.bond, alone: !persons[lifeOther(role)].alive };
+    // solo 按人算：对门遇到过的事，你也可能遇到（但同一天两人不会是同一件）
+    var mine = lifeSeenIds(s, role);
+    if (fate.qing) mine[fate.qing] = true;
+    var solos = c.events.filter(function (e) { return e.kind === "solo" && lifeEligible(e, t, flags, mine, ctx); });
     if (solos.length > 0 && lifeRand(s) < 0.7) {
       var pick = lifePickWeighted(s, solos, function (e) { return e.weight; })!;
       fate[role] = pick.id;
-      seen[pick.id] = true;
     }
   }
 
@@ -147,6 +151,7 @@ function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error
   a.y = sp.at[1];
   a.action = act.id;
   a.spot = sp.id;
+  a.shadow = false;
   if (act.sleep) {
     a.asleep = true;
     a.until = null;
@@ -175,12 +180,13 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   var a = s.world!.actors[role]!;
   var act = worldFindAction(c, a.action!);
   var p = s.persons![role];
-  var fam = lifeFind(c.families, p.familyId);
+  var wealth = 1; // 这户人家在新内容里没了（见 save.ts）就按普通家境算
+  for (var fi = 0; fi < c.families.length; fi++) if (c.families[fi].id === p.familyId) wealth = c.families[fi].wealth;
   var stats: SelfDelta = {};
   for (var k in act.stats) (stats as any)[k] = ((act.stats as any)[k] as number) * (act.id === "study" && lifeHasFlag(p, "tal_memory") ? 2 : 1);
   lifeApplySelf(p, stats);
   lifeApplySelf(p, act.needs);
-  if (act.id === "eat") lifeApplySelf(p, { mood: fam.wealth * 3 + (lifeHasFlag(p, "tal_foodie") ? 6 : 0) });
+  if (act.id === "eat") lifeApplySelf(p, { mood: wealth * 3 + (lifeHasFlag(p, "tal_foodie") ? 6 : 0) });
   p.money += act.money;
   a.action = null;
   a.spot = null;
@@ -215,6 +221,20 @@ function worldShadowAct(s: LifeState, c: Content, role: Role) {
     var fallback = worldSpotFor(c, age >= 6 ? "study" : "knock", role);
     if (fallback) { a.x = fallback.at[0]; a.y = fallback.at[1]; worldAct(s, c, role, fallback.id); }
   }
+  if (a.action) a.shadow = true;
+}
+
+/** 本人回来了：影子正在做的事（睡觉、上学除外）停下，把身体还给他 */
+function worldReclaim(s: LifeState, role: Role): boolean {
+  if (s.phase !== "life" || !s.world) return false;
+  var a = s.world.actors[role];
+  if (!a || !a.shadow) return false;
+  a.shadow = false;
+  if (!a.action || a.asleep || a.action === "school") return false;
+  a.action = null;
+  a.spot = null;
+  a.until = null;
+  return true;
 }
 
 // ---------- 需求随时间变化 ----------

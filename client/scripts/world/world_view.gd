@@ -1,13 +1,19 @@
 extends Node2D
-## 河畔里：按 content.json 里的地图画出来，放两个孩子，点哪走哪。
-## 画面全部用 _draw 的墨线完成（M0 占位美术），之后替换成手绘贴图时只改这里。
+## 河畔里：铺上孔版套色的地图（map_art.gd），放两个孩子，点哪走哪（nav.gd 寻路绕开墙和家具）。
+## 地图贴图不在时，退回 M0 的墨线占位画法（_draw_fallback_map）。
 
 signal move_report(pos: Vector2)
 
 const P := preload("res://scripts/ui/palette.gd")
 const Actor := preload("res://scripts/world/actor.gd")
+const MapArt := preload("res://scripts/world/map_art.gd")
+const Nav := preload("res://scripts/world/nav.gd")
 const SPOT_RADIUS := 100.0  ## 比服务器的 110 小一点，避免边缘抖动
 const MOVE_SEND_INTERVAL := 0.1
+const SnapshotBuffer := preload("res://scripts/net/snapshot_buffer.gd")
+const TICK_RATE := 10.0
+const CORRECT_DEADZONE := 6.0   ## 服务器和本地差这么点就不管
+const SNAP_DIST := 220.0        ## 差太多（换天回家、被叫去事件）直接到位
 
 var map: Dictionary = {}
 var actions: Dictionary = {}
@@ -16,8 +22,18 @@ var actors: Dictionary = {}  ## role -> Actor
 var hints: Array = []
 var controllable := true
 var camera: Camera2D
+var art: MapArt
+var nav := Nav.new()
+var _marks: Node2D  ## 互动点和命运提示：画在叠印层上面
+var _tap_fx := Vector2.INF
+var _tap_t := 0.0
 var _send_timer := 0.0
 var _last_sent := Vector2.INF
+## 联机客户端（lifeline_client.gd）：提供服务器时钟和「第 seq 条 MOVE 我在哪」。离线逛逛时为 null
+var net = null
+var buffers: Dictionary = {}    ## role -> SnapshotBuffer（只用于对方）
+var _correction := Vector2.ZERO ## 本地角色还没消化掉的服务器校正量
+var _corrected_upto := 0        ## 这个序号及以前的 MOVE 是在校正之前发的，不再拿来校正（避免重复校正）
 
 
 func setup(content: Dictionary, role: String, names: Dictionary) -> void:
@@ -25,14 +41,22 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 	for a in map.actions:
 		actions[a.id] = a
 	my_role = role
+	y_sort_enabled = true
+	art = MapArt.new()
+	add_child(art)
+	nav.load_mask()
+	_marks = _Marks.new(self)
+	_marks.z_index = 70
+	add_child(_marks)
 	for r in ["qing", "mei"]:
 		var sp: Array = map.spawn[r]
 		var actor := Actor.new()
 		actor.setup(r, str(names.get(r, P.ROLE_NAME[r])), r == role, Vector2(sp[0], sp[1]))
 		add_child(actor)
 		actors[r] = actor
+		buffers[r] = SnapshotBuffer.new()
 	camera = Camera2D.new()
-	camera.zoom = Vector2.ONE * 1.2
+	camera.zoom = Vector2.ONE * 1.4
 	camera.limit_left = 0
 	camera.limit_top = 0
 	camera.limit_right = int(map.size[0])
@@ -48,11 +72,38 @@ func me() -> Actor:
 	return actors.get(my_role)
 
 
+## 人生阶段变了（长大了），换外观
+func set_stage(stage: String) -> void:
+	for a in actors.values():
+		a.set_stage(stage)
+
+
+## 时钟：决定昼夜（联机时 apply_world 自动调用；离线预览由 main 喂）
+func set_minute(m: float) -> void:
+	if art != null:
+		art.set_minute(m)
+
+
 func _process(delta: float) -> void:
 	var a := me()
 	if a == null:
 		return
+	# 本地预测的校正：每帧吃掉一部分，人不会瞬移
+	if _correction.length_squared() > 0.01:
+		var step := _correction * minf(1.0, delta * 10.0)
+		a.nudge(step)
+		_correction -= step
+	# 对方：落后服务器 DELAY 秒，从插值缓冲里取位置
+	if net != null and net.clock.is_ready():
+		var render_t: float = net.clock.server_now() - SnapshotBuffer.DELAY
+		for r in actors:
+			var other: Actor = actors[r]
+			var buf = buffers[r]
+			if not other.is_local and not buf.is_empty():
+				other.net_target = buf.sample(render_t)
 	camera.position = a.position
+	_tap_t += delta
+	_marks.queue_redraw()
 	_send_timer += delta
 	if _send_timer >= MOVE_SEND_INTERVAL:
 		_send_timer = 0.0
@@ -69,12 +120,43 @@ func _unhandled_input(event: InputEvent) -> void:
 		var target := get_global_mouse_position()
 		target.x = clampf(target.x, 0.0, float(map.size[0]))
 		target.y = clampf(target.y, 0.0, float(map.size[1]))
-		me().walk_target = target
+		if nav.ready():
+			target = nav.snap(target)
+			me().set_path(nav.path(me().position, target))
+		else:
+			me().walk_target = target
+		_tap_fx = target
+		_tap_t = 0.0
+
+
+## 断线重连 / 进房时的快照：所有人直接放到服务器的位置
+func apply_snapshot_actors(server_actors: Variant) -> void:
+	if not server_actors is Dictionary:
+		return
+	for r in ["qing", "mei"]:
+		var s: Variant = server_actors.get(r)
+		var a: Actor = actors[r]
+		if s == null:
+			a.visible = false
+			continue
+		a.visible = true
+		var pos := Vector2(float(s.x), float(s.y))
+		a.position = pos
+		a.walk_target = pos
+		a.net_target = pos
+		a.snap_remote = true
+		buffers[r].clear()
+	_correction = Vector2.ZERO
+	_corrected_upto = 0
+	_last_sent = Vector2.INF
 
 
 ## 服务器 5Hz 的世界广播
 func apply_world(view: Dictionary) -> void:
 	hints = view.get("hints", [])
+	if view.has("minute"):
+		set_minute(float(view.minute))
+	var t := float(view.get("tick", 0)) / TICK_RATE
 	for r in ["qing", "mei"]:
 		var a: Actor = actors[r]
 		var s: Variant = view.actors.get(r)
@@ -87,13 +169,46 @@ func apply_world(view: Dictionary) -> void:
 		a.asleep = bool(s.get("sleep", false))
 		a.action_label = "" if act == null or a.asleep else str(actions.get(act, {}).get("label", act))
 		if a.is_local:
-			# 自己：在忙（被服务器放到行动点上）或者偏差太大时，以服务器为准
-			if act != null or a.position.distance_to(server_pos) > 220.0:
-				a.position = server_pos
-				a.walk_target = server_pos
+			_reconcile(a, server_pos, act != null or a.asleep, int(s.get("seq", 0)))
 		else:
-			a.net_target = server_pos
+			var buf = buffers[r]
+			if net == null or not view.has("tick"):
+				a.net_target = server_pos
+			else:
+				buf.push(t, server_pos)
 	queue_redraw()
+
+
+## 本地预测 + 服务器校正：
+## 服务器说「处理完你第 seq 条 MOVE 后你在 P」，我们查当时自己上报的位置 Q；
+## P≈Q 说明服务器认可，什么都不做（不会被 200ms 前的旧位置往回拽）；
+## P≠Q 说明被限速/边界截过，把差值 P-Q 平滑地加到现在的位置上。
+func _reconcile(a: Actor, server_pos: Vector2, busy: bool, seq: int) -> void:
+	if busy:
+		# 在忙（被服务器放到行动点上、睡着了）：以服务器为准
+		a.position = server_pos
+		a.walk_target = server_pos
+		_correction = Vector2.ZERO
+		return
+	var reference: Variant = null
+	if seq > 0 and seq <= _corrected_upto:
+		return
+	if net != null and seq > 0:
+		reference = net.sent_position(seq)
+	if reference == null:
+		if a.position.distance_to(server_pos) > SNAP_DIST:
+			a.position = server_pos
+			a.walk_target = server_pos
+			_correction = Vector2.ZERO
+		return
+	var err: Vector2 = server_pos - (reference as Vector2)
+	if err.length() > SNAP_DIST:
+		a.position = server_pos
+		a.walk_target = server_pos
+		_correction = Vector2.ZERO
+	elif err.length() > CORRECT_DEADZONE:
+		_correction += err
+		_corrected_upto = net.last_move_seq()
 
 
 ## 离自己最近、够得着的互动点
@@ -116,11 +231,65 @@ func action_of(spot: Dictionary) -> Dictionary:
 
 
 # ======================================================================
-# 画地图
+# 互动点 + 命运提示（在叠印层之上）
+# ======================================================================
+
+func draw_marks(c: CanvasItem) -> void:
+	if map.is_empty():
+		return
+	var f := P.font()
+	var near := nearest_spot()
+	var t := _tap_t
+	var labeled: Array = []  ## 挨得很近的同名互动点（两扇门）只写一次
+	# 点击落点：一个墨圈散开
+	if _tap_fx != Vector2.INF and t < 0.6:
+		c.draw_arc(_tap_fx, 10.0 + t * 40.0, 0, TAU, 24, Color(P.INK, 0.6 * (1.0 - t / 0.6)), 2.0)
+	for sp in map.spots:
+		var at := Vector2(sp.at[0], sp.at[1])
+		var is_near: bool = not near.is_empty() and near.id == sp.id
+		var r := 9.0 + (sin(Time.get_ticks_msec() / 220.0) * 2.0 if is_near else 0.0)
+		c.draw_circle(at, r, Color(P.PAPER, 0.85))
+		c.draw_arc(at, r, 0, TAU, 20, P.MEI if is_near else Color(P.INK, 0.7), 2.4)
+		c.draw_circle(at, 3.0, P.MEI if is_near else Color(P.INK, 0.7))
+		if is_near:
+			continue  # 走近了由底部按钮显示，不重复
+		var label := str(action_of(sp).get("label", ""))
+		var dup := false
+		for l in labeled:
+			if l[0] == label and (l[1] as Vector2).distance_to(at) < 120.0:
+				dup = true
+		if dup:
+			continue
+		labeled.append([label, at])
+		var w := f.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x
+		c.draw_rect(Rect2(at + Vector2(-w / 2.0 - 6, 16), Vector2(w + 12, 26)), Color(P.PAPER, 0.8))
+		c.draw_string(f, at + Vector2(-w / 2.0, 36), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(P.INK, 0.75))
+	# 命运的提示：一行很淡的字，飘在那个地方
+	for h in hints:
+		for z in map.zones:
+			if z.id == h.zone:
+				var top := Vector2(z.rect[0] + z.rect[2] / 2.0, z.rect[1] + 36 + sin(Time.get_ticks_msec() / 900.0) * 4.0)
+				var tw := f.get_string_size(str(h.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x
+				c.draw_rect(Rect2(top + Vector2(-tw / 2.0 - 10, -26), Vector2(tw + 20, 38)), Color(P.PAPER, 0.85))
+				c.draw_string(f, top - Vector2(tw / 2.0, 0), str(h.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 26, P.OVERLAP)
+
+
+class _Marks extends Node2D:
+	var view: Node
+
+	func _init(v: Node) -> void:
+		view = v
+
+	func _draw() -> void:
+		view.draw_marks(self)
+
+
+# ======================================================================
+# 占位地图（没有生成美术时）
 # ======================================================================
 
 func _draw() -> void:
-	if map.is_empty():
+	if map.is_empty() or (art != null and art.has_art):
 		return
 	var f := P.font()
 	for z in map.zones:
@@ -192,23 +361,6 @@ func _draw() -> void:
 							draw_rect(Rect2(wx, wy, 34, 10), Color(P.MEI, 0.18))
 							wx += 40.0
 		draw_string(f, r.position + Vector2(20, 44), str(z.name), HORIZONTAL_ALIGNMENT_LEFT, -1, 32, P.INK_SOFT)
-
-	# 互动点
-	for sp in map.spots:
-		var at := Vector2(sp.at[0], sp.at[1])
-		draw_circle(at, 12.0, P.PAPER)
-		draw_arc(at, 12.0, 0, TAU, 20, P.INK, 2.5)
-		var label := str(action_of(sp).get("label", ""))
-		var w := f.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x
-		draw_string(f, at + Vector2(-w / 2.0, 42), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(P.INK, 0.55))
-
-	# 命运的提示：一行很淡的字，飘在那个地方
-	for h in hints:
-		for z in map.zones:
-			if z.id == h.zone:
-				var top := Vector2(z.rect[0] + z.rect[2] / 2.0, z.rect[1] - 16)
-				var tw := f.get_string_size(str(h.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 28).x
-				draw_string(f, top - Vector2(tw / 2.0, 0), str(h.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color(P.OVERLAP, 0.75))
 
 
 func _zone_frame(r: Rect2, fill: Color) -> void:

@@ -1035,6 +1035,10 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 	var swing := int(round(luck * 10.0))
 	if swing != 0:
 		_label(modal_body, "今天发挥得%s，%s %d 分。" % ["不错" if swing > 0 else "不大好", "多了" if swing > 0 else "少了", absi(swing)], 30, P.INK_SOFT)
+	# 默契托住的分：已经算在上面的数里了，这里只是告诉他是谁托的
+	var steady := int(round(float(_dict(pe.get("steady")).get(my_role, 0.0)) * 10.0))
+	if steady > 0:
+		_label(modal_body, "知道%s就在外头等着，心里踏实，少丢了 %d 分。" % [str(names.get(_other(), "TA")), steady], 30, P.INK_SOFT)
 	_gap(modal_body, 8)
 	var my_locks: Dictionary = _dict(locks.get(my_role))
 	var their_locks: Dictionary = _dict(locks.get(_other()))
@@ -1213,7 +1217,7 @@ func _show_milestone_result(e: Dictionary) -> void:
 		var mark := "（影子）" if e.get("shadow", []).has(r) else ""
 		var pick := _label(row, _option_text(e.events[r], res.get("option")) + mark, 38, P.INK)
 		pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		if has_line:
+		if has_line and res.get("score") != null:
 			var score := "%d %s" % [int(res.get("score", 0)), str(res.get("unit", "分"))]
 			if res.get("grade") != null:
 				score += " · " + str(res.grade)

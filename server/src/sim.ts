@@ -333,7 +333,7 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
   for (var i = 0; i < c.events.length; i++) {
     var ev = c.events[i];
     if (ev.kind !== "milestone" || ev.age! < age || seen[ev.id] || !lifeMilestoneFor(ev, p)) continue;
-    if (!ev.options.some(function (o) { return !!o.min; })) continue; // 上小学、退休：没有线，不算目标
+    if (!ev.options.some(function (o) { return !!o.min; })) continue; // 没有线的关口不算目标
     if (!best || ev.age! < best.age!) best = ev;
   }
   if (!best) return null;
@@ -498,8 +498,11 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       lifeApplyBond(s, c, o.effects.bond);
       lifeAddFlags(me, o.effects.flags);
       if (!entry.results) entry.results = {};
+      var scored = false;
+      for (var swk in sw) scored = true;
       entry.results[role] = {
-        score: shown,
+        // 走的是不看分的路、这一关也没有统一的卷子：没有分数可记（不写 0 分）
+        score: scored ? shown : null,
         unit: sw.money ? "块" : "分",
         grade: grade ? grade.label : null,
         option: o.id,

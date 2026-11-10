@@ -491,14 +491,21 @@ function worldMilestone(s: LifeState, c: Content, out: WorldTick): boolean {
     w.done.push(ms.id);
     return false;
   }
-  var pe: PendingEvent = { eventId: ms.id, kind: "milestone", roles: due, choices: {}, shadow: [], swing: {} };
+  var pe: PendingEvent = { eventId: ms.id, kind: "milestone", roles: due, choices: {}, shadow: [], swing: {}, steady: {} };
   var forced = true;
   for (var i = 0; i < due.length; i++) {
     var r = due[i];
     var a = w.actors[r]!;
     if (a.action || a.asleep) { a.action = null; a.spot = null; a.until = null; a.asleep = false; delete a.eff; delete a.together; delete a.boost; }
     var luck = s.persons![r].stats.luck;
-    var swing = ms.swing ? Math.round(((lifeRand(s) - 0.5) * SWING_RANGE + (luck - 5) * SWING_LUCK) * 100) / 100 : 0;
+    var swing = 0;
+    if (ms.swing) {
+      var hand = (lifeRand(s) - 0.5) * SWING_RANGE;
+      // 默契托底：知道对门在考场外头等着，手气差的那一半按默契折掉一些。手气好的时候不多给，属性也不动
+      var steady = hand < 0 && lifePairBond(s, r) ? Math.round(-hand * (s.bond.sync / 100) * c.rules.bond.syncSteady * 100) / 100 : 0;
+      if (steady > 0) pe.steady![r] = steady;
+      swing = Math.round((hand + steady + (luck - 5) * SWING_LUCK) * 100) / 100;
+    }
     pe.swing![r] = swing;
     var open = ms.options.filter(function (o) { return !lifeOptionLock(ms, o, s.persons![r], swing, lifePairBond(s, r)); });
     // 一条都走不通（内容写漏了兜底的路）：走线最低的那条，不让这条人生卡在这里

@@ -210,3 +210,155 @@ function sleep(s, r) {
   }
   console.log("✓ 歇班日：成年后工钱照发、不用去 / 上班日不多发 / 小时候和少年歇了就没有");
 }
+
+// ---------- 6. 关口上挣来的东西接得上后面的日子 ----------
+{
+  /** 找一个 age 岁的平常日子（不是关口、要上学或上班），两个人带着各自的标记 */
+  const plain = (age, flags) => {
+    for (let seed = 1; seed < 400; seed++) {
+      const s = lifeAt(seed, age);
+      for (const r of ROLES) s.persons[r].flags.push(...(flags[r] || []));
+      s.turn = turnAtAge(age);
+      G("worldStartDay")(s, C);
+      if (!s.world.fate.milestone && !s.world.rest) return s;
+    }
+    assert.fail("没抽到要的日子");
+  };
+  const spot = (id) => C.map.spots.find((sp) => sp.id === id);
+  const pick = (s, r, id) => G("worldPickAction")(s, C, r, spot(id)).act?.id ?? null;
+  const at = (s, r, id) => { const a = s.world.actors[r]; a.x = spot(id).at[0]; a.y = spot(id).at[1]; };
+
+  // 6 岁那一关：当了学习委员的和没当的还是同班，一起上学照样算搭伴
+  {
+    const s = plain(8, { qing: ["lead_study"] });
+    assert.equal(G("lifeTrack")(C, s.persons.qing, 8).id, "primary_study");
+    assert.equal(G("lifeTrack")(C, s.persons.mei, 8).id, "primary");
+    s.world.minute = G("worldDuty")(s, C, "qing").arrive[0];
+    for (const r of ROLES) { at(s, r, "school_gate"); assert.equal(G("worldAct")(s, C, r, "school_gate").error, null); }
+    const before = { qing: s.persons.qing.stats.mind, mei: s.persons.mei.stats.mind };
+    for (let i = 0; i < 4000 && s.world.actors.qing.action; i++) G("worldAdvance")(s, C, 0.5, ON);
+    assert.ok(s.world.warm, "不同的小干部一起上学也是搭伴");
+    assert.ok(s.persons.qing.stats.mind - before.qing > s.persons.mei.stats.mind - before.mei, "学习委员上一天学，心智长得多一点");
+  }
+
+  // 9 岁那一关：进了小组的人，放学以后校门口是小组；没进的、不在钟点上的、毕了业的都不是
+  {
+    const s = plain(10, { qing: ["club_math", "club_sport"] });
+    const club = C.map.actions.find((a) => a.id === "club_math");
+    s.world.minute = club.requires.hours[0] - 30;
+    s.world.dutyDone = { qing: true, mei: true };
+    assert.equal(pick(s, "qing", "school_gate"), null, "还没到钟点");
+    assert.equal(pick(s, "qing", "school_yard"), "ball", "体校没开练，操场照样能踢球");
+    s.world.minute = club.requires.hours[0] + 10;
+    assert.equal(pick(s, "qing", "school_gate"), "club_math");
+    assert.equal(pick(s, "qing", "school_yard"), "club_sport");
+    assert.equal(pick(s, "mei", "school_gate"), null, "没进小组的人看不见它");
+    assert.equal(pick(s, "mei", "school_yard"), "ball");
+    at(s, "mei", "school_gate");
+    assert.ok(G("worldAct")(s, C, "mei", "school_gate").error, "也做不了");
+    s.world.minute = club.requires.hours[1] + 10;
+    assert.equal(pick(s, "qing", "school_gate"), null, "锁门以后就没有了");
+    // 小组比自己写作业长得快，但没有快到非进不可
+    const study = C.map.actions.find((a) => a.id === "study");
+    assert.ok(club.stats.mind > study.stats.mind && club.stats.mind <= study.stats.mind * 1.4);
+    const older = plain(13, { qing: ["club_math"] });
+    older.world.minute = club.requires.hours[0] + 10;
+    older.world.dutyDone = { qing: true, mei: true };
+    assert.notEqual(pick(older, "qing", "school_gate"), "club_math", "小学毕业以后小组就散了");
+    // 客户端不知道标记：WORLD 里带一张「我挣来的去处」的单子
+    const view = G("worldView")({ record: { life: s }, moveSeq: {}, tick: 0 });
+    assert.deepEqual(J(view.tracks.qing.unlocks).sort(), ["club_math", "club_sport"]);
+    assert.deepEqual(J(view.tracks.mei.unlocks), []);
+  }
+
+  // 45 岁那一关：争到位子的人工钱多五成（歇班那年也是）
+  {
+    const s = plain(48, { qing: ["job_desk", "mid_post"], mei: ["job_desk"] });
+    const desk = C.tracks.find((t) => t.id === "job_desk").duty;
+    assert.equal(G("worldWage")(C, s.persons.qing, desk), Math.round(desk.money * C.rules.daily.wageFlags.mid_post * 10) / 10);
+    assert.equal(G("worldWage")(C, s.persons.mei, desk), desk.money);
+  }
+
+  // 70 岁那一关：搭伙过看的是亲近，原数给人看；对门不在了这条路就没有了
+  {
+    const s = lifeAt(9, 70, C, 2);
+    assert.equal(s.world.fate.milestone, "m_evening");
+    const ev = C.events.find((e) => e.id === "m_evening"), pair = ev.options.find((o) => o.id === "pair");
+    const lock = (r) => G("lifeOptionLock")(ev, pair, s.persons[r], 0, G("lifePairBond")(s, r));
+    s.bond.close = pair.min - 1;
+    assert.ok(lock("qing").includes("亲近") && lock("qing").includes(String(pair.min)), "差一点：告诉他线在哪");
+    assert.equal(G("lifeOptionLock")(ev, pair, s.persons.qing, 5, s.bond), lock("qing"), "亲近不看临场发挥");
+    s.bond.close = pair.min;
+    assert.equal(lock("qing"), null);
+    const goal = G("lifeGoal")(s, C, "qing").lines.find((l) => l.id === "pair");
+    assert.deepEqual([goal.have, goal.need, goal.ok], [pair.min, pair.min, true]);
+    s.persons.mei.alive = false;
+    assert.ok(lock("qing"), "一个人搭不了伙");
+    assert.ok(ev.options.some((o) => !G("lifeOptionLock")(ev, o, s.persons.qing, 0, G("lifePairBond")(s, "qing"))), "但总有一条路");
+  }
+
+  // 走过的路折成寿数：每一条都在四年以内，加起来压不过命数本身的起伏
+  {
+    const s = lifeAt(9, 60, C, 5);
+    const p = s.persons.qing;
+    p.lifespan = 76; s.bond.close = 0;
+    const base = G("growthLimit")(s, C, "qing");
+    let sum = 0;
+    for (const [f, years] of Object.entries(C.rules.lifespan.flags)) {
+      p.flags.push(f);
+      assert.equal(Math.round((G("growthLimit")(s, C, "qing") - base) * 10) / 10, years, f);
+      p.flags.pop();
+      assert.ok(Math.abs(years) <= 4);
+      sum += Math.max(0, years);
+    }
+    assert.ok(sum <= 8, "所有的好路都走到也只多活 " + sum + " 年");
+  }
+
+  // 从三岁第一天起眼前就有一道关：上小学
+  {
+    const s = lifeAt(3, 3);
+    const goal = G("lifeGoal")(s, C, "qing");
+    assert.equal(goal.id, "m_school");
+    assert.ok(goal.lines.length >= 3);
+  }
+  // 走了不看分的那条路，长卷上不记「0 分」
+  {
+    const s = lifeAt(5, 6, C, 9);
+    untilMilestone(s);
+    assert.equal(G("worldChoose")(s, C, "qing", "go", false).error, null);
+    assert.equal(G("worldChoose")(s, C, "mei", "study", false).error, null);
+    const res = s.log.at(-1).results;
+    assert.equal(res.qing.score, null);
+    assert.deepEqual([res.mei.score, res.mei.unit], [90, "分"]);
+  }
+  console.log("✓ 关口接得上日子：小干部还是同班 / 小组只给进了的人、只在放学后、毕业就散 / 位子多五成工钱 / 搭伙看亲近、对门空了就没有 / 走过的路折成寿数 / 三岁起眼前就有一道关 / 不看分的路不记 0 分");
+}
+
+// ---------- 7. 默契替考场托底 ----------
+{
+  // 同一个种子、同样的两个人，只差默契：手气好的时候一分不多，手气差的时候少丢一些，对门不在了就没有
+  const swings = (sync, alone) => {
+    const out = [];
+    for (let seed = 1; seed <= 60; seed++) {
+      const s = lifeAt(seed, 18, C, 9);
+      s.bond.sync = sync;
+      if (alone) s.persons.mei.alive = false;
+      untilMilestone(s);
+      if (s.world.event) out.push({ swing: s.world.event.swing.qing, steady: s.world.event.steady.qing || 0 });
+    }
+    return out;
+  };
+  const none = swings(0), full = swings(100), alone = swings(100, true);
+  assert.ok(none.length >= 50 && none.length === full.length);
+  let helped = 0;
+  for (let i = 0; i < none.length; i++) {
+    assert.equal(none[i].steady, 0);
+    assert.ok(full[i].swing >= none[i].swing);
+    assert.equal(Math.round((full[i].swing - none[i].swing) * 100), Math.round(full[i].steady * 100), "托住多少就告诉他多少");
+    assert.ok(full[i].steady <= (G("SWING_RANGE") / 2) * C.rules.bond.syncSteady + 1e-9);
+    if (full[i].steady > 0) helped++;
+  }
+  assert.ok(helped > none.length * 0.3 && helped < none.length * 0.7, "只有手气差的那一半有人托");
+  assert.ok(alone.every((x) => x.steady === 0), "对门不在了，没有人在外头等");
+  console.log(`✓ 默契托底：60 场高考里 ${helped} 场手气差，默契 100 最多托回 ${Math.round(Math.max(...full.map((x) => x.steady)) * 10)} 分 / 手气好不多给 / 一个人没有`);
+}

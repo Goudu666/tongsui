@@ -247,7 +247,7 @@ const rules = load("rules.yaml");
     daily: ["bodyEnergy", "charmTogether", "luckFate", "wageFlags"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],
     lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max", "flags"],
-    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "drift", "driftDistance", "driftFloor"],
+    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "drift", "driftDistance", "driftFloor"],
     legacy: ["pastKept", "heirloomOffer", "houseMax", "houseMoney"],
   };
   checkKeys("rules", rules, Object.keys(need));
@@ -256,6 +256,7 @@ const rules = load("rules.yaml");
     checkKeys(`rules.${sec}`, rules[sec], keys);
     for (const k of keys) if (rules[sec][k] === undefined) errors.push(`rules.yaml: 缺少 ${sec}.${k}`);
   }
+  if (rules?.bond && (typeof rules.bond.syncSteady !== "number" || rules.bond.syncSteady < 0 || rules.bond.syncSteady > 1)) errors.push("rules.yaml: bond.syncSteady 是默契替考场托住的那一份，要在 0 到 1 之间");
   for (const [f, mul] of Object.entries(rules?.daily?.wageFlags ?? {})) {
     consumed.push(["rules.daily.wageFlags", f]);
     if (typeof mul !== "number" || mul < 1 || mul > 2) errors.push(`rules.yaml: daily.wageFlags.${f} 是工钱的倍数，要在 1 到 2 之间`);

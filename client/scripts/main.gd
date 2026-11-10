@@ -101,6 +101,9 @@ func _apply_content(c: Dictionary) -> void:
 	talents.clear()
 	for ev in content.events:
 		events_by_id[ev.id] = ev
+	# 主线（content/story.yaml）：七章，每章三件一定会发生的事。和随机的事走同一套弹窗
+	for ev in _dict(content.get("story")).get("events", []):
+		events_by_id[ev.id] = ev
 	for f in content.families:
 		families[f.id] = f
 	for t in content.talents:
@@ -1138,6 +1141,7 @@ func _refresh_hud() -> void:
 		hud.bond = {}
 		hud.money = -1
 		hud.note = ""
+		hud.story = {}
 		goal_panel.visible = false
 		return
 	hud.minute = float(last_world.get("minute", 390))
@@ -1155,6 +1159,8 @@ func _refresh_hud() -> void:
 	hud.needs = needs
 	hud.money = int(last_world.get("money", {}).get(my_role, 0))
 	hud.bond = last_world.get("bond", life.get("bond", {}))
+	var st: Dictionary = _dict(last_world.get("story"))
+	hud.story = {} if st.is_empty() else {"chapter": st.get("chapter", 0), "title": st.get("title", ""), "next": _dict(st.get("next")).get(my_role), "force": st.get("force", false)}
 
 
 ## 对门的牌（HUD 右上）和屏幕边上的箭头：TA 在哪、在做什么；走出画面了就指个方向。每帧算一次
@@ -1300,11 +1306,19 @@ func _on_event_started(data: Dictionary) -> void:
 	if pe.kind == "milestone":
 		_show_milestone(pe, ev, _dict(data.get("locks", pe.get("locks"))))
 		return
-	var opts: Array = ev.get("options", [])
+	# 主线的选项有门槛：家里给不了的那条不摆出来，积蓄不够的灰着写差多少（服务器在 locks 里说）
+	var my_locks: Dictionary = _dict(_dict(data.get("locks", pe.get("locks"))).get(my_role))
+	var opts: Array = story_options(ev, my_locks)
 	_open_modal(_options_width(opts.size()))
 	modal.set_meta("waiting_event", pe.eventId)
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 16)
+	modal_body.add_child(head)
+	if ev.has("chapter"):
+		var ch: Dictionary = _list_at(_dict(content.get("story")).get("chapters", []), int(ev.chapter) - 1)
+		Kit.chip(head, "%s · %s" % [Hud.story_text({"chapter": ev.chapter})[0], str(ch.get("title", ""))], P.INK)
 	if mirror:
-		Kit.chip(modal_body, "默契时刻 · 不要商量", P.role_color(my_role))
+		Kit.chip(head, "默契时刻 · 不要商量", P.role_color(my_role))
 	_label(modal_body, str(ev.get("title", "")), 68)
 	Kit.rule(modal_body)
 	_label(modal_body, str(ev.get("text", "")), 40)
@@ -1314,8 +1328,30 @@ func _on_event_started(data: Dictionary) -> void:
 	for o in opts:
 		var oid: String = o.id
 		var otext: String = o.text
-		_option(grid, otext, _pick.bind(oid, otext, mirror))
+		if my_locks.has(oid):
+			var b := _option(grid, "%s\n%s" % [otext, str(my_locks[oid])], func(): pass)
+			b.disabled = true
+		else:
+			_option(grid, otext, _pick.bind(oid, otext, mirror))
 	_gap(modal_body, 4)
+
+
+## 摆出来的选项：带标记门槛、又走不了的（不是给这户人家留的）不摆；只是钱不够的摆着，灰的
+static func story_options(ev: Dictionary, locks: Dictionary) -> Array:
+	var out: Array = []
+	for o in ev.get("options", []):
+		var rq: Dictionary = o.get("requires", {}) if o.get("requires") is Dictionary else {}
+		var by_flag: bool = not (rq.get("flags", []) as Array).is_empty() or not (rq.get("notFlags", []) as Array).is_empty()
+		if locks.has(str(o.id)) and by_flag:
+			continue
+		out.append(o)
+	return out
+
+
+static func _list_at(list: Variant, i: int) -> Dictionary:
+	if list is Array and i >= 0 and i < list.size() and list[i] is Dictionary:
+		return list[i]
+	return {}
 
 
 ## 人生关口：够不着的路是灰的，写着差多少；够得着的路上写着对门走不走得了。

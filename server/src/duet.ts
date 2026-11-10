@@ -343,7 +343,7 @@ function duetRepair(s: LifeState, c: Content, notes: string[]) {
     var list = s.duet.owed[r] || [];
     for (var j = 0; j < list.length; j++) {
       var o = list[j];
-      var ok = lifeHasId(c.events, o.eventId);
+      var ok = lifeHasEvent(c, o.eventId);
       if (ok) {
         var ev = lifeFindEvent(c, o.eventId);
         ok = !!lifeFindOption(ev, o.shadow) && !!lifeFindOption(ev, o.partner);

@@ -826,8 +826,9 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
     const p = life.persons[r];
     assert.deepEqual(v.past.persons[r], { name: p.name, familyId: p.familyId, talentId: p.talentId, diedAtAge: p.diedAtAge, job: G("legacyJob")(p), heirloomId: p.heirloomId });
   }
-  assert.ok(v.past.memories.length > 0 && v.past.memories.length <= 40);
-  assert.deepEqual(Object.keys(v.past.memories[0]).sort(), ["age", "title", "vivid"]);
+  // 房间开的人生种子是随机的：两百条里有一条一辈子没留下共同的回忆（两个影子一直没选到一块儿），那一页的回忆就是空的
+  assert.equal(v.past.memories.length, Math.min(life.memories.length, G("LEGACY_VIEW_MEMORIES")));
+  for (const m of v.past.memories) assert.deepEqual(Object.keys(m).sort(), ["age", "title", "vivid"]);
   assert.ok(v.past.memories.every((m, i, all) => i === 0 || all[i - 1].age <= m.age), "回忆按先后排");
   assert.deepEqual(v.past.stats, { mirrors: G("lifeStats")(life).mirrors, rate: G("lifeStats")(life).rate, together: G("lifeStats")(life).together });
   const text = JSON.stringify(v);

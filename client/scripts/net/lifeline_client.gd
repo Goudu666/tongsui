@@ -8,6 +8,9 @@ extends Node
 ##   open_lifeline(id) 拿 matchId → 进房间（记住 id，断线后自动回到这条人生线）
 ##   断线（socket closed / 8 秒没收到任何东西 / App 从后台回来发现连接死了）
 ##     → 退避重连 1s 2s 4s 8s 10s… → 重新 open_lifeline（房间可能已关闭重开）→ 服务器重发快照
+##
+## 版本：服务器和安装包是分开更新的。每次 open_lifeline 双方互报协议版本（protocol.gd 的 VERSION）和内容指纹：
+##   协议对不上 → 提示更新，不进房间；内容不一样 → 从服务器下载这一版内容（content_store.gd），再进房间。
 
 signal status(text: String)
 signal failed(text: String)
@@ -17,6 +20,7 @@ signal lifelines(items: Array)
 signal partner_joined(lifeline_id: String, partner_name: String)
 signal recovered(ok: bool, text: String)  ## 用找回码登录的结果
 signal connection_changed(online: bool)  ## false = 断了，正在重连；true = 回来了
+signal content_updated(content: Dictionary)  ## 服务器的剧情内容和手里的不一样，已经换成服务器这一版
 signal snapshot(data: Dictionary)
 signal roll_state(data: Dictionary)
 signal world_state(data: Dictionary)
@@ -27,6 +31,7 @@ signal presence(data: Dictionary)
 const Config := preload("res://scripts/net/config.gd")
 const Op := preload("res://scripts/net/protocol.gd")
 const ServerClock := preload("res://scripts/net/server_clock.gd")
+const ContentStore := preload("res://scripts/net/content_store.gd")
 
 const SESSION_PATH := "user://session.cfg"
 const RECOVERY_PATH := "user://recovery.cfg"
@@ -50,6 +55,7 @@ var waiting_lifeline := ""   ## 正在等 TA 输配对码的人生线
 var clock := ServerClock.new()
 var rtt_ms := -1.0
 var connected := false
+var content_version := ""    ## 界面现在用的是哪一版内容（main.gd 载入内容后告诉我们）
 
 var _want_online := false
 var _reconnecting := false
@@ -396,8 +402,10 @@ func list_lifelines() -> void:
 
 ## 打开一条人生线并进入它的房间。quiet = 重连时用，不发 opened（界面不用跳）
 func open_lifeline(id: String, quiet := false) -> bool:
-	var r = await _rpc("lifeline_open", {"lifelineId": id})
+	var r = await _rpc("lifeline_open", {"lifelineId": id, "protocol": Op.VERSION})
 	if r == null:
+		return false
+	if not await _check_versions(r):
 		return false
 	_remember(id)
 	if r.get("matchId") == null:
@@ -429,9 +437,48 @@ func open_lifeline(id: String, quiet := false) -> bool:
 	return true
 
 
+## 进房间前对版本：协议太旧的服务器不进；内容和手里的不一样就换成服务器这一版
+func _check_versions(r: Dictionary) -> bool:
+	if int(r.get("protocol", 0)) < Op.MIN_SERVER:
+		failed.emit("服务器的版本太旧了，和这个安装包对不上，需要先更新服务器")
+		return false
+	var want := str(r.get("content", ""))
+	if want == "" or want == content_version:
+		return true
+	var c := ContentStore.load_cached(want)
+	if c.is_empty():
+		status.emit("正在更新剧情……")
+		c = await _download_content(want)
+	if c.is_empty():
+		failed.emit("剧情更新没下载下来，等一会儿再试")
+		return false
+	content_version = want
+	content_updated.emit(c)
+	return true
+
+
+## 分块取服务器的内容，拼完整、版本对得上才算数
+func _download_content(want: String) -> Dictionary:
+	var text := ""
+	for i in 200:  # 一块约 4.8 万字符，整份内容几块就取完；上限只是防服务器乱回
+		var part = await _rpc("content_get", {"offset": text.length()})
+		if not part is Dictionary or str(part.get("version", "")) != want:
+			return {}  # 取到一半服务器又换了内容：下次重连再来
+		var chunk := str(part.get("chunk", ""))
+		text += chunk
+		if bool(part.get("done", false)):
+			break
+		if chunk.is_empty():
+			return {}
+	var c := ContentStore.parse(text, want)
+	if not c.is_empty():
+		ContentStore.save_cache(text)
+	return c
+
+
 func _poll_waiting() -> void:
 	var id := waiting_lifeline
-	var r = await _rpc("lifeline_open", {"lifelineId": id})
+	var r = await _rpc("lifeline_open", {"lifelineId": id, "protocol": Op.VERSION})
 	if r != null and r.get("matchId") != null and waiting_lifeline == id:
 		partner_joined.emit(id, "")
 		await open_lifeline(id)

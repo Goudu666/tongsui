@@ -298,6 +298,7 @@ function restart(env, id) {
   // 测试机器人用的消息号
   const bot = repo("server/test/e2e.mjs").match(/const OP = (\{[^}]+\})/);
   assert.deepEqual(new Function(`return ${bot[1]}`)(), J(OP), "server/test/e2e.mjs 的 OP 和 main.ts 不一致");
+  assert.equal(Number(repo("server/test/e2e.mjs").match(/const PROTOCOL = (\d+)/)[1]), G("PROTOCOL_VERSION"), "server/test/e2e.mjs 的 PROTOCOL 和 main.ts 不一致");
 
   // 回合 → 年龄阶段（客户端只用来显示和换角色外观）
   const lt = repo("client/scripts/ui/life_time.gd");

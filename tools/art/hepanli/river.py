@@ -115,8 +115,7 @@ def far_bank(ctx: Ctx):
                 elif rnd.random() < 0.4:
                     g.ink.fill(rect_pts(wx, wy, 3, 4), density=0.45)
         x += w + rnd.uniform(2, 10)
-    # 一根烟囱
-    g.ink.line([(2366, yb - 20), (2370, -10)], 6, density=0.5)
+    # 对岸的烟囱、厂房、后来的摩天轮都随年代变，是 street.py 画的活物，不在底图里
     # 对岸的岸线（双线，像石堤）
     g.ink.line([(WATER0, yb), (XR, yb)], 2.4, density=0.8)
     g.ink.line([(WATER0, yb + 6), (XR, yb + 6)], 1.2, density=0.5)

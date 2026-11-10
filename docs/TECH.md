@@ -79,16 +79,17 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | 3 ROLL_STATE | s→c | `{rolls}` 两人当前抽到的家庭、天赋、属性、剩余次数 |
 | 4 MOVE | c→s | `{x, y, seq}` 约 10 Hz，seq 递增；服务器丢掉乱序旧包，限速（360 px/s，间隔最多按 1 秒算）和边界 |
 | 5 ACT | c→s | `{spot}` 在某个点开始行动（距离、年龄、时间、家、钱都会校验） |
-| 6 CHOOSE | c→s | `{optionId}` 事件里的选择，结算前可以改 |
-| 7 WORLD | s→c | 5 Hz：`{tick, minute, schoolDay, actors{x,y,act,spot,sleep,seq}, needs, money, event, bond, hints}`；`actors[r].seq` 是服务器处理到的最后一条 MOVE |
-| 8 EVENT | s→c | `{event}` 有事件开始了（只告诉谁参与、是否已选，不告诉选了什么） |
+| 6 CHOOSE | c→s | `{optionId, guess?}` 事件里的选择，结算前可以改。`guess`：默契事件里猜 TA 选了哪一项，可以不带（见 [DUET.md](DUET.md)） |
+| 7 WORLD | s→c | 5 Hz：`{tick, minute, rest, actors{x,y,act,spot,sleep,seq,tg}, needs, money, event, bond, hints, stats, eff, goals, tracks}`；`actors[r].seq` 是服务器处理到的最后一条 MOVE，`tg` 是这次行动在搭伴；`goals[r]` 是下一个关口和每条线离得多远，`tracks[r]` 是现在走的路和今天的日程，`eff[r]` 是现在做事的效率 |
+| 8 EVENT | s→c | `{event, locks}` 有事件开始了（只告诉谁参与、是否已选，不告诉选了什么）。关口（`kind: milestone`）带 `locks: {role: {optionId: 原因}}`，够不着的路客户端画成灰的 |
 | 9 ERROR | s→c | `{message}` |
-| 10 LOG | s→c | `{entries}` 事件结算、同框、一天结束、死亡、终局 |
+| 10 LOG | s→c | `{entries}` 事件结算、搭伴、一天结束、死亡、终局。关口的结算带 `results: {role: {score, unit, grade, option, track}}`，一天结束带 `gains`（每人今天长了多少） |
 | 11 PRESENCE | s→c | `{online}` |
 | 12 PING | c→s | `{t}` 每 2 秒，测延迟 |
 | 13 PONG | s→c | `{t, tick}` 只回给发的人 |
 | 20 GAME | s→c | `{game}` 搭伴小游戏的状态：`{gameId, phase: offer/play, left, ready, t, d}`；局关掉时发 `{game: null, result}`，打完了 `result = {gameId, score, boost}`，没玩成是 `null` |
 | 21 GAME_INPUT | c→s | `{k}`：问的时候 `ready` / `pass`；玩的时候 `quit`，或各款自己的输入（放风筝：`{k: "line", v}` 攥线的人报线长，`{k: "run", v}` 另一个人报跑到哪，都是 0~1） |
+| 30 ECHO | c→s | `{turn, optionId}` 回话：补答影子替我选过的默契事件（`turn` 是那天的序号，`optionId` 为 null 是「不提了」）。结算作为一条 LOG 发给两个人 |
 
 - 事件进行中时钟暂停；没选的人都离线时，等 30 秒后由影子代选。
 - 搭伴小游戏（`games.ts`）问和玩的时候时钟也暂停。它只在两人都真在线、同时做 `GAME_ACTIONS` 里的行动时问一次（每天一次），结果只写成这一次行动的成长倍率 `Actor.boost`，`worldFinish` 用掉就清；没玩成（不了、没理、掉线、中途退出）什么都不留。物理在服务器上跑，客户端只报手指位置；`client/scripts/games/kite_sim.gd` 是照抄的一份，只给离线试玩用，改规则先改服务器。
@@ -144,10 +145,13 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | `events/*.yaml` | 剧情事件 |
 | `families.yaml` | 投胎能抽到的人家：家境、零花钱、属性加成、家庭标记 |
 | `talents.yaml` | 先天天赋 |
-| `map.yaml` | 地图：地点（矩形区域）、互动点、行动（时长、需求/属性变化、花钱挣钱、同框效果、条件） |
+| `map.yaml` | 地图：地点（矩形区域）、互动点、行动（时长、需求/属性变化、花钱挣钱、搭伴效果、条件）。一个互动点可以用 `actions` 挂几个行动，按年纪取第一个合适的 |
+| `events/milestones.yaml` | 人生关口：`kind: milestone` 的事件，按 `age` 到来，选项上的 `min` 是分数线。格式见文件头 |
+| `tracks.yaml` | 人生路线：由标记推出来的日程（白天去哪、去多久、长什么、挣多少）。按顺序匹配，最后一条兜底 |
 | `endings.yaml` | 结局：两个人的结局（pair）和每个人的一生小结（lives），按顺序匹配，最后一条兜底 |
 | `rules.yaml` | 数值规则：投胎预算、成长、衰老、检定、寿命、亲近（规则代码在 `server/src/growth.ts`，说明见 [GROWTH.md](GROWTH.md)） |
 | `checks.yaml` | 检定：挂在已有事件的选项上，成不成看属性和运气 |
+| `duet.yaml` | 接话：「搭上了」（按事件 id 挂上去的互补选项组合）、猜 TA 和回话的旁白。格式见文件头和 [DUET.md](DUET.md) |
 
 事件格式：
 
@@ -177,10 +181,16 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
   resonance:                             # mirror 专用：两人选到同一项
     stars: { text: ……, memory: 第四十七颗星, bond: { sync: 3 }, flags: [p_stars] }   # flags：共同标记，两人都得到，必须 p_ 开头
   dissonance: { text: ……, bond: { close: 1 }, flags: [] }   # mirror 专用：选得不一样
+  # 选得不一样、但正好一个抛一个接的组合（「搭上了」）不写在这里，写在 content/duet.yaml 的 catches 里
 ```
 
 `npm run content` 的校验除了格式，还会检查：性格标签只能是 gentle / adventure / solitude / responsible / competitive / patient；
 只有童年能写 seasons；mirror 不能放在某一家屋里；要求了某个标记却没有任何地方会打上它时给出警告（多半是拼错了）。
+
+关口和路线是核心玩法的骨架（设计见 [GDD.md](GDD.md) 第 4 节）。规则在 `server/src/sim.ts`（`lifeTrack` 路线、`lifeOptionLock` 上锁、`lifeGoal` 目标）
+和 `server/src/world.ts`（`worldPickAction` 点位上现在能做什么、`worldDuty` 日程、`worldFinish` 里的搭伴倍率和状态效率）。
+分数线调完要跑 `node tools/paths.mjs`：九种活法的机器人把人生过到三十岁，打印每条线有多少人够得着。
+`server/test/paths.test.mjs` 把四件事钉成断言：不上心的够不着高线、活法比出身重要、搭伴比一个人强、一个人够不着所有的线。
 
 结局格式见 `content/endings.yaml` 文件头。服务器在两人都离开后调用 `lifeEnding` 算出结局，存进 `LifeState.ending`（`{ pair, lives: { qing, mei } }`），
 并把结局文字写进最后一条 `end` 日志，客户端的长卷直接显示。
@@ -196,6 +206,7 @@ npm run server:test      # 编译 + 投胎规则 + 60 条全影子人生 + 世�
                          # + 架构测试（arch.test.mjs）：版本握手与内容下载 / 坏消息 / 存档往返 / 剧情改了以后旧存档还能打开 /
                          #   出错回滚 / 单写者 / 两端契约（消息号、协议版本、年龄阶段表、走动限速这些两边各抄一份的东西有没有走样）
 npm run balance          # 平衡模拟：机器人按真实规则过 1200 条人生，打印成长曲线、寿命、结局的分布（改了 rules.yaml 以后跑，见 GROWTH.md）
+                         # + 接话测试（duet.test.mjs）：搭上了 / 猜 TA / 回话 / 存档修复 / 带猜测和回话的联机流程
 GODOT=godot bash tools/ci/client_unit.sh      # 客户端单测 client/tests/unit_*.gd，不需要服务器
 
 # 下面两个要先起一台本地 Nakama（docker compose，见 README）

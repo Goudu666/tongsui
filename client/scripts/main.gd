@@ -19,6 +19,7 @@ const WorldView := preload("res://scripts/world/world_view.gd")
 const ServerConfig := preload("res://scripts/net/config.gd")
 const ServerSettings := preload("res://scripts/ui/server_settings.gd")
 const ContentStore := preload("res://scripts/net/content_store.gd")
+const DuetUI := preload("res://scripts/duet/duet_ui.gd")
 const GameLayer := preload("res://scripts/games/game_layer.gd")
 
 var content: Dictionary = {}
@@ -53,12 +54,14 @@ var my_role := "qing"
 var life: Dictionary = {}
 var last_world: Dictionary = {}
 var offline_preview := false
+var duet: DuetUI  ## 「接话」的界面：猜 TA / 搭上了 / 回话（见 docs/DUET.md）
 var _preview_minute := 390.0
 const PRACTICE_ACTION := "play_river"
 var _practice_count := 0
 
 
 func _ready() -> void:
+	duet = DuetUI.new(self)
 	_load_content()
 	_build_layers()
 	games = GameLayer.new()
@@ -667,6 +670,7 @@ func _on_snapshot(data: Dictionary) -> void:
 				last_world["rest"] = w.get("rest", false)
 				_resume_event(w.get("event"))
 			_refresh_hud()
+			duet.on_snapshot()  # 我不在的时候影子替我选过的，现在问我
 		"ended":
 			_show_ending()
 
@@ -1019,13 +1023,28 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 			var note := ""
 			if both and gated:
 				note = ("\n%s 够不着这条" if their_locks.has(oid) else "\n%s 也走得了") % their_name
-			_button(modal_body, otext + note, _pick.bind(oid, otext, both))
+			_button(modal_body, otext + note, _pick_path.bind(oid, otext, both))
 	_gap(modal_body, 4)
 
 
+## 关口上选路：不走默契事件的「猜 TA」（可以商量，没什么可猜的）。waiting：对门也过这一关，选完要等 TA
+func _pick_path(option_id: String, option_text: String, waiting: bool) -> void:
+	net.choose(option_id)
+	_pick_shown(option_id, option_text, waiting)
+
+
 func _pick(option_id: String, option_text: String, mirror: bool) -> void:
+	if mirror:
+		# 默契事件：选完自己的，再猜 TA 选了哪个，两样一起发
+		duet.ask_guess(str(modal.get_meta("waiting_event", "")), option_id, option_text)
+		return
 	net.choose(option_id)
 	_pick_shown(option_id, option_text, mirror)
+
+
+func _pick_send(option_id: String, option_text: String, guess: String) -> void:
+	net.choose(option_id, guess)
+	_pick_shown(option_id, option_text, true)
 
 
 func _pick_shown(_option_id: String, option_text: String, mirror: bool) -> void:
@@ -1064,6 +1083,7 @@ func _close_modal() -> void:
 	modal.visible = false
 	if modal.has_meta("waiting_event"):
 		modal.remove_meta("waiting_event")
+	duet.check_owed()  # 还有欠着的话就接着问
 
 
 func _option_text(event_id: Variant, option_id: Variant) -> String:
@@ -1085,6 +1105,8 @@ func _on_log_entries(data: Dictionary) -> void:
 			_show_mirror_result(e)
 		elif kind == "milestone":
 			_show_milestone_result(e)
+		elif kind == "solo" and e.get("duet") is Dictionary and e.duet.get("echo") == true:
+			duet.show_echo(e)
 		elif kind == "solo":
 			if e.events[my_role] != null:
 				_close_modal()
@@ -1185,35 +1207,9 @@ func _show_milestone_result(e: Dictionary) -> void:
 	_gap(modal_body, 4)
 
 
+## 默契事件的结算卡：共鸣 / 搭上了 / 错位（画在 duet_ui.gd 里）
 func _show_mirror_result(e: Dictionary) -> void:
-	_open_modal()
-	var ev: Dictionary = events_by_id.get(e.events.qing, {})
-	var hit := bool(e.resonance)
-	var head := HBoxContainer.new()
-	head.add_theme_constant_override("separation", 16)
-	modal_body.add_child(head)
-	Kit.chip(head, "共鸣" if hit else "错位", P.OVERLAP if hit else P.INK_SOFT)
-	var when := _label(head, "%s · %s" % [str(e.label), str(ev.get("title", ""))], 30, P.INK_SOFT)
-	when.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	# 两个圆靠拢：叠住 = 共鸣，错开 = 错位
-	modal_body.add_child(Resonance.new(hit))
-	var checks: Dictionary = e.get("checks", {})
-	for r in ["qing", "mei"]:
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 18)
-		modal_body.add_child(row)
-		Kit.chip(row, str(names.get(r, P.ROLE_NAME[r])), P.role_color(r), 30)
-		var mark := "（影子）" if e.shadow.has(r) else ""
-		var pick := _label(row, _option_text(e.events[r], e.choices[r]) + mark, 38, P.INK)
-		pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		# 这一项挂着检定：成没成，写在选择下面
-		if checks.get(r) != null:
-			var c: Dictionary = checks[r]
-			_label(modal_body, "%s　%s" % [_check_verdict(c), str(c.get("text", ""))], 30, P.INK_SOFT)
-	Kit.rule(modal_body, Color(P.INK, 0.25))
-	_label(modal_body, str(e.text), 44, P.OVERLAP if hit else P.INK)
-	_primary(modal_body, "嗯", _close_modal)
-	_gap(modal_body, 4)
+	duet.show_result(e)
 
 
 ## 检定：有些选项成不成要看本事和运气（服务端 growth.ts 掷的，结果跟着日志过来）。
@@ -1258,6 +1254,8 @@ func _show_ending() -> void:
 	for e in life.get("log", []):
 		if e.kind == "end":
 			_label(body, str(e.text), 40, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
+	for line in duet.ending_lines():
+		_label(body, str(line), 34, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
 	_gap(body, 30)
 	var memories: Array = life.get("memories", [])
 	var card := Kit.card(P.OVERLAP, 44.0)

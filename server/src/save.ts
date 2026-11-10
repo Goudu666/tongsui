@@ -131,6 +131,8 @@ function lifeRepair(s: LifeState, c: Content): string[] {
     }
   }
 
+  duetRepair(s, c, notes); // 欠着没回的话（duet.ts）也记着事件和选项的 id
+
   if (s.contentVersion !== c.version) {
     if (notes.length === 0 && s.contentVersion) notes.push("内容 " + s.contentVersion + " → " + c.version + "，存档不用改");
     s.contentVersion = c.version;

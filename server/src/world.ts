@@ -764,7 +764,7 @@ function worldMilestone(s: LifeState, c: Content, out: WorldTick): boolean {
     if (ms.swing) {
       var hand = (lifeRand(s) - 0.5) * SWING_RANGE;
       // 默契托底：知道对门在考场外头等着，手气差的那一半按默契折掉一些。手气好的时候不多给，属性也不动
-      var steady = hand < 0 && lifePairBond(s, r) ? Math.round(-hand * (s.bond.sync / 100) * c.rules.bond.syncSteady * 100) / 100 : 0;
+      var steady = hand < 0 && lifePairBond(s, r) ? Math.round(-hand * growthSteadyShare(c, s.bond.sync) * 100) / 100 : 0;
       if (steady > 0) pe.steady![r] = steady;
       swing = Math.round((hand + steady + (luck - 5) * SWING_LUCK) * 100) / 100;
     }

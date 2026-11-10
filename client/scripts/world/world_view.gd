@@ -8,6 +8,7 @@ const P := preload("res://scripts/ui/palette.gd")
 const Actor := preload("res://scripts/world/actor.gd")
 const MapArt := preload("res://scripts/world/map_art.gd")
 const Nav := preload("res://scripts/world/nav.gd")
+const StreetLife := preload("res://scripts/world/street_life.gd")
 const PrintLight := preload("res://scripts/world/print_light.gd")
 const SPOT_RADIUS := 100.0  ## 比服务器的 110 小一点，避免边缘抖动
 const MOVE_SEND_INTERVAL := 0.1
@@ -26,6 +27,7 @@ var hints: Array = []
 var controllable := true
 var camera: Camera2D
 var art: MapArt
+var street: StreetLife  ## 街坊、车流、年代道具（纯街景，不参与结算）
 var light: PrintLight  ## 昼夜和旧纸感（夜版套印）
 var nav := Nav.new()
 var _marks: Node2D  ## 互动点和命运提示：画在叠印层上面
@@ -77,6 +79,9 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 	camera.position_smoothing_speed = 6.0
 	add_child(camera)
 	camera.make_current()
+	street = StreetLife.new()
+	add_child(street)
+	street.setup(self)
 	queue_redraw()
 
 
@@ -88,6 +93,8 @@ func me() -> Actor:
 func set_stage(stage: String) -> void:
 	for a in actors.values():
 		a.set_stage(stage)
+	if street != null:
+		street.set_stage(stage)
 	if light != null:
 		light.set_stage(stage, not _stage_set)
 	_stage_set = true
@@ -97,11 +104,15 @@ func set_stage(stage: String) -> void:
 func set_minute(m: float) -> void:
 	if art != null:
 		art.set_minute(m)
+	if street != null:
+		street.set_minute(m)
 	if light != null:
 		light.set_minute(m)
 		# 互动点的小纸片在夜版上面，夜里跟着暗一点，不然太扎眼
 		if _marks != null:
 			_marks.modulate = Color.WHITE.lerp(Color(0.72, 0.76, 0.9), light.night)
+		if street != null:
+			street.set_night(light.night)
 
 
 func _process(delta: float) -> void:
@@ -181,6 +192,12 @@ func apply_world(view: Dictionary) -> void:
 	if view.has("minute"):
 		set_minute(float(view.minute))
 	var t := float(view.get("tick", 0)) / TICK_RATE
+	var busy: Array = []
+	var qs: Variant = view.actors.get("qing")
+	var ms: Variant = view.actors.get("mei")
+	# 两个人在同一个点上做同一件事：左右错开半步，别叠成一个人
+	var side_by_side: bool = qs != null and ms != null and qs.get("act") != null \
+		and qs.get("act") == ms.get("act") and Vector2(qs.x, qs.y).distance_to(Vector2(ms.x, ms.y)) < 4.0
 	for r in ["qing", "mei"]:
 		var a: Actor = actors[r]
 		var s: Variant = view.actors.get(r)
@@ -189,7 +206,11 @@ func apply_world(view: Dictionary) -> void:
 			continue
 		a.visible = true
 		var server_pos := Vector2(s.x, s.y)
+		if side_by_side:
+			server_pos.x += -24.0 if r == "qing" else 24.0
 		var act: Variant = s.get("act")
+		if act != null:
+			busy.append(str(act))
 		a.asleep = bool(s.get("sleep", false))
 		a.doing = "" if act == null else str(act)
 		a.at_spot = str(s.get("spot", "")) if s.get("spot") != null else ""
@@ -203,6 +224,8 @@ func apply_world(view: Dictionary) -> void:
 				a.net_target = server_pos
 			else:
 				buf.push(t, server_pos)
+	if street != null:
+		street.set_busy(busy)
 	queue_redraw()
 
 

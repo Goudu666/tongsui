@@ -269,6 +269,18 @@
    "peak": -4.0,
    "bytes": 32165
   },
+  "amb/tea_clap.ogg": {
+   "seconds": 2.6,
+   "lufs": -22.1,
+   "peak": -4.0,
+   "bytes": 39484
+  },
+  "amb/tea_laugh.ogg": {
+   "seconds": 2.689,
+   "lufs": -15.9,
+   "peak": -4.0,
+   "bytes": 30186
+  },
   "amb/traffic.ogg": {
    "seconds": 17.0,
    "lufs": -28.0,
@@ -581,11 +593,29 @@
    "peak": -4.0,
    "bytes": 33148
   },
+  "sfx/act_fish.ogg": {
+   "seconds": 1.531,
+   "lufs": -16.3,
+   "peak": -4.0,
+   "bytes": 16329
+  },
   "sfx/act_knock.ogg": {
    "seconds": 1.799,
    "lufs": -20.3,
    "peak": -4.0,
    "bytes": 28427
+  },
+  "sfx/act_listen.ogg": {
+   "seconds": 1.499,
+   "lufs": -15.2,
+   "peak": -4.0,
+   "bytes": 19087
+  },
+  "sfx/act_perform.ogg": {
+   "seconds": 2.324,
+   "lufs": -17.8,
+   "peak": -4.0,
+   "bytes": 37159
   },
   "sfx/act_play_alley.ogg": {
    "seconds": 2.22,

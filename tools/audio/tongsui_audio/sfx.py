@@ -197,6 +197,38 @@ def wrench():
     return far(mx.buf, 0.1, 0.5, 35)
 
 
+def teacup():
+    """喝茶听一段：盖碗的盖子在碗沿上刮两下，扣回去。"""
+    rng = rng_for("teacup")
+    mx = Mix(1.6)
+    for t, d in [(0.02, 0.16), (0.26, 0.2)]:
+        n = sec(d)
+        mx.add(bp(white(n, rng), 3200, 8200) * np.sin(np.pi * np.linspace(0, 1, n)) ** 2 * 0.25, t, 0.6, pan=-0.1)
+    for t, p, g in [(0.56, 1.0, 0.9), (0.63, 1.31, 0.4)]:
+        y = modal(sec(0.6), [1650 * p, 3720 * p, 6100 * p, 8900 * p], [0.16, 0.1, 0.05, 0.03], [1.0, 0.55, 0.3, 0.15], rng, 0.001)
+        mx.add(y, t, g, pan=0.1)
+    return reverb(mx.buf, 0.7, 0.14, 5000, 43)
+
+
+def on_stage():
+    """上台来一段：醒木一拍，台下稀稀拉拉一阵掌声。"""
+    rng = rng_for("on_stage")
+    mx = Mix(2.6)
+    mx.add(xingmu(), 0.0, 0.9)
+    mx.add(lp(amb.applause(1.7, rng), 5000), 0.55, 0.2)
+    return reverb(mx.buf, 0.9, 0.18, 4500, 45)
+
+
+def fishing():
+    """跟大爷钓鱼：甩一竿，漂落在水上。"""
+    rng = rng_for("fishing")
+    mx = Mix(2.0)
+    n = sec(0.34)
+    mx.add(moving_band(n, rng, 900, 4200, 5.0, q=2.0) * np.sin(np.pi * np.linspace(0, 1, n)) ** 2, 0.02, 0.5, pan=-0.2)
+    mx.add(amb.water_plop(), 0.8, 0.7, pan=0.2)
+    return mx.buf
+
+
 def step(surface: str, i: int):
     """脚步。indoor：水泥地，闷，带一点鞋底；outdoor：土路柏油，沙沙的。"""
     rng = rng_for("step_%s_%d" % (surface, i))
@@ -276,7 +308,7 @@ UI = {
 ACTIONS = {
     "eat": eat, "eat_out": amb.egg_sizzle, "sleep": cord, "study": study, "wash": wash, "knock": knock,
     "play_roof": amb.wing_flap, "play_river": kite, "play_alley": rope, "work": wrench,
-    "school": lambda: amb.school_bell(True),
+    "school": lambda: amb.school_bell(True), "listen": teacup, "perform": on_stage, "fish": fishing,
 }
 STEPS = {"step_%s_%d" % (s, i): (lambda s=s, i=i: step(s, i)) for s in ("indoor", "outdoor") for i in range(4)}
 

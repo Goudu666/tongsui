@@ -41,6 +41,7 @@
   {"files": ["beeper"], "zones": {"out": 0.6, "in": 0.5}, "every": [40, 90], "stages": [0, 1, 0.3, 0, 0], "db": -22},
   {"files": ["keyboard"], "zones": {"alley": 0.8, "school": 0.3}, "hours": [[720, 1260]], "every": [22, 50], "stages": [0, 1, 0.4, 0, 0], "db": -19},
   {"files": ["pile"], "zones": {"river": 1.0, "roof": 0.8, "alley": 0.5, "in": 0.3}, "hours": [[480, 1050]], "every": [35, 75], "stages": [0, 0, 1, 0.3, 0], "db": -12},
-  {"files": ["egg", "scrape", "bowl"], "zones": {"breakfast": 1.0}, "reach": 380, "hours": [[390, 610]], "every": [4, 10], "stages": [1, 1, 1, 0.8, 0.6], "db": -14}
+  {"files": ["egg", "scrape", "bowl"], "zones": {"breakfast": 1.0}, "reach": 380, "hours": [[390, 610]], "every": [4, 10], "stages": [1, 1, 1, 0.8, 0.6], "db": -14},
+  {"files": ["tea_laugh", "tea_clap", "bowl", "kuaiban_a"], "zones": {"teahouse": 1.0, "alley": 0.2}, "reach": 420, "hours": [[540, 1260]], "every": [6, 14], "stages": [1, 1, 0.9, 0.8, 0.7], "db": -14}
  ]
 }

@@ -714,6 +714,13 @@ def batter_scrape():
     return far(mx.buf, 0.1, 0.4, 87)
 
 
+def teahouse_crowd(clap: bool):
+    """茶社里隔着门传出来的一阵笑，或者一阵巴掌。"""
+    rng = rng_for("tea_clap" if clap else "tea_laugh")
+    y = lp(applause(2.2, rng), 4500) * 0.5 if clap else laughter(2.4, rng, 9)
+    return far(y, 0.45, 0.9, 97)
+
+
 def bowl_clink():
     rng = rng_for("bowl")
     mx = Mix(1.4)
@@ -735,6 +742,7 @@ SHOTS = {
     "erhu_a": lambda: erhu_phrase(0), "erhu_b": lambda: erhu_phrase(1), "erhu_c": lambda: erhu_phrase(2),
     "beeper": beeper, "keyboard": keyboard, "pile": pile_driver, "gust": gust,
     "egg": egg_sizzle, "scrape": batter_scrape, "bowl": bowl_clink,
+    "tea_laugh": lambda: teahouse_crowd(False), "tea_clap": lambda: teahouse_crowd(True),
 }
 
 

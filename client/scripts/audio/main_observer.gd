@@ -2,21 +2,36 @@ extends Node
 ## 观察者：看着主场景（scripts/main.gd）和联机信号，把「发生了什么」翻译成声音导演的接口。
 ##
 ## 所有对主场景内部结构的依赖都关在这一个文件里，而且全部是「看」，不改任何东西：
-##   - 读 main 的 world / life / last_world / my_role / screen / modal / toast / net
-##   - 监听 net 的 snapshot / world_state / event_started / log_entries / presence / failed
+##   - 读 main 的属性（READS）
+##   - 监听 net 的信号（SIGNALS）
 ##   - 场景树里新出现的按钮和输入框，自动接上按键音
 ## 主场景以后要是拆了，这个文件跟着改（或者删掉，由新代码直接调导演的接口）。
 ## 读属性一律用 get() 加默认值：对不上就不出声，不报错。
+## 「不报错」的代价是改名之后声音会悄悄哑掉，所以依赖都列在下面几张表里，
+## tests/unit_audio.gd 会对着源码查：表里的名字不在了，CI 就红。
 
 const LifeTime := preload("res://scripts/ui/life_time.gd")
+const P := preload("res://scripts/ui/palette.gd")
+
+## 从主场景（scripts/main.gd）读的属性
+const READS := ["world", "net", "life", "last_world", "my_role", "content", "events_by_id", "ui", "screen",
+	"modal", "modal_body", "toast", "offline_preview", "_preview_minute", "_page_id"]
+## 监听的联机信号（scripts/net/lifeline_client.gd）
+const SIGNALS := ["snapshot", "world_state", "event_started", "log_entries", "presence", "failed"]
+## 页面名（main._page_id）→ 配乐的场景。没列出来的页面都算 title
+const PAGE_SCENE := {"roll": "roll", "ending": "ending"}
+## 按钮的音效种类。优先读按钮的 meta "sfx"（tap / back / shake / birth / option / none）；
+## 没有 meta 的按下面这几个字认，认不出来就是普通的 tap
+const TEXT_KINDS := [["重新投胎", "shake"], ["出生吧", "birth"], ["返回", "back"], ["回大厅", "back"]]
 
 var main: Node
 var audio: Node
 
 var _net: Object = null
 var _scene := ""
-var _ending_id := 0   ## 结局页第一个节点的 id：它还在，就还在结局页
-var _page_id := 0
+var _page := ""
+var _themed := false
+var _accent := Color.TRANSPARENT
 var _toast_alpha := 0.0
 var _acts := {}
 var _money := -1
@@ -51,40 +66,36 @@ func _ctl(key: String) -> Control:
 	return v if v is Control and is_instance_valid(v) else null
 
 
-static func _alive(id: int) -> bool:
-	if id == 0:
-		return false
-	var o := instance_from_id(id)
-	return o is Node and is_instance_valid(o) and (o as Node).is_inside_tree()
-
-
 # ---------------------------------------------------------------- 按钮 ----
 
 func _on_node_added(n: Node) -> void:
 	if n is LineEdit:
 		n.text_changed.connect(func(_t): audio.cue("type", 0.0, randf_range(0.92, 1.08)))
-		return
-	if not n is BaseButton:
-		return
-	var kind := "tap"
-	var text: String = n.text if n is Button else ""
+	elif n is BaseButton:
+		n.pressed.connect(_on_pressed.bind(n))
+
+
+## 按下的那一刻再认它是哪种按钮（那时候 meta 和文字都已经设好了）
+func _kind(b: BaseButton) -> String:
+	if b.has_meta("sfx"):
+		return str(b.get_meta("sfx"))
 	var modal_body := _ctl("modal_body")
 	var modal := _ctl("modal")
-	if modal_body != null and modal != null and modal_body.is_ancestor_of(n) and modal.has_meta("waiting_event"):
+	if modal_body != null and modal != null and modal_body.is_ancestor_of(b) and modal.has_meta("waiting_event"):
 		var events: Variant = main.get("events_by_id")
 		var ev: Dictionary = events.get(modal.get_meta("waiting_event"), {}) if events is Dictionary else {}
-		kind = "option_mirror" if str(ev.get("kind", "")) == "mirror" else "option"
-	elif text.contains("重新投胎"):
-		kind = "shake"
-	elif text.contains("出生吧"):
-		kind = "birth"
-	elif text.begins_with("返回") or text.contains("回大厅"):
-		kind = "back"
-	n.pressed.connect(_on_pressed.bind(kind))
+		return "option_mirror" if str(ev.get("kind", "")) == "mirror" else "option"
+	var text: String = b.text if b is Button else ""
+	for pair in TEXT_KINDS:
+		if text.contains(pair[0]):
+			return pair[1]
+	return "tap"
 
 
-func _on_pressed(kind: String) -> void:
-	match kind:
+func _on_pressed(b: BaseButton) -> void:
+	match _kind(b):
+		"none":
+			pass
 		"option_mirror":  # 默契事件：我先把我这半句说出去
 			audio.cue("stamp")
 			audio.sting("call_" + _role())
@@ -109,10 +120,10 @@ func _watch_net() -> void:
 	_net = net
 	if net == null:
 		return
-	for pair in [["snapshot", _on_snapshot], ["world_state", _on_world_state], ["event_started", _on_event_started],
-			["log_entries", _on_log_entries], ["presence", _on_presence], ["failed", _on_failed]]:
-		if net.has_signal(pair[0]) and not net.is_connected(pair[0], pair[1]):
-			net.connect(pair[0], pair[1])
+	for sig in SIGNALS:
+		var handler := Callable(self, "_on_" + sig)
+		if net.has_signal(sig) and not net.is_connected(sig, handler):
+			net.connect(sig, handler)
 
 
 func _on_failed(_text: String) -> void:
@@ -126,14 +137,6 @@ func _on_snapshot(data: Dictionary) -> void:
 	_acts.clear()
 	_paired = false
 	_money = -1
-	var life: Variant = data.get("life")
-	if life is Dictionary and str(life.get("phase", "")) == "ended":
-		_mark_ending.call_deferred()
-
-
-func _mark_ending() -> void:
-	var body := _ctl("body")
-	_ending_id = body.get_child(0).get_instance_id() if body != null and body.get_child_count() > 0 else 0
 
 
 func _on_presence(data: Dictionary) -> void:
@@ -229,21 +232,16 @@ func _process(delta: float) -> void:
 	var in_world: bool = world != null and is_instance_valid(world) and (screen == null or not screen.visible)
 
 	# 现在是哪一场
-	var scene := "title"
-	if in_world:
-		scene = "life"
-		_ending_id = 0
-	elif _alive(_ending_id):
-		scene = "ending"
-	elif str(life.get("phase", "")) == "roll" and _net != null and is_instance_valid(_net) and str(_net.get("match_id")) != "":
-		scene = "roll"
+	var page := str(main.get("_page_id")) if main.get("_page_id") != null else ""
+	var scene: String = "life" if in_world else PAGE_SCENE.get(page, "title")
 	if scene != _scene:
 		_scene = scene
 		audio.set_scene(scene)
 		_last_pos.clear()
 
-	_watch_pages(delta, screen)
+	_watch_pages(delta, page, in_world)
 	_watch_toast()
+	_place_button(in_world, modal)
 
 	if not in_world:
 		audio.idle()
@@ -282,18 +280,32 @@ func _process(delta: float) -> void:
 			audio.step(str(r), pos, moved, r == me, gain)
 
 
-## 整页换了（标题 → 大厅 → 投胎……）：抽一张纸的声音
-func _watch_pages(delta: float, screen: Control) -> void:
+## 整页换了（标题 → 大厅 → 投胎……）：抽一张纸的声音。进出河畔里有自己的转场，不抽
+func _watch_pages(delta: float, page: String, in_world: bool) -> void:
 	_page_cool = maxf(0.0, _page_cool - delta)
-	var body := _ctl("body")
-	if body == null or screen == null or not screen.visible or body.get_child_count() == 0:
+	if page == _page:
 		return
-	var first := body.get_child(0).get_instance_id()
-	if first != _page_id:
-		if _page_id != 0 and _page_cool <= 0.0:
-			audio.cue("page")
-			_page_cool = 0.35
-		_page_id = first
+	if _page != "" and not in_world and _page_cool <= 0.0:
+		audio.cue("page")
+		_page_cool = 0.35
+	_page = page
+
+
+## 音量按钮：用主界面的主题和玩家自己的颜色；在河畔里挪到「亲近 / 默契」卡片下面；
+## 弹窗和搭伴小游戏出来的时候藏起来
+func _place_button(in_world: bool, modal: Control) -> void:
+	if not _themed:
+		var ui := _ctl("ui")
+		if ui != null and ui.theme != null:
+			audio.adopt_theme(ui.theme)
+			_themed = true
+	var accent := P.role_color(_role())
+	if _themed and accent != _accent:
+		_accent = accent
+		audio.tint_button(accent)
+	var games: Variant = main.get("games")
+	var busy: bool = games != null and is_instance_valid(games) and games.has_method("busy") and games.busy()
+	audio.place_button(in_world, (modal != null and modal.visible) or busy)
 
 
 func _watch_toast() -> void:

@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "da2a3e37c69b",
+ "version": "179ee56aa0ab",
  "events": [
   {
    "id": "c_roof_summer",
@@ -10717,7 +10717,7 @@ var CONTENT: Content = {
     {
      "id": "key",
      "text": "去重点班",
-     "min": 7,
+     "min": 7.4,
      "tags": [
       "competitive"
      ],
@@ -10733,7 +10733,7 @@ var CONTENT: Content = {
     {
      "id": "paid",
      "text": "家里交了钱，进重点班",
-     "min": 6.5,
+     "min": 6.9,
      "cost": 20,
      "requires": {
       "flags": [
@@ -10826,7 +10826,7 @@ var CONTENT: Content = {
     {
      "id": "far",
      "text": "过桥去念重点高中",
-     "min": 7.2,
+     "min": 7.6,
      "tags": [
       "competitive"
      ],
@@ -10844,7 +10844,7 @@ var CONTENT: Content = {
     {
      "id": "paid",
      "text": "交择校费，过桥上重点",
-     "min": 6.8,
+     "min": 7.2,
      "cost": 35,
      "requires": {
       "flags": [
@@ -10965,7 +10965,7 @@ var CONTENT: Content = {
     {
      "id": "away",
      "text": "去外地念大学",
-     "min": 8.3,
+     "min": 8.4,
      "tags": [
       "adventure",
       "competitive"
@@ -10984,7 +10984,7 @@ var CONTENT: Content = {
     {
      "id": "abroad",
      "text": "家里送你出国念书",
-     "min": 7.7,
+     "min": 7.8,
      "cost": 60,
      "requires": {
       "flags": [

@@ -133,12 +133,12 @@
   options:
     - id: key
       text: 去重点班
-      min: 7.0
+      min: 7.4
       tags: [competitive]
       effects: { flags: [junior_key] }
     - id: paid
       text: 家里交了钱，进重点班
-      min: 6.5
+      min: 6.9
       cost: 20
       requires: { flags: [fam_rich] }
       lock: 家里拿不出这笔钱
@@ -174,12 +174,12 @@
   options:
     - id: far
       text: 过桥去念重点高中
-      min: 7.2
+      min: 7.6
       tags: [competitive]
       effects: { bond: { distance: 1 }, flags: [school_far] }
     - id: paid
       text: 交择校费，过桥上重点
-      min: 6.8
+      min: 7.2
       cost: 35
       requires: { flags: [fam_rich] }
       lock: 家里拿不出择校费
@@ -227,13 +227,13 @@
   options:
     - id: away
       text: 去外地念大学
-      min: 8.3
+      min: 8.4
       tags: [adventure, competitive]
       effects: { bond: { distance: 2 }, flags: [uni_away] }
     - id: abroad
       text: 家里送你出国念书
-      # 比考外地（8.3）低半分多，留给差一口气的人。6.3 的时候等于花钱买了最好的那所大学（玩法评审）
-      min: 7.7
+      # 比考外地（8.4）低半分多，留给差一口气的人。6.3 的时候等于花钱买了最好的那所大学（玩法评审）
+      min: 7.8
       cost: 60
       requires: { flags: [fam_rich] }
       lock: 家里供不起

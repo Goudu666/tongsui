@@ -61,6 +61,16 @@
   duty: { label: 上学, spot: school_gate, arrive: [420, 540], until: 900, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.14, body: 0.19, charm: 0.12 } }
 
 # ---- 18~21 大学，或者先干着 ----
+# 出国（殷实人家才走得了，m_gaokao 的 abroad）：长得最快，离得最远，一年只回来一趟
+- id: uni_abroad
+  label: 在国外念书
+  requires: { minAge: 18, maxAge: 21, flags: [uni_abroad] }
+  duty: { label: 回学校, spot: river_bridge, arrive: [390, 480], until: 1140, needs: { hunger: 30, energy: -20, mood: -3 }, stats: { mind: 0.5, charm: 0.2 } }
+# 当兵（不是殷实人家的孩子的一条路，m_gaokao 的 army）：长体魄，有一点津贴，二十二岁退伍能安置进厂
+- id: army
+  label: 在部队
+  requires: { minAge: 18, maxAge: 21, flags: [army] }
+  duty: { label: 出操, spot: river_bridge, arrive: [390, 420], until: 1050, needs: { hunger: 35, energy: -28, clean: -15 }, stats: { body: 0.5, mind: 0.08 }, money: 4 }
 - id: uni_away
   label: 在外地念大学
   requires: { minAge: 18, maxAge: 21, flags: [uni_away] }
@@ -83,6 +93,11 @@
   label: 坐办公室
   requires: { minAge: 22, maxAge: 59, flags: [job_desk] }
   duty: { label: 过桥上班, spot: river_bridge, arrive: [420, 510], until: 1080, needs: { hunger: 25, energy: -22, mood: -2 }, stats: { mind: 0.1 }, money: 24 }
+# 托家里的关系进的单位（m_job 的 pull，殷实人家）：和考进去的坐办公室不是一回事，钱少几块，也不长本事
+- id: job_pull
+  label: 托关系进的单位
+  requires: { minAge: 22, maxAge: 59, flags: [job_pull] }
+  duty: { label: 过桥上班, spot: river_bridge, arrive: [450, 540], until: 1050, needs: { hunger: 25, energy: -18, mood: -2 }, money: 18 }
 - id: job_teach
   label: 教书
   requires: { minAge: 22, maxAge: 59, flags: [job_teach] }
@@ -99,6 +114,11 @@
   label: 卖力气
   requires: { minAge: 22, maxAge: 59, flags: [job_labor] }
   duty: { label: 过桥上工, spot: river_bridge, arrive: [390, 450], until: 1050, needs: { hunger: 15, energy: -32, clean: -20 }, stats: { body: 0.14 }, money: 16 }
+# 接班 / 退伍安置进厂（m_job 的 succeed、placed）：不用考，钱不多不少，三十岁能等厂里分房
+- id: job_succeed
+  label: 在厂里上班
+  requires: { minAge: 22, maxAge: 59, flags: [job_succeed] }
+  duty: { label: 过桥上班, spot: river_bridge, arrive: [420, 480], until: 1020, needs: { hunger: 25, energy: -24, clean: -12 }, stats: { body: 0.07 }, money: 14 }
 - id: job_odd
   label: 打零工
   requires: { minAge: 22, maxAge: 59 }

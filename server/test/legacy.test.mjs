@@ -514,7 +514,9 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
     for (const r of ROLES) if (s.rolls[r].offer.length) G("legacyPick")(s, r, s.rolls[r].offer[0]);
     const control = confirm(G("lifeCreate")(s.seed, C)); // 同一个种子、没有传承：属性的底子
     confirm(s);
-    for (const r of ROLES) assert.ok(sum(s.persons[r].born) <= sum(control.persons[r].born) + 0.5 + 1e-9, `第 ${n} 世的先天属性比空着手多了不止半点`);
+    // 解开了藏着的天赋，抽到的人家可能跟对照不一样；家境本身差的那一点（rules.roll.wealthAdjust）不算老物件给的
+    const base = (p) => sum(p.born) - C.rules.roll.wealthAdjust[C.families.find((f) => f.id === p.familyId).wealth];
+    for (const r of ROLES) assert.ok(base(s.persons[r]) <= base(control.persons[r]) + 0.5 + 1e-9, `第 ${n} 世的先天属性比空着手多了不止半点`);
     liveOut(s);
   }
   const lg = s.legacy;

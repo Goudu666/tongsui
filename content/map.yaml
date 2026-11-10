@@ -34,7 +34,8 @@ spots:
   - { id: roof_pigeon, zone: roof, at: [740, 130], action: play_roof }
   - { id: breakfast_stall, zone: breakfast, at: [1630, 470], actions: [duty, eat_out, dine] }
   - { id: river_bank, zone: river, at: [2140, 820], actions: [play_river, walk_river] }
-  - { id: river_bridge, zone: river, at: [2360, 690], action: duty }
+  # 桥：上学上班的报到处；殷实人家的孩子晚上过桥去对岸上补习班（tutor）
+  - { id: river_bridge, zone: river, at: [2360, 690], actions: [duty, tutor] }
   - { id: alley_rope, zone: alley, at: [1260, 880], actions: [play_alley, chat] }
   - { id: bike_bench, zone: bikeshop, at: [1120, 1280], actions: [duty, work] }
   # 三年级那一关（m_club）挣来的去处写在前面：进了的人下午四点前后看见的是它，别的人、别的钟点还是原来那件事
@@ -44,6 +45,11 @@ spots:
   - { id: tea_seat, zone: teahouse, at: [1716, 236], action: listen }
   - { id: tea_stage, zone: teahouse, at: [1668, 104], actions: [club_art, perform] }
   - { id: river_fish, zone: river, at: [2096, 1134], action: fish }
+  # 家境（docs/MEANS.md）：殷实人家放学后去少年宫学琴；清贫人家的孩子在楼下帮家里干活；爸妈在厂里的带上对门去厂里的澡堂。
+  # 新地图（content/maps/）落地以后这几处搬过去：学琴到对岸的少年宫，干活到各家的铺子，澡堂到厂区
+  - { id: palace_piano, zone: school, at: [150, 1330], action: piano }
+  - { id: alley_cart, zone: alley, at: [560, 880], action: help_out }
+  - { id: factory_bath, zone: bikeshop, at: [1300, 1160], action: factory_bath }
 
 # 行动。needs：hunger 饱腹 / energy 精力 / mood 心情 / clean 清洁（0~100）
 #       stats：body / mind / charm（0~10，一次涨零点几；运气是天生的，行动不给）
@@ -173,6 +179,45 @@ actions:
     needs: { energy: -8, mood: 6 }
     stats: { charm: 0.5 }
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: 茶社下午没有客人，台子借给孩子们。你们一个打板，一个数拍子。 }
+
+  # ---- 家境：家里才有的（docs/MEANS.md）----
+  # 殷实人家花钱买的：长得比自己练快，但要钱，也占着放学后、晚上的那一段。bring：对门跟过来，两份钱你出
+  - id: piano
+    label: 去少年宫学琴
+    minutes: 90
+    money: -2
+    bring: true
+    requires: { minAge: 6, maxAge: 14, flags: [fam_rich], hours: [930, 1200] }
+    needs: { energy: -6, mood: -3 }
+    stats: { charm: 0.4, mind: 0.15 }
+    together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 一架琴两个人坐，你弹右手，TA 弹左手，老师说拍子对上了。 }
+  - id: tutor
+    label: 过桥上补习班
+    minutes: 120
+    money: -3
+    bring: true
+    requires: { minAge: 12, maxAge: 17, flags: [fam_rich], hours: [1080, 1260] }
+    needs: { energy: -14, mood: -6 }
+    stats: { mind: 0.62 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 回来的末班车上，两个人把今天的卷子对了一遍，错的是同一道。 }
+  # 清贫人家自己的：挣钱，也长见人的本事。不用花钱，可也不带人（那是你家的活）
+  - id: help_out
+    label: 帮家里干活
+    minutes: 120
+    money: 3
+    requires: { minAge: 8, maxAge: 17, flags: [fam_poor] }
+    needs: { energy: -12, clean: -10 }
+    stats: { body: 0.15, charm: 0.2 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 对门过来搭了把手，干完了，你家大人塞给你们一人一个苹果。 }
+  # 爸妈在厂里的：厂里的澡堂，一张澡票洗得又热又久。带对门去，澡票你出
+  - id: factory_bath
+    label: 去厂里澡堂洗澡
+    minutes: 40
+    money: -1
+    bring: true
+    requires: { minAge: 5, flags: [fam_factory] }
+    needs: { clean: 90, mood: 10, energy: 4 }
+    together: { needs: { mood: 8 }, bond: { close: 2 }, text: 出来的时候头发还冒着热气，两个人一人一瓶汽水，坐在厂门口晾着。 }
 
   # ---- 魅力 ----
   - id: chat

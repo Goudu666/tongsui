@@ -23,7 +23,7 @@ function growthPlasticity(c: Content, p: Person, stage: Stage, k: StatKey): numb
   var g = c.rules.growth;
   var v = g.plasticity[stage][k];
   if (lifeHasFlag(p, "tal_plain")) v *= g.plainBonus;
-  return v;
+  return legacyPlasticity(c, p, stage, k, v); // 大器晚成、老灵魂
 }
 
 /**
@@ -44,7 +44,7 @@ function growthApply(p: Person, k: StatKey, raw: number, g: GrowCtx): number {
   var v = raw * g.scale;
   if (raw > 0) {
     // 底子：离底子越远，长得越慢
-    var room = lifeClamp(1 - (before - growthBase(g.c, p, k)) / g.c.rules.growth.room, g.c.rules.growth.floor, 1);
+    var room = lifeClamp(1 - (before - growthBase(g.c, p, k)) / (g.c.rules.growth.room + legacyRoom(g.c, p, g.stage)), g.c.rules.growth.floor, 1);
     v *= growthPlasticity(g.c, p, g.stage, k) * room;
     if (p.active && (k === "body" || k === "mind")) p.active[k] = true;
   }
@@ -90,6 +90,7 @@ function growthCheckChance(c: Content, ck: Check, me: Person, partner: Person | 
   }
   var p = r.base + (eff - ck.dc) * r.perPoint;
   if (ck.stat !== "luck") p += (me.stats.luck - 5) * r.luck;
+  p += legacyCheckBonus(c, me); // 老灵魂
   return { p: lifeClamp(p, r.min, r.max), help: help };
 }
 
@@ -160,13 +161,14 @@ function growthDayEnd(s: LifeState, c: Content) {
   // 不走动就淡了：这天既没同框也没共鸣，亲近往下掉一点。离得越远掉得越多，但住过对门，总归认识
   var rb = c.rules.bond;
   if (bothAlive && s.world && !s.world.warm && s.bond.close > rb.driftFloor) {
-    var drift = rb.drift[t.stage] * (1 + s.bond.distance * rb.driftDistance);
+    var drift = legacyDrift(c, s, rb.drift[t.stage] * (1 + s.bond.distance * rb.driftDistance)); // 连心
     s.bond.close = Math.max(rb.driftFloor, Math.round((s.bond.close - drift) * 100) / 100);
   }
 
   for (var i = 0; i < ROLES.length; i++) {
     var p = persons[ROLES[i]];
     if (!p.alive) continue;
+    legacyLinkedMood(c, p, persons[lifeOther(ROLES[i])]); // 连心：心情往对门那边靠
     p.moodSum = (p.moodSum || 0) + p.needs.mood;
     p.moodDays = (p.moodDays || 0) + 1;
     // 岁数不饶人：当天动过、用过脑子的掉得少

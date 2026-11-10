@@ -37,7 +37,7 @@
 
 - id: h_keys
   name: 一串钥匙
-  desc: 一大串，每把上缠着一截不同颜色的线。
+  desc: 一大串，每把上缠着胶布，写了字。最小的那把写着「顶」。
   from: { flags: [fam_head, took_over] }
   bonus: { mind: 0.5 }
   flags: [heir_keys]
@@ -147,7 +147,7 @@
 - id: h_passbook
   name: 存折
   desc: 数不大。每一笔都是五块十块存进去的。
-  from: { minMoney: 150 }
+  from: { minMoney: 130 }
   money: 6
   flags: [heir_passbook]
 

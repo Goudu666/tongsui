@@ -1,5 +1,5 @@
 {
- "version": "d2c3d5418035",
+ "version": "d39045616476",
  "events": [
   {
    "id": "c_roof_summer",
@@ -7135,6 +7135,744 @@
     },
     "flags": []
    },
+   "catches": []
+  },
+  {
+   "id": "l_wall_old_names",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": null,
+   "hint": "楼道的墙皮掉了一块。",
+   "requires": {
+    "minAge": 7,
+    "flags": [
+     "leg_p_wall_names"
+    ]
+   },
+   "title": "墙皮底下",
+   "text": "楼道的墙掉了一块皮，露出底下两个歪歪扭扭的名字，挨得很近。没人说得清是哪年刻的。",
+   "options": [
+    {
+     "id": "trace",
+     "text": "拿指头描一遍",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "carve",
+     "text": "在旁边刻上自己的",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "去问楼长是谁的",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "trace": {
+     "text": "你描左边那个，对门的描右边那个。描完一数，笔画差不多。",
+     "memory": "墙皮底下的字",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "carve": {
+     "text": "四个名字挤在一块墙皮上。楼长路过，看了半天，没擦。",
+     "memory": "四个名字",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": [
+      "p_wall_names",
+      "p_four_names"
+     ]
+    },
+    "ask": {
+     "text": "楼长翻了半天住户本，合上了：「早先住三楼对门的。刻的时候，跟你俩一般大。」",
+     "memory": "住户本",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个蹲着描，一个跑去找楼长。楼长来了，看看墙，又看看你俩，什么也没说。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "l_capsule_found",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "river",
+   "when": null,
+   "hint": "河堤让雨冲了个豁口。",
+   "requires": {
+    "minAge": 8,
+    "flags": [
+     "leg_p_capsule"
+    ]
+   },
+   "title": "别人的盒子",
+   "text": "大雨把河堤冲出个豁口，露出半截铁皮盒子，盖上的字都锈了。不是你俩埋的。一晃，里头哗啦响。",
+   "options": [
+    {
+     "id": "open",
+     "text": "撬开看看",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "clean": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "bury",
+     "text": "原样埋回去",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "add",
+     "text": "添一样东西再埋",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "open": {
+     "text": "两颗玻璃球，一张画片，一封信。信上的字认不全，只认出一句：「一百年不许变。」",
+     "memory": "别人的一百年",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "bury": {
+     "text": "你俩把土踩实，又压了块砖。走出去老远，对门的说：「他们会回来挖的吧。」",
+     "memory": "压着的那块砖",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "add": {
+     "text": "你搁了颗玻璃球，对门的搁了张画片。盖上再晃，里头比刚才热闹。",
+     "memory": "添的玻璃球",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": [
+      "p_capsule"
+     ]
+    }
+   },
+   "dissonance": {
+    "text": "一个要撬，一个要埋，盒子在两人手里拽了半天。谁也没撬开，盖子倒松了。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "l_old_pigeon",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": "roof",
+   "when": null,
+   "hint": "楼顶有只鸽子不走。",
+   "requires": {
+    "minAge": 5,
+    "flags": [
+     "leg_p_pigeon"
+    ]
+   },
+   "title": "认人的鸽子",
+   "text": "楼顶落着一只老灰鸽子，哪家棚里的都不是。别人一走近它就飞。你过去，它歪着头看了你半天。",
+   "options": [
+    {
+     "id": "hand",
+     "text": "伸出手",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "luck": 1,
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "feed",
+     "text": "回家抓一把小米",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "shoo",
+     "text": "轰它走",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "l_house_box",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 8,
+    "flags": [
+     "leg_house"
+    ]
+   },
+   "title": "柜顶的匣子",
+   "text": "柜顶有个旧木匣，落着灰。家里人说，是早先接下这门营生的人留下的，一直没人打开。",
+   "options": [
+    {
+     "id": "open",
+     "text": "搬凳子够下来看",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "dust",
+     "text": "擦干净，放回去",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "leave",
+     "text": "不碰它",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "l_same_doors",
+   "kind": "mirror",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": "hallway",
+   "when": null,
+   "hint": "楼道里有人说闲话。",
+   "requires": {
+    "minAge": 20,
+    "flags": [
+     "leg_p_married"
+    ]
+   },
+   "title": "这两扇门",
+   "text": "楼道里下棋的老爷子看着你俩直乐：「这两扇门出过一对。也是同岁，也是从小住对门。」",
+   "options": [
+    {
+     "id": "laugh",
+     "text": "「那后来呢？」",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "look",
+     "text": "看一眼对门的",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "deny",
+     "text": "「别瞎说」，回屋关门",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "laugh": {
+     "text": "「后来？后来就一扇门了呗。」老爷子乐得棋子掉了一地。你俩谁也没捡。",
+     "memory": "掉了一地的棋子",
+     "bond": {
+      "sync": 2,
+      "close": 3
+     },
+     "flags": []
+    },
+    "look": {
+     "text": "你看过去的时候，对门的正看过来。老爷子咳嗽一声，低头接着下棋。",
+     "memory": "那一声咳嗽",
+     "bond": {
+      "sync": 3,
+      "close": 4
+     },
+     "flags": []
+    },
+    "deny": {
+     "text": "两扇门同时关上了，关得一样响。老爷子摇摇头，落了一子。",
+     "memory": "一样响的门",
+     "bond": {
+      "sync": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个追着问后来，一个已经进了屋。老爷子看看关上的那扇门，没往下说。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "l_deja_vu",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 75,
+    "flags": [
+     "leg_any"
+    ]
+   },
+   "title": "好像来过",
+   "text": "打了个盹，梦见自己三岁，扶着暖气片学走路。醒了，手还扶着。",
+   "options": [
+    {
+     "id": "tell",
+     "text": "讲给对门的听",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {
+       "mood": 5
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "write",
+     "text": "记在本子上",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "deja_vu"
+      ]
+     }
+    },
+    {
+     "id": "smile",
+     "text": "乐了一下，接着睡",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8,
+       "energy": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "l_tal_oldsoul_cord",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 6,
+    "flags": [
+     "tal_oldsoul"
+    ]
+   },
+   "title": "灯绳",
+   "text": "头一回一个人下到楼道尽头的煤棚，里头黑着。你没找，一伸手就摸到了灯绳。",
+   "options": [
+    {
+     "id": "pull",
+     "text": "拉亮它",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "think",
+     "text": "站着想了一会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "tell",
+     "text": "跑回去告诉对门的",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "l_tal_linked_lamp",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "tal_linked"
+    ],
+    "alone": false
+   },
+   "title": "灯也亮着",
+   "text": "半夜忽然醒了，心里发慌，说不上为什么。隔着楼道一看，对门的灯也亮着。",
+   "options": [
+    {
+     "id": "knock",
+     "text": "敲三下暖气管",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {
+       "mood": 5
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "等那盏灯灭了再睡",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "cover",
+     "text": "蒙上被子",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "l_tal_late_dawn",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 22,
+    "flags": [
+     "tal_late"
+    ]
+   },
+   "title": "才开始",
+   "text": "一块儿长大的都定了型。你夜里翻一本没人让你翻的书，翻着翻着，天亮了。",
+   "options": [
+    {
+     "id": "read",
+     "text": "接着往下看",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "run",
+     "text": "出门跑一圈",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sleep",
+     "text": "合上书，睡一会儿",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "energy": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
    "catches": []
   },
   {
@@ -22455,7 +23193,8 @@
    "bonus": {},
    "flags": [
     "tal_plain"
-   ]
+   ],
+   "unlock": null
   },
   {
    "id": "memory",
@@ -22467,7 +23206,8 @@
    },
    "flags": [
     "tal_memory"
-   ]
+   ],
+   "unlock": null
   },
   {
    "id": "strong",
@@ -22479,7 +23219,8 @@
    },
    "flags": [
     "tal_strong"
-   ]
+   ],
+   "unlock": null
   },
   {
    "id": "sunny",
@@ -22491,7 +23232,8 @@
    },
    "flags": [
     "tal_sunny"
-   ]
+   ],
+   "unlock": null
   },
   {
    "id": "koi",
@@ -22503,7 +23245,8 @@
    },
    "flags": [
     "tal_koi"
-   ]
+   ],
+   "unlock": null
   },
   {
    "id": "owl",
@@ -22513,7 +23256,8 @@
    "bonus": {},
    "flags": [
     "tal_owl"
-   ]
+   ],
+   "unlock": null
   },
   {
    "id": "foodie",
@@ -22525,7 +23269,8 @@
    },
    "flags": [
     "tal_foodie"
-   ]
+   ],
+   "unlock": null
   },
   {
    "id": "pigeon",
@@ -22537,7 +23282,8 @@
    },
    "flags": [
     "tal_pigeon"
-   ]
+   ],
+   "unlock": null
   },
   {
    "id": "loud",
@@ -22550,7 +23296,8 @@
    },
    "flags": [
     "tal_loud"
-   ]
+   ],
+   "unlock": null
   },
   {
    "id": "crafty",
@@ -22563,7 +23310,8 @@
    },
    "flags": [
     "tal_crafty"
-   ]
+   ],
+   "unlock": null
   },
   {
    "id": "kind",
@@ -22576,7 +23324,8 @@
    },
    "flags": [
     "tal_kind"
-   ]
+   ],
+   "unlock": null
   },
   {
    "id": "stubborn",
@@ -22589,7 +23338,41 @@
    },
    "flags": [
     "tal_stubborn"
-   ]
+   ],
+   "unlock": null
+  },
+  {
+   "id": "late",
+   "name": "大器晚成",
+   "weight": 1,
+   "desc": "小时候看不出来。别人长完了，你才刚开始长。",
+   "bonus": {},
+   "flags": [
+    "tal_late"
+   ],
+   "unlock": "retake"
+  },
+  {
+   "id": "linked",
+   "name": "连心",
+   "weight": 1,
+   "desc": "对门的一皱眉，你心里就跟着一沉。隔多远都不容易生分。",
+   "bonus": {},
+   "flags": [
+    "tal_linked"
+   ],
+   "unlock": "p_reunited"
+  },
+  {
+   "id": "oldsoul",
+   "name": "老灵魂",
+   "weight": 1,
+   "desc": "总觉得这条楼道以前走过。头一回干的事，上手像干过。",
+   "bonus": {},
+   "flags": [
+    "tal_oldsoul"
+   ],
+   "unlock": "deja_vu"
   }
  ],
  "map": {
@@ -24242,6 +25025,17 @@
     }
    },
    {
+    "id": "e_four_names",
+    "title": "四个名字",
+    "text": "楼道的墙后来刷过好几回，那一块没人刷。四个名字，两个深，两个浅。",
+    "requires": {
+     "flags": [
+      "p_four_names"
+     ],
+     "minClose": 40
+    }
+   },
+   {
     "id": "e_reunited",
     "title": "重逢",
     "text": "走散过很多年。后来在海河边又碰上了，谁也没提那些年，只说了一句：「吃了吗您？」",
@@ -24261,6 +25055,19 @@
       "p_partners"
      ],
      "minClose": 30
+    }
+   },
+   {
+    "id": "e_again",
+    "title": "又是对门",
+    "text": "这两扇门里，早先也有两个孩子拉过钩。这一回拉钩的，还是住对门的两个。楼长翻着住户本，半天没说话。",
+    "requires": {
+     "flags": [
+      "leg_p_promise",
+      "p_promise"
+     ],
+     "maxDistance": 1,
+     "minClose": 45
     }
    },
    {
@@ -24305,6 +25112,32 @@
      "minRate": 60,
      "minSync": 30,
      "minMemories": 6
+    }
+   },
+   {
+    "id": "e_duo",
+    "title": "一逗一捧",
+    "text": "一辈子没几回想到一块儿去。一个说东，一个准说西。说了几十年，谁也没换过搭档。",
+    "requires": {
+     "flags": [
+      "x_many_mirrors"
+     ],
+     "maxRate": 30,
+     "minClose": 60
+    }
+   },
+   {
+    "id": "e_same_death",
+    "title": "搭个伴",
+    "text": "同一年来的，同一年走的。楼里人说，这俩连走都得搭个伴，怕路上没人说话。",
+    "requires": {
+     "flags": [
+      "x_same_year"
+     ],
+     "minClose": 60,
+     "notFlags": [
+      "p_estranged"
+     ]
     }
    },
    {
@@ -24614,6 +25447,16 @@
     }
    },
    {
+    "id": "l_just_right",
+    "title": "恰恰好",
+    "text": "{name} 一辈子没拔过尖，也没掉过队。楼里人说起来想了半天：「{name} 啊？挺好。」",
+    "requires": {
+     "flags": [
+      "x_plain_life"
+     ]
+    }
+   },
+   {
     "id": "l_wanderer",
     "title": "远行的人",
     "text": "{name} 在很远的城市过了大半辈子。那边的人都说 {name} 是天津人，可 {name} 已经说不准天津话了。",
@@ -24798,7 +25641,14 @@
    "pastKept": 6,
    "heirloomOffer": 3,
    "houseMax": 2,
-   "houseMoney": 2
+   "houseMoney": 2,
+   "lateEarly": 0.75,
+   "lateAfter": 1.8,
+   "lateRoom": 3,
+   "linkedDrift": 0.5,
+   "linkedMood": 0.3,
+   "oldSoul": 0.08,
+   "oldSoulCharm": 0.8
   }
  },
  "checks": [
@@ -25131,7 +25981,7 @@
   {
    "id": "h_keys",
    "name": "一串钥匙",
-   "desc": "一大串，每把上缠着一截不同颜色的线。",
+   "desc": "一大串，每把上缠着胶布，写了字。最小的那把写着「顶」。",
    "from": {
     "flags": [
      "fam_head",
@@ -25409,7 +26259,7 @@
    "name": "存折",
    "desc": "数不大。每一笔都是五块十块存进去的。",
    "from": {
-    "minMoney": 150
+    "minMoney": 130
    },
    "bonus": {},
    "money": 6,
@@ -25430,5 +26280,178 @@
     "heir_photo"
    ]
   }
- ]
+ ],
+ "remembered": [
+  {
+   "id": "r_one_door",
+   "title": "一扇门",
+   "desc": "对门住成了一家。",
+   "who": "pair",
+   "requires": {
+    "flags": [
+     "p_married"
+    ]
+   }
+  },
+  {
+   "id": "r_patched",
+   "title": "吵不散",
+   "desc": "吵翻过，后来又坐到了一张桌上。",
+   "who": "pair",
+   "requires": {
+    "flags": [
+     "p_estranged",
+     "p_reunited"
+    ]
+   }
+  },
+  {
+   "id": "r_four_things",
+   "title": "一样没落下",
+   "desc": "墙上的名字，河边的盒子，拉过的钩。",
+   "who": "pair",
+   "requires": {
+    "flags": [
+     "p_wall_names",
+     "p_capsule",
+     "p_promise"
+    ]
+   }
+  },
+  {
+   "id": "r_wordless",
+   "title": "不用言语",
+   "desc": "遇到的事，十回有七回想到了一起。",
+   "who": "pair",
+   "requires": {
+    "flags": [
+     "x_many_mirrors"
+    ],
+    "minRate": 70
+   }
+  },
+  {
+   "id": "r_duo",
+   "title": "一个东一个西",
+   "desc": "脾气不一样，偏偏好了一辈子。",
+   "who": "pair",
+   "requires": {
+    "flags": [
+     "x_opposites"
+    ],
+    "minClose": 60
+   }
+  },
+  {
+   "id": "r_helping",
+   "title": "搭把手",
+   "desc": "有两回，是两个人一起才办成的。",
+   "who": "pair",
+   "requires": {
+    "minHelps": 2
+   }
+  },
+  {
+   "id": "r_same_trade",
+   "title": "一个行当",
+   "desc": "两个人干了一辈子同一行。",
+   "who": "pair",
+   "requires": {
+    "flags": [
+     "x_same_trade"
+    ]
+   }
+  },
+  {
+   "id": "r_same_year",
+   "title": "同年",
+   "desc": "同一年来的，同一年走的。",
+   "who": "pair",
+   "requires": {
+    "flags": [
+     "x_same_year"
+    ]
+   }
+  },
+  {
+   "id": "r_homecoming",
+   "title": "回来了",
+   "desc": "有人去了外地，后来又回来了。",
+   "who": "each",
+   "requires": {
+    "flags": [
+     "left_city",
+     "came_back"
+    ]
+   }
+  },
+  {
+   "id": "r_two_signs",
+   "title": "两块招牌",
+   "desc": "两个人都接下了家里的营生。",
+   "who": "both",
+   "requires": {
+    "flags": [
+     "took_over"
+    ]
+   }
+  },
+  {
+   "id": "r_ninety",
+   "title": "过了九十",
+   "desc": "有人活过了九十岁。",
+   "who": "each",
+   "requires": {
+    "minDiedAge": 90
+   }
+  },
+  {
+   "id": "r_plain",
+   "title": "挺好",
+   "desc": "普通的孩子，一辈子没拔过尖，也没掉过队。",
+   "who": "each",
+   "requires": {
+    "flags": [
+     "x_plain_life"
+    ]
+   }
+  },
+  {
+   "id": "r_again",
+   "title": "又拉了一回",
+   "desc": "上一世拉过钩，这一世又拉了一回。",
+   "who": "pair",
+   "requires": {
+    "flags": [
+     "leg_p_promise",
+     "p_promise"
+    ]
+   }
+  },
+  {
+   "id": "r_four_names",
+   "title": "四个名字",
+   "desc": "墙上的旧名字旁边，又添了两个。",
+   "who": "pair",
+   "requires": {
+    "flags": [
+     "p_four_names"
+    ]
+   }
+  }
+ ],
+ "legacy": {
+  "traces": [
+   "p_capsule",
+   "p_married",
+   "p_pigeon",
+   "p_promise",
+   "p_wall_names"
+  ],
+  "marks": [
+   "deja_vu",
+   "p_reunited",
+   "retake"
+  ]
+ }
 }

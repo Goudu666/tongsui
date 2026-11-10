@@ -29,6 +29,7 @@ signal log_entries(data: Dictionary)
 signal presence(data: Dictionary)
 signal game_state(data: Dictionary)  ## 搭伴小游戏：{game: 视图 | null, result?}
 signal again_state(data: Dictionary)  ## 再来一世：{again: {qing, mei}} 谁点了
+signal past_life(life_no: int, page: Variant)  ## 住户本：某一世那一页（lifeline_past 给的）；读不到是 null
 
 const Config := preload("res://scripts/net/config.gd")
 const Op := preload("res://scripts/net/protocol.gd")
@@ -591,6 +592,19 @@ func pick_heirloom(heirloom_id := "") -> void:
 ## 一世走完以后：再来一世（yes 为 false 是收回）。两个人都点了，服务器会发来新一世的快照
 func again(yes := true) -> void:
 	_send(Op.AGAIN, {"yes": yes})
+
+
+## 住户本：读这条人生线上走完的某一世（服务器挑过的那几样）。
+## 读不到就发 null，不弹错：老服务器没有这个接口，界面照着快照里的小传画就行
+func fetch_past(life_no: int) -> void:
+	var page: Variant = null
+	if lifeline_id != "" and client != null and await _ensure_session():
+		var res = await client.rpc_async(session, "lifeline_past", JSON.stringify({"lifelineId": lifeline_id, "life": life_no}))
+		if not res.is_exception():
+			var r: Variant = JSON.parse_string(res.payload)
+			if r is Dictionary and r.get("past") is Dictionary:
+				page = r.past
+	past_life.emit(life_no, page)
 
 
 ## 服务器懂不懂传承（老物件、再来一世）。连着旧服务器时界面不给按钮，而不是点了报错

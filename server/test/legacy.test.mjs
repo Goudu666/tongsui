@@ -2,6 +2,8 @@
 // 1) 头一世和以前一模一样  2) 每件老物件都有人留得下  3) 一世走完记下了什么  4) 再来一世（票、可复现）
 // 5) 摆和挑  6) 带上以后多了什么（不叠、不越带越强）  7) 家业  8) 旧存档升级  9) 老物件被删以后
 // 10) 房间：票进存档、重开接着投、上一世归档、新旧安装包混搭  11) 连着过几世  12) 老物件压不过活法
+// 第二步：13) 痕迹  14) 藏着的天赋（要先出过那件事 / 换一种活法，不是更强）  15) 街坊记住的事（只记一回、不给东西）
+// 16) v6 存档升 v7、内容删了以后  17) 住户本读归档（只给两个人、只给挑过的那几样）
 import assert from "node:assert/strict";
 import { G, C, J, NAMES, SYSTEM_USER, fakeNakama, room } from "./harness.mjs";
 import { WAYS, live, climb } from "../../tools/paths.mjs";
@@ -11,6 +13,8 @@ const STATS = ["body", "mind", "charm", "luck"];
 const OP = G("OP");
 const heir = (id) => C.heirlooms.find((h) => h.id === id);
 const sum = (st) => STATS.reduce((x, k) => x + st[k], 0);
+/** 一份传承（没写的字段是空的） */
+const LG = (o = {}) => ({ ...J(G("legacyNew")()), ...o });
 
 /** 两个人都确认投胎 */
 function confirm(s) {
@@ -50,7 +54,8 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   for (const seed of [1, 7, 20261110]) {
     const s = G("lifeCreate")(seed, C);
     assert.equal(s.life, 1);
-    assert.deepEqual(J(s.legacy), { lives: 0, families: {}, heirlooms: [], past: [] });
+    assert.deepEqual(J(s.legacy), { lives: 0, families: {}, heirlooms: [], past: [], traces: [], marks: [], remembered: {} });
+    for (const r of ROLES) assert.ok(!C.talents.find((t) => t.id === s.rolls[r].talentId).unlock, "头一世抽到了藏着的天赋");
     for (const r of ROLES) assert.deepEqual([s.rolls[r].house, J(s.rolls[r].offer), s.rolls[r].heirloomId], [0, [], null]);
     // 没有东西可摆的时候不多抽一次随机数：抽完两张卡，随机数停在哪儿还停在哪儿
     const bare = { rng: seed | 0 };
@@ -58,7 +63,7 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
     G("lifeRollOnce")(bare, C, q.familyId);
     assert.equal(s.rng, bare.rng, "头一世多动了随机数，老存档和别的测试里的种子就对不上了");
     // 有传承的时候，两张卡也还是先抽的：人家和天赋不因为攒了东西而变
-    const later = G("lifeCreate")(seed, C, { lives: 2, families: {}, heirlooms: ["h_photo", "h_books", "h_mug"], past: [] });
+    const later = G("lifeCreate")(seed, C, LG({ lives: 2, heirlooms: ["h_photo", "h_books", "h_mug"] }));
     for (const r of ROLES) assert.deepEqual([later.rolls[r].familyId, later.rolls[r].talentId, J(later.rolls[r].stats)], [s.rolls[r].familyId, s.rolls[r].talentId, J(s.rolls[r].stats)]);
     assert.equal(later.life, 3);
   }
@@ -97,9 +102,9 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   assert.equal(G("legacyLeave")(C, p), last.id);
   p.diedAtAge = 84;
   assert.equal(G("legacyLeave")(C, p), "h_towel");
-  p.stats.body = 5; p.money = 149;
+  p.stats.body = 5; p.money = heir("h_passbook").from.minMoney - 1;
   assert.equal(G("legacyLeave")(C, p), last.id);
-  p.money = 150;
+  p.money += 1;
   assert.equal(G("legacyLeave")(C, p), "h_passbook");
   // 两个人不留同一件：对门留了鸽哨，我接着往下找；都只剩兜底的时候不挑
   const pigeon = blank();
@@ -142,6 +147,14 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   assert.ok(s.left.qing !== s.left.mei || s.left.qing === C.heirlooms.at(-1).id, "两个人不留同一件");
   assert.equal(new Set(lg.heirlooms).size, lg.heirlooms.length, "同一件不记两回");
   assert.deepEqual(J(G("lifeUpgrade")(J(s))), [], "刚存的档不用升级");
+  // 第二步记的：街坊新记住的事（长卷和小传里是同一份）、留下的痕迹、出过的事
+  assert.ok(Array.isArray(s.noted));
+  assert.deepEqual(J(past.noted), J(s.noted));
+  assert.deepEqual(Object.keys(lg.remembered).sort(), [...s.noted].sort());
+  const anyone = (f) => ROLES.some((r) => s.persons[r].flags.includes(f));
+  assert.deepEqual(J(lg.traces), J(C.legacy.traces).filter(anyone));
+  assert.deepEqual(J(lg.marks), J(C.legacy.marks).filter(anyone));
+  assert.deepEqual(Object.keys(lg).sort(), ["families", "heirlooms", "lives", "marks", "past", "remembered", "traces"], "河畔里不攒跨世的计数");
   console.log(`✓ 一世走完：留下 ${ROLES.map((r) => heir(s.left[r]).name).join("、")}，记了小传（${past.memories.length} 段回忆）和住过的人家`);
 }
 
@@ -181,18 +194,18 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
 {
   // 攒了七件：两个人面前各三件，不重样，都是攒下的
   const pool = ["h_photo", "h_books", "h_mug", "h_candy_box", "h_passbook", "h_whistle", "h_scale"];
-  const s = G("lifeCreate")(42, C, { lives: 3, families: {}, heirlooms: pool, past: [] });
+  const s = G("lifeCreate")(42, C, LG({ lives: 3, heirlooms: pool }));
   const oq = J(s.rolls.qing.offer), om = J(s.rolls.mei.offer);
   assert.deepEqual([oq.length, om.length], [3, 3]);
   assert.equal(new Set([...oq, ...om]).size, 6, "两人面前的不能重样");
   assert.ok([...oq, ...om].every((id) => pool.includes(id)));
-  assert.deepEqual(J(G("lifeCreate")(42, C, { lives: 3, families: {}, heirlooms: pool, past: [] }).rolls), J(s.rolls), "同一个种子摆出来的一样");
+  assert.deepEqual(J(G("lifeCreate")(42, C, LG({ lives: 3, heirlooms: pool })).rolls), J(s.rolls), "同一个种子摆出来的一样");
   // 只攒了一件、三件：轮着摆。谁先摆一世一换，多出来的那件不会回回落在同一个人面前
-  const one = G("lifeCreate")(42, C, { lives: 1, families: {}, heirlooms: ["h_photo"], past: [] });
+  const one = G("lifeCreate")(42, C, LG({ lives: 1, heirlooms: ["h_photo"] }));
   assert.deepEqual([J(one.rolls.qing.offer), J(one.rolls.mei.offer)], [["h_photo"], []]);
-  const oneLater = G("lifeCreate")(42, C, { lives: 2, families: {}, heirlooms: ["h_photo"], past: [] });
+  const oneLater = G("lifeCreate")(42, C, LG({ lives: 2, heirlooms: ["h_photo"] }));
   assert.deepEqual([J(oneLater.rolls.qing.offer), J(oneLater.rolls.mei.offer)], [[], ["h_photo"]]);
-  const three = G("lifeCreate")(42, C, { lives: 1, families: {}, heirlooms: ["h_photo", "h_books", "h_mug"], past: [] });
+  const three = G("lifeCreate")(42, C, LG({ lives: 1, heirlooms: ["h_photo", "h_books", "h_mug"] }));
   assert.deepEqual([three.rolls.qing.offer.length, three.rolls.mei.offer.length], [2, 1]);
 
   const pick = G("legacyPick");
@@ -221,7 +234,7 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
 {
   // 同一个种子投两回胎：一回空着手，一回带着东西。差出来的只能是那件东西写明的
   const born = (seed, heirlooms, take) => {
-    const s = G("lifeCreate")(seed, C, { lives: 3, families: {}, heirlooms, past: [] });
+    const s = G("lifeCreate")(seed, C, LG({ lives: 3, heirlooms }));
     if (take) for (const r of ROLES) if (s.rolls[r].offer.length) assert.equal(G("legacyPick")(s, r, s.rolls[r].offer[0]), null);
     return confirm(s);
   };
@@ -248,8 +261,8 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
     }
   }
   // 不越带越强：走完了多少世、这件东西带过多少回，带上以后多的都一样
-  const first = G("lifeCreate")(3, C, { lives: 1, families: {}, heirlooms: ["h_books"], past: [] });
-  const tenth = G("lifeCreate")(3, C, { lives: 11, families: {}, heirlooms: ["h_books"], past: [] });
+  const first = G("lifeCreate")(3, C, LG({ lives: 1, heirlooms: ["h_books"] }));
+  const tenth = G("lifeCreate")(3, C, LG({ lives: 11, heirlooms: ["h_books"] }));
   for (const s of [first, tenth]) { G("legacyPick")(s, "qing", "h_books"); confirm(s); }
   assert.deepEqual(J(first.persons.qing.stats), J(tenth.persons.qing.stats));
   console.log(`✓ 带上以后：${checked} 回对照，属性、钱、亲近、标记只多那件东西写明的；一人一件；走完 1 世带和走完 11 世带一样`);
@@ -261,7 +274,7 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   const kept = (n) => Object.fromEntries(C.families.map((f) => [f.id, { lived: n, kept: n }]));
   const base = confirm(G("lifeCreate")(8, C));
   for (const n of [1, 2, 3, 9]) { // 传了几代都试试，封顶在 houseMax
-    const s = G("lifeCreate")(8, C, { lives: n, families: kept(n), heirlooms: [], past: [] });
+    const s = G("lifeCreate")(8, C, LG({ lives: n, families: kept(n) }));
     const house = Math.min(n, R.houseMax);
     for (const r of ROLES) assert.equal(s.rolls[r].house, house);
     confirm(s);
@@ -273,7 +286,7 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   assert.ok(R.houseMoney * R.houseMax + Math.max(...C.heirlooms.map((h) => h.money)) <= 10, "家业加上最值钱的老物件，开局最多多十块");
   // 住过但没接下营生的不算；重抽到别的人家，家业跟着换
   const only = C.families[0].id;
-  const s = G("lifeCreate")(8, C, { lives: 2, families: { ...Object.fromEntries(C.families.map((f) => [f.id, { lived: 2, kept: 0 }])), [only]: { lived: 2, kept: 1 } }, heirlooms: [], past: [] });
+  const s = G("lifeCreate")(8, C, LG({ lives: 2, families: { ...Object.fromEntries(C.families.map((f) => [f.id, { lived: 2, kept: 0 }])), [only]: { lived: 2, kept: 1 } } }));
   for (let i = 0; i < C.rules.roll.rerolls; i++) {
     G("lifeReroll")(s, C, "qing");
     assert.equal(s.rolls.qing.house, s.rolls.qing.familyId === only ? 1 : 0);
@@ -286,7 +299,7 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   const strip = (s) => {
     const old = J(s);
     old.version = 5;
-    for (const k of ["legacy", "life", "left", "again"]) delete old[k];
+    for (const k of ["legacy", "life", "left", "again", "noted"]) delete old[k];
     for (const r of ROLES) {
       for (const k of ["house", "offer", "heirloomId"]) delete old.rolls[r][k];
       if (old.persons) delete old.persons[r].heirloomId;
@@ -296,7 +309,7 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   // 抽卡中、过到一半的
   for (const src of [G("lifeCreate")(6, C), confirm(G("lifeCreate")(6, C))]) {
     const old = strip(src);
-    assert.deepEqual(J(G("lifeUpgrade")(old)), ["v5→v6"]);
+    assert.deepEqual(J(G("lifeUpgrade")(old)), ["v5→v6", "v6→v7"]);
     assert.deepEqual(J(old), J(src), "升上来应该和现在新开的一模一样");
     assert.deepEqual(J(G("lifeRepair")(old, C)), []);
   }
@@ -319,7 +332,7 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
 // ---------- 9. 老物件从内容里删了以后 ----------
 {
   const pool = ["h_photo", "h_books", "h_mug", "h_candy_box"];
-  const s = G("lifeCreate")(42, C, { lives: 3, families: {}, heirlooms: [...pool], past: [] });
+  const s = G("lifeCreate")(42, C, LG({ lives: 3, heirlooms: [...pool] }));
   const gone = s.rolls.qing.offer[0];
   G("legacyPick")(s, "qing", gone);
   const C2 = { ...C, heirlooms: C.heirlooms.filter((h) => h.id !== gone), version: "test-removed" };
@@ -542,4 +555,298 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   assert.ok(extra <= heir("h_passbook").money + 1e-9, `带着存折到 12 岁多了 ${extra.toFixed(0)} 块，比存折里的还多`);
   assert.ok(purse(hustle) > purse(soloPurse) + 10, `从小挣钱的只比带着存折念书的多 ${(purse(hustle) - purse(soloPurse)).toFixed(0)} 块，钱成了带来的`);
   console.log(`✓ 压不过活法：带一箱书到 12 岁心智多 ${kept.toFixed(2)}，重点班 ${Math.round(key(lazy) * 100)}% → ${Math.round(key(lazyBooks) * 100)}%（空手一半念书 ${Math.round(key(half) * 100)}%）/ 专心的空手人还多 ${gap.toFixed(1)} 点 / 带存折多 ${extra.toFixed(0)} 块，从小挣钱的还多 ${(purse(hustle) - purse(soloPurse)).toFixed(0)} 块`);
+}
+
+// =====================================================================
+// 第二步：痕迹、藏着的天赋、街坊记住的事、住户本
+// =====================================================================
+
+/** 一份走完的存档，传承清空、两个人身上这一世攒的共同标记摘掉：拿来单独试「一世走完记什么」 */
+function endedBlank(life = 1, legacy = LG()) {
+  const s = J(lifeOne);
+  s.life = life;
+  s.legacy = legacy;
+  delete s.noted;
+  for (const r of ROLES) s.persons[r].flags = s.persons[r].flags.filter((f) => !/^(p_|x_|leg_|job_)/.test(f) && !["took_over", "left_city", "came_back", "deja_vu", "retake"].includes(f));
+  return s;
+}
+const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].flags.push(...flags); return s; };
+
+// ---------- 13. 痕迹：上一世两个人一起做过的事，下一世的孩子出生就带着 ----------
+{
+  const first = confirm(G("lifeCreate")(11, C));
+  for (const r of ROLES) assert.ok(!first.persons[r].flags.some((f) => f.startsWith("leg_")), "头一世的孩子身上不该有上一世的痕迹");
+  const second = confirm(G("lifeCreate")(11, C, LG({ lives: 1, traces: ["p_wall_names", "p_capsule"] })));
+  for (const r of ROLES) {
+    const f = second.persons[r].flags;
+    assert.ok(f.includes("leg_any") && f.includes("leg_p_wall_names") && f.includes("leg_p_capsule"));
+    assert.ok(!f.includes("leg_p_pigeon") && !f.includes("leg_house"));
+    // 痕迹只是标记：属性、钱都和头一世同一个种子的孩子一样
+    assert.deepEqual([J(second.persons[r].stats), second.persons[r].money], [J(first.persons[r].stats), first.persons[r].money]);
+    assert.deepEqual(J(f).filter((x) => !x.startsWith("leg_")), J(first.persons[r].flags));
+  }
+  assert.deepEqual(J(second.bond), J(first.bond));
+  // 家里的营生传下来过：多一个 leg_house（柜顶的匣子靠它）
+  const house = confirm(G("lifeCreate")(11, C, LG({ lives: 1, families: Object.fromEntries(C.families.map((f) => [f.id, { lived: 1, kept: 1 }])) })));
+  for (const r of ROLES) assert.ok(house.persons[r].flags.includes("leg_house"));
+
+  // 只记上一世的：这一世接着做了才传得下去，没人再做就到此为止
+  const fade = give(endedBlank(2, LG({ lives: 1, traces: ["p_capsule"] })), ["leg_any", "leg_p_capsule"]);
+  G("legacyNote")(fade, C);
+  assert.deepEqual(J(fade.legacy.traces), [], "上一世埋的盒子，这一世没人添东西，不该再往下传");
+  const kept = give(endedBlank(2, LG({ lives: 1, traces: ["p_capsule"] })), ["leg_any", "leg_p_capsule", "p_capsule", "p_promise"]);
+  G("legacyNote")(kept, C);
+  assert.deepEqual(J(kept.legacy.traces), ["p_capsule", "p_promise"]);
+  assert.ok(J(C.legacy.traces).every((t) => t.startsWith("p_")), "能留下痕迹的只有两个人一起做的事（共同标记）");
+
+  // 隔世的事都得带着上一世的痕迹（或藏着的天赋）才遇得到：头一世一件也碰不上
+  const cross = J(C.events).filter((e) => e.id.startsWith("l_"));
+  assert.ok(cross.length >= 6);
+  for (const e of cross) assert.ok((e.requires.flags || []).some((f) => /^(leg_|tal_(late|linked|oldsoul)$)/.test(f)), `${e.id} 没有挂在上一世的痕迹上`);
+  for (const t of J(C.legacy.traces)) {
+    const read = JSON.stringify([C.events, C.endings, C.remembered]).includes(`"leg_${t}"`);
+    assert.ok(read, `痕迹 ${t} 留下了却没有东西读它`);
+  }
+  console.log(`✓ 痕迹：头一世没有 / 下一世的孩子带着 leg_ 标记，别的一样不多 / 这一世没接着做就不再传 / ${cross.length} 件隔世的事都挂在痕迹或藏着的天赋上`);
+}
+
+// ---------- 14. 藏着的天赋：这条人生线上出过那件事才抽得到；换一种活法，不是更强 ----------
+{
+  const all = J(C.talents);
+  const hidden = all.filter((t) => t.unlock), plain = all.filter((t) => !t.unlock);
+  assert.equal(hidden.length, 3);
+  assert.deepEqual(hidden.map((t) => t.unlock).sort(), J(C.legacy.marks));
+  assert.ok(hidden.every((t) => Object.keys(t.bonus).length === 0), "藏着的天赋不多给先天属性");
+  const ids = (lg) => J(G("legacyTalents")(C, lg)).map((t) => t.id);
+  assert.deepEqual(ids(undefined), plain.map((t) => t.id));
+  assert.deepEqual(ids(LG({ lives: 5 })), plain.map((t) => t.id), "过了多少世都不算数，要出过那件事");
+  for (const h of hidden) assert.deepEqual(ids(LG({ lives: 1, marks: [h.unlock] })), all.filter((t) => !t.unlock || t.id === h.id).map((t) => t.id));
+
+  const roll = (legacy, n) => {
+    const st = { rng: 20261110 }, seen = {};
+    for (let i = 0; i < n; i++) { const t = G("lifeRollOnce")(st, C, null, legacy).talentId; seen[t] = (seen[t] || 0) + 1; }
+    return seen;
+  };
+  const N = 6000;
+  const before = roll(LG({ lives: 3 }), N), after = roll(LG({ lives: 3, marks: J(C.legacy.marks) }), N);
+  const total = all.reduce((x, t) => x + t.weight, 0);
+  for (const h of hidden) {
+    assert.equal(before[h.id], undefined, `${h.name} 没出过那件事就抽到了`);
+    const share = after[h.id] / N, want = h.weight / total;
+    assert.ok(share > want * 0.6 && share < want * 1.5, `${h.name} 抽到的比例 ${share.toFixed(3)}，按权重该是 ${want.toFixed(3)}`);
+  }
+
+  // 出过的事：有一个人带着那个标记走完一世就记上，记上以后一直在
+  const s = give(endedBlank(1), ["deja_vu"], ["mei"]);
+  G("legacyNote")(s, C);
+  assert.deepEqual(J(s.legacy.marks), ["deja_vu"]);
+  const next = endedBlank(2, J(s.legacy));
+  G("legacyNote")(next, C);
+  assert.deepEqual(J(next.legacy.marks), ["deja_vu"], "下一世没再遇上，出过的事也还在");
+  // 内容里把这种天赋摘了：出过的事跟着摘，抽到它的人重抽（save.ts 原有的修复）
+  const C2 = { ...C, talents: C.talents.filter((t) => t.id !== "oldsoul"), legacy: { traces: C.legacy.traces, marks: J(C.legacy.marks).filter((m) => m !== "deja_vu") }, version: "test-no-oldsoul" };
+  const st = G("lifeCreate")(5, C, LG({ lives: 1, marks: ["deja_vu", "retake"] }));
+  st.rolls.qing.talentId = "oldsoul";
+  const notes = J(G("lifeRepair")(st, C2));
+  assert.deepEqual(J(st.legacy.marks), ["retake"]);
+  assert.ok(st.rolls.qing.talentId !== "oldsoul" && notes.some((n) => n.includes("oldsoul")));
+
+  // 换一种活法：同一批种子、同一种过法，两个人都换成这种天赋，和一个没有数值规则的天赋（夜猫子）比
+  const SEEDS = 24;
+  const as = (talent) => (life) => { for (const r of ROLES) life.rolls[r].talentId = talent; };
+  const run = (way, talent, until) => Array.from({ length: SEEDS }, (_, i) => live((i + 1) * 7919, WAYS[way], until, climb, as(talent)));
+  const at = (runs, id) => runs.flatMap((x) => Object.values(x.marks[id] || {}));
+  const avg = (ps, f) => ps.reduce((a, p) => a + f(p), 0) / ps.length;
+  const opens = (ps, o) => ps.filter((p) => p.open.includes(o)).length / ps.length;
+  const total3 = (p) => p.stats.body + p.stats.mind + p.stats.charm;
+
+  // 大器晚成：前面的关口吃亏，三十岁以后追上来，六十岁主项反超
+  const late = run("一个人念书", "late", 61), owl = run("一个人念书", "owl", 61);
+  const m = (runs, id) => avg(at(runs, id), (p) => p.stats.mind);
+  assert.ok(m(late, "m_junior") < m(owl, "m_junior") - 0.3, `大器晚成 12 岁心智 ${m(late, "m_junior").toFixed(2)}，不比别人（${m(owl, "m_junior").toFixed(2)}）慢`);
+  assert.ok(opens(at(late, "m_junior"), "key") < opens(at(owl, "m_junior"), "key"), "大器晚成进重点班的不该和别人一样多");
+  assert.ok(opens(at(late, "m_gaokao"), "away") < opens(at(owl, "m_gaokao"), "away"), "大器晚成考去外地的不该和别人一样多");
+  assert.ok(m(late, "m_retire") > m(owl, "m_retire") + 0.1, `大器晚成 60 岁心智 ${m(late, "m_retire").toFixed(2)}，没有追过别人（${m(owl, "m_retire").toFixed(2)}）`);
+  const gap60 = avg(at(late, "m_retire"), total3) - avg(at(owl, "m_retire"), total3);
+  assert.ok(Math.abs(gap60) < 1.2, `大器晚成 60 岁三项合计和别人差了 ${gap60.toFixed(2)}，换一种活法不该差出一大截`);
+
+  // 连心：各顾各的也不容易生分；属性一点不多，心情跟着对门走
+  const linked = run("各顾各的", "linked", 31), apart = run("各顾各的", "owl", 31);
+  const close = (runs) => avg(runs, (x) => x.s.bond.close);
+  assert.ok(close(linked) > close(apart) + 2, `连心的亲近 ${close(linked).toFixed(1)}，和别人（${close(apart).toFixed(1)}）没差`);
+  const gapL = avg(at(linked, "m_settle"), total3) - avg(at(apart, "m_settle"), total3);
+  assert.ok(Math.abs(gapL) < 0.4, `连心 30 岁三项合计和别人差了 ${gapL.toFixed(2)}`);
+  const moodGap = (runs) => avg(runs, (x) => Math.abs(x.s.persons.qing.needs.mood - x.s.persons.mei.needs.mood));
+  assert.ok(moodGap(linked) < moodGap(apart), "连心的两个人，心情应该比别人挨得近");
+  // 它没有真的代价，靠窄站住：只帮本来就搭伴的人把七十岁那一关接住，而且不能接得太稳；各顾各的人够不着
+  const pairUp = (runs) => opens(at(runs, "m_evening"), "pair");
+  const nearL = run("搭伴念书", "linked", 71), nearO = run("搭伴念书", "owl", 71), farL = run("各顾各的", "linked", 71);
+  assert.ok(pairUp(nearL) >= pairUp(nearO), "连心的两个人搭伴过，老了不该比别人更难并一家");
+  assert.ok(pairUp(nearL) <= 0.6, `搭伴的连心七十岁能并一家的有 ${Math.round(pairUp(nearL) * 100)}%，超过六成就是白给了（linkedDrift 调得太低）`);
+  assert.equal(pairUp(farL), 0, "各顾各的连心也够得着并一家：它不该替人把搭伴省了");
+
+  // 老灵魂：检定多一点把握，小时候魅力长得慢
+  const old = run("嘴甜人缘好", "oldsoul", 13), kid = run("嘴甜人缘好", "owl", 13);
+  const ch = (runs) => avg(at(runs, "m_junior"), (p) => p.stats.charm);
+  assert.ok(ch(old) < ch(kid) - 0.1, `老灵魂 12 岁魅力 ${ch(old).toFixed(2)}，不比别人（${ch(kid).toFixed(2)}）少`);
+  const ck = J(C.checks)[0], me = (flags) => ({ flags, stats: { body: 5, mind: 5, charm: 5, luck: 5 } });
+  const chance = (flags) => G("growthCheckChance")(C, ck, me(flags), null, false).p;
+  assert.ok(Math.abs(chance(["tal_oldsoul"]) - chance([]) - C.rules.legacy.oldSoul) < 1e-9);
+
+  console.log(`✓ 藏着的天赋：没出过那件事 ${N} 回一回也抽不到 / 出过的事记上就一直在 / 内容摘了跟着摘`);
+  console.log(`  大器晚成：12 岁心智 ${m(late, "m_junior").toFixed(1)} 对 ${m(owl, "m_junior").toFixed(1)}，重点班 ${Math.round(opens(at(late, "m_junior"), "key") * 100)}% 对 ${Math.round(opens(at(owl, "m_junior"), "key") * 100)}%，60 岁 ${m(late, "m_retire").toFixed(1)} 对 ${m(owl, "m_retire").toFixed(1)}`);
+  console.log(`  连心：各顾各的到 30 岁亲近 ${close(linked).toFixed(1)} 对 ${close(apart).toFixed(1)}，属性差 ${gapL.toFixed(2)}，搭伴念书七十岁能并一家 ${Math.round(pairUp(nearL) * 100)}% 对 ${Math.round(pairUp(nearO) * 100)}% / 老灵魂：12 岁魅力 ${ch(old).toFixed(1)} 对 ${ch(kid).toFixed(1)}，检定 +${C.rules.legacy.oldSoul}`);
+}
+
+// ---------- 15. 街坊记住的事：记的是怎么过的，只记一回，不给任何东西 ----------
+{
+  const list = J(C.remembered);
+  assert.ok(list.length >= 10 && list.length <= 19, "街坊记住的事要少：一条人生线上凑不成一张要填满的表");
+  const allowed = ["flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "minMemories", "maxMemories", "minRate", "maxRate", "minTogether", "minHelps", "minDiedAge", "maxDiedAge"];
+  for (const a of list) {
+    assert.ok([...a.title].length <= 7 && [...a.desc].length <= 32, `${a.id} 写长了`);
+    assert.ok(Object.keys(a.requires).length > 0 && Object.keys(a.requires).every((k) => allowed.includes(k)), `${a.id} 的条件里有不该看的东西（属性、钱都不看）`);
+  }
+  const note = (s) => { G("legacyNote")(s, C); return J(s.noted); };
+
+  // 两个人的事：对门住成了一家。记上是第几世，下一世再做到也不记第二回
+  const one = give(endedBlank(1), ["p_married"]);
+  assert.ok(note(one).includes("r_one_door"));
+  assert.equal(one.legacy.remembered.r_one_door, 1);
+  const two = give(endedBlank(2, J(one.legacy)), ["p_married"]);
+  assert.ok(!note(two).includes("r_one_door"), "记过的不记第二回");
+  assert.equal(two.legacy.remembered.r_one_door, 1, "记的还是头一回那一世");
+  // each：有一个人做到就算。both：两个人都得做到
+  assert.ok(note(give(endedBlank(), ["left_city", "came_back"], ["mei"])).includes("r_homecoming"));
+  assert.ok(!note(give(endedBlank(), ["left_city"], ["mei"])).includes("r_homecoming"));
+  assert.ok(!note(give(endedBlank(), ["took_over"], ["qing"])).includes("r_two_signs"));
+  assert.ok(note(give(endedBlank(), ["took_over"])).includes("r_two_signs"));
+  // 搭把手：数的是长卷里两个人一起才办成的检定
+  const helped = (n) => { const s = endedBlank(); for (let i = 0; i < n; i++) s.log.push({ kind: "mirror", resonance: true, checks: { qing: { ok: true, help: true } } }); return s; };
+  const need = list.find((a) => a.id === "r_helping").requires.minHelps;
+  const base = G("legacyHelps")(endedBlank());
+  assert.ok(!note(helped(Math.max(0, need - base - 1))).includes("r_helping") || base >= need);
+  assert.ok(note(helped(need)).includes("r_helping"));
+  // 隔着一世：上一世拉过钩，这一世又拉了一回
+  assert.ok(!note(give(endedBlank(), ["p_promise"])).includes("r_again"));
+  assert.ok(note(give(endedBlank(2, LG({ lives: 1 })), ["leg_p_promise", "p_promise"])).includes("r_again"));
+
+  // 不给任何东西：街坊记住了多少，投胎出来的孩子一模一样
+  const everything = Object.fromEntries(list.map((a) => [a.id, 1]));
+  const bare = confirm(G("lifeCreate")(9, C, LG({ lives: 2 })));
+  const full = confirm(G("lifeCreate")(9, C, LG({ lives: 2, remembered: everything })));
+  assert.deepEqual([J(full.persons), J(full.bond), J(full.rolls)], [J(bare.persons), J(bare.bond), J(bare.rolls)]);
+  console.log(`✓ 街坊记住的事：${list.length} 条，条件里不看属性和钱 / 记过的不记第二回 / 一个人、两个人、隔着一世各有各的算法 / 记了多少都不改投胎`);
+}
+
+// ---------- 16. v6 存档升 v7；记住的事从内容里删了以后 ----------
+{
+  const down = (src) => {
+    const old = J(src);
+    old.version = 6;
+    delete old.noted;
+    for (const k of ["traces", "marks", "remembered"]) delete old.legacy[k];
+    for (const p of old.legacy.past) delete p.noted;
+    if (old.persons) for (const r of ROLES) old.persons[r].flags = old.persons[r].flags.filter((f) => !f.startsWith("x_"));
+    return old;
+  };
+  // 抽卡中、过到一半：升上来和现在新开的一模一样
+  for (const src of [G("lifeCreate")(6, C), confirm(G("lifeCreate")(6, C))]) {
+    const old = down(src);
+    assert.deepEqual(J(G("lifeUpgrade")(old)), ["v6→v7"]);
+    assert.deepEqual(J(old), J(src));
+    assert.deepEqual(J(G("lifeRepair")(old, C)), []);
+  }
+  // 只有老物件那会儿走完的一世：补记一回，和当时就记的一样
+  const src = J(lifeOne);
+  const old = down(src);
+  G("lifeUpgrade")(old);
+  assert.equal(old.noted, undefined);
+  const notes = J(G("lifeRepair")(old, C));
+  assert.ok(notes.some((n) => n.includes("街坊记住的事")), "走完的 v6 存档要补记");
+  assert.deepEqual(J(old), src, "补记的和当时就记的一样");
+  assert.deepEqual(J(G("lifeRepair")(old, C)), [], "只补一回");
+  // 已经在第二世抽卡的 v6 存档：上一世的痕迹补不回来（从这一世起记），别的照常
+  const second = reborn(J(lifeOne));
+  const old2 = down(second);
+  G("lifeUpgrade")(old2);
+  assert.deepEqual([J(old2.legacy.traces), J(old2.legacy.marks), J(old2.legacy.remembered)], [[], [], {}]);
+  assert.deepEqual(J(G("lifeRepair")(old2, C)), []);
+  liveOut(old2);
+  assert.ok(Array.isArray(old2.noted) && old2.legacy.lives === 2);
+
+  // 记住的事从内容里删了：记着的、这一世新记的、小传里的都摘掉，别的不动
+  const s = J(lifeOne);
+  s.legacy.remembered = { r_one_door: 1, r_gone: 1 };
+  s.noted = ["r_gone", "r_one_door"];
+  s.legacy.past[0].noted = ["r_gone", "r_one_door"];
+  const fixed = J(G("lifeRepair")(s, C));
+  assert.ok(fixed.some((n) => n.includes("r_gone")));
+  assert.deepEqual([J(s.legacy.remembered), J(s.noted), J(s.legacy.past[0].noted)], [{ r_one_door: 1 }, ["r_one_door"], ["r_one_door"]]);
+  console.log("✓ v6 存档：抽卡中 / 过到一半升上来和新开的一样 / 走完的补记一回 / 第二世的从这一世起记；记住的事被删了就摘掉");
+}
+
+// ---------- 17. 住户本读归档：只给这条人生线上的两个人，只给挑过的那几样 ----------
+{
+  const pa = { userId: "user-a", sessionId: "sa" };
+  const pb = { userId: "user-b", sessionId: "sb" };
+  const NEW = { protocol: String(G("PROTOCOL_VERSION")) };
+  const env = fakeNakama();
+  const a = env.rpc("rpcLifelineCreate", "user-a", { name: "小青" });
+  env.rpc("rpcLifelineJoin", "user-b", { code: a.code, name: "小梅" });
+  const id = a.lifelineId;
+  const R = room(env.nk, env.rpc("rpcLifelineOpen", "user-a", { lifelineId: id }).matchId);
+  for (const p of [pa, pb]) { assert.equal(R.attempt(p, NEW).accept, true); R.join([p]); }
+  const past = (user, life) => env.rpc("rpcLifelinePast", user, { lifelineId: id, life });
+
+  R.loop([R.msg(pa, OP.ROLL, { confirm: true }), R.msg(pb, OP.ROLL, { confirm: true })]);
+  assert.throws(() => past("user-a", 1), /还没走完/);
+  liveOut(R.life());
+  // 这里是直接推规则把一世过完的，房间没经手，所以借一张票让它存一回档（点了再收回）
+  R.loop([R.msg(pa, OP.AGAIN, {})]);
+  R.loop([R.msg(pa, OP.AGAIN, { yes: false })]);
+  const life = J(R.life());
+
+  // 走完还没换世：从存档里读
+  const v = past("user-b", 1);
+  assert.equal(v.lifelineId, id);
+  assert.deepEqual(v.names, { qing: "小青", mei: "小梅" });
+  assert.deepEqual(Object.keys(v.past).sort(), ["close", "ending", "left", "life", "memories", "noted", "persons", "stats"]);
+  assert.deepEqual(v.past.ending, { pair: life.ending.pair, lives: life.ending.lives });
+  assert.deepEqual([v.past.life, v.past.left, v.past.noted, v.past.close], [1, life.left, life.noted, Math.round(life.bond.close)]);
+  for (const r of ROLES) {
+    const p = life.persons[r];
+    assert.deepEqual(v.past.persons[r], { name: p.name, familyId: p.familyId, talentId: p.talentId, diedAtAge: p.diedAtAge, job: G("legacyJob")(p), heirloomId: p.heirloomId });
+  }
+  assert.ok(v.past.memories.length > 0 && v.past.memories.length <= 40);
+  assert.deepEqual(Object.keys(v.past.memories[0]).sort(), ["age", "title", "vivid"]);
+  assert.ok(v.past.memories.every((m, i, all) => i === 0 || all[i - 1].age <= m.age), "回忆按先后排");
+  assert.deepEqual(v.past.stats, { mirrors: G("lifeStats")(life).mirrors, rate: G("lifeStats")(life).rate, together: G("lifeStats")(life).together });
+  const text = JSON.stringify(v);
+  for (const k of ["rng", "seed", "flags", "log", "world", "legacy", "members", "code", "user-a", "user-b"]) assert.ok(!text.includes(`"${k}"`), `住户本里不该有 ${k}`);
+  assert.ok(text.length < 4000, `一世那一页 ${text.length} 字节，太大了`);
+
+  // 不是这条人生线上的人、没有的世数、乱填的
+  assert.throws(() => past("user-c", 1), /不是你的人生线/);
+  assert.throws(() => env.rpc("rpcLifelinePast", "user-a", { lifelineId: "nope", life: 1 }), /人生线不存在/);
+  for (const bad of [0, -1, 2, 99, "x", null, 1.5 - 2]) assert.throws(() => past("user-a", bad), /没有这一世/);
+
+  // 换世以后：从归档里读，读出来的是同一页；新的这一世还没走完
+  R.loop([R.msg(pa, OP.AGAIN, {}), R.msg(pb, OP.AGAIN, {})]);
+  assert.equal(env.record(id).life.life, 2);
+  assert.deepEqual(past("user-a", 1), v);
+  assert.throws(() => past("user-a", 2), /还没走完/);
+  // 归档坏了（读出来不是一世）：和没有这一世一样回话，不把运行时的报错原样给出去
+  const slot = env.nk.store.get([...env.nk.store.keys()].find((key) => key.startsWith("lifeline_past/") && key.endsWith(`/${id}.1`)));
+  const good = slot.value;
+  for (const broken of [{}, { past: null }, { past: "x" }, null]) {
+    slot.value = broken;
+    assert.throws(() => past("user-a", 1), /^Error: 没有这一世$/);
+  }
+  slot.value = good;
+  assert.deepEqual(past("user-a", 1), v);
+  // 归档是旧版本存的、缺东西：照样给得出一页，不抛错
+  const empty = J(G("legacyPastView")({}));
+  assert.deepEqual(empty, { life: 1, ending: { pair: null, lives: { qing: null, mei: null } }, close: 0, persons: { qing: null, mei: null }, memories: [], left: { qing: null, mei: null }, noted: [], stats: { mirrors: 0, rate: 0, together: 0 } });
+  console.log(`✓ 住户本：走完的从存档读、换世以后从归档读，是同一页（${text.length} 字节）/ 只有八样东西，没有随机数、标记、长卷 / 外人、没有的世数、没走完的、归档坏了的都读不到`);
 }

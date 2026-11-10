@@ -12,3 +12,12 @@
 - { id: crafty, name: 巧手, weight: 1, desc: 什么都敢拆，拆了还能原样装回去，手里还多一颗螺丝。, bonus: { mind: 1, body: 1 }, flags: [tal_crafty] }
 - { id: kind, name: 老好人, weight: 1, desc: 谁的忙都帮，「不」字到了嘴边，总是咽回去。, bonus: { charm: 1, luck: 1 }, flags: [tal_kind] }
 - { id: stubborn, name: 犟脾气, weight: 1, desc: 认准的事，九头牛拉不回来。十头也白搭。, bonus: { body: 2, charm: -1 }, flags: [tal_stubborn] }
+
+# 藏着的天赋：这条人生线上出过 unlock 写的那件事（有人带过这个标记），往后每一世投胎才抽得到。
+# 没出过之前哪儿都不提。不是更强的天赋，是换一种活法：效果在 server/src/legacy.ts，数在 rules.yaml 的 legacy 一节。
+#   大器晚成  有人复读过一年          童年少年长得慢，成年以后才开始长
+#   连心      两个人走散过又重逢      不走动也不容易生分；心情跟着对门走
+#   老灵魂    有人把那个梦记在了本子上  检定多一点把握；小时候魅力长得慢
+- { id: late, name: 大器晚成, weight: 1, unlock: retake, desc: 小时候看不出来。别人长完了，你才刚开始长。, bonus: {}, flags: [tal_late] }
+- { id: linked, name: 连心, weight: 1, unlock: p_reunited, desc: 对门的一皱眉，你心里就跟着一沉。隔多远都不容易生分。, bonus: {}, flags: [tal_linked] }
+- { id: oldsoul, name: 老灵魂, weight: 1, unlock: deja_vu, desc: 总觉得这条楼道以前走过。头一回干的事，上手像干过。, bonus: {}, flags: [tal_oldsoul] }

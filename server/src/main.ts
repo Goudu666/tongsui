@@ -340,6 +340,34 @@ var rpcLifelineList: nkruntime.RpcFunction = function (ctx, logger, nk) {
   return JSON.stringify({ lifelines: items });
 };
 
+/**
+ * 住户本：翻看这条人生线上走完的某一世。只有这条人生线上的两个人能看；给出去的是 legacyPastView 挑过的那几样。
+ * 走完还没换世的这一世从存档里读，换过世的从归档里读。
+ */
+var rpcLifelinePast: nkruntime.RpcFunction = function (ctx, logger, nk, payload) {
+  if (!ctx.userId) throw new Error("需要登录");
+  var p = parsePayload(payload);
+  var rec = loadLifeline(nk, String(p.lifelineId || ""));
+  if (!rec) throw new Error("人生线不存在");
+  if (!roleOf(rec, ctx.userId)) throw new Error("这不是你的人生线");
+  var n = Math.floor(Number(p.life));
+  if (!(n >= 1)) throw new Error("没有这一世");
+  var names = rec.names;
+  var src: any = null;
+  if (rec.life && (rec.life.life || 1) === n) {
+    if (rec.life.phase !== "ended") throw new Error("这一世还没走完");
+    src = rec.life;
+  } else {
+    var found = nk.storageRead([{ collection: COL_PAST, key: rec.id + "." + n, userId: SYSTEM_USER }]);
+    // 归档坏了（读出来不是一世）和没有这一世一样回话，不把运行时的报错原样给出去
+    var kept: any = found.length ? found[0].value : null;
+    if (!kept || !kept.past || typeof kept.past !== "object") throw new Error("没有这一世");
+    src = kept.past;
+    names = kept.names || names;
+  }
+  return JSON.stringify({ lifelineId: rec.id, names: names, past: legacyPastView(src) });
+};
+
 // ---------- 权威房间 ----------
 
 function online(s: LifelineMatch): { [R in Role]: boolean } {
@@ -794,6 +822,7 @@ var InitModule: nkruntime.InitModule = function (ctx, logger, nk, initializer) {
   initializer.registerRpc("lifeline_join", rpcLifelineJoin);
   initializer.registerRpc("lifeline_open", rpcLifelineOpen);
   initializer.registerRpc("lifeline_list", rpcLifelineList);
+  initializer.registerRpc("lifeline_past", rpcLifelinePast);
   initializer.registerRpc("content_get", rpcContentGet);
   initializer.registerRpc("server_info", rpcServerInfo);
   initializer.registerMatch<LifelineMatch>(MATCH_NAME, {

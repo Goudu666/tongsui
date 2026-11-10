@@ -195,8 +195,9 @@ function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot): { act:
     var rq = act.requires || {};
     if (rq.minAge !== undefined && age < rq.minAge) { why = "还太小了"; continue; }
     if (rq.maxAge !== undefined && age > rq.maxAge) { why = "已经过了那个年纪"; continue; }
-    // 关口上挣来的去处（少年宫、体校）：没走那条路的人看不见它，轮到下一个行动
-    if (!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) continue;
+    // 关口上挣来的去处（少年宫、体校）、家里才有的（学琴、厂里的澡堂）：没有那个标记的人看不见它，轮到下一个行动。
+    // 对门正在这儿做、而且这件事带得了人，就能跟着做（means.ts）
+    if ((!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) && !meansGuestOk(s, c, role, sp, act)) continue;
     // 不在钟点上先轮到下一个：体校四点开练，四点以前操场照样能踢球。
     // 后面没有别的事可做，还是把它给出去：点位上有名字，点了回「现在不是时候」（worldCanAct），不会变成没反应
     if (rq.hours && (minute < rq.hours[0] || minute > rq.hours[1])) { if (!late) late = act; continue; }
@@ -234,7 +235,8 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
   if (rq.owner && lifeFind(c.map.zones, sp.zone).owner !== role) return "这不是你的家";
   if (rq.hours && (w.minute < rq.hours[0] || w.minute > rq.hours[1])) return "现在不是时候";
   if (act.duty && w.minute < worldDuty(s, c, role)!.arrive[0]) return "还没到点";
-  if (act.money < 0 && s.persons![role].money < -act.money) return "兜里的钱不够";
+  var broke = meansCantPay(s, role, act, !lifeHasAll(s.persons![role].flags, rq.flags) || !lifeHasNone(s.persons![role].flags, rq.notFlags));
+  if (broke) return broke;
   return null;
 }
 
@@ -254,6 +256,8 @@ function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error
   a.eff = worldEfficiency(s.persons![role]);
   a.together = false;
   delete a.boost; // 上一件事没用掉的搭伴倍率不带过来（见 games.ts）
+  var arq = act.requires || {};
+  if (!lifeHasAll(s.persons![role].flags, arq.flags) || !lifeHasNone(s.persons![role].flags, arq.notFlags)) a.guest = true; else delete a.guest; // 对门带着做的（means.ts）
   if (act.sleep) {
     a.asleep = true;
     a.until = null;
@@ -325,13 +329,15 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
     for (var fi = 0; fi < c.families.length; fi++) if (c.families[fi].id === p.familyId) wealth = c.families[fi].wealth;
     lifeApplySelf(p, { mood: wealth * 3 + (lifeHasFlag(p, "tal_foodie") ? 6 : 0) });
   }
-  p.money += money;
+  var payer = s.persons![meansPayer(s, role)]; // 对门带着做的，钱记在对门头上（means.ts）
+  payer.money = Math.max(0, payer.money + money);
   a.action = null;
   a.spot = null;
   a.until = null;
   delete a.eff;
   delete a.together;
   delete a.boost;
+  delete a.guest;
 }
 
 // ---------- 影子：离线时按需求和习惯自己过日子 ----------
@@ -434,6 +440,7 @@ function worldReclaim(s: LifeState, role: Role): boolean {
   delete a.eff;
   delete a.together;
   delete a.boost;
+  delete a.guest;
   a.action = null;
   a.spot = null;
   a.until = null;
@@ -498,7 +505,7 @@ function worldMilestone(s: LifeState, c: Content, out: WorldTick): boolean {
   for (var i = 0; i < due.length; i++) {
     var r = due[i];
     var a = w.actors[r]!;
-    if (a.action || a.asleep) { a.action = null; a.spot = null; a.until = null; a.asleep = false; delete a.eff; delete a.together; delete a.boost; }
+    if (a.action || a.asleep) { a.action = null; a.spot = null; a.until = null; a.asleep = false; delete a.eff; delete a.together; delete a.boost; delete a.guest; }
     var luck = s.persons![r].stats.luck;
     var swing = 0;
     if (ms.swing) {

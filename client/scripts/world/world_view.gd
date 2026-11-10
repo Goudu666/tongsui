@@ -16,6 +16,8 @@ const SnapshotBuffer := preload("res://scripts/net/snapshot_buffer.gd")
 const TICK_RATE := 10.0
 const CORRECT_DEADZONE := 6.0   ## 服务器和本地差这么点就不管
 const SNAP_DIST := 220.0        ## 差太多（换天回家、被叫去事件）直接到位
+const ZOOM := 1.4               ## 镜头：1080 高的屏幕上看到 771 高的一段河畔里
+const HUD_SHIFT := 56.0         ## 人在屏幕上比正中低这么多（界面坐标）
 
 var map: Dictionary = {}
 var actions: Dictionary = {}
@@ -70,9 +72,11 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 		buffers[r] = SnapshotBuffer.new()
 		light.actors.append(actor)
 	camera = Camera2D.new()
-	# 长屏手机上一屏能看到的比地图还高，就再放大一点，别露出地图外面的白纸
+	# 横屏：一屏横着能看到大半条街。屏幕特别长（或者平板特别高）时一屏比地图还大，就再放大一点，别露出地图外面的白纸
 	var view := get_viewport_rect().size
-	camera.zoom = Vector2.ONE * maxf(1.4, maxf(view.x / float(map.size[0]), view.y / float(map.size[1])) + 0.01)
+	camera.zoom = Vector2.ONE * maxf(ZOOM, maxf(view.x / float(map.size[0]), view.y / float(map.size[1])) + 0.01)
+	# 顶上有一条 HUD：人往下站一点，头顶上的字不被纸带压住
+	camera.offset = Vector2(0, -HUD_SHIFT / camera.zoom.y)
 	camera.limit_left = 0
 	camera.limit_top = 0
 	camera.limit_right = int(map.size[0])
@@ -272,6 +276,16 @@ func _doing_label(role: String, act: String) -> String:
 		if d is Dictionary:
 			return str(d.get("label", "忙"))
 	return str(actions.get(act, {}).get("label", act))
+
+
+## 这个位置叫什么（HUD 上「对门在哪」用）。自己家写「家里」，串门写「你家」，不在哪块地方上就是路上
+func place_name(pos: Vector2, role: String) -> String:
+	for z in map.zones:
+		if Rect2(z.rect[0], z.rect[1], z.rect[2], z.rect[3]).has_point(pos):
+			if z.has("owner"):
+				return "家里" if str(z.owner) == role else ("你家" if str(z.owner) == my_role else str(z.name))
+			return str(z.name)
+	return "路上"
 
 
 ## 离自己最近、够得着、现在有事可做的互动点

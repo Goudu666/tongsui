@@ -4,6 +4,8 @@ extends Node
 ## 另有「先逛逛」：不联网，只能走动，用来调地图和美术。
 ## 界面全部用代码搭（M0），层级：
 ##   背景纸张（CanvasLayer -10）→ 世界（Node2D + Camera2D）→ UI（CanvasLayer 1：screen / hud / modal / toast）
+## 横屏：设计稿 1920×1080，高固定、宽随手机变长（见 Kit.BASE）。菜单页用 _columns() 分左右两栏；
+## 河畔里的 HUD 是「对门」构图（ui/hud.gd）；弹窗用 _open_modal(宽度)，选项用 _options() 并排。
 
 const P := preload("res://scripts/ui/palette.gd")
 const Kit := preload("res://scripts/ui/kit.gd")
@@ -35,12 +37,19 @@ var body: VBoxContainer  ## screen 里的内容（标题页没有）
 var hud: Hud
 var goal_panel: GoalPanel  ## 下一个人生关口（HUD 里日历牌下面那条纸带，点开看全部的线）
 var action_btn: Button
+var action_title: Label    ## 行动按钮上的大字：做什么
+var action_sub: Label      ## 下面一行小字：多久、多少钱、搭不搭伴
+var _action_dim: Variant = null  ## 行动按钮上的字现在是不是灰的（null：还没设过）
 var modal: ColorRect
 var modal_card: PanelContainer
+var modal_scroll: ScrollContainer  ## 弹窗比屏幕高时，卡片里面滚
 var modal_body: VBoxContainer
 var toast: PanelContainer
 var toast_label: Label
 var _toast_tween: Tween
+var _toast_box := Vector2.ZERO  ## 提示条这一回的大小
+var _toast_over := false        ## 提示条是不是贴在顶上（开着弹窗）
+var _toast_drop := 0.0
 var _modal_tween: Tween
 var _page_id := ""       ## 现在是哪一页；换页时才播转场
 var _stage_shown := ""   ## 河畔里现在显示的人生阶段
@@ -59,6 +68,12 @@ var duet: DuetUI  ## 「接话」的界面：猜 TA / 搭上了 / 回话（见 d
 var legacy: LegacyUI  ## 传承的界面：投胎页的老物件、结局页的再来一世（见 docs/LEGACY.md）
 var _preview_minute := 390.0
 const PRACTICE_ACTION := "play_river"
+const PAGE_WIDTH := 1560.0    ## 菜单页内容最宽这么多，再宽就居中（两栏）
+const COLUMN_WIDTH := 1040.0  ## 只有一栏的页面
+const MODAL_WIDTH := 1040.0   ## 普通弹窗
+const MODAL_WIDE := 1500.0    ## 选项并排、左右分栏的弹窗
+const ACTION_SIZE := Vector2(640, 128)
+const TOAST_ANCHOR := 0.72  ## 提示条平时在屏高这么多的地方；开着弹窗时贴到顶上
 var _practice_count := 0
 
 
@@ -140,27 +155,32 @@ func _build_layers() -> void:
 	hud.visible = false
 	ui.add_child(hud)
 	goal_panel = GoalPanel.new()
-	goal_panel.anchor_right = 1.0
-	goal_panel.offset_left = 40
-	goal_panel.offset_right = -40
-	goal_panel.offset_top = 282
-	goal_panel.offset_bottom = 378
 	goal_panel.visible = false
 	goal_panel.pressed.connect(_show_goal_detail)
 	hud.add_child(goal_panel)
+	# 行动按钮：右下角，右手拇指够得着。两行字自己摆（按钮本身不带字）
 	action_btn = Button.new()
-	action_btn.anchor_left = 0.5
-	action_btn.anchor_right = 0.5
+	action_btn.anchor_left = 1.0
+	action_btn.anchor_right = 1.0
 	action_btn.anchor_top = 1.0
 	action_btn.anchor_bottom = 1.0
-	action_btn.offset_left = -400
-	action_btn.offset_right = 400
-	action_btn.offset_top = -236
-	action_btn.offset_bottom = -116
 	action_btn.visible = false
 	action_btn.pressed.connect(_on_action_pressed)
 	Kit.make_primary(action_btn)
 	hud.add_child(action_btn)
+	var lines := VBoxContainer.new()
+	lines.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	lines.offset_left = 28
+	lines.offset_right = -28
+	lines.alignment = BoxContainer.ALIGNMENT_CENTER
+	lines.add_theme_constant_override("separation", 0)
+	lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	action_btn.add_child(lines)
+	action_title = Kit.label(lines, "", 40, P.PAPER, HORIZONTAL_ALIGNMENT_CENTER)
+	action_sub = Kit.label(lines, "", 26, Color(P.PAPER, 0.8), HORIZONTAL_ALIGNMENT_CENTER)
+	for l in [action_title, action_sub]:
+		l.autowrap_mode = TextServer.AUTOWRAP_OFF
+		l.clip_text = true
 
 	# 弹窗（事件、结算、一天结束）：一张纸卡片，高度跟着内容走
 	modal = ColorRect.new()
@@ -171,21 +191,28 @@ func _build_layers() -> void:
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	modal.add_child(center)
-	modal_card = Kit.card(Kit.accent, 56.0)
+	modal_card = Kit.card(Kit.accent, 52.0)
 	Kit._accent_boxes.append(modal_card.get_theme_stylebox("panel"))
-	modal_card.custom_minimum_size = Vector2(960, 0)
+	modal_card.custom_minimum_size = Vector2(MODAL_WIDTH, 0)
 	center.add_child(modal_card)
+	# 横屏只有 1080 高：内容比屏幕高的时候，卡片不再长，里面滚
+	modal_scroll = ScrollContainer.new()
+	modal_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	modal_card.add_child(modal_scroll)
 	modal_body = VBoxContainer.new()
-	modal_body.add_theme_constant_override("separation", 26)
-	modal_card.add_child(modal_body)
+	modal_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	modal_body.add_theme_constant_override("separation", 22)
+	modal_scroll.add_child(modal_body)
+	modal_body.minimum_size_changed.connect(_fit_modal)
+	ui.resized.connect(_fit_modal)
 
 	# 提示条：一张贴歪的小纸条
 	toast = Kit.card(Kit.accent, 26.0, false, 6.0)
 	Kit._accent_boxes.append(toast.get_theme_stylebox("panel"))
 	toast.anchor_left = 0.5
 	toast.anchor_right = 0.5
-	toast.anchor_top = 0.74
-	toast.anchor_bottom = 0.74
+	toast.anchor_top = TOAST_ANCHOR
+	toast.anchor_bottom = TOAST_ANCHOR
 	toast.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	toast.grow_vertical = Control.GROW_DIRECTION_BOTH
 	toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -194,11 +221,14 @@ func _build_layers() -> void:
 	ui.add_child(toast)
 	toast_label = Kit.label(toast, "", 34, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
 
+	# 断线提示：左下角一条（顶上是 HUD，右下是行动按钮）
 	banner = Label.new()
-	banner.anchor_left = 0.0
-	banner.anchor_right = 1.0
-	banner.offset_top = 0
-	banner.offset_bottom = 64
+	banner.anchor_top = 1.0
+	banner.anchor_bottom = 1.0
+	banner.offset_left = 40
+	banner.offset_right = 780
+	banner.offset_top = -104
+	banner.offset_bottom = -40
 	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	banner.add_theme_font_size_override("font_size", 30)
@@ -210,15 +240,19 @@ func _build_layers() -> void:
 	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	banner.visible = false
 	ui.add_child(banner)
+	ui.resized.connect(_layout_hud)
+	_layout_hud()
 
 
-func _scroll_column(parent: Control, side: int, top: int) -> VBoxContainer:
+## 菜单页的内容区：可以上下滚，内容最宽 width，宽屏上居中；比一屏矮的时候上下也居中
+func _scroll_column(parent: Control, width: float) -> VBoxContainer:
+	var inset := Kit.safe_sides(ui)
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", side - 16)
-	margin.add_theme_constant_override("margin_right", side - 24)
-	margin.add_theme_constant_override("margin_top", top)
-	margin.add_theme_constant_override("margin_bottom", 100)
+	margin.add_theme_constant_override("margin_left", int(56 + inset.x) - 16)
+	margin.add_theme_constant_override("margin_right", int(56 + inset.y) - 24)
+	margin.add_theme_constant_override("margin_top", 28)
+	margin.add_theme_constant_override("margin_bottom", 24)
 	parent.add_child(margin)
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -233,9 +267,81 @@ func _scroll_column(parent: Control, side: int, top: int) -> VBoxContainer:
 	pad.add_theme_constant_override("margin_bottom", 24)
 	scroll.add_child(pad)
 	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 30)
+	col.custom_minimum_size.x = minf(width, ui.size.x - 112.0 - inset.x - inset.y)
+	col.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	col.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	col.add_theme_constant_override("separation", 26)
 	pad.add_child(col)
 	return col
+
+
+## 左右两栏（横屏的菜单页大多是：左边是「这是什么」，右边是「要你做什么」）。
+## 返回 [左栏, 右栏]；ratio 是两栏的宽度比
+func _columns(parent: Container, left_ratio := 1.0, right_ratio := 1.0, gap := 80) -> Array:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", gap)
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	parent.add_child(row)
+	var out: Array = []
+	for ratio in [left_ratio, right_ratio]:
+		var col := VBoxContainer.new()
+		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		col.size_flags_stretch_ratio = ratio
+		col.add_theme_constant_override("separation", 26)
+		row.add_child(col)
+		out.append(col)
+	return out
+
+
+## 并排的选项（事件、关口、猜 TA）：三个以内排一行，四个 2×2，再多三列。往返回的格子里加按钮就行
+func _options(parent: Container, count: int) -> GridContainer:
+	var grid := GridContainer.new()
+	grid.columns = count if count <= 3 else (2 if count == 4 else 3)
+	grid.add_theme_constant_override("h_separation", 26)
+	grid.add_theme_constant_override("v_separation", 22)
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	parent.add_child(grid)
+	return grid
+
+
+## 选项那张票：和普通按钮一个框，字居中，几张票一样高
+func _option(grid: Container, text: String, on_press: Callable) -> Button:
+	var b := Kit.button(grid, text, on_press)
+	b.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	b.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	b.custom_minimum_size.y = 132
+	b.add_theme_font_size_override("font_size", 36)
+	return b
+
+
+## 选项并排的弹窗该多宽：两个选项不用太宽，三个以上用宽卡
+static func _options_width(count: int) -> float:
+	return MODAL_WIDTH if count <= 1 else (1240.0 if count == 2 or count == 4 else MODAL_WIDE)
+
+
+## HUD 上位置跟着屏幕宽度和刘海走的几样东西
+func _layout_hud() -> void:
+	if hud == null or goal_panel == null:
+		return
+	var inset := Kit.safe_sides(ui)
+	hud.inset = inset
+	var strip := hud.strip_rect()
+	goal_panel.position = strip.position
+	goal_panel.size = strip.size
+	action_btn.offset_right = -40 - inset.y
+	action_btn.offset_left = action_btn.offset_right - ACTION_SIZE.x
+	action_btn.offset_bottom = -44
+	action_btn.offset_top = action_btn.offset_bottom - ACTION_SIZE.y
+	banner.offset_left = 40 + inset.x
+	banner.offset_right = banner.offset_left + 740
+
+
+## 弹窗卡片的高：跟着内容走，但不超过屏幕
+func _fit_modal() -> void:
+	if modal_scroll == null:
+		return
+	var room := ui.size.y - 64.0 - 104.0  # 上下各留 32，再去掉卡片自己的留白
+	modal_scroll.custom_minimum_size.y = minf(modal_body.get_combined_minimum_size().y, room)
 
 
 func _clear(box: Container) -> void:
@@ -277,10 +383,21 @@ func _status(parent: Container) -> Label:
 func _set_status(text: String) -> void:
 	if body == null:
 		return
-	var s := body.get_node_or_null("Status") as Label
+	# 分了栏以后「Status」不一定直接挂在 body 下面
+	var s := body.find_child("Status", true, false) as Label
 	if s == null:
 		s = _status(body)
 	s.text = text
+
+
+## 提示条摆在哪：平时在屏幕下半截；开着弹窗时那里正是弹窗的按钮，纸条贴到屏幕顶上。drop 是落下来那一下还差多少
+func _toast_place(drop: float) -> void:
+	_toast_drop = drop
+	toast.anchor_top = 0.0 if _toast_over else TOAST_ANCHOR
+	toast.anchor_bottom = toast.anchor_top
+	var mid := maxf(64.0, _toast_box.y / 2.0 + 8.0) if _toast_over else 0.0
+	toast.offset_top = mid + drop - _toast_box.y / 2.0
+	toast.offset_bottom = mid + drop + _toast_box.y / 2.0
 
 
 func _toast(text: String) -> void:
@@ -301,13 +418,13 @@ func _toast(text: String) -> void:
 	if _toast_tween:
 		_toast_tween.kill()
 	toast.modulate.a = 0.0
-	toast.offset_top = 40 - box.y / 2.0
-	toast.offset_bottom = 40 + box.y / 2.0
+	_toast_box = box
+	_toast_over = modal.visible
+	_toast_place(40.0)
 	_toast_tween = create_tween()
 	_toast_tween.set_parallel(true)
 	_toast_tween.tween_property(toast, "modulate:a", 1.0, 0.18)
-	_toast_tween.tween_property(toast, "offset_top", -box.y / 2.0, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_toast_tween.tween_property(toast, "offset_bottom", box.y / 2.0, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_toast_tween.tween_method(_toast_place, 40.0, 0.0, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_toast_tween.set_parallel(false)
 	_toast_tween.tween_interval(2.6)
 	_toast_tween.tween_property(toast, "modulate:a", 0.0, 0.6)
@@ -329,7 +446,7 @@ func _set_role(role: String) -> void:
 	Kit.set_accent(P.role_color(role))
 
 
-func _show_screen(id: String, scroll := true) -> void:
+func _show_screen(id: String, scroll := true, width := PAGE_WIDTH) -> void:
 	_page(id)
 	screen.visible = true
 	hud.visible = false
@@ -337,7 +454,7 @@ func _show_screen(id: String, scroll := true) -> void:
 	for c in screen.get_children():
 		screen.remove_child(c)
 		c.queue_free()
-	body = _scroll_column(screen, 72, 150) if scroll else null
+	body = _scroll_column(screen, width) if scroll else null
 
 
 # ======================================================================
@@ -350,11 +467,14 @@ func _show_title() -> void:
 		net.go_offline()
 	banner.visible = false
 	_show_screen("title", false)
-	screen.add_child(TitleArt.new())
+	var art := TitleArt.new()
+	screen.add_child(art)
+	# 左边是标志和按钮，右边是那扇窗（title_art.gd 定版面）
 	var col := VBoxContainer.new()
-	col.position = Vector2(88, 1440 + TitleArt.drop(screen.size.y))
-	col.size = Vector2(900, 0)
-	col.add_theme_constant_override("separation", 34)
+	var slot := art.buttons_rect()
+	col.position = slot.position
+	col.size = Vector2(slot.size.x, 0)
+	col.add_theme_constant_override("separation", 30)
 	screen.add_child(col)
 	if content.is_empty():
 		_label(col, "没有找到 data/content.json，请先在仓库根目录运行 npm run content", 32, P.MEI)
@@ -386,30 +506,42 @@ func _process(delta: float) -> void:
 		hud.minute = _preview_minute
 		world.set_minute(_preview_minute)
 	world.controllable = not modal.visible and not screen.visible and not games.busy()
+	_refresh_partner()
 	var spot := world.nearest_spot()
 	if spot.is_empty() or modal.visible or games.busy():
 		action_btn.visible = false
 		return
 	var act := world.action_of(spot)
-	var cost := ""
+	var cost: Array = []
 	if bool(act.get("sleep", false)):
-		cost = " · 结束这一天"
+		cost.append("结束这一天")
 	elif bool(act.get("duty", false)):
-		cost = " · 到 %s" % P.clock(float(act.get("until", 930)))
+		cost.append("到 %s" % P.clock(float(act.get("until", 930))))
 	elif int(act.get("minutes", 0)) > 0:
-		cost = " · %d 分钟" % int(act.minutes)
+		cost.append("%d 分钟" % int(act.minutes))
 	if int(act.get("money", 0)) < 0:
-		cost += " · %d 块" % -int(act.money)
+		cost.append("%d 块" % -int(act.money))
 	# TA 正在这儿做同一件事：现在坐下就是搭伴，两个人都长得快
 	if world.partner_doing(spot, act):
-		cost += " · 和 TA 搭伴"
-	action_btn.text = str(act.get("label", "")) + cost
+		cost.append("和 TA 搭伴")
+	var title := str(act.get("label", ""))
 	action_btn.set_meta("spot", spot.id)
 	action_btn.disabled = offline_preview
-	if offline_preview and str(act.get("id", "")) == PRACTICE_ACTION:
-		# 不联网也能试一局放风筝（跟陪练放，不算数）
-		action_btn.text = "试玩放风筝"
-		action_btn.disabled = false
+	if offline_preview:
+		cost = ["联网之后才能做"]
+		if str(act.get("id", "")) == PRACTICE_ACTION:
+			# 不联网也能试一局放风筝（跟陪练放，不算数）
+			title = "试玩放风筝"
+			cost = ["跟陪练放，不算数"]
+			action_btn.disabled = false
+	action_title.text = title
+	action_sub.text = " · ".join(cost)
+	action_sub.visible = not cost.is_empty()
+	# 字的颜色跟着按钮灰不灰走。只在变的时候设：同一个颜色再设一遍也会触发主题变更和重排，这里每帧都跑
+	if _action_dim != action_btn.disabled:
+		_action_dim = action_btn.disabled
+		action_title.add_theme_color_override("font_color", P.INK_SOFT if _action_dim else P.PAPER)
+		action_sub.add_theme_color_override("font_color", P.INK_SOFT if _action_dim else Color(P.PAPER, 0.8))
 	action_btn.visible = true
 
 
@@ -440,8 +572,7 @@ func _on_move_report(pos: Vector2) -> void:
 # ======================================================================
 
 func _show_online() -> void:
-	_show_screen("online")
-	_gap(body, 60)
+	_show_screen("online", true, COLUMN_WIDTH)
 	_label(body, "联机", 96)
 	if not NetClient.addon_available():
 		_label(body, "没有找到 nakama-godot 插件（client/addons/com.heroiclabs.nakama）。\n确认 project.godot 里注册了 autoload「Nakama」，然后用 Godot 重新打开项目。", 36, P.MEI)
@@ -475,40 +606,46 @@ func _show_online() -> void:
 		_primary(body, "重试", _show_online)
 		_quiet(body, "返回", _show_title)
 		return
-	_clear(body)
-	_gap(body, 60)
-	_label(body, "联机", 96)
-	_label(body, "一个人开一条人生线，把配对码发给另一个人。", 32, P.INK_SOFT)
+	# 连上了：左边是「接着过」，右边是「新开一条 / 加入 TA 的」
+	_show_screen("online")
+	var cols := _columns(body, 1.0, 1.0)
+	var left: VBoxContainer = cols[0]
+	var right: VBoxContainer = cols[1]
+	_label(left, "联机", 96)
+	_label(left, "一个人开一条人生线，把配对码发给另一个人。", 32, P.INK_SOFT)
 
 	# 继续之前的人生线
 	lobby_list = VBoxContainer.new()
 	lobby_list.add_theme_constant_override("separation", 20)
-	body.add_child(lobby_list)
+	left.add_child(lobby_list)
 	net.list_lifelines()
+	Kit.rule(left, Color(P.INK, 0.25))
+	_label(left, "服务器：%s" % ServerConfig.url(), 28, P.INK_SOFT)
+	var tools := HBoxContainer.new()
+	tools.add_theme_constant_override("separation", 26)
+	left.add_child(tools)
+	_button(tools, "换手机找回", _show_recovery)
+	_button(tools, "服务器设置", _show_server_settings)
+	_quiet(left, "返回", _show_title)
 
-	_gap(body, 20)
+	_gap(right, 24)
 	var name_edit := LineEdit.new()
 	name_edit.placeholder_text = "你的名字（最多 12 个字）"
 	name_edit.max_length = 12
-	body.add_child(name_edit)
-	Kit.tint(_primary(body, "开一条新的人生线（我是青）", func(): net.create_lifeline(name_edit.text)), P.QING)
-	_gap(body, 10)
-	Kit.rule(body, Color(P.INK, 0.25))
+	right.add_child(name_edit)
+	Kit.tint(_primary(right, "开一条新的人生线（我是青）", func(): net.create_lifeline(name_edit.text)), P.QING)
+	_gap(right, 10)
+	Kit.rule(right, Color(P.INK, 0.25))
 	var code_edit := LineEdit.new()
 	code_edit.placeholder_text = "输入 TA 发给你的 6 位配对码"
 	code_edit.max_length = 6
-	body.add_child(code_edit)
-	Kit.tint(_primary(body, "加入（我是梅）", func(): net.join_lifeline(code_edit.text.strip_edges(), name_edit.text)), P.MEI)
-	_status(body)
-	Kit.rule(body, Color(P.INK, 0.25))
-	_button(body, "换手机找回", _show_recovery)
-	_server_row(body)
-	_quiet(body, "返回", _show_title)
+	right.add_child(code_edit)
+	Kit.tint(_primary(right, "加入（我是梅）", func(): net.join_lifeline(code_edit.text.strip_edges(), name_edit.text)), P.MEI)
+	_status(right)
 
 
 func _show_server_settings() -> void:
-	_show_screen("server")
-	_gap(body, 60)
+	_show_screen("server", true, COLUMN_WIDTH)
 	var panel := ServerSettings.new()
 	panel.done.connect(func(changed: bool):
 		if changed:
@@ -533,30 +670,34 @@ func _server_row(parent: Container) -> void:
 ## 换手机找回：显示这台手机的找回码；或者输入旧手机的找回码
 func _show_recovery() -> void:
 	_show_screen("recovery")
-	_gap(body, 60)
-	_label(body, "换手机找回", 72)
-	_label(body, "把下面的找回码记下来。换手机、卸载重装之后，在新手机上输入它，就能回到你们的人生线。", 34, P.INK_SOFT)
+	var cols := _columns(body, 1.0, 1.0)
+	var left: VBoxContainer = cols[0]
+	var right: VBoxContainer = cols[1]
+	_label(left, "换手机找回", 72)
+	_label(left, "把下面的找回码记下来。换手机、卸载重装之后，在新手机上输入它，就能回到你们的人生线。", 34, P.INK_SOFT)
 	# 和配对码一样，印在一张票上
 	var ticket := Kit.card(Kit.accent, 40.0)
-	body.add_child(ticket)
+	left.add_child(ticket)
 	var code_label := _label(ticket, "生成中……", 84, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
+	var copy_slot := VBoxContainer.new()
+	left.add_child(copy_slot)
+	_gap(right, 30)
+	_label(right, "我是从旧手机过来的", 44)
+	var edit := LineEdit.new()
+	edit.placeholder_text = "输入旧手机上的 10 位找回码"
+	edit.max_length = 12
+	right.add_child(edit)
+	_primary(right, "找回", func(): net.recover(edit.text))
+	_status(right)
+	_quiet(right, "返回", _show_online)
 	var code: String = await net.recovery_code()
 	if not is_instance_valid(code_label):
 		return
 	code_label.text = code if code != "" else "（生成失败）"
 	if code != "":
-		_button(body, "复制找回码", func():
+		_button(copy_slot, "复制找回码", func():
 			DisplayServer.clipboard_set(code)
 			_set_status("已复制，存到备忘录里"))
-	_gap(body, 40)
-	_label(body, "我是从旧手机过来的", 36)
-	var edit := LineEdit.new()
-	edit.placeholder_text = "输入旧手机上的 10 位找回码"
-	edit.max_length = 12
-	body.add_child(edit)
-	_primary(body, "找回", func(): net.recover(edit.text))
-	_status(body)
-	_quiet(body, "返回", _show_online)
 
 
 func _on_recovered(ok: bool, text: String) -> void:
@@ -619,20 +760,22 @@ func _on_net_failed(text: String) -> void:
 
 func _on_net_created(code: String, lifeline_id: String) -> void:
 	_show_screen("code")
-	_gap(body, 160)
-	_label(body, "把配对码发给 TA", 40, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
+	var cols := _columns(body, 1.15, 1.0)
+	var left: VBoxContainer = cols[0]
+	var right: VBoxContainer = cols[1]
+	_label(left, "把配对码发给 TA", 44, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
 	# 配对码印在一张票上
 	var ticket := Kit.card(P.QING, 40.0)
-	body.add_child(ticket)
+	left.add_child(ticket)
 	_label(ticket, " ".join(code.split("")), 130, P.QING, HORIZONTAL_ALIGNMENT_CENTER)
-	_label(body, "TA 输入之后，这里会自己进屋", 34, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
-	_gap(body, 40)
-	_primary(body, "复制配对码", func():
+	_label(left, "TA 输入之后，这里会自己进屋", 34, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
+	right.alignment = BoxContainer.ALIGNMENT_CENTER
+	_primary(right, "复制配对码", func():
 		DisplayServer.clipboard_set(code)
 		_set_status("已复制，去微信粘贴给 TA"))
-	_button(body, "TA 已经输好了，进去", func(): net.open_lifeline(lifeline_id))
-	_status(body)
-	_quiet(body, "先回大厅", _show_online)
+	_button(right, "TA 已经输好了，进去", func(): net.open_lifeline(lifeline_id))
+	_status(right)
+	_quiet(right, "先回大厅", _show_online)
 
 
 var _partner_online: Variant = null
@@ -719,26 +862,33 @@ func _show_roll() -> void:
 	_show_screen("roll")
 	var mine: Dictionary = life.rolls[my_role]
 	var theirs: Dictionary = life.rolls[_other()]
-	legacy.roll_head(body)
-	var card := _roll_card(body, my_role, mine, true)
+	# 对门：我的出生证在左，TA 的在右
+	var cols := _columns(body, 1.25, 1.0)
+	var left: VBoxContainer = cols[0]
+	var right: VBoxContainer = cols[1]
+	legacy.roll_head(left)
+	var card := _roll_card(left, my_role, mine, true)
 	_drop_in(card)  # 每抽一次，新卡片"啪"地落下来
+	_label(right, "对门是", 40, P.INK_SOFT)
+	_roll_card(right, _other(), theirs, false)
+	legacy.their_offer(right)
+	_label(right, "TA 已经定下来了" if bool(theirs.confirmed) else "TA 还在犹豫", 30, P.INK_SOFT)
+	_status(right)
+	# 第二世起，我面前摆着的老物件在两栏下面通栏排开，定下来的按钮跟到它下面；头一世按钮就在出生证下面
 	legacy.my_offer(body)
+	var foot: Container = left
+	if legacy.has_offer():
+		foot = _columns(body, 1.25, 1.0)[0]  # 和出生证一样宽，对齐在我这一边
 	if bool(mine.confirmed):
-		_label(body, "就这样了。等 TA 也定下来……", 36, P.INK_SOFT)
+		_label(foot, "就这样了。等 TA 也定下来……", 36, P.INK_SOFT)
 	else:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 30)
-		body.add_child(row)
+		foot.add_child(row)
 		var b := _button(row, "重新投胎 · 剩 %d 次" % int(mine.rerollsLeft), func(): net.reroll())
 		b.disabled = int(mine.rerollsLeft) <= 0
+		b.autowrap_mode = TextServer.AUTOWRAP_OFF
 		_primary(row, "就这样，出生吧", func(): net.confirm_roll())
-	_gap(body, 6)
-	_label(body, "对门是", 32, P.INK_SOFT)
-	_roll_card(body, _other(), theirs, false)
-	legacy.their_offer(body)
-	_label(body, "TA 已经定下来了" if bool(theirs.confirmed) else "TA 还在犹豫", 30, P.INK_SOFT)
-	_status(body)
-
 
 ## 卡片从上面一点落到它本来的位置。等容器排好版再动：位置是相对它自己该在的地方算的，
 ## 不然会把卡片挪到页面最顶上，盖住页头
@@ -822,6 +972,7 @@ func _enter_world() -> void:
 	world.age = int(t.age)
 	world.net = null if offline_preview else net
 	world.move_report.connect(_on_move_report)
+	_layout_hud()
 	_refresh_hud()
 
 
@@ -833,6 +984,8 @@ func _leave_world() -> void:
 		world.queue_free()
 		world = null
 	hud.visible = false
+	hud.partner = {}
+	hud.pointer = {}
 
 
 ## 人生阶段变了：整版墨盖下来，写上年纪，盖住的时候换外观和纸色
@@ -896,6 +1049,47 @@ func _refresh_hud() -> void:
 	hud.bond = last_world.get("bond", life.get("bond", {}))
 
 
+## 对门的牌（HUD 右上）和屏幕边上的箭头：TA 在哪、在做什么；走出画面了就指个方向。每帧算一次
+func _refresh_partner() -> void:
+	var other: Variant = world.actors.get(_other())
+	if offline_preview or other == null or not other.visible:
+		hud.partner = {}
+		hud.pointer = {}
+		return
+	var online: bool = _partner_online == true
+	var where := world.place_name(other.position, _other())
+	var big := where
+	var small := "闲着" if online else "影子替 TA 过着"
+	if other.asleep:
+		big = "睡着了"
+		small = where
+	elif other.action_label != "":
+		big = other.action_label
+		small = ("和你搭伴 · " if other.together else "") + where
+	var color := P.role_color(_other())
+	var their_name := str(names.get(_other(), "TA"))
+	hud.partner = {"name": their_name, "color": color, "online": online, "big": big, "small": small}
+	# 走出画面了：沿着「屏幕中心 → TA」这条线，贴到边上
+	var at: Vector2 = world.get_canvas_transform() * other.global_position
+	var view := Rect2(Vector2.ZERO, ui.size)
+	if view.grow(-20.0).has_point(at) or modal.visible:
+		hud.pointer = {}
+		return
+	var box := Rect2(70.0 + hud.inset.x, 300.0, ui.size.x - 140.0 - hud.inset.x - hud.inset.y, ui.size.y - 370.0)
+	var c := view.get_center()
+	var d := at - c
+	var k := 1.0
+	if absf(d.x) > 0.01:
+		k = minf(k, ((box.end.x if d.x > 0.0 else box.position.x) - c.x) / d.x)
+	if absf(d.y) > 0.01:
+		k = minf(k, ((box.end.y if d.y > 0.0 else box.position.y) - c.y) / d.y)
+	var edge := c + d * k
+	# 别钻到行动按钮底下
+	if action_btn.visible and edge.x > action_btn.position.x - 70.0 and edge.y > action_btn.position.y - 70.0:
+		edge.y = action_btn.position.y - 70.0
+	hud.pointer = {"at": edge.round(), "dir": d.normalized().snappedf(0.02), "color": color, "name": their_name}
+
+
 static func _dict(v: Variant) -> Dictionary:
 	return v if v is Dictionary else {}
 
@@ -912,6 +1106,7 @@ func _refresh_goal(my_track: Dictionary) -> void:
 	goal_panel.their_goal = goals.get(_other())
 	goal_panel.my_color = P.role_color(my_role)
 	goal_panel.their_color = P.role_color(_other())
+	goal_panel.their_name = str(names.get(_other(), "TA"))
 	goal_panel.eff = float(_dict(last_world.get("eff")).get(my_role, 1.0))
 	goal_panel.track = str(my_track.get("label", ""))
 	goal_panel.stats = _dict(_dict(last_world.get("stats")).get(my_role))
@@ -927,33 +1122,40 @@ func _show_goal_detail() -> void:
 	var stats: Dictionary = _dict(last_world.get("stats"))
 	var my_c := P.role_color(my_role)
 	var their_c := P.role_color(_other())
-	_open_modal()
+	# 左边是这一关所有的线，右边是三项属性和「怎么长得快」
+	_open_modal(MODAL_WIDE)
+	var cols := _columns(modal_body, 1.2, 1.0, 64)
+	var left: VBoxContainer = cols[0]
+	var right: VBoxContainer = cols[1]
+	left.add_theme_constant_override("separation", 14)
+	right.add_theme_constant_override("separation", 14)
 	if mine is Dictionary:
 		var head := HBoxContainer.new()
 		head.add_theme_constant_override("separation", 16)
-		modal_body.add_child(head)
+		left.add_child(head)
 		Kit.chip(head, "下一个关口", my_c)
 		var when := _label(head, "%d 岁 · %s" % [int(mine.age), GoalPanel.turns_text(int(mine.turns))], 30, P.INK_SOFT)
 		when.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		_label(modal_body, str(mine.title), 68)
-		Kit.rule(modal_body)
+		_label(left, str(mine.title), 64)
+		Kit.rule(left)
 		for l in mine.lines:
-			modal_body.add_child(GoalRow.new(l, GoalPanel.their_have(theirs if theirs is Dictionary and theirs.id == mine.id else null, str(l.id)), my_c, their_c))
+			left.add_child(GoalRow.new(l, GoalPanel.their_have(theirs if theirs is Dictionary and theirs.id == mine.id else null, str(l.id)), my_c, their_c))
 		if theirs is Dictionary and theirs.id != mine.id:
-			_label(modal_body, "%s 要过的是另一关：%s。" % [_role_text(_other()), str(theirs.title)], 30, P.INK_SOFT)
+			_label(left, "%s 要过的是另一关：%s。" % [_role_text(_other()), str(theirs.title)], 30, P.INK_SOFT)
 	else:
-		Kit.chip(modal_body, "往后的日子", my_c)
-		_label(modal_body, "没有非过不可的关了", 56)
-	Kit.rule(modal_body, Color(P.INK, 0.25))
+		Kit.chip(left, "往后的日子", my_c)
+		_label(left, "没有非过不可的关了", 56)
 	var mine_stats: Dictionary = _dict(stats.get(my_role))
 	var their_stats: Dictionary = _dict(stats.get(_other()))
+	Kit.chip(right, "现在的本事", P.INK)
 	for k in ["body", "mind", "charm"]:
 		if not mine_stats.has(k):
 			continue
 		var row := {"id": k, "text": P.STAT_NAME[k], "by": "", "unit": "分", "have": _points(mine_stats[k]), "need": 0, "ok": true}
-		modal_body.add_child(GoalRow.new(row, float(_points(their_stats[k])) if their_stats.has(k) else -1.0, my_c, their_c))
-	_label(modal_body, "实心的点是你，空心的是 %s。两个人在同一个地方做同一件事，都长得快一半；心情好的时候学得快，饿着困着学不进去。" % str(names.get(_other(), "TA")), 28, P.INK_SOFT)
-	_primary(modal_body, "知道了", _close_modal)
+		right.add_child(GoalRow.new(row, float(_points(their_stats[k])) if their_stats.has(k) else -1.0, my_c, their_c))
+	_label(right, "实心的点是你，空心的是 %s。两个人在同一个地方做同一件事，都长得快一半；心情好的时候学得快，饿着困着学不进去。" % str(names.get(_other(), "TA")), 28, P.INK_SOFT)
+	_gap(right, 6)
+	_primary(right, "知道了", _close_modal)
 	_gap(modal_body, 4)
 
 
@@ -996,18 +1198,21 @@ func _on_event_started(data: Dictionary) -> void:
 	if pe.kind == "milestone":
 		_show_milestone(pe, ev, _dict(data.get("locks", pe.get("locks"))))
 		return
-	_open_modal()
+	var opts: Array = ev.get("options", [])
+	_open_modal(_options_width(opts.size()))
 	modal.set_meta("waiting_event", pe.eventId)
 	if mirror:
 		Kit.chip(modal_body, "默契时刻 · 不要商量", P.role_color(my_role))
 	_label(modal_body, str(ev.get("title", "")), 68)
 	Kit.rule(modal_body)
 	_label(modal_body, str(ev.get("text", "")), 40)
-	_gap(modal_body, 8)
-	for o in ev.get("options", []):
+	_gap(modal_body, 4)
+	# 选项并排：一张张票摆在正文下面
+	var grid := _options(modal_body, opts.size())
+	for o in opts:
 		var oid: String = o.id
 		var otext: String = o.text
-		_button(modal_body, otext, _pick.bind(oid, otext, mirror))
+		_option(grid, otext, _pick.bind(oid, otext, mirror))
 	_gap(modal_body, 4)
 
 
@@ -1015,7 +1220,8 @@ func _on_event_started(data: Dictionary) -> void:
 ## 这是整个游戏里最重的一次选择：分数是平时一天天攒的，路是自己挑的，可以为了对门走低的那条。
 func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 	var both: bool = pe.roles.has(_other())
-	_open_modal()
+	var opts: Array = ev.get("options", [])
+	_open_modal(_options_width(opts.size()))
 	modal.set_meta("waiting_event", pe.eventId)
 	# 只有一条路可走的人，服务器已经替他定了：直接显示结果，等对门
 	var fixed: Variant = _dict(pe.get("choices")).get(my_role, pe.get("mine"))
@@ -1039,22 +1245,24 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 	var steady := int(round(float(_dict(pe.get("steady")).get(my_role, 0.0)) * 10.0))
 	if steady > 0:
 		_label(modal_body, "知道%s就在外头等着，心里踏实，少丢了 %d 分。" % [str(names.get(_other(), "TA")), steady], 30, P.INK_SOFT)
-	_gap(modal_body, 8)
+	_gap(modal_body, 4)
 	var my_locks: Dictionary = _dict(locks.get(my_role))
 	var their_locks: Dictionary = _dict(locks.get(_other()))
 	var their_name := str(names.get(_other(), "TA"))
-	for o in ev.get("options", []):
+	# 几条路并排摆着：够不着的是灰的，写着差多少；够得着的下面写对门走不走得了
+	var grid := _options(modal_body, opts.size())
+	for o in opts:
 		var oid: String = o.id
 		var otext: String = o.text
 		var gated: bool = o.has("min") or o.has("cost")
 		if my_locks.has(oid):
-			var b := _button(modal_body, "%s\n%s" % [otext, str(my_locks[oid])], func(): pass)
+			var b := _option(grid, "%s\n%s" % [otext, str(my_locks[oid])], func(): pass)
 			b.disabled = true
 		else:
 			var note := ""
 			if both and gated:
 				note = ("\n%s 够不着这条" if their_locks.has(oid) else "\n%s 也走得了") % their_name
-			_button(modal_body, otext + note, _pick_path.bind(oid, otext, both))
+			_option(grid, otext + note, _pick_path.bind(oid, otext, both))
 	_gap(modal_body, 4)
 
 
@@ -1080,6 +1288,7 @@ func _pick_send(option_id: String, option_text: String, guess: String) -> void:
 
 func _pick_shown(_option_id: String, option_text: String, mirror: bool) -> void:
 	_clear(modal_body)
+	modal_card.custom_minimum_size.x = MODAL_WIDTH
 	_label(modal_body, "你选了", 32, P.INK_SOFT)
 	_label(modal_body, option_text, 48, P.role_color(my_role))
 	if mirror:
@@ -1088,12 +1297,19 @@ func _pick_shown(_option_id: String, option_text: String, mirror: bool) -> void:
 		s.text = "TA 还在想……"
 
 
-func _open_modal() -> void:
+## width：卡片多宽。普通的 MODAL_WIDTH；选项并排或左右分栏的用 MODAL_WIDE / _options_width()
+func _open_modal(width := MODAL_WIDTH) -> void:
 	_clear(modal_body)
+	modal_card.custom_minimum_size.x = minf(width, ui.size.x - 96.0)
+	modal_card.size = Vector2.ZERO  # 上一张卡要是更宽更高，别把这张撑着
+	modal_scroll.scroll_vertical = 0
 	if modal.has_meta("waiting_event"):
 		modal.remove_meta("waiting_event")
 	modal.visible = true
 	action_btn.visible = false
+	if not _toast_over:  # 还挂着的提示条让到顶上去，别压住这张卡的按钮
+		_toast_over = true
+		_toast_place(_toast_drop)
 	# 卡片像一张纸落在桌上：先歪一点、小一点，再放正
 	if _modal_tween:
 		_modal_tween.kill()
@@ -1197,22 +1413,31 @@ func _show_milestone_result(e: Dictionary) -> void:
 		_close_modal()
 		_toast("%s：%s" % [str(ev.get("title", "")), _option_text(e.events[my_role], results[my_role].get("option"))])
 		return
-	_open_modal()
+	# 两个人都过这一关：两个圆在左，各自考了多少、走了哪条路在右
+	var box := modal_body
+	if both:
+		_open_modal(MODAL_WIDE - 160.0)
+		var cols := _columns(modal_body, 0.62, 1.0, 56)
+		var emblem: VBoxContainer = cols[0]
+		emblem.alignment = BoxContainer.ALIGNMENT_CENTER
+		emblem.add_child(Resonance.new(same))
+		box = cols[1]
+		box.add_theme_constant_override("separation", 20)
+	else:
+		_open_modal()
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 16)
-	modal_body.add_child(head)
+	box.add_child(head)
 	Kit.chip(head, ("同路" if same else "各走各的") if both else "人生关口", P.OVERLAP if same else P.INK)
 	var when := _label(head, "%s · %s" % [str(e.label), str(ev.get("title", ""))], 30, P.INK_SOFT)
 	when.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	if both:
-		modal_body.add_child(Resonance.new(same))
 	for r in ["qing", "mei"]:
 		if not results.has(r):
 			continue
 		var res: Dictionary = results[r]
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 18)
-		modal_body.add_child(row)
+		box.add_child(row)
 		Kit.chip(row, str(names.get(r, P.ROLE_NAME[r])), P.role_color(r), 30)
 		var mark := "（影子）" if e.get("shadow", []).has(r) else ""
 		var pick := _label(row, _option_text(e.events[r], res.get("option")) + mark, 38, P.INK)
@@ -1230,11 +1455,11 @@ func _show_milestone_result(e: Dictionary) -> void:
 		if tr.id == results[my_role].get("track"):
 			track_label = str(tr.label)
 	if str(e.get("text", "")) != "":
-		Kit.rule(modal_body, Color(P.INK, 0.25))
-		_label(modal_body, str(e.text), 44, P.OVERLAP if same else P.INK)
+		Kit.rule(box, Color(P.INK, 0.25))
+		_label(box, str(e.text), 44, P.OVERLAP if same else P.INK)
 	if track_label != "":
-		_label(modal_body, "从今天起：%s。" % track_label, 30, P.INK_SOFT)
-	_primary(modal_body, "往下过", _close_modal)
+		_label(box, "从今天起：%s。" % track_label, 30, P.INK_SOFT)
+	_primary(box, "往下过", _close_modal)
 	_gap(modal_body, 4)
 
 
@@ -1279,18 +1504,21 @@ func _show_check_result(e: Dictionary, c: Dictionary) -> void:
 func _show_ending() -> void:
 	_leave_world()
 	_show_screen("ending")
-	_gap(body, 20)
-	body.add_child(_EndMark.new())
-	_label(body, "一生", 110, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
+	# 左边是这一生怎么收的尾，右边是两个人的共同回忆
+	var cols := _columns(body, 1.0, 1.1)
+	var left: VBoxContainer = cols[0]
+	var right: VBoxContainer = cols[1]
+	left.add_child(_EndMark.new())
+	_label(left, "一生", 110, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
 	for e in life.get("log", []):
 		if e.kind == "end":
-			_label(body, str(e.text), 40, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
+			_label(left, str(e.text), 40, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
 	for line in duet.ending_lines():
-		_label(body, str(line), 34, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
-	_gap(body, 30)
+		_label(left, str(line), 34, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
+	_gap(left, 10)
 	var memories: Array = life.get("memories", [])
 	var card := Kit.card(P.OVERLAP, 44.0)
-	body.add_child(card)
+	right.add_child(card)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 18)
 	card.add_child(col)
@@ -1299,13 +1527,14 @@ func _show_ending() -> void:
 		_label(col, "（你们没有在同一件事上选到一起过）", 36, P.INK_SOFT)
 	else:
 		col.add_child(_MemoryLine.new(memories))
-	_gap(body, 20)
-	_label(body, "人生长卷（M3）会在这里生成一张双色长图。", 30, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
-	# 各自留给河畔里的老物件；服务器支持的话，再来一世
-	if legacy.ending(body):
-		_quiet(body, "回到标题", _show_title)
+	# 各自留给河畔里的老物件，跟共同回忆放一栏：都是这一世剩下的东西
+	legacy.left_behind(right)
+	_label(right, "人生长卷（M3）会在这里生成一张双色长图。", 30, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
+	# 服务器支持的话，再来一世；那样「回到标题」退成小字
+	if legacy.again(left):
+		_quiet(left, "回到标题", _show_title)
 	else:
-		_primary(body, "回到标题", _show_title)
+		_primary(left, "回到标题", _show_title)
 
 
 ## 结局页顶上：两个圆完全叠在一起

@@ -16,6 +16,7 @@ const MusicPlayer := preload("res://scripts/audio/music_player.gd")
 const Soundscape := preload("res://scripts/audio/soundscape.gd")
 const Observer := preload("res://scripts/audio/main_observer.gd")
 const P := preload("res://scripts/ui/palette.gd")
+const Kit := preload("res://scripts/ui/kit.gd")
 
 const SFX_DIR := "res://audio/sfx/"
 const MANIFEST := "res://audio/manifest.json"
@@ -32,10 +33,10 @@ const STEP_PITCH := {"child": 1.18, "teen": 1.06, "young": 1.0, "middle": 0.96, 
 const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "play_river", "dine": "eat_out", "ball": "play_alley", "chat": "listen", "club_math": "study", "club_sport": "play_alley", "club_art": "perform"}
 ## 设置按钮的三档：全开 → 只关音乐 → 静音
 const LEVELS := ["乐", "响", "静"]
-## 按钮和 HUD 右上角「亲近 / 默契」卡片（ui/hud.gd 的 _bond：宽 128，y 64~220）一样宽，在河畔里排在它下面
+## 横屏：菜单页在右上角；河畔里排在右上「对门的牌」下面（ui/hud.gd：横带 y 40~196，再空 16）
 const BUTTON_SIZE := Vector2(128, 68)
-const BUTTON_TOP_MENU := 64.0
-const BUTTON_TOP_WORLD := 240.0
+const BUTTON_TOP_MENU := 40.0
+const BUTTON_TOP_WORLD := 212.0
 
 var music: MusicPlayer
 var scape: Soundscape
@@ -183,8 +184,9 @@ func tint_button(color: Color) -> void:
 func place_button(in_world: bool, hidden: bool) -> void:
 	_button.visible = not hidden
 	var top := BUTTON_TOP_WORLD if in_world else BUTTON_TOP_MENU
-	_button.offset_left = -40 - BUTTON_SIZE.x
-	_button.offset_right = -40
+	var edge := -40.0 - Kit.safe_sides(_button).y  # 刘海在右边时让开
+	_button.offset_left = edge - BUTTON_SIZE.x
+	_button.offset_right = edge
 	_button.offset_top = top
 	_button.offset_bottom = top + BUTTON_SIZE.y
 

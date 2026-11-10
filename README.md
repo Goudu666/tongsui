@@ -52,7 +52,7 @@
 
 ```
 tongsui/
-├── client/                 Godot 4 客户端（竖屏 1080×1920）
+├── client/                 Godot 4 客户端（横屏 1920×1080，锁横向）
 │   ├── scenes/main.tscn    入口场景
 │   ├── scripts/            界面流程、地图与角色、联机封装
 │   ├── shaders/            纸张/套色 shader、XDoG 显影 shader

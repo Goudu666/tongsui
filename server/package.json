@@ -4,7 +4,7 @@
   "description": "同岁 Nakama TypeScript 服务端模块",
   "scripts": {
     "build": "tsc",
-    "test": "tsc && node test/life.test.mjs && node test/growth.test.mjs && node test/story.test.mjs && node test/arch.test.mjs",
+    "test": "tsc && node test/life.test.mjs && node test/growth.test.mjs && node test/story.test.mjs && node test/arch.test.mjs && node test/games.test.mjs",
     "e2e": "node test/e2e.mjs"
   },
   "devDependencies": {

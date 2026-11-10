@@ -19,6 +19,8 @@ const LOG := 10        ## s→c {entries}
 const PRESENCE := 11   ## s→c {online}
 const PING := 12       ## c→s {t}
 const PONG := 13       ## s→c {t, tick}
+const GAME := 20       ## s→c {game: {gameId, phase, left, ready, t, d} | null, result?} 搭伴小游戏
+const GAME_INPUT := 21 ## c→s {k: "ready" | "pass" | "quit" | 小游戏自己的输入}
 
 ## 通知码（Nakama notification code），与 main.ts 保持一致
 const NOTIFY_PARTNER_JOINED := 101

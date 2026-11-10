@@ -1,9 +1,10 @@
 extends Control
-## 下一个人生关口：常驻在河畔里画面上的一条纸带。
+## 下一个人生关口：常驻在河畔里画面上的一条纸带（横屏时在顶上，日历牌和对门的牌之间）。
 ## 它回答「我今天干这些是为了什么」：下一关是哪个、还有几个日子、离最近的那条线还差多少、对门走到哪了。
 ##   左边色条：关口的名字和还剩几个日子
+##   靠左是我：我的分 / 线，还差多少，和今天的状态（心情、饿、困折出来的效率）
 ##   中间一把尺：缺口是那条线，实心点是我，空心点是 TA
-##   右边：我的分 / 线，和今天的状态（心情、饿、困折出来的效率）
+##   靠右是对门：TA 在同一条线上的分，还差多少；TA 过的是另一关就写那一关
 ## 点一下展开全部的线（main.gd → _show_goal_detail）。数据来自服务器 WORLD 里的 goals / stats / eff / tracks。
 
 signal pressed
@@ -15,6 +16,7 @@ var goal: Variant = null        ## 我的 { id, title, age, turns, lines:[{id,te
 var their_goal: Variant = null  ## 对门的。两个人的关口可能不一样（一个辍学了、一个去了外地）
 var my_color := P.QING
 var their_color := P.MEI
+var their_name := "TA"
 var eff := 1.0                  ## 现在做事的效率（1.0 上下）
 var track := ""                 ## 现在走在哪条路上（上小学 / 机关上班）
 var stats: Dictionary = {}      ## 我的属性（0~10），没有关口时显示
@@ -36,7 +38,7 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _process(_delta: float) -> void:
-	var sig := [str(goal), str(their_goal), my_color, eff, track, str(stats), size]
+	var sig := [str(goal), str(their_goal), my_color, eff, track, str(stats), their_name, size]
 	if sig != _sig:
 		_sig = sig
 		queue_redraw()
@@ -134,28 +136,66 @@ func _draw() -> void:
 		return
 	draw_string(f, Vector2(18, 42), str(goal.title), HORIZONTAL_ALIGNMENT_LEFT, band - 28, 32, P.PAPER)
 	draw_string(f, Vector2(18, 76), turns_text(int(goal.turns)), HORIZONTAL_ALIGNMENT_LEFT, band - 28, 22, Color(P.PAPER, 0.85))
-	# 中间：哪条线、看什么、一把尺
-	var x0 := band + 24.0
-	var right := 236.0
-	var name_text := str(line.text)
-	var name_w := minf(f.get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x, size.x - x0 - right - 110.0)
-	draw_string(f, Vector2(x0, 36), name_text, HORIZONTAL_ALIGNMENT_LEFT, name_w, 26, P.INK)
-	draw_string(f, Vector2(x0 + name_w + 14, 36), "看" + str(line.by), HORIZONTAL_ALIGNMENT_LEFT, -1, 20, P.INK_SOFT)
-	draw_ruler(self, Vector2(x0 + 6, 66), size.x - x0 - right - 30.0, line, their_have(their_goal, str(line.id)), my_color, their_color)
-	# 右边：我的分 / 线
 	var unit := str(line.get("unit", "分"))
-	var have_text := str(int(line.have))
-	var need_text := " / %d %s" % [int(line.need), unit]
-	var hw := f.get_string_size(have_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 40).x
-	var rx := size.x - right + 6.0
-	draw_string(f, Vector2(rx, 46), have_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 40, P.INK)
-	draw_string(f, Vector2(rx + hw, 46), need_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, P.INK_SOFT)
+	var side := 212.0 if size.x >= 900.0 else 196.0  ## 两头各留给一个人的数
+	var x0 := band + 22.0
+	var tx := size.x - 38.0 - side
+	var both := size.x >= band + side * 2.0 + 170.0  ## 太窄（小屏加刘海）就只写我的，对门只剩尺上的空心点
+	if not both:
+		tx = size.x - 38.0
+	# 靠左：我。实心点 + 我的分 / 线
+	draw_circle(Vector2(x0 + 12, 34) + Vector2(2, 2), 9.0, my_color, true, -1.0, true)
+	draw_arc(Vector2(x0 + 12, 34), 9.0, 0, TAU, 20, P.INK, 2.5, true)
+	_score(f, x0 + 32.0, str(int(line.have)), " / %d %s" % [int(line.need), unit])
 	var sub := "够着了" if bool(line.ok) else "还差 %d %s" % [int(ceil(float(line.need) - float(line.have))), unit]
-	draw_string(f, Vector2(rx, 78), sub + _eff_text(" · "), HORIZONTAL_ALIGNMENT_LEFT, right - 40, 20, P.INK_SOFT)
+	var eff_text := _eff_text(" · ")
+	if f.get_string_size(sub + eff_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x > side - 6.0:
+		eff_text = ""  # 放不下就只说还差多少
+	draw_string(f, Vector2(x0, 78), sub + eff_text, HORIZONTAL_ALIGNMENT_LEFT, side - 6.0, 20, P.INK_SOFT)
+	# 靠右：对门。空心点 + TA 在这条线上的分
+	var theirs := their_have(their_goal if _same_gate() else null, str(line.id))
+	if both:
+		draw_circle(Vector2(tx + 12, 34), 9.0, P.PAPER, true, -1.0, true)
+		draw_arc(Vector2(tx + 12, 34), 9.0, 0, TAU, 20, their_color, 3.5, true)
+		if theirs >= 0.0:
+			_score(f, tx + 32.0, str(int(theirs)), " / %d %s" % [int(line.need), unit])
+			var gap := int(ceil(float(line.need) - theirs))
+			draw_string(f, Vector2(tx, 78), "%s %s" % [their_name, "够着了" if gap <= 0 else "还差 %d %s" % [gap, unit]], HORIZONTAL_ALIGNMENT_LEFT, side - 6.0, 20, P.INK_SOFT)
+		elif their_goal is Dictionary and not _same_gate():
+			draw_string(f, Vector2(tx + 32.0, 44), str(their_goal.title), HORIZONTAL_ALIGNMENT_LEFT, side - 38.0, 28, P.INK)
+			draw_string(f, Vector2(tx, 78), "%s 过的是另一关" % their_name, HORIZONTAL_ALIGNMENT_LEFT, side - 6.0, 20, P.INK_SOFT)
+		else:
+			draw_string(f, Vector2(tx + 32.0, 44), "不走这条", HORIZONTAL_ALIGNMENT_LEFT, side - 38.0, 28, P.INK_SOFT)
+			draw_string(f, Vector2(tx, 78), their_name, HORIZONTAL_ALIGNMENT_LEFT, side - 6.0, 20, P.INK_SOFT)
+	# 中间：哪条线、看什么、一把尺
+	var rx := x0 + side + 6.0
+	var rw := tx - 22.0 - rx
+	var name_text := str(line.text)
+	if rw < 230.0:
+		# 小屏再加刘海，中间放不下一把尺：只写线的名字，两头的数照样能比
+		draw_string(f, Vector2(rx, 44), name_text, HORIZONTAL_ALIGNMENT_LEFT, rw, 26, P.INK)
+		draw_string(f, Vector2(rx, 78), "看" + str(line.by), HORIZONTAL_ALIGNMENT_LEFT, rw, 20, P.INK_SOFT)
+	else:
+		var name_w := minf(f.get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x, rw - 96.0)
+		draw_string(f, Vector2(rx, 36), name_text, HORIZONTAL_ALIGNMENT_LEFT, name_w, 26, P.INK)
+		draw_string(f, Vector2(rx + name_w + 14, 36), "看" + str(line.by), HORIZONTAL_ALIGNMENT_LEFT, rw - name_w - 14.0, 20, P.INK_SOFT)
+		draw_ruler(self, Vector2(rx + 6, 68), rw - 12.0, line, their_have(their_goal, str(line.id)), my_color, their_color)
 	# 可以点开
-	var cx := size.x - 22.0
+	var cx := size.x - 20.0
 	var cy := size.y / 2.0
 	draw_polyline(PackedVector2Array([Vector2(cx - 6, cy - 12), Vector2(cx + 6, cy), Vector2(cx - 6, cy + 12)]), Color(P.INK, 0.6), 3.0, true)
+
+
+## 两个人过的是不是同一关
+func _same_gate() -> bool:
+	return goal is Dictionary and their_goal is Dictionary and str(their_goal.get("id", "")) == str(goal.get("id", ""))
+
+
+## 「58 / 64 分」：前面的数大，后面的线小
+func _score(f: Font, x: float, have_text: String, need_text: String) -> void:
+	var hw := f.get_string_size(have_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 40).x
+	draw_string(f, Vector2(x, 48), have_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 40, P.INK)
+	draw_string(f, Vector2(x + hw, 48), need_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, P.INK_SOFT)
 
 
 func _eff_text(lead := "") -> String:

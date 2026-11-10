@@ -9,6 +9,24 @@ const RisoBox := preload("res://scripts/ui/riso_box.gd")
 static var accent := P.QING
 static var _accent_boxes: Array = []  ## 换 accent 时要跟着变的框（只有主题里那三个，不会涨）
 
+## 设计稿是横屏 1920×1080：高固定 1080，手机越长越宽（20:9 是 2400）。贴左右边的东西用锚点，别写死宽度。
+const BASE := Vector2(1920, 1080)
+static var safe_override: Variant = null  ## 截图和测试用：假装有刘海，Vector2(左, 右)
+
+
+## 横屏时刘海和圆角在左右两边：返回 (左, 右) 要让开的宽度，单位是界面坐标。电脑上是 0
+static func safe_sides(c: CanvasItem) -> Vector2:
+	if safe_override is Vector2:
+		return safe_override
+	if not OS.has_feature("mobile"):
+		return Vector2.ZERO
+	var win := Vector2(DisplayServer.window_get_size())
+	var safe := DisplayServer.get_display_safe_area()
+	if win.x <= 0.0 or safe.size.x <= 0:
+		return Vector2.ZERO
+	var k := c.get_viewport_rect().size.x / win.x
+	return Vector2(clampf(safe.position.x * k, 0.0, 160.0), clampf((win.x - safe.end.x) * k, 0.0, 160.0))
+
 
 static func set_accent(c: Color) -> void:
 	if c == accent:

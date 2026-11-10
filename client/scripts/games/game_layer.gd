@@ -13,6 +13,7 @@ const KiteSim := preload("res://scripts/games/kite_sim.gd")
 const OFFER := {
 	"kite": {"title": "一起放风筝？", "text": "两个人各管一头。放得好，这回一起玩长得更多；不玩也照常。", "yes": "放", "no": "不了"},
 }
+const CARD_WIDTH := 960.0   ## 底部那张卡片的宽
 const STALE_SECONDS := 3.0  ## 这么久没收到服务器的状态，就当这一局已经没了（比如刚好换了天）
 
 var my_role := "qing"
@@ -34,13 +35,13 @@ func _init() -> void:
 	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_root)
-	# 卡片贴着屏幕底边，内容多高它就多高
+	# 卡片贴着屏幕底边居中（横屏不占满一整条），内容多高它就多高
 	var dock := MarginContainer.new()
 	dock.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dock.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dock.add_theme_constant_override("margin_left", 48)
 	dock.add_theme_constant_override("margin_right", 48)
-	dock.add_theme_constant_override("margin_bottom", 96)
+	dock.add_theme_constant_override("margin_bottom", 56)
 	_root.add_child(dock)
 	_card = PanelContainer.new()
 	var sb := StyleBoxFlat.new()
@@ -51,6 +52,8 @@ func _init() -> void:
 	sb.set_content_margin_all(44)
 	_card.add_theme_stylebox_override("panel", sb)
 	_card.size_flags_vertical = Control.SIZE_SHRINK_END
+	_card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_card.custom_minimum_size.x = CARD_WIDTH
 	_card.visible = false
 	dock.add_child(_card)
 	_card_body = VBoxContainer.new()

@@ -1,5 +1,5 @@
 {
- "version": "ae68da27affe",
+ "version": "90fcccad5047",
  "events": [
   {
    "id": "c_roof_summer",
@@ -26476,6 +26476,4582 @@
    "deja_vu",
    "p_reunited",
    "retake"
+  ]
+ },
+ "story": {
+  "chapters": [
+   {
+    "id": "door",
+    "title": "对门",
+    "ages": [
+     3,
+     5
+    ],
+    "opens": [
+     "building",
+     "street"
+    ],
+    "intro": "三楼两扇门，门对着门。",
+    "closes": [
+     "m_school"
+    ]
+   },
+   {
+    "id": "class",
+    "title": "一个班",
+    "ages": [
+     6,
+     11
+    ],
+    "opens": [
+     "primary",
+     "river"
+    ],
+    "intro": "从楼门口到校门口，一走六年。",
+    "closes": [
+     "m_club",
+     "m_junior"
+    ]
+   },
+   {
+    "id": "bridge",
+    "title": "过桥",
+    "ages": [
+     12,
+     17
+    ],
+    "opens": [
+     "middle",
+     "across"
+    ],
+    "intro": "楼顶上看了好些年的灯，在桥那边。",
+    "closes": [
+     "m_senior",
+     "m_gaokao"
+    ]
+   },
+   {
+    "id": "apart",
+    "title": "远近",
+    "ages": [
+     18,
+     29
+    ],
+    "opens": [
+     "away"
+    ],
+    "intro": "有人走，有人留，信要走两天。",
+    "closes": [
+     "m_job",
+     "m_settle"
+    ]
+   },
+   {
+    "id": "home",
+    "title": "安家",
+    "ages": [
+     30,
+     44
+    ],
+    "opens": [
+     "newhome",
+     "rental"
+    ],
+    "intro": "各有各的家了，老楼还在。",
+    "closes": [
+     "m_midlife"
+    ]
+   },
+   {
+    "id": "half",
+    "title": "半辈子",
+    "ages": [
+     45,
+     59
+    ],
+    "opens": [
+     "hospital"
+    ],
+    "intro": "楼没了，日子照旧早起。",
+    "closes": [
+     "m_retire"
+    ]
+   },
+   {
+    "id": "river",
+    "title": "河边",
+    "ages": [
+     60,
+     200
+    ],
+    "opens": [
+     "park"
+    ],
+    "intro": "河还是那条河。",
+    "closes": [
+     "m_evening"
+    ]
+   }
+  ],
+  "events": [
+   {
+    "id": "s1_door",
+    "kind": "mirror",
+    "stage": "childhood",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 1,
+    "beat": 1,
+    "scene": "building",
+    "slot": "am",
+    "next": "上午，楼道里",
+    "replaces": [],
+    "requires": {},
+    "title": "对门",
+    "text": "楼道里两扇门对着开。大人在门口说话，门缝后头有个跟你一般高的人，也在往外看。",
+    "options": [
+     {
+      "id": "knock",
+      "text": "过去敲三下门",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "hide",
+      "text": "躲到大人腿后头",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": 2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "candy",
+      "text": "递过去一块糖",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "frog",
+      "text": "拿出上弦的铁皮青蛙",
+      "requires": {
+       "flags": [
+        "fam_rich"
+       ]
+      },
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5,
+        "charm": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     }
+    ],
+    "resonance": {
+     "knock": {
+      "text": "你敲了三下，门里头也敲了三下。大人把门打开的时候，你俩还隔着门板在敲。",
+      "memory": "敲了三下",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": [
+       "p_knock"
+      ]
+     },
+     "hide": {
+      "text": "两个人都躲在大人腿后头，只露半个脑袋。大人聊了半个钟头，你俩对看了半个钟头。",
+      "memory": "半个脑袋",
+      "bond": {
+       "sync": 2,
+       "close": 2
+      },
+      "flags": []
+     },
+     "candy": {
+      "text": "两块糖在门槛上碰了头，一块水果糖，一块奶糖。后来谁吃的哪块，谁也说不清了。",
+      "memory": "两块糖",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个在门这边敲，一个在门那边躲。门开了一条缝，又让过堂风带上了。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s1_breakfast",
+    "kind": "mirror",
+    "stage": "childhood",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 1,
+    "beat": 2,
+    "scene": "street",
+    "slot": "morning",
+    "next": "早上，楼下早点铺",
+    "replaces": [],
+    "requires": {
+     "minAge": 4
+    },
+    "title": "一套煎饼",
+    "text": "头一回让你俩自己下楼买早点。早点铺门口排着队，一个攥着钱，一个攥着从家里带的鸡蛋，手心都出了汗。",
+    "options": [
+     {
+      "id": "line",
+      "text": "规规矩矩排到头",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "egg",
+      "text": "把手里的举过头顶",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 4
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "squeeze",
+      "text": "从大人腿缝里往前钻",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5,
+        "body": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "extra",
+      "text": "多买一套带上楼",
+      "requires": {
+       "flags": [
+        "fam_rich"
+       ]
+      },
+      "cost": 1,
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {
+        "mood": 3
+       },
+       "bond": {},
+       "flags": []
+      }
+     },
+     {
+      "id": "half",
+      "text": "一套掰成两半",
+      "requires": {
+       "flags": [
+        "fam_poor"
+       ]
+      },
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {
+        "hunger": 10
+       },
+       "bond": {},
+       "flags": []
+      }
+     }
+    ],
+    "resonance": {
+     "line": {
+      "text": "排到了，老板娘接过鸡蛋，在鏊子边上一磕。她没问夹什么，也没问是谁家的。",
+      "memory": "鏊子边上一磕",
+      "bond": {
+       "sync": 2,
+       "close": 2
+      },
+      "flags": []
+     },
+     "egg": {
+      "text": "钱和鸡蛋一块儿举过了头顶。老板娘先接的鸡蛋，在鏊子边上磕了。",
+      "memory": "举过头顶",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "squeeze": {
+      "text": "两个人一块儿钻到了最前头，让老板娘一手一个拎回了队尾。后头的人笑，你俩也笑。",
+      "memory": "拎回队尾",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个老老实实排在队尾，一个已经钻到了前头。那套煎饼，最后是两个人分着吃的。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s1_roof",
+    "kind": "mirror",
+    "stage": "childhood",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 1,
+    "beat": 3,
+    "scene": "building",
+    "slot": "night",
+    "next": "晚上，楼顶",
+    "replaces": [
+     "c_promise"
+    ],
+    "requires": {},
+    "title": "对岸的灯",
+    "text": "晚上大人上楼顶收床单，你俩趴在栏杆上。河对岸的灯一片一片亮起来，比这边多，也比这边高。",
+    "options": [
+     {
+      "id": "hook",
+      "text": "伸出小拇指",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "count",
+      "text": "一盏一盏数",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mind": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "point",
+      "text": "指着最高的那盏",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "hook": {
+      "text": "「长大了去那边住，还住对门。」两根小拇指勾在栏杆上，勾了好半天，谁也不先松。",
+      "memory": "勾在栏杆上",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": [
+       "p_promise"
+      ]
+     },
+     "count": {
+      "text": "数到一百多，对岸又亮了一片，只好从头数。收完床单下楼，你俩已经数了三回。",
+      "memory": "从头数",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "point": {
+      "text": "两根手指指着同一盏，都说那是最高的。其实是对岸楼顶上的红灯，一闪一闪。",
+      "memory": "一闪一闪",
+      "bond": {
+       "sync": 2,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "那根小拇指在栏杆上伸了半天，旁边的人还在数灯。大人喊下楼了，才揣回兜里。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s2_road",
+    "kind": "mirror",
+    "stage": "childhood",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 2,
+    "beat": 1,
+    "scene": "street",
+    "slot": "morning",
+    "next": "早上，楼门口",
+    "replaces": [],
+    "requires": {
+     "minAge": 6
+    },
+    "title": "上学的路",
+    "text": "开学头一天，两家大人都说不送了。从楼门口到校门口，要过两个路口、一个早点铺、一个修车铺。",
+    "options": [
+     {
+      "id": "hand",
+      "text": "拉着手过马路",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 4
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "race",
+      "text": "比谁先到校门口",
+      "tags": [
+       "competitive"
+      ],
+      "effects": {
+       "self": {
+        "body": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "dawdle",
+      "text": "在修车铺门口蹲一会儿",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mind": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "car",
+      "text": "坐家里的车过去",
+      "requires": {
+       "flags": [
+        "fam_rich"
+       ]
+      },
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "energy": 10
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     },
+     {
+      "id": "key",
+      "text": "把钥匙塞进领口",
+      "requires": {
+       "flags": [
+        "fam_poor"
+       ]
+      },
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "mind": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     }
+    ],
+    "resonance": {
+     "hand": {
+      "text": "过头一个路口还拉着手，过第二个就松开了，一前一后跑。传达室的大爷看了你俩一眼，记住了。",
+      "memory": "两个路口",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "race": {
+      "text": "两个人同时撞上校门的铁栏杆，书包里的铅笔盒响成一片。大爷说：「慢点儿，门跑不了。」",
+      "memory": "一块儿撞上",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "dawdle": {
+      "text": "修车爷爷补完一个胎，抬头看见两个小人儿蹲着：「还不走？要打铃了。」你俩跑着去的。",
+      "memory": "补完一个胎",
+      "bond": {
+       "sync": 2,
+       "close": 2
+      },
+      "flags": []
+     },
+     "car": {
+      "text": "两辆车在校门口一前一后停下，车门同时开了。两个人隔着车门，对着笑了一下。",
+      "memory": "两扇车门",
+      "bond": {
+       "sync": 2,
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "校门口先到了一个，回头看来的路。另一个也在路上，只是慢了一个路口。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s2_names",
+    "kind": "mirror",
+    "stage": "childhood",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 2,
+    "beat": 2,
+    "scene": "building",
+    "slot": "evening",
+    "next": "傍晚，三楼楼道",
+    "replaces": [
+     "c_wall_names"
+    ],
+    "requires": {
+     "minAge": 7
+    },
+    "title": "墙上的名字",
+    "text": "暖气片上头那块墙，一层一层全是早先的孩子划的道道。楼道里堆着自行车。你俩兜里各有一根钉子。",
+    "options": [
+     {
+      "id": "carve",
+      "text": "刻两个人的名字",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "height",
+      "text": "靠着墙量个子",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3,
+        "body": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "hand_in",
+      "text": "把钉子交给楼长",
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "mind": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "carve": {
+      "text": "你刻一个，对门的刻一个，当中空着一个字的地方，谁也没想好刻什么。踮着脚，刻得很矮。",
+      "memory": "空着一个字",
+      "bond": {
+       "sync": 4,
+       "close": 3
+      },
+      "flags": [
+       "p_wall_names"
+      ]
+     },
+     "height": {
+      "text": "两个人背靠着墙，一个给另一个划道。两道印子一般高，谁也不信，又量了一回。",
+      "memory": "一般高",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "hand_in": {
+      "text": "两根钉子交到楼长手里。楼长看看墙，说他小时候也在这儿刻过，现在找不着了。",
+      "memory": "找不着的那道",
+      "bond": {
+       "sync": 2,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个名字刻完了，钉子递过去，没人接。那块墙皮后来让白菜蹭得更黑了。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s2_capsule",
+    "kind": "mirror",
+    "stage": "childhood",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 2,
+    "beat": 3,
+    "scene": "river",
+    "slot": "evening",
+    "next": "傍晚，河边柳树底下",
+    "replaces": [
+     "c_capsule"
+    ],
+    "requires": {
+     "minAge": 8
+    },
+    "title": "铁皮盒子",
+    "text": "河边第三棵柳树底下，你俩挖了个坑。盒子是装过饼干的，铁皮的，盖上印着外国字。说好了，老了再来挖。",
+    "options": [
+     {
+      "id": "letter",
+      "text": "写封信给老了的自己",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mind": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "marble",
+      "text": "放进最好的那颗弹球",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "keep",
+      "text": "舍不得，抱回家",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": 2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "watch",
+      "text": "放进一块电子表",
+      "requires": {
+       "flags": [
+        "fam_rich"
+       ]
+      },
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 4
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     },
+     {
+      "id": "coins",
+      "text": "放进攒下的五毛钱",
+      "requires": {
+       "flags": [
+        "fam_poor"
+       ]
+      },
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "mood": 4
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     }
+    ],
+    "resonance": {
+     "letter": {
+      "text": "两封信都折成了小方块，谁也没看谁的。土拍实了，你俩在柳树皮上划了一道。",
+      "memory": "树皮上一道",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": [
+       "p_capsule"
+      ]
+     },
+     "marble": {
+      "text": "盒子里放进了一颗玻璃弹球。不对，是两颗。你俩把最好的那颗都拿出来了。",
+      "memory": "两颗弹球",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": [
+       "p_capsule"
+      ]
+     },
+     "keep": {
+      "text": "两个人抱着空盒子蹲了半天，又一路抱回了楼里，塞到床底下，后来就忘了。",
+      "memory": "空着的盒子",
+      "bond": {
+       "sync": 2,
+       "close": 1
+      },
+      "flags": []
+     },
+     "watch": {
+      "text": "两块电子表放进去，都还走着。土埋上了，你俩趴下去听，好像还能听见。",
+      "memory": "走着的表",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": [
+       "p_capsule"
+      ]
+     },
+     "coins": {
+      "text": "两张五毛的票子叠在一块儿放进去。盖上盖子，比放什么都踏实。",
+      "memory": "两张五毛",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": [
+       "p_capsule"
+      ]
+     }
+    },
+    "dissonance": {
+     "text": "盒子还是埋下去了，里头一样东西多，一样东西少。谁也没问。",
+     "bond": {
+      "close": 0
+     },
+     "flags": [
+      "p_capsule"
+     ]
+    }
+   },
+   {
+    "id": "s3_bridge",
+    "kind": "mirror",
+    "stage": "teen",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 3,
+    "beat": 1,
+    "scene": "across",
+    "slot": "night",
+    "next": "晚上，过桥去对岸",
+    "replaces": [],
+    "requires": {
+     "minAge": 12
+    },
+    "title": "过桥",
+    "text": "头一回不跟大人，自己过桥去了对岸。小时候在楼顶上看的那片灯，走近了是一栋一栋的楼，没有一扇窗户是认识的。",
+    "options": [
+     {
+      "id": "look_back",
+      "text": "站在桥当中往回看",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "walk",
+      "text": "走回去，不坐车",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "body": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "mall",
+      "text": "进商场转一圈",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3,
+        "charm": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "taxi",
+      "text": "打个车回去",
+      "requires": {
+       "flags": [
+        "fam_rich"
+       ]
+      },
+      "cost": 2,
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "energy": 10
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     },
+     {
+      "id": "soda",
+      "text": "省下车钱买两瓶汽水",
+      "requires": {
+       "flags": [
+        "fam_poor"
+       ]
+      },
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "body": 1
+       },
+       "other": {
+        "mood": 5
+       },
+       "bond": {},
+       "flags": []
+      }
+     }
+    ],
+    "resonance": {
+     "look_back": {
+      "text": "从桥当中往回看，河这边黑了一片，只有三楼两扇窗户还亮着。不知道是谁家大人在等。",
+      "memory": "亮着的两扇窗",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": [
+       "p_bridge"
+      ]
+     },
+     "walk": {
+      "text": "两个人一路走回了河畔里，到楼门口腿都直了。谁也没说累，第二天谁也没起来。",
+      "memory": "走回来的桥",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": [
+       "p_bridge"
+      ]
+     },
+     "mall": {
+      "text": "商场里一样东西也没买，你俩把每一层的电梯都坐了一遍，下来的时候笑岔了气。",
+      "memory": "每一层电梯",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": [
+       "p_bridge"
+      ]
+     }
+    },
+    "dissonance": {
+     "text": "一个站在桥当中往回看，一个已经到了桥那头，回头喊了一声。风大，没听见。",
+     "bond": {
+      "close": 0
+     },
+     "flags": [
+      "p_bridge"
+     ]
+    }
+   },
+   {
+    "id": "s3_note",
+    "kind": "mirror",
+    "stage": "teen",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 3,
+    "beat": 2,
+    "scene": "building",
+    "slot": "night",
+    "next": "晚上，楼里",
+    "replaces": [],
+    "requires": {},
+    "title": "一张纸条",
+    "text": "你俩换着借的课本，同一天还了回来。翻到当中，都夹着一张纸条，折了四折，压得平平的。",
+    "options": [
+     {
+      "id": "read",
+      "text": "在被窝里打开看",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "reply",
+      "text": "写一句，夹回去",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3,
+        "charm": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "keep",
+      "text": "不拆，夹进日记本",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mind": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "read": {
+      "text": "两张纸条上写的都是数学题的答案，最底下都还有一行小字。手电筒关了又开，开了又关。",
+      "memory": "最底下一行",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": [
+       "p_note"
+      ]
+     },
+     "reply": {
+      "text": "第二天课本又换了回来。纸条上多了一行，字比上一行还小。",
+      "memory": "多了一行",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": [
+       "p_note"
+      ]
+     },
+     "keep": {
+      "text": "两张纸条都没拆，夹在两个本子里。一个在三楼东屋，一个在三楼西屋。",
+      "memory": "没拆的纸条",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": [
+       "p_note"
+      ]
+     }
+    },
+    "dissonance": {
+     "text": "一张纸条拆开看了，一张原样夹着，后来跟着旧课本一块儿卖了废品。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s3_eve",
+    "kind": "mirror",
+    "stage": "teen",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 3,
+    "beat": 3,
+    "scene": "building",
+    "slot": "night",
+    "next": "晚上，三楼楼道",
+    "replaces": [],
+    "requires": {},
+    "title": "前一晚",
+    "text": "明天大考。楼道的灯坏了一盏，两扇门里都亮着台灯，门缝底下漏出两条光，在楼道当中差一点挨上。",
+    "options": [
+     {
+      "id": "knock",
+      "text": "隔着门敲三下",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "drill",
+      "text": "再做一套卷子",
+      "tags": [
+       "competitive"
+      ],
+      "effects": {
+       "self": {
+        "mind": 1,
+        "energy": -10
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "sleep",
+      "text": "早点关灯睡觉",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "energy": 15
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "chores",
+      "text": "先把明早的饭做上",
+      "requires": {
+       "flags": [
+        "fam_poor"
+       ]
+      },
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "energy": -5,
+        "charm": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     }
+    ],
+    "resonance": {
+     "knock": {
+      "text": "你敲了三下，那边也敲了三下。然后两条光一块儿灭了。",
+      "memory": "又敲了三下",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "drill": {
+      "text": "两盏台灯一直亮到后半夜。天快亮的时候，一边先灭了，另一边跟着也灭了。",
+      "memory": "后半夜的台灯",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "sleep": {
+      "text": "两条光差不多同时灭了。楼道里黑下来，只剩暖气片在响。",
+      "memory": "一块儿灭的灯",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一边的光早早灭了，一边亮到后半夜。灭了的那个躺着，听了半天对门翻书的动静。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s4_leave",
+    "kind": "mirror",
+    "stage": "young",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 4,
+    "beat": 1,
+    "scene": "street",
+    "slot": "morning",
+    "next": "早上，楼门口",
+    "replaces": [
+     "y_station"
+    ],
+    "requires": {
+     "flags": [
+      "uni_away"
+     ]
+    },
+    "title": "后备箱",
+    "text": "楼门口停着车，后备箱开着。包里塞满了家里给的东西，拉链拉不上。早点铺刚出锅。",
+    "options": [
+     {
+      "id": "write",
+      "text": "说一句「到了来信」",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "give",
+      "text": "塞过去一包东西",
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {
+        "hunger": 15
+       },
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "wave",
+      "text": "什么也不说，摆摆手",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": -2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "write": {
+      "text": "两句「到了来信」撞在一块儿。车拐过早点铺，鏊子还在响。",
+      "memory": "到了来信",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "give": {
+      "text": "一个塞过去一包，一个也塞过来一包。打开一看，都是早点铺的果子，还热着。",
+      "memory": "两包果子",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "wave": {
+      "text": "都没说话。车开了，各摆了摆手，摆到看不见。",
+      "memory": "两只手",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个要说的话还没想好，车已经开了。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s4_leave_far",
+    "kind": "mirror",
+    "stage": "young",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 4,
+    "beat": 1,
+    "scene": "street",
+    "slot": "morning",
+    "next": "早上，楼门口",
+    "replaces": [],
+    "requires": {
+     "flags": [
+      "left_city"
+     ],
+     "notFlags": [
+      "uni_away"
+     ]
+    },
+    "title": "后备箱",
+    "text": "楼门口停着车。这一走，就不是放假能回来的了。箱子立在地上，比人还高。早点铺刚出锅。",
+    "options": [
+     {
+      "id": "write",
+      "text": "说一句「到了来信」",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "give",
+      "text": "塞过去一包东西",
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {
+        "hunger": 15
+       },
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "wave",
+      "text": "什么也不说，摆摆手",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": -2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "write": {
+      "text": "两句「到了来信」撞在一块儿。车拐过早点铺，鏊子还在响。",
+      "memory": "到了来信",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "give": {
+      "text": "一个塞过去一包，一个也塞过来一包。打开一看，都是早点铺的果子，还热着。",
+      "memory": "两包果子",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "wave": {
+      "text": "都没说话。车开了，各摆了摆手，摆到看不见。",
+      "memory": "两只手",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个要说的话还没想好，车已经开了。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s4_stay",
+    "kind": "mirror",
+    "stage": "young",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 4,
+    "beat": 1,
+    "scene": "street",
+    "slot": "morning",
+    "next": "早上，楼门口",
+    "replaces": [],
+    "requires": {
+     "notFlags": [
+      "uni_away",
+      "left_city"
+     ]
+    },
+    "title": "路口",
+    "text": "九月头一天，楼里走了好几个同学，你俩都没走。早上在楼门口碰上，一块儿走到了路口。",
+    "options": [
+     {
+      "id": "weekend",
+      "text": "约好礼拜天上楼顶",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 4
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "bridge",
+      "text": "一块儿过桥再分开",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "energy": -5,
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "split",
+      "text": "在路口各走各的",
+      "tags": [
+       "competitive"
+      ],
+      "effects": {
+       "self": {
+        "mind": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "weekend": {
+      "text": "礼拜天的楼顶，两个人都来了，凉席还是小时候那两张，短了一截。",
+      "memory": "短了一截",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "bridge": {
+      "text": "一块儿走到桥那头，一个往东，一个往西。走出去十几步，都回头看了一眼。",
+      "memory": "桥那头",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "split": {
+      "text": "在路口说了句「晚上见」，就各走各的了。晚上果然在楼道里见着了。",
+      "memory": "晚上见",
+      "bond": {
+       "sync": 2,
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个在路口站住了，一个已经过了马路。绿灯又亮了一回，两个人隔着马路摆了摆手。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s4_stray_letter",
+    "kind": "mirror",
+    "stage": "young",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 4,
+    "beat": 2,
+    "scene": "building",
+    "slot": "evening",
+    "next": "傍晚，楼道里",
+    "replaces": [],
+    "requires": {
+     "notFlags": [
+      "uni_away",
+      "left_city"
+     ]
+    },
+    "title": "寄错的信",
+    "text": "楼长拿来一封信，地址是三楼，收信人的名字谁也没听过。邮戳是好多年前的，信封都黄了。",
+    "options": [
+     {
+      "id": "open",
+      "text": "拆开看看",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "return",
+      "text": "让楼长再找找这个人",
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "mind": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "answer",
+      "text": "照着地址回一封",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "charm": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "open": {
+      "text": "信很短，说那边下雪了，问楼顶的鸽子还在不在。落款只写了「对门」两个字。",
+      "memory": "落款是对门",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "return": {
+      "text": "楼长翻了半天住户本，没找着，把信夹进了本子里：「先替他收着。」",
+      "memory": "替他收着",
+      "bond": {
+       "sync": 2,
+       "close": 2
+      },
+      "flags": []
+     },
+     "answer": {
+      "text": "两个人凑着写了一封，说鸽子换了好几茬，楼顶还在。寄出去，没有回音。",
+      "memory": "没有回音",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个把信拆了，一个要还给楼长。信最后夹进了住户本，拆开的那道口子还在。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s4_letter_abroad",
+    "kind": "solo",
+    "stage": "young",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 4,
+    "beat": 2,
+    "scene": "away",
+    "slot": "night",
+    "next": "晚上，写封信回去",
+    "replaces": [],
+    "requires": {
+     "flags": [
+      "uni_abroad"
+     ]
+    },
+    "title": "一封信",
+    "text": "那边是早上，这边是夜里。你写了一封信，邮票比信封还贵。信要走两个礼拜。",
+    "options": [
+     {
+      "id": "home",
+      "text": "写楼里的事问问",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {
+        "close": 2
+       },
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "photo",
+      "text": "夹一张这边的照片",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "charm": 1
+       },
+       "other": {},
+       "bond": {
+        "close": 1
+       },
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "unsent",
+      "text": "写完了，没寄",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": -3
+       },
+       "other": {},
+       "bond": {
+        "distance": 1
+       },
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   },
+   {
+    "id": "s4_letter_away",
+    "kind": "solo",
+    "stage": "young",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 4,
+    "beat": 2,
+    "scene": "away",
+    "slot": "night",
+    "next": "晚上，写封信回去",
+    "replaces": [],
+    "requires": {
+     "flags": [
+      "uni_away"
+     ]
+    },
+    "title": "一封信",
+    "text": "外地的宿舍熄了灯。你借着走廊的光写信，写了两页，写的全是食堂的菜。信要走两天。",
+    "options": [
+     {
+      "id": "home",
+      "text": "写楼里的事问问",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {
+        "close": 2
+       },
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "ticket",
+      "text": "夹一张回家的车票",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {
+        "close": 1
+       },
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "unsent",
+      "text": "写完了，没寄",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": -3
+       },
+       "other": {},
+       "bond": {
+        "distance": 1
+       },
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   },
+   {
+    "id": "s4_letter_gone",
+    "kind": "solo",
+    "stage": "young",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 4,
+    "beat": 2,
+    "scene": "away",
+    "slot": "night",
+    "next": "晚上，写封信回去",
+    "replaces": [],
+    "requires": {
+     "flags": [
+      "left_city"
+     ]
+    },
+    "title": "一封信",
+    "text": "到这边头一个月，你写了一封信，从头到尾都是这边的天气。信要走好几天。",
+    "options": [
+     {
+      "id": "home",
+      "text": "写楼里的事问问",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {
+        "close": 2
+       },
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "money",
+      "text": "夹两张钱给家里",
+      "tags": [
+       "responsible"
+      ],
+      "cost": 5,
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {
+        "close": 1
+       },
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "unsent",
+      "text": "写完了，没寄",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": -3
+       },
+       "other": {},
+       "bond": {
+        "distance": 1
+       },
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   },
+   {
+    "id": "s4_letter_home",
+    "kind": "solo",
+    "stage": "young",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 4,
+    "beat": 2,
+    "scene": "building",
+    "slot": "evening",
+    "next": "傍晚，楼里",
+    "replaces": [],
+    "requires": {
+     "alone": false,
+     "notFlags": [
+      "uni_away",
+      "left_city"
+     ]
+    },
+    "title": "信到了",
+    "text": "信到了，走了好几天。信封上的字你认得，三楼的门牌号写得比名字还大。",
+    "options": [
+     {
+      "id": "reply",
+      "text": "当天就回一封",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {
+        "close": 2
+       },
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "pocket",
+      "text": "揣在兜里看了三天",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {
+        "close": 1
+       },
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "door",
+      "text": "先去对门问声好",
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "charm": 1
+       },
+       "other": {},
+       "bond": {
+        "close": 1
+       },
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   },
+   {
+    "id": "s4_new_year",
+    "kind": "mirror",
+    "stage": "young",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 4,
+    "beat": 3,
+    "scene": "building",
+    "slot": "night",
+    "next": "年三十晚上，楼里",
+    "replaces": [],
+    "requires": {},
+    "title": "年三十",
+    "text": "年三十，楼里的人都回来了。楼道里堆着行李箱和年货，两家的门都开着，饺子往对门端，端回来的还是饺子。",
+    "options": [
+     {
+      "id": "roof",
+      "text": "上楼顶放挂炮",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 8
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "stairs",
+      "text": "坐在楼梯上说话",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "dumplings",
+      "text": "帮着两家包饺子",
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "charm": 1,
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "gifts",
+      "text": "把带回来的东西分给楼里",
+      "requires": {
+       "flags": [
+        "fam_rich"
+       ]
+      },
+      "cost": 3,
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "charm": 1,
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     },
+     {
+      "id": "envelope",
+      "text": "把攒的钱塞给爸妈",
+      "requires": {
+       "flags": [
+        "fam_poor"
+       ]
+      },
+      "cost": 3,
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "mood": 8
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     }
+    ],
+    "resonance": {
+     "roof": {
+      "text": "两个人在楼顶点同一挂炮。炸完了满地红纸，楼下有人喊，听着像楼长。",
+      "memory": "一挂炮",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "stairs": {
+      "text": "楼梯上坐到后半夜，起先说的都是外头的事，说到后来，说的都是楼里的事。",
+      "memory": "楼梯上的后半夜",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "dumplings": {
+      "text": "两家的饺子包在一个案板上，煮出来分不清是谁家的馅。",
+      "memory": "分不清的馅",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "楼顶的炮响了。屋里让亲戚拉着说话的那个，也往窗外看了一眼。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s5_one_door",
+    "kind": "mirror",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 5,
+    "beat": 1,
+    "scene": "street",
+    "slot": "evening",
+    "next": "傍晚，回老楼吃饭",
+    "replaces": [],
+    "requires": {
+     "flags": [
+      "p_married"
+     ]
+    },
+    "title": "一扇门",
+    "text": "住成了一家，回老楼吃饭还是一个进东屋，一个进西屋。吃完了，再换过来。",
+    "options": [
+     {
+      "id": "both",
+      "text": "两边各吃一碗",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "hunger": 20,
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "table",
+      "text": "把两张饭桌拼起来",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "fix",
+      "text": "帮爸妈修修弄弄",
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "body": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "both": {
+      "text": "两边各吃了一碗，下楼的时候都撑着了。在楼梯上坐了一会儿，坐的还是那两级。",
+      "memory": "两碗饭",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "table": {
+      "text": "两张饭桌在楼道里拼成一张，两家老人坐对面。菜还是各做各的，筷子伸到对面去。",
+      "memory": "拼起来的饭桌",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "fix": {
+      "text": "一个修这边的水龙头，一个修那边的门锁。修完了，两边的老人都说没坏。",
+      "memory": "都说没坏",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个在东屋吃到一半，一个在西屋已经刷上了碗。两边的老人隔着楼道喊话。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s5_two_doors",
+    "kind": "mirror",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 5,
+    "beat": 1,
+    "scene": "street",
+    "slot": "evening",
+    "next": "傍晚，回老楼吃饭",
+    "replaces": [],
+    "requires": {
+     "flags": [
+      "married_other"
+     ],
+     "notFlags": [
+      "p_married"
+     ]
+    },
+    "title": "多了一个人",
+    "text": "回老楼吃饭，在楼门口碰上了。有人身边多了一个人，介绍了一句，三个人站着说了会儿话。",
+    "options": [
+     {
+      "id": "invite",
+      "text": "喊上一块儿吃饭",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "charm": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "nod",
+      "text": "点个头，先上楼",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": -2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "old_times",
+      "text": "说一件小时候的事",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "invite": {
+      "text": "一张饭桌坐了好几家人。说到楼道里的那些年，满桌的人都看你俩。",
+      "memory": "满桌的人",
+      "bond": {
+       "sync": 2,
+       "close": 1
+      },
+      "flags": []
+     },
+     "nod": {
+      "text": "两个人都点了个头，一前一后上了楼。到了三楼，两扇门一块儿关上。",
+      "memory": "一块儿关上",
+      "bond": {
+       "sync": 2,
+       "close": 0
+      },
+      "flags": []
+     },
+     "old_times": {
+      "text": "一个说起楼顶，一个说起河边，说的是同一个夏天。旁边那个人听着，笑了。",
+      "memory": "同一个夏天",
+      "bond": {
+       "sync": 3,
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个还想再说两句，一个已经上楼了。楼门口剩下两个人，互相客气了一下。",
+     "bond": {
+      "close": -1
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s5_no_door",
+    "kind": "mirror",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 5,
+    "beat": 1,
+    "scene": "street",
+    "slot": "evening",
+    "next": "傍晚，回老楼吃饭",
+    "replaces": [],
+    "requires": {
+     "notFlags": [
+      "p_married",
+      "married_other"
+     ]
+    },
+    "title": "饭桌上",
+    "text": "回老楼吃饭，两家饭桌上问的是同一件事。吃完下楼倒垃圾，你俩在楼道里碰上了。",
+    "options": [
+     {
+      "id": "laugh",
+      "text": "对着笑一下",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "roof",
+      "text": "上楼顶躲一会儿",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 4
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "home",
+      "text": "回自己那边去",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": -2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "laugh": {
+      "text": "一个笑，另一个也笑，谁也没说被问了什么。垃圾袋在手里拎了半天才扔。",
+      "memory": "拎了半天",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "roof": {
+      "text": "楼顶的鸽子棚早拆了，晾衣绳还在。两个人靠着栏杆，看了一会儿对岸。",
+      "memory": "晾衣绳还在",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "home": {
+      "text": "两个人都说「回了」，一个往桥那边走，一个往路口走。走到一半，都没回头。",
+      "memory": "都说回了",
+      "bond": {
+       "sync": 2,
+       "close": 0
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个在楼道里站住了，一个拎着垃圾下了楼。楼道的灯灭了，又让咳嗽声叫亮。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s5_supper_alone",
+    "kind": "solo",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 5,
+    "beat": 1,
+    "scene": "street",
+    "slot": "evening",
+    "next": "傍晚，回老楼吃饭",
+    "replaces": [],
+    "requires": {
+     "alone": true
+    },
+    "title": "饭桌上",
+    "text": "回老楼吃饭。饭桌上多摆了一双筷子，谁也没去收。",
+    "options": [
+     {
+      "id": "eat",
+      "text": "低头吃饭",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "hunger": 20
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "door",
+      "text": "吃完去对门坐坐",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   },
+   {
+    "id": "s5_notice",
+    "kind": "mirror",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 5,
+    "beat": 2,
+    "scene": "street",
+    "slot": "morning",
+    "next": "早上，楼门口的告示",
+    "replaces": [
+     "m_demolish"
+    ],
+    "requires": {},
+    "title": "红纸",
+    "text": "楼门口贴了张红纸。全楼的人围着看，看完了没人说话。楼长说：「今年白菜不用码楼道里了。」",
+    "options": [
+     {
+      "id": "read",
+      "text": "把告示从头看到尾",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mind": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "work",
+      "text": "转身去上班",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": -3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "parents",
+      "text": "把爸妈接去新楼",
+      "requires": {
+       "flags": [
+        "home_own"
+       ]
+      },
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     },
+     {
+      "id": "sums",
+      "text": "算算补的钱够不够",
+      "requires": {
+       "notFlags": [
+        "home_own"
+       ]
+      },
+      "tags": [
+       "competitive"
+      ],
+      "effects": {
+       "self": {
+        "mood": -2,
+        "mind": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     }
+    ],
+    "resonance": {
+     "read": {
+      "text": "两个人都看到了最底下那一行，签字的日子。看完一块儿抬头，看三楼那两扇窗。",
+      "memory": "签字的日子",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "work": {
+      "text": "两个人都没看完就走了。走到路口，又都回过头来看了一眼。",
+      "memory": "路口回头",
+      "bond": {
+       "sync": 2,
+       "close": 1
+      },
+      "flags": []
+     },
+     "parents": {
+      "text": "两家老人都让接走了。楼长送到楼门口，说房子空着，他给看着。",
+      "memory": "他给看着",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "sums": {
+      "text": "两个人蹲在告示底下拿手指头算，算了两遍，两个数不一样，都比心里那个数小。",
+      "memory": "两个数",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "告示有人从头看到了尾，有人只看了个标题。那天晚上，两边的灯都亮到很晚。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s5_notice_alone",
+    "kind": "solo",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 5,
+    "beat": 2,
+    "scene": "street",
+    "slot": "morning",
+    "next": "早上，楼门口的告示",
+    "replaces": [],
+    "requires": {
+     "alone": true
+    },
+    "title": "红纸",
+    "text": "楼门口贴了张红纸。你看完了，抬头看了看对门那扇窗。",
+    "options": [
+     {
+      "id": "read",
+      "text": "从头再看一遍",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mind": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "go",
+      "text": "回去收拾东西",
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "mood": -2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   },
+   {
+    "id": "s5_empty_names",
+    "kind": "mirror",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 5,
+    "beat": 3,
+    "scene": "building",
+    "slot": "pm",
+    "next": "下午，搬空的楼道",
+    "replaces": [],
+    "requires": {
+     "flags": [
+      "p_wall_names"
+     ]
+    },
+    "title": "矮处的名字",
+    "text": "搬家的车走了。楼道空了，暖气片也拆了，墙上两个名字还在，刻得真矮，得蹲下才看得见。",
+    "options": [
+     {
+      "id": "photo",
+      "text": "蹲下拍一张",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "touch",
+      "text": "拿手摸一遍",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "carve",
+      "text": "把当中那个字刻上",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 8
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "photo": {
+      "text": "两个人蹲成一排，拍了一张，起身的时候都扶了一下墙。",
+      "memory": "扶了一下墙",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "touch": {
+      "text": "你摸左边那个，对门的摸右边那个。摸到当中空着的地方，两只手碰上了。",
+      "memory": "空着的地方",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "carve": {
+      "text": "空了几十年的那个字，两个人蹲着，拿钥匙一人刻了一半。刻完了，还是没说刻的是什么。",
+      "memory": "一人一半",
+      "bond": {
+       "sync": 4,
+       "close": 4
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个蹲着看墙，一个站在楼梯口等着锁门。楼长交了钥匙，最后一个下的楼。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s5_empty",
+    "kind": "mirror",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 5,
+    "beat": 3,
+    "scene": "building",
+    "slot": "pm",
+    "next": "下午，搬空的楼道",
+    "replaces": [],
+    "requires": {
+     "notFlags": [
+      "p_wall_names"
+     ]
+    },
+    "title": "空楼道",
+    "text": "搬家的车走了。楼道空了，暖气片也拆了，墙上一层一层是别人家孩子刻的道道。",
+    "options": [
+     {
+      "id": "carve",
+      "text": "现在刻上也不晚",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 8
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "photo",
+      "text": "拍一张楼道",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "close",
+      "text": "把门带上，下楼",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": -2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "carve": {
+      "text": "两个人拿钥匙在墙上刻了两个名字，刻得很高，站着就够得着。楼长在楼梯口等着，没催。",
+      "memory": "刻得很高",
+      "bond": {
+       "sync": 4,
+       "close": 3
+      },
+      "flags": [
+       "p_wall_names"
+      ]
+     },
+     "photo": {
+      "text": "照片里是空楼道和两扇开着的门，一个人也没有。拍的人站在当中。",
+      "memory": "两扇开着的门",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "close": {
+      "text": "两扇门一块儿带上，「咔」的一声。楼长把钥匙收了，最后一个下的楼。",
+      "memory": "咔的一声",
+      "bond": {
+       "sync": 2,
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个站在楼道里不走，一个已经下到了二楼。楼长交了钥匙，最后一个下的楼。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s5_empty_alone",
+    "kind": "solo",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 5,
+    "beat": 3,
+    "scene": "building",
+    "slot": "pm",
+    "next": "下午，搬空的楼道",
+    "replaces": [],
+    "requires": {
+     "alone": true
+    },
+    "title": "空楼道",
+    "text": "搬家的车走了。对门的门开着，屋里什么也没有了。",
+    "options": [
+     {
+      "id": "close",
+      "text": "替对门把门带上",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "stand",
+      "text": "在楼道里站一会儿",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": -2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   },
+   {
+    "id": "s6_ward",
+    "kind": "mirror",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 6,
+    "beat": 1,
+    "scene": "hospital",
+    "slot": "night",
+    "next": "晚上，医院",
+    "replaces": [],
+    "requires": {},
+    "title": "陪床",
+    "text": "两家老人住进了同一间病房，床挨着床。夜里，你俩一人一个小板凳，坐在两张床当间。",
+    "options": [
+     {
+      "id": "watch",
+      "text": "守到天亮",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "energy": -20,
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "talk",
+      "text": "小声说说话",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "carer",
+      "text": "请个护工替一宿",
+      "requires": {
+       "flags": [
+        "fam_rich"
+       ]
+      },
+      "cost": 10,
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "energy": 10
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     },
+     {
+      "id": "single",
+      "text": "托人换个单间",
+      "requires": {
+       "flags": [
+        "fam_rich"
+       ]
+      },
+      "cost": 20,
+      "tags": [
+       "competitive"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     },
+     {
+      "id": "porridge",
+      "text": "天亮前回去熬锅粥",
+      "requires": {
+       "flags": [
+        "fam_poor"
+       ]
+      },
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "energy": -15,
+        "charm": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     }
+    ],
+    "resonance": {
+     "watch": {
+      "text": "后半夜两家老人都睡着了，一个打呼，一个说梦话。你俩对看了一眼，谁也没笑出声。",
+      "memory": "两张床当间",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "talk": {
+      "text": "说的都是小时候的事。说到一半，一张床上的老人插了一句，说你们记错了。",
+      "memory": "记错了",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "carer": {
+      "text": "两个护工在走廊里碰上，说的是一个地方的话。你俩坐在楼下长椅上，一人一杯热水。",
+      "memory": "一人一杯热水",
+      "bond": {
+       "sync": 2,
+       "close": 2
+      },
+      "flags": []
+     },
+     "single": {
+      "text": "两家都换了单间，隔着一道墙。夜里墙那边咳嗽一声，墙这边也咳嗽一声。",
+      "memory": "隔着一道墙",
+      "bond": {
+       "sync": 2,
+       "close": 1
+      },
+      "flags": []
+     },
+     "porridge": {
+      "text": "天亮前两锅粥一块儿端进了病房，一锅稠一锅稀，两家老人换着喝了。",
+      "memory": "一稠一稀",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "天亮的时候，两个小板凳都还在原处。一个守了一夜，一个出去办了别的事。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s6_ward_alone",
+    "kind": "solo",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 6,
+    "beat": 1,
+    "scene": "hospital",
+    "slot": "night",
+    "next": "晚上，医院",
+    "replaces": [],
+    "requires": {
+     "alone": true
+    },
+    "title": "陪床",
+    "text": "老人住院，你一个人守夜。隔壁床空着，被子叠得方方正正。",
+    "options": [
+     {
+      "id": "watch",
+      "text": "守到天亮",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "energy": -20,
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "carer",
+      "text": "请个护工替一宿",
+      "requires": {
+       "flags": [
+        "fam_rich"
+       ]
+      },
+      "cost": 10,
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "energy": 10
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     },
+     {
+      "id": "nap",
+      "text": "趴在床边眯一会儿",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "energy": -5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   },
+   {
+    "id": "s6_cabbage_cold",
+    "kind": "mirror",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 6,
+    "beat": 2,
+    "scene": "across",
+    "slot": "evening",
+    "next": "傍晚，对岸的菜市场",
+    "replaces": [],
+    "requires": {
+     "flags": [
+      "p_estranged"
+     ],
+     "notFlags": [
+      "p_reunited"
+     ]
+    },
+    "title": "一棵白菜",
+    "text": "对岸新楼底下的菜市场，两个人伸手拿了同一棵白菜。好些年没说过话了。",
+    "options": [
+     {
+      "id": "let_go",
+      "text": "先撒手",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "yours",
+      "text": "说一句「你拿吧」",
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "hold",
+      "text": "攥着不撒手",
+      "tags": [
+       "competitive"
+      ],
+      "effects": {
+       "self": {
+        "mood": -3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "let_go": {
+      "text": "两只手同时撒开，白菜滚回了摊上。卖菜的看看你，又看看对门的，把它劈成了两半。",
+      "memory": "劈成两半",
+      "bond": {
+       "sync": 3,
+       "close": 4
+      },
+      "flags": [
+       "p_reunited"
+      ]
+     },
+     "yours": {
+      "text": "「你拿吧。」「你拿吧。」都多少年了，说话还是一个点儿。",
+      "memory": "你拿吧",
+      "bond": {
+       "sync": 4,
+       "close": 4
+      },
+      "flags": [
+       "p_reunited"
+      ]
+     },
+     "hold": {
+      "text": "谁也不撒手，卖菜的看不下去了：「这儿还有一筐呢。」两个人都笑了，笑完都没撒手。",
+      "memory": "还有一筐",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": [
+       "p_reunited"
+      ]
+     }
+    },
+    "dissonance": {
+     "text": "一个撒了手，一个拿着白菜站在那儿。回去的路上，两个人走的是同一座桥。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s6_cabbage",
+    "kind": "mirror",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 6,
+    "beat": 2,
+    "scene": "across",
+    "slot": "evening",
+    "next": "傍晚，对岸的菜市场",
+    "replaces": [],
+    "requires": {},
+    "title": "一棵白菜",
+    "text": "对岸新楼底下的菜市场，两个人伸手拿了同一棵白菜。抬头一看，都老了点儿。",
+    "options": [
+     {
+      "id": "halves",
+      "text": "一人一半",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "breakfast",
+      "text": "约着明早吃早点",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "yours",
+      "text": "让给对门",
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "charm": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "halves": {
+      "text": "卖菜的把白菜劈开，一人拎走一半。走到楼底下才想起来，两家都只有两口人，一半正好。",
+      "memory": "一半正好",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "breakfast": {
+      "text": "早点铺也搬到了这边，还是那口鏊子。换了个年轻的摊主，问你俩夹什么。你俩愣了一下。",
+      "memory": "夹什么",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "yours": {
+      "text": "你让我我让你，白菜在两个人手里推了三个来回，最后搁回了摊上。",
+      "memory": "推了三回",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "白菜劈开了，一半拎走了，一半还留在摊上。说一人一半的那个，回头看了一眼。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s6_cabbage_alone",
+    "kind": "solo",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 6,
+    "beat": 2,
+    "scene": "across",
+    "slot": "evening",
+    "next": "傍晚，对岸的菜市场",
+    "replaces": [],
+    "requires": {
+     "alone": true
+    },
+    "title": "一棵白菜",
+    "text": "菜市场里，你买了一棵白菜，一个人吃不了。",
+    "options": [
+     {
+      "id": "half",
+      "text": "让卖菜的劈一半",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "whole",
+      "text": "整棵拎回去",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "hunger": 10
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   },
+   {
+    "id": "s6_site",
+    "kind": "mirror",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 6,
+    "beat": 3,
+    "scene": "river",
+    "slot": "morning",
+    "next": "早上，河边往回看",
+    "replaces": [],
+    "requires": {},
+    "title": "那块地",
+    "text": "从河边往回看，老楼那块地上盖起了一片新楼，二十多层，楼顶上什么也没有。",
+    "options": [
+     {
+      "id": "willow",
+      "text": "去找第三棵柳树",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "count",
+      "text": "数数有多少层",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mind": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "go",
+      "text": "看一眼就走",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": -2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "willow": {
+      "text": "柳树都还在，比小时候粗了一圈。你俩数了三遍，都说第三棵是自己指的那一棵。",
+      "memory": "粗了一圈",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "count": {
+      "text": "数到二十几层就数乱了。数乱了，就指着说，大概是这儿，大概是三楼。",
+      "memory": "大概是三楼",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "go": {
+      "text": "两个人都只看了一眼，转身往早点铺那边走。那边有人在排队。",
+      "memory": "有人在排队",
+      "bond": {
+       "sync": 2,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个往柳树那边走了，一个还在数层数。数完回头，柳树底下站着一个人。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s6_site_alone",
+    "kind": "solo",
+    "stage": "middle",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 6,
+    "beat": 3,
+    "scene": "river",
+    "slot": "morning",
+    "next": "早上，河边往回看",
+    "replaces": [],
+    "requires": {
+     "alone": true
+    },
+    "title": "那块地",
+    "text": "老楼那块地上盖起了新楼。你数到三楼，就不数了。",
+    "options": [
+     {
+      "id": "willow",
+      "text": "去柳树底下站站",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "go",
+      "text": "转身回家",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": -2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   },
+   {
+    "id": "s7_park",
+    "kind": "mirror",
+    "stage": "old",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 7,
+    "beat": 1,
+    "scene": "park",
+    "slot": "morning",
+    "next": "早上，公园",
+    "replaces": [],
+    "requires": {},
+    "title": "一圈",
+    "text": "早上公园里走一圈，一圈八百步。走到第二圈，碰上了。",
+    "options": [
+     {
+      "id": "together",
+      "text": "并排走一圈",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "body": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "nod",
+      "text": "碰上了点个头",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "bench",
+      "text": "坐下歇会儿",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "energy": 10
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "together": {
+      "text": "两个人并排走，步子慢慢对上了。走完一圈，又走了一圈。",
+      "memory": "又一圈",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "nod": {
+      "text": "每走一圈碰上一回，点一回头。点到第五回，都笑了。",
+      "memory": "点了五回",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "bench": {
+      "text": "长椅上一坐，看别人走。看了半个钟头，谁也没提走。",
+      "memory": "半个钟头",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个坐下了，一个还在走。走过长椅的时候，脚底下慢了一点。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s7_park_alone",
+    "kind": "solo",
+    "stage": "old",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 7,
+    "beat": 1,
+    "scene": "park",
+    "slot": "morning",
+    "next": "早上，公园",
+    "replaces": [],
+    "requires": {
+     "alone": true
+    },
+    "title": "一圈",
+    "text": "公园里走一圈。走到长椅那儿，还是停了一下。",
+    "options": [
+     {
+      "id": "sit",
+      "text": "坐一会儿",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "energy": 10
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "walk",
+      "text": "接着走",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "body": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   },
+   {
+    "id": "s7_dig",
+    "kind": "mirror",
+    "stage": "old",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 7,
+    "beat": 2,
+    "scene": "river",
+    "slot": "am",
+    "next": "上午，第三棵柳树",
+    "replaces": [],
+    "requires": {
+     "flags": [
+      "p_capsule"
+     ]
+    },
+    "title": "第三棵柳树",
+    "text": "第三棵柳树底下，两把小铲子挖了一上午。铁皮锈透了。",
+    "options": [
+     {
+      "id": "open",
+      "text": "撬开盖子",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 8
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "rest",
+      "text": "先坐下歇会儿",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "energy": 10,
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "rebury",
+      "text": "原样埋回去",
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "deeper",
+      "text": "再往下挖一挖",
+      "requires": {
+       "flags": [
+        "leg_p_capsule"
+       ]
+      },
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     }
+    ],
+    "resonance": {
+     "open": {
+      "text": "里头的东西一样不少。你俩一样一样摆在草上，摆了一溜，像小时候在楼下摆摊。",
+      "memory": "摆在草上",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "rest": {
+      "text": "坐在土堆边歇了一会儿。盒子搁在当间，谁也不急着开。",
+      "memory": "不急着开",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "rebury": {
+      "text": "看了一眼盖子，又埋了回去。土拍实了，在树皮上又划了一道。",
+      "memory": "又划一道",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "deeper": {
+      "text": "底下还有一个盒子，更锈，盖上的字认不出了。你俩没打开，把它跟自己那个并排放着。",
+      "memory": "并排两个盒子",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "盒子搁在两个人当间，晒了一上午太阳。一个要开，一个要埋。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s7_dig_none",
+    "kind": "mirror",
+    "stage": "old",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 7,
+    "beat": 2,
+    "scene": "river",
+    "slot": "am",
+    "next": "上午，河边柳树底下",
+    "replaces": [],
+    "requires": {
+     "notFlags": [
+      "p_capsule"
+     ]
+    },
+    "title": "柳树底下",
+    "text": "河边柳树底下有人在挖土找东西。不是你俩埋的。",
+    "options": [
+     {
+      "id": "help",
+      "text": "过去帮着挖",
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "body": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "watch",
+      "text": "站着看",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "box",
+      "text": "想起床底下那个空盒子",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "help": {
+      "text": "挖出来一个铁皮盒子。那家人道了谢，你俩走回去，谁也没说话。",
+      "memory": "别人的盒子",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "watch": {
+      "text": "两个人站着看到人家挖出来，打开，笑了。你俩也跟着笑了。",
+      "memory": "跟着笑了",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "box": {
+      "text": "两个人同时说「那个盒子」。一个说在床底下，一个说搬家时就不见了。",
+      "memory": "那个盒子",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个过去帮着挖了，一个站在河堤上看着。挖出来的时候，两个人都往前探了探身子。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s7_dig_alone",
+    "kind": "solo",
+    "stage": "old",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 7,
+    "beat": 2,
+    "scene": "river",
+    "slot": "am",
+    "next": "上午，第三棵柳树",
+    "replaces": [],
+    "requires": {
+     "alone": true,
+     "flags": [
+      "p_capsule"
+     ]
+    },
+    "title": "第三棵柳树",
+    "text": "一个人挖了一上午，盒子出来了。",
+    "options": [
+     {
+      "id": "open",
+      "text": "打开",
+      "tags": [
+       "adventure"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "home",
+      "text": "不开，抱回家",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   },
+   {
+    "id": "s7_dig_none_alone",
+    "kind": "solo",
+    "stage": "old",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 7,
+    "beat": 2,
+    "scene": "river",
+    "slot": "am",
+    "next": "上午，河边柳树底下",
+    "replaces": [],
+    "requires": {
+     "alone": true,
+     "notFlags": [
+      "p_capsule"
+     ]
+    },
+    "title": "柳树底下",
+    "text": "柳树底下有人在挖土。你站着看了一会儿。",
+    "options": [
+     {
+      "id": "watch",
+      "text": "看到挖出来",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "go",
+      "text": "接着往前走",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "body": 1
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   },
+   {
+    "id": "s7_bench",
+    "kind": "mirror",
+    "stage": "old",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 7,
+    "beat": 3,
+    "scene": "river",
+    "slot": "evening",
+    "next": "傍晚，河边的长椅",
+    "replaces": [],
+    "requires": {},
+    "title": "长椅",
+    "text": "傍晚河边的长椅，坐两个人刚好。对岸的灯亮了。",
+    "options": [
+     {
+      "id": "sit",
+      "text": "就这么坐着",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "count",
+      "text": "数对岸的灯",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "knock",
+      "text": "在椅背上敲三下",
+      "requires": {
+       "flags": [
+        "p_knock"
+       ]
+      },
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 8
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     },
+     {
+      "id": "note",
+      "text": "掏出那张纸条",
+      "requires": {
+       "flags": [
+        "p_note"
+       ]
+      },
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 8
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     }
+    ],
+    "resonance": {
+     "sit": {
+      "text": "坐到灯全亮了。谁也没说回去，也没说别的。",
+      "memory": "灯全亮了",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "count": {
+      "text": "数到一百多，对岸又亮了一片。这回谁也没说从头数。",
+      "memory": "又数了三回",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "knock": {
+      "text": "你敲了三下，椅背那头也敲了三下。跟三岁那年隔着门板，一个声。",
+      "memory": "椅背上三下",
+      "bond": {
+       "sync": 4,
+       "close": 3
+      },
+      "flags": []
+     },
+     "note": {
+      "text": "两张纸条都掏了出来，折痕磨得发白。最底下那行小字，两个人都没念出声。",
+      "memory": "发白的折痕",
+      "bond": {
+       "sync": 4,
+       "close": 3
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个在数灯，一个看着数灯的那个。灯亮完了，两个人都没数清。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s7_bench_alone",
+    "kind": "solo",
+    "stage": "old",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 7,
+    "beat": 3,
+    "scene": "river",
+    "slot": "evening",
+    "next": "傍晚，河边的长椅",
+    "replaces": [],
+    "requires": {
+     "alone": true
+    },
+    "title": "长椅",
+    "text": "河边的长椅，一个人坐宽了。对岸的灯亮了。",
+    "options": [
+     {
+      "id": "sit",
+      "text": "坐到灯全亮",
+      "tags": [
+       "patient"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "knock",
+      "text": "在椅背上敲三下",
+      "requires": {
+       "flags": [
+        "p_knock"
+       ]
+      },
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      }
+     },
+     {
+      "id": "middle",
+      "text": "挪到当中坐",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": 2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   }
   ]
  }
 }

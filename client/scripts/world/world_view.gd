@@ -8,6 +8,7 @@ const P := preload("res://scripts/ui/palette.gd")
 const Actor := preload("res://scripts/world/actor.gd")
 const MapArt := preload("res://scripts/world/map_art.gd")
 const Nav := preload("res://scripts/world/nav.gd")
+const PrintLight := preload("res://scripts/world/print_light.gd")
 const SPOT_RADIUS := 100.0  ## 比服务器的 110 小一点，避免边缘抖动
 const MOVE_SEND_INTERVAL := 0.1
 const SnapshotBuffer := preload("res://scripts/net/snapshot_buffer.gd")
@@ -23,6 +24,7 @@ var hints: Array = []
 var controllable := true
 var camera: Camera2D
 var art: MapArt
+var light: PrintLight  ## 昼夜和旧纸感（夜版套印）
 var nav := Nav.new()
 var _marks: Node2D  ## 互动点和命运提示：画在叠印层上面
 var _tap_fx := Vector2.INF
@@ -34,6 +36,7 @@ var net = null
 var buffers: Dictionary = {}    ## role -> SnapshotBuffer（只用于对方）
 var _correction := Vector2.ZERO ## 本地角色还没消化掉的服务器校正量
 var _corrected_upto := 0        ## 这个序号及以前的 MOVE 是在校正之前发的，不再拿来校正（避免重复校正）
+var _stage_set := false
 
 
 func setup(content: Dictionary, role: String, names: Dictionary) -> void:
@@ -43,7 +46,11 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 	my_role = role
 	y_sort_enabled = true
 	art = MapArt.new()
+	art.plate_lighting = true
 	add_child(art)
+	light = PrintLight.new()
+	add_child(light)
+	light.setup(Vector2(map.size[0], map.size[1]), art.anchors)
 	nav.load_mask()
 	_marks = _Marks.new(self)
 	_marks.z_index = 70
@@ -55,8 +62,11 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 		add_child(actor)
 		actors[r] = actor
 		buffers[r] = SnapshotBuffer.new()
+		light.actors.append(actor)
 	camera = Camera2D.new()
-	camera.zoom = Vector2.ONE * 1.4
+	# 长屏手机上一屏能看到的比地图还高，就再放大一点，别露出地图外面的白纸
+	var view := get_viewport_rect().size
+	camera.zoom = Vector2.ONE * maxf(1.4, maxf(view.x / float(map.size[0]), view.y / float(map.size[1])) + 0.01)
 	camera.limit_left = 0
 	camera.limit_top = 0
 	camera.limit_right = int(map.size[0])
@@ -76,12 +86,20 @@ func me() -> Actor:
 func set_stage(stage: String) -> void:
 	for a in actors.values():
 		a.set_stage(stage)
+	if light != null:
+		light.set_stage(stage, not _stage_set)
+	_stage_set = true
 
 
 ## 时钟：决定昼夜（联机时 apply_world 自动调用；离线预览由 main 喂）
 func set_minute(m: float) -> void:
 	if art != null:
 		art.set_minute(m)
+	if light != null:
+		light.set_minute(m)
+		# 互动点的小纸片在夜版上面，夜里跟着暗一点，不然太扎眼
+		if _marks != null:
+			_marks.modulate = Color.WHITE.lerp(Color(0.72, 0.76, 0.9), light.night)
 
 
 func _process(delta: float) -> void:

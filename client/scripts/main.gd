@@ -53,6 +53,7 @@ var _toast_over := false        ## 提示条是不是贴在顶上（开着弹窗
 var _toast_drop := 0.0
 var _modal_tween: Tween
 var _page_id := ""       ## 现在是哪一页；换页时才播转场
+var _scroll_saving := false  ## 长卷正在存图，再点不重来
 var _stage_shown := ""   ## 河畔里现在显示的人生阶段
 var banner: Label        ## 顶部「连接断了，正在重连」
 var lobby_list: VBoxContainer  ## 大厅里「继续」的人生线列表
@@ -1524,20 +1525,22 @@ func _has_scroll() -> bool:
 func _show_scroll() -> void:
 	_leave_world()
 	_show_screen("scroll", false)
-	var side := Kit.safe_sides(screen).x
+	_scroll_saving = false
+	var sides := Kit.safe_sides(screen)
 	var view := LifeScroll.view(life, content, names)
-	view.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	view.offset_left = side
-	view.offset_right = -side
-	view.offset_top = 40.0
-	view.offset_bottom = 40.0 + LifeScroll.HEIGHT
+	# 纸和底栏当一组，对着屏幕的竖向正中摆：1080 高时和原来一样，更高的屏（平板）上下的白平分
+	view.set_anchors_preset(Control.PRESET_HCENTER_WIDE)
+	view.offset_left = sides.x
+	view.offset_right = -sides.y
+	view.offset_top = -500.0
+	view.offset_bottom = -500.0 + LifeScroll.HEIGHT
 	screen.add_child(view)
 	var bar := HBoxContainer.new()
-	bar.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	bar.offset_left = side + 70.0
-	bar.offset_right = -side - 70.0
-	bar.offset_top = -136.0
-	bar.offset_bottom = -36.0
+	bar.set_anchors_preset(Control.PRESET_HCENTER_WIDE)
+	bar.offset_left = sides.x + 70.0
+	bar.offset_right = -sides.y - 70.0
+	bar.offset_top = 404.0
+	bar.offset_bottom = 504.0
 	bar.add_theme_constant_override("separation", 26)
 	bar.alignment = BoxContainer.ALIGNMENT_END
 	screen.add_child(bar)
@@ -1549,19 +1552,33 @@ func _show_scroll() -> void:
 	_primary(bar, "往下看", _show_ending_page)
 
 
-## 把整张长卷存进相册；存不进去（没给权限、桌面版）就存在游戏自己的目录里
+## 把整张长卷存进相册。桌面版相册写不进去就放游戏自己的目录；
+## 手机上那是玩家翻不到的私有目录，不算存好，直说没存进去
 func _save_scroll(scroll: Control) -> void:
+	if _scroll_saving:
+		return
+	_scroll_saving = true
+	_toast("正在存……")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if not is_instance_valid(scroll) or not scroll.is_inside_tree():
+		_scroll_saving = false
+		return
 	var name := "同岁_长卷_%s.png" % Time.get_datetime_string_from_system().replace(":", "").replace("-", "").replace("T", "_")
-	var dir := OS.get_system_dir(OS.SYSTEM_DIR_PICTURES).path_join("同岁")
-	var path := dir.path_join(name)
 	var err := ERR_CANT_CREATE
-	if DirAccess.make_dir_recursive_absolute(dir) == OK:
-		err = await scroll.save_png(path)
-	if err != OK:
-		path = "user://" + name
-		err = await scroll.save_png(path)
-		path = ProjectSettings.globalize_path(path)
-	_toast("长卷存好了：%s" % path if err == OK else "没存成，截个屏吧。")
+	var path := ""
+	var pictures := OS.get_system_dir(OS.SYSTEM_DIR_PICTURES)
+	if pictures != "":
+		var dir := pictures.path_join("同岁")
+		if DirAccess.make_dir_recursive_absolute(dir) == OK:
+			path = dir.path_join(name)
+			err = await scroll.save_png(path)
+	if err != OK and not OS.has_feature("mobile"):
+		err = await scroll.save_png("user://" + name)
+		path = ProjectSettings.globalize_path("user://" + name)
+	_scroll_saving = false
+	if _page_id == "scroll":
+		_toast("长卷存好了：%s" % path if err == OK else "没能存进相册，截个屏吧。")
 
 
 func _show_ending_page() -> void:

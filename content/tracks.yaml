@@ -12,9 +12,25 @@
   label: 还没上学
   requires: { maxAge: 5 }
 
-# ---- 6~11 小学：两个人一定同路 ----
+# ---- 6~11 小学：两个人一定同路（当了不同的小干部也还是同班，group 一样就算同路） ----
+- id: primary_study
+  label: 上小学 · 学习委员
+  group: primary
+  requires: { minAge: 6, maxAge: 11, flags: [lead_study] }
+  duty: { label: 上学, spot: school_gate, arrive: [420, 540], until: 930, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.34, charm: 0.07 } }
+- id: primary_sport
+  label: 上小学 · 体育委员
+  group: primary
+  requires: { minAge: 6, maxAge: 11, flags: [lead_sport] }
+  duty: { label: 上学, spot: school_gate, arrive: [420, 540], until: 930, needs: { hunger: 30, energy: -17 }, stats: { mind: 0.29, body: 0.12, charm: 0.07 } }
+- id: primary_art
+  label: 上小学 · 文艺委员
+  group: primary
+  requires: { minAge: 6, maxAge: 11, flags: [lead_art] }
+  duty: { label: 上学, spot: school_gate, arrive: [420, 540], until: 930, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.29, charm: 0.17 } }
 - id: primary
   label: 上小学
+  group: primary
   requires: { minAge: 6, maxAge: 11 }
   duty: { label: 上学, spot: school_gate, arrive: [420, 540], until: 930, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.29, charm: 0.07 } }
 

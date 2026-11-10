@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// 活法模拟：让机器人按几种活法在河畔里把人生过到 30 岁，看每个关口各种活法落在哪条线上。
-// 用法：npm run server:build && node tools/paths.mjs [每种活法跑几条人生，默认 60]
+// 活法模拟：让机器人按几种活法在河畔里把人生过完（最后一道关在 75 岁），看每个关口各种活法落在哪条线上。
+// 用法：npm run server:build && node tools/paths.mjs [每种活法跑几条人生，默认 60] [只跑这几种活法…]
+//       UNTIL=31 node tools/paths.mjs 只过到 30 岁那一关（快得多）
 //
 // 分数线（content/events/milestones.yaml 里的 min）是这个游戏最要紧的数值。调的时候看这张表：
 //   - 「不上心」的活法应该够不着高线；「专心」的应该大多够得着；
@@ -110,7 +111,7 @@ export function live(seed, way, untilAge, pickOption) {
       for (const r of ROLES) {
         const p = s.persons[r];
         if (!G("lifeMilestoneFor")(ms, p) || G("lifeSeenIds")(s, r)[ms.id]) continue;
-        marks[ms.id][r] = { stats: { ...p.stats }, money: p.money, open: ms.options.filter((o) => !G("lifeOptionLock")(ms, o, p, 0)).map((o) => o.id) };
+        marks[ms.id][r] = { stats: { ...p.stats }, money: p.money, close: s.bond.close, open: ms.options.filter((o) => !G("lifeOptionLock")(ms, o, p, 0, G("lifePairBond")(s, r))).map((o) => o.id) };
       }
     }
     if (w.event) {
@@ -119,7 +120,7 @@ export function live(seed, way, untilAge, pickOption) {
         if (pe.choices[r]) continue;
         if (!online[r]) { G("worldChoose")(s, C, r, G("lifeShadowChoose")(s, C, r, ev.id), true); if (!s.world || s.world.event !== pe) break; continue; }
         const swing = (pe.swing && pe.swing[r]) || 0;
-        const open = ev.options.filter((o) => ev.kind !== "milestone" || !G("lifeOptionLock")(ev, o, s.persons[r], swing));
+        const open = ev.options.filter((o) => ev.kind !== "milestone" || !G("lifeOptionLock")(ev, o, s.persons[r], swing, G("lifePairBond")(s, r)));
         const id = pickOption ? pickOption(s, r, ev, open) : open[Math.floor(G("lifeRand")(s) * open.length)].id;
         G("worldChoose")(s, C, r, id, false);
         if (!s.world || s.world.event !== pe) break;
@@ -145,25 +146,36 @@ export function live(seed, way, untilAge, pickOption) {
 }
 
 /** 关口上总是选够得着的线里最高的那条 */
-export const climb = (s, r, ev, open) => (ev.kind === "milestone" ? [...open].sort((a, b) => (b.min || 0) - (a.min || 0))[0].id : open[Math.floor(G("lifeRand")(s) * open.length)].id);
+export const climb = (s, r, ev, open) => {
+  if (ev.kind !== "milestone") return open[Math.floor(G("lifeRand")(s) * open.length)].id;
+  // 线不是一个量纲的（分数、积蓄、亲近）比不了高低，按写的顺序取头一条带线的
+  const lined = open.filter((o) => o.min);
+  const raw = (o) => G("lifeScoreRaw")(o.score || ev.score || {});
+  if (lined.length && lined.some((o) => raw(o) !== raw(lined[0]))) return lined[0].id;
+  return [...open].sort((a, b) => (b.min || 0) - (a.min || 0))[0].id;
+};
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const N = Number(process.argv[2]) || 60;
+  const UNTIL = Number(process.env.UNTIL) || 76;
+  const only = process.argv.slice(3);
   const stones = C.events.filter((e) => e.kind === "milestone" && e.options.some((o) => o.min)).sort((a, b) => a.age - b.age);
   console.log(`每种活法 ${N} 条人生（两个人 = ${N * 2} 个人），关口上总选够得着的最高那条线。数字是够得着这条线的人的比例。\n`);
   for (const [name, way] of Object.entries(WAYS)) {
+    if (only.length && !only.includes(name)) continue;
     const rows = [];
     const acc = {};
     for (let seed = 1; seed <= N; seed++) {
-      const { marks } = live(seed * 7919, way, 31, climb);
+      const { marks } = live(seed * 7919, way, UNTIL, climb);
       for (const ev of stones) for (const r of way.shadow || ROLES) {
         const m = marks[ev.id]?.[r];
         if (!m) continue;
-        const a = (acc[ev.id] ||= { n: 0, open: {}, stat: { body: 0, mind: 0, charm: 0 }, money: 0 });
+        const a = (acc[ev.id] ||= { n: 0, open: {}, stat: { body: 0, mind: 0, charm: 0 }, money: 0, close: 0 });
         a.n++;
         for (const id of m.open) a.open[id] = (a.open[id] || 0) + 1;
         for (const k of Object.keys(a.stat)) a.stat[k] += m.stats[k];
         a.money += m.money;
+        a.close += m.close;
       }
     }
     for (const ev of stones) {
@@ -171,7 +183,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       if (!a) continue;
       const pct = ev.options.filter((o) => o.min).map((o) => `${o.id} ${Math.round(((a.open[o.id] || 0) / a.n) * 100)}%`).join("  ");
       const st = Object.entries(a.stat).map(([k, v]) => `${k} ${(v / a.n).toFixed(1)}`).join(" ");
-      rows.push(`  ${String(ev.age).padStart(2)} 岁 ${ev.title.padEnd(6, "　")} ${pct.padEnd(64)} | ${st}  积蓄 ${Math.round(a.money / a.n)}  (${a.n} 人)`);
+      rows.push(`  ${String(ev.age).padStart(2)} 岁 ${ev.title.padEnd(6, "　")} ${pct.padEnd(64)} | ${st}  积蓄 ${Math.round(a.money / a.n)}  亲近 ${Math.round(a.close / a.n)}  (${a.n} 人)`);
     }
     console.log(`【${name}】\n${rows.join("\n")}\n`);
   }

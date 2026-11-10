@@ -9,7 +9,7 @@ var SEASON_LABEL = ["立春", "立夏", "立秋", "立冬"];
 var SWING_RANGE = 0.5;
 var SWING_LUCK = 0.04;
 var STAT_KEYS: StatKey[] = ["body", "mind", "charm", "luck"];
-var STAT_LABEL: { [k: string]: string } = { body: "体魄", mind: "心智", charm: "魅力", luck: "运气", money: "积蓄" };
+var STAT_LABEL: { [k: string]: string } = { body: "体魄", mind: "心智", charm: "魅力", luck: "运气", money: "积蓄", close: "亲近" };
 
 /** 时间的密度：每个回合是人生里被「放大」的一天，回合之间的日子一笔带过。越长大，跳得越远。 */
 var STAGE_TABLE: { stage: Stage; fromAge: number; turnsPerYear: number; years: number }[] = [
@@ -205,14 +205,25 @@ function lifeRound1(v: number): number {
   return Math.round(v * 10) / 10;
 }
 
-/** 按权重算分：属性乘权重相加，money 是积蓄 */
-function lifeScore(p: Person, w: ScoreWeights): number {
+/** 按权重算分：属性乘权重相加，money 是积蓄，close 是两个人的亲近（要传 bond，不传按 0 算） */
+function lifeScore(p: Person, w: ScoreWeights, bond?: Bond): number {
   var total = 0;
   for (var k in w) {
     var weight = (w as any)[k] as number;
-    total += weight * (k === "money" ? p.money : p.stats[k as StatKey]);
+    total += weight * (k === "money" ? p.money : k === "close" ? (bond ? bond.close : 0) : p.stats[k as StatKey]);
   }
   return Math.round(total * 100) / 100;
+}
+
+/** 算关口的线用的亲近。对门不在了返回 undefined：要两个人才走得成的路，一个人走不了 */
+function lifePairBond(s: LifeState, role: Role): Bond | undefined {
+  var o = s.persons ? s.persons[lifeOther(role)] : null;
+  return o && o.alive ? s.bond : undefined;
+}
+
+/** 这条线按原数给人看：积蓄是块，亲近本来就是 0~100。不乘 10，也不算考场上的发挥 */
+function lifeScoreRaw(w: ScoreWeights): boolean {
+  return !!(w.money || w.close);
 }
 
 function lifeOptionWeights(ev: LifeEvent, o: EventOption): ScoreWeights {
@@ -247,16 +258,19 @@ function lifeMilestoneFor(ev: LifeEvent, p: Person): boolean {
 }
 
 /** 这条路走不走得了。走不了返回原因（给玩家看的），走得了返回 null。swing 是这次的发挥 */
-function lifeOptionLock(ev: LifeEvent, o: EventOption, p: Person, swing: number): string | null {
+function lifeOptionLock(ev: LifeEvent, o: EventOption, p: Person, swing: number, bond?: Bond): string | null {
   var rq = o.requires || {};
   if (!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) return "这条路不是给你留的";
   if (o.min) {
     var w = lifeOptionWeights(ev, o);
-    var have = lifeScore(p, w) + (w.money ? 0 : swing);
+    if (w.close && !bond) return "对门已经空了";
+    var have = lifeScore(p, w, bond) + (lifeScoreRaw(w) ? 0 : swing);
     if (have < o.min) {
       return w.money
         ? "积蓄 " + Math.floor(have) + " 块，要 " + o.min + " 块"
-        : lifeWeightsLabel(w) + " " + lifePoints(have) + " 分，线是 " + lifePoints(o.min) + " 分";
+        : w.close
+          ? "亲近 " + Math.floor(have) + " 分，线是 " + o.min + " 分"
+          : lifeWeightsLabel(w) + " " + lifePoints(have) + " 分，线是 " + lifePoints(o.min) + " 分";
     }
   }
   if (o.cost && p.money < o.cost) return "积蓄 " + Math.floor(p.money) + " 块，要 " + o.cost + " 块";
@@ -282,7 +296,7 @@ function lifeMilestoneLocks(s: LifeState, c: Content): { [R in Role]?: { [option
     var r = pe.roles[i];
     var locks: { [optionId: string]: string } = {};
     for (var j = 0; j < ev.options.length; j++) {
-      var why = lifeOptionLock(ev, ev.options[j], s.persons![r], (pe.swing && pe.swing[r]) || 0);
+      var why = lifeOptionLock(ev, ev.options[j], s.persons![r], (pe.swing && pe.swing[r]) || 0, lifePairBond(s, r));
       if (why) locks[ev.options[j].id] = why;
     }
     out[r] = locks;
@@ -323,8 +337,9 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
     var o = best.options[j];
     if (!o.min) continue;
     var w = lifeOptionWeights(best, o);
-    var have = lifeScore(p, w);
-    lines.push({ id: o.id, text: o.text, by: lifeWeightsLabel(w), unit: w.money ? "块" : "分", have: w.money ? Math.floor(have) : lifePoints(have), need: w.money ? o.min : lifePoints(o.min), ok: have >= o.min });
+    var have = lifeScore(p, w, lifePairBond(s, role));
+    var raw = lifeScoreRaw(w);
+    lines.push({ id: o.id, text: o.text, by: lifeWeightsLabel(w), unit: w.money ? "块" : "分", have: raw ? Math.floor(have) : lifePoints(have), need: raw ? o.min : lifePoints(o.min), ok: have >= o.min });
   }
   return { id: best.id, title: best.title, age: best.age!, turns: lifeTurnsUntilAge(s.turn, best.age!), lines: lines };
 }
@@ -428,7 +443,7 @@ function lifeShadowChoose(s: LifeState, c: Content, role: Role, eventId: string)
   for (var i = 0; i < ev.options.length; i++) {
     var o = ev.options[i];
     // 关口：走不了的路影子也不能替他选。够得着的路里，影子偏向线最高的那条（人往高处走），再看性格
-    if (ev.kind === "milestone" && lifeOptionLock(ev, o, s.persons![role], swing)) continue;
+    if (ev.kind === "milestone" && lifeOptionLock(ev, o, s.persons![role], swing, lifePairBond(s, role))) continue;
     var score = ev.kind === "milestone" ? (o.min || 0) * 0.01 : 0;
     for (var j = 0; j < o.tags.length; j++) score += tags[o.tags[j]] || 0;
     if (score > bestScore) { bestScore = score; best = [o]; }
@@ -465,12 +480,12 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       var w = lifeOptionWeights(ev, o);
       var swing = (pe.swing && pe.swing[role]) || 0;
       var gw = ev.score || {};
-      var gscore = lifeScore(me, gw) + (gw.money ? 0 : swing);
+      var gscore = lifeScore(me, gw, s.bond) + (lifeScoreRaw(gw) ? 0 : swing);
       var grade: Grade | null = null;
       for (var g = 0; g < (ev.grades || []).length; g++) if (gscore >= ev.grades![g].min) { grade = ev.grades![g]; break; }
       // 成绩单上的数要在扣钱、长属性之前算：那是走进考场那一刻的本事
       var sw = o.min ? w : gw;
-      var shown = sw.money ? Math.floor(lifeScore(me, sw)) : lifePoints(lifeScore(me, sw) + swing);
+      var shown = lifeScoreRaw(sw) ? Math.floor(lifeScore(me, sw, s.bond)) : lifePoints(lifeScore(me, sw, s.bond) + swing);
       if (grade) lifeAddFlags(me, grade.flags);
       if (o.cost) me.money = Math.max(0, me.money - o.cost);
       lifeApplySelf(me, o.effects.self, grow);

@@ -202,6 +202,8 @@ function growthLimit(s: LifeState, c: Content, role: Role): number {
   var other = s.persons![lifeOther(role)];
   var limit = p.lifespan + (p.stats.body - 5) * r.body + growthMoodYears(c, p);
   if (s.bond.close >= r.bondClose) limit += r.bond; // 有人惦记（人走了，惦记还在）
+  // 中年把身体捡回来的、老了还自己下楼的、搭伙过的：关口上走的路折成几年
+  if (r.flags) for (var f in r.flags) if (lifeHasFlag(p, f)) limit += r.flags[f];
   if (!other.alive && s.bond.close >= r.widowClose) limit -= r.widow; // 太亲的两个人，后走的那个撑不了太久
   return lifeClamp(limit, r.min, r.max);
 }

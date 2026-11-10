@@ -143,7 +143,7 @@ const sum = (st) => st.body + st.mind + st.charm + st.luck;
 {
   assert.ok(C.checks.length > 0);
   const ck = { stat: "body", dc: 5 };
-  const me = (body, luck = 5) => ({ stats: { body, mind: 5, charm: 5, luck } });
+  const me = (body, luck = 5) => ({ stats: { body, mind: 5, charm: 5, luck }, flags: [] });
   const p = (...a) => growthCheckChance(C, ck, ...a).p;
   assert.ok(Math.abs(p(me(5), null, false) - R.check.base) < 1e-9, "属性刚好够难度，就是 base");
   assert.ok(p(me(7), null, false) > p(me(5), null, false) && p(me(5), null, false) > p(me(3), null, false));

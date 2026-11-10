@@ -6,6 +6,8 @@
 //   npm run balance                 # 默认 1200 条人生，打印报告
 //   npm run balance -- --lives 4000 # 多跑一些
 //   npm run balance -- --json out.json   # 把原始统计写出来（docs/GROWTH.md 里的图表用）
+//   npm run balance -- --chain 4    # 四世一串地连着过（带着上一世的传承投胎）：看隔世的事、街坊记住的事、藏着的天赋
+//   npm run balance -- --marks      # 当作「三件事都出过」的人生线：藏着的天赋从头一世就抽得到，用来和别的天赋比强度
 //
 // 机器人是「活法」的原型，不是最优解：
 //   bookworm 书虫：有空就写作业      wild 野孩子：有空就在外面玩
@@ -20,6 +22,8 @@ const LIVES = Number(arg("lives", 1200));
 const JSON_OUT = arg("json", null);
 const QUIET = args.includes("--quiet");
 const TRACE = arg("trace", null);
+const CHAIN = Math.max(1, Number(arg("chain", 1)));
+const MARKS = args.includes("--marks");
 const traceLog = [];
 
 // --build <路径>：换一份编译好的规则来跑（比如拿改之前的分支做对照）
@@ -254,12 +258,16 @@ for (let i = 0; i < LIVES; i++) {
     rerolls: { qing: Math.floor(R() * 4), mei: Math.floor(R() * 4) },
     legacy: undefined,
   };
+  if (i % CHAIN === 0) legacy = MARKS ? { ...G("legacyNew")(), marks: [...C.legacy.marks] } : undefined;
+  cfg.legacy = legacy;
   const out = simulate(seed, cfg);
   const s = out.s;
+  legacy = JSON.parse(JSON.stringify(s.legacy));
   const st = G("lifeStats")(s);
   pairs.push({
     seed, cfg, turns: s.turn, ending: s.ending.pair, bond: { ...s.bond }, memories: s.memories.length, rate: st.rate, mirrors: st.mirrors, together: st.together,
-    bondTrack: out.bondTrack, achievements: s.earned ?? [], seenEvents: s.log.filter((e) => e.kind === "mirror").map((e) => e.events.qing),
+    bondTrack: out.bondTrack, helps: has("legacyHelps") ? G("legacyHelps")(s) : 0, noted: s.noted ?? [], life: s.life ?? 1, traces: [...(s.legacy?.traces ?? [])], marks: [...(s.legacy?.marks ?? [])],
+    seenEvents: s.log.filter((e) => e.kind !== "day").flatMap((e) => [e.events.qing, e.events.mei]).filter(Boolean),
   });
   for (const r of ROLES) {
     const p = s.persons[r];
@@ -384,7 +392,7 @@ strength("talents", (p) => p.talent, (id) => C.talents.find((t) => t.id === id).
   const le = count(people.map((p) => p.ending));
   report.pairEndings = Object.fromEntries(pe.map(([id, n]) => [id, n / pairs.length]));
   report.lifeEndings = Object.fromEntries(le.map(([id, n]) => [id, n / people.length]));
-  const title = (list, id) => { const e = list.find((x) => x.id === id); return (e.hidden ? "◆" : "") + e.title; };
+  const title = (list, id) => list.find((x) => x.id === id).title;
   log(`\n【结局】两个人的结局：走到过 ${pe.length}/${C.endings.pair.length} 种`);
   log("  " + pe.map(([id, n]) => `${title(C.endings.pair, id)} ${pct(n, pairs.length)}`).join("  "));
   log(`  每个人的一生：走到过 ${le.length}/${C.endings.lives.length} 种`);
@@ -407,16 +415,32 @@ if (C.heirlooms) {
   if (never.length) log("  没人留下的：" + never.join("、"));
 }
 
-// 9. 成就（有的话）
-if (C.achievements) {
-  const m = new Map(C.achievements.map((a) => [a.id, 0]));
-  for (const p of pairs) for (const id of p.achievements) m.set(id, (m.get(id) ?? 0) + 1);
-  report.achievements = Object.fromEntries([...m].map(([id, n]) => [id, n / pairs.length]));
-  const per = pairs.map((p) => p.achievements.length);
-  report.achievementsPerLife = { mean: mean(per), p5: quant(per, 0.05), p95: quant(per, 0.95) };
-  log(`\n【成就】一条人生平均拿到 ${f1(mean(per))} 个（5%~95%：${quant(per, 0.05)}~${quant(per, 0.95)}），共 ${C.achievements.length} 个`);
-  const rows = [...m].sort((a, b) => b[1] - a[1]);
-  log("  " + rows.map(([id, n]) => `${C.achievements.find((a) => a.id === id).title} ${pct(n, pairs.length)}`).join("  "));
+// 9. 街坊记住的事、痕迹、藏着的天赋（docs/LEGACY.md 第二步）。记的是活法：不该有一条人人都有，也不该有一条谁都碰不上
+if (C.remembered) {
+  const m = new Map(C.remembered.map((a) => [a.id, 0]));
+  for (const p of pairs) for (const id of p.noted) m.set(id, (m.get(id) ?? 0) + 1);
+  report.remembered = Object.fromEntries([...m].map(([id, n]) => [id, n / pairs.length]));
+  const per = pairs.map((p) => p.noted.length);
+  log(`\n【街坊记住的事】共 ${C.remembered.length} 条；一世平均新记住 ${f2(mean(per))} 条，一条也没有的人生 ${pct(per.filter((n) => n === 0).length, per.length)}`);
+  log("  每 100 世记住几回：" + [...m].sort((a, b) => b[1] - a[1]).map(([id, n]) => `${C.remembered.find((a) => a.id === id).title} ${f1((n / pairs.length) * 100)}`).join("  "));
+  const helps = pairs.map((p) => p.helps);
+  log(`  两个人一起才办成的事：平均 ${f1(mean(helps))} 回（50%/95%：${quant(helps, 0.5)}/${quant(helps, 0.95)}），够 3 回的 ${pct(helps.filter((n) => n >= 3).length, helps.length)}，够 5 回的 ${pct(helps.filter((n) => n >= 5).length, helps.length)}`);
+  if (CHAIN > 1) {
+    const byLife = groupBy(pairs, (p) => p.life);
+    log("  第几世新记住几条：" + [...byLife].sort((a, b) => a[0] - b[0]).map(([n, rows]) => `第${n}世 ${f2(mean(rows.map((p) => p.noted.length)))}`).join("  "));
+    const ends = pairs.filter((p) => p.life === CHAIN);
+    const total = ends.map((_, k) => pairs.slice(k * CHAIN, k * CHAIN + CHAIN).reduce((n, p) => n + p.noted.length, 0));
+    log(`  连过 ${CHAIN} 世一共记住：平均 ${f1(mean(total))} 条（5%~95%：${quant(total, 0.05)}~${quant(total, 0.95)}）`);
+    const later = pairs.filter((p) => p.life > 1);
+    const prev = pairs.filter((p) => p.life < CHAIN);
+    log("  上一世留下的痕迹：" + C.legacy.traces.map((t) => `${t} ${pct(prev.filter((p) => p.traces.includes(t)).length, prev.length)}`).join("  "));
+    log("  出过的事（到最后一世为止）：" + C.legacy.marks.map((t) => `${t} ${pct(ends.filter((p) => p.marks.includes(t)).length, ends.length)}`).join("  "));
+    const legacyEvents = C.events.filter((e) => (e.requires.flags ?? []).some((f) => f.startsWith("leg_")));
+    log("  隔世的事（第二世起，每 100 世遇到几回）：" + legacyEvents.map((e) => `${e.title} ${f1((later.filter((p) => p.seenEvents.includes(e.id)).length / Math.max(1, later.length)) * 100)}`).join("  "));
+    const hiddenTal = C.talents.filter((t) => t.unlock);
+    const laterPeople = people.filter((_, k) => pairs[Math.floor(k / 2)].life > 1);
+    log("  藏着的天赋（第二世起抽到的人）：" + hiddenTal.map((t) => `${t.name} ${pct(laterPeople.filter((p) => p.talent === t.id).length, laterPeople.length)}`).join("  "));
+  }
 }
 
 if (JSON_OUT) {

@@ -8,6 +8,9 @@
 # lives.requires：
 #   flags / notFlags     这个人自己的标记    stats 属性下限，如 { mind: 8 }    minDiedAge / maxDiedAge 去世的年纪
 #   text 里的 {name} 会换成这个人的名字
+#
+# 藏着的结局（标了「藏着」的那几条）和别的结局一样按顺序匹配，只是条件跟着具体的事走，平常走不到。
+# 走到之前界面上哪儿都不提。x_ 开头的标记是人生结束时规则算出来的，leg_ 开头的是上一世留下的痕迹（见 remembered.yaml 文件头）。
 
 pair:
   - id: e_same_year
@@ -25,6 +28,12 @@ pair:
     text: 结了婚，吵了大半辈子。可是每天晚上，饭桌上总摆着两副碗筷。
     requires: { flags: [p_married] }
 
+  # 藏着：墙上的旧名字旁边，又刻了两个
+  - id: e_four_names
+    title: 四个名字
+    text: 楼道的墙后来刷过好几回，那一块没人刷。四个名字，两个深，两个浅。
+    requires: { flags: [p_four_names], minClose: 40 }
+
   - id: e_reunited
     title: 重逢
     text: 走散过很多年。后来在海河边又碰上了，谁也没提那些年，只说了一句：「吃了吗您？」
@@ -34,6 +43,12 @@ pair:
     title: 合伙人
     text: 那间小铺子开了很多年，招牌换过三回，门框上一直刻着两个人的名字。
     requires: { flags: [p_partners], minClose: 30 }
+
+  # 藏着：上一世拉过钩，这一世又拉了一回
+  - id: e_again
+    title: 又是对门
+    text: 这两扇门里，早先也有两个孩子拉过钩。新楼分房那天，你们又抓到了对门。楼长翻着住户本，半天没说话。
+    requires: { flags: [leg_p_promise, p_promise], maxDistance: 1, minClose: 45 }
 
   - id: e_neighbors
     title: 还住对门
@@ -54,6 +69,18 @@ pair:
     title: 知己
     text: 不常见面，见了面也不怎么说话。但每一次私下的选择，你们差不多都选到了一起。
     requires: { minRate: 60, minSync: 30, minMemories: 6 }
+
+  # 藏着：没几回想到一块儿去，偏偏好了一辈子
+  - id: e_duo
+    title: 一逗一捧
+    text: 一辈子没几回想到一块儿去。一个说东，一个准说西。说了几十年，谁也没换过搭档。
+    requires: { flags: [x_many_mirrors], maxRate: 30, minClose: 60 }
+
+  # 藏着：同一年走的
+  - id: e_same_death
+    title: 搭个伴
+    text: 同一年来的，同一年走的。楼里人说，这俩连走都得搭个伴，怕路上没人说话。
+    requires: { flags: [x_same_year], minClose: 60, notFlags: [p_estranged] }
 
   - id: e_lifelong
     title: 一辈子的发小
@@ -180,6 +207,12 @@ lives:
     title: 好运气
     text: "{name} 的运气好了一辈子。摸奖中过，捡钱还过，连走的那天，都是个大晴天。"
     requires: { stats: { luck: 9 } }
+  # 藏着：普通的孩子，没有一项拔尖，也没有一项垫底
+  - id: l_just_right
+    title: 恰恰好
+    text: "{name} 一辈子没拔过尖，也没掉过队。楼里人说起来想了半天：「{name} 啊？挺好。」"
+    requires: { flags: [x_plain_life] }
+
   - id: l_wanderer
     title: 远行的人
     text: "{name} 在很远的城市过了大半辈子。那边的人都说 {name} 是天津人，可 {name} 已经说不准天津话了。"

@@ -8,7 +8,7 @@
 //
 // 纯函数，不依赖 Nakama。
 
-var LIFE_VERSION = 6;
+var LIFE_VERSION = 7;
 
 /** 结构升级。返回做了什么（写服务器日志用）；存档比服务器还新时抛错（服务器被回滚了，不能硬读） */
 function lifeUpgrade(s: any): string[] {
@@ -55,6 +55,12 @@ function lifeUpgrade(s: any): string[] {
     v = 6;
     notes.push("v5→v6");
   }
+  if (v === 6) {
+    // v7：传承里多了痕迹、出过的事、街坊记住的事、干过的营生。旧存档从空的开始
+    legacyUpgrade2(s);
+    v = 7;
+    notes.push("v6→v7");
+  }
   s.version = v;
   return notes;
 }
@@ -75,7 +81,7 @@ function lifeRepair(s: LifeState, c: Content): string[] {
       var r = ROLES[i];
       var roll = s.rolls[r];
       if (lifeHasId(c.families, roll.familyId) && lifeHasId(c.talents, roll.talentId)) continue;
-      var next = lifeRollOnce(s, c, s.rolls[lifeOther(r)].familyId);
+      var next = lifeRollOnce(s, c, s.rolls[lifeOther(r)].familyId, s.legacy);
       notes.push("roll." + r + " " + roll.familyId + "/" + roll.talentId + " 已不存在，重抽");
       roll.familyId = next.familyId;
       roll.talentId = next.talentId;

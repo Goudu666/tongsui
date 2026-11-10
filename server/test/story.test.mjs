@@ -5,6 +5,7 @@
 //   2) 跨阶段的故事线索真的能连起来（标记被打上、被后面的事件读到）
 //   3) 新的条件：亲近 / 默契 / 距离 / 对方离开以后、共鸣与错位的共同标记
 //   4) 多结局：每种结局和一生小结的条件都有人能走到；结局按顺序匹配
+//   5) 隔世的事：人生三世一串地连着过（带着上一世的传承投胎），上一世留下的痕迹这一世真的撞得见
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import assert from "node:assert/strict";
@@ -27,9 +28,10 @@ const byId = new Map(C.events.map((e) => [e.id, e]));
  * 模拟一生。choose(s, role, ev) 返回选项 id。
  * near：这一天两个人碰上、一起做点什么的概率。这里不走地图，就用一次同框的亲近来代替
  *（亲近是走动出来的：一天既没同框也没共鸣就会淡，见 growth.ts）。
+ * legacy：上一世留下的传承（不传就是头一世）。
  */
-function story(seed, choose, rerolls = 0, near = 0.5) {
-  const s = lifeCreate(seed, C);
+function story(seed, choose, rerolls = 0, near = 0.5, legacy = undefined) {
+  const s = lifeCreate(seed, C, legacy);
   for (let i = 0; i < rerolls; i++) { lifeReroll(s, C, "qing"); lifeReroll(s, C, "mei"); }
   lifeConfirm(s, C, "qing", { qing: "青", mei: "梅" });
   lifeConfirm(s, C, "mei", { qing: "青", mei: "梅" });
@@ -155,8 +157,22 @@ const lifeEnd = new Map(C.endings.lives.map((e) => [e.id, 0]));
 const flagsSeen = new Map();
 const trackSeen = new Set(); // 40 岁时走在哪条路上
 let turns = 0, evs = 0, mems = 0;
+// 三世一串：第二、三世带着上一世的传承投胎，隔世的事才遇得到。
+// 藏着的天赋要先出过事才抽得到，光靠三世撞不够，所以每隔一串当作「三件事都出过」的人生线
+const CHAIN = 3;
+const noted = new Map(C.remembered.map((a) => [a.id, 0]));
+const talentSeen = new Map();
+let legacy;
 for (let seed = 1; seed <= LIVES; seed++) {
-  const { s, seen } = story(seed * 2654435761, seed % 2 ? randomChoice : steadyChoice, seed % 4, NEAR[Math.floor(seed / 4) % NEAR.length]);
+  const nth = (seed - 1) % CHAIN;
+  if (nth === 0) legacy = undefined;
+  if (nth === 1 && Math.floor(seed / CHAIN) % 2 === 0) legacy.marks = [...C.legacy.marks];
+  const { s, seen } = story(seed * 2654435761, seed % 2 ? randomChoice : steadyChoice, seed % 4, NEAR[Math.floor(seed / 4) % NEAR.length], legacy);
+  legacy = JSON.parse(JSON.stringify(s.legacy));
+  assert.equal(s.life, nth + 1);
+  for (const id of s.noted) noted.set(id, noted.get(id) + 1);
+  for (const r of ["qing", "mei"]) talentSeen.set(s.persons[r].talentId, (talentSeen.get(s.persons[r].talentId) ?? 0) + 1);
+  if (nth === 0) for (const r of ["qing", "mei"]) assert.ok(!s.persons[r].flags.some((f) => f.startsWith("leg_")), "头一世不带上一世的痕迹");
   for (const k of seen) { const id = k.split(":")[1]; hit.set(id, hit.get(id) + 1); }
   assert.equal(new Set(seen).size, seen.length, "默契事件一生只出现一次，各自的事和关口每人一生只遇一次");
   for (const r of ["qing", "mei"]) trackSeen.add(lifeTrack(C, s.persons[r], 40).id);
@@ -195,6 +211,14 @@ for (let seed = 1; seed <= LIVES; seed++) {
   for (const f of ["p_wall_names", "p_capsule", "p_pigeon", "p_promise", "p_seaside", "p_lovers", "p_married", "p_partners", "p_reunited", "took_over"]) {
     assert.ok((flagsSeen.get(f) ?? 0) > 0, `故事线索 ${f} 从来没被打上`);
   }
+  // 隔世：每一种痕迹都有人带着出生过；藏着的天赋出过事以后抽得到；街坊记住的事每条都有人被记住过
+  for (const f of ["leg_any", "leg_house", ...C.legacy.traces.map((t) => "leg_" + t)]) assert.ok((flagsSeen.get(f) ?? 0) > 0, `痕迹 ${f} 从来没人带着出生`);
+  for (const t of C.talents.filter((t) => t.unlock)) assert.ok((talentSeen.get(t.id) ?? 0) > 0, `藏着的天赋 ${t.name} 出过事以后也没人抽到`);
+  // 活过九十要一辈子吃好睡好，这里不模拟过日子（同上面高寿的小结）；隔着好几世才数得出来的放在 legacy.test.mjs 里测
+  const slow = new Set(C.remembered.filter((a) => (a.requires.minDiedAge ?? 0) >= 85 || a.requires.minJobs || a.requires.minFamilies).map((a) => a.id));
+  const deadNote = [...noted].filter(([id, n]) => n === 0 && !slow.has(id)).map(([id]) => id);
+  assert.deepEqual(deadNote, [], `街坊从来没记住过的事：${deadNote.join(", ")}`);
+  console.log("  街坊记住的事（每 100 世）：" + [...noted].sort((a, b) => b[1] - a[1]).map(([id, n]) => `${C.remembered.find((a) => a.id === id).title} ${((n / LIVES) * 100).toFixed(1)}`).join("  "));
 }
 
 // ---------- 4. 结局按顺序匹配 ----------

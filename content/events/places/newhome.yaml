@@ -7,9 +7,9 @@
   where: landing
   weight: 2
   requires: { flags: [home_own] }
-  title: 对门姓什么
+  title: 隔壁姓什么
   hint: 电梯间里没有人说话。
-  text: 住进新楼三年，还不知道对门姓什么。今天电梯里碰上了，两个人一齐看着数字往上跳。
+  text: 住进新楼三年，还不知道隔壁姓什么。今天电梯里碰上了，两个人一齐看着数字往上跳。
   options:
     - id: ask
       text: 问一句贵姓

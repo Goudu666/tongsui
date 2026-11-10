@@ -1,9 +1,9 @@
 # 先天天赋，开局随家庭一起抽。flags 会影响世界规则或事件（见 server/src/world.ts）。
 
 - { id: none, name: 普通的孩子, weight: 8, desc: 没有什么特别的。但普通也挺好的。, bonus: {}, flags: [] }
-- { id: memory, name: 过目不忘, weight: 1, desc: 看一遍就记住了，写作业的效率是别人的两倍。, bonus: { mind: 2 }, flags: [tal_memory] }
+- { id: memory, name: 过目不忘, weight: 1, desc: 看一遍就记住了，念书比别人快一半。, bonus: { mind: 2 }, flags: [tal_memory] }
 - { id: strong, name: 天生神力, weight: 1, desc: 三岁就能把水桶从井里提上来。, bonus: { body: 2 }, flags: [tal_strong] }
-- { id: sunny, name: 倍儿哏儿, weight: 1, desc: 天生乐呵，谁见了都想笑。心情掉得比别人慢。, bonus: { charm: 2 }, flags: [tal_sunny] }
+- { id: sunny, name: 乐天派, weight: 1, desc: 天生乐呵，谁见了都想笑。心情掉得比别人慢。, bonus: { charm: 2 }, flags: [tal_sunny] }
 - { id: koi, name: 锦鲤, weight: 1, desc: 运气好得离谱。, bonus: { luck: 3 }, flags: [tal_koi] }
 - { id: owl, name: 夜猫子, weight: 1, desc: 晚上精神特别好，早上起不来。, bonus: {}, flags: [tal_owl] }
 - { id: foodie, name: 小馋猫, weight: 1, desc: 饿得快，但每顿饭都吃得特别开心。, bonus: { charm: 1 }, flags: [tal_foodie] }

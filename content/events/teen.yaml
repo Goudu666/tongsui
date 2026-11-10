@@ -26,23 +26,6 @@
     text: 纸条在课桌角上躺了一节课。下课时，它不见了。
     bond: { close: -1 }
 
-- id: t_choose_school
-  kind: solo
-  stage: teen
-  weight: 2
-  requires: { minAge: 15, notFlags: [dropout] }
-  title: 志愿
-  text: 中考志愿表发下来了。市里的重点高中要住校，离家很远。
-  options:
-    - id: far
-      text: 报市重点
-      tags: [competitive]
-      effects: { self: { mind: 2 }, bond: { distance: 1 }, flags: [school_far] }
-    - id: near
-      text: 报家门口的学校
-      tags: [gentle]
-      effects: { self: { mood: 5 }, flags: [school_near] }
-
 # ---------------------------------------------------------------
 # 12 岁：小升初、分班
 # ---------------------------------------------------------------
@@ -810,7 +793,7 @@
   kind: solo
   stage: teen
   weight: 2
-  requires: { minAge: 16, notFlags: [dropout, gaokao_good, gaokao_bad] }
+  requires: { minAge: 16, notFlags: [dropout] }
   title: 家里出事了
   text: 妈妈在车间里伤了手。夜里你听见爸妈在隔壁小声算账——学费、药费、下个月的煤气罐。算到后来，就没声了。
   options:
@@ -892,19 +875,19 @@
   kind: solo
   stage: teen
   weight: 3
-  requires: { minAge: 17, notFlags: [dropout, gaokao_good, gaokao_bad] }
+  requires: { minAge: 17, notFlags: [dropout, vocational] }
   title: 最后一门
-  text: 高考最后一门，离交卷还有二十分钟，你忽然发现前面一道大题从第一步就错了。窗外的知了叫得人心慌。
+  text: 模拟考最后一门，离交卷还有二十分钟，你忽然发现前面一道大题从第一步就错了。窗外的知了叫得人心慌。
   options:
     - id: redo
       text: 推倒重算，赌一把
       tags: [adventure]
-      effects: { self: { mind: 1, energy: -20, mood: -5 }, flags: [gaokao_good] }
+      effects: { self: { mind: 1, energy: -20, mood: -5 } }
     - id: safe
       text: 不动它，先保住会的
       tags: [patient]
-      effects: { self: { mind: 1, mood: 3 }, flags: [gaokao_bad] }
+      effects: { self: { mind: 1, mood: 3 } }
     - id: window
       text: 搁下笔，看窗外
       tags: [solitude]
-      effects: { self: { mood: 10, luck: 1 }, flags: [gaokao_bad] }
+      effects: { self: { mood: 10 } }

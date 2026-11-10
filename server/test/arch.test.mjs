@@ -99,7 +99,10 @@ function restart(env, id) {
   const pick = (s, role, eventId) => {
     const ev = C.events.find((e) => e.id === eventId);
     const h = createHash("md5").update(`${eventId}/${role}/${s.turn}`).digest();
-    return ev.options[h[0] % ev.options.length].id;
+    // 关口上够不着的路选不了，只在走得通的里面挑
+    const swing = (s.world.event.swing && s.world.event.swing[role]) || 0;
+    const open = ev.kind === "milestone" ? ev.options.filter((o) => !G("lifeOptionLock")(ev, o, s.persons[role], swing)) : ev.options;
+    return open[h[0] % open.length].id;
   };
   const live = (seed, reloadEvery) => {
     let s = G("lifeCreate")(seed, C);
@@ -109,7 +112,10 @@ function restart(env, id) {
       G("worldAdvance")(s, C, 0.1, { qing: false, mei: false });
       if (s.world && s.world.event) {
         const pe = s.world.event;
-        for (const r of pe.roles) G("worldChoose")(s, C, r, pick(s, r, pe.eventId), false);
+        for (const r of pe.roles) {
+          if (s.world.event !== pe) break;
+          if (!pe.choices[r]) assert.equal(G("worldChoose")(s, C, r, pick(s, r, pe.eventId), false).error, null);
+        }
       }
       if (reloadEvery && tick % reloadEvery === 0) s = J(s);
       assert.ok(tick < 400000, "人生没有结束");
@@ -144,10 +150,15 @@ function restart(env, id) {
       // 等到「有事件卡着」的一跳再删内容，这样悬空引用最多：卡着的事件、今天剩下的命运、做到一半的行动
       if (!gone && s.turn >= stopAt && s.world && s.world.event) {
         const w = s.world;
+        const ENGINE = ["eat", "eat_out", "sleep", "duty", "wash", "knock", "play_roof"]; // 引擎点名要用的行动，内容构建不许删（tools/build-content.mjs 的 ENGINE_ACTIONS）
         gone = new Set([w.fate.mirror, w.fate.qing, w.fate.mei, w.event.eventId].filter(Boolean));
-        const busy = ["qing", "mei"].map((r) => w.actors[r] && w.actors[r].action).filter((x) => x && x !== "sleep");
+        const busy = ["qing", "mei"].map((r) => w.actors[r] && w.actors[r].action).filter((x) => x && !ENGINE.includes(x));
         C2 = { ...C, version: "rewritten", events: C.events.filter((e) => !gone.has(e.id)) };
-        if (busy.length) C2.map = { ...C.map, actions: C.map.actions.filter((x) => !busy.includes(x.id)), spots: C.map.spots.filter((sp) => !busy.includes(sp.action)) };
+        if (busy.length) {
+          // 和内容构建保证的一样：点位上不留指向不存在行动的引用，一个行动都不剩的点位整个拿掉
+          const spots = C.map.spots.map((sp) => ({ ...sp, actions: sp.actions.filter((x) => !busy.includes(x)) })).filter((sp) => sp.actions.length).map((sp) => ({ ...sp, action: sp.actions[0] }));
+          C2.map = { ...C.map, actions: C.map.actions.filter((x) => !busy.includes(x.id)), spots };
+        }
         assert.throws(() => { const t = J(s); G("worldChoose")(t, C2, t.world.event.roles[0], "x", true); }, /not found/, "不修复的话，规则代码一查这个事件就抛错");
         const notes = G("lifeRepair")(s, C2);
         assert.ok(notes.length >= 1, "应该报告摘掉了什么");
@@ -197,7 +208,7 @@ function restart(env, id) {
     const life = R2.life();
     assert.equal(life.version, G("LIFE_VERSION"));
     assert.equal(life.contentVersion, C.version);
-    assert.deepEqual(J(life.world.fate), { mirror: null, qing: null, mei: null });
+    assert.deepEqual(J(life.world.fate), { mirror: null, qing: null, mei: null, milestone: null });
     assert.equal(life.world.event, null);
     assert.equal(life.world.actors.mei.action, null);
     assert.ok(life.world.actors.mei.x <= C.map.size[0] && life.world.actors.mei.y >= 0);

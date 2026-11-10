@@ -6,6 +6,13 @@ var REROLLS = 3;
 var MEMORY_FADE_EVERY = 8;
 var SEASON_ORDER: Season[] = ["spring", "summer", "autumn", "winter"];
 var SEASON_LABEL = ["立春", "立夏", "立秋", "立冬"];
+/** 事件给的属性整体打折：日常行动是成长的大头，经历只是点缀。分量用标记、回忆和文字表达 */
+var EVENT_STAT_SCALE = 0.15;
+/** 考试的发挥：手气 ±SWING_RANGE/2，运气每高于 5 一点再加 SWING_LUCK */
+var SWING_RANGE = 0.5;
+var SWING_LUCK = 0.04;
+var STAT_KEYS: StatKey[] = ["body", "mind", "charm", "luck"];
+var STAT_LABEL: { [k: string]: string } = { body: "体魄", mind: "心智", charm: "魅力", luck: "运气", money: "积蓄" };
 
 /** 时间的密度：每个回合是人生里被「放大」的一天，回合之间的日子一笔带过。越长大，跳得越远。 */
 var STAGE_TABLE: { stage: Stage; fromAge: number; turnsPerYear: number; years: number }[] = [
@@ -165,6 +172,124 @@ function lifeNewPerson(s: LifeState, c: Content, r: Roll, name: string): Person 
   };
 }
 
+// ---------- 人生路线与关口 ----------
+
+/** 这个人现在走在哪条路上：按年龄和标记从上往下取第一条符合的（最后一条兜底） */
+function lifeTrack(c: Content, p: Person, age: number): Track {
+  for (var i = 0; i < c.tracks.length; i++) {
+    var t = c.tracks[i];
+    var rq = t.requires || {};
+    if (lifeInRange(age, rq.minAge, rq.maxAge) && lifeHasAll(p.flags, rq.flags) && lifeHasNone(p.flags, rq.notFlags)) return t;
+  }
+  return c.tracks[c.tracks.length - 1];
+}
+
+function lifeRound1(v: number): number {
+  return Math.round(v * 10) / 10;
+}
+
+/** 按权重算分：属性乘权重相加，money 是积蓄 */
+function lifeScore(p: Person, w: ScoreWeights): number {
+  var total = 0;
+  for (var k in w) {
+    var weight = (w as any)[k] as number;
+    total += weight * (k === "money" ? p.money : p.stats[k as StatKey]);
+  }
+  return Math.round(total * 100) / 100;
+}
+
+function lifeOptionWeights(ev: LifeEvent, o: EventOption): ScoreWeights {
+  return o.score || ev.score || {};
+}
+
+/** 「心智」「心智和魅力」：这条线看的是什么 */
+function lifeWeightsLabel(w: ScoreWeights): string {
+  var parts: string[] = [];
+  for (var k in w) parts.push(STAT_LABEL[k] || k);
+  return parts.join("和");
+}
+
+/** 这个年纪的关口（没有就是 null） */
+function lifeMilestoneAt(c: Content, age: number): LifeEvent | null {
+  for (var i = 0; i < c.events.length; i++) if (c.events[i].kind === "milestone" && c.events[i].age === age) return c.events[i];
+  return null;
+}
+
+/** 这个人过不过这个关口（辍学的人不参加中考） */
+function lifeMilestoneFor(ev: LifeEvent, p: Person): boolean {
+  var rq = ev.requires || {};
+  return p.alive && lifeHasAll(p.flags, rq.flags) && lifeHasNone(p.flags, rq.notFlags);
+}
+
+/** 这条路走不走得了。走不了返回原因（给玩家看的），走得了返回 null。swing 是这次的发挥 */
+function lifeOptionLock(ev: LifeEvent, o: EventOption, p: Person, swing: number): string | null {
+  var rq = o.requires || {};
+  if (!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) return "这条路不是给你留的";
+  if (o.min) {
+    var w = lifeOptionWeights(ev, o);
+    var have = lifeScore(p, w) + (w.money ? 0 : swing);
+    if (have < o.min) return lifeWeightsLabel(w) + " " + (w.money ? Math.floor(have) : lifeRound1(have)) + "，要 " + o.min;
+  }
+  if (o.cost && p.money < o.cost) return "积蓄 " + Math.floor(p.money) + "，要 " + o.cost;
+  return null;
+}
+
+/** 正在进行的关口里，每个人哪些路是锁着的：{ role: { optionId: 原因 } }。不在关口里返回 null */
+function lifeMilestoneLocks(s: LifeState, c: Content): { [R in Role]?: { [optionId: string]: string } } | null {
+  var pe = s.world && s.world.event;
+  if (!pe || pe.kind !== "milestone") return null;
+  var ev = lifeFindEvent(c, pe.eventId);
+  var out: { [R in Role]?: { [optionId: string]: string } } = {};
+  for (var i = 0; i < pe.roles.length; i++) {
+    var r = pe.roles[i];
+    var locks: { [optionId: string]: string } = {};
+    for (var j = 0; j < ev.options.length; j++) {
+      var why = lifeOptionLock(ev, ev.options[j], s.persons![r], (pe.swing && pe.swing[r]) || 0);
+      if (why) locks[ev.options[j].id] = why;
+    }
+    out[r] = locks;
+  }
+  return out;
+}
+
+/** 从现在到满 age 岁的第一天，还要过几个日子（今天就是那天返回 0） */
+function lifeTurnsUntilAge(turn: number, age: number): number {
+  for (var k = 0; k < 400; k++) if (lifeTimeAt(turn + k).age >= age) return k;
+  return 400;
+}
+
+interface GoalLine { id: string; text: string; by: string; have: number; need: number; ok: boolean }
+interface GoalView { id: string; title: string; age: number; turns: number; lines: GoalLine[] }
+
+/**
+ * 界面上常驻的那一条：下一个关口是什么、还有几个日子、每条路的线离你还有多远。
+ * 这是日常行动的目的。没有带线的关口了（退休以后）返回 null。
+ */
+function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
+  if (s.phase !== "life") return null;
+  var p = s.persons![role];
+  if (!p.alive) return null;
+  var age = lifeTimeAt(s.turn).age;
+  var seen = lifeSeenIds(s, role);
+  var best: LifeEvent | null = null;
+  for (var i = 0; i < c.events.length; i++) {
+    var ev = c.events[i];
+    if (ev.kind !== "milestone" || ev.age! < age || seen[ev.id] || !lifeMilestoneFor(ev, p)) continue;
+    if (!ev.options.some(function (o) { return !!o.min; })) continue; // 上小学、退休：没有线，不算目标
+    if (!best || ev.age! < best.age!) best = ev;
+  }
+  if (!best) return null;
+  var lines: GoalLine[] = [];
+  for (var j = 0; j < best.options.length; j++) {
+    var o = best.options[j];
+    if (!o.min) continue;
+    var w = lifeOptionWeights(best, o);
+    var have = lifeScore(p, w);
+    lines.push({ id: o.id, text: o.text, by: lifeWeightsLabel(w), have: w.money ? Math.floor(have) : lifeRound1(have), need: o.min, ok: have >= o.min });
+  }
+  return { id: best.id, title: best.title, age: best.age!, turns: lifeTurnsUntilAge(s.turn, best.age!), lines: lines };
+}
+
 // ---------- 效果 ----------
 
 function lifeHasFlag(p: Person, f: string): boolean {
@@ -239,6 +364,16 @@ function lifeEligible(ev: LifeEvent, t: TimeInfo, flags: string[], seen: { [id: 
   return lifeHasAll(flags, rq.flags) && lifeHasNone(flags, rq.notFlags);
 }
 
+/** 事件给的属性打折（需求不打折） */
+function lifeScaleStats(d: SelfDelta): SelfDelta {
+  var out: SelfDelta = {};
+  for (var k in d) {
+    var v = (d as any)[k] as number;
+    (out as any)[k] = STAT_KEYS.indexOf(k as StatKey) >= 0 ? v * EVENT_STAT_SCALE : v;
+  }
+  return out;
+}
+
 /** 给人打标记（不重复） */
 function lifeAddFlags(p: Person, flags: string[] | undefined) {
   if (!flags) return;
@@ -258,11 +393,15 @@ function lifeFindOption(ev: LifeEvent, optionId: string): EventOption | null {
 function lifeShadowChoose(s: LifeState, c: Content, role: Role, eventId: string): string {
   var ev = lifeFindEvent(c, eventId);
   var tags = s.persons![role].tags;
+  var pe = s.world && s.world.event;
+  var swing = (pe && pe.eventId === eventId && pe.swing && pe.swing[role]) || 0;
   var best: EventOption[] = [];
   var bestScore = -1;
   for (var i = 0; i < ev.options.length; i++) {
     var o = ev.options[i];
-    var score = 0;
+    // 关口：走不了的路影子也不能替他选。够得着的路里，影子偏向线最高的那条（人往高处走），再看性格
+    if (ev.kind === "milestone" && lifeOptionLock(ev, o, s.persons![role], swing)) continue;
+    var score = ev.kind === "milestone" ? (o.min || 0) * 0.01 : 0;
     for (var j = 0; j < o.tags.length; j++) score += tags[o.tags[j]] || 0;
     if (score > bestScore) { bestScore = score; best = [o]; }
     else if (score === bestScore) best.push(o);
@@ -289,16 +428,39 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
     entry.events[role] = ev.id;
     entry.choices[role] = o.id;
     var me = s.persons![role];
-    lifeApplySelf(me, o.effects.self);
     var other = s.persons![lifeOther(role)];
-    if (other.alive) lifeApplySelf(other, o.effects.other);
-    lifeApplyBond(s, o.effects.bond);
-    lifeAddFlags(me, o.effects.flags);
+    if (ev.kind === "milestone") {
+      // 关口：先记成绩（事实），再走选的那条路（选择）
+      var w = lifeOptionWeights(ev, o);
+      var swing = (pe.swing && pe.swing[role]) || 0;
+      var gw = ev.score || {};
+      var gscore = lifeScore(me, gw) + (gw.money ? 0 : swing);
+      var grade: Grade | null = null;
+      for (var g = 0; g < (ev.grades || []).length; g++) if (gscore >= ev.grades![g].min) { grade = ev.grades![g]; break; }
+      if (grade) lifeAddFlags(me, grade.flags);
+      if (o.cost) me.money = Math.max(0, me.money - o.cost);
+      lifeApplySelf(me, o.effects.self);
+      if (other.alive) lifeApplySelf(other, o.effects.other);
+      lifeApplyBond(s, o.effects.bond);
+      lifeAddFlags(me, o.effects.flags);
+      if (!entry.results) entry.results = {};
+      entry.results[role] = {
+        score: lifeRound1(lifeScore(me, o.min ? w : gw) + ((o.min ? w : gw).money ? 0 : swing)),
+        grade: grade ? grade.label : null,
+        option: o.id,
+        track: lifeTrack(c, me, entry.age).id,
+      };
+    } else {
+      lifeApplySelf(me, lifeScaleStats(o.effects.self));
+      if (other.alive) lifeApplySelf(other, lifeScaleStats(o.effects.other));
+      lifeApplyBond(s, o.effects.bond);
+      lifeAddFlags(me, o.effects.flags);
+    }
     if (pe.shadow.indexOf(role) < 0) {
       for (var j = 0; j < o.tags.length; j++) me.tags[o.tags[j]] = (me.tags[o.tags[j]] || 0) + 1;
     }
   }
-  if (pe.kind === "mirror") {
+  if (pe.kind === "mirror" || (pe.kind === "milestone" && pe.roles.length === 2)) {
     if (pe.choices.qing === pe.choices.mei) {
       entry.resonance = true;
       var res = ev.resonance && ev.resonance[pe.choices.qing!];
@@ -308,7 +470,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
         lifeAddFlags(s.persons!.mei, res.flags);
         entry.text = res.text;
         if (res.memory) s.memories.push({ title: res.memory, eventId: ev.id, turn: s.turn, age: entry.age, vivid: 3 });
-      } else {
+      } else if (pe.kind === "mirror") {
         lifeApplyBond(s, { sync: 1 });
         entry.text = "你们选了同一个答案。";
       }
@@ -340,6 +502,15 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
     var a = w.actors[ROLES[i]];
     var slept = a !== null && a.asleep;
     parts.push(p.name + (slept ? "睡得很香" : "困得趴在了桌上"));
+    if (p.dayStart) {
+      var gain: Partial<Stats> = {};
+      for (var gk = 0; gk < STAT_KEYS.length; gk++) {
+        var dv = Math.round((p.stats[STAT_KEYS[gk]] - p.dayStart[STAT_KEYS[gk]]) * 100) / 100;
+        if (dv !== 0) gain[STAT_KEYS[gk]] = dv;
+      }
+      if (!summary.gains) summary.gains = {};
+      summary.gains[ROLES[i]] = gain;
+    }
     // 回合之间的日子：需求回到日常水平，心情慢慢回归
     p.needs.hunger = 75;
     p.needs.energy = slept ? 90 : 65;

@@ -5,14 +5,15 @@ extends StyleBox
 
 const P := preload("res://scripts/ui/palette.gd")
 
-var fill := P.PAPER
-var ink := P.INK
-var line := 3.0
-var block := P.QING              ## 错位的色块；透明 = 不印
-var block_offset := Vector2(8, 8)
-var hatch := false               ## 色块印成排线而不是实地
-var overshoot := 7.0             ## 线头伸出去多少
-var shift := Vector2.ZERO        ## 整体挪动（按下时压到色块上）
+# 都要 @export：Resource.duplicate() 只拷导出的属性，不然复制出来的框会丢掉填色和按下的位移
+@export var fill := P.PAPER
+@export var ink := P.INK
+@export var line := 3.0
+@export var block := P.QING              ## 错位的色块；透明 = 不印
+@export var block_offset := Vector2(8, 8)
+@export var hatch := false               ## 色块印成排线而不是实地
+@export var overshoot := 7.0             ## 线头伸出去多少
+@export var shift := Vector2.ZERO        ## 整体挪动（按下时压到色块上）
 
 
 static func make(p_block: Color, p_offset := 8.0, margin := 40.0) -> StyleBox:

@@ -9,6 +9,8 @@ const Kit := preload("res://scripts/ui/kit.gd")
 const NEED_GLYPH := {"hunger": "饱", "energy": "精", "mood": "心", "clean": "净"}
 const STAGE_NAME := {"childhood": "童年", "teen": "少年", "young": "青年", "middle": "中年", "old": "老年"}
 
+const LOW := 30.0          ## 需求低于这个数：圆表变梅红并抖动
+
 var time_label := ""    ## LifeTime.at().label，例如 "7 岁 · 立夏"
 var stage := "childhood"
 var minute := 390.0
@@ -19,6 +21,8 @@ var money := -1
 var bond: Dictionary = {}
 var _shown: Dictionary = {}   ## 圆表上正在显示的值（慢慢追上真实值）
 var _t := 0.0
+var _idle := 0.0
+var _sig: Array = []
 
 
 func _ready() -> void:
@@ -26,12 +30,28 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
+## 只在有东西在动时每帧重画：圆表还在追数、有需求见底在抖、显示的内容变了。
+## 其余时候一秒画十次，够两个圆慢慢呼吸。
 func _process(delta: float) -> void:
 	_t += delta
+	_idle += delta
+	var moving := false
 	for k in needs:
-		var cur := float(_shown.get(k, needs[k]))
-		_shown[k] = lerpf(cur, float(needs[k]), 1.0 - exp(-6.0 * delta))
-	queue_redraw()
+		var target := float(needs[k])
+		var cur := float(_shown.get(k, target))
+		if absf(cur - target) > 0.05:
+			cur = lerpf(cur, target, 1.0 - exp(-6.0 * delta))
+			moving = true
+		else:
+			cur = target
+		_shown[k] = cur
+		if target < LOW:
+			moving = true
+	var sig := [time_label, stage, int(minute), tag, note, money, bond.hash(), size]
+	if moving or _idle >= 0.1 or sig != _sig:
+		_sig = sig
+		_idle = 0.0
+		queue_redraw()
 
 
 func _draw() -> void:
@@ -100,7 +120,7 @@ func _calendar(f: Font, at: Vector2) -> void:
 
 func _gauge(f: Font, c: Vector2, key: String) -> void:
 	var v := clampf(float(_shown.get(key, 0.0)) / 100.0, 0.0, 1.0)
-	var low := float(needs.get(key, 100.0)) < 30.0
+	var low := float(needs.get(key, 100.0)) < LOW
 	var r := 40.0
 	if low:
 		c += Vector2(sin(_t * 22.0) * 1.6 * maxf(0.0, sin(_t * 2.2)), 0.0)

@@ -1,7 +1,7 @@
 extends Control
-## 标题页的画面（按钮由 main.gd 摆在下面）：
-##   上面是标志：青、梅两个圆从两边滑进来、叠住，"同""岁"反白在圆里
-##   中间是一扇"窗"：真的河畔里地图在里面慢慢横移，鸽子照飞，天会黑、灯会亮
+## 标题页的画面（横屏；按钮由 main.gd 摆在 buttons_rect() 里）：
+##   左边是标志：青、梅两个圆从两边滑进来、叠住，"同""岁"反白在圆里；下面一句话，再下面是按钮
+##   右边是一扇"窗"：真的河畔里地图在里面慢慢横移，鸽子照飞，天会黑、灯会亮
 ##   窗的四角有裁切线，下面一排色标：这是一张还没裁的印刷打样
 
 const P := preload("res://scripts/ui/palette.gd")
@@ -9,14 +9,18 @@ const Kit := preload("res://scripts/ui/kit.gd")
 const MapArt := preload("res://scripts/world/map_art.gd")
 const PrintLight := preload("res://scripts/world/print_light.gd")
 
-const LOGO_Y := 400.0
-const LOGO_R := 215.0
-const WIN := Rect2(60, 800, 960, 500)
-const VIEW_SCALE := 0.6
+const LEFT := 96.0       ## 左栏离屏幕左边
+const COL_W := 620.0     ## 左栏（标志、按钮）的宽
+const LOGO_Y := 292.0
+const LOGO_R := 150.0
+const WIN_TOP := 190.0
+const WIN_H := 640.0
+const VIEW_SCALE := 0.62
+const VIEW_TOP := 250.0  ## 窗里从地图的哪一行看起
 const DAY := 70.0  ## 窗里的一整天（秒）
 
 var _t := 0.0
-var _oy := 0.0  ## 屏幕比 16:9 更长时，整个版面往下挪一点，别都挤在上面
+var _inset := Vector2.ZERO
 var _window: Control
 var _frame: Control
 var _holder: Node2D
@@ -27,9 +31,8 @@ var _light: PrintLight
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_inset = Kit.safe_sides(self)
 	_window = Control.new()
-	_window.position = WIN.position
-	_window.size = WIN.size
 	_window.clip_contents = true
 	_window.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_window)
@@ -46,28 +49,48 @@ func _ready() -> void:
 	else:
 		_window.visible = false
 	_frame = _Frame.new()
-	_frame.position = WIN.position
-	_frame.size = WIN.size
 	_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_frame.visible = _window.visible
 	add_child(_frame)
+	_place()
 
 
-## 长屏手机上版面下移多少（按钮列也用它）
-static func drop(view_height: float) -> float:
-	return maxf(0.0, (view_height - 1920.0) * 0.42)
+## 屏幕比 16:9 高（平板）时，整个版面往下挪，上下居中
+func _drop() -> float:
+	return maxf(0.0, (size.y - Kit.BASE.y) * 0.5)
+
+
+func _left() -> float:
+	return LEFT + _inset.x
+
+
+## 那扇窗：左栏右边剩下的地方都给它，手机越长窗越宽
+func window_rect() -> Rect2:
+	var x := _left() + COL_W + 110.0
+	return Rect2(x, WIN_TOP + _drop(), maxf(480.0, size.x - x - 110.0 - _inset.y), WIN_H)
+
+
+## 按钮列放哪儿（main.gd 用）
+func buttons_rect() -> Rect2:
+	return Rect2(_left(), 600.0 + _drop(), COL_W, 0.0)
+
+
+func _place() -> void:
+	var win := window_rect()
+	_window.position = win.position
+	_window.size = win.size
+	_frame.position = win.position
+	_frame.size = win.size
 
 
 func _process(delta: float) -> void:
 	_t += delta
-	_oy = drop(size.y)
-	_window.position.y = WIN.position.y + _oy
-	_frame.position.y = WIN.position.y + _oy
+	_place()
 	if _window.visible:
 		# 镜头：沿着老街来回走一趟
-		var span := 2400.0 - WIN.size.x / VIEW_SCALE
+		var span := maxf(0.0, 2400.0 - _window.size.x / VIEW_SCALE)
 		var k := 0.5 - 0.5 * cos(_t / 95.0 * TAU)
-		_holder.position = Vector2(-span * k * VIEW_SCALE, -330.0 * VIEW_SCALE)
+		_holder.position = Vector2(-span * k * VIEW_SCALE, -VIEW_TOP * VIEW_SCALE)
 		# 时钟：清早 → 夜里 → 再倒回清早（倒着看的晚霞就是朝霞）
 		var d := fmod(_t + 8.0, DAY * 2.0) / DAY
 		var day := d if d < 1.0 else 2.0 - d
@@ -80,21 +103,21 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	var f := P.font()
-	var cx := size.x / 2.0
+	var cx := _left() + COL_W / 2.0
 	# 两个圆：开场时从两边滑进来（没套准），慢慢对上，之后轻轻呼吸
 	var settle := 1.0 - pow(1.0 - clampf(_t / 1.4, 0.0, 1.0), 3.0)
-	var gap := lerpf(LOGO_R * 3.4, LOGO_R * 1.36, settle) + sin(_t * 0.9) * 5.0 * settle
-	var c := Vector2(cx, LOGO_Y + _oy)
+	var gap := lerpf(LOGO_R * 3.4, LOGO_R * 1.36, settle) + sin(_t * 0.9) * 4.0 * settle
+	var c := Vector2(cx, LOGO_Y + _drop())
 	Kit.draw_pair(self, c, LOGO_R, gap, 1.0, 3.0)
-	var fs := 210
+	var fs := 148
 	for i in 2:
 		var ch := "同" if i == 0 else "岁"
-		var at := c + Vector2((-0.5 if i == 0 else 0.5) * gap + (-18.0 if i == 0 else 18.0), 0.0)
+		var at := c + Vector2((-0.5 if i == 0 else 0.5) * gap + (-13.0 if i == 0 else 13.0), 0.0)
 		var w := f.get_string_size(ch, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 		draw_string(f, at + Vector2(-w / 2.0, fs * 0.35), ch, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, P.PAPER)
 	var line := "同一栋楼，同一年出生，同一生。"
-	var lw := f.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, 40).x
-	draw_string(f, Vector2(cx - lw / 2.0, 716 + _oy), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 40, Color(P.INK, clampf(_t - 0.9, 0.0, 1.0)))
+	var lw := f.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, 38).x
+	draw_string(f, Vector2(cx - lw / 2.0, LOGO_Y + LOGO_R + 86.0 + _drop()), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 38, Color(P.INK, clampf(_t - 0.9, 0.0, 1.0)))
 
 
 ## 窗框：墨线、裁切线、套准十字、色标、图注

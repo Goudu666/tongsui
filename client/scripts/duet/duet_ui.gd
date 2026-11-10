@@ -78,8 +78,10 @@ func ask_guess(event_id: String, option_id: String, option_text: String) -> void
 	m._label(box, option_text, 48, P.role_color(m.my_role))
 	Kit.rule(box, Color(P.INK, 0.25))
 	Kit.chip(box, "猜猜 %s 选了哪个" % _name(other), P.role_color(other))
-	for o in ev.get("options", []):
-		var b: Button = m._button(box, str(o.text), m._pick_send.bind(option_id, option_text, str(o.id)))
+	var opts: Array = ev.get("options", [])
+	var grid: Container = m._options(box, opts.size())
+	for o in opts:
+		var b: Button = m._option(grid, str(o.text), m._pick_send.bind(option_id, option_text, str(o.id)))
 		Kit.tint(b, P.role_color(other))
 	m._quiet(box, "不猜", m._pick_send.bind(option_id, option_text, ""))
 
@@ -99,10 +101,15 @@ func show_result(e: Dictionary) -> void:
 	var d: Dictionary = e.duet if e.get("duet") is Dictionary else {}
 	var outcome := outcome_of(e)
 	var ev: Dictionary = m.events_by_id.get(e.events.qing, {})
-	var box: VBoxContainer = m.modal_body
-	m._open_modal()
+	# 横屏：两个圆在左，谁选了什么、那句话在右
+	m._open_modal(m.MODAL_WIDE - 160.0)
+	var cols: Array = m._columns(m.modal_body, 0.62, 1.0, 56)
+	var emblem: VBoxContainer = cols[0]
+	emblem.alignment = BoxContainer.ALIGNMENT_CENTER
+	emblem.add_child(Resonance.new(outcome, d.get("knew")))
+	var box: VBoxContainer = cols[1]
+	box.add_theme_constant_override("separation", 20)
 	_head(box, outcome, "%s · %s" % [str(e.label), str(ev.get("title", ""))])
-	box.add_child(Resonance.new(outcome, d.get("knew")))
 	var checks: Dictionary = e.checks if e.get("checks") is Dictionary else {}
 	for r in ["qing", "mei"]:
 		var mark := "（影子）" if e.shadow.has(r) else ""
@@ -161,14 +168,16 @@ func _show_owed(o: Dictionary) -> void:
 	var ev: Dictionary = m.events_by_id.get(o.eventId, {})
 	var turn := int(o.turn)
 	var box: VBoxContainer = m.modal_body
-	m._open_modal()
+	var opts: Array = ev.get("options", [])
+	m._open_modal(m._options_width(opts.size()))
 	Kit.chip(box, "你不在的那天 · %s" % str(o.label), P.role_color(m.my_role))
 	m._label(box, str(ev.get("title", "")), 64)
 	Kit.rule(box)
 	m._label(box, str(ev.get("text", "")), 38)
 	m._label(box, str(_texts("echo").get("ask", "换了你，你会？")), 34, P.INK_SOFT)
-	for opt in ev.get("options", []):
-		m._button(box, str(opt.text), _answer.bind(turn, str(opt.id), str(opt.text)))
+	var grid: Container = m._options(box, opts.size())
+	for opt in opts:
+		m._option(grid, str(opt.text), _answer.bind(turn, str(opt.id), str(opt.text)))
 	var row := HBoxContainer.new()
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	box.add_child(row)
@@ -187,6 +196,7 @@ func _answer(turn: int, option_id: String, option_text: String) -> void:
 	_forget(turn)
 	var box: VBoxContainer = m.modal_body
 	m._clear(box)
+	m.modal_card.custom_minimum_size.x = m.MODAL_WIDTH
 	m._label(box, "你说", 32, P.INK_SOFT)
 	m._label(box, option_text, 48, P.role_color(m.my_role))
 	Kit.rule(box, Color(P.INK, 0.25))
@@ -217,10 +227,14 @@ func show_echo(e: Dictionary) -> void:
 		m._toast(told + (HEADLINE[outcome] + "。" if mended else ""))
 		return
 	var other := "mei" if role == "qing" else "qing"
-	var box: VBoxContainer = m.modal_body
-	m._open_modal()
+	m._open_modal(m.MODAL_WIDE - 160.0)
+	var cols: Array = m._columns(m.modal_body, 0.62, 1.0, 56)
+	var emblem: VBoxContainer = cols[0]
+	emblem.alignment = BoxContainer.ALIGNMENT_CENTER
+	emblem.add_child(Resonance.new(outcome, null, 0.78))
+	var box: VBoxContainer = cols[1]
+	box.add_theme_constant_override("separation", 20)
 	_head(box, outcome, "回话 · %s · %s" % [str(d.get("label", "")), str(ev.get("title", ""))])
-	box.add_child(Resonance.new(outcome, null, 0.78))
 	_pick_row(box, role, m._option_text(ev.get("id"), e.choices[role]))
 	_pick_row(box, other, m._option_text(ev.get("id"), d.get("partner")))
 	Kit.rule(box, Color(P.INK, 0.25))

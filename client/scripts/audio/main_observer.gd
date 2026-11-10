@@ -305,7 +305,8 @@ func _place_button(in_world: bool, modal: Control) -> void:
 		audio.tint_button(accent)
 	var games: Variant = main.get("games")
 	var busy: bool = games != null and is_instance_valid(games) and games.has_method("busy") and games.busy()
-	audio.place_button(in_world, (modal != null and modal.visible) or busy)
+	# 离线逛逛时右上角没有对门的牌，按钮回到角上
+	audio.place_button(in_world and main.get("offline_preview") != true, (modal != null and modal.visible) or busy)
 
 
 func _watch_toast() -> void:

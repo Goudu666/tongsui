@@ -4,8 +4,7 @@
 - id: pl_nh_neighbor
   kind: solo
   stage: middle
-  where: landing
-  weight: 2
+  weight: 3
   requires: { flags: [home_own] }
   title: 隔壁姓什么
   hint: 电梯间里没有人说话。

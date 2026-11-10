@@ -14,8 +14,8 @@ const { Client } = await import("@heroiclabs/nakama-js");
 const HOST = process.env.NAKAMA_HOST || "127.0.0.1";
 const PORT = process.env.NAKAMA_PORT || "7350";
 const KEY = process.env.NAKAMA_KEY || "defaultkey";
-const PROTOCOL = 2; // 和 main.ts 的 PROTOCOL_VERSION 一起改（arch.test.mjs 的契约测试会比对）
-const OP = { SNAPSHOT: 1, ROLL: 2, ROLL_STATE: 3, MOVE: 4, ACT: 5, CHOOSE: 6, WORLD: 7, EVENT: 8, ERROR: 9, LOG: 10, PRESENCE: 11, PING: 12, PONG: 13, GAME: 20, GAME_INPUT: 21, ECHO: 30 };
+const PROTOCOL = 3; // 和 main.ts 的 PROTOCOL_VERSION 一起改（arch.test.mjs 的契约测试会比对）
+const OP = { SNAPSHOT: 1, ROLL: 2, ROLL_STATE: 3, MOVE: 4, ACT: 5, CHOOSE: 6, WORLD: 7, EVENT: 8, ERROR: 9, LOG: 10, PRESENCE: 11, PING: 12, PONG: 13, GAME: 20, GAME_INPUT: 21, ECHO: 30, AGAIN: 31 };
 const run = Date.now().toString(36);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const dec = new TextDecoder();
@@ -35,7 +35,8 @@ async function phone(name) {
   };
   // 像真客户端一样，打开人生线时报上自己的协议版本
   p.rpc = async (id, body) => (await client.rpc(session, id, id === "lifeline_open" ? { protocol: PROTOCOL, ...body } : body)).payload;
-  p.join = async (matchId) => { p.matchId = matchId; await p.socket.joinMatch(matchId); };
+  // 进房时报协议版本（3 版起的安装包会报）。old = true 模拟不报的旧安装包
+  p.join = async (matchId, old = false) => { p.matchId = matchId; await p.socket.joinMatch(matchId, undefined, old ? undefined : { protocol: String(PROTOCOL) }); };
   p.send = (op, body, socket = p.socket) => socket.sendMatchState(p.matchId, op, JSON.stringify(body));
   /** 等到收到满足条件的消息 */
   p.wait = async (op, pred = () => true, ms = 5000, socket = null) => {
@@ -79,11 +80,16 @@ console.log("✓ 并发：两人同时打开 16 次，只有一个房间");
 
 // 3. 进房 + 投胎
 await qing.join(matchId);
-await mei.join(matchId);
+await mei.join(matchId, true); // 梅先用旧安装包进来
 const snapQ = await qing.wait(OP.SNAPSHOT);
 assert.equal(snapQ.you, "qing");
 assert.equal(snapQ.life.phase, "roll");
 assert.equal(snapQ.life.rng, undefined);
+assert.equal(snapQ.life.life, 1, "头一世");
+// 房间知道两边安装包的版本：进房时报了的按报的算，没报的按能进来的最旧版本算（传承，docs/LEGACY.md）
+const snapM = await mei.wait(OP.SNAPSHOT);
+const oldest = (await qing.rpc("server_info", {})).minClientProtocol;
+assert.deepEqual(snapM.protocols, { qing: PROTOCOL, mei: oldest }, "快照里两边安装包的版本");
 qing.send(OP.ROLL, { confirm: true });
 mei.send(OP.ROLL, { confirm: true });
 await qing.wait(OP.SNAPSHOT, (d) => d.life.phase === "life");
@@ -124,6 +130,7 @@ mei.clear();
 await mei.join(matchId);
 const resnap = await mei.wait(OP.SNAPSHOT, () => true, 5000, newSocket);
 assert.equal(resnap.you, "mei");
+assert.deepEqual(resnap.protocols, { qing: PROTOCOL, mei: PROTOCOL }, "梅换了新安装包重新进来，版本跟着变");
 assert.equal(resnap.life.phase, "life");
 assert.equal(resnap.life.world.actors.qing.x, x, "重连快照里青的位置是最新的");
 const meiPos = resnap.life.world.actors.mei;

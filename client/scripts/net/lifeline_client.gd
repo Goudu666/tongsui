@@ -28,6 +28,7 @@ signal event_started(data: Dictionary)
 signal log_entries(data: Dictionary)
 signal presence(data: Dictionary)
 signal game_state(data: Dictionary)  ## 搭伴小游戏：{game: 视图 | null, result?}
+signal again_state(data: Dictionary)  ## 再来一世：{again: {qing, mei}} 谁点了
 
 const Config := preload("res://scripts/net/config.gd")
 const Op := preload("res://scripts/net/protocol.gd")
@@ -56,6 +57,7 @@ var waiting_lifeline := ""   ## 正在等 TA 输配对码的人生线
 var clock := ServerClock.new()
 var rtt_ms := -1.0
 var connected := false
+var server_protocol := 0      ## 服务器的协议版本（lifeline_open 的回复里带的）
 var content_version := ""    ## 界面现在用的是哪一版内容（main.gd 载入内容后告诉我们）
 
 var _want_online := false
@@ -430,7 +432,8 @@ func open_lifeline(id: String, quiet := false) -> bool:
 	_move_seq = 0
 	_move_history.clear()
 	clock.reset()
-	var m = await socket.join_match_async(r.matchId)
+	# 进房时报上安装包的协议版本：服务器据此知道哪些新消息能发给这个连接，也告诉对门
+	var m = await socket.join_match_async(r.matchId, {"protocol": str(Op.VERSION)})
 	if m.is_exception():
 		match_id = ""
 		failed.emit("进入房间失败：%s" % _err_text(m.get_exception()))
@@ -440,7 +443,8 @@ func open_lifeline(id: String, quiet := false) -> bool:
 
 ## 进房间前对版本：协议太旧的服务器不进；内容和手里的不一样就换成服务器这一版
 func _check_versions(r: Dictionary) -> bool:
-	if int(r.get("protocol", 0)) < Op.MIN_SERVER:
+	server_protocol = int(r.get("protocol", 0))
+	if server_protocol < Op.MIN_SERVER:
 		failed.emit("服务器的版本太旧了，和这个安装包对不上，需要先更新服务器")
 		return false
 	var want := str(r.get("content", ""))
@@ -579,6 +583,21 @@ func game_input(body: Dictionary) -> void:
 	_send(Op.GAME_INPUT, body)
 
 
+## 投胎时挑一件老物件带上；留空是放下不带
+func pick_heirloom(heirloom_id := "") -> void:
+	_send(Op.ROLL, {"heirloom": heirloom_id if heirloom_id != "" else null})
+
+
+## 一世走完以后：再来一世（yes 为 false 是收回）。两个人都点了，服务器会发来新一世的快照
+func again(yes := true) -> void:
+	_send(Op.AGAIN, {"yes": yes})
+
+
+## 服务器懂不懂传承（老物件、再来一世）。连着旧服务器时界面不给按钮，而不是点了报错
+func server_has_legacy() -> bool:
+	return server_protocol >= Op.LEGACY_SINCE
+
+
 func _on_match_state(state) -> void:
 	_last_rx = ServerClock.local_now()
 	var data: Variant = JSON.parse_string(state.data)
@@ -607,5 +626,7 @@ func _on_match_state(state) -> void:
 		presence.emit(data)
 	elif op == Op.GAME:
 		game_state.emit(data)
+	elif op == Op.AGAIN:
+		again_state.emit(data)
 	elif op == Op.ERROR:
 		failed.emit(str(data.get("message", "")))

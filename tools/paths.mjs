@@ -91,11 +91,13 @@ export const WAYS = {
 /**
  * 把一条人生过到 untilAge 岁。pickOption(s, role, ev, open) 决定关口和事件怎么选。
  * way.shadow 里的人不在线：机器人不管他，由引擎的影子替他过（worldShadowAct、lifeShadowChoose）。
+ * setup(s) 在投胎确认之前调用，可以动抽到的卡（比如让人带上一件老物件，看它压不压得过活法）。
  */
-export function live(seed, way, untilAge, pickOption) {
+export function live(seed, way, untilAge, pickOption, setup) {
   const off = way.shadow || [];
   const online = { qing: !off.includes("qing"), mei: !off.includes("mei") };
   const s = G("lifeCreate")(seed, C);
+  if (setup) setup(s);
   G("lifeConfirm")(s, C, "qing", { qing: "青", mei: "梅" });
   G("lifeConfirm")(s, C, "mei", { qing: "青", mei: "梅" });
   const marks = {}; // 关口 id → { role: { stats, money, open:[能走的路], chose } }

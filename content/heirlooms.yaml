@@ -1,0 +1,159 @@
+# 老物件：一辈子过完，每个人给河畔里留下一样东西。下一世投胎时，每人可以从攒下的老物件里挑一件带上。
+# 按顺序匹配，一个人只留第一件对得上的；最后一件没有条件，是兜底。越靠前越难得。
+# 两个人不留同一件：先走的先留，后走的那个接着往下找（都只剩兜底那件的时候除外）。
+# 所以一个人自己挣来的排在前面，两个人一起做过的排在后面：不然一起养过鸽子的两个人，回回都只留下一只鸽哨。
+#
+#   from    上一世什么样的人会留下它（写法同 endings.yaml 的 lives.requires，另有 anyStat、minMoney）
+#   bonus   带上它的人，先天属性加多少。不占投胎的点数，所以要小：一件最多半点。
+#           关口的线是按十分之一点调的，半点已经够让一条够不着的线变成够得着一半
+#   money   开局多带的零花钱。和家业（rules.yaml 的 legacy.houseMoney × houseMax）加起来最多十块：
+#           买房的线是按两百块调的，而且很陡，带来的钱只能是个零头
+#   close   开局两人的亲近多多少
+#   flags   带上它的人出生就有的标记，事件可以用 requires.flags 读到
+#
+# 写法：一句话写物件本身，不写它「代表」什么。
+
+# ---- 接下了家里的营生 ----
+- id: h_scraper
+  name: 竹刮板
+  desc: 摊了两辈子煎饼的那把，把儿上磨出了手印。
+  from: { flags: [fam_breakfast, took_over] }
+  bonus: { charm: 0.5 }
+  flags: [heir_scraper]
+
+- id: h_fan
+  name: 折扇
+  desc: 扇面上的字磨没了。一合，还是那一声脆的。
+  from: { flags: [fam_crosstalk, took_over] }
+  bonus: { charm: 0.5 }
+  flags: [heir_fan]
+
+- id: h_wrench
+  name: 老扳手
+  desc: 车铺里用了几十年的那把，拧过半个河畔里的车。
+  from: { flags: [fam_handy, took_over] }
+  bonus: { body: 0.5 }
+  flags: [heir_wrench]
+
+- id: h_keys
+  name: 一串钥匙
+  desc: 楼拆了，钥匙没扔。哪把是谁家的，闭着眼能摸出来。
+  from: { flags: [fam_head, took_over] }
+  bonus: { mind: 0.5 }
+  flags: [heir_keys]
+
+- id: h_ledger
+  name: 老账本
+  desc: 家里的营生传下来的。头几页的字，是不认识的人写的。
+  from: { flags: [took_over] }
+  bonus: { mind: 0.5 }
+  flags: [heir_ledger]
+
+# ---- 一个人练出来的 ----
+- id: h_erhu
+  name: 旧二胡
+  desc: 车铺墙上挂过的那把。弦换过三回，弓子没换。
+  from: { flags: [erhu_life] }
+  bonus: { charm: 0.5 }
+  flags: [erhu, heir_erhu]    # 家里挂着一把现成的，这一世的孩子摸得着琴
+
+- id: h_books
+  name: 一箱书
+  desc: 扉页上都写着同一个名字。有几本没看完，夹着电影票。
+  from: { stats: { mind: 9 } }
+  bonus: { mind: 0.5 }
+  flags: [heir_books]
+
+- id: h_towel
+  name: 冬泳的毛巾
+  desc: 洗得发硬。八十多岁那年冬天还用着。
+  from: { stats: { body: 7 }, minDiedAge: 84 }
+  bonus: { body: 0.5 }
+  flags: [heir_towel]
+
+# ---- 干了一辈子的那一行（找工作那一关走的路，干到退休） ----
+- id: h_chalk
+  name: 半盒粉笔
+  desc: 白的用完了，剩下的都是彩色的，一直没舍得用。
+  from: { flags: [job_teach, retired] }
+  bonus: { mind: 0.5 }
+  flags: [heir_chalk]
+
+- id: h_scale
+  name: 一杆秤
+  desc: 秤杆磨得发亮。秤砣底下刻着一个「足」字。
+  from: { flags: [job_trade, retired] }
+  bonus: { charm: 0.5 }
+  flags: [heir_scale]
+
+- id: h_toolbag
+  name: 帆布工具包
+  desc: 边角都磨白了。每样家伙搁在哪个兜里，几十年没变过。
+  from: { flags: [job_craft, retired] }
+  bonus: { body: 0.5 }
+  flags: [heir_toolbag]
+
+- id: h_shoulder_pad
+  name: 垫肩
+  desc: 码头上扛包用的，蓝布的，补过四层。
+  from: { flags: [job_labor, retired] }
+  bonus: { body: 0.5 }
+  flags: [heir_pad]
+
+- id: h_mug
+  name: 搪瓷缸子
+  desc: 办公桌上搁了三十年。缸子上印的字，只剩下「先进」两个。
+  from: { flags: [job_desk, retired] }
+  bonus: { mind: 0.5 }
+  flags: [heir_mug]
+
+# ---- 两个人一起做过的决定 ----
+- id: h_candy_box
+  name: 喜糖盒子
+  desc: 楼顶那场喜事剩下的。糖早没了，里头搁着两颗扣子。
+  from: { flags: [p_married] }
+  close: 6
+  flags: [heir_candy]
+
+- id: h_whistle
+  name: 鸽哨
+  desc: 绑过那只灰鸽子尾巴的。拿嘴一吹，楼顶就有东西扑棱。
+  from: { flags: [p_pigeon] }
+  bonus: { luck: 0.5 }
+  flags: [heir_whistle]
+
+- id: h_tin_box
+  name: 铁皮盒子
+  desc: 海河边埋过的。盖上的外国字锈没了一半。
+  from: { flags: [p_capsule] }
+  bonus: { luck: 0.5 }
+  flags: [heir_tin_box]
+
+# ---- 日子里留下的 ----
+- id: h_letters
+  name: 一沓信
+  desc: 外地寄回来的，一年一封。信封都拿刀裁的，一个毛边没有。
+  from: { flags: [left_city] }
+  bonus: { mind: 0.5 }
+  flags: [heir_letters]
+
+- id: h_tiger_shoes
+  name: 虎头鞋
+  desc: 就穿过一冬，鞋底还是新的。
+  from: { flags: [has_kid] }
+  bonus: { body: 0.5 }
+  flags: [heir_shoes]
+
+- id: h_passbook
+  name: 存折
+  desc: 数不大。每一笔都是五块十块存进去的。
+  from: { minMoney: 150 }
+  money: 6
+  flags: [heir_passbook]
+
+- id: h_photo
+  name: 一张合影
+  desc: 两个孩子站在三楼楼道里，一个看镜头，一个看对门的。
+  from: {}
+  close: 3
+  flags: [heir_photo]

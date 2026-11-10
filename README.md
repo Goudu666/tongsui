@@ -34,7 +34,7 @@
 | **影子** | 你不在线时，你的角色按需求和习惯自己过日子，还会去找 TA 玩 |
 | **显影** | 拍一张你们现实中的照片，在手机端用 XDoG 算法显影成游戏里的双色线稿回忆 |
 
-完整设计见 [docs/GDD.md](docs/GDD.md)。
+完整设计见 [docs/GDD.md](docs/GDD.md)。文字、人物和场景细节的写法见 [docs/tianjin_style.md](docs/tianjin_style.md)。
 
 ## 技术栈
 

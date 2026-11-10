@@ -3,7 +3,7 @@ extends SceneTree
 ## 用真的主场景 + 一个只记账的假联机层，把 猜 TA / 三种结算 / 回话 / 结局闲话 各走一遍。
 
 const Op := preload("res://scripts/net/protocol.gd")
-const Seal := preload("res://scripts/duet/seal.gd")
+const Resonance := preload("res://scripts/ui/resonance.gd")
 const DuetUI := preload("res://scripts/duet/duet_ui.gd")
 
 
@@ -48,7 +48,7 @@ func texts() -> String:
 
 
 func seal() -> Variant:
-	var found: Array = main.modal_body.find_children("*", "Control", true, false).filter(func(c): return c is Seal)
+	var found: Array = main.modal_body.find_children("*", "Control", true, false).filter(func(c): return c is Resonance)
 	return found[0] if found.size() == 1 else null
 
 
@@ -84,7 +84,7 @@ func _run() -> void:
 	check(buttons().size() == 4 and texts().contains("猜猜") and texts().contains("梅"), "猜 TA：三个选项 + 不猜")
 	press(ev.options[1].text)
 	check(net.sent == [[Op.CHOOSE, {"optionId": "climb", "guess": "hold"}]], "选择和猜测一起发：%s" % [net.sent])
-	check(texts().contains("等 TA"), "发完等 TA")
+	check(texts().contains("TA 还在想"), "发完等 TA")
 	net.sent.clear()
 	main._on_event_started({"event": {"eventId": "d_kite_tree", "kind": "mirror", "roles": ["qing", "mei"]}})
 	press(ev.options[2].text)
@@ -103,16 +103,16 @@ func _run() -> void:
 		"resonance": true, "text": ev.catches[0].text,
 		"duet": {"outcome": "catch", "guess": {"qing": "hold", "mei": "wait"}, "knew": {"qing": true, "mei": false}, "line": "青猜着了梅，梅没猜着青。"},
 	})]})
-	check(main.modal.visible and texts().contains("搭上了 · 一个上树") and texts().contains("青猜着了梅"), "搭上了的卡：\n" + texts())
+	check(main.modal.visible and texts().contains("搭上了") and texts().contains("一个上树") and texts().contains("青猜着了梅"), "搭上了的卡：\n" + texts())
 	check(seal() != null and seal().outcome == "catch" and seal().knew.get("qing") == true, "印：扣在一起，青懂梅")
 	main._on_log_entries({"entries": [entry("d_kite_tree", "wait", "wait", {"duet": {"outcome": "res", "knew": {"qing": null, "mei": null}, "line": null}})]})
-	check(texts().contains("共鸣 · ") and seal().outcome == "res", "共鸣的卡")
+	check(texts().contains("共鸣") and seal().outcome == "res", "共鸣的卡")
 	main._on_log_entries({"entries": [entry("d_kite_tree", "climb", "wait", {"shadow": ["mei"], "duet": {"outcome": "miss", "owed": "mei", "line": null}})]})
-	check(texts().contains("错位 · ") and seal().outcome == "miss" and texts().contains("（影子）"), "错位的卡")
+	check(texts().contains("错位") and seal().outcome == "miss" and texts().contains("（影子）"), "错位的卡")
 	check(texts().contains("等本人回来接"), "影子替 TA 选的：告诉我话先悬着")
 	# 老服务器的日志没有 duet：按 resonance 画
 	main._on_log_entries({"entries": [entry("d_kite_tree", "hold", "hold")]})
-	check(texts().contains("共鸣 · ") and seal().outcome == "res", "没有 duet 字段也能画")
+	check(texts().contains("共鸣") and seal().outcome == "res", "没有 duet 字段也能画")
 	check(DuetUI.outcome_of({"resonance": false}) == "miss", "没有 duet 字段的错位")
 
 	# ---- 回话 ----
@@ -138,7 +138,7 @@ func _run() -> void:
 			"partnerKnew": true, "turn": 9, "label": "8 岁 · 春", "lines": ["隔了三个日子，还是搭上了。", "影子替你选的是「等风把它吹下来」。它还得学。"]},
 	}
 	main._on_log_entries({"entries": [echo_entry]})
-	check(texts().contains("回话 · 8 岁 · 春") and texts().contains("搭上了 · ") and texts().contains("它还得学"), "回话的结算卡：\n" + texts())
+	check(texts().contains("回话 · 8 岁 · 春") and texts().contains("搭上了") and texts().contains("它还得学"), "回话的结算卡：\n" + texts())
 	check(seal() != null and seal().outcome == "catch", "回话的印")
 	press("嗯")
 	check(texts().contains(main.events_by_id["d_broken_window"].title), "接着问下一句")
@@ -166,7 +166,7 @@ func _run() -> void:
 	main._close_modal()
 	theirs.duet.outcome = "miss"
 	main._on_log_entries({"entries": [theirs]})
-	check(not main.modal.visible and main.toast.text.contains("梅回了「%s」那天的话" % ev.title), "没补上只提一句：" + main.toast.text)
+	check(not main.modal.visible and main.toast_label.text.contains("梅回了「%s」那天的话" % ev.title), "没补上只提一句：" + main.toast_label.text)
 
 	# ---- 结局多出来的几句 ----
 	check(main.duet.ending_lines() == ["青猜中梅 1 回，梅猜中青 0 回。"], "结局闲话")

@@ -56,8 +56,8 @@
 
 这句话是这个机制存在的理由。默契率是两个人共有的一个数；「谁更懂谁」是两个数，而且通常不相等。
 
-结算卡上的两个圆（`client/scripts/duet/seal.gd`）把这些画成一枚印：共鸣是两个圆叠成一个，搭上了是扣在一起，错位是各在一边；
-猜中了，对方的圆里会落一个你的颜色的小点。
+结算卡上的两个圆（`client/scripts/ui/resonance.gd`，全游戏共用的那个标志）把这些画出来：共鸣是两个圆深深叠住，搭上了是斜着扣上一瓣，错位是擦肩而过；
+猜中了，对方的圆里会落一个你的颜色的小点。两个人都猜中时，你中有我，我中有你。
 
 ## 三、回话
 
@@ -109,7 +109,7 @@ catches:
 
 ## 实现
 
-规则全在 `server/src/duet.ts`（纯函数），界面在 `client/scripts/duet/`。其余文件各改几行，方便和别的改动合并：
+规则全在 `server/src/duet.ts`（纯函数），界面在 `client/scripts/duet/duet_ui.gd`（部件用 `ui/kit.gd`，两个圆是 `ui/resonance.gd` 加了第三种状态和猜中的点）。其余文件各改几行，方便和别的改动合并：
 
 | 位置 | 改动 |
 | --- | --- |
@@ -118,7 +118,8 @@ catches:
 | `main.ts` | `CHOOSE` 多一个可选的 `guess`；新消息 `ECHO`（30）；快照里的 `life.duet` 走 `duetView()` |
 | `save.ts` `lifeRepair` | 调 `duetRepair()`：剧情改了以后，欠着的话对不上就放下 |
 | `tools/build-content.mjs` | 读 `duet.yaml`，挂到事件的 `catches` 和 `content.duet` 上 |
-| `main.gd` | 五处调进 `duet_ui.gd`（见该文件头） |
+| `main.gd` | 六处调进 `duet_ui.gd`（见该文件头）；`_show_mirror_result` 保留为入口 |
+| `tools/shots/shots.gd` | 截图脚本多出六张接话的卡（30 到 35） |
 
 状态：
 

@@ -1,11 +1,13 @@
 extends Node2D
-## 河畔里：按 content.json 里的地图画出来，放两个孩子，点哪走哪。
-## 画面全部用 _draw 的墨线完成（M0 占位美术），之后替换成手绘贴图时只改这里。
+## 河畔里：铺上孔版套色的地图（map_art.gd），放两个孩子，点哪走哪（nav.gd 寻路绕开墙和家具）。
+## 地图贴图不在时，退回 M0 的墨线占位画法（_draw_fallback_map）。
 
 signal move_report(pos: Vector2)
 
 const P := preload("res://scripts/ui/palette.gd")
 const Actor := preload("res://scripts/world/actor.gd")
+const MapArt := preload("res://scripts/world/map_art.gd")
+const Nav := preload("res://scripts/world/nav.gd")
 const SPOT_RADIUS := 100.0  ## 比服务器的 110 小一点，避免边缘抖动
 const MOVE_SEND_INTERVAL := 0.1
 
@@ -16,6 +18,11 @@ var actors: Dictionary = {}  ## role -> Actor
 var hints: Array = []
 var controllable := true
 var camera: Camera2D
+var art: MapArt
+var nav := Nav.new()
+var _marks: Node2D  ## 互动点和命运提示：画在叠印层上面
+var _tap_fx := Vector2.INF
+var _tap_t := 0.0
 var _send_timer := 0.0
 var _last_sent := Vector2.INF
 
@@ -25,6 +32,13 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 	for a in map.actions:
 		actions[a.id] = a
 	my_role = role
+	y_sort_enabled = true
+	art = MapArt.new()
+	add_child(art)
+	nav.load_mask()
+	_marks = _Marks.new(self)
+	_marks.z_index = 70
+	add_child(_marks)
 	for r in ["qing", "mei"]:
 		var sp: Array = map.spawn[r]
 		var actor := Actor.new()
@@ -32,7 +46,7 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 		add_child(actor)
 		actors[r] = actor
 	camera = Camera2D.new()
-	camera.zoom = Vector2.ONE * 1.2
+	camera.zoom = Vector2.ONE * 1.4
 	camera.limit_left = 0
 	camera.limit_top = 0
 	camera.limit_right = int(map.size[0])
@@ -48,11 +62,25 @@ func me() -> Actor:
 	return actors.get(my_role)
 
 
+## 人生阶段变了（长大了），换外观
+func set_stage(stage: String) -> void:
+	for a in actors.values():
+		a.set_stage(stage)
+
+
+## 时钟：决定昼夜（联机时 apply_world 自动调用；离线预览由 main 喂）
+func set_minute(m: float) -> void:
+	if art != null:
+		art.set_minute(m)
+
+
 func _process(delta: float) -> void:
 	var a := me()
 	if a == null:
 		return
 	camera.position = a.position
+	_tap_t += delta
+	_marks.queue_redraw()
 	_send_timer += delta
 	if _send_timer >= MOVE_SEND_INTERVAL:
 		_send_timer = 0.0
@@ -69,12 +97,20 @@ func _unhandled_input(event: InputEvent) -> void:
 		var target := get_global_mouse_position()
 		target.x = clampf(target.x, 0.0, float(map.size[0]))
 		target.y = clampf(target.y, 0.0, float(map.size[1]))
-		me().walk_target = target
+		if nav.ready():
+			target = nav.snap(target)
+			me().set_path(nav.path(me().position, target))
+		else:
+			me().walk_target = target
+		_tap_fx = target
+		_tap_t = 0.0
 
 
 ## 服务器 5Hz 的世界广播
 func apply_world(view: Dictionary) -> void:
 	hints = view.get("hints", [])
+	if view.has("minute"):
+		set_minute(float(view.minute))
 	for r in ["qing", "mei"]:
 		var a: Actor = actors[r]
 		var s: Variant = view.actors.get(r)
@@ -116,11 +152,65 @@ func action_of(spot: Dictionary) -> Dictionary:
 
 
 # ======================================================================
-# 画地图
+# 互动点 + 命运提示（在叠印层之上）
+# ======================================================================
+
+func draw_marks(c: CanvasItem) -> void:
+	if map.is_empty():
+		return
+	var f := P.font()
+	var near := nearest_spot()
+	var t := _tap_t
+	var labeled: Array = []  ## 挨得很近的同名互动点（两扇门）只写一次
+	# 点击落点：一个墨圈散开
+	if _tap_fx != Vector2.INF and t < 0.6:
+		c.draw_arc(_tap_fx, 10.0 + t * 40.0, 0, TAU, 24, Color(P.INK, 0.6 * (1.0 - t / 0.6)), 2.0)
+	for sp in map.spots:
+		var at := Vector2(sp.at[0], sp.at[1])
+		var is_near: bool = not near.is_empty() and near.id == sp.id
+		var r := 9.0 + (sin(Time.get_ticks_msec() / 220.0) * 2.0 if is_near else 0.0)
+		c.draw_circle(at, r, Color(P.PAPER, 0.85))
+		c.draw_arc(at, r, 0, TAU, 20, P.MEI if is_near else Color(P.INK, 0.7), 2.4)
+		c.draw_circle(at, 3.0, P.MEI if is_near else Color(P.INK, 0.7))
+		if is_near:
+			continue  # 走近了由底部按钮显示，不重复
+		var label := str(action_of(sp).get("label", ""))
+		var dup := false
+		for l in labeled:
+			if l[0] == label and (l[1] as Vector2).distance_to(at) < 120.0:
+				dup = true
+		if dup:
+			continue
+		labeled.append([label, at])
+		var w := f.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x
+		c.draw_rect(Rect2(at + Vector2(-w / 2.0 - 6, 16), Vector2(w + 12, 26)), Color(P.PAPER, 0.8))
+		c.draw_string(f, at + Vector2(-w / 2.0, 36), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(P.INK, 0.75))
+	# 命运的提示：一行很淡的字，飘在那个地方
+	for h in hints:
+		for z in map.zones:
+			if z.id == h.zone:
+				var top := Vector2(z.rect[0] + z.rect[2] / 2.0, z.rect[1] + 36 + sin(Time.get_ticks_msec() / 900.0) * 4.0)
+				var tw := f.get_string_size(str(h.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x
+				c.draw_rect(Rect2(top + Vector2(-tw / 2.0 - 10, -26), Vector2(tw + 20, 38)), Color(P.PAPER, 0.85))
+				c.draw_string(f, top - Vector2(tw / 2.0, 0), str(h.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 26, P.OVERLAP)
+
+
+class _Marks extends Node2D:
+	var view: Node
+
+	func _init(v: Node) -> void:
+		view = v
+
+	func _draw() -> void:
+		view.draw_marks(self)
+
+
+# ======================================================================
+# 占位地图（没有生成美术时）
 # ======================================================================
 
 func _draw() -> void:
-	if map.is_empty():
+	if map.is_empty() or (art != null and art.has_art):
 		return
 	var f := P.font()
 	for z in map.zones:
@@ -192,23 +282,6 @@ func _draw() -> void:
 							draw_rect(Rect2(wx, wy, 34, 10), Color(P.MEI, 0.18))
 							wx += 40.0
 		draw_string(f, r.position + Vector2(20, 44), str(z.name), HORIZONTAL_ALIGNMENT_LEFT, -1, 32, P.INK_SOFT)
-
-	# 互动点
-	for sp in map.spots:
-		var at := Vector2(sp.at[0], sp.at[1])
-		draw_circle(at, 12.0, P.PAPER)
-		draw_arc(at, 12.0, 0, TAU, 20, P.INK, 2.5)
-		var label := str(action_of(sp).get("label", ""))
-		var w := f.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x
-		draw_string(f, at + Vector2(-w / 2.0, 42), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(P.INK, 0.55))
-
-	# 命运的提示：一行很淡的字，飘在那个地方
-	for h in hints:
-		for z in map.zones:
-			if z.id == h.zone:
-				var top := Vector2(z.rect[0] + z.rect[2] / 2.0, z.rect[1] - 16)
-				var tw := f.get_string_size(str(h.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 28).x
-				draw_string(f, top - Vector2(tw / 2.0, 0), str(h.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color(P.OVERLAP, 0.75))
 
 
 func _zone_frame(r: Rect2, fill: Color) -> void:

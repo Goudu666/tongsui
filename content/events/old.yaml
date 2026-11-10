@@ -6,7 +6,7 @@
   stage: old
   weight: 1
   title: 最后一封信
-  text: 你翻出一叠旧信。有一封，当年写好了却没有寄出去。
+  text: 翻箱子找棉裤，带出一沓旧信，猴皮筋一碰就断。有一封贴好了邮票，没寄。
   options:
     - id: send
       text: 现在寄出去

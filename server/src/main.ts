@@ -45,7 +45,7 @@ var OP = {
   ROLL_STATE: 3, // s→c { rolls }  每人带着 house（家业传了几代）、offer（摆在面前的老物件）、heirloomId（挑中的）
   MOVE: 4, // c→s { x, y }
   ACT: 5, // c→s { spot }
-  CHOOSE: 6, // c→s { optionId, guess? } guess：默契事件里猜 TA 选了哪一项（可以不猜）
+  CHOOSE: 6, // c→s { optionId }（旧客户端带的 guess 不认了：猜 TA 砍了）
   WORLD: 7, // s→c 精简世界状态（5Hz）
   EVENT: 8, // s→c { event } 有事件开始了
   ERROR: 9, // s→c { message }
@@ -729,7 +729,6 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
       if (res.error) sendError(dispatcher, msg.sender, res.error);
       if (res.together) broadcastLog(dispatcher, [res.together]);
     } else if (msg.opCode === OP.CHOOSE) {
-      duetGuess(life, CONTENT, role, body.guess); // 要先记下，两人都选完那一刻就结算了
       var ch = worldChoose(life, CONTENT, role, String(body.optionId), false);
       if (ch.error) sendError(dispatcher, msg.sender, ch.error);
       if (ch.entry) {

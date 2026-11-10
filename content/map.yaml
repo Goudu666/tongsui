@@ -317,3 +317,11 @@ actions:
     requires: { minAge: 15 }
     needs: { mood: 5 }
     stats: { mind: 0.15 }
+  # 外地的大学：在外地念书的人长魅力的地方（家里的茶社、街坊都够不着了）
+  - id: club_campus
+    label: 去社团
+    minutes: 45
+    requires: { minAge: 18, maxAge: 25, hours: [930, 1320] }
+    needs: { mood: 6, energy: -8 }
+    stats: { charm: 0.4 }
+    together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 社团里没人知道你们是一条街上长大的。你们也没说。 }

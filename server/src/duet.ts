@@ -1,11 +1,12 @@
 // 接话：两个人之间一抛一接的规则。纯函数，不依赖 Nakama。设计说明见 docs/DUET.md。
 //
-// 默契不是选一样，是一个抛、一个接得住。这一轮做三件事，都长在默契事件（mirror）上：
+// 默契不是选一样，是一个抛、一个接得住。两件事，都长在默契事件（mirror）上：
 //   搭上了  两人选得不一样，但正好是一个出招、一个接着（content/duet.yaml 的 catches）→ 也算默契，也留回忆
-//   猜 TA   选完自己的，再猜对门选了什么。猜中是「懂」，有方向：青懂梅，不等于梅懂青
 //   回话    一方不在时影子替他选过的事先欠着，本人回来后补答；可能补成共鸣，也接着教影子
+// 「猜 TA」（选完再猜对门选了什么）2026-11 重做时砍了：多一层弹窗，打断主线。服务器不再认 CHOOSE 的 guess；
+// 旧存档里的 know 计数和 owed[].guess 照旧读得进来，只是不再增加。
 //
-// 状态：LifeState.duet（长期，可选字段，随快照发给客户端，不放当下的秘密）、PendingEvent.guess（当下的猜测，不外发）、
+// 状态：LifeState.duet（长期，可选字段，随快照发给客户端，不放当下的秘密）、
 // LogEntry.duet（结算附带的数据，旧客户端可以不认识）。不改 bond 的含义，不用人生主线的随机数。
 
 /** 欠着的话过了这么多个日子就接不上了（和回忆褪色一级的间隔一样） */
@@ -24,7 +25,6 @@ interface DuetCatch {
 }
 
 interface DuetContent {
-  lines: { knew_both_same: string; knew_both_diff: string; knew_one: string; knew_none: string; knew_single: string };
   echo: { ask: string; res: string; catch: string; miss: string; like: string; unlike: string; knew: string; kept: string; told: string };
   epitaph: { know: string; shadow: string; last: { minRate: number; text: string }[] };
 }
@@ -112,62 +112,17 @@ function duetCatch(s: LifeState, c: Content, pe: PendingEvent, ev: LifeEvent, en
   return true;
 }
 
-// ---------- 猜 TA ----------
-
-/** 默契事件里猜对门选了什么。跟自己的选择一起发来（CHOOSE 的 guess 字段）；不合法的猜测当没猜 */
-function duetGuess(s: LifeState, c: Content, role: Role, optionId: any) {
-  var w = s.world;
-  if (typeof optionId !== "string" || !w || !w.event || w.event.kind !== "mirror" || w.event.roles.indexOf(role) < 0) return;
-  if (!lifeFindOption(lifeFindEvent(c, w.event.eventId), optionId)) return;
-  if (!w.event.guess) w.event.guess = {};
-  w.event.guess[role] = optionId;
-}
-
-/** 事件结算之后（worldChoose 里调用）：猜 TA 的对错；影子替选的记一笔欠着 */
+/** 事件结算之后（worldChoose 里调用）：影子替选的记一笔欠着 */
 function duetAfterEvent(s: LifeState, c: Content, pe: PendingEvent, entry: LogEntry) {
   if (pe.kind !== "mirror" || pe.roles.length !== 2) return;
   var d = duetOf(s);
   var info: any = entry.duet || (entry.duet = { outcome: entry.resonance ? "res" : "miss" });
-  var guesses = pe.guess || {};
-  var same = pe.choices.qing === pe.choices.mei;
-  info.guess = { qing: null, mei: null };
-  info.knew = { qing: null, mei: null };
-  var guessed = 0, knew: Role[] = [];
-  for (var i = 0; i < ROLES.length; i++) {
-    var r = ROLES[i];
-    var g = guesses[r];
-    // 影子不猜；本人猜的才算
-    if (typeof g !== "string" || pe.shadow.indexOf(r) >= 0) continue;
-    var hit = g === pe.choices[lifeOther(r)];
-    info.guess[r] = g;
-    info.knew[r] = hit;
-    guessed += 1;
-    d.know[r][1] += 1;
-    if (hit) { knew.push(r); d.know[r][0] += 1; lifeApplyBond(s, c, { sync: 1 }); }
-  }
-  var L = c.duet.lines;
-  var line: string | null = null;
-  if (guessed === 2) {
-    if (knew.length === 2) {
-      line = same ? L.knew_both_same : L.knew_both_diff;
-      if (!same) lifeApplyBond(s, c, { close: 1 }); // 选得不一样，但知根知底
-    } else if (knew.length === 1) {
-      line = duetFill(L.knew_one, { a: s.persons![knew[0]].name, b: s.persons![lifeOther(knew[0])].name });
-    } else {
-      line = L.knew_none;
-    }
-  } else if (knew.length === 1) {
-    line = duetFill(L.knew_single, { a: s.persons![knew[0]].name });
-  }
-  info.line = line;
-
   // 影子替选的：这句话先悬着，等本人回来接（两个人都是影子就算了，没人在场）
   if (pe.shadow.length === 1) {
     var sr = pe.shadow[0], other = lifeOther(sr);
-    var og = guesses[other];
     d.owed[sr].push({
       turn: s.turn, age: entry.age, label: entry.label, eventId: pe.eventId,
-      shadow: pe.choices[sr]!, partner: pe.choices[other]!, guess: typeof og === "string" ? og : null, outcome: info.outcome,
+      shadow: pe.choices[sr]!, partner: pe.choices[other]!, guess: null, outcome: info.outcome,
     });
     while (d.owed[sr].length > DUET_OWED_MAX) d.owed[sr].shift();
     info.owed = sr;

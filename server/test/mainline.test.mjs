@@ -141,6 +141,7 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
   const replaced = new Set(S.events.flatMap((e) => e.replaces));
   const SLOT_AT = [[390, 480], [480, 720], [720, 930], [930, 1110], [1110, 1320]], SLOT_IDS = ["morning", "am", "pm", "evening", "night"];
   let lives = 0, beats = 0, there = 0;
+  const forced = S.chapters.map(() => [0, 0]); // 每章 [强制的, 一共]
   for (let seed = 1; seed <= 12; seed++) {
     const s = G("lifeCreate")(seed * 7919, C);
     G("lifeConfirm")(s, C, "qing", NAMES);
@@ -149,6 +150,8 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
       G("worldAdvance")(s, C, 0.1, OFF);
       if (s.world && s.world.event) {
         const pe = s.world.event;
+        const sev = byId.get(pe.eventId);
+        if (sev && !pe.counted) { pe.counted = true; forced[sev.chapter - 1][1]++; if ((s.world.fate.force || []).includes(sev.id)) forced[sev.chapter - 1][0]++; }
         for (const r of pe.roles) if (!pe.choices[r] && s.world.event === pe) assert.equal(G("worldChoose")(s, C, r, G("lifeShadowChoose")(s, C, r, pe.eventId), true).error, null, `${pe.eventId}: 影子选了一条走不了的路`);
       }
       assert.ok(t < 900000);
@@ -156,7 +159,7 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
     lives++;
     for (const e of s.log) for (const r of ["qing", "mei"]) assert.ok(!replaced.has(e.events[r]), `${e.events[r]} 让主线顶替了，不该再从随机池里出来`);
     for (const r of ["qing", "mei"]) {
-      const got = s.log.filter((e) => byId.has(e.events[r])).map((e) => ({ ev: byId.get(e.events[r]), age: e.age, minute: e.minute }));
+      const got = s.log.filter((e) => byId.has(e.events[r])).map((e) => ({ ev: byId.get(e.events[r]), age: e.age, minute: e.minute, turn: e.turn }));
       const keys = Array.from(got, (g) => g.ev.chapter * 10 + g.ev.beat);
       assert.deepEqual(keys, [...keys].sort((a, b) => a - b), `${seed}/${r}：主线要按章、按件的顺序过（${keys.join(" ")}）`);
       assert.equal(new Set(keys).size, keys.length, `${seed}/${r}：同一件过了两回`);
@@ -167,17 +170,24 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
         for (let b = 1; b <= 3; b++) assert.ok(keys.includes((ci + 1) * 10 + b), `${seed}/${r}：第${ci + 1}章第${b}件没过到（活到 ${died === 999 ? "最后" : died} 岁）`);
       }
       for (const g of got) {
-        const open = G("storyOpenAge")(S.chapters[g.ev.chapter - 1], g.ev.beat - 1, 3);
-        assert.ok(g.age >= open, `${g.ev.id}：${g.age} 岁就发生了，第${g.ev.beat}件要到 ${open} 岁才排上`);
+        const open = G("storyOpenTurn")(C, S.chapters[g.ev.chapter - 1], g.ev.beat - 1, 3);
+        assert.ok(g.turn >= open, `${g.ev.id}：第 ${g.turn} 个日子就发生了，第${g.ev.beat}件要到第 ${open} 个日子才排上`);
         beats++;
         const k = SLOT_IDS.indexOf(g.ev.slot);
-        if (g.minute >= SLOT_AT[k][0] && g.minute < SLOT_AT[k][1] && !(k > 0 && g.minute === 390)) there++;
+        if (g.minute >= SLOT_AT[k][0] && g.minute < SLOT_AT[k][1]) there++;
+        assert.ok(!G("storyMilestoneDay")(C, g.turn), `${g.ev.id}：发生在关口那天（${g.age} 岁）`);
       }
     }
   }
-  // 影子会往主线那张图上走：一大半是走到了那儿、那一段发生的，强制的是少数
-  assert.ok(there / beats > 0.55, `影子过的人生里只有 ${Math.round((there / beats) * 100)}% 的主线是走到那儿发生的`);
-  console.log(`✓ 引擎：${lives} 条全影子人生、${beats} 件主线，每章三件按顺序都过到，${Math.round((there / beats) * 100)}% 是走到那张图、那一段发生的，其余章末一早强制 / 被顶替的旧事件一次没出`);
+  // 强制的也是到了它自己那一段才发生：写好的晚饭、天黑和时候对得上
+  assert.ok(there / beats > 0.97, `只有 ${Math.round((there / beats) * 100)}% 的主线发生在它写的那一段`);
+  // 按章看强制的比例。童年到青年日子多，影子多半是自己走到那儿碰上的；第一章三到五岁的孩子傍晚就困了，楼顶那一晚常常是被叫起来的。
+  // 中年以后一个日子是三五年（第五、六章各四个空日子，第七章只有一个），事是找上门来的：这是认下的，但也是在它写的那一段
+  const rate = forced.map(([f, n]) => f / Math.max(n, 1));
+  for (const i of [1, 2, 3]) assert.ok(rate[i] <= 0.15, `第${i + 1}章强制的有 ${Math.round(rate[i] * 100)}%：日子够多的章，主线该是走到那儿碰上的`);
+  assert.ok(rate[0] <= 0.4, `第一章强制的有 ${Math.round(rate[0] * 100)}%`);
+  console.log(`  各章强制的比例：${rate.map((x, i) => `${i + 1} ${Math.round(x * 100)}%`).join(" / ")}`);
+  console.log(`✓ 引擎：${lives} 条全影子人生、${beats} 件主线，每章三件按顺序都过到，没有一件在关口那天，${Math.round((there / beats) * 100)}% 发生在它写的那一段 / 被顶替的旧事件一次没出`);
 }
 
 // ---------- 6) 引擎的几条规矩 ----------
@@ -192,7 +202,9 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
     return t;
   };
   const fresh = (seed = 11) => { const s = G("lifeCreate")(seed, C); G("lifeConfirm")(s, C, "qing", NAMES); G("lifeConfirm")(s, C, "mei", NAMES); return s; };
-  const today = (s) => J(G("storyToday")(s, C, G("lifeTimeAt")(s.turn)));
+  const today = (s, ms = false) => J(G("storyToday")(s, C, G("lifeTimeAt")(s.turn), ms));
+  const OFF = { qing: false, mei: false }, ON = { qing: true, mei: true };
+  const sceneOf = (s, r) => G("worldSceneAt")(C, s.world.actors[r].y).id;
   // 摊开：第二章（6~11 岁）第二件到 8 岁才排上（s2_names 自己写的是 7 岁）
   {
     const s = fresh();
@@ -202,7 +214,17 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
     s.turn = at(8);
     assert.equal(today(s).mirror, "s2_names");
   }
-  // 强制：第一章最后一个日子，一件都没过的人一早就遇上第一件
+  // 关口那天不排主线：六岁上学那天早上是关口，第二章第一件往后顺一天
+  {
+    const s = fresh();
+    s.turn = at(6);
+    G("worldStartDay")(s, C);
+    assert.equal(s.world.fate.milestone, "m_school");
+    assert.ok(!G("storyFindEvent")(C, s.world.fate.mirror || ""), "关口那天不排主线");
+    s.turn = at(6) + 1;
+    assert.equal(today(s).mirror, "s2_road");
+  }
+  // 强制：第一章最后一个日子，一件都没过的人到了它那一段（上午）被叫到楼道里，人在哪儿都一样
   {
     const s = fresh();
     s.turn = at(4);
@@ -210,14 +232,56 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
     s.turn = at(5, true);
     G("worldStartDay")(s, C);
     assert.deepEqual(J(s.world.fate.force), ["s1_door"]);
-    const tick = G("worldAdvance")(s, C, 0.1, { qing: true, mei: true });
-    assert.ok(tick.started && tick.started.eventId === "s1_door" && s.world.minute === 390, "章末没碰上的一早就发生，不等人走过去");
+    s.world.fate.qing = s.world.fate.mei = null; // 只看主线
+    const street = C.map.scenes.find((x) => x.id === "street");
+    s.world.actors.qing.y = street.floors[0];
+    s.world.actors.qing.x = 1700;
+    assert.equal(G("worldAdvance")(s, C, 0.1, ON).started, null, "早上还不到它那一段");
+    s.world.slot = 1;
+    s.world.minute = 480;
+    const tick = G("worldAdvance")(s, C, 0.1, ON);
+    assert.ok(tick.started && tick.started.eventId === "s1_door", "到了上午，躲不过的那件就发生");
+    assert.equal(sceneOf(s, "qing"), "building", "在楼下的人被放回楼里");
+  }
+  // 那一段过去了才马上发生；人都睡下了也是
+  {
+    const s = fresh();
+    s.turn = at(5, true);
+    G("worldStartDay")(s, C);
+    s.world.fate.qing = s.world.fate.mei = null;
+    s.world.slot = 3;
+    s.world.minute = 930;
+    assert.equal(G("worldAdvance")(s, C, 0.1, ON).started?.eventId, "s1_door", "上午已经过去了：马上发生");
+  }
+  // 第七章只有一个空着的日子（60、70 岁那天是关口）：三件在同一天里按段接着发生，都在自己那一段
+  {
+    const s = fresh();
+    s.turn = at(65);
+    G("worldStartDay")(s, C);
+    assert.equal(s.world.fate.mirror, "s7_park");
+    assert.deepEqual(J(s.world.fate.force), ["s7_park"]);
+    const SLOT_IDS = ["morning", "am", "pm", "evening", "night"];
+    const seen = [];
+    const day = s.turn;
+    for (let k = 0; s.turn === day && k < 100000; k++) {
+      G("worldAdvance")(s, C, 0.5, OFF);
+      const pe = s.world && s.world.event;
+      if (pe) {
+        const ev = G("lifeFindEvent")(C, pe.eventId);
+        if (ev.chapter) seen.push(`${ev.beat}:${SLOT_IDS[s.world.slot]}=${ev.slot}`);
+        for (const r of pe.roles) if (!pe.choices[r] && s.world.event === pe) G("worldChoose")(s, C, r, G("lifeShadowChoose")(s, C, r, pe.eventId), true);
+      }
+    }
+    assert.equal(seen.length, 3, `第七章三件都在 65 岁那天：${seen.join(" ")}`);
+    for (const x of seen) { const [, got, want] = x.match(/(\w+)=(\w+)/); assert.equal(got, want, `发生在自己那一段：${seen.join(" ")}`); }
   }
   // 主线带人过桥：12 岁、家里不送去学琴的孩子，平时去不了河对岸；排上「过桥」的那天能去
   {
     const s = fresh();
     for (const r of ["qing", "mei"]) s.persons[r].flags = s.persons[r].flags.filter((f) => !["fam_rich", "fam_factory"].includes(f));
-    s.turn = at(12);
+    s.turn = at(12) + 1; // 12 岁头一天是关口（这里当它已经过了）
+    const ms12 = G("lifeMilestoneAt")(C, 12).id;
+    s.log.push({ turn: at(12), age: 12, events: { qing: ms12, mei: ms12 }, choices: {} });
     G("worldStartDay")(s, C);
     const across = C.map.scenes.find((x) => x.id === "across");
     assert.equal(s.world.fate.mirror, "s3_bridge");
@@ -234,5 +298,5 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
     assert.match(G("worldChoose")(s, C, "qing", "frog", false).error || "", /走不了/);
     assert.equal(G("worldChoose")(s, C, "qing", "knock", false).error, null);
   }
-  console.log("✓ 引擎规矩：一章三件按岁数摊开 / 章末一早强制 / 主线那张图当天开着 / 家底门槛服务器也拦");
+  console.log("✓ 引擎规矩：一章三件按章里的日子摊开 / 关口那天不排 / 章末躲不过的到了它那一段才发生、人放到那张图上 / 段过去了才马上发生 / 第七章三件同一天按段接着发生 / 主线那张图当天开着 / 家底门槛服务器也拦");
 }

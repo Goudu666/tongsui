@@ -623,7 +623,7 @@
   kind: solo
   stage: old
   where: roof
-  weight: 2
+  weight: 3   # 老了、对门不在了、还养过小灰：本来就少；主线占了六十五岁那天以后，2 在 1500 条人生里一次也碰不上
   requires: { alone: true, flags: [tal_pigeon, p_pigeon] }
   title: 小灰
   text: 一只灰鸽子落在你肩上，不走了。你喊了一声「小灰」，它歪了歪头。

@@ -38,7 +38,7 @@ var OP = {
   ROLL_STATE: 3, // s→c { rolls }
   MOVE: 4, // c→s { x, y }
   ACT: 5, // c→s { spot }
-  CHOOSE: 6, // c→s { optionId }
+  CHOOSE: 6, // c→s { optionId, guess? } guess：默契事件里猜 TA 选了哪一项（可以不猜）
   WORLD: 7, // s→c 精简世界状态（5Hz）
   EVENT: 8, // s→c { event } 有事件开始了
   ERROR: 9, // s→c { message }
@@ -46,9 +46,12 @@ var OP = {
   PRESENCE: 11, // s→c { online }
   PING: 12, // c→s { t } 心跳，客户端用来测延迟、发现死连接
   PONG: 13, // s→c { t, tick } 原样带回 t，附上服务器 tick
+  GAME: 20, // s→c { game: 视图 | null, result? } 搭伴小游戏的状态（games.ts）
+  GAME_INPUT: 21, // c→s { k: "ready" | "pass" | "quit" | 小游戏自己的输入 }
+  ECHO: 30, // c→s { turn, optionId } 回话：补答影子替我选过的默契事件；optionId 为 null 是「不提了」
 };
 /** c→s 的消息号：只有这些会被处理，其余的回一个 ERROR */
-var CLIENT_OPS = [OP.ROLL, OP.MOVE, OP.ACT, OP.CHOOSE, OP.PING];
+var CLIENT_OPS = [OP.ROLL, OP.MOVE, OP.ACT, OP.CHOOSE, OP.PING, OP.GAME_INPUT, OP.ECHO];
 
 interface LifelineRecord {
   id: string;
@@ -346,10 +349,13 @@ function snapshot(s: LifelineMatch, role: Role) {
   var life = s.record.life!;
   var view: any = {};
   for (var k in life) {
-    if (k === "rng" || k === "seed" || k === "world") continue;
+    // duet 不原样给：里面有「对门当年猜我会选什么」，只走 duetView()
+    if (k === "rng" || k === "seed" || k === "world" || k === "duet") continue;
     view[k] = (life as any)[k];
   }
-  view.log = life.phase === "ended" ? life.log : life.log.slice(-SNAPSHOT_LOG_TAIL);
+  if (life.phase !== "roll") view.duet = duetView(life, role);
+  // 还欠着话的那几天，日志里的猜测也先摘掉，等回完话再揭晓
+  view.log = duetLogView(life, role, life.phase === "ended" ? life.log : life.log.slice(-SNAPSHOT_LOG_TAIL));
   view.logTotal = life.log.length;
   var w = life.world;
   if (w) {
@@ -612,12 +618,19 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
       if (res.error) sendError(dispatcher, msg.sender, res.error);
       if (res.together) broadcastLog(dispatcher, [res.together]);
     } else if (msg.opCode === OP.CHOOSE) {
+      duetGuess(life, CONTENT, role, body.guess); // 要先记下，两人都选完那一刻就结算了
       var ch = worldChoose(life, CONTENT, role, String(body.optionId), false);
       if (ch.error) sendError(dispatcher, msg.sender, ch.error);
       if (ch.entry) {
         state.eventWaitSince = null;
         broadcastLog(dispatcher, [ch.entry]);
       }
+    } else if (msg.opCode === OP.GAME_INPUT) {
+      gameOnMessage(life, dispatcher, role, body);
+    } else if (msg.opCode === OP.ECHO) {
+      var echo = duetEcho(life, CONTENT, role, Number(body.turn), body.optionId);
+      if (echo.error) sendError(dispatcher, msg.sender, echo.error);
+      if (echo.entry) broadcastLog(dispatcher, [echo.entry]);
     }
   }
 
@@ -643,6 +656,7 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
       }
     }
 
+    gameLoop(life, state, dispatcher, tick);
     if (state.presences.qing || state.presences.mei) {
       var t = worldAdvance(life, CONTENT, 1 / TICK_RATE, steering(state));
       if (t.started) send(dispatcher, OP.EVENT, { event: t.started });

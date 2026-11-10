@@ -151,6 +151,7 @@ function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error
   a.y = sp.at[1];
   a.action = act.id;
   a.spot = sp.id;
+  a.shadow = false;
   if (act.sleep) {
     a.asleep = true;
     a.until = null;
@@ -219,6 +220,20 @@ function worldShadowAct(s: LifeState, c: Content, role: Role) {
     var fallback = worldSpotFor(c, age >= 6 ? "study" : "knock", role);
     if (fallback) { a.x = fallback.at[0]; a.y = fallback.at[1]; worldAct(s, c, role, fallback.id); }
   }
+  if (a.action) a.shadow = true;
+}
+
+/** 本人回来了：影子正在做的事（睡觉、上学除外）停下，把身体还给他 */
+function worldReclaim(s: LifeState, role: Role): boolean {
+  if (s.phase !== "life" || !s.world) return false;
+  var a = s.world.actors[role];
+  if (!a || !a.shadow) return false;
+  a.shadow = false;
+  if (!a.action || a.asleep || a.action === "school") return false;
+  a.action = null;
+  a.spot = null;
+  a.until = null;
+  return true;
 }
 
 // ---------- 需求随时间变化 ----------

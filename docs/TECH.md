@@ -62,27 +62,52 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | --- | --- | --- |
 | `lifeline_create {name}` | 青 | 新建人生线，返回 6 位配对码 |
 | `lifeline_join {code, name}` | 梅 | 输入配对码加入，同时为两人各投一次胎 |
-| `lifeline_open {lifelineId}` | 任意一方 | 返回正在运行的房间 id，没有就从存档拉起 |
-| `lifeline_list` | 任意 | 我参与的人生线 |
+| `lifeline_open {lifelineId}` | 任意一方 | 返回正在运行的房间 id，没有就从存档拉起（两人同时打开也只会有一个房间） |
+| `lifeline_list` | 任意 | 我参与的人生线：两人名字、是否已配对、阶段、走到哪一天（大厅的「继续」） |
+
+梅输入配对码后，服务器给青发一条通知（code 101 `partner_joined`），青的客户端收到就自动进房间开始投胎；
+通知万一丢了，青的等待页每 5 秒也会问一次 `lifeline_open`。有人进房而对方不在房间里时发 code 102 `partner_online`。
 
 房间（`lifeline` 权威 match，10 tick/秒）的阶段：`roll`（投胎）→ `life`（河畔里）→ `ended`。
 
 | op | 方向 | 内容 |
 | --- | --- | --- |
-| 1 SNAPSHOT | s→c | `{lifelineId, names, life, you, online}` 进房、开局、每天结束时发 |
+| 1 SNAPSHOT | s→c | `{lifelineId, names, life, you, online, tick}` 进房（含断线重连）、开局、每天结束时发。`life.world` 只带时钟、人物和事件（`event.chosen` 只说谁选了，`event.mine` 是我自己选的），不带 TA 的选项、今天的命运和随机数状态 |
 | 2 ROLL | c→s | `{reroll: true}` 或 `{confirm: true}` |
 | 3 ROLL_STATE | s→c | `{rolls}` 两人当前抽到的家庭、天赋、属性、剩余次数 |
-| 4 MOVE | c→s | `{x, y}` 约 10 Hz，服务器限速（360 px/s）和边界 |
+| 4 MOVE | c→s | `{x, y, seq}` 约 10 Hz，seq 递增；服务器丢掉乱序旧包，限速（360 px/s，间隔最多按 1 秒算）和边界 |
 | 5 ACT | c→s | `{spot}` 在某个点开始行动（距离、年龄、时间、家、钱都会校验） |
 | 6 CHOOSE | c→s | `{optionId}` 事件里的选择，结算前可以改 |
-| 7 WORLD | s→c | 5 Hz：`{minute, schoolDay, actors, needs, money, event, bond, hints}` |
+| 7 WORLD | s→c | 5 Hz：`{tick, minute, schoolDay, actors{x,y,act,spot,sleep,seq}, needs, money, event, bond, hints}`；`actors[r].seq` 是服务器处理到的最后一条 MOVE |
 | 8 EVENT | s→c | `{event}` 有事件开始了（只告诉谁参与、是否已选，不告诉选了什么） |
 | 9 ERROR | s→c | `{message}` |
 | 10 LOG | s→c | `{entries}` 事件结算、同框、一天结束、死亡、终局 |
 | 11 PRESENCE | s→c | `{online}` |
+| 12 PING | c→s | `{t}` 每 2 秒，测延迟 |
+| 13 PONG | s→c | `{t, tick}` 只回给发的人 |
 
 - 事件进行中时钟暂停；没选的人都离线时，等 30 秒后由影子代选。
-- 每天结束、有人掉线、每 30 秒各存一次档。两人都下线后世界停住，2 分钟后房间关闭。
+- 掉线 10 秒之内影子不接手（切网络、进电梯）；超过 10 秒影子替他过日子；本人回来时影子手上的事（睡觉、上学除外）停下，把身体还给他。
+- 每天结束、有人掉线、每 30 秒各存一次档。两人都下线后世界停住，2 分钟后房间关闭，存档里的 matchId 清空，下次打开从存档重新拉起。
+
+### 一条人生线只有一个房间
+
+`lifeline_open` 本身不写存档，拉起房间时由 `matchInit` 用**带版本号的条件写入**把自己的 matchId 写进存档：
+两个人同一瞬间打开时只有一个能写成功，另一个在 `matchInit` 里抛 `DUP_MATCH:<赢家的 id>`，RPC 把赢家的房间返回给他。
+刚写进去的 matchId 在 15 秒内一律当作活着（房间要等 `matchInit` 返回后才能被 `matchGet` 查到）。
+
+### 断线重连（客户端 `lifeline_client.gd`）
+
+- 会话存在 `user://session.cfg`，7 天内重开 App 不用重新登录；快过期时用 refresh token 刷新，刷新不了就重新设备登录。设备 id 在安卓上用 `OS.get_unique_id()`（ANDROID_ID，卸载重装不变）。
+- **换手机找回**：大厅里「换手机找回」第一次打开时生成一个 10 位找回码，作为 Nakama custom id（`tongsui-recover-<码>`）绑到当前账号；新手机输入它，用 `authenticate_custom(create=false)` 登回同一个 user_id，人生线都在。之后这台手机一直用找回码这个身份登录。
+- 三种情况触发重连：socket `closed`；在房间里 8 秒没收到任何消息（WORLD 是 5 Hz，这是看门狗）；App 从后台回来发现 3 秒以上没消息。
+- 退避 1/2/4/8/10 秒重试，连上后重新 `lifeline_open`（房间可能已经关了重开）再进房；服务器重发快照，客户端把人放回服务器的位置，如果正卡在事件里就把选择框弹回来。
+- 同一个人的新连接进房会顶掉旧连接：旧连接后来的 `leave` 不会把人踢下线，旧连接发来的消息也不算数。
+
+### 同框的位置同步
+
+- **自己**：客户端预测（点哪走哪，330 px/s），每 0.1 秒带 seq 上报。WORLD 回来的 `seq` 对应的那条上报位置如果和服务器位置一致，就什么都不做（不会被 200 ms 前的旧位置往回拽）；被限速或边界截过才把差值平滑地补上，差太多（换天回家、被事件叫过去）直接到位。
+- **对方**：插值缓冲（`snapshot_buffer.gd`）。按 WORLD 里的 `tick` 估计服务器时钟（`server_clock.gd`），画面落后服务器 0.25 秒播放，两帧之间线性插值，所以是匀速走而不是一顿一顿地追；包来晚了按速度外推最多 0.25 秒；两帧之间跳太远就不插值。
 
 ## 内容格式
 
@@ -136,8 +161,13 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 
 ```bash
 npm run content          # 内容校验
-npm run server:test      # 编译 + 投胎规则 + 60 条全影子人生 + 世界规则单点 + 模拟一遍联机流程
+npm run server:test      # 编译 + 投胎规则 + 60 条全影子人生 + 世界规则单点 + 假 Nakama 里的联机流程（配对、并发开房、重连、防泄露、影子宽限）
                          # + 剧情测试：1500 条随机人生，保证每个事件、每个结局都走得到
+
+# 下面两个要先起一台本地 Nakama（docker compose，见 README）
+npm --prefix server run e2e                   # 两个 Node 机器人连真 Nakama：配对通知、16 次并发打开、走动同步、换连接重连、掉线再进
+GODOT=godot bash tools/net_e2e.sh             # 两个无头 Godot 客户端（用游戏里真正的联机代码）配对、投胎、同框走动，其中一个中途硬断网自动重连
+godot --headless --path client -s res://tests/unit_net.gd   # 插值缓冲、服务器时钟、地址解析的单测，不需要服务器
 ```
 
 CI（`.github/workflows/build.yml`）还会在真实的 Nakama 容器里加载模块并调用一次 `lifeline_create`，然后导出 Android 调试 APK。
@@ -153,7 +183,7 @@ CI（`.github/workflows/build.yml`）还会在真实的 Nakama 容器里加载�
 
 ## 已知待办
 
-- 客户端是最小可用：地图和角色是代码画的墨线占位，还没有手绘贴图、动画、音效；没处理断线重连、重新进入已有的人生线（`lifeline_list`）。
+- 客户端是最小可用：地图和角色是代码画的墨线占位，还没有手绘贴图、动画、音效。
 - 地图没有碰撞（合作游戏，信任客户端走位），M1 加简单的墙体。
 - 少年以后的阶段还在用河畔里这一张地图；M2 加分开的城市地图、书信、危机场景、回忆唤起、蝴蝶事件。
 - 字体：霞鹜文楷完整版约 25 MB，正式打包前用 `pyftsubset` 裁成常用 3500 字 + 游戏里出现的字。

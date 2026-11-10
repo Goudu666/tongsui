@@ -80,8 +80,9 @@ docker compose -f deploy/docker-compose.yml up -d
 # 3. 客户端
 #    用 Godot 4.7.2 打开 client/project.godot，F5 运行
 #    「先逛逛河畔里」不需要服务器，只能走动，用来看地图
-#    联机模式需要先运行 tools/fetch_addons.sh 拉取 nakama-godot 插件和霞鹜文楷字体
+#    nakama-godot 插件已经在仓库里；tools/fetch_addons.sh 只用来拉霞鹜文楷字体
 #    同一台电脑开两个窗口测试联机：godot --path client -- --device=a / --device=b
+#    两台手机在局域网里联调：电脑上起服务器，手机的联机大厅「服务器设置」填电脑的局域网 IP（如 192.168.1.5）
 ```
 
 打包 APK：push 到 GitHub 后，在 Actions → `build` 页面底部 Artifacts 下载 `tongsui-*.apk`；

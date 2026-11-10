@@ -56,33 +56,33 @@
 - id: first_job
   label: 先干着
   requires: { minAge: 18, maxAge: 21 }
-  duty: { label: 上班, spot: bike_bench, arrive: [450, 570], until: 1020, needs: { energy: -22, clean: -15 }, stats: { body: 0.19 }, money: 8 }
+  duty: { label: 上班, spot: bike_bench, arrive: [450, 570], until: 1020, needs: { energy: -22, clean: -15 }, stats: { body: 0.19 }, money: 12 }
 
 # ---- 22~59 工作 ----
 - id: job_away
   label: 在外地工作
   requires: { minAge: 22, maxAge: 59, flags: [left_city], notFlags: [came_back] }
-  duty: { label: 过桥上班, spot: river_bridge, arrive: [390, 480], until: 1170, needs: { hunger: 25, energy: -28, mood: -3 }, money: 18 }
+  duty: { label: 过桥上班, spot: river_bridge, arrive: [390, 480], until: 1170, needs: { hunger: 25, energy: -28, mood: -3 }, money: 16 }
 - id: job_desk
   label: 坐办公室
   requires: { minAge: 22, maxAge: 59, flags: [job_desk] }
-  duty: { label: 过桥上班, spot: river_bridge, arrive: [420, 510], until: 1080, needs: { hunger: 25, energy: -22, mood: -2 }, stats: { mind: 0.1 }, money: 14 }
+  duty: { label: 过桥上班, spot: river_bridge, arrive: [420, 510], until: 1080, needs: { hunger: 25, energy: -22, mood: -2 }, stats: { mind: 0.1 }, money: 24 }
 - id: job_teach
   label: 教书
   requires: { minAge: 22, maxAge: 59, flags: [job_teach] }
-  duty: { label: 去上课, spot: school_gate, arrive: [420, 510], until: 990, needs: { hunger: 25, energy: -20 }, stats: { mind: 0.07, charm: 0.07 }, money: 10 }
+  duty: { label: 去上课, spot: school_gate, arrive: [420, 510], until: 990, needs: { hunger: 25, energy: -20 }, stats: { mind: 0.07, charm: 0.07 }, money: 15 }
 - id: job_trade
   label: 做买卖
   requires: { minAge: 22, maxAge: 59, flags: [job_trade] }
-  duty: { label: 出摊, spot: breakfast_stall, arrive: [390, 450], until: 840, needs: { energy: -25, clean: -10 }, stats: { charm: 0.12 }, money: 11 }
+  duty: { label: 出摊, spot: breakfast_stall, arrive: [390, 450], until: 840, needs: { energy: -25, clean: -10 }, stats: { charm: 0.12 }, money: 19 }
 - id: job_craft
   label: 靠手艺吃饭
   requires: { minAge: 22, maxAge: 59, flags: [job_craft] }
-  duty: { label: 上工, spot: bike_bench, arrive: [450, 540], until: 1020, needs: { energy: -22, clean: -15 }, stats: { body: 0.07, mind: 0.05 }, money: 10 }
+  duty: { label: 上工, spot: bike_bench, arrive: [450, 540], until: 1020, needs: { energy: -22, clean: -15 }, stats: { body: 0.07, mind: 0.05 }, money: 14 }
 - id: job_labor
   label: 卖力气
   requires: { minAge: 22, maxAge: 59, flags: [job_labor] }
-  duty: { label: 过桥上工, spot: river_bridge, arrive: [390, 450], until: 1050, needs: { hunger: 15, energy: -32, clean: -20 }, stats: { body: 0.14 }, money: 11 }
+  duty: { label: 过桥上工, spot: river_bridge, arrive: [390, 450], until: 1050, needs: { hunger: 15, energy: -32, clean: -20 }, stats: { body: 0.14 }, money: 16 }
 - id: job_odd
   label: 打零工
   requires: { minAge: 22, maxAge: 59 }

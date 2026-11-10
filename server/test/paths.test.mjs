@@ -17,6 +17,8 @@ const mean = (marks, id, stat) => { const ps = people(marks, id); return ps.redu
 const lazy = run("不上心", 13), solo = run("一个人念书", 13), duo = run("搭伴念书", 13), half = run("一半念书一半玩", 13);
 
 // 1. 不上心的够不着高线，专心的大多够得着，一半一半的在中间
+//    现在（重点班线 7.0，tools/paths.mjs 每种活法 120 人）：不上心 25%，一半一半 75%，专心一个人 89%，搭伴 100%。
+//    这里只跑 16 条人生，数会跳几个点；断言留的余量够大，不用跟着调。
 const [rl, rh, rs] = [rate(lazy, "m_junior", "key"), rate(half, "m_junior", "key"), rate(solo, "m_junior", "key")];
 assert.ok(rl <= 0.5, `不上心的人有 ${Math.round(rl * 100)}% 进了重点班，线太低了`);
 assert.ok(rs >= 0.7, `专心念书的人只有 ${Math.round(rs * 100)}% 进重点班，线太高了`);

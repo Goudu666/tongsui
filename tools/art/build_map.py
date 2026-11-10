@@ -29,7 +29,7 @@ from riso import ROOT, Sheet  # noqa: E402
 from common import MAP, SPOTS, W, H, Ctx, WalkMask  # noqa: E402
 
 # 画的顺序：先铺地，再画大块，后画的可以挖空盖住先画的
-MODULES = ["ground", "street", "building", "breakfast", "river", "bikeshop", "school", "south"]
+MODULES = ["ground", "street", "building", "breakfast", "teahouse", "river", "bikeshop", "school", "south", "landmarks"]
 TILE = 800
 MARGIN = 16
 OUT = os.path.join(ROOT, "client", "art", "map")

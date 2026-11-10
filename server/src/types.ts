@@ -193,7 +193,7 @@ interface Rules {
     flags?: { [flag: string]: number };
   };
   bond: {
-    closeSoft: number; closeFloor: number; closeScale: number; syncSoft: number; syncFloor: number; syncSteady: number; slotTogether?: number;
+    closeSoft: number; closeFloor: number; closeScale: number; syncSoft: number; syncFloor: number; syncSteady: number; syncSteadyFrom?: number; syncSteadyFull?: number; slotTogether?: number;
     drift: { [S in Stage]: number }; driftDistance: number; driftFloor: number;
   };
 }

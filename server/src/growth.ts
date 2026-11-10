@@ -53,6 +53,16 @@ function growthApply(p: Person, k: StatKey, raw: number, g: GrowCtx): number {
 }
 
 /** 亲近、默契：越高越难涨；往下掉不打折 */
+/**
+ * 考场上手气差的时候，默契替你托回几成（0~syncSteady）。只用在坏手气上，好手气不加。
+ * 默契在 syncSteadyFrom 以下不托，到 syncSteadyFull 托满；老内容没写这两个数就按默契 / 100 算（原来的算法）
+ */
+function growthSteadyShare(c: Content, sync: number): number {
+  var r = c.rules.bond;
+  if (typeof r.syncSteadyFrom !== "number" || typeof r.syncSteadyFull !== "number") return (sync / 100) * r.syncSteady;
+  return lifeClamp((sync - r.syncSteadyFrom) / (r.syncSteadyFull - r.syncSteadyFrom), 0, 1) * r.syncSteady;
+}
+
 function growthBond(s: LifeState, c: Content, d: Partial<Bond>) {
   var r = c.rules.bond;
   if (d.close) {

@@ -43,7 +43,7 @@ const LEGACY_BIRTH_FLAGS = ["leg_any", "leg_house"];
 const LEGACY_TALENT_FLAGS = ["tal_late", "tal_linked", "tal_oldsoul"];
 // 街坊记住的事：十几条，记的是活法。条件里不许出现属性和钱；标题和那一句话都要短
 const REMEMBERED_KEYS = ["id", "title", "desc", "who", "requires"];
-const REMEMBERED_PAIR_KEYS = [...PAIR_REQ_KEYS, "minHelps", "minJobs"];
+const REMEMBERED_PAIR_KEYS = [...PAIR_REQ_KEYS, "minHelps"];
 const REMEMBERED_PERSON_KEYS = ["flags", "notFlags", "minDiedAge", "maxDiedAge"];
 const REMEMBERED_MAX = 19;
 

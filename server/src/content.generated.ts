@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "971497407808",
+ "version": "d39045616476",
  "events": [
   {
    "id": "c_roof_summer",
@@ -26438,15 +26438,6 @@ var CONTENT: Content = {
     "flags": [
      "p_four_names"
     ]
-   }
-  },
-  {
-   "id": "r_trades",
-   "title": "五行八作",
-   "desc": "教书、买卖、手艺、力气活、坐办公室，前前后后都有人干过。",
-   "who": "pair",
-   "requires": {
-    "minJobs": 5
    }
   }
  ],

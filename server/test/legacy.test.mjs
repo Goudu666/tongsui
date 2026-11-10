@@ -54,7 +54,7 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   for (const seed of [1, 7, 20261110]) {
     const s = G("lifeCreate")(seed, C);
     assert.equal(s.life, 1);
-    assert.deepEqual(J(s.legacy), { lives: 0, families: {}, heirlooms: [], past: [], traces: [], marks: [], remembered: {}, jobs: [] });
+    assert.deepEqual(J(s.legacy), { lives: 0, families: {}, heirlooms: [], past: [], traces: [], marks: [], remembered: {} });
     for (const r of ROLES) assert.ok(!C.talents.find((t) => t.id === s.rolls[r].talentId).unlock, "头一世抽到了藏着的天赋");
     for (const r of ROLES) assert.deepEqual([s.rolls[r].house, J(s.rolls[r].offer), s.rolls[r].heirloomId], [0, [], null]);
     // 没有东西可摆的时候不多抽一次随机数：抽完两张卡，随机数停在哪儿还停在哪儿
@@ -147,14 +147,14 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   assert.ok(s.left.qing !== s.left.mei || s.left.qing === C.heirlooms.at(-1).id, "两个人不留同一件");
   assert.equal(new Set(lg.heirlooms).size, lg.heirlooms.length, "同一件不记两回");
   assert.deepEqual(J(G("lifeUpgrade")(J(s))), [], "刚存的档不用升级");
-  // 第二步记的：街坊新记住的事（长卷和小传里是同一份）、留下的痕迹、出过的事、干过的营生
+  // 第二步记的：街坊新记住的事（长卷和小传里是同一份）、留下的痕迹、出过的事
   assert.ok(Array.isArray(s.noted));
   assert.deepEqual(J(past.noted), J(s.noted));
   assert.deepEqual(Object.keys(lg.remembered).sort(), [...s.noted].sort());
   const anyone = (f) => ROLES.some((r) => s.persons[r].flags.includes(f));
   assert.deepEqual(J(lg.traces), J(C.legacy.traces).filter(anyone));
   assert.deepEqual(J(lg.marks), J(C.legacy.marks).filter(anyone));
-  assert.deepEqual(J(lg.jobs), [...new Set(ROLES.map((r) => past.persons[r].job).filter((j) => j && j !== "job_odd"))]);
+  assert.deepEqual(Object.keys(lg).sort(), ["families", "heirlooms", "lives", "marks", "past", "remembered", "traces"], "河畔里不攒跨世的计数");
   console.log(`✓ 一世走完：留下 ${ROLES.map((r) => heir(s.left[r]).name).join("、")}，记了小传（${past.memories.length} 段回忆）和住过的人家`);
 }
 
@@ -678,6 +678,12 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
   assert.ok(Math.abs(gapL) < 0.4, `连心 30 岁三项合计和别人差了 ${gapL.toFixed(2)}`);
   const moodGap = (runs) => avg(runs, (x) => Math.abs(x.s.persons.qing.needs.mood - x.s.persons.mei.needs.mood));
   assert.ok(moodGap(linked) < moodGap(apart), "连心的两个人，心情应该比别人挨得近");
+  // 它没有真的代价，靠窄站住：只帮本来就搭伴的人把七十岁那一关接住，而且不能接得太稳；各顾各的人够不着
+  const pairUp = (runs) => opens(at(runs, "m_evening"), "pair");
+  const nearL = run("搭伴念书", "linked", 71), nearO = run("搭伴念书", "owl", 71), farL = run("各顾各的", "linked", 71);
+  assert.ok(pairUp(nearL) >= pairUp(nearO), "连心的两个人搭伴过，老了不该比别人更难并一家");
+  assert.ok(pairUp(nearL) <= 0.6, `搭伴的连心七十岁能并一家的有 ${Math.round(pairUp(nearL) * 100)}%，超过六成就是白给了（linkedDrift 调得太低）`);
+  assert.equal(pairUp(farL), 0, "各顾各的连心也够得着并一家：它不该替人把搭伴省了");
 
   // 老灵魂：检定多一点把握，小时候魅力长得慢
   const old = run("嘴甜人缘好", "oldsoul", 13), kid = run("嘴甜人缘好", "owl", 13);
@@ -689,14 +695,14 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
 
   console.log(`✓ 藏着的天赋：没出过那件事 ${N} 回一回也抽不到 / 出过的事记上就一直在 / 内容摘了跟着摘`);
   console.log(`  大器晚成：12 岁心智 ${m(late, "m_junior").toFixed(1)} 对 ${m(owl, "m_junior").toFixed(1)}，重点班 ${Math.round(opens(at(late, "m_junior"), "key") * 100)}% 对 ${Math.round(opens(at(owl, "m_junior"), "key") * 100)}%，60 岁 ${m(late, "m_retire").toFixed(1)} 对 ${m(owl, "m_retire").toFixed(1)}`);
-  console.log(`  连心：各顾各的到 30 岁亲近 ${close(linked).toFixed(1)} 对 ${close(apart).toFixed(1)}，属性差 ${gapL.toFixed(2)} / 老灵魂：12 岁魅力 ${ch(old).toFixed(1)} 对 ${ch(kid).toFixed(1)}，检定 +${C.rules.legacy.oldSoul}`);
+  console.log(`  连心：各顾各的到 30 岁亲近 ${close(linked).toFixed(1)} 对 ${close(apart).toFixed(1)}，属性差 ${gapL.toFixed(2)}，搭伴念书七十岁能并一家 ${Math.round(pairUp(nearL) * 100)}% 对 ${Math.round(pairUp(nearO) * 100)}% / 老灵魂：12 岁魅力 ${ch(old).toFixed(1)} 对 ${ch(kid).toFixed(1)}，检定 +${C.rules.legacy.oldSoul}`);
 }
 
 // ---------- 15. 街坊记住的事：记的是怎么过的，只记一回，不给任何东西 ----------
 {
   const list = J(C.remembered);
   assert.ok(list.length >= 10 && list.length <= 19, "街坊记住的事要少：一条人生线上凑不成一张要填满的表");
-  const allowed = ["flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "minMemories", "maxMemories", "minRate", "maxRate", "minTogether", "minHelps", "minJobs", "minDiedAge", "maxDiedAge"];
+  const allowed = ["flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "minMemories", "maxMemories", "minRate", "maxRate", "minTogether", "minHelps", "minDiedAge", "maxDiedAge"];
   for (const a of list) {
     assert.ok([...a.title].length <= 7 && [...a.desc].length <= 32, `${a.id} 写长了`);
     assert.ok(Object.keys(a.requires).length > 0 && Object.keys(a.requires).every((k) => allowed.includes(k)), `${a.id} 的条件里有不该看的东西（属性、钱都不看）`);
@@ -721,23 +727,16 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
   const base = G("legacyHelps")(endedBlank());
   assert.ok(!note(helped(Math.max(0, need - base - 1))).includes("r_helping") || base >= need);
   assert.ok(note(helped(need)).includes("r_helping"));
-  // 好几世：干过的营生一世一世攒（打零工不算），攒够了才记
-  const jobs = ["job_desk", "job_teach", "job_trade", "job_craft"];
-  assert.ok(!note(give(endedBlank(5, LG({ lives: 4, jobs: [...jobs] })), ["job_odd"])).includes("r_trades"));
-  assert.ok(!note(give(endedBlank(5, LG({ lives: 4, jobs: [...jobs] })), ["job_teach"])).includes("r_trades"));
-  const fifth = give(endedBlank(5, LG({ lives: 4, jobs: [...jobs] })), ["job_labor"], ["qing"]);
-  assert.ok(note(fifth).includes("r_trades"));
-  assert.equal(fifth.legacy.jobs.length, 5);
   // 隔着一世：上一世拉过钩，这一世又拉了一回
   assert.ok(!note(give(endedBlank(), ["p_promise"])).includes("r_again"));
   assert.ok(note(give(endedBlank(2, LG({ lives: 1 })), ["leg_p_promise", "p_promise"])).includes("r_again"));
 
-  // 不给任何东西：街坊记住了多少、干过多少行，投胎出来的孩子一模一样
+  // 不给任何东西：街坊记住了多少，投胎出来的孩子一模一样
   const everything = Object.fromEntries(list.map((a) => [a.id, 1]));
   const bare = confirm(G("lifeCreate")(9, C, LG({ lives: 2 })));
-  const full = confirm(G("lifeCreate")(9, C, LG({ lives: 2, remembered: everything, jobs: [...jobs, "job_labor"] })));
+  const full = confirm(G("lifeCreate")(9, C, LG({ lives: 2, remembered: everything })));
   assert.deepEqual([J(full.persons), J(full.bond), J(full.rolls)], [J(bare.persons), J(bare.bond), J(bare.rolls)]);
-  console.log(`✓ 街坊记住的事：${list.length} 条，条件里不看属性和钱 / 记过的不记第二回 / 一个人、两个人、好几世、隔着一世各有各的算法 / 记了多少都不改投胎`);
+  console.log(`✓ 街坊记住的事：${list.length} 条，条件里不看属性和钱 / 记过的不记第二回 / 一个人、两个人、隔着一世各有各的算法 / 记了多少都不改投胎`);
 }
 
 // ---------- 16. v6 存档升 v7；记住的事从内容里删了以后 ----------
@@ -746,7 +745,7 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
     const old = J(src);
     old.version = 6;
     delete old.noted;
-    for (const k of ["traces", "marks", "remembered", "jobs"]) delete old.legacy[k];
+    for (const k of ["traces", "marks", "remembered"]) delete old.legacy[k];
     for (const p of old.legacy.past) delete p.noted;
     if (old.persons) for (const r of ROLES) old.persons[r].flags = old.persons[r].flags.filter((f) => !f.startsWith("x_"));
     return old;
@@ -763,7 +762,6 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
   const old = down(src);
   G("lifeUpgrade")(old);
   assert.equal(old.noted, undefined);
-  assert.deepEqual(J(old.legacy.jobs), src.legacy.jobs, "干过的营生从小传里补得回来");
   const notes = J(G("lifeRepair")(old, C));
   assert.ok(notes.some((n) => n.includes("街坊记住的事")), "走完的 v6 存档要补记");
   assert.deepEqual(J(old), src, "补记的和当时就记的一样");
@@ -773,7 +771,6 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
   const old2 = down(second);
   G("lifeUpgrade")(old2);
   assert.deepEqual([J(old2.legacy.traces), J(old2.legacy.marks), J(old2.legacy.remembered)], [[], [], {}]);
-  assert.deepEqual(J(old2.legacy.jobs), J(second.legacy.jobs));
   assert.deepEqual(J(G("lifeRepair")(old2, C)), []);
   liveOut(old2);
   assert.ok(Array.isArray(old2.noted) && old2.legacy.lives === 2);
@@ -839,8 +836,17 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
   assert.equal(env.record(id).life.life, 2);
   assert.deepEqual(past("user-a", 1), v);
   assert.throws(() => past("user-a", 2), /还没走完/);
+  // 归档坏了（读出来不是一世）：和没有这一世一样回话，不把运行时的报错原样给出去
+  const slot = env.nk.store.get([...env.nk.store.keys()].find((key) => key.startsWith("lifeline_past/") && key.endsWith(`/${id}.1`)));
+  const good = slot.value;
+  for (const broken of [{}, { past: null }, { past: "x" }, null]) {
+    slot.value = broken;
+    assert.throws(() => past("user-a", 1), /^Error: 没有这一世$/);
+  }
+  slot.value = good;
+  assert.deepEqual(past("user-a", 1), v);
   // 归档是旧版本存的、缺东西：照样给得出一页，不抛错
   const empty = J(G("legacyPastView")({}));
   assert.deepEqual(empty, { life: 1, ending: { pair: null, lives: { qing: null, mei: null } }, close: 0, persons: { qing: null, mei: null }, memories: [], left: { qing: null, mei: null }, noted: [], stats: { mirrors: 0, rate: 0, together: 0 } });
-  console.log(`✓ 住户本：走完的从存档读、换世以后从归档读，是同一页（${text.length} 字节）/ 只有八样东西，没有随机数、标记、长卷 / 外人、没有的世数、没走完的都读不到`);
+  console.log(`✓ 住户本：走完的从存档读、换世以后从归档读，是同一页（${text.length} 字节）/ 只有八样东西，没有随机数、标记、长卷 / 外人、没有的世数、没走完的、归档坏了的都读不到`);
 }

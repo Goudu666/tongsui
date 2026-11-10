@@ -58,7 +58,7 @@ func _run() -> void:
 		{"life": 3, "pair": pair.call("e_four_names"), "close": 83, "memories": ["墙上的四个名字", "河边的盒子", "拉过的钩", "一个柜子里的碗"], "noted": ["r_four_names", "r_one_door", "r_wordless"],
 			"persons": {"qing": person.call("谷雨", 2, "late", 84, "l_just_right", "job_craft", "h_books"), "mei": person.call("白露", 9, "linked", 84, "l_parent", "job_desk", "h_photo")}},
 	]
-	var legacy := {"lives": 3, "families": {}, "past": past, "traces": [], "marks": [], "jobs": ["job_teach", "job_labor", "job_trade", "job_craft", "job_desk"],
+	var legacy := {"lives": 3, "families": {}, "past": past, "traces": [], "marks": [],
 		"heirlooms": ["h_chalk", "h_whistle", "h_towel", "h_scale", "h_books", "h_photo"],
 		"remembered": {"r_homecoming": 1, "r_same_trade": 1, "r_patched": 2, "r_four_names": 3, "r_one_door": 3, "r_wordless": 3}}
 	main.names = {"qing": "谷雨", "mei": "白露"}

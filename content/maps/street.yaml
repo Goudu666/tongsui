@@ -27,7 +27,7 @@ spots:
   - { id: shop_counter, at: 1080, area: shop, actions: [ help_out ] }
   - { id: alley_rope, at: 1530, area: alley, actions: [ play_alley, chat ] }
   - { id: chess_table, at: 2010, area: alley, actions: [ chess ] }
-  - { id: bike_bench, at: 2710, area: bikeshop, actions: [ duty, work, help_out ] }
+  - { id: bike_bench, at: 2710, area: bikeshop, actions: [ duty, work ] }
   - { id: tea_stage, at: 3310, area: teahouse, actions: [ club_art, perform ] }
   - { id: tea_seat, at: 3580, area: teahouse, actions: [ listen ] }
 

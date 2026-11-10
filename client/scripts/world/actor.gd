@@ -151,13 +151,25 @@ func _draw() -> void:
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	if _sprite != null and _sprite.visible:
 		var head := -CELL.y * _height_ratio()
-		_text(display_name, Vector2(0, 30), 24, c)
+		_name_tag(c)
 		if asleep:
 			_text("z z", Vector2(34, head + 30 + sin(_t * 2.0) * 6.0), 28, P.INK_SOFT)
 		elif action_label != "":
 			_text(action_label + "中…", Vector2(0, head - 8 + sin(_t * 3.0) * 3.0), 24, P.INK_SOFT)
 		return
 	_draw_fallback(c)
+
+
+## 脚下的名字：垫一小片纸，压在网点和砖缝上也看得清。自己的那片多一条色边
+func _name_tag(c: Color) -> void:
+	var f := P.font()
+	var w := f.get_string_size(display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x
+	var r := Rect2(-w / 2.0 - 9.0, 12.0, w + 18.0, 30.0)
+	if is_local:
+		draw_rect(Rect2(r.position + Vector2(3, 3), r.size), c)
+	draw_rect(r, Color(P.PAPER, 0.94))
+	draw_rect(r, Color(P.INK, 0.8), false, 1.5)
+	draw_string(f, Vector2(-w / 2.0, 35.0), display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, c)
 
 
 func _height_ratio() -> float:

@@ -171,6 +171,8 @@ interface Rules {
     actionScale: number;
     room: number;
     floor: number;
+    /** 底子里出身占多少：1 = 完全看出生时的属性，0 = 人人一样 */
+    bornWeight: number;
     plasticity: { [S in Stage]: Stats };
     plainBonus: number;
   };

@@ -63,7 +63,9 @@ function worldStartDay(s: LifeState, c: Content) {
   if (persons.qing.alive && persons.mei.alive) {
     var both = persons.qing.flags.concat(persons.mei.flags);
     var mirrors = c.events.filter(function (e) { return e.kind === "mirror" && lifeEligible(e, t, both, seen, together); });
-    if (mirrors.length > 0 && lifeRand(s) < (t.stage === "childhood" ? 0.6 : 0.45)) {
+    // 运气好的两个人，命运准备的事也多一点
+    var luck = (persons.qing.stats.luck + persons.mei.stats.luck) / 2 - 5;
+    if (mirrors.length > 0 && lifeRand(s) < (t.stage === "childhood" ? 0.6 : 0.45) + luck * c.rules.daily.luckFate) {
       fate.mirror = lifePickWeighted(s, mirrors, function (e) { return e.weight; })!.id;
     }
   }
@@ -89,6 +91,7 @@ function worldStartDay(s: LifeState, c: Content) {
     event: null,
     fate: fate,
     done: [],
+    warm: false,
   };
 }
 
@@ -168,9 +171,15 @@ function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error
   var key = "together:" + act.id;
   if (act.together && b && b.action === act.id && !act.sleep && w.done.indexOf(key) < 0) {
     w.done.push(key); // 每种同框每天只算一次
-    lifeApplySelf(s.persons!.qing, act.together.needs);
-    lifeApplySelf(s.persons!.mei, act.together.needs);
-    lifeApplyBond(s, act.together.bond);
+    // 讨人喜欢的两个人凑一块儿更开心
+    var charm = s.persons!.qing.stats.charm + s.persons!.mei.stats.charm - 10;
+    var lift = Math.max(0.5, 1 + charm * c.rules.daily.charmTogether);
+    var needs: SelfDelta = {};
+    for (var nk in act.together.needs) (needs as any)[nk] = ((act.together.needs as any)[nk] as number) * (nk === "mood" ? lift : 1);
+    lifeApplySelf(s.persons!.qing, needs);
+    lifeApplySelf(s.persons!.mei, needs);
+    lifeApplyBond(s, c, act.together.bond);
+    w.warm = true;
     together = lifeEntry(s, "together", act.together.text || "你们一起" + act.label + "。");
     s.log.push(together);
   }
@@ -187,7 +196,7 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   var boost = a.boost || 1; // 搭伴小游戏打出来的倍率，只乘这一次行动长的属性（见 games.ts）
   delete a.boost;
   for (var k in act.stats) (stats as any)[k] = ((act.stats as any)[k] as number) * (act.id === "study" && lifeHasFlag(p, "tal_memory") ? 2 : 1) * boost;
-  lifeApplySelf(p, stats);
+  lifeApplySelf(p, stats, growthCtx(s, c, "action"));
   lifeApplySelf(p, act.needs);
   if (act.id === "eat") lifeApplySelf(p, { mood: wealth * 3 + (lifeHasFlag(p, "tal_foodie") ? 6 : 0) });
   p.money += act.money;
@@ -242,11 +251,13 @@ function worldReclaim(s: LifeState, role: Role): boolean {
 
 // ---------- 需求随时间变化 ----------
 
-function worldDecay(p: Person, a: Actor, minute: number, dm: number) {
+function worldDecay(c: Content, p: Person, a: Actor, minute: number, dm: number) {
   var h = dm / 60;
   var hungerRate = (a.asleep ? 2 : 5) * (lifeHasFlag(p, "tal_foodie") ? 1.4 : 1);
   var energyRate = a.asleep ? -12 : 4;
   if (!a.asleep && lifeHasFlag(p, "tal_owl")) energyRate = minute >= 1200 ? 2 : minute < 480 ? 6 : 4;
+  // 体魄好的人醒着不那么容易累
+  if (!a.asleep) energyRate *= Math.max(0.5, 1 - (p.stats.body - 5) * c.rules.daily.bodyEnergy);
   var d: SelfDelta = { hunger: -hungerRate * h, energy: -energyRate * h, clean: -2 * h };
   var moodDrop = 0;
   if (p.needs.hunger < 20) moodDrop += 3;
@@ -296,7 +307,7 @@ function worldAdvance(s: LifeState, c: Content, dtSec: number, online: { [R in R
 
   for (var j = 0; j < roles.length; j++) {
     var a = w.actors[roles[j]]!;
-    worldDecay(s.persons![roles[j]], a, w.minute, dm);
+    worldDecay(c, s.persons![roles[j]], a, w.minute, dm);
     if (a.until !== null && w.minute >= a.until) worldFinish(s, c, roles[j]);
   }
 

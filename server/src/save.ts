@@ -8,7 +8,7 @@
 //
 // 纯函数，不依赖 Nakama。
 
-var LIFE_VERSION = 3;
+var LIFE_VERSION = 4;
 
 /** 结构升级。返回做了什么（写服务器日志用）；存档比服务器还新时抛错（服务器被回滚了，不能硬读） */
 function lifeUpgrade(s: any): string[] {
@@ -21,6 +21,22 @@ function lifeUpgrade(s: any): string[] {
     s.contentVersion = s.contentVersion || "";
     v = 3;
     notes.push("v2→v3");
+  }
+  if (v === 3) {
+    // v4：成长规则（growth.ts）要的字段。出生时的属性没记过，就拿现在的当底子：
+    // 老存档里的人往后长得和新规则下的新生儿一样慢，不会凭空多出或少掉属性
+    for (var i = 0; i < ROLES.length; i++) {
+      var p = s.persons ? s.persons[ROLES[i]] : null;
+      if (!p) continue;
+      if (!p.born) p.born = { body: p.stats.body, mind: p.stats.mind, charm: p.stats.charm, luck: p.stats.luck };
+      if (p.moodSum === undefined) { p.moodSum = 0; p.moodDays = 0; }
+      if (!p.active) p.active = { body: false, mind: false };
+      // 「普通的孩子」以前没有标记（标记是出生时拷进 flags 的），补上才长得匀、才遇得到它的专属事件
+      if (p.talentId === "none" && p.flags && p.flags.indexOf("tal_plain") < 0) p.flags.push("tal_plain");
+    }
+    if (s.world && s.world.warm === undefined) s.world.warm = false;
+    v = 4;
+    notes.push("v3→v4");
   }
   s.version = v;
   return notes;
@@ -78,6 +94,10 @@ function lifeRepair(s: LifeState, c: Content): string[] {
           }
         }
       }
+    }
+    if (w.game && !GAME_RULES[w.game.gameId]) {
+      notes.push("game " + w.game.gameId + " 已不存在，取消");
+      w.game = null;
     }
     for (var j = 0; j < ROLES.length; j++) {
       var a = w.actors[ROLES[j]];

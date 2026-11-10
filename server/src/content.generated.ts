@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "aefd369322e8",
+ "version": "cb04227bce5b",
  "events": [
   {
    "id": "c_roof_summer",
@@ -14807,6 +14807,144 @@ var CONTENT: Content = {
    }
   },
   {
+   "id": "f_tal_plain_awards",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "school",
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 7,
+    "flags": [
+     "tal_plain"
+    ]
+   },
+   "title": "没念到的名字",
+   "text": "期末发奖状，老师念了一长串名字，没有你。最后老师说，还有些同学样样都不差，就是不冒尖。你觉得说的是你。",
+   "options": [
+    {
+     "id": "pick",
+     "text": "认准一样，往深里学",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "all",
+     "text": "样样都再多会一点",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "charm": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "fine",
+     "text": "不冒尖也挺好",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
+   "id": "f_tal_plain_reunion",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "tal_plain"
+    ]
+   },
+   "title": "同学会",
+   "text": "同学会上，大家记得谁考过第一，谁翻过墙。说到你，想了半天，没想起什么事。后来有人说，我那年的学费是你先垫的。又有人说，我也借过。",
+   "options": [
+    {
+     "id": "laugh",
+     "text": "笑笑，说都忘了",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "toast",
+     "text": "站起来敬大家一杯",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "early",
+     "text": "坐了一会儿，先走了",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null
+  },
+  {
    "id": "t_note",
    "kind": "mirror",
    "stage": "teen",
@@ -20238,7 +20376,9 @@ var CONTENT: Content = {
    "weight": 8,
    "desc": "没什么特别的。可平平常常的日子，过好了也是能耐。",
    "bonus": {},
-   "flags": []
+   "flags": [
+    "tal_plain"
+   ]
   },
   {
    "id": "memory",
@@ -21341,5 +21481,357 @@ var CONTENT: Content = {
     "requires": {}
    }
   ]
- }
+ },
+ "rules": {
+  "roll": {
+   "budget": 18,
+   "wealthAdjust": [
+    1,
+    0,
+    -1
+   ],
+   "statMin": 1,
+   "statMax": 7,
+   "rerolls": 3
+  },
+  "growth": {
+   "eventScale": 0.15,
+   "actionScale": 0.1,
+   "room": 5,
+   "floor": 0.06,
+   "plasticity": {
+    "childhood": {
+     "body": 1,
+     "mind": 1,
+     "charm": 1,
+     "luck": 1
+    },
+    "teen": {
+     "body": 1.3,
+     "mind": 1.3,
+     "charm": 1.1,
+     "luck": 1
+    },
+    "young": {
+     "body": 0.9,
+     "mind": 1.1,
+     "charm": 1.2,
+     "luck": 1
+    },
+    "middle": {
+     "body": 0.5,
+     "mind": 0.9,
+     "charm": 0.9,
+     "luck": 1
+    },
+    "old": {
+     "body": 0.3,
+     "mind": 0.5,
+     "charm": 0.6,
+     "luck": 1
+    }
+   },
+   "plainBonus": 1.2
+  },
+  "aging": {
+   "body": [
+    [
+     40,
+     0.03
+    ],
+    [
+     60,
+     0.06
+    ],
+    [
+     75,
+     0.09
+    ]
+   ],
+   "mind": [
+    [
+     70,
+     0.04
+    ]
+   ],
+   "activeFactor": 0.4
+  },
+  "daily": {
+   "bodyEnergy": 0.04,
+   "charmTogether": 0.04,
+   "luckFate": 0.02
+  },
+  "check": {
+   "base": 0.55,
+   "perPoint": 0.12,
+   "luck": 0.03,
+   "min": 0.08,
+   "max": 0.95,
+   "help": 1
+  },
+  "lifespan": {
+   "base": 76,
+   "spread": 17,
+   "body": 1,
+   "moodMid": 85,
+   "moodStep": 5,
+   "moodMin": -4,
+   "moodMax": 2,
+   "bondClose": 55,
+   "bond": 2,
+   "widowClose": 85,
+   "widow": 1.5,
+   "min": 56,
+   "max": 104
+  },
+  "bond": {
+   "closeSoft": 100,
+   "closeFloor": 0.12,
+   "closeScale": 0.65,
+   "syncSoft": 110,
+   "syncFloor": 0.15,
+   "drift": {
+    "childhood": 0.4,
+    "teen": 0.9,
+    "young": 1.6,
+    "middle": 2.4,
+    "old": 1.5
+   },
+   "driftDistance": 0.35,
+   "driftFloor": 5
+  }
+ },
+ "checks": [
+  {
+   "event": "c_first_fight",
+   "option": "fight",
+   "stat": "body",
+   "dc": 5,
+   "pass": "你一头把领头的撞了个屁股蹲儿。书包带断了一根。",
+   "fail": {
+    "text": "没打过。鼻血抹在袖口上，回家说是磕的。",
+    "self": {
+     "mood": -8
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "c_exam",
+   "option": "cram",
+   "stat": "mind",
+   "dc": 5,
+   "pass": "卷子发下来，最后一道大题全班就你一个人对了。",
+   "fail": {
+    "text": "熬到后半夜。考场上困得把名字写串了行。",
+    "self": {
+     "energy": -10,
+     "mood": -5
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "c_river_swim",
+   "option": "jump",
+   "stat": "body",
+   "dc": 5.5,
+   "pass": "一个猛子扎下去，从桥墩那头冒出来。",
+   "fail": {
+    "text": "呛了两口海河水，扑腾上岸，嘴唇都紫了。",
+    "self": {
+     "mood": -5,
+     "energy": -10
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "c_ride_lesson",
+   "option": "ride",
+   "stat": "body",
+   "dc": 4.5,
+   "pass": "歪歪扭扭骑出去半条街，愣是没倒。",
+   "fail": {
+    "text": "连人带车拍进白菜堆，楼长的白菜碎了三棵。",
+    "self": {
+     "mood": -3,
+     "clean": -10
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "c_paper_cards",
+   "option": "hard",
+   "stat": "luck",
+   "dc": 5,
+   "pass": "啪的一声，一摞全翻了个儿。",
+   "fail": {
+    "text": "劲儿使大了。画片没翻，手心拍红了。",
+    "self": {
+     "mood": -3
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "c_cicada",
+   "option": "dig",
+   "stat": "luck",
+   "dc": 5,
+   "pass": "一晚上摸了十一只，罐头瓶都装不下。",
+   "fail": {
+    "text": "摸了一晚上，就摸着一手泥。",
+    "self": {
+     "clean": -10
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "t_misjudged",
+   "option": "stand",
+   "stat": "charm",
+   "dc": 6,
+   "pass": "老师把那张卷子又看了一遍，没言语，把罚抄划了。",
+   "fail": {
+    "text": "越说越急，自己先结巴了。罚抄翻了一倍。",
+    "self": {
+     "mood": -8,
+     "energy": -5
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "t_seaside",
+   "option": "go",
+   "stat": "body",
+   "dc": 5.5,
+   "pass": "蹬了四个钟头，先闻见的咸味儿。",
+   "fail": {
+    "text": "半道上腿肚子转筋，后半程是推着走的。",
+    "self": {
+     "energy": -15
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "f_gu_first_stage",
+   "option": "steady",
+   "stat": "charm",
+   "dc": 6,
+   "pass": "绷住了。台下的笑是冲着包袱来的。",
+   "fail": {
+    "text": "没绷住，自己先乐了。台下笑得比包袱还响。",
+    "self": {
+     "mood": 3
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "t_gaokao",
+   "option": "redo",
+   "stat": "mind",
+   "dc": 6.5,
+   "pass": "收卷铃响的时候，你刚写完最后一个等号。",
+   "fail": {
+    "text": "算到一半，铃响了。那道题留了半页白。",
+    "self": {
+     "energy": -20,
+     "mood": -10
+    },
+    "flags": [
+     "gaokao_bad"
+    ]
+   }
+  },
+  {
+   "event": "y_dorm_good",
+   "option": "guankou",
+   "stat": "charm",
+   "dc": 6,
+   "pass": "一口气没换。上铺的鼓掌，床板直往下掉灰。",
+   "fail": {
+    "text": "背到第七道菜卡了壳，上铺的替你接了下半句。",
+    "self": {
+     "mood": -3
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "y_crossroad",
+   "option": "quit",
+   "stat": "luck",
+   "dc": 5.5,
+   "pass": "头一个月就开了张。",
+   "fail": {
+    "text": "铺子撑了半年。关门那天，你把招牌扛回了家。",
+    "self": {
+     "mood": -10
+    },
+    "flags": []
+   }
+  },
+  {
+   "event": "m_layoff",
+   "option": "stall",
+   "stat": "charm",
+   "dc": 5.5,
+   "pass": "摊子支了三个月，楼里人下班都绕过来看一眼。",
+   "fail": {
+    "text": "头一天一样没卖出去。你把东西一件件码回车上。",
+    "self": {
+     "mood": -8
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "m_layoff",
+   "option": "south",
+   "stat": "luck",
+   "dc": 6,
+   "pass": "南边的活儿成了。过年回来，行李比走时沉。",
+   "fail": {
+    "text": "转了一圈回来，兜里就剩一张站台票。",
+    "self": {
+     "mood": -10
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "o_winter_swim",
+   "option": "jump",
+   "stat": "body",
+   "dc": 6.5,
+   "pass": "下去了。上来的时候浑身冒白气。",
+   "fail": {
+    "text": "水刚没脚脖子就蹿回来了。岸上的老爷子直拍栏杆。",
+    "self": {
+     "mood": 5
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "o_chess",
+   "option": "fight",
+   "stat": "mind",
+   "dc": 6,
+   "pass": "一步不让，赢了半个子儿。",
+   "fail": {
+    "text": "一步不让，让人将死在角上。",
+    "self": {
+     "mood": -3
+    },
+    "flags": null
+   }
+  }
+ ]
 };

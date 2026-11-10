@@ -139,6 +139,54 @@ interface Talent {
   flags: string[];
 }
 
+// ---------- 数值规则（content/rules.yaml，说明见 docs/GROWTH.md） ----------
+
+interface Rules {
+  roll: { budget: number; wealthAdjust: number[]; statMin: number; statMax: number; rerolls: number };
+  growth: {
+    eventScale: number;
+    actionScale: number;
+    room: number;
+    floor: number;
+    plasticity: { [S in Stage]: Stats };
+    plainBonus: number;
+  };
+  /** [从几岁起, 每年掉多少] */
+  aging: { body: number[][]; mind: number[][]; activeFactor: number };
+  daily: { bodyEnergy: number; charmTogether: number; luckFate: number };
+  check: { base: number; perPoint: number; luck: number; min: number; max: number; help: number };
+  lifespan: {
+    base: number; spread: number; body: number;
+    moodMid: number; moodStep: number; moodMin: number; moodMax: number;
+    bondClose: number; bond: number; widowClose: number; widow: number;
+    min: number; max: number;
+  };
+  bond: {
+    closeSoft: number; closeFloor: number; closeScale: number; syncSoft: number; syncFloor: number;
+    drift: { [S in Stage]: number }; driftDistance: number; driftFloor: number;
+  };
+}
+
+/** 检定：挂在某个事件的某个选项上的一次「成不成」（content/checks.yaml） */
+interface Check {
+  event: string;
+  option: string;
+  stat: StatKey;
+  dc: number;
+  pass: string;
+  /** self / flags 为 null 时沿用选项原来的（self 会去掉长属性的部分） */
+  fail: { text: string; self: SelfDelta | null; flags: string[] | null };
+}
+
+/** 一次检定的结果，写进日志给客户端显示 */
+interface CheckResult {
+  stat: StatKey;
+  ok: boolean;
+  /** 搭把手：两个人一起办成的 */
+  help: boolean;
+  text: string;
+}
+
 interface Zone {
   id: string;
   name: string;
@@ -182,6 +230,8 @@ interface Content {
   talents: Talent[];
   map: GameMap;
   endings: Endings;
+  rules: Rules;
+  checks: Check[];
 }
 
 // ---------- 存档 ----------
@@ -203,8 +253,15 @@ interface Person {
   familyId: string;
   talentId: string;
   stats: Stats;
+  /** 出生时的属性：成长的「底子」 */
+  born: Stats;
   needs: Needs;
   money: number;
+  /** 一辈子的心气：每个日子结束时的心情累加，用来算寿命 */
+  moodSum: number;
+  moodDays: number;
+  /** 今天动没动过 / 用没用过脑子（岁数大了以后掉得慢一点） */
+  active: { body: boolean; mind: boolean };
   flags: string[];
   /** 性格标签计数，用来训练「影子」 */
   tags: { [tag: string]: number };
@@ -250,6 +307,8 @@ interface WorldState {
   fate: { mirror: string | null; qing: string | null; mei: string | null };
   /** 已经触发过的 fate */
   done: string[];
+  /** 今天有没有同框或共鸣过：没有的话，一天结束时亲近会淡一点 */
+  warm: boolean;
 }
 
 interface LogEntry {
@@ -263,6 +322,8 @@ interface LogEntry {
   shadow: Role[];
   resonance: boolean | null;
   text: string;
+  /** 这件事里做过的检定 */
+  checks?: { [R in Role]?: CheckResult };
 }
 
 interface LifeState {

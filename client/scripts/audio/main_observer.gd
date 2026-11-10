@@ -19,7 +19,7 @@ const READS := ["world", "net", "life", "last_world", "my_role", "content", "eve
 ## 监听的联机信号（scripts/net/lifeline_client.gd）
 const SIGNALS := ["snapshot", "world_state", "event_started", "log_entries", "presence", "failed"]
 ## 页面名（main._page_id）→ 配乐的场景。没列出来的页面都算 title
-const PAGE_SCENE := {"roll": "roll", "ending": "ending"}
+const PAGE_SCENE := {"roll": "roll", "scroll": "ending", "ending": "ending"}
 ## 按钮的音效种类。优先读按钮的 meta "sfx"（tap / back / shake / birth / option / none）；
 ## 没有 meta 的按下面这几个字认，认不出来就是普通的 tap
 const TEXT_KINDS := [["重新投胎", "shake"], ["出生吧", "birth"], ["返回", "back"], ["回大厅", "back"]]
@@ -292,7 +292,7 @@ func _watch_pages(delta: float, page: String, in_world: bool) -> void:
 
 
 ## 音量按钮：用主界面的主题和玩家自己的颜色；在河畔里挪到「亲近 / 默契」卡片下面；
-## 弹窗和搭伴小游戏出来的时候藏起来
+## 弹窗和搭伴小游戏出来的时候藏起来；人生长卷那一页整屏都是那张纸，也藏
 func _place_button(in_world: bool, modal: Control) -> void:
 	if not _themed:
 		var ui := _ctl("ui")
@@ -306,7 +306,7 @@ func _place_button(in_world: bool, modal: Control) -> void:
 	var games: Variant = main.get("games")
 	var busy: bool = games != null and is_instance_valid(games) and games.has_method("busy") and games.busy()
 	# 离线逛逛时右上角没有对门的牌，按钮回到角上
-	audio.place_button(in_world and main.get("offline_preview") != true, (modal != null and modal.visible) or busy)
+	audio.place_button(in_world and main.get("offline_preview") != true, (modal != null and modal.visible) or busy or _page == "scroll")
 
 
 func _watch_toast() -> void:

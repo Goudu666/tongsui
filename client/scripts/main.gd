@@ -16,6 +16,7 @@ const Resonance := preload("res://scripts/ui/resonance.gd")
 const GoalPanel := preload("res://scripts/ui/goal_panel.gd")
 const GoalRow := preload("res://scripts/ui/goal_row.gd")
 const LifeTime := preload("res://scripts/ui/life_time.gd")
+const LifeScroll := preload("res://scripts/ui/life_scroll.gd")
 const NetClient := preload("res://scripts/net/lifeline_client.gd")
 const WorldView := preload("res://scripts/world/world_view.gd")
 const ServerConfig := preload("res://scripts/net/config.gd")
@@ -52,6 +53,7 @@ var _toast_over := false        ## 提示条是不是贴在顶上（开着弹窗
 var _toast_drop := 0.0
 var _modal_tween: Tween
 var _page_id := ""       ## 现在是哪一页；换页时才播转场
+var _scroll_saving := false  ## 长卷正在存图，再点不重来
 var _stage_shown := ""   ## 河畔里现在显示的人生阶段
 var banner: Label        ## 顶部「连接断了，正在重连」
 var lobby_list: VBoxContainer  ## 大厅里「继续」的人生线列表
@@ -1501,7 +1503,85 @@ func _show_check_result(e: Dictionary, c: Dictionary) -> void:
 # 一生
 # ======================================================================
 
+## 一生走完：先看长卷，再翻到「一生」那一页。已经翻过去了就留在那页（再来一世的票变了会重画它）
 func _show_ending() -> void:
+	if _page_id == "scroll":
+		return
+	if _page_id == "ending" or not _has_scroll():
+		_show_ending_page()
+	else:
+		_show_scroll()
+
+
+## 长卷要有关口才画得出来（很旧的存档、只拿到半截日志的时候没有）
+func _has_scroll() -> bool:
+	for e in life.get("log", []):
+		if e is Dictionary and str(e.get("kind", "")) == "milestone":
+			return true
+	return false
+
+
+## 人生长卷：整屏只有这一张纸，手指拖着看（ui/life_scroll.gd）
+func _show_scroll() -> void:
+	_leave_world()
+	_show_screen("scroll", false)
+	_scroll_saving = false
+	var sides := Kit.safe_sides(screen)
+	var view := LifeScroll.view(life, content, names)
+	# 纸和底栏当一组，对着屏幕的竖向正中摆：1080 高时和原来一样，更高的屏（平板）上下的白平分
+	view.set_anchors_preset(Control.PRESET_HCENTER_WIDE)
+	view.offset_left = sides.x
+	view.offset_right = -sides.y
+	view.offset_top = -500.0
+	view.offset_bottom = -500.0 + LifeScroll.HEIGHT
+	screen.add_child(view)
+	var bar := HBoxContainer.new()
+	bar.set_anchors_preset(Control.PRESET_HCENTER_WIDE)
+	bar.offset_left = sides.x + 70.0
+	bar.offset_right = -sides.y - 70.0
+	bar.offset_top = 404.0
+	bar.offset_bottom = 504.0
+	bar.add_theme_constant_override("separation", 26)
+	bar.alignment = BoxContainer.ALIGNMENT_END
+	screen.add_child(bar)
+	var hint := _label(bar, "拖着看。两条线并成一条的地方，是你们走了同一条路。", 30, P.INK_SOFT)
+	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hint.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	hint.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_quiet(bar, "存成一张图", func(): _save_scroll(view.get_meta("scroll")))
+	_primary(bar, "往下看", _show_ending_page)
+
+
+## 把整张长卷存进相册。桌面版相册写不进去就放游戏自己的目录；
+## 手机上那是玩家翻不到的私有目录，不算存好，直说没存进去
+func _save_scroll(scroll: Control) -> void:
+	if _scroll_saving:
+		return
+	_scroll_saving = true
+	_toast("正在存……")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if not is_instance_valid(scroll) or not scroll.is_inside_tree():
+		_scroll_saving = false
+		return
+	var name := "同岁_长卷_%s.png" % Time.get_datetime_string_from_system().replace(":", "").replace("-", "").replace("T", "_")
+	var err := ERR_CANT_CREATE
+	var path := ""
+	var pictures := OS.get_system_dir(OS.SYSTEM_DIR_PICTURES)
+	if pictures != "":
+		var dir := pictures.path_join("同岁")
+		if DirAccess.make_dir_recursive_absolute(dir) == OK:
+			path = dir.path_join(name)
+			err = await scroll.save_png(path)
+	if err != OK and not OS.has_feature("mobile"):
+		err = await scroll.save_png("user://" + name)
+		path = ProjectSettings.globalize_path("user://" + name)
+	_scroll_saving = false
+	if _page_id == "scroll":
+		_toast("长卷存好了：%s" % path if err == OK else "没能存进相册，截个屏吧。")
+
+
+func _show_ending_page() -> void:
 	_leave_world()
 	_show_screen("ending")
 	# 左边是这一生怎么收的尾，右边是两个人的共同回忆
@@ -1529,7 +1609,8 @@ func _show_ending() -> void:
 		col.add_child(_MemoryLine.new(memories))
 	# 各自留给河畔里的老物件，跟共同回忆放一栏：都是这一世剩下的东西
 	legacy.left_behind(right)
-	_label(right, "人生长卷（M3）会在这里生成一张双色长图。", 30, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
+	if _has_scroll():
+		_quiet(right, "再看一眼长卷", _show_scroll)
 	# 服务器支持的话，再来一世；那样「回到标题」退成小字
 	if legacy.again(left):
 		_quiet(left, "回到标题", _show_title)

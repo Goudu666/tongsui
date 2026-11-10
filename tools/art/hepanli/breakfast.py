@@ -89,12 +89,12 @@ def corner(ctx: Ctx):
     bicycle(g, 1846, 532, facing=1, scale=0.85)
     ctx.walk.block_rect(1814, 494, 66, 44)
     # 两个摞起来的空箱子
-    for i, (bx, by) in enumerate(((1806, 318), (1810, 306))):
+    for i, (bx, by) in enumerate(((1864, 318), (1868, 306))):   # 靠东墙根，让出茶社的门
         g.clear(rect_pts(bx, by, 34, 22))
         g.pen("mei" if i == 0 else "ink", 0.35).fill(rect_pts(bx, by, 34, 22))
         g.ink.rect(bx, by, 34, 22, lw=2)
         g.ink.line([(bx + 4, by + 8), (bx + 30, by + 8)], 1.2, amp=0.2)
-    ctx.walk.block_rect(1804, 300, 42, 44)
+    ctx.walk.block_rect(1862, 300, 42, 44)
 
     kiosk(ctx, 1814, 560)
 

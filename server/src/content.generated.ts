@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "bc38f39916b7",
+ "version": "71e0e5e1e3e8",
  "events": [
   {
    "id": "c_roof_summer",
@@ -21582,6 +21582,16 @@ var CONTENT: Content = {
      520,
      400
     ]
+   },
+   {
+    "id": "teahouse",
+    "name": "河畔茶社",
+    "rect": [
+     1456,
+     0,
+     430,
+     284
+    ]
    }
   ],
   "spots": [
@@ -21728,6 +21738,33 @@ var CONTENT: Content = {
      1200
     ],
     "action": "school"
+   },
+   {
+    "id": "tea_seat",
+    "zone": "teahouse",
+    "at": [
+     1716,
+     236
+    ],
+    "action": "listen"
+   },
+   {
+    "id": "tea_stage",
+    "zone": "teahouse",
+    "at": [
+     1668,
+     104
+    ],
+    "action": "perform"
+   },
+   {
+    "id": "river_fish",
+    "zone": "river",
+    "at": [
+     2096,
+     1134
+    ],
+    "action": "fish"
    }
   ],
   "actions": [
@@ -21979,6 +22016,102 @@ var CONTENT: Content = {
       "close": 1
      },
      "text": "你们一起走进了校门。"
+    }
+   },
+   {
+    "id": "listen",
+    "label": "喝茶听一段",
+    "minutes": 40,
+    "sleep": false,
+    "school": false,
+    "requires": {
+     "minAge": 6,
+     "hours": [
+      540,
+      1260
+     ]
+    },
+    "needs": {
+     "mood": 12,
+     "energy": 2
+    },
+    "stats": {
+     "charm": 0.1
+    },
+    "money": -1,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "台上讲到最要紧的地方停了一下。你们俩同时笑出了声，又同时捂住了嘴。"
+    }
+   },
+   {
+    "id": "perform",
+    "label": "上台来一段",
+    "minutes": 45,
+    "sleep": false,
+    "school": false,
+    "requires": {
+     "minAge": 10,
+     "hours": [
+      540,
+      1260
+     ]
+    },
+    "needs": {
+     "mood": 6,
+     "energy": -10
+    },
+    "stats": {
+     "charm": 0.4
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 8
+     },
+     "bond": {
+      "close": 1,
+      "sync": 2
+     },
+     "text": "你忘了词，TA 在旁边接了下去，像排练过一样。台下有人叫了声好。"
+    }
+   },
+   {
+    "id": "fish",
+    "label": "跟大爷钓鱼",
+    "minutes": 60,
+    "sleep": false,
+    "school": false,
+    "requires": {
+     "minAge": 6,
+     "hours": [
+      390,
+      1140
+     ]
+    },
+    "needs": {
+     "mood": 10,
+     "energy": -4
+    },
+    "stats": {
+     "mind": 0.1
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "漂动了。你们俩同时喊「上钩了！」鱼吓跑了。大爷没恼，笑了笑，又挂了一条蚯蚓。"
     }
    }
   ]

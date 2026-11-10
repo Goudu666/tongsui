@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "6c88066703da",
+ "version": "d83443130a4c",
  "events": [
   {
    "id": "c_roof_summer",
@@ -28330,10 +28330,241 @@ var CONTENT: Content = {
     "replaces": [],
     "requires": {
      "flags": [
-      "left_city"
+      "uni_abroad"
      ],
      "notFlags": [
       "uni_away"
+     ]
+    },
+    "title": "后备箱",
+    "text": "楼门口停着车。这一走，就不是放假能回来的了。箱子立在地上，比人还高。早点铺刚出锅。",
+    "options": [
+     {
+      "id": "write",
+      "text": "说一句「到了来信」",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "give",
+      "text": "塞过去一包东西",
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {
+        "hunger": 15
+       },
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "wave",
+      "text": "什么也不说，摆摆手",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": -2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "write": {
+      "text": "两句「到了来信」撞在一块儿。车拐过早点铺，鏊子还在响。",
+      "memory": "到了来信",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "give": {
+      "text": "一个塞过去一包，一个也塞过来一包。打开一看，都是早点铺的果子，还热着。",
+      "memory": "两包果子",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "wave": {
+      "text": "都没说话。车开了，各摆了摆手，摆到看不见。",
+      "memory": "两只手",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个要说的话还没想好，车已经开了。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s4_leave_army",
+    "kind": "mirror",
+    "stage": "young",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 4,
+    "beat": 1,
+    "scene": "street",
+    "slot": "morning",
+    "next": "早上，楼门口",
+    "replaces": [],
+    "requires": {
+     "flags": [
+      "army"
+     ],
+     "notFlags": [
+      "uni_away",
+      "uni_abroad"
+     ]
+    },
+    "title": "后备箱",
+    "text": "楼门口停着车。这一走，就不是放假能回来的了。箱子立在地上，比人还高。早点铺刚出锅。",
+    "options": [
+     {
+      "id": "write",
+      "text": "说一句「到了来信」",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "give",
+      "text": "塞过去一包东西",
+      "tags": [
+       "responsible"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {
+        "hunger": 15
+       },
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "wave",
+      "text": "什么也不说，摆摆手",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": -2
+       },
+       "other": {},
+       "bond": {},
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": {
+     "write": {
+      "text": "两句「到了来信」撞在一块儿。车拐过早点铺，鏊子还在响。",
+      "memory": "到了来信",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     },
+     "give": {
+      "text": "一个塞过去一包，一个也塞过来一包。打开一看，都是早点铺的果子，还热着。",
+      "memory": "两包果子",
+      "bond": {
+       "sync": 3,
+       "close": 3
+      },
+      "flags": []
+     },
+     "wave": {
+      "text": "都没说话。车开了，各摆了摆手，摆到看不见。",
+      "memory": "两只手",
+      "bond": {
+       "sync": 3,
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    "dissonance": {
+     "text": "一个要说的话还没想好，车已经开了。",
+     "bond": {
+      "close": 0
+     },
+     "flags": []
+    }
+   },
+   {
+    "id": "s4_leave_gone",
+    "kind": "mirror",
+    "stage": "young",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 4,
+    "beat": 1,
+    "scene": "street",
+    "slot": "morning",
+    "next": "早上，楼门口",
+    "replaces": [],
+    "requires": {
+     "flags": [
+      "left_city"
+     ],
+     "notFlags": [
+      "uni_away",
+      "uni_abroad",
+      "army"
      ]
     },
     "title": "后备箱",
@@ -28445,6 +28676,8 @@ var CONTENT: Content = {
     "requires": {
      "notFlags": [
       "uni_away",
+      "uni_abroad",
+      "army",
       "left_city"
      ]
     },
@@ -28556,6 +28789,8 @@ var CONTENT: Content = {
     "requires": {
      "notFlags": [
       "uni_away",
+      "uni_abroad",
+      "army",
       "left_city"
      ]
     },
@@ -28811,6 +29046,88 @@ var CONTENT: Content = {
     "dissonance": null
    },
    {
+    "id": "s4_letter_army",
+    "kind": "solo",
+    "stage": "young",
+    "seasons": [],
+    "weight": 1,
+    "where": null,
+    "when": null,
+    "hint": null,
+    "chapter": 4,
+    "beat": 2,
+    "scene": "away",
+    "slot": "night",
+    "next": "晚上，写封信回去",
+    "replaces": [],
+    "requires": {
+     "flags": [
+      "army"
+     ]
+    },
+    "title": "一封信",
+    "text": "营房熄了灯。你借着走廊的光写信，一页纸写了撕，撕了写。信要走好几天。",
+    "options": [
+     {
+      "id": "home",
+      "text": "写楼里的事问问",
+      "tags": [
+       "gentle"
+      ],
+      "effects": {
+       "self": {
+        "mood": 3
+       },
+       "other": {},
+       "bond": {
+        "close": 2
+       },
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "money",
+      "text": "夹两张津贴给家里",
+      "tags": [
+       "responsible"
+      ],
+      "cost": 5,
+      "effects": {
+       "self": {
+        "mood": 5
+       },
+       "other": {},
+       "bond": {
+        "close": 1
+       },
+       "flags": []
+      },
+      "requires": {}
+     },
+     {
+      "id": "unsent",
+      "text": "写完了，没寄",
+      "tags": [
+       "solitude"
+      ],
+      "effects": {
+       "self": {
+        "mood": -3
+       },
+       "other": {},
+       "bond": {
+        "distance": 1
+       },
+       "flags": []
+      },
+      "requires": {}
+     }
+    ],
+    "resonance": null,
+    "dissonance": null
+   },
+   {
     "id": "s4_letter_gone",
     "kind": "solo",
     "stage": "young",
@@ -28911,6 +29228,8 @@ var CONTENT: Content = {
      "alone": false,
      "notFlags": [
       "uni_away",
+      "uni_abroad",
+      "army",
       "left_city"
      ]
     },

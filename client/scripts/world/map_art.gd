@@ -25,6 +25,8 @@ var _lights: Array[PointLight2D] = []
 var _fx: Node2D
 var _sky: Node2D
 var has_art := false
+## 夜色交给 print_light.gd 的"夜版"去印：这里不再整屏压色、不点灯
+var plate_lighting := false
 
 
 func _ready() -> void:
@@ -108,10 +110,10 @@ func set_minute(m: float) -> void:
 		if m > b[0]:
 			c = b[1]
 	if _modulate != null:
-		_modulate.color = c
+		_modulate.color = Color.WHITE if plate_lighting else c
 	night = clampf((m - 1110.0) / 120.0, 0.0, 1.0)
 	for l in _lights:
-		l.enabled = night > 0.01
+		l.enabled = night > 0.01 and not plate_lighting
 		l.energy = night * float(l.get_meta("energy", 0.8))
 
 

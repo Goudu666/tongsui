@@ -11,6 +11,12 @@
 #
 # 选项只管打标记，日程由 content/tracks.yaml 按标记决定。
 # 考上了也可以不去：分数够不够是一回事，走不走是另一回事。
+#
+# 家境（docs/MEANS.md）：带 requires 的路只给某种人家留着。
+#   lock   标记不对的人看到的那句（「家里拿不出这笔钱」）：路摆在那儿，灰着，知道有这么条路
+#   joins  和哪条路是同一条：交钱进的重点班和考进去的同班，两个人一个交钱一个考，也算同路
+# 殷实人家花钱买的路照样有线，只是低一些，钱从自己的积蓄里扣：花在念书上，三十岁安家就少了这一截。
+# 清贫人家自己的路（接班、分房、当兵）线低或者不看分，可往后挣得也少。挂了标记的路不当兜底（lifeMilestoneFallback）。
 # 分数线是这个游戏最要紧的数值，改之前跑一遍 node tools/paths.mjs 看各种活法落在哪。
 
 - id: m_school
@@ -130,6 +136,15 @@
       min: 7.0
       tags: [competitive]
       effects: { flags: [junior_key] }
+    - id: paid
+      text: 家里交了钱，进重点班
+      min: 6.5
+      cost: 20
+      requires: { flags: [fam_rich] }
+      lock: 家里拿不出这笔钱
+      joins: key
+      tags: [competitive]
+      effects: { flags: [junior_key, junior_paid] }
     - id: normal
       text: 去普通班
       tags: [gentle]
@@ -162,6 +177,15 @@
       min: 7.2
       tags: [competitive]
       effects: { bond: { distance: 1 }, flags: [school_far] }
+    - id: paid
+      text: 交择校费，过桥上重点
+      min: 6.8
+      cost: 35
+      requires: { flags: [fam_rich] }
+      lock: 家里拿不出择校费
+      joins: far
+      tags: [competitive]
+      effects: { bond: { distance: 1 }, flags: [school_far, school_paid] }
     - id: near
       text: 念家门口的高中
       min: 5.8
@@ -206,11 +230,28 @@
       min: 8.3
       tags: [adventure, competitive]
       effects: { bond: { distance: 2 }, flags: [uni_away] }
+    - id: abroad
+      text: 家里送你出国念书
+      # 比考外地（8.3）低半分多，留给差一口气的人。6.3 的时候等于花钱买了最好的那所大学（玩法评审）
+      min: 7.7
+      cost: 60
+      requires: { flags: [fam_rich] }
+      lock: 家里供不起
+      tags: [adventure]
+      effects: { bond: { distance: 3 }, flags: [uni_abroad] }
     - id: local
       text: 念本市的大学
       min: 6.8
       tags: [gentle]
       effects: { flags: [uni_near] }
+    - id: army
+      text: 报名去当兵
+      score: { body: 1 }
+      min: 5.8
+      requires: { notFlags: [fam_rich] }
+      lock: 家里舍不得
+      tags: [responsible, adventure]
+      effects: { bond: { distance: 2 }, flags: [army] }
     - id: work
       text: 不念了，找活干
       tags: [responsible]
@@ -224,6 +265,14 @@
       text: 两所学校隔着四站地。周末回河畔里，还是从同一个楼门进去。
       memory: 四站地
       bond: { sync: 2, close: 2 }
+    abroad:
+      text: 两个人坐同一班飞机走的。落地以后，一个往东，一个往西，隔着一个时区写信。
+      memory: 同一班飞机
+      bond: { sync: 3, close: 1 }
+    army:
+      text: 胸口戴着同一种红花，坐上同一趟车。车开了，楼里的人还站在路口。
+      memory: 同一种红花
+      bond: { sync: 3, close: 2 }
     work:
       text: 第一个月的工钱，你们一人买了一双新鞋，在楼下比了比谁的贵。
       memory: 两双新鞋
@@ -246,6 +295,18 @@
       min: 8.2
       tags: [competitive]
       effects: { flags: [job_desk] }
+    - id: pull
+      text: 托家里的关系进单位
+      # 自己一份营生（tracks.yaml 的 job_pull），不算考进去的办公室：一天少几块，往后三道要钱的关不跟着坐办公室走。
+      # 魅力只占四成：占六成的时候嘴甜的殷实孩子 85% 进得去，同样嘴甜的小康 19%，成了「魅力换办公室」（玩法评审）。
+      # 时间切段（#23）以后人长得快一些，7.8 时嘴甜殷实 57% 对小康 30%，抬到 8.0（means.test 钉着差不超过 15 个点）
+      score: { mind: 0.6, charm: 0.4 }
+      min: 8.0
+      cost: 15
+      requires: { flags: [fam_rich] }
+      lock: 家里没有这层关系
+      tags: [competitive]
+      effects: { self: { mood: -3 }, flags: [job_pull] }
     - id: teach
       text: 回小学教书
       score: { mind: 0.6, charm: 0.4 }
@@ -270,6 +331,19 @@
       min: 6.0
       tags: [responsible]
       effects: { flags: [job_labor] }
+    - id: succeed
+      text: 接爸妈的班，进厂
+      requires: { flags: [fam_factory] }
+      lock: 家里没人在厂里
+      tags: [responsible]
+      effects: { flags: [job_succeed] }
+    - id: placed
+      text: 退伍安置，进厂
+      requires: { flags: [army] }
+      lock: 没当过兵
+      joins: succeed
+      tags: [responsible]
+      effects: { flags: [job_succeed, army_placed] }
     - id: odd
       text: 先打零工
       tags: [solitude]
@@ -295,6 +369,14 @@
       text: 一根杠子两头抬，走了一天，步子是一样的。
       memory: 一根杠子
       bond: { sync: 3, close: 2 }
+    pull:
+      text: 两家托的是同一个人。报到那天在传达室碰上了，谁也没问对方是怎么进来的。
+      memory: 传达室
+      bond: { sync: 2, close: 1 }
+    succeed:
+      text: 同一个厂门，同一种蓝工装。下了班在澡堂门口等，谁先出来谁去买汽水。
+      memory: 两身蓝工装
+      bond: { sync: 3, close: 2 }
     odd:
       text: 今天有活，明天没活。没活的那天，你们在河边坐一下午。
       memory: 没活的下午
@@ -318,6 +400,25 @@
       cost: 200
       tags: [responsible]
       effects: { self: { mood: 15 }, flags: [home_own] }
+    - id: help
+      text: 爸妈出首付，买了房
+      # 爸妈出五十块。线再低，三十岁买不买得起房就几乎只看投胎了（tools/paths.mjs：殷实不上心的人 130 时九成有房）
+      min: 150
+      cost: 150
+      requires: { flags: [fam_rich] }
+      lock: 爸妈帮不上
+      joins: buy
+      tags: [responsible]
+      effects: { self: { mood: 10 }, flags: [home_own, home_help] }
+    - id: unit
+      text: 等到了厂里分的房
+      min: 40
+      cost: 40
+      requires: { flags: [job_succeed] }
+      lock: 单位不分房
+      joins: buy
+      tags: [patient]
+      effects: { self: { mood: 12 }, flags: [home_own, home_unit] }
     - id: rent
       text: 在附近租一间
       min: 100

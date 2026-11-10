@@ -32,6 +32,10 @@ interface EventOption {
   score?: ScoreWeights;
   cost?: number;
   requires?: { flags?: string[]; notFlags?: string[] };
+  /** 标记不对的人看到的那句话（「家里拿不出这笔钱」）；不写就是「这条路不是给你留的」 */
+  lock?: string;
+  /** 和哪条路是同一条（花钱进的重点和考进去的同校）：两个人一个走这条、一个走那条，也算同路 */
+  joins?: string;
 }
 
 /** 关口怎么算分：各项属性乘权重相加；money 表示积蓄 */
@@ -277,6 +281,8 @@ interface Action {
   stats: Partial<Stats>;
   money: number;
   together: { needs: Partial<Needs>; bond: Partial<Bond>; text: string } | null;
+  /** 带上对门：标记够的人正在做，对门走过去也能跟着做，两份钱都由带的人出（means.ts） */
+  bring: boolean;
 }
 
 interface GameMap {
@@ -393,6 +399,8 @@ interface Actor {
   from?: number;
   /** 这一段里这件事做了几遍：一段的分钟 × slotUse ÷ 行动的分钟。成长、需求、工钱都乘它 */
   scale?: number;
+  /** 这件事是对门带着做的（means.ts）：钱记在带的人头上 */
+  guest?: boolean;
 }
 
 interface PendingEvent {

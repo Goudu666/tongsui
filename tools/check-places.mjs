@@ -26,8 +26,8 @@ const SPOT_KEYS = ["id", "at", "area", "actions", "owner"];
 const UNLOCK_KEYS = ["minAge", "maxAge", "flags", "notFlags", "any"];
 const NPC_KEYS = ["id", "name", "at", "eras", "slots", "lines", "sprite", "hide_when", "phase", "fx"];
 const EVENT_KEYS = ["id", "kind", "stage", "where", "when", "hint", "seasons", "weight", "requires", "title", "text", "options", "resonance", "dissonance"];
-// 别的线程会加、这边先引用的行动：资源差异线程（piano / tutor / help_out / factory_bath）、地图线程（letter 写信）
-const PENDING_ACTIONS = ["piano", "tutor", "help_out", "factory_bath", "letter"];
+// 别的线程会加、这边先引用的行动：地图线程（letter 写信）。资源差异线程的四个已经在 content/map.yaml 里
+const PENDING_ACTIONS = ["letter"];
 // 别的线程会打上的标记：资源差异（fam_factory / school_paid / uni_abroad …）、主线（p_bridge 第一次自己过桥）
 const PENDING_FLAGS = ["fam_factory", "school_paid", "uni_abroad", "job_pull", "job_succeed", "home_unit", "p_bridge"];
 // 正文上限按阶段（§4.1），其余字段（§9.1）

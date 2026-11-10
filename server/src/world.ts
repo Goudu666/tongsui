@@ -55,10 +55,10 @@ function worldSceneAt(c: Content, y: number): Scene | null {
  * 这个人现在去不去得了这张图。unlock 顶上写的条件都要满足；any 里满足一条就行（河对岸：18 岁，或者 15 岁考上了市重点……）。
  * 今天要去这张图上报到的人（上学、上班）总去得了。去不了返回原因
  */
-function worldSceneLock(s: LifeState, c: Content, sc: Scene, role: Role): string | null {
+function worldSceneLock(s: LifeState, c: Content, sc: Scene, role: Role, today?: Duty | null): string | null {
   var u = sc.unlock;
   if (!u) return null;
-  var duty = worldDuty(s, c, role);
+  var duty = today === undefined ? worldDuty(s, c, role) : today;
   if (duty && lifeFind(c.map.spots, duty.spot).scene === sc.id) return null;
   var age = lifeTimeAt(s.turn).age;
   var p = s.persons![role];
@@ -159,10 +159,16 @@ function worldStartDay(s: LifeState, c: Content) {
   // 命运给今天准备的事：mirror 一件（两人都在世时），每人 solo 一件。要走到对的地方才会发生。
   var seen = lifeSeenIds(s);
   var fate: WorldState["fate"] = { mirror: null, qing: null, mei: null };
+  // 事情出在哪张图上，那张图这个人得去得了：八岁的孩子遇不上少年宫走廊里的事（除非家里送去学琴），不然这一天命运准备的事白白落空
+  var reach = function (e: LifeEvent, r: Role): boolean {
+    if (!e.where) return true;
+    var z = lifeFind(c.map.zones, e.where);
+    return !worldSceneLock(s, c, lifeFind(c.map.scenes, z.scene), r, lifeTrack(c, persons[r], t.age).duty);
+  };
   var together: EligibleCtx = { bond: s.bond, alone: false };
   if (persons.qing.alive && persons.mei.alive) {
     var both = persons.qing.flags.concat(persons.mei.flags);
-    var mirrors = c.events.filter(function (e) { return e.kind === "mirror" && lifeEligible(e, t, both, seen, together); });
+    var mirrors = c.events.filter(function (e) { return e.kind === "mirror" && lifeEligible(e, t, both, seen, together) && reach(e, "qing") && reach(e, "mei"); });
     // 运气好的两个人，命运准备的事也多一点
     var luck = (persons.qing.stats.luck + persons.mei.stats.luck) / 2 - 5;
     if (mirrors.length > 0 && lifeRand(s) < (t.stage === "childhood" ? 0.6 : 0.45) + luck * c.rules.daily.luckFate) {
@@ -177,7 +183,7 @@ function worldStartDay(s: LifeState, c: Content) {
     // solo 按人算：对门遇到过的事，你也可能遇到（但同一天两人不会是同一件）
     var mine = lifeSeenIds(s, role);
     if (fate.qing) mine[fate.qing] = true;
-    var solos = c.events.filter(function (e) { return e.kind === "solo" && lifeEligible(e, t, flags, mine, ctx); });
+    var solos = c.events.filter(function (e) { return e.kind === "solo" && lifeEligible(e, t, flags, mine, ctx) && reach(e, role); });
     if (solos.length > 0 && lifeRand(s) < 0.7) {
       var pick = lifePickWeighted(s, solos, function (e) { return e.weight; })!;
       fate[role] = pick.id;
@@ -302,8 +308,9 @@ function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot): { act:
     var rq = act.requires || {};
     if (rq.minAge !== undefined && age < rq.minAge) { why = "还太小了"; continue; }
     if (rq.maxAge !== undefined && age > rq.maxAge) { why = "已经过了那个年纪"; continue; }
-    // 关口上挣来的去处（少年宫、体校）：没走那条路的人看不见它，轮到下一个行动
-    if (!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) continue;
+    // 关口上挣来的去处（少年宫、体校）、家里才有的（学琴、厂里的澡堂）：没有那个标记的人看不见它，轮到下一个行动。
+    // 对门正在这儿做、而且这件事带得了人，就能跟着做（means.ts）
+    if ((!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) && !meansGuestOk(s, c, role, sp, act)) continue;
     // 不在钟点上先轮到下一个：体校四点开练，四点以前操场照样能踢球。
     // 后面没有别的事可做，还是把它给出去：点位上有名字，点了回「现在不是时候」（worldCanAct），不会变成没反应
     if (rq.hours && !worldOverlaps(rq.hours, slot)) { if (!late) late = act; continue; }
@@ -349,7 +356,8 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
   if (rq.owner && lifeFind(c.map.zones, sp.zone).owner !== role) return "这不是你的家";
   if (rq.hours && !worldOverlaps(rq.hours, w.slot)) return "现在不是时候";
   if (act.duty && w.slot < worldDutySlots(worldDuty(s, c, role)!)[0]) return "还没到点";
-  if (act.money < 0 && p.money < -act.money) return "兜里的钱不够";
+  var broke = meansCantPay(s, role, act, meansNeedsHost(p, act)); // 被带着做的看对门兜里（means.ts）
+  if (broke) return broke;
   if (act.quick) {
     // 顺手的事不花时间，可也不能一直做：一段里同一件只做一回，吃饱了、洗干净了就不用了
     if (w.quick.indexOf(role + ":" + act.id) >= 0) return "刚" + act.label + "过";
@@ -445,7 +453,8 @@ function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error
     var len = SLOTS[w.slot][1] - SLOTS[w.slot][0];
     a.until = SLOTS[w.slot][1];
     a.scale = Math.round((len * c.rules.daily.slotUse / act.minutes) * 100) / 100;
-    p.money += act.money < 0 ? act.money : 0; // 花的钱是进门的钱，坐一下午也只付一回
+    a.guest = meansNeedsHost(p, act) || undefined; // 对门带着做的（means.ts）
+    s.persons![a.guest ? lifeOther(role) : role].money += act.money < 0 ? act.money : 0; // 花的钱是进门的钱，坐一下午也只付一回；被带的那份对门出
   }
   // 搭伴：先定后定都算，两个人这一段做的是同一件事
   var b = w.actors[lifeOther(role)];
@@ -484,8 +493,9 @@ function worldCancel(s: LifeState, c: Content, role: Role): string | null {
   if (a.from !== undefined && a.from < w.slot) return "已经在" + worldFindAction(c, a.action).label + "了";
   var act = worldFindAction(c, a.action);
   if (act.duty) w.dutyDone[role] = false;
-  if (!act.duty && !act.sleep && act.money < 0) s.persons![role].money -= act.money; // 进门的钱退回来
+  if (!act.duty && !act.sleep && act.money < 0) s.persons![a.guest ? lifeOther(role) : role].money -= act.money; // 进门的钱退回来（被带的退给对门）
   worldClearAction(a);
+  meansHostLeft(s, c, role); // 带人的改了主意，跟着来的那个也撤回来
   var b = w.actors[lifeOther(role)];
   if (b && b.from === w.slot) b.together = false;
   return null;
@@ -500,6 +510,7 @@ function worldClearAction(a: Actor) {
   delete a.eff;
   delete a.together;
   delete a.scale;
+  delete a.guest;
 }
 
 function worldFinish(s: LifeState, c: Content, role: Role) {
@@ -539,6 +550,8 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
 /** 影子去一个点位做事（它不用走路）。做不了返回 false */
 function worldShadowGo(s: LifeState, c: Content, role: Role, spot: Spot | null): boolean {
   if (!spot || worldCanAct(s, c, role, spot.id, true)) return false;
+  var pk = worldPickAction(s, c, role, spot).act;
+  if (pk && meansNeedsHost(s.persons![role], pk)) return false; // 影子不被对门带着花钱（means.ts）
   var a = s.world!.actors[role]!;
   a.x = spot.at[0];
   a.y = spot.at[1];

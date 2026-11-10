@@ -561,7 +561,7 @@ func _slot_state() -> String:
 		return "open"
 	var me: Dictionary = _dict(_dict(last_world.get("actors")).get(my_role))
 	var fr: Variant = me.get("fr")
-	if me.get("act") != null and not bool(me.get("sleep", false)) and fr != null and int(fr) < int(last_world.get("slot", 0)):
+	if (me.get("act") != null or bool(me.get("sleep", false))) and fr != null and int(fr) < int(last_world.get("slot", 0)):
 		return "busy"
 	return "decided"
 

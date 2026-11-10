@@ -225,7 +225,7 @@ func _end(result: Variant) -> void:
 	if bool(result.get("practice", false)):
 		_label("试玩不算数。联网后两个人一起放，才算进这一天。", 32, P.INK_SOFT)
 	else:
-		_label("这回一起放风筝，长得比平时多：×%.2f" % float(result.get("boost", 1.0)), 34, P.INK)
+		_label("这回长的，是一个人放的 %.2f 倍。" % float(result.get("boost", 1.0)), 34, P.INK)
 	_button(_card_body, "好", func(): _card.visible = false)
 	_card.visible = true
 	_result_timer = 5.0

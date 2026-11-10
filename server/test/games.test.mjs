@@ -120,7 +120,7 @@ function play(s, { lag = 0.3, shake = 0, idle = false } = {}) {
   const out = play(s);
   assert.equal(JSON.stringify([s.persons, s.bond, s.memories, s.log.length]), before, "小游戏不碰属性、关系、回忆、日志");
   assert.equal(s.world.minute, m0, "也不占这一天的时间");
-  assert.ok(out.result.boost >= 1.3 && out.result.boost <= 1.8);
+  assert.ok(out.result.boost >= 1.5 && out.result.boost <= 2.0);
   assert.equal(s.world.actors.qing.boost, out.result.boost);
   assert.equal(s.world.actors.mei.boost, out.result.boost);
   assert.equal(s.world.actors.qing.action, "play_river", "人还在放风筝，行动接着走");
@@ -162,8 +162,8 @@ function play(s, { lag = 0.3, shake = 0, idle = false } = {}) {
     return xs;
   };
   const idle = run({ idle: true }), ok = run({ lag: 0.8, shake: 0.15 }), good = run({ lag: 0.25, shake: 0.03 });
-  assert.ok(idle[20].boost <= 1.4, "两个人都不动，倍率接近下限");
-  assert.ok(good[20].boost >= 1.7, "配合得好，倍率接近上限");
+  assert.ok(idle[20].boost <= 1.6, "两个人都不动，倍率接近下限");
+  assert.ok(good[20].boost >= 1.9, "配合得好，倍率接近上限");
   assert.ok(ok[20].score > idle[20].score && ok[20].score < good[20].score);
   const fmt = (xs) => `${xs[20].score} 分 ×${xs[20].boost}`;
   console.log(`✓ 放风筝：各管一头 / 只写倍率 / 不占时间  |  中位数：不动 ${fmt(idle)}，手生 ${fmt(ok)}，默契 ${fmt(good)}`);
@@ -192,7 +192,7 @@ function play(s, { lag = 0.3, shake = 0, idle = false } = {}) {
   for (let i = 0; i < 400 && life.world.game; i++) R.loop();
   const last = R.sent.filter((m) => m.op === OP.GAME).at(-1).data;
   assert.equal(last.game, null);
-  assert.ok(last.result.boost >= 1.3, "打完广播结果");
+  assert.ok(last.result.boost >= 1.5, "打完广播结果");
   assert.ok(life.world.minute - minute <= 4.01, "从问到打完表没走（最后一跳关局后才接着走）");
   assert.ok(!R.sent.some((m) => m.op === OP.ERROR), "没有报错");
   for (let i = 0; i < 30 && life.world.actors.qing.action; i++) R.loop();

@@ -29,14 +29,17 @@ var SHADOW_GRACE_SECONDS = 10; // 掉线这么久之内不交给影子：切网�
  * - 旧客户端没法再用了：把 MIN_CLIENT_PROTOCOL 提到能用的最低版本，旧包会看到「请装新版」，而不是卡在看不懂的界面里
  * 剧情内容不走这个：内容有自己的指纹 CONTENT.version，客户端发现不一样会自己下载（content_get）。
  */
-var PROTOCOL_VERSION = 7; // 2：关口（上锁的选项）、日程、目标、属性进了 WORLD；schoolDay 没了  3：传承（老物件、再来一世），旧包可以忽略
+var PROTOCOL_VERSION = 8; // 2：关口（上锁的选项）、日程、目标、属性进了 WORLD；schoolDay 没了  3：传承（老物件、再来一世），旧包可以忽略
 // 4：一天五段（WORLD 多了 slot / ready / playing，新消息 PASS / CANCEL）；放风筝小游戏（20 / 21）拿掉。旧包不会按「就这么过」，一段都过不去
 // 5：一张张横着的图（世界坐标按图分条，人只左右走，新消息 EXIT 走出口）。旧包画的还是原来那张大地图，对不上
 // 6：主线（EVENT 会是 content.story 里的事、带上了锁的选项；WORLD 多了 story 纸带）。旧包找不到主线事件，弹出来是空的
 // 7：一件一件做（ACT 可以带 once，WORLD 的 actors 多了 pm / sp / did）。旧包不带 once，还是整段做到点，照样能玩
+// 8：点位是一张菜单（ACT 可以带 action，点的是菜单上哪一件）。旧包不带，做的是菜单头一件，和原来一样
 var MIN_CLIENT_PROTOCOL = 6;
 /** 从这个协议版本起，安装包才认识传承的消息（31 AGAIN）。和 protocol.gd 的 LEGACY_SINCE 是同一个数 */
 var LEGACY_SINCE_PROTOCOL = 3;
+/** 从这个协议版本起，ACT 认 action（点位菜单）。和 protocol.gd 的 MENU_SINCE 是同一个数 */
+var MENU_SINCE_PROTOCOL = 8;
 var CONTENT_CHUNK = 48000; // content_get 一次回多少个字符：整份内容约 17 万字符，分几次取，不撞单条消息的大小上限
 
 /** 客户端 ↔ 服务端消息号，client/scripts/net/protocol.gd 里保持一致 */
@@ -45,7 +48,7 @@ var OP = {
   ROLL: 2, // c→s { reroll: true } | { confirm: true } | { heirloom: 老物件 id | null } 挑一件老物件带上 / 放下
   ROLL_STATE: 3, // s→c { rolls }  每人带着 house（家业传了几代）、offer（摆在面前的老物件）、heirloomId（挑中的）
   MOVE: 4, // c→s { x, y }
-  ACT: 5, // c→s { spot, once? }
+  ACT: 5, // c→s { spot, once?, action? }
   CHOOSE: 6, // c→s { optionId }（旧客户端带的 guess 不认了：猜 TA 砍了）
   WORLD: 7, // s→c 精简世界状态（5Hz）
   EVENT: 8, // s→c { event } 有事件开始了
@@ -439,6 +442,7 @@ function snapshot(s: LifelineMatch, role: Role) {
         chosen: { qing: !!w.event.choices.qing, mei: !!w.event.choices.mei },
         mine: w.event.choices[role] || null,
         locks: lifeMilestoneLocks(life, CONTENT),
+        pulls: lifeMilestonePulls(life, CONTENT),
       };
     }
     view.world = { minute: Math.floor(w.minute), slot: w.slot, ready: worldReadyView(life), playing: w.playing, rest: w.rest, actors: w.actors, event: ev, story: storyView(life, CONTENT) };
@@ -730,7 +734,8 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
       if (seq > 0) state.moveSeq[role] = seq;
       worldMove(life, CONTENT, role, Number(body.x), Number(body.y), dt);
     } else if (msg.opCode === OP.ACT) {
-      var res = worldAct(life, CONTENT, role, String(body.spot), body.once === true); // once：做一回当场结算（协议 7）；旧包不带，整段做到点
+      // once：做一回当场结算（协议 7）；旧包不带，整段做到点。action：点位菜单上点的那一件（协议 8）；不带就是菜单头一件
+      var res = worldAct(life, CONTENT, role, String(body.spot), body.once === true, typeof body.action === "string" && body.action ? body.action : undefined);
       if (res.error) sendError(dispatcher, msg.sender, res.error);
       if (res.together) broadcastLog(dispatcher, [res.together]);
     } else if (msg.opCode === OP.CHOOSE) {
@@ -805,7 +810,7 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
 
     if (state.presences.qing || state.presences.mei) {
       var t = worldAdvance(life, CONTENT, 1 / TICK_RATE, steering(state));
-      if (t.started) send(dispatcher, OP.EVENT, { event: t.started, locks: lifeMilestoneLocks(life, CONTENT) });
+      if (t.started) send(dispatcher, OP.EVENT, { event: t.started, locks: lifeMilestoneLocks(life, CONTENT), pulls: lifeMilestonePulls(life, CONTENT) });
       broadcastLog(dispatcher, t.entries);
       if (t.dayEnded) {
         save(nk, logger, state, tick);

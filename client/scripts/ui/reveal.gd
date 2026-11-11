@@ -5,6 +5,7 @@ extends Control
 ##   够着名次档的（考进年级前十）再砸一条横章，
 ##   差一点没够上的，停在那条线前面，灰旗子抖两下，写「差 3 分」
 ##   底下一行小字：这一场的临场发挥，默契替你托住了多少
+##   对门拉了一把的（server/src/pull.ts）：自己的数完，对门颜色的那一截再接上去，接过线才盖印
 ## 两个人的同时开始数（main.gd 的 _show_milestone_result 一人一把），点一下直接跳到数完。
 ## 分数口径和服务器 lifePoints 一样（百分制往下取整），线和「差一点」由服务器给（sim.ts → lifeReveal），这里不算。
 
@@ -22,11 +23,15 @@ var miss: Dictionary = {}     ## { need, have, text } 差一点没够上的那�
 var luck := 0                 ## 临场发挥（已经算在 score 里）
 var steady := 0               ## 默契托住的（算在 luck 里）
 var grade := ""               ## 成绩档（印在章上）
+var pull := 0                 ## 对门拉过来的那一截（和 score 同一个口径；钱就是塞过来的块数）
+var pull_color := P.MEI
+var pull_who := ""
 var rank := ""                ## 够着的名次档（关口 grades 里兜底以上那几档：考进年级前十、过了本科线）：数完再砸一条横章
 var delay := 0.25
 var sound := Callable()       ## func(cue, db, pitch)：main 把声音导演的 cue 递进来
 var _t := -1.0
 var _dur := 1.2
+var _end := 1.2                ## 数完、对门那截也接完
 var _lo := 20.0
 var _hi := 100.0
 var _last_bead := -1
@@ -36,6 +41,7 @@ var _done := false
 var _skip := false
 var _rank_hit := false
 const RANK_AT := 0.32           ## 数完多久砸名次章（方印先落）
+const PULL_DUR := 0.7           ## 对门那一截接上来要多久
 
 
 func _ready() -> void:
@@ -45,6 +51,7 @@ func _ready() -> void:
 		_lo = 0.0
 		_hi = maxf(maxf(float(line) * 1.3, float(score) * 1.12), maxf(float(miss.get("need", 0)) * 1.15, 10.0))
 	_dur = clampf(0.65 + absf(float(score) - _lo) / 70.0, 0.8, 1.7)
+	_end = _dur + (PULL_DUR if pull > 0 else 0.0)
 	_t = -delay
 
 
@@ -56,7 +63,7 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func passed() -> bool:
-	return line >= 0 and score >= line
+	return line >= 0 and score + pull >= line
 
 
 func _cue(name: String, db := 0.0, pitch := 1.0) -> void:
@@ -75,8 +82,8 @@ func _value() -> float:
 
 
 func _process(delta: float) -> void:
-	if _skip and _t < _dur:
-		_t = _dur
+	if _skip and _t < _end:
+		_t = _end
 	_t += delta
 	if _t < 0.0:
 		return
@@ -91,7 +98,11 @@ func _process(delta: float) -> void:
 		if line >= 0 and not _crossed and v >= float(line):
 			_crossed = true
 			_cue("gain", -2.0, 1.5)
-	if not _done and _t >= _dur:
+	# 对门那一截：自己的数完了，换对门的颜色接上去
+	if pull > 0 and _t > _dur and line >= 0 and not _crossed and float(score) + float(pull) * _pull_k() >= float(line) - 0.001:
+		_crossed = true
+		_cue("gain", -1.0, 1.7)
+	if not _done and _t >= _end:
 		_done = true
 		_skip = false
 		if passed():
@@ -99,11 +110,19 @@ func _process(delta: float) -> void:
 		elif not miss.is_empty() or (line >= 0 and score < line):
 			_cue("miss", -1.0)
 		finished.emit(passed())
-	if rank != "" and not _rank_hit and _t >= _dur + RANK_AT:
+	if rank != "" and not _rank_hit and _t >= _end + RANK_AT:
 		_rank_hit = true
 		_cue("seal", -1.0, 1.12)
-	if _t < _dur + 1.6:
+	if _t < _end + 1.6:
 		queue_redraw()
+
+
+## 对门那一截接上来接到哪了（0~1）
+func _pull_k() -> float:
+	if pull <= 0:
+		return 0.0
+	var x := clampf((_t - _dur) / PULL_DUR, 0.0, 1.0)
+	return 1.0 - pow(1.0 - x, 3.0)
 
 
 func _x(v: float, r: Rect2) -> float:
@@ -115,7 +134,7 @@ func _draw() -> void:
 	var w := size.x
 	var ruler := Rect2(0, 76, w - 300, 0)
 	var v := _value() if _t >= 0.0 else _lo
-	var since := _t - _dur  # 数完多久了
+	var since := _t - _end  # 数完（连对门那截）多久了
 	# 名字
 	if who != "":
 		var nw := f.get_string_size(who, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x
@@ -130,6 +149,14 @@ func _draw() -> void:
 	if scored:
 		draw_line(Vector2(ruler.position.x + 2, ruler.position.y + 3), Vector2(head + 2, ruler.position.y + 3), Color(P.INK, 0.3), 12.0)
 		draw_line(ruler.position, Vector2(head, ruler.position.y), color, 12.0)
+		# 对门拉的那一截：接在自己的后头，对门的颜色，上面写谁拉的
+		var pk := _pull_k()
+		if pk > 0.0:
+			var px := _x(float(score) + float(pull) * pk, ruler)
+			draw_line(Vector2(head, ruler.position.y), Vector2(px, ruler.position.y), pull_color, 12.0)
+			var ptxt := "%s%s %d %s" % [pull_who, "垫了" if unit == "块" else "拉了", pull, unit]
+			var pw := f.get_string_size(ptxt, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x
+			draw_string(f, Vector2(clampf((head + px) / 2.0 - pw / 2.0, 0.0, ruler.size.x - pw), ruler.position.y + 38), ptxt, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(pull_color, clampf(pk * 2.0, 0.0, 1.0)))
 	# 差一点的那条线：灰旗子，数完了抖两下
 	if not miss.is_empty() and scored:
 		var mx := _x(float(miss.need), ruler)
@@ -157,6 +184,8 @@ func _draw() -> void:
 		draw_string(f, Vector2(-nw / 2.0, 0), num, HORIZONTAL_ALIGNMENT_LEFT, -1, big, P.INK)
 		draw_set_transform(Vector2.ZERO)
 		draw_string(f, Vector2(ux + 6, 92), unit, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, P.INK_SOFT)
+		if pull > 0 and _t > _dur:
+			draw_string(f, Vector2(ux + 6, 58), "+%d" % pull, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color(pull_color, clampf((_t - _dur) / 0.3, 0.0, 1.0)))
 	# 底下一行：发挥和托底
 	if since > 0.1:
 		var parts: Array = []

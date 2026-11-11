@@ -8,7 +8,6 @@
 #       算「搭伴」；走了不同的路，放学下班的钟点就错开了。
 # 时间用当天的分钟数：420 = 07:00，930 = 15:30，1080 = 18:00。
 #
-# 九到十一岁进了学校的小组（m_club）：放了学先去小组，家里的活、爸妈报的班让给它（不然这道关对清贫、殷实的孩子没有回报）
 # 家境的三种难度（docs/MEANS.md 第八节）：考场公平，考场外不公平。变体排在原来那条前头，group 写原来那条的 group 或 id，
 # 和同班同学还是同路、照样搭伴。
 #   清贫「时间是借来的」：6~17 岁放了学帮家里（看摊、糊纸盒），日程拖到傍晚收工（until 1110），一天少一段自己的时间，
@@ -31,46 +30,46 @@
 - id: primary_class_book
   label: 上小学 · 放了学上奥数班
   group: primary
-  requires: { minAge: 6, maxAge: 11, flags: [fam_rich, exp_book], notFlags: [class_quit, fam_cut, club_math, club_sport, club_art] }
+  requires: { minAge: 6, maxAge: 11, flags: [fam_rich, exp_book], notFlags: [class_quit, fam_cut] }
   duty: { label: 上学，放了学上奥数班, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -21, mood: -3 }, stats: { mind: 0.99, charm: 0.07 } }
 - id: primary_class_pull
   label: 上小学 · 放了学学朗诵
   group: primary
-  requires: { minAge: 6, maxAge: 11, flags: [fam_rich, exp_pull], notFlags: [class_quit, fam_cut, club_math, club_sport, club_art] }
+  requires: { minAge: 6, maxAge: 11, flags: [fam_rich, exp_pull], notFlags: [class_quit, fam_cut] }
   duty: { label: 上学，放了学学朗诵, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -20, mood: -3 }, stats: { mind: 0.29, charm: 0.62 } }
 - id: primary_class_abroad
   label: 上小学 · 放了学上外语班
   group: primary
-  requires: { minAge: 6, maxAge: 11, flags: [fam_rich, exp_abroad], notFlags: [class_quit, fam_cut, club_math, club_sport, club_art] }
+  requires: { minAge: 6, maxAge: 11, flags: [fam_rich, exp_abroad], notFlags: [class_quit, fam_cut] }
   duty: { label: 上学，放了学上外语班, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -21, mood: -3 }, stats: { mind: 0.61, charm: 0.38 } }
 - id: primary_class_art
   label: 上小学 · 放了学去学琴
   group: primary
-  requires: { minAge: 6, maxAge: 11, flags: [fam_rich, exp_art], notFlags: [class_quit, fam_cut, club_math, club_sport, club_art] }
+  requires: { minAge: 6, maxAge: 11, flags: [fam_rich, exp_art], notFlags: [class_quit, fam_cut] }
   duty: { label: 上学，放了学去学琴, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -20, mood: -3 }, stats: { mind: 0.39, charm: 0.55 } }
 # 清贫：放了学帮家里看摊、糊纸盒，傍晚才收工
 - id: primary_help_study
   label: 上小学 · 学习委员，放了学帮家里
   group: primary
-  requires: { minAge: 6, maxAge: 11, flags: [fam_poor, lead_study], notFlags: [aid, club_math, club_sport, club_art] }
+  requires: { minAge: 6, maxAge: 11, flags: [fam_poor, lead_study], notFlags: [aid] }
   duty: { label: 上学，放了学帮家里, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -22 }, stats: { mind: 0.34, body: 0.06, charm: 0.15 } }
   restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
 - id: primary_help_sport
   label: 上小学 · 体育委员，放了学帮家里
   group: primary
-  requires: { minAge: 6, maxAge: 11, flags: [fam_poor, lead_sport], notFlags: [aid, club_math, club_sport, club_art] }
+  requires: { minAge: 6, maxAge: 11, flags: [fam_poor, lead_sport], notFlags: [aid] }
   duty: { label: 上学，放了学帮家里, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -24 }, stats: { mind: 0.29, body: 0.18, charm: 0.15 } }
   restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
 - id: primary_help_art
   label: 上小学 · 文艺委员，放了学帮家里
   group: primary
-  requires: { minAge: 6, maxAge: 11, flags: [fam_poor, lead_art], notFlags: [aid, club_math, club_sport, club_art] }
+  requires: { minAge: 6, maxAge: 11, flags: [fam_poor, lead_art], notFlags: [aid] }
   duty: { label: 上学，放了学帮家里, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -22 }, stats: { mind: 0.29, body: 0.06, charm: 0.25 } }
   restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
 - id: primary_help
   label: 上小学 · 放了学帮家里
   group: primary
-  requires: { minAge: 6, maxAge: 11, flags: [fam_poor], notFlags: [aid, club_math, club_sport, club_art] }
+  requires: { minAge: 6, maxAge: 11, flags: [fam_poor], notFlags: [aid] }
   duty: { label: 上学，放了学帮家里, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -22 }, stats: { mind: 0.29, body: 0.06, charm: 0.15 } }
   restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
 - id: primary_study

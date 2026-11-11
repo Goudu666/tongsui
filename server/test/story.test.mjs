@@ -227,7 +227,10 @@ for (let seed = 1; seed <= LIVES; seed++) {
   assert.deepEqual(deadPair, [], `走不到的结局：${deadPair.join(", ")}`);
   // 高寿的小结（长寿、冬泳的老人）靠的是一辈子吃好睡好心情好，这里不模拟过日子，放在 growth.test.mjs 里测
   const needsLongLife = new Set(C.endings.lives.filter((e) => (e.requires.minDiedAge ?? 0) >= 85).map((e) => e.id));
-  const deadLife = [...lifeEnd].filter(([id, n]) => n === 0 && !needsLongLife.has(id) && !held(C.endings.lives.find((e) => e.id === id).requires.flags)).map(([id]) => id);
+  // 「两家的孩子」（l_kids_tongsui）要这一世两家都有孩子、孩子的事又同路（p_kids_tongsui），1500 条里个位数，跟着随机数顺序在 0 和几回之间跳。
+  // 走不走得到由 legacy.test「一生小结：两家的孩子」按标记直接钉着，这里不靠抽样
+  const sampledRare = new Set(C.endings.lives.filter((e) => (e.requires.flags ?? []).includes("p_kids_tongsui")).map((e) => e.id));
+  const deadLife = [...lifeEnd].filter(([id, n]) => n === 0 && !needsLongLife.has(id) && !sampledRare.has(id) && !held(C.endings.lives.find((e) => e.id === id).requires.flags)).map(([id]) => id);
   assert.deepEqual(deadLife, [], `走不到的一生小结：${deadLife.join(", ")}`);
   // 结局不能一边倒：最常见的结局不超过一半
   const top = Math.max(...pairEnd.values());

@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "33c8fc5bde2c",
+ "version": "07c1e1e0ac36",
  "events": [
   {
    "id": "m_rise",
@@ -35373,7 +35373,7 @@ var CONTENT: Content = {
    "when": null,
    "hint": null,
    "requires": {
-    "maxAge": 18,
+    "maxAge": 20,
     "flags": [
      "gaokao_bad"
     ],
@@ -35391,7 +35391,7 @@ var CONTENT: Content = {
    "options": [
     {
      "id": "retake",
-     "text": "再念一年",
+     "text": "在家再翻一年书",
      "requires": {
       "notFlags": [
        "fam_poor"
@@ -35408,9 +35408,7 @@ var CONTENT: Content = {
       },
       "other": {},
       "bond": {},
-      "flags": [
-       "retake"
-      ]
+      "flags": []
      }
     },
     {
@@ -49571,10 +49569,7 @@ var CONTENT: Content = {
     ],
     "notFlags": [
      "class_quit",
-     "fam_cut",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "fam_cut"
     ]
    },
    "group": "primary",
@@ -49610,10 +49605,7 @@ var CONTENT: Content = {
     ],
     "notFlags": [
      "class_quit",
-     "fam_cut",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "fam_cut"
     ]
    },
    "group": "primary",
@@ -49649,10 +49641,7 @@ var CONTENT: Content = {
     ],
     "notFlags": [
      "class_quit",
-     "fam_cut",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "fam_cut"
     ]
    },
    "group": "primary",
@@ -49688,10 +49677,7 @@ var CONTENT: Content = {
     ],
     "notFlags": [
      "class_quit",
-     "fam_cut",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "fam_cut"
     ]
    },
    "group": "primary",
@@ -49726,10 +49712,7 @@ var CONTENT: Content = {
      "lead_study"
     ],
     "notFlags": [
-     "aid",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "aid"
     ]
    },
    "group": "primary",
@@ -49781,10 +49764,7 @@ var CONTENT: Content = {
      "lead_sport"
     ],
     "notFlags": [
-     "aid",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "aid"
     ]
    },
    "group": "primary",
@@ -49836,10 +49816,7 @@ var CONTENT: Content = {
      "lead_art"
     ],
     "notFlags": [
-     "aid",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "aid"
     ]
    },
    "group": "primary",
@@ -49890,10 +49867,7 @@ var CONTENT: Content = {
      "fam_poor"
     ],
     "notFlags": [
-     "aid",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "aid"
     ]
    },
    "group": "primary",

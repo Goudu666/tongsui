@@ -1,5 +1,5 @@
 {
- "version": "33c8fc5bde2c",
+ "version": "07c1e1e0ac36",
  "events": [
   {
    "id": "m_rise",
@@ -35372,7 +35372,7 @@
    "when": null,
    "hint": null,
    "requires": {
-    "maxAge": 18,
+    "maxAge": 20,
     "flags": [
      "gaokao_bad"
     ],
@@ -35390,7 +35390,7 @@
    "options": [
     {
      "id": "retake",
-     "text": "再念一年",
+     "text": "在家再翻一年书",
      "requires": {
       "notFlags": [
        "fam_poor"
@@ -35407,9 +35407,7 @@
       },
       "other": {},
       "bond": {},
-      "flags": [
-       "retake"
-      ]
+      "flags": []
      }
     },
     {
@@ -49570,10 +49568,7 @@
     ],
     "notFlags": [
      "class_quit",
-     "fam_cut",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "fam_cut"
     ]
    },
    "group": "primary",
@@ -49609,10 +49604,7 @@
     ],
     "notFlags": [
      "class_quit",
-     "fam_cut",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "fam_cut"
     ]
    },
    "group": "primary",
@@ -49648,10 +49640,7 @@
     ],
     "notFlags": [
      "class_quit",
-     "fam_cut",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "fam_cut"
     ]
    },
    "group": "primary",
@@ -49687,10 +49676,7 @@
     ],
     "notFlags": [
      "class_quit",
-     "fam_cut",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "fam_cut"
     ]
    },
    "group": "primary",
@@ -49725,10 +49711,7 @@
      "lead_study"
     ],
     "notFlags": [
-     "aid",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "aid"
     ]
    },
    "group": "primary",
@@ -49780,10 +49763,7 @@
      "lead_sport"
     ],
     "notFlags": [
-     "aid",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "aid"
     ]
    },
    "group": "primary",
@@ -49835,10 +49815,7 @@
      "lead_art"
     ],
     "notFlags": [
-     "aid",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "aid"
     ]
    },
    "group": "primary",
@@ -49889,10 +49866,7 @@
      "fam_poor"
     ],
     "notFlags": [
-     "aid",
-     "club_math",
-     "club_sport",
-     "club_art"
+     "aid"
     ]
    },
    "group": "primary",

@@ -15,6 +15,7 @@ python3 tools/audio/build_audio.py               # 全部，四核约两分钟 �
 python3 tools/audio/build_audio.py music         # 只做配乐（最慢的一部分）
 python3 tools/audio/build_audio.py amb sfx       # 只做环境音和音效（几秒）
 python3 tools/audio/build_audio.py --only whistle_a,radio,child   # 只做指定的几个
+TONGSUI_AUDIO_OUT=/tmp/try python3 tools/audio/build_audio.py music --only old   # 生成到别处试听，不碰 client/audio
 ```
 
 生成结果已经提交，不改声音不用跑。生成后用 Godot 打开一次项目让它重新导入。
@@ -26,9 +27,11 @@ python3 tools/audio/build_audio.py --only whistle_a,radio,child   # 只做指定
 | --- | --- |
 | `tongsui_audio/dsp.py` | 底层：包络、滤波、噪声、混响、响度（BS.1770）、循环无缝、导出 |
 | `tongsui_audio/inst.py` | 乐器。拨的（八音盒、吉他、钢琴、三弦……）和吟的（竖笛、口琴、大提琴、二胡……） |
-| `tongsui_audio/music.py` | 主题的谱子、五个阶段的编曲、默契乐句、标题 / 投胎 / 一生 |
+| `tongsui_audio/music.py` | 主题的谱子（A 曲、B 曲）、五个阶段的编曲和 morn / eve 两层、默契乐句、标题 / 投胎 / 一生 |
+| `tongsui_audio/highlight.py` | 高光：关口揭晓（rise / pass / top / miss）和长大（grow_*） |
 | `tongsui_audio/amb.py` | 河畔里的环境音：循环（`LOOPS`）和单发（`SHOTS`） |
 | `tongsui_audio/sfx.py` | 界面音、行动音、脚步 |
+| `analyze.py` | 量响度、真峰、刺耳带、音高、画频谱图；`--game` 按 mix_table.gd 算游戏里多响 |
 | `build_audio.py` | 入口。并行渲染，写 `client/audio/manifest.json` |
 
 ## 怎么改

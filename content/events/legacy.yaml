@@ -62,7 +62,7 @@
     - id: open
       text: 撬开看看
       tags: [adventure]
-      effects: { self: { mood: 5, clean: -10 } }
+      effects: { self: { mood: 5 } }
     - id: bury
       text: 原样埋回去
       tags: [responsible]

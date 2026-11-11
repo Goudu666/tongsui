@@ -399,7 +399,7 @@
     - id: both
       text: 顺手把对门的也扛了
       tags: [gentle]
-      effects: { self: { body: 1, energy: -20, clean: -10 }, other: { mood: 5 }, bond: { close: 1 } }
+      effects: { self: { body: 1, energy: -20 }, other: { mood: 5 }, bond: { close: 1 } }
     - id: wait
       text: 等大人回来
       tags: [patient]
@@ -717,7 +717,7 @@
     - id: fix
       text: 把它装回去
       tags: [patient]
-      effects: { self: { mind: 1, clean: -15 } }
+      effects: { self: { mind: 1 } }
     - id: bell
       text: 拆下车铃留个念想
       tags: [gentle]

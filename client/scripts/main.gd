@@ -31,6 +31,7 @@ const Juice := preload("res://scripts/ui/juice.gd")
 const StatStrip := preload("res://scripts/ui/stat_strip.gd")
 const Reveal := preload("res://scripts/ui/reveal.gd")
 const Icons := preload("res://scripts/ui/icons.gd")
+const Era := preload("res://scripts/ui/era.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -73,6 +74,8 @@ var _modal_tween: Tween
 var _page_id := ""       ## 现在是哪一页；换页时才播转场
 var _scroll_saving := false  ## 长卷正在存图，再点不重来
 var _stage_shown := ""   ## 河畔里现在显示的人生阶段
+var _era_queue: Array = []  ## 新的一天开头来的年代大事（log kind "era"），等弹窗都关了再弹年代卡（ui/era.gd）
+var _era_wait := 0.0     ## 条件都齐了以后再等这么久：几条连着来的、长大的墨卡，先让它们到齐
 var banner: Label        ## 顶部「连接断了，正在重连」
 var lobby_list: VBoxContainer  ## 大厅里「继续」的人生线列表
 
@@ -626,6 +629,7 @@ func _process(delta: float) -> void:
 		hud.minute = _preview_minute
 		world.set_minute(_preview_minute)
 	world.controllable = not modal.visible and not screen.visible and not world.playing
+	_pump_era(delta)
 	_refresh_partner()
 	_sweep_clock(delta)
 	if modal.visible:
@@ -1311,6 +1315,9 @@ func _on_roll_state(data: Dictionary) -> void:
 	# 只是谁换了手里的老物件：原地改那几行，不整页重画（不然页面会跳回顶上，出生证也会再落一回）
 	var same: bool = _page_id == "roll" and legacy.same_cards(life.get("rolls"), data.rolls)
 	life.rolls = data.rolls
+	if data.get("cohort") is Dictionary:
+		same = same and Era.cohort_lines(data.cohort) == Era.cohort_lines(life.get("cohort"))
+		life.cohort = data.cohort
 	if str(life.get("phase", "")) != "roll":
 		return
 	if same:
@@ -1328,6 +1335,7 @@ func _show_roll() -> void:
 	var left: VBoxContainer = cols[0]
 	var right: VBoxContainer = cols[1]
 	legacy.roll_head(left)
+	_cohort_head(left)
 	var card := _roll_card(left, my_role, mine, true)
 	_drop_in(card)  # 每抽一次，新卡片"啪"地落下来
 	_label(right, "对门是", 40, P.INK_SOFT)
@@ -1350,6 +1358,22 @@ func _show_roll() -> void:
 		b.disabled = int(mine.rerollsLeft) <= 0
 		b.autowrap_mode = TextServer.AUTOWRAP_OFF
 		_primary(row, "就这样，出生吧", func(): net.confirm_roll())
+
+## 这一世两个人生在哪个年代（服务器 life.cohort）：同一年生，一个名字、一句小字。老服务器不发就不写
+func _cohort_head(parent: Container) -> void:
+	var lines := Era.cohort_lines(life.get("cohort"))
+	if lines.is_empty():
+		return
+	var row := HBoxContainer.new()
+	row.name = "Cohort"
+	row.add_theme_constant_override("separation", 18)
+	parent.add_child(row)
+	Kit.chip(row, "同一年生", P.OVERLAP, 28)
+	var nl := _label(row, str(lines[0]), 44, P.INK)
+	nl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	if lines.size() > 1:
+		_label(parent, str(lines[1]), 28, P.INK_SOFT)
+
 
 ## 卡片从上面一点落到它本来的位置。等容器排好版再动：位置是相对它自己该在的地方算的，
 ## 不然会把卡片挪到页面最顶上，盖住页头
@@ -1430,6 +1454,7 @@ func _enter_world() -> void:
 	var t := LifeTime.at(int(life.get("turn", 0)))
 	_stage_shown = str(t.stage)
 	world.set_stage(_stage_shown)
+	world.set_look(_era_look())
 	world.age = int(t.age)
 	world.net = null if offline_preview else net
 	world.move_report.connect(_on_move_report)
@@ -1447,6 +1472,7 @@ func _leave_world() -> void:
 	hud.visible = false
 	hud.partner = {}
 	hud.pointer = {}
+	_era_queue.clear()
 
 
 ## 人生阶段变了：整版墨盖下来，写上年纪，盖住的时候换外观和纸色
@@ -1457,11 +1483,31 @@ func _grow_up(t: Dictionary) -> void:
 	_stage_shown = stage
 	fx.stage_card("%d 岁" % int(t.age), _era_name(stage), P.INK, func():
 		if world != null:
-			world.set_stage(stage))
+			world.set_stage(stage)
+			world.set_look(_era_look()))
 
 
-## 过场卡上的小字。地标线程的 data/street.json 里有五个年代的名字就用它，没有就写人生阶段
+## 现在的年代（WORLD 的 era 新一点，没有就看 life view 的；老服务器两边都没有）
+func _era_now() -> Dictionary:
+	return Era.era_of(last_world, life)
+
+
+## 街景 / 远景 / 声景用哪一套：有 era.look 用它，没有照人生阶段
+func _look_now(stage: String) -> String:
+	return Era.look_for(stage, _era_now())
+
+
+## 服务器给的 era.look（认得的键）；没有是空的，世界就照人生阶段画
+func _era_look() -> String:
+	return Era.look_for("", _era_now())
+
+
+## 过场卡上的小字。服务器给了年代名（era.decade）就用它；
+## 不然地标线程的 data/street.json 里有五个年代的名字就用它，没有就写人生阶段
 func _era_name(stage: String) -> String:
+	var dn := Era.decade(_era_now())
+	if dn != "":
+		return dn
 	var path := "res://data/street.json"
 	if FileAccess.file_exists(path):
 		var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
@@ -1483,10 +1529,16 @@ func _era_name(stage: String) -> String:
 
 func _refresh_hud() -> void:
 	var t := LifeTime.at(int(life.get("turn", 0)))
-	hud.time_label = str(t.label)
+	hud.time_label = Era.hud_label(str(t.label), _era_now())
 	hud.stage = str(t.stage)
 	if world != null:
 		world.age = int(t.age)
+		# 年代换了（九十年代 → 千禧年头上）：街上换一套，印一回。正在长大的墨卡下面就等它揭开时一起换
+		if not fx.is_busy() and str(t.stage) == _stage_shown:
+			var look := _look_now(_stage_shown)
+			if look != world.scene_look():
+				world.set_look(_era_look())
+				fx.print_in(0.8)
 		world.set_season(LifeTime.season_of(int(life.get("turn", 0))), int(life.get("turn", 0)))
 	if offline_preview:
 		hud.tag = "预览"
@@ -1890,11 +1942,37 @@ func _on_log_entries(data: Dictionary) -> void:
 					_label(desk, str(e.crossed), 30, P.INK_SOFT)
 			_primary(side if side != null else page, "下一个被记住的日子", _close_modal)
 			_gap(page, 4)
+		elif kind == "era":
+			# 年代大事：「年代 · 标题」。在河畔里就排进年代卡（等关口揭晓、收工小结关了才弹，_pump_era），不在就一行字带过
+			if world != null and not offline_preview:
+				_era_queue.append(e)
+				_era_wait = maxf(_era_wait, 0.5)
+			else:
+				_toast(Era.log_line(e))
 		elif kind == "death":
 			_open_modal()
 			_label(modal_body, str(e.text), 52, P.OVERLAP)
 			_button(modal_body, "……", _close_modal)
 			_gap(modal_body, 4)
+
+
+## 年代卡：攒着的年代大事，等弹窗（关口揭晓、收工小结、事件）都关了、别的墨卡也揭开了，再一起弹。
+## 几条连着来的排在一张卡里（Era.PER_CARD 一张），多了下一张
+func _pump_era(delta: float) -> void:
+	if _era_queue.is_empty():
+		return
+	if modal.visible or screen.visible or fx.is_busy():
+		_era_wait = maxf(_era_wait, 0.35)
+		return
+	_era_wait -= delta
+	if _era_wait > 0.0:
+		return
+	var pages: Array = []
+	for pg in Era.pages(_era_queue, my_role, Era.decade(_era_now())):
+		pages.append(Era.specs(pg))
+	_era_queue.clear()
+	if not pages.is_empty():
+		fx.era_cards(pages)
 
 
 ## 一天下来长了多少（百分制，不到 1 分的写「一点」）

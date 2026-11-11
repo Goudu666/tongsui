@@ -85,3 +85,74 @@
   dissonance:
     text: 一个往长椅走，一个已经迈开步子绕圈。绕回来，长椅上那个正给他留着座。
     bond: { close: 0 }
+
+# ---------- 补空档（11-11）：老年 ----------
+# 七十岁那道关看体魄（自己下楼）、亲近（搭伙过）、积蓄（请人照应）。停电梯那件三样各给一条路。
+
+- id: pl_nh_lift
+  kind: solo
+  stage: old
+  where: landing
+  when: [480, 930]
+  hint: 电梯间贴了张新条。
+  weight: 2
+  requires: { flags: [home_own] }
+  title: 停电梯
+  text: 电梯间贴了张条：礼拜三检修，停一天。你家在十六楼。
+  options:
+    - id: stairs
+      text: 一层一层走下去
+      tags: [competitive]
+      effects: { self: { body: 1, energy: -10 } }
+    - id: call
+      text: 叫对门的来坐一天
+      tags: [gentle]
+      effects: { self: { mood: 5 }, bond: { close: 2 } }
+    - id: order
+      text: 让物业把菜送上来
+      tags: [responsible]
+      cost: 3
+      effects: { self: { mood: 2, energy: 3 } }
+    - id: stay
+      text: 那天就不出门了
+      tags: [patient]
+      effects: { self: { energy: 4 } }
+
+- id: pl_nh_scallion
+  kind: mirror
+  stage: old
+  where: garden
+  when: [480, 930]
+  hint: 花坛边上冒出一垄绿。
+  weight: 2
+  title: 一垄葱
+  text: 花园角上有人偷偷种了一垄葱。物业的小伙子装没看见。
+  options:
+    - id: plant
+      text: 挨着也种一垄
+      tags: [adventure]
+      effects: { self: { body: 1, energy: -4 } }
+    - id: water
+      text: 帮着浇浇水
+      tags: [gentle]
+      effects: { self: { mood: 4 } }
+    - id: pick
+      text: 掐两根回去
+      tags: [solitude]
+      effects: { self: { mood: 3 } }
+  resonance:
+    plant:
+      text: 一垄变成了三垄。物业的小伙子路过，帮你们插了块牌子。
+      memory: 三垄葱
+      bond: { sync: 2, close: 2 }
+    water:
+      text: 你们拎着同一只壶，一人浇一头。
+      memory: 一只壶
+      bond: { sync: 2, close: 2 }
+    pick:
+      text: 两个人各掐了两根，晚上两家都是葱花饼。
+      memory: 葱花饼
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个蹲着种，一个蹲着掐。掐的那个，掐的是刚种下的。
+    bond: { close: 0 }

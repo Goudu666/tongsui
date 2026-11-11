@@ -211,8 +211,9 @@ const pick = (s, r, id) => G("worldPickAction")(s, C, r, spot(id)).act?.id ?? nu
   const RICH = ["xu", "tang", "dong", "zheng"], MID = ["lin", "zhou", "su", "gu"];
   const job = (way, fams, opts) => {
     const ps = [];
-    // 32 条人生（64 个人）一边：16 条时一个人进没进单位就是 3 个点，线又卡在 15，换一下外地那几年做什么就来回跳
-    for (let seed = 1; seed <= 32; seed++) {
+    // 64 条人生（128 个人）一边：16 条时一个人进没进单位就是 3 个点，线又卡在 15，换一下外地那几年做什么就来回跳。
+    // 32 条也不够：11-11 补地点小事（随机数顺序挪了一下），32 条时差 15 个点，128 条量出来 main 差 12、改完差 11，是抽样的抖动
+    for (let seed = 1; seed <= 64; seed++) {
       const { marks } = live(seed * 7919, WAYS[way], 23, climb, (s) => { s.rolls.qing.familyId = fams[seed % 4]; s.rolls.mei.familyId = fams[(seed + 1) % 4]; });
       ps.push(...Object.values(marks.m_job || {}));
     }

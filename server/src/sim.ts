@@ -368,7 +368,8 @@ function lifeTurnsUntilAge(turn: number, age: number): number {
 
 /** have / need：给人看的数。属性类的线按「分」算（属性 × 10，满分 100），钱类的按块 */
 // hx：分数线的「攒着的」那一截，百分制带一位小数往下取整（have 是它的整数部分）。小时候一回只长零点几分，界面拿它让尺上的点和分数后面的小数挪一挪
-interface GoalLine { id: string; text: string; by: string; unit: string; have: number; need: number; ok: boolean; hx?: number }
+// pull：这条我还差，到时候对门拉得动（pull.ts → pullGoalHint），界面写「TA 能拉你 3 分」
+interface GoalLine { id: string; text: string; by: string; unit: string; have: number; need: number; ok: boolean; hx?: number; pull?: PullOffer }
 interface GoalView { id: string; title: string; age: number; turns: number; lines: GoalLine[] }
 
 /**
@@ -422,6 +423,7 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
     var raw = lifeScoreRaw(w);
     var gl: GoalLine = { id: o.id, text: o.text, by: lifeWeightsLabel(w), unit: w.money ? "块" : "分", have: raw ? Math.floor(have) : lifePoints(have), need: raw ? o.min : lifePoints(o.min), ok: have >= o.min };
     if (!raw) gl.hx = lifeFinePoints(have);
+    if (!gl.ok) { var ph = pullGoalHint(s, c, role, best, o); if (ph) gl.pull = ph; }
     lines.push(gl);
   }
   // 比最高那条路还高的名次（grades）也摆上来：起点高的人不会开局就无事可冲，每道关都还有一条够一够的线
@@ -540,6 +542,9 @@ function lifeShadowChoose(s: LifeState, c: Content, role: Role, eventId: string)
   var tags = s.persons![role].tags;
   var pe = s.world && s.world.event;
   var swing = (pe && pe.eventId === eventId && pe.swing && pe.swing[role]) || 0;
+  // 对门选了一条要你拉的路、你也走得了：影子跟着走这条（影子自己不去赌要人拉的路）
+  var follow = pe && pe.eventId === eventId ? pullShadowFollow(s, c, ev, pe, role) : null;
+  if (follow) return follow;
   var best: EventOption[] = [];
   var bestScore = -1;
   for (var i = 0; i < ev.options.length; i++) {
@@ -570,6 +575,9 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
   var entry = lifeEntry(s, pe.kind, "");
   var grow = growthCtx(s, c, "event");
   entry.shadow = pe.shadow.slice();
+  // 关口：要人拉的路，对门走了就拉过去（钱真塞过去），没走就换成自己够得着的（pull.ts）
+  var gate = pullResolve(s, c, ev, pe);
+  if (gate) entry.gate = gate;
   for (var i = 0; i < pe.roles.length; i++) {
     var role = pe.roles[i];
     var o = lifeFindOption(ev, pe.choices[role]!)!;
@@ -590,6 +598,12 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       // 差一点：离哪条没走成的路最近（结局页上「差一点」读它，见 atlas.ts）。也是走进考场那一刻的数
       var near = atlasMilestoneNear(ev, o.id, me, swing, lifePairBond(s, role), gscore);
       var shown = lifeScoreRaw(sw) ? Math.floor(lifeScore(me, sw, s.bond)) : lifePoints(lifeScore(me, sw, s.bond) + swing);
+      // 塞过去的钱：成绩单上记的是进门前自己兜里的数，塞的那一截揭晓时单画（entry.gate.pull）
+      if (sw.money && pe.pull) {
+        var pl = pe.pull[role], po = pe.pull[lifeOther(role)];
+        if (pl && pl.unit === "块") shown = Math.floor(shown - pl.gap);
+        if (po && po.unit === "块" && po.by === role) shown = Math.floor(shown + po.gap);
+      }
       // 揭晓演出要的几样（线、发挥），也是走进考场那一刻的。差一点的那条就是上面的 near，不另算
       var reveal = lifeReveal(ev, o, swing, (pe.steady && pe.steady[role]) || 0);
       if (grade) lifeAddFlags(me, grade.flags);
@@ -652,6 +666,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       }
     }
   }
+  if (pe.kind === "milestone" && pe.roles.length === 2) pullReunion(s, c, ev, entry); // 上一道关走散了，这一道又走到一块儿
   s.log.push(entry);
   return entry;
 }

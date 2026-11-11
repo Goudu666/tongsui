@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "26b694ae8231",
+ "version": "04dd21fe752d",
  "events": [
   {
    "id": "m_rise",
@@ -1205,6 +1205,7 @@ var CONTENT: Content = {
    "score": {},
    "swing": false,
    "grades": [],
+   "withStory": true,
    "catches": []
   },
   {

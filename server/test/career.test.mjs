@@ -93,7 +93,11 @@ const wageOf = (p, age) => G("worldWage")(C, p, G("lifeTrack")(C, p, age).duty);
     const s = lifeAt(9, age, { flags: ["job_desk"] });
     assert.equal(s.world.fate.milestone, id, `${age} 岁那天是「${ev(id).title}」`);
   }
-  console.log(`✓ 骨架：${JOBS.length} 个行当各有 up_* / top_*（hide + lock）/ tracks 里 _r2、_r1 排在原来那条前头、标记多一级、换了路名 / 26、36 岁那天排上两道关`);
+  // 挑大梁那天主线照排（withStory）：36 岁在第五章（30~44）中间，不让的话第五章只剩三天排三件，三十三岁起天天强制
+  assert.equal(ev("m_rise2").withStory, true);
+  assert.equal(G("storyMilestoneDay")(C, turnAtAge(36)), false, "36 岁不算关口日，主线能排");
+  assert.deepEqual(J(G("storyToday")(lifeAt(9, 33), C, G("lifeTimeAt")(turnAtAge(33)), false).force), [], "三十三岁第五章还不紧，不强制");
+  console.log(`✓ 骨架：${JOBS.length} 个行当各有 up_* / top_*（hide + lock）/ tracks 里 _r2、_r1 排在原来那条前头、标记多一级、换了路名 / 26、36 岁那天排上两道关、挑大梁那天主线照排`);
 }
 
 // ---------- 1. 26 岁那关：别的行当的路锁着、藏着，自己这行的只看分数 ----------

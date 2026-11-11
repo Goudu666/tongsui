@@ -750,7 +750,8 @@ func _show_spot_action() -> void:
 	# 剩的时间够做不止一回：旁边给一个「做到点」
 	if plain and not spent and not offline_preview and left > float(act.get("minutes", 60)) + 5.0:
 		fill_title.text = "做到 %s" % P.clock(float(WorldView.SLOTS[world.slot][1]))
-		fill_sub.text = "一直%s" % str(act.get("label", ""))
+		var fill_label := str(act.get("label", ""))
+		fill_sub.text = ("一直" + fill_label) if fill_label.length() <= 5 else fill_label  # 「陪孩子写作业」再加「一直」就放不下了
 		fill_btn.set_meta("spot", spot.id)
 		fill_btn.visible = true
 	_place_slot_btn()
@@ -772,8 +773,16 @@ static func act_cost(act: Dictionary, left: float, needs_factor := 1.0) -> Array
 	for k in ["mind", "body", "charm"]:
 		if float(stats.get(k, 0.0)) >= 0.2:
 			grow.append(P.STAT_NAME[k])
+	# 带孩子的事（行动的 kid 字段）：长的是孩子，自己不长
+	var kid_grow: Array = []
+	var kid: Dictionary = _dict(act.get("kid"))
+	for k in ["mind", "body", "charm"]:
+		if float(kid.get(k, 0.0)) >= 0.2:
+			kid_grow.append(P.STAT_NAME[k])
 	if not grow.is_empty():
 		out.append("长" + "、".join(grow))
+	elif not kid_grow.is_empty():
+		out.append("孩子长" + "、".join(kid_grow))
 	elif float(_dict(act.get("needs")).get("mood", 0.0)) >= 8.0:
 		out.append("心情好")
 	if int(act.get("money", 0)) > 0:
@@ -1523,6 +1532,8 @@ func _refresh_hud() -> void:
 	var st: Dictionary = _dict(last_world.get("story"))
 	hud.story = {} if st.is_empty() else {"chapter": st.get("chapter", 0), "title": st.get("title", ""), "next": _dict(st.get("next")).get(my_role), "force": st.get("force", false)}
 	hud.kid = _kid_of(my_role)
+	if world != null:
+		world.kid_age = int(hud.kid.get("age", 0)) if not hud.kid.is_empty() else -1
 
 
 ## 某个人的孩子（WORLD actors[role].kid：{ name, age, stats, shared }，没孩子不发，见 docs/FAMILY.md）

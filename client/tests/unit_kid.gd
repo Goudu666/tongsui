@@ -79,6 +79,11 @@ func _initialize() -> void:
 	check(Juice.kid_items({"body": 0.04}, was, now).is_empty(), "不到 1 分不飘")
 	check(Juice.kid_items({}, was, now).is_empty(), "没有 k 不飘孩子")
 
+	# 行动按钮的小字：带孩子的事写「孩子长心智」，自己不长
+	var Main: Script = load("res://scripts/main.gd")
+	var cost: Array = Main.act_cost({"label": "陪孩子写作业", "minutes": 90, "needs": {"energy": -8}, "kid": {"mind": 0.4}}, 200.0)
+	check(cost.has("孩子长心智") and not cost.has("长心智"), "带孩子的事的小字（实际 %s）" % [cost])
+
 	# 接起来：WORLD 里 did 带 k，飘一张「孩子 心智」，飞向孩子那张牌；落下之前牌上的数不拨
 	var m := FakeMain.new()
 	m.ui = Control.new()

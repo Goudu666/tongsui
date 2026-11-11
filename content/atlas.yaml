@@ -82,3 +82,5 @@ says:
   shop_two: 再开一家铺子
   p_confidant: 做一辈子的老朋友
   single_life: 一个人过
+  # 成家和下一代 · 孩子（content/events/kids.yaml）
+  p_kids_tongsui: 两家孩子一起长大

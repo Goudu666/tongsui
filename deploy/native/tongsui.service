@@ -1,0 +1,30 @@
+# 同岁 Nakama 服务（原生部署，不用 Docker）：setup.sh 装到 /etc/systemd/system/tongsui.service
+# 配置和密钥在 /opt/tongsui/config.yml（640 root:tongsui），存档在本机 PostgreSQL 的 nakama 库
+# 只监听 127.0.0.1（7348/7349 gRPC / 7350 API+WebSocket / 7351 控制台），公网只经 nginx 的 8080
+[Unit]
+Description=Tongsui game server (Nakama)
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=tongsui
+Group=tongsui
+WorkingDirectory=/opt/tongsui
+ExecStartPre=/opt/tongsui/bin/nakama migrate up --config /opt/tongsui/config.yml
+ExecStart=/opt/tongsui/bin/nakama --config /opt/tongsui/config.yml
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=30
+# 小机器上和 cakery 共处：Nakama 最多 768 MB
+MemoryMax=768M
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/tongsui/data
+
+[Install]
+WantedBy=multi-user.target

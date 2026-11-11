@@ -356,11 +356,11 @@ func _pop_items(role: String, items: Array, delay: float, fly: bool) -> void:
 		var target: Variant = _target(key) if fly and up else null
 		var strip: Variant = main.get("stat_strip")
 		var t0 := delay + i * 0.14
+		var gp: Variant = main.get("goal_panel")
+		if target != null and gp is Control and i == 0 and (key in KEYS or key.begins_with("kid_")):
+			gp.land_in = t0 + 1.25  # 纸带上「还差几分」也等第一张落下来再拨（孩子的关口看的是孩子的数）
 		if target != null and key in KEYS and strip is Control:
 			strip.hold(key, t0 + 1.25)
-			var gp: Variant = main.get("goal_panel")
-			if gp is Control and i == 0:
-				gp.land_in = t0 + 1.25  # 纸带上「还差几分」也等第一张落下来再拨
 		elif target != null and key == "money" and main.hud.has_method("hold_money"):
 			main.hud.hold_money(t0 + 1.25)
 		elif target != null and key.begins_with("kid_") and main.hud.has_method("hold_kid"):

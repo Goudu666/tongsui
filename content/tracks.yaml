@@ -85,6 +85,15 @@
   duty: { label: 上班, spot: bike_bench, arrive: [450, 570], until: 1020, needs: { energy: -22 }, stats: { body: 0.19 }, money: 12 }
 
 # ---- 22~59 工作 ----
+# 升了级的路排在原来那份工前头（content/events/career.yaml 的两道升迁关打 rank1 / rank2）：路的名字换了，工钱涨一截
+- id: job_away_r2
+  label: 在外地 · 带一摊事
+  requires: { minAge: 22, maxAge: 59, flags: [left_city, rank2], notFlags: [came_back] }
+  duty: { label: 上班, spot: away_work, arrive: [390, 480], until: 1170, needs: { hunger: 25, energy: -28, mood: -3 }, stats: { mind: 0.07, charm: 0.07 }, money: 27 }
+- id: job_away_r1
+  label: 在外地 · 站住了脚
+  requires: { minAge: 22, maxAge: 59, flags: [left_city, rank1], notFlags: [came_back] }
+  duty: { label: 上班, spot: away_work, arrive: [390, 480], until: 1170, needs: { hunger: 25, energy: -28, mood: -3 }, money: 21 }
 - id: job_away
   label: 在外地工作
   requires: { minAge: 22, maxAge: 59, flags: [left_city], notFlags: [came_back] }
@@ -105,36 +114,100 @@
   label: 没了正经事由，打零工
   requires: { minAge: 30, maxAge: 59, flags: [no_job] }
   duty: { label: 打零工, spot: bike_bench, arrive: [450, 600], until: 900, needs: { energy: -20 }, stats: { body: 0.07 }, money: 7 }
+- id: job_desk_r2
+  label: 坐办公室 · 科长
+  requires: { minAge: 22, maxAge: 59, flags: [job_desk, rank2] }
+  duty: { label: 过桥上班, spot: office_desk, arrive: [420, 510], until: 1080, needs: { hunger: 25, energy: -22, mood: -2 }, stats: { mind: 0.07, charm: 0.1 }, money: 34 }
+- id: job_desk_r1
+  label: 坐办公室 · 组长
+  requires: { minAge: 22, maxAge: 59, flags: [job_desk, rank1] }
+  duty: { label: 过桥上班, spot: office_desk, arrive: [420, 510], until: 1080, needs: { hunger: 25, energy: -22, mood: -2 }, stats: { mind: 0.1, charm: 0.05 }, money: 28 }
 - id: job_desk
   label: 坐办公室
   requires: { minAge: 22, maxAge: 59, flags: [job_desk] }
   duty: { label: 过桥上班, spot: office_desk, arrive: [420, 510], until: 1080, needs: { hunger: 25, energy: -22, mood: -2 }, stats: { mind: 0.1 }, money: 24 }
 # 托家里的关系进的单位（m_job 的 pull，殷实人家）：和考进去的坐办公室不是一回事，钱少几块，也不长本事
+- id: job_pull_r2
+  label: 托关系进的单位 · 副手
+  requires: { minAge: 22, maxAge: 59, flags: [job_pull, rank2] }
+  duty: { label: 过桥上班, spot: office_desk, arrive: [450, 540], until: 1050, needs: { hunger: 25, energy: -18, mood: -2 }, stats: { charm: 0.07 }, money: 27 }
+- id: job_pull_r1
+  label: 托关系进的单位 · 要紧科室
+  requires: { minAge: 22, maxAge: 59, flags: [job_pull, rank1] }
+  duty: { label: 过桥上班, spot: office_desk, arrive: [450, 540], until: 1050, needs: { hunger: 25, energy: -18, mood: -2 }, money: 22 }
 - id: job_pull
   label: 托关系进的单位
   requires: { minAge: 22, maxAge: 59, flags: [job_pull] }
   duty: { label: 过桥上班, spot: office_desk, arrive: [450, 540], until: 1050, needs: { hunger: 25, energy: -18, mood: -2 }, money: 18 }
+- id: job_teach_r2
+  label: 教书 · 教研组长
+  requires: { minAge: 22, maxAge: 59, flags: [job_teach, rank2] }
+  duty: { label: 去上课, spot: school_gate, arrive: [420, 510], until: 990, needs: { hunger: 25, energy: -20 }, stats: { mind: 0.1, charm: 0.1 }, money: 22 }
+- id: job_teach_r1
+  label: 教书 · 班主任
+  requires: { minAge: 22, maxAge: 59, flags: [job_teach, rank1] }
+  duty: { label: 去上课, spot: school_gate, arrive: [420, 510], until: 990, needs: { hunger: 25, energy: -20 }, stats: { mind: 0.07, charm: 0.1 }, money: 18 }
 - id: job_teach
   label: 教书
   requires: { minAge: 22, maxAge: 59, flags: [job_teach] }
   duty: { label: 去上课, spot: school_gate, arrive: [420, 510], until: 990, needs: { hunger: 25, energy: -20 }, stats: { mind: 0.07, charm: 0.07 }, money: 15 }
+- id: job_trade_r2
+  label: 做买卖 · 做批发
+  requires: { minAge: 22, maxAge: 59, flags: [job_trade, rank2] }
+  duty: { label: 出摊, spot: breakfast_stall, arrive: [390, 450], until: 840, needs: { energy: -25 }, stats: { charm: 0.12, mind: 0.05 }, money: 32 }
+- id: job_trade_r1
+  label: 做买卖 · 有了门脸
+  requires: { minAge: 22, maxAge: 59, flags: [job_trade, rank1] }
+  duty: { label: 出摊, spot: breakfast_stall, arrive: [390, 450], until: 840, needs: { energy: -25 }, stats: { charm: 0.12 }, money: 25 }
 - id: job_trade
   label: 做买卖
   requires: { minAge: 22, maxAge: 59, flags: [job_trade] }
   duty: { label: 出摊, spot: breakfast_stall, arrive: [390, 450], until: 840, needs: { energy: -25 }, stats: { charm: 0.12 }, money: 19 }
+- id: job_craft_r2
+  label: 靠手艺吃饭 · 开铺子带徒弟
+  requires: { minAge: 22, maxAge: 59, flags: [job_craft, rank2] }
+  duty: { label: 上工, spot: bike_bench, arrive: [450, 540], until: 1020, needs: { energy: -22 }, stats: { mind: 0.07, charm: 0.07 }, money: 25 }
+- id: job_craft_r1
+  label: 靠手艺吃饭 · 出了师
+  requires: { minAge: 22, maxAge: 59, flags: [job_craft, rank1] }
+  duty: { label: 上工, spot: bike_bench, arrive: [450, 540], until: 1020, needs: { energy: -22 }, stats: { body: 0.07, mind: 0.05 }, money: 18 }
 - id: job_craft
   label: 靠手艺吃饭
   requires: { minAge: 22, maxAge: 59, flags: [job_craft] }
   duty: { label: 上工, spot: bike_bench, arrive: [450, 540], until: 1020, needs: { energy: -22 }, stats: { body: 0.07, mind: 0.05 }, money: 14 }
+- id: job_labor_r2
+  label: 卖力气 · 拉一班人
+  requires: { minAge: 22, maxAge: 59, flags: [job_labor, rank2] }
+  duty: { label: 过桥上工, spot: river_bridge, arrive: [390, 450], until: 1050, needs: { hunger: 15, energy: -32 }, stats: { body: 0.07, charm: 0.1 }, money: 24 }
+- id: job_labor_r1
+  label: 卖力气 · 大工
+  requires: { minAge: 22, maxAge: 59, flags: [job_labor, rank1] }
+  duty: { label: 过桥上工, spot: river_bridge, arrive: [390, 450], until: 1050, needs: { hunger: 15, energy: -32 }, stats: { body: 0.14 }, money: 19 }
 - id: job_labor
   label: 卖力气
   requires: { minAge: 22, maxAge: 59, flags: [job_labor] }
   duty: { label: 过桥上工, spot: river_bridge, arrive: [390, 450], until: 1050, needs: { hunger: 15, energy: -32 }, stats: { body: 0.14 }, money: 16 }
 # 接班 / 退伍安置进厂（m_job 的 succeed、placed）：不用考，钱不多不少，三十岁能等厂里分房
+- id: job_succeed_r2
+  label: 在厂里上班 · 车间主任
+  requires: { minAge: 22, maxAge: 59, flags: [job_succeed, rank2] }
+  duty: { label: 过桥上班, spot: river_bridge, arrive: [420, 480], until: 1020, needs: { hunger: 25, energy: -24 }, stats: { mind: 0.07, charm: 0.07 }, money: 21 }
+- id: job_succeed_r1
+  label: 在厂里上班 · 技术员
+  requires: { minAge: 22, maxAge: 59, flags: [job_succeed, rank1] }
+  duty: { label: 过桥上班, spot: river_bridge, arrive: [420, 480], until: 1020, needs: { hunger: 25, energy: -24 }, stats: { body: 0.05, mind: 0.07 }, money: 17 }
 - id: job_succeed
   label: 在厂里上班
   requires: { minAge: 22, maxAge: 59, flags: [job_succeed] }
   duty: { label: 过桥上班, spot: river_bridge, arrive: [420, 480], until: 1020, needs: { hunger: 25, energy: -24 }, stats: { body: 0.07 }, money: 14 }
+- id: job_odd_r2
+  label: 打零工 · 带几个人干
+  requires: { minAge: 22, maxAge: 59, flags: [job_odd, rank2] }
+  duty: { label: 打零工, spot: bike_bench, arrive: [450, 600], until: 900, needs: { energy: -20 }, stats: { body: 0.05, charm: 0.07 }, money: 15 }
+- id: job_odd_r1
+  label: 打零工 · 有了长活
+  requires: { minAge: 22, maxAge: 59, flags: [job_odd, rank1] }
+  duty: { label: 打零工, spot: bike_bench, arrive: [450, 600], until: 900, needs: { energy: -20 }, stats: { body: 0.07 }, money: 11 }
 - id: job_odd
   label: 打零工
   requires: { minAge: 22, maxAge: 59 }

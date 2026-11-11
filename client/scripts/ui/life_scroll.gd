@@ -17,6 +17,7 @@ const HEIGHT := 880.0
 const LEFT := 420.0        ## 卷首（标题）占的宽度，第一站之前
 const STEP := 340.0        ## 相邻两站之间的距离
 const TAIL := 900.0        ## 卷尾（结局、题词）占的宽度
+const TAIL_ART := 340.0    ## 卷尾右边再贴一张画（最后一章的河边）占的宽度
 const MID := 440.0         ## 两条线中间那条看不见的轴
 const SEP_START := 30.0    ## 还没过第一关：两扇对着的门
 const SEP_SAME := 7.0      ## 同路：两条线挨着，中间叠印
@@ -169,7 +170,7 @@ func setup(life: Dictionary, content: Dictionary, p_names: Dictionary) -> void:
 	# 卷尾：最后一个人走的那一年，或者最后一个日子
 	var end_turn := float(model.last) + 1.0
 	_anchors.append({"turn": maxf(end_turn, float(_anchors[-1].turn) + 1.0), "x": x + STEP})
-	custom_minimum_size = Vector2(x + STEP + TAIL, HEIGHT)
+	custom_minimum_size = Vector2(x + STEP + TAIL + (TAIL_ART if _art(7) != null else 0.0), HEIGHT)
 	size = custom_minimum_size
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	queue_redraw()
@@ -355,6 +356,11 @@ func _draw_head(f: Font) -> void:
 	x += _text(f, Vector2(x + 14, 480), "和", 30, P.INK_SOFT, -1) + 28
 	_text(f, Vector2(x, 480), str(names.get("mei", "梅")), 36, P.MEI, -1)
 	draw_string(f, Vector2(72, 530), "河畔里 · 住对门", HORIZONTAL_ALIGNMENT_LEFT, -1, 26, P.INK_SOFT)
+	# 卷首贴一张：三四岁，楼道里两扇对着的门（第一章的画裁一块）
+	var a := _art(1)
+	if a != null:
+		var ts := Vector2(a.get_size())
+		_inset(a, Rect2(ts.x * 0.5 - ts.x * 0.14, ts.y * 0.27, ts.x * 0.28, ts.x * 0.28 * 0.66), Rect2(72, 576, 300, 198))
 	# 起点：三岁，两扇对着的门
 	_text(f, Vector2(LEFT, 92), "3 岁", 44, P.INK)
 	_text(f, Vector2(LEFT, 130), "搬进对门", 26, P.INK_SOFT)
@@ -514,6 +520,38 @@ func _draw_tail(f: Font) -> void:
 	_para(f, Vector2(x, HEIGHT - 150), line, width, 24, P.INK_SOFT)
 	# 右上角的两个圆：最后有多亲近，就叠多少
 	Kit.draw_pair(self, Vector2(x + width - 44, 100), 30.0, lerpf(56.0, 0.0, clampf(float(model.close) / 100.0, 0.0, 1.0)), 1.0, 2.0)
+	# 卷尾最右边一张竖的：老了，还在河边（第七章的画裁中间一竖条）
+	var a := _art(7)
+	if a != null:
+		var ts := Vector2(a.get_size())
+		var src_w := ts.y * 0.8
+		var dst := Rect2(x + width + 70.0, 96.0, 250.0, 250.0 / 0.8)
+		_inset(a, Rect2(ts.x * 0.5 - src_w * 0.5, 0, src_w, ts.y), dst)
+		_text(f, Vector2(dst.position.x, dst.end.y + 52.0), "河边", 28, P.INK_SOFT, -1)
+
+
+## 第几章的画（res://art/keyart/ch{N}.jpg；没有就是 null，卷照常画）。
+## 要攥在手里：_draw 里现 load 的贴图画完就被释放，排进画布的那一笔会变成一块白
+static var _arts := {}
+
+
+static func _art(ch: int) -> Texture2D:
+	if not _arts.has(ch):
+		var path := "res://art/keyart/ch%d.jpg" % ch
+		_arts[ch] = load(path) if ResourceLoader.exists(path) else null
+	return _arts[ch]
+
+
+## 贴一张画：底下错开一块青、墨线框、四角裁切线（和界面的色块框一个路数）
+func _inset(tex: Texture2D, src: Rect2, dst: Rect2) -> void:
+	draw_rect(Rect2(dst.position + Vector2(8, 8), dst.size), P.QING)
+	draw_texture_rect_region(tex, dst, src)
+	draw_rect(dst, P.INK, false, 3.0)
+	for corner in [dst.position, Vector2(dst.end.x, dst.position.y), Vector2(dst.position.x, dst.end.y), dst.end]:
+		var sx := -1.0 if corner.x < dst.get_center().x else 1.0
+		var sy := -1.0 if corner.y < dst.get_center().y else 1.0
+		draw_line(corner + Vector2(sx * 8, 0), corner + Vector2(sx * 26, 0), P.INK, 1.6)
+		draw_line(corner + Vector2(0, sy * 8), corner + Vector2(0, sy * 26), P.INK, 1.6)
 
 
 ## 画一段会折行的字，返回这段字的底边

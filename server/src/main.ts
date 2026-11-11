@@ -14,7 +14,7 @@ var MATCH_NAME = "lifeline";
 var TICK_RATE = 10; // 走动需要实时，一秒十跳
 var WORLD_BROADCAST_EVERY = 2; // 每 2 跳（5Hz）广播一次世界状态，客户端插值
 var SAVE_EVERY_SECONDS = 30;
-var SHADOW_WAIT_SECONDS = 30; // 事件里搭档离线时，等多久让影子代选
+var SHADOW_WAIT_SECONDS = 12; // 事件里搭档离线时，等多久让影子代选（原来 30 秒：刚上手的人对着「TA 还在想……」干等半分钟，以为卡了）
 var EMPTY_CLOSE_SECONDS = 120; // 房间空了多久后关闭
 var MOVE_MAX_DT = 1.0; // 两次 MOVE 之间最多按 1 秒算限速，防止站久了一步瞬移
 var NOTIFY_PARTNER_JOINED = 101; // 通知码：TA 输入了配对码
@@ -465,6 +465,7 @@ function worldView(s: LifelineMatch) {
   var needs: any = {};
   var money: any = {};
   var stats: any = {};
+  var fine: any = {};
   var eff: any = {};
   var goals: any = {};
   var tracks: any = {};
@@ -481,6 +482,8 @@ function worldView(s: LifelineMatch) {
     money[r] = p.money;
     if (!p.alive || !a) continue;
     stats[r] = { body: lifeRound1(p.stats.body), mind: lifeRound1(p.stats.mind), charm: lifeRound1(p.stats.charm), luck: lifeRound1(p.stats.luck) };
+    // fine：三项的百分制带一位小数（往下取整）。stats 按一位小数四舍五入，小时候一回只长零点几分，客户端靠它飘「+0.3」、攒着的那一截
+    fine[r] = { body: lifeFinePoints(p.stats.body), mind: lifeFinePoints(p.stats.mind), charm: lifeFinePoints(p.stats.charm) };
     eff[r] = worldEfficiency(p);
     goals[r] = lifeGoal(life, CONTENT, r);
     var track = lifeTrack(CONTENT, p, age);
@@ -508,7 +511,7 @@ function worldView(s: LifelineMatch) {
   // tick：服务器时间轴（每秒 TICK_RATE 跳），客户端按它做插值缓冲
   return {
     tick: s.tick, minute: Math.floor(w.minute), slot: w.slot, ready: worldReadyView(life), playing: w.playing, wait: Math.floor(w.wait), rest: w.rest, actors: actors, needs: needs, money: money, event: ev, bond: life.bond, hints: hints,
-    stats: stats, eff: eff, goals: goals, tracks: tracks,
+    stats: stats, fine: fine, eff: eff, goals: goals, tracks: tracks,
     // 纸带：这一章，和今天的「下一件事」（主线，story.ts）
     story: storyView(life, CONTENT),
   };

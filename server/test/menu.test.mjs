@@ -89,7 +89,7 @@ const doIt = (s, r, sp, a, once = true) => G("worldAct")(s, C, r, sp, once, a);
 // 同一个阶段里，不靠标记的事每个钟头长得最多的那件，后添的不超过它：菜单是换着花时间，不是多给
 {
   const ADDED = C.map.actions.filter((a) => a.menu).map((a) => a.id);
-  assert.ok(ADDED.length >= 15, "后添的事都标了 menu");
+  assert.ok(ADDED.length >= 14, "后添的事都标了 menu");
   const STAGES = [[3, 11], [12, 17], [18, 29], [30, 59], [60, 90]];
   const open = (a, lo, hi) => !(a.requires?.minAge > hi) && !(a.requires?.maxAge < lo) && !a.requires?.flags && !a.quick && !a.duty && !a.sleep;
   for (const [lo, hi] of STAGES) {

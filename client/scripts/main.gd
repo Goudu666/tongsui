@@ -1773,7 +1773,7 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 			if both and gated:
 				note = ("\n%s 够不着这条" if their_locks.has(oid) else "\n%s 也走得了") % their_name
 			b = _option(grid, otext + note, _pick_path.bind(oid, otext, both))
-		_path_ruler(b, my_goal, their_goal, str(pe.eventId), oid)
+		_path_ruler(b, my_goal, their_goal, pe, oid, my_locks.has(oid), their_locks.has(oid), opts.size() > 6)
 	_gap(modal_body, 4)
 
 
@@ -1791,33 +1791,52 @@ func _head_when(head: HBoxContainer) -> void:
 		l.autowrap_mode = TextServer.AUTOWRAP_OFF
 
 
-## 路票底下垫一把小尺：这条路的线、我到哪了、对门到哪了（只有带分数线的路才有）
-func _path_ruler(b: Button, my_goal: Dictionary, their_goal: Dictionary, event_id: String, option_id: String) -> void:
+## 路票底下垫一把小尺：这条路的线、我到哪了、对门到哪了（只有带分数线的路才有）。
+## 尺上的点要和锁上那句话对得上：服务器锁路时用的是「本事 + 今天的发挥」（lifeOptionLock），
+## lifeGoal 的 have 不带发挥，这里补上 swing；再以锁为准夹一下：锁着的点不过旗，没锁的点不落在旗前。
+## compact：路多（超过 6 条）时票不另加高，尺子压进票底下一窄条，只给字让出这一条
+func _path_ruler(b: Button, my_goal: Dictionary, their_goal: Dictionary, pe: Dictionary, option_id: String,
+		locked: bool, their_locked: bool, compact: bool) -> void:
+	var event_id := str(pe.get("eventId", ""))
 	if str(my_goal.get("id", "")) != event_id:
 		return
 	var line: Dictionary = {}
 	for l in my_goal.get("lines", []):
 		if l is Dictionary and str(l.get("id", "")) == option_id:
-			line = l
-	if line.is_empty() or float(line.get("need", 0)) <= 0.0:
+			line = l.duplicate()
+	if line.is_empty() or float(line.get("need", 0)) <= 0.0 or str(line.get("unit", "分")) != "分":
 		return
+	var swing: Dictionary = _dict(pe.get("swing"))
+	line["have"] = path_have(float(line.get("have", 0)), float(swing.get(my_role, 0.0)), float(line.need), locked)
 	var theirs := GoalPanel.their_have(their_goal if str(their_goal.get("id", "")) == event_id else null, option_id)
-	var r := PathRuler.new(line, theirs, P.role_color(my_role), P.role_color(_other()))
+	if theirs >= 0.0:
+		theirs = path_have(theirs, float(swing.get(_other(), 0.0)), float(line.need), their_locked)
+	var r := PathRuler.new(line, theirs, P.role_color(my_role), P.role_color(_other()), b.disabled)
 	r.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	r.offset_left = 34
 	r.offset_right = -30
-	r.offset_top = -46
-	r.offset_bottom = -14
+	r.offset_top = -34 if compact else -46
+	r.offset_bottom = -6 if compact else -14
 	b.add_child(r)
-	b.custom_minimum_size.y = 168
+	if not compact:
+		b.custom_minimum_size.y = 168
+	var lift := 12.0 if compact else 20.0
 	for c in b.get_children():  # 甲乙丙那枚印跟着字往上挪，别落在尺子上
 		if c is Label:
-			c.offset_top -= 20
-			c.offset_bottom -= 20
+			c.offset_top -= lift
+			c.offset_bottom -= lift
 	for st in ["normal", "hover", "pressed", "disabled"]:
 		var sb: StyleBox = b.get_theme_stylebox(st)
 		if sb != null:
-			sb.content_margin_bottom = 52.0
+			sb.content_margin_bottom = 34.0 if compact else 52.0
+
+
+## 路票尺子上的点：本事加今天的发挥（swing 是属性单位，×10 是分），再以锁为准
+static func path_have(have: float, swing: float, need: float, locked: bool) -> float:
+	var v := have + swing * 10.0
+	if locked:
+		return minf(v, need - 1.0)
+	return maxf(v, need)
 
 
 ## 关口上选路。waiting：对门也过这一关，选完要等 TA

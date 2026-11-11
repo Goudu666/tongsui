@@ -145,6 +145,7 @@ func _run() -> void:
 		main._close_modal()
 		main.life = {"turn": 36}
 		main.last_world.goals = {"qing": junior, "mei": junior_mei}
+		main._refresh_hud()
 		main._on_event_started({"event": {"roles": ["qing", "mei"], "eventId": "m_junior", "kind": "milestone", "choices": {}, "swing": {"qing": 0.2, "mei": -0.1}},
 			"locks": {"qing": {"key": "心智 60 分，线是 64 分"}, "mei": {}}})
 		await _wait(1.5)

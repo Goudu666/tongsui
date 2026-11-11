@@ -15,7 +15,46 @@
 
 配置：**2 核 2 GB 起步就够**（Nakama + PostgreSQL 空载约 300 MB 内存）。想留余量做测试服就选 2 核 4 GB。系统选 **Ubuntu 24.04** 或 **Debian 12**。
 
-## 5 分钟上线
+## 现在线上那台：香港 cakery 机器（原生部署，`deploy/native/`）
+
+《同岁》现在和甜心蛋糕屋（cakery）、sing-box 共用香港那台 GCE 机器（`34.92.141.255`，Mac 上的 ssh 别名 `cakery`）。
+那台机器的 80 / 443 / 8443 / 8787 已经有人用，所以**不走下面的 Docker + Caddy 一键脚本**，而是：
+
+| | |
+| --- | --- |
+| 服务 | `tongsui.service`（Nakama 3.41.0 官方二进制，用户 `tongsui`，`MemoryMax=768M`） |
+| 数据库 | 本机 PostgreSQL（apt 装的 `postgresql.service`），库 `nakama`、角色 `tongsui`，只听 localhost |
+| 目录 | `/opt/tongsui/`：`bin/nakama`、`modules/index.js`、`config.yml`（640，含密钥）、`secrets.env`（600，第一次生成后不再变）、`data/`、`client-server.json` |
+| 端口 | Nakama 7349 / 7350 / 7351 全绑 127.0.0.1；公网只有 nginx 新增的 **8080**（`/etc/nginx/sites-available/tongsui`，HTTP + WebSocket 反代到 7350） |
+| 客户端地址 | `{"host": "34.92.141.255", "port": 8080, "scheme": "http", "server_key": "…"}`，已写进仓库变量 `TONGSUI_SERVER` |
+| 备份 | `tongsui-backup.timer` 每天 04:30 JST `pg_dump` 到 `/opt/tongsui-backups/`，保留 14 天；更新前也自动备份一次 |
+| 防火墙 | GCE 规则 `allow-cakery-web`（标签 `cakery-server`）本来就放行 tcp:8080；机器上没开 ufw |
+
+**第一次部署和以后更新都是同一条**（在 Mac 上跑；构建模块 → scp → `sudo setup.sh`：备份 → 换模块 → 重启 → 检查 → nginx -t 后 reload）：
+
+```bash
+cd ~/tongsui && git pull
+bash deploy/native/ship.sh          # 默认目标就是 ssh 别名 cakery
+```
+
+> ⚠️ **别对这台机器跑 `deploy/ship.sh` / `deploy/install.sh`**：它们会装 Docker、开 ufw 只放 22/80/443、让 Caddy 占 80/443，会把 cakery 和 sing-box 弄坏。
+> `setup.sh` 只新增自己的东西，不碰 cakery、sing-box、nginx 里已有的 server；nginx 用 `reload` 不用 `restart`，cakery 正连着的 WebSocket 不会断。
+
+运维（在服务器上，`ssh cakery`）：
+
+```bash
+systemctl status tongsui
+journalctl -u tongsui -f                       # 日志；搜 room fault 看房间出错
+sudo /opt/tongsui/backup.sh                    # 手动备份
+ls -lh /opt/tongsui-backups/
+cat /opt/tongsui/client-server.json            # 客户端配置
+# 恢复：sudo systemctl stop tongsui && gunzip -c 备份.sql.gz | sudo -u postgres psql -d nakama && sudo systemctl start tongsui
+# 控制台：在 Mac 上 ssh -L 7351:127.0.0.1:7351 cakery，浏览器开 http://127.0.0.1:7351（账号密码：sudo grep CONSOLE /opt/tongsui/secrets.env）
+```
+
+现在是明文 HTTP（没有域名就拿不到证书）。以后有域名了，可以在 nginx 的 tongsui server 上加证书改成 https，再把 `TONGSUI_SERVER` 改成 `"scheme": "https"` 重新出包。
+
+## 5 分钟上线（一台空的新服务器，Docker + Caddy）
 
 1. **买服务器**：香港轻量应用服务器，2 核 2 GB，Ubuntu 24.04。
    在控制台的**防火墙 / 安全组**里放行 **22、80、443**（TCP；443 再加一条 UDP 给 HTTP/3，可选）。

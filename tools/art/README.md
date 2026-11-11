@@ -83,3 +83,27 @@ python3 tools/art/scenes.py --preview street --x 1200 --w 1600 --scale 0.5 --out
 
 分寸：这是一条普通的老街，不是景点。不摆城市名片，不堆方言，街坊只叫行当不起姓（姓留给玩家可能投胎到的那几户人家）。
 年代靠街上的东西自己说：面的换成小出租，黑板报换成公告栏，对岸的烟囱换成楼。越往后越虚，老年只留不变的。
+
+## 主视觉和商店图（`keyart.py`）
+
+标题页、七章章首卡、人生长卷头尾的画，还有商店宣传图，都不另画：在游戏里摆拍，再排版。
+
+1. 摆拍：`tools/shots/keyart.gd` 进「先逛逛」，把两个人摆进某张图的某个位置，设好年纪、季节、钟点和天气，把镜头推近，再收起界面拍下来。
+   ```bash
+   xvfb-run -a -s "-screen 0 2400x1080x24" godot --path client --rendering-driver opengl3 \
+     --resolution 2400x1080 --script res://../tools/shots/keyart.gd -- --out=/tmp/ka [--only=title,ch5]
+   ```
+   要拍哪些镜头写在 `SHOTS` 表里，一行一个镜头。
+2. 排版：
+   ```bash
+   python3 tools/art/keyart.py /tmp/ka [--store /tmp/store --ui <tools/shots/run.sh 的截图目录>]
+   ```
+   - 打进安装包的有两样：`client/art/keyart/title.jpg`（2400×1080），以及 `ch1~7.jpg`（1200×360，以人为中心裁的横条）。
+   - 商店图是另外 5 张 1920×1080，不进安装包。
+3. `CH_FEET` 和 `CH_X` 记的是两个人在底片里的位置：脚底的 y、两人中间的 x。换了镜头要跟着改，不然人会被裁掉。
+4. 这几张图导入时按有损 WebP 压缩（`.import` 里写的是 `compress/mode=1`，质量 0.86），一共约 2.5MB。无损的话要 9MB。
+5. 谁在用这些图：
+   - `ui/title_art.gd`：整屏铺画，慢慢推拉，左边铺纸。
+   - `ui/fx.gd`：章首卡上的 `@art`。
+   - `ui/life_scroll.gd`：卷首取第一章的画，卷尾取第七章的画。
+   图都不存在时，这三处都照旧显示，只是没有画。

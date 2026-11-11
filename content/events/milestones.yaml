@@ -19,6 +19,58 @@
 # 清贫人家自己的路（接班、分房、当兵）线低或者不看分，可往后挣得也少。挂了标记的路不当兜底（lifeMilestoneFallback）。
 # 分数线是这个游戏最要紧的数值，改之前跑一遍 node tools/paths.mjs 看各种活法落在哪。
 
+# 四岁：头一道小关（关口冲刺 11-11）。开局十分钟里就有一回「看线 → 押时间 → 揭晓」，原来头一道关在六岁，真人手速要第十九分钟。
+# 只挑一个人上台，线比六岁的小干部高：底子最好的那项再使使劲才够得着。够不着也有台下那一条，不改往后的路。
+- id: m_kinder
+  kind: milestone
+  stage: childhood
+  age: 4
+  title: 六一
+  text: 幼儿园要过六一。阿姨拿着花名册挨个看：领唱的、翻跟头的、背诗的，台上各要一个。
+  options:
+    - id: sing
+      text: 站在最前头领唱
+      score: { charm: 1 }
+      min: 6.3
+      tags: [gentle]
+      effects: { self: { mood: 6 }, flags: [k_sing] }
+    - id: tumble
+      text: 在台上翻跟头
+      score: { body: 1 }
+      min: 6.5
+      tags: [adventure]
+      effects: { self: { mood: 6 }, flags: [k_tumble] }
+    - id: poem
+      text: 一口气背完一首长诗
+      score: { mind: 1 }
+      min: 6.5
+      tags: [competitive]
+      effects: { self: { mood: 6 }, flags: [k_poem] }
+    - id: clap
+      text: 坐在台下拍巴掌
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+  resonance:
+    sing:
+      text: 阿姨挑不出来，让两个人一块儿领。唱到一半忘了词，两个人对着看了一眼，接着往下哼。
+      memory: 一块儿哼过去
+      bond: { sync: 2, close: 2 }
+    tumble:
+      text: 一个翻过去，一个翻过来，在台中间差点撞上。底下的家长以为是排好的，鼓掌鼓得最响。
+      memory: 差点撞上
+      bond: { sync: 2, close: 2 }
+    poem:
+      text: 两个人背的是同一首，一人一句轮着背。轮到最后一句，两个人一块儿张的嘴。
+      memory: 一人一句
+      bond: { sync: 2, close: 2 }
+    clap:
+      text: 两个小板凳挨着。台上唱什么你们都没听，光顾着比谁拍得响。
+      memory: 比谁拍得响
+      bond: { sync: 1, close: 2 }
+  dissonance:
+    text: 一个在台上，一个在台下。下了台，台下的那个把攥热了的糖塞过去一块。
+    bond: { close: 1 }
+
 - id: m_school
   kind: milestone
   stage: childhood
@@ -561,7 +613,8 @@
     - id: walk
       text: 每天自己下楼走一圈
       score: { body: 1 }
-      min: 5.0
+      # 关口冲刺 11-11：六七十岁体魄 65~90，线 50 人人开局就过；抬到 75，底子一般的人要接着练才守得住
+      min: 7.5
       tags: [patient]
       effects: { self: { mood: 4 }, flags: [old_spry] }
     - id: care

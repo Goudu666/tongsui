@@ -88,7 +88,8 @@ const doIt = (s, r, sp, a, once = true) => G("worldAct")(s, C, r, sp, once, a);
 // ---------- 5. 菜单上后添的事守成长的上限 ----------
 // 同一个阶段里，不靠标记的事每个钟头长得最多的那件，后添的不超过它：菜单是换着花时间，不是多给
 {
-  const ADDED = ["pancake", "tea_runner", "mall_clerk", "river_run", "laps", "hopscotch", "sketch", "coal", "cards", "teach_chess", "flowers", "boat", "huqin", "square_dance"];
+  const ADDED = C.map.actions.filter((a) => a.menu).map((a) => a.id);
+  assert.ok(ADDED.length >= 15, "后添的事都标了 menu");
   const STAGES = [[3, 11], [12, 17], [18, 29], [30, 59], [60, 90]];
   const open = (a, lo, hi) => !(a.requires?.minAge > hi) && !(a.requires?.maxAge < lo) && !a.requires?.flags && !a.quick && !a.duty && !a.sleep;
   for (const [lo, hi] of STAGES) {
@@ -104,4 +105,40 @@ const doIt = (s, r, sp, a, once = true) => G("worldAct")(s, C, r, sp, once, a);
   }
 }
 
-console.log("✓ 点位菜单：点哪件做哪件、不带还是头一件 / 不在这儿、年纪不到、家底不够、不在钟点上的都回一句话 / 同一件才算搭伴 / 做到点也认 / 后添的事不超过原来最快的");
+// ---------- 6. 不点菜单的永远轮不到后添的事 ----------
+// 旧安装包、影子、机器人不带 action：每个点位、每个年纪、每个时段、有没有家底，选出来的都不是 menu 的事。
+// 头一件不在钟点上照旧回「现在不是时候」，不会掉到后添的划船、拉胡琴上去（交叉评审指出的）
+{
+  let n = 0;
+  for (const age of [5, 10, 14, 20, 35, 50, 70]) for (let slot = 0; slot < SLOTS.length; slot++) for (const rich of [false, true]) {
+    const s = day(age, slot);
+    if (rich) s.persons.qing.flags.push("fam_rich");
+    for (const sp of C.map.spots) {
+      const pk = G("worldPickAction")(s, C, "qing", sp).act;
+      if (pk) { assert.ok(!pk.menu, `${age} 岁时段 ${slot} 在 ${sp.id} 不点菜单落到了 ${pk.id}`); n++; }
+    }
+  }
+  assert.ok(n > 500);
+  const s = day(70, 2);
+  at(s, "qing", "lake_walk");
+  assert.equal(doIt(s, "qing", "lake_walk").error, "现在不是时候", "下午不点菜单：还是早上遛弯不是时候，不会去划船花钱");
+  const m0 = s.persons.qing.money;
+  assert.equal(doIt(s, "qing", "lake_walk", "boat").error, null, "点了划船才划船");
+  assert.ok(s.persons.qing.money < m0);
+}
+
+// ---------- 7. 影子跟着对门做菜单上的那件 ----------
+{
+  let followed = 0;
+  for (let seed = 1; seed <= 40 && !followed; seed++) {
+    const s = day(17, 2, seed);
+    at(s, "qing", "tea_seat");
+    assert.equal(doIt(s, "qing", "tea_seat", "tea_runner", false).error, null);
+    s.world.actors.mei.action = null;
+    G("worldShadowStep")(s, C, "mei");
+    if (s.world.actors.mei.action === "tea_runner") followed++;
+  }
+  assert.ok(followed > 0, "对门点了跑堂，影子跟过去也是跑堂");
+}
+
+console.log("✓ 点位菜单：点哪件做哪件、不带还是头一件 / 不在这儿、年纪不到、家底不够、不在钟点上的都回一句话 / 同一件才算搭伴 / 做到点也认 / 后添的事不超过原来最快的 / 不点菜单的轮不到后添的事 / 影子跟对门做菜单上的那件");

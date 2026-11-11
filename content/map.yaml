@@ -427,14 +427,16 @@ actions:
   # 挣钱的：少年、青年也有正经的零钱来路，可钱换的是长本事的时间
   - id: pancake
     label: 帮着摊煎饼
+    menu: true
     minutes: 60
     money: 1
     requires: { minAge: 12, maxAge: 21, hours: [390, 600] }
     needs: { energy: -8, mood: 2 }
     stats: { charm: 0.12 }
-    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 一个磕鸡蛋，一个刷酱，排队的人说你们俩比老板还快。 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 两个人一个收钱一个递，排队的人说你们俩比老板还快。 }
   - id: tea_runner
     label: 在茶社跑堂
+    menu: true
     minutes: 120
     money: 2
     requires: { minAge: 15, maxAge: 29, hours: [540, 1260] }
@@ -443,6 +445,7 @@ actions:
     together: { needs: { mood: 5 }, bond: { close: 1 }, text: 一个续水，一个收茶碗，台上说到热闹处，你们俩都站住了。 }
   - id: mall_clerk
     label: 在商场站柜台
+    menu: true
     minutes: 120
     money: 3
     requires: { minAge: 16, maxAge: 25, hours: [600, 1260] }
@@ -452,6 +455,7 @@ actions:
   # 填空的：四十五分钟、半个钟头，剩的时间不够一整回正经事的时候
   - id: river_run
     label: 沿河堤跑一趟
+    menu: true
     minutes: 45
     requires: { minAge: 12, maxAge: 59 }
     needs: { energy: -12, hunger: -6, mood: 4 }
@@ -459,6 +463,7 @@ actions:
     together: { needs: { mood: 5 }, bond: { close: 1 }, text: 跑到桥底下，两个人一块儿停下来，扶着膝盖喘。 }
   - id: laps
     label: 操场跑两圈
+    menu: true
     minutes: 30
     requires: { minAge: 12, maxAge: 17 }
     needs: { energy: -8, hunger: -4 }
@@ -466,6 +471,7 @@ actions:
     together: { needs: { mood: 4 }, bond: { close: 1 }, text: 第二圈你们俩谁也不肯落后半步。 }
   - id: hopscotch
     label: 跳房子
+    menu: true
     minutes: 45
     requires: { minAge: 6, maxAge: 11 }
     needs: { mood: 8, energy: -6 }
@@ -474,6 +480,7 @@ actions:
   # 两样都沾一点的：不如专门的长得快，可心情不掉
   - id: sketch
     label: 在河边写生
+    menu: true
     minutes: 60
     requires: { minAge: 10, hours: [540, 1080] }
     needs: { energy: -4, mood: 6 }
@@ -481,13 +488,15 @@ actions:
     together: { needs: { mood: 5 }, bond: { close: 1, sync: 1 }, text: 画的是同一座桥，一个画得歪，一个画得直，你们换着看了半天。 }
   - id: coal
     label: 帮街坊搬蜂窝煤
+    menu: true
     minutes: 60
-    requires: { minAge: 8, maxAge: 17 }
+    requires: { minAge: 8, maxAge: 11 }
     needs: { energy: -10, mood: 3 }
     stats: { body: 0.15, charm: 0.12 }
     together: { needs: { mood: 5 }, bond: { close: 1 }, text: 一个人在楼下递，一个人在楼梯上接，两张脸都抹黑了。 }
   - id: cards
     label: 跟街坊打扑克
+    menu: true
     minutes: 60
     requires: { minAge: 18, hours: [1110, 1320] }
     needs: { mood: 10, energy: -4 }
@@ -495,6 +504,7 @@ actions:
     together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 你们俩一伙，一个眼神就知道该出什么，对家直嚷嚷不玩了。 }
   - id: teach_chess
     label: 教小孩下棋
+    menu: true
     minutes: 60
     requires: { minAge: 45, hours: [720, 1110] }
     needs: { mood: 6, energy: -2 }
@@ -502,6 +512,7 @@ actions:
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: 小孩问你们俩谁下得好。你们同时指了指对方。 }
   - id: flowers
     label: 在阳台上侍弄花
+    menu: true
     minutes: 45
     requires: { minAge: 30 }
     needs: { mood: 8 }
@@ -510,6 +521,7 @@ actions:
   # 老了的去处：公园里早上、白天、晚上各有一样，搭伴的多，亲近涨得动（rules.yaml bond.closeWeight）
   - id: boat
     label: 去湖上划船
+    menu: true
     minutes: 60
     money: -2
     requires: { minAge: 45, hours: [600, 1080] }
@@ -518,6 +530,7 @@ actions:
     together: { needs: { mood: 8 }, bond: { close: 2 }, text: 两把桨划不到一块儿，船在湖当中转了个圈，你们索性不划了。 }
   - id: huqin
     label: 在亭子里拉胡琴
+    menu: true
     minutes: 60
     requires: { minAge: 50, hours: [480, 1080] }
     needs: { mood: 8, energy: -2 }
@@ -525,6 +538,7 @@ actions:
     together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 一个拉，一个哼，哼的那个跑了调，拉的那个跟着跑。 }
   - id: square_dance
     label: 跳广场舞
+    menu: true
     minutes: 60
     requires: { minAge: 45, hours: [1110, 1260] }
     needs: { mood: 8, energy: -8 }
@@ -533,6 +547,7 @@ actions:
   # 家境：殷实人家的孩子在茶社能包个座，听的是整本
   - id: tea_box
     label: 在茶社包个座
+    menu: true
     minutes: 90
     money: -3
     bring: true

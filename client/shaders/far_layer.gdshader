@@ -11,6 +11,7 @@ uniform float haze = 0.3;        // 0 不透视 ~ 1 全是天色
 uniform vec3 haze_col : source_color = vec3(0.90, 0.92, 0.88);
 uniform float seed = 0.0;
 uniform vec2 tex_size = vec2(2048.0, 620.0);
+uniform float blur = 0.0;        // 景深：远的虚一点（mip 偏移）
 
 const vec3 NIGHT = vec3(0.17, 0.24, 0.50);
 const vec3 DUSK = vec3(0.98, 0.70, 0.52);
@@ -23,7 +24,7 @@ float hash(vec2 p) {
 }
 
 void fragment() {
-	vec4 c = texture(TEXTURE, UV);
+	vec4 c = texture(TEXTURE, UV, blur);
 	vec3 col = mix(c.rgb, haze_col, haze);
 	col *= mix(vec3(1.0), DUSK, dusk * 0.4 + dawn * 0.15);
 	col *= mix(vec3(1.0), NIGHT * 1.15, night * 0.8);

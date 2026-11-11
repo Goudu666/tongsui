@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "c2ce0a8b0cce",
+ "version": "7bd75b6a127c",
  "events": [
   {
    "id": "ch_runner",
@@ -13199,6 +13199,149 @@ var CONTENT: Content = {
    "catches": []
   },
   {
+   "id": "m_kinder",
+   "kind": "milestone",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {},
+   "title": "六一",
+   "text": "幼儿园要过六一。阿姨拿着花名册挨个看：领唱的、翻跟头的、背诗的，台上各要一个。",
+   "options": [
+    {
+     "id": "sing",
+     "text": "站在最前头领唱",
+     "score": {
+      "charm": 1
+     },
+     "min": 6.3,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "k_sing"
+      ]
+     }
+    },
+    {
+     "id": "tumble",
+     "text": "在台上翻跟头",
+     "score": {
+      "body": 1
+     },
+     "min": 6.5,
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "k_tumble"
+      ]
+     }
+    },
+    {
+     "id": "poem",
+     "text": "一口气背完一首长诗",
+     "score": {
+      "mind": 1
+     },
+     "min": 6.5,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "k_poem"
+      ]
+     }
+    },
+    {
+     "id": "clap",
+     "text": "坐在台下拍巴掌",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "sing": {
+     "text": "阿姨挑不出来，让两个人一块儿领。唱到一半忘了词，两个人对着看了一眼，接着往下哼。",
+     "memory": "一块儿哼过去",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "tumble": {
+     "text": "一个翻过去，一个翻过来，在台中间差点撞上。底下的家长以为是排好的，鼓掌鼓得最响。",
+     "memory": "差点撞上",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "poem": {
+     "text": "两个人背的是同一首，一人一句轮着背。轮到最后一句，两个人一块儿张的嘴。",
+     "memory": "一人一句",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "clap": {
+     "text": "两个小板凳挨着。台上唱什么你们都没听，光顾着比谁拍得响。",
+     "memory": "比谁拍得响",
+     "bond": {
+      "sync": 1,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在台上，一个在台下。下了台，台下的那个把攥热了的糖塞过去一块。",
+    "bond": {
+     "close": 1
+    },
+    "flags": []
+   },
+   "age": 4,
+   "score": {},
+   "swing": false,
+   "grades": [],
+   "catches": []
+  },
+  {
    "id": "m_school",
    "kind": "milestone",
    "stage": "childhood",
@@ -14691,7 +14834,7 @@ var CONTENT: Content = {
      "score": {
       "body": 1
      },
-     "min": 5,
+     "min": 7.5,
      "tags": [
       "patient"
      ],
@@ -30987,7 +31130,8 @@ var CONTENT: Content = {
     "stats": {},
     "money": 0,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "eat_out",
@@ -31017,7 +31161,8 @@ var CONTENT: Content = {
      },
      "text": "「俩鸡蛋，多放葱花。」你们说的是同一句。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "dine",
@@ -31048,7 +31193,8 @@ var CONTENT: Content = {
      },
      "text": "一张小桌，两瓶汽水，说到人家收摊。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "sleep",
@@ -31064,7 +31210,8 @@ var CONTENT: Content = {
     "stats": {},
     "money": 0,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "wash",
@@ -31080,7 +31227,8 @@ var CONTENT: Content = {
     "stats": {},
     "money": 0,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "duty",
@@ -31102,7 +31250,8 @@ var CONTENT: Content = {
      },
      "text": "你们是一路去的。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "picture_book",
@@ -31131,7 +31280,8 @@ var CONTENT: Content = {
      },
      "text": "两个脑袋凑在一本书上，谁也不让谁翻页。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "study",
@@ -31161,7 +31311,8 @@ var CONTENT: Content = {
      },
      "text": "一张桌子两头坐，写一会儿，抬头看一眼对面写到哪了。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "read",
@@ -31190,7 +31341,8 @@ var CONTENT: Content = {
      },
      "text": "各看各的，半天没人说话，也不觉得闷。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "play_alley",
@@ -31220,7 +31372,8 @@ var CONTENT: Content = {
      },
      "text": "「小皮球，架脚踢……」你们俩跳得一样快。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "play_river",
@@ -31249,7 +31402,8 @@ var CONTENT: Content = {
      },
      "text": "一个人拽线，一个人举着风筝跑。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "walk_river",
@@ -31278,7 +31432,8 @@ var CONTENT: Content = {
      },
      "text": "从桥这头走到那头，话说了一半，又走回来。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "ball",
@@ -31308,7 +31463,8 @@ var CONTENT: Content = {
      },
      "text": "两个人，一个球，书包摆成门。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "work",
@@ -31338,7 +31494,8 @@ var CONTENT: Content = {
      },
      "text": "爷爷说你们俩加一块儿顶半个学徒。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "club_math",
@@ -31375,7 +31532,8 @@ var CONTENT: Content = {
      },
      "text": "一道题两种解法，你们各讲各的，讲到传达室的大爷来锁门。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "club_sport",
@@ -31413,7 +31571,8 @@ var CONTENT: Content = {
      },
      "text": "压腿的时候背靠着背，谁也不敢先喊疼。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "club_art",
@@ -31450,7 +31609,8 @@ var CONTENT: Content = {
      },
      "text": "茶社下午没有客人，台子借给孩子们。你们一个打板，一个数拍子。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "piano",
@@ -31489,7 +31649,8 @@ var CONTENT: Content = {
      },
      "text": "一架琴两个人坐，你弹右手，TA 弹左手，老师说拍子对上了。"
     },
-    "bring": true
+    "bring": true,
+    "menu": false
    },
    {
     "id": "tutor",
@@ -31526,7 +31687,8 @@ var CONTENT: Content = {
      },
      "text": "回来的末班车上，两个人把今天的卷子对了一遍，错的是同一道。"
     },
-    "bring": true
+    "bring": true,
+    "menu": false
    },
    {
     "id": "help_out",
@@ -31559,7 +31721,8 @@ var CONTENT: Content = {
      },
      "text": "对门过来搭了把手，干完了，你家大人塞给你们一人一个苹果。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "factory_bath",
@@ -31589,7 +31752,8 @@ var CONTENT: Content = {
      },
      "text": "出来的时候头发还冒着热气，两个人一人一瓶汽水，坐在厂门口晾着。"
     },
-    "bring": true
+    "bring": true,
+    "menu": false
    },
    {
     "id": "chat",
@@ -31617,7 +31781,8 @@ var CONTENT: Content = {
      },
      "text": "街坊问你们俩怎么老在一块儿，你们同时说「顺路」。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "knock",
@@ -31642,7 +31807,8 @@ var CONTENT: Content = {
      },
      "text": "两扇门同时开了，你们在楼道里对着乐。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "play_roof",
@@ -31667,7 +31833,8 @@ var CONTENT: Content = {
      },
      "text": "鸽子绕着楼顶飞了三圈，你们数的圈数不一样。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "listen",
@@ -31701,7 +31868,8 @@ var CONTENT: Content = {
      },
      "text": "台上讲到最要紧的地方停了一下。你们俩同时笑出了声，又同时捂住了嘴。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "perform",
@@ -31735,7 +31903,8 @@ var CONTENT: Content = {
      },
      "text": "你忘了词，TA 在旁边接了下去，像排练过一样。台下有人叫了声好。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "fish",
@@ -31769,7 +31938,8 @@ var CONTENT: Content = {
      },
      "text": "漂动了。你们俩同时喊「上钩了！」鱼吓跑了。大爷没恼，笑了笑，又挂了一条蚯蚓。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "chess",
@@ -31802,7 +31972,8 @@ var CONTENT: Content = {
      },
      "text": "你们俩对着下，大爷们围了一圈，谁也不许支招。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "blackboard",
@@ -31837,7 +32008,8 @@ var CONTENT: Content = {
      },
      "text": "一个画报头，一个抄字，粉笔灰落了两个人一头。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "broadcast",
@@ -31872,7 +32044,8 @@ var CONTENT: Content = {
      },
      "text": "一个念稿，一个放歌。念错一个字，全校都听见你们俩在笑。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "rail_talk",
@@ -31899,7 +32072,8 @@ var CONTENT: Content = {
      },
      "text": "船过去了三条，话说了一半。剩下那一半，明天再说。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "window_shop",
@@ -31930,7 +32104,8 @@ var CONTENT: Content = {
      },
      "text": "什么也没买，从一楼逛到顶楼，又坐滚梯下来。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "dine_west",
@@ -31963,7 +32138,8 @@ var CONTENT: Content = {
      },
      "text": "刀叉摆了一排，你们从最外头那把拿起，拿错了也没人看。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "read_store",
@@ -31996,7 +32172,8 @@ var CONTENT: Content = {
      },
      "text": "你们背靠着一个书架坐在地上，一人一本，翻页的声音错开。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "night_snack",
@@ -32019,7 +32196,8 @@ var CONTENT: Content = {
     "stats": {},
     "money": -2,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "cook",
@@ -32046,7 +32224,8 @@ var CONTENT: Content = {
      },
      "text": "一个灶眼，两个人轮着炒，炒出来的是一个味儿。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "balcony",
@@ -32064,7 +32243,8 @@ var CONTENT: Content = {
     "stats": {},
     "money": 0,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "morning_walk",
@@ -32097,7 +32277,8 @@ var CONTENT: Content = {
      },
      "text": "你们一前一后走，走到第三圈，并成了一排。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "choir",
@@ -32131,7 +32312,8 @@ var CONTENT: Content = {
      },
      "text": "你们站在一排，调都起高了，谁也没往下落。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "ground_write",
@@ -32164,7 +32346,8 @@ var CONTENT: Content = {
      },
      "text": "一个写上句，一个接下句。写到第四句，第一句已经干了。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "accompany",
@@ -32191,7 +32374,8 @@ var CONTENT: Content = {
      },
      "text": "两把椅子拼在一起，你们轮着眯一会儿。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "letter",
@@ -32211,7 +32395,8 @@ var CONTENT: Content = {
     },
     "money": 0,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "club_campus",
@@ -32246,7 +32431,8 @@ var CONTENT: Content = {
      },
      "text": "社团里没人知道你们是一条街上长大的。你们也没说。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "swim_class",
@@ -32284,7 +32470,8 @@ var CONTENT: Content = {
      },
      "text": "一块浮板两个人扒着，你踢左腿，TA 踢右腿，在池子里转了个圈。"
     },
-    "bring": true
+    "bring": true,
+    "menu": false
    },
    {
     "id": "lang_class",
@@ -32322,7 +32509,8 @@ var CONTENT: Content = {
      },
      "text": "老师让同桌对话。你们俩用外语问对方吃了吗，说完都笑了。"
     },
-    "bring": true
+    "bring": true,
+    "menu": false
    },
    {
     "id": "banquet",
@@ -32353,7 +32541,8 @@ var CONTENT: Content = {
     },
     "money": -5,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "night_class",
@@ -32393,7 +32582,8 @@ var CONTENT: Content = {
      },
      "text": "教室里坐的都是下了班的人。你们俩挨着，一个记笔记，一个替另一个盯着别睡着。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "side_tutor",
@@ -32422,7 +32612,8 @@ var CONTENT: Content = {
     },
     "money": 2,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "side_fix",
@@ -32450,7 +32641,8 @@ var CONTENT: Content = {
     },
     "money": 2,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "night_market",
@@ -32479,7 +32671,8 @@ var CONTENT: Content = {
     },
     "money": 2,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "overtime",
@@ -32512,7 +32705,8 @@ var CONTENT: Content = {
     },
     "money": 2,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "night_shift",
@@ -32545,7 +32739,8 @@ var CONTENT: Content = {
     },
     "money": 2,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "run_dawn",
@@ -32583,7 +32778,8 @@ var CONTENT: Content = {
      },
      "text": "老头在前头倒着跑，你们俩在后头追。他说，喘气要一块儿喘。"
     },
-    "bring": true
+    "bring": true,
+    "menu": false
    },
    {
     "id": "old_lessons",
@@ -32620,7 +32816,8 @@ var CONTENT: Content = {
      },
      "text": "老先生一人给一杯茶，茶凉了，他才说今天就到这儿。"
     },
-    "bring": true
+    "bring": true,
+    "menu": false
    },
    {
     "id": "pancake",
@@ -32652,9 +32849,10 @@ var CONTENT: Content = {
      "bond": {
       "close": 1
      },
-     "text": "一个磕鸡蛋，一个刷酱，排队的人说你们俩比老板还快。"
+     "text": "两个人一个收钱一个递，排队的人说你们俩比老板还快。"
     },
-    "bring": false
+    "bring": false,
+    "menu": true
    },
    {
     "id": "tea_runner",
@@ -32688,7 +32886,8 @@ var CONTENT: Content = {
      },
      "text": "一个续水，一个收茶碗，台上说到热闹处，你们俩都站住了。"
     },
-    "bring": false
+    "bring": false,
+    "menu": true
    },
    {
     "id": "mall_clerk",
@@ -32722,7 +32921,8 @@ var CONTENT: Content = {
      },
      "text": "两个柜台挨着，没客人的时候，你们隔着玻璃比划着说话。"
     },
-    "bring": false
+    "bring": false,
+    "menu": true
    },
    {
     "id": "river_run",
@@ -32753,7 +32953,8 @@ var CONTENT: Content = {
      },
      "text": "跑到桥底下，两个人一块儿停下来，扶着膝盖喘。"
     },
-    "bring": false
+    "bring": false,
+    "menu": true
    },
    {
     "id": "laps",
@@ -32783,7 +32984,8 @@ var CONTENT: Content = {
      },
      "text": "第二圈你们俩谁也不肯落后半步。"
     },
-    "bring": false
+    "bring": false,
+    "menu": true
    },
    {
     "id": "hopscotch",
@@ -32814,7 +33016,8 @@ var CONTENT: Content = {
      },
      "text": "粉笔画的格子，沙包扔到了九，两个人一块儿蹦过去捡。"
     },
-    "bring": false
+    "bring": false,
+    "menu": true
    },
    {
     "id": "sketch",
@@ -32849,7 +33052,8 @@ var CONTENT: Content = {
      },
      "text": "画的是同一座桥，一个画得歪，一个画得直，你们换着看了半天。"
     },
-    "bring": false
+    "bring": false,
+    "menu": true
    },
    {
     "id": "coal",
@@ -32860,7 +33064,7 @@ var CONTENT: Content = {
     "duty": false,
     "requires": {
      "minAge": 8,
-     "maxAge": 17
+     "maxAge": 11
     },
     "needs": {
      "energy": -10,
@@ -32880,7 +33084,8 @@ var CONTENT: Content = {
      },
      "text": "一个人在楼下递，一个人在楼梯上接，两张脸都抹黑了。"
     },
-    "bring": false
+    "bring": false,
+    "menu": true
    },
    {
     "id": "cards",
@@ -32914,7 +33119,8 @@ var CONTENT: Content = {
      },
      "text": "你们俩一伙，一个眼神就知道该出什么，对家直嚷嚷不玩了。"
     },
-    "bring": false
+    "bring": false,
+    "menu": true
    },
    {
     "id": "teach_chess",
@@ -32948,7 +33154,8 @@ var CONTENT: Content = {
      },
      "text": "小孩问你们俩谁下得好。你们同时指了指对方。"
     },
-    "bring": false
+    "bring": false,
+    "menu": true
    },
    {
     "id": "flowers",
@@ -32976,7 +33183,8 @@ var CONTENT: Content = {
      },
      "text": "一盆茉莉开了两朵，你们一人闻了一朵。"
     },
-    "bring": false
+    "bring": false,
+    "menu": true
    },
    {
     "id": "boat",
@@ -33009,7 +33217,8 @@ var CONTENT: Content = {
      },
      "text": "两把桨划不到一块儿，船在湖当中转了个圈，你们索性不划了。"
     },
-    "bring": false
+    "bring": false,
+    "menu": true
    },
    {
     "id": "huqin",
@@ -33044,7 +33253,8 @@ var CONTENT: Content = {
      },
      "text": "一个拉，一个哼，哼的那个跑了调，拉的那个跟着跑。"
     },
-    "bring": false
+    "bring": false,
+    "menu": true
    },
    {
     "id": "square_dance",
@@ -33078,7 +33288,8 @@ var CONTENT: Content = {
      },
      "text": "你们站在最后一排，动作总慢半拍，慢得一模一样。"
     },
-    "bring": false
+    "bring": false,
+    "menu": true
    },
    {
     "id": "tea_box",
@@ -33115,7 +33326,8 @@ var CONTENT: Content = {
      },
      "text": "茶社伙计给你们端来一碟瓜子，说是老先生送的。台上正讲到要紧处，你们都忘了嗑。"
     },
-    "bring": true
+    "bring": true,
+    "menu": true
    }
   ],
   "scenes": [

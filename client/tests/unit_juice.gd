@@ -72,6 +72,36 @@ func _initialize() -> void:
 	j.on_world(_world({"qing": {"body": 4.5, "mind": 5.35, "charm": 3.0}, "mei": {"body": 4.0, "mind": 4.0, "charm": 4.0}}, 18, 42))
 	check(_tags(j) == before, "弹窗关了也不补飘（底数跟着走了）")
 
+	# 零点几分（服务器 fine）：刚做完一件（did 换了号）才飘「+0.3」，小一号；没做事（需求自己掉、影子）不飘；跨过整分照常飘整数
+	var st := {"qing": {"body": 4.5, "mind": 5.35, "charm": 3.0}, "mei": {"body": 4.0, "mind": 4.0, "charm": 4.0}}
+	var w0 := _world(st, 18, 42)
+	w0["fine"] = {"qing": {"body": 45.0, "mind": 53.5, "charm": 30.0}, "mei": {"body": 40.0, "mind": 40.0, "charm": 40.0}}
+	j.on_world(w0)
+	before = _tags(j)
+	var w1 := _world(st, 18, 42)
+	w1["fine"] = {"qing": {"body": 45.0, "mind": 53.5, "charm": 30.3}, "mei": {"body": 40.0, "mind": 40.0, "charm": 40.0}}
+	j.on_world(w1)
+	check(_tags(j) == before, "没做完一件事（没有新的 did）：零点几分不飘")
+	var w2 := _world(st, 18, 42)
+	w2["fine"] = {"qing": {"body": 45.0, "mind": 53.5, "charm": 30.5}, "mei": {"body": 40.0, "mind": 40.0, "charm": 40.0}}
+	w2.actors.qing["did"] = {"n": 7, "a": "play_alley", "tg": false}
+	j.on_world(w2)
+	var bits: Array = []
+	for c in j.get_children():
+		if c is Juice.Tag and c.bit:
+			bits.append(c.text_big)
+	check(bits == ["+0.2"], "刚做完一件、只长了 0.2 分：飘一张小号的「+0.2」（实际 %s）" % [bits])
+	var w3 := _world(st, 18, 42)
+	w3["fine"] = {"qing": {"body": 45.0, "mind": 53.5, "charm": 31.1}, "mei": {"body": 40.0, "mind": 40.0, "charm": 40.0}}
+	w3.actors.qing["did"] = {"n": 8, "a": "play_alley", "tg": false}
+	before = _tags(j)
+	j.on_world(w3)
+	var last: Juice.Tag = null
+	for c in j.get_children():
+		if c is Juice.Tag:
+			last = c
+	check(_tags(j) == before + 1 and last != null and not last.bit and last.text_big == "+1", "30.5 → 31.1 跨过一分：飘整数「+1」")
+
 	# 成长账：一个日子一个点，同一天只改不加；回到更早的日子（再来一世）从头记
 	j.journal = {"pts": [], "stages": {}}
 	for turn in [0, 0, 1, 2, 35, 36]:
@@ -135,5 +165,5 @@ func _initialize() -> void:
 	check(Report.has_stage([[0, 3, "childhood", 1, 1, 1, 1, 1, 1]], "childhood") and not Report.has_stage([], "teen"), "成长账里有没有这一段")
 
 	if fails == 0:
-		print("✓ 爽感层：百分制取整 / 不到 1 分不飘 / 开着弹窗不飘 / 成长账一天一点、换一世从头记 / 成绩单讲刚过完的那段 / 搭伴和关口计数 / 数等飘字落下才拨 / 过线判定")
+		print("✓ 爽感层：百分制取整 / 不到 1 分不飘、做完一件才飘零点几分 / 开着弹窗不飘 / 成长账一天一点、换一世从头记 / 成绩单讲刚过完的那段 / 搭伴和关口计数 / 数等飘字落下才拨 / 过线判定")
 	quit(1 if fails > 0 else 0)

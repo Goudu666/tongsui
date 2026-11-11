@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 # 同岁数据库在线备份：/opt/tongsui-backups/tongsui-<时间>.sql.gz，保留 14 天（TONGSUI_BACKUP_KEEP_DAYS 可改）
-# 恢复：sudo systemctl stop tongsui
-#       gunzip -c 备份.sql.gz | sudo -u postgres psql -d nakama
-#       sudo systemctl start tongsui
+# 恢复：sudo /opt/tongsui/restore.sh 备份.sql.gz（要以 tongsui 身份导入，别直接 psql，见 restore.sh）
 set -euo pipefail
 dir=/opt/tongsui-backups
 keep="${TONGSUI_BACKUP_KEEP_DAYS:-14}"

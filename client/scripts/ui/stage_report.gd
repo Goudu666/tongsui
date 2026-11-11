@@ -15,7 +15,7 @@ var stage := "childhood"     ## 讲哪一阶段
 var done := true             ## 这一阶段过完了（墨卡上）还是正在过（点开看）
 var mine := P.QING
 var theirs := P.MEI
-var counts: Dictionary = {}  ## { tg 搭伴几回, res 想到一块儿几回, ms 过了几道关 }
+var counts: Dictionary = {}  ## { tg 搭伴几回, res 想到一块儿几回, ms 过了几道关, list 每道关一行（juice.gd milestone_row） }
 var on_ink := true
 var _t := 0.0
 var _fg := P.PAPER
@@ -32,11 +32,26 @@ func setup(p_pts: Array, p_stage: String, p_mine: Color, p_theirs: Color, p_coun
 	done = p_done
 	_fg = P.PAPER if on_ink else P.INK
 	_soft = Color(P.PAPER, 0.62) if on_ink else P.INK_SOFT
-	custom_minimum_size = Vector2(w, 560)
+	custom_minimum_size = Vector2(w, 560 + ledger_height(p_counts))
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 ## 这一阶段有没有东西可讲（成长账里至少有一个点）
+## 这一章的关口总账占多高：一道关一行，最多 MAX_ROWS 行（多了只留最近的）
+const ROW := 52.0
+const MAX_ROWS := 4
+
+
+static func ledger_rows(p_counts: Dictionary) -> Array:
+	var list: Array = p_counts.get("list", []) if p_counts.get("list") is Array else []
+	return list.slice(maxi(0, list.size() - MAX_ROWS))
+
+
+static func ledger_height(p_counts: Dictionary) -> float:
+	var n := ledger_rows(p_counts).size()
+	return 0.0 if n == 0 else n * ROW + 22.0
+
+
 static func has_stage(p_pts: Array, p_stage: String) -> bool:
 	for p in p_pts:
 		if str(p[2]) == p_stage:
@@ -82,10 +97,11 @@ func _draw() -> void:
 	var tw := f.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 40).x
 	draw_string(f, Vector2(tw + 18, 40), span + ("" if done else " · 还在过"), HORIZONTAL_ALIGNMENT_LEFT, -1, 26, _soft)
 	# 三行：从多少到多少
+	var top := _ledger(f, w)
 	var bar_x := 110.0
 	var bar_w := w - bar_x - 230.0
 	for i in KEYS.size():
-		var y := 96.0 + i * 64.0
+		var y := 96.0 + top + i * 64.0
 		var a := float(first[3 + i])
 		var b := float(last[3 + i])
 		var them := float(last[6 + i])
@@ -115,17 +131,71 @@ func _draw() -> void:
 			var dt := ("+%d" % dv) if dv > 0 else ("−%d" % -dv)
 			var dw := f.get_string_size(dt, HORIZONTAL_ALIGNMENT_LEFT, -1, 30).x
 			draw_string(f, Vector2(w - dw, y + 12), dt, HORIZONTAL_ALIGNMENT_LEFT, -1, 30, mine if dv > 0 else _soft)
-	_curve(f, Rect2(0, 300, w, 190))
+	_curve(f, Rect2(0, 300 + top, w, 190))
 	# 最底下一行
 	var parts: Array = []
 	if int(counts.get("tg", 0)) > 0:
 		parts.append("搭伴做了 %d 回事" % int(counts.tg))
 	if int(counts.get("res", 0)) > 0:
 		parts.append("想到一块儿 %d 回" % int(counts.res))
-	if int(counts.get("ms", 0)) > 0:
+	if int(counts.get("ms", 0)) > 0 and top <= 0.0:  # 老成长账没记每道关的，只写个数
 		parts.append("过了 %d 道关" % int(counts.ms))
 	if not parts.is_empty():
-		draw_string(f, Vector2(0, 545), "　·　".join(parts), HORIZONTAL_ALIGNMENT_LEFT, w, 26, _soft)
+		draw_string(f, Vector2(0, 545 + top), "　·　".join(parts), HORIZONTAL_ALIGNMENT_LEFT, w, 26, _soft)
+
+
+## 这一章的几场冲刺：一道关一行，「12 岁　小升初　→ 普通班　[过]　差 2 分没够上『去重点班』」。返回占了多高
+func _ledger(f: Font, w: float) -> float:
+	var rows := ledger_rows(counts)
+	if rows.is_empty():
+		return 0.0
+	for i in rows.size():
+		var row: Dictionary = rows[i]
+		var y := 62.0 + i * ROW + 34.0
+		var k := _ease(0.15 + i * 0.22, 0.55 + i * 0.22)
+		if k <= 0.0:
+			continue
+		var dx := (1.0 - k) * 24.0
+		var x := dx
+		draw_string(f, Vector2(x, y), "%d 岁" % int(row.get("a", 0)), HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(_soft, _soft.a * k))
+		x += 76.0
+		var title := str(row.get("t", ""))
+		draw_string(f, Vector2(x, y), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 30, Color(_fg, k))
+		x += f.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 30).x + 18.0
+		var pick := str(row.get("o", ""))
+		if pick != "":
+			var pt := "→ " + pick
+			draw_string(f, Vector2(x, y), pt, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Color(_fg, 0.85 * k))
+			x += f.get_string_size(pt, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x + 20.0
+		# 印：过了线盖一方自己颜色的（有成绩档写成绩档），没过线的灰框
+		if row.has("ok"):
+			var ok := bool(row.ok)
+			var txt := str(row.get("g", "")) if ok and str(row.get("g", "")).length() <= 5 and str(row.get("g", "")) != "" else ("过线" if ok else "没过线")
+			var tw := f.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x
+			var sk := _ease(0.45 + i * 0.22, 0.6 + i * 0.22)
+			var sc := lerpf(1.6, 1.0, sk)
+			var box := Rect2(x, y - 30, tw + 22, 40)
+			var c := box.get_center()
+			draw_set_transform(c, -0.05, Vector2(sc, sc))
+			var lb := Rect2(-box.size / 2.0, box.size)
+			if ok:
+				draw_rect(Rect2(lb.position + Vector2(3, 3), lb.size), Color(P.INK, 0.35 * sk))
+				draw_rect(lb, Color(mine, sk))
+				draw_string(f, lb.position + Vector2(11, 28), txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(P.PAPER, sk))
+			else:
+				draw_rect(lb, Color(_soft, 0.8 * sk), false, 2.0)
+				draw_string(f, lb.position + Vector2(11, 28), txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(_soft, sk))
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+			x += box.size.x + 20.0
+		if row.has("gap") and int(row.gap) > 0:
+			var gt := "差 %d %s" % [int(row.gap), str(row.get("u", "分"))]
+			draw_string(f, Vector2(x, y), gt, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color(_fg, k))
+			x += f.get_string_size(gt, HORIZONTAL_ALIGNMENT_LEFT, -1, 28).x + 8.0
+			if str(row.get("mt", "")) != "":
+				draw_string(f, Vector2(x, y), "没够上「%s」" % str(row.mt), HORIZONTAL_ALIGNMENT_LEFT, maxf(40.0, w - x), 24, Color(_soft, _soft.a * k))
+	var bottom := 62.0 + rows.size() * ROW + 6.0
+	draw_line(Vector2(0, bottom), Vector2(w, bottom), Color(_fg, 0.2), 1.5)
+	return ledger_height(counts)
 
 
 static func avg(p: Array, off: int) -> float:

@@ -1732,7 +1732,7 @@ func _show_milestone_result(e: Dictionary) -> void:
 			rv.luck = int(res.get("luck", 0))
 			rv.steady = int(res.get("steady", 0))
 			rv.grade = str(res.grade) if res.get("grade") != null else ""
-			var miss: Dictionary = _dict(res.get("miss"))
+			var miss: Dictionary = _dict(res.get("near", res.get("miss")))  # near：结局页「差一点」同一个数（atlas.ts）；miss 是没有 near 的服务器
 			if not miss.is_empty():
 				miss = miss.duplicate()
 				miss["text"] = _option_text(e.events[r], miss.get("option"))

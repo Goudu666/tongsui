@@ -175,7 +175,13 @@ func _process(delta: float) -> void:
 	_t += delta
 	_since_tip += delta
 	if _tip.visible:
-		_tip_t += delta
+		# 弹窗（事件、关口）压上来时纸条先让开、计时停住，弹窗关了再接着显示：不然纸条正好盖在事件的字上
+		var covered: bool = main != null and main.modal.visible and str(TIPS[_tip_id][1]) != "modal"
+		if covered:
+			_tip.modulate.a = 0.0
+		else:
+			_tip.modulate.a = minf(1.0, _tip.modulate.a + delta * 4.0)
+			_tip_t += delta
 		if _tip_t > TIP_SECONDS:
 			_hide_tip()
 		else:
@@ -334,10 +340,9 @@ func want(id: String) -> void:
 	_tip_label.text = str(TIPS[id][0])
 	_tip.visible = true
 	_tip_t = 0.0
+	_tip.modulate.a = 0.0  # _process 里淡入（被弹窗压着时不显示）
 	_tip.reset_size()
 	_place_tip()
-	var tw := _tip.create_tween()
-	tw.tween_property(_tip, "modulate:a", 1.0, 0.25)
 
 
 func _hide_tip() -> void:

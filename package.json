@@ -9,7 +9,8 @@
     "server:test": "npm --prefix server run test",
     "test": "npm run content && npm run server:test",
     "balance": "node tools/balance.mjs",
-    "build": "npm run content && npm run server:build"
+    "build": "npm run content && npm run server:build",
+    "web": "bash web/build.sh"
   },
   "devDependencies": {
     "yaml": "2.9.1"

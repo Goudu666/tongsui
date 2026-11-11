@@ -11,15 +11,15 @@ var mine_color := P.QING
 var theirs_color := P.MEI
 
 
-func _init(p_line: Dictionary, p_theirs: float, p_mine: Color, p_theirs_color: Color) -> void:
+## dim：这条路锁着，尺子淡一半
+func _init(p_line: Dictionary, p_theirs: float, p_mine: Color, p_theirs_color: Color, dim := false) -> void:
 	line = p_line
 	theirs = p_theirs
 	mine_color = p_mine
 	theirs_color = p_theirs_color
+	modulate.a = 0.55 if dim else 1.0
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func _draw() -> void:
-	var dim := get_parent() is BaseButton and (get_parent() as BaseButton).disabled
-	modulate.a = 0.55 if dim else 1.0
 	GoalPanel.draw_ruler(self, Vector2(0, size.y - 12.0), size.x, line, theirs, mine_color, theirs_color)

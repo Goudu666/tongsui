@@ -27,7 +27,7 @@ const CHAPTER_NUM := ["", "一", "二", "三", "四", "五", "六", "七", "八"
 var time_label := ""    ## LifeTime.at().label，例如 "7 岁 · 立夏"
 var stage := "childhood"
 var minute := 390.0
-var slot_name := ""     ## 一天五段里的哪一段（早上 / 上午……）。还没定的时候日历牌上写它，这一段在过的时候写钟点
+var slot_name := ""     ## 一天五段里的哪一段（早上 / 上午……）。日历牌上现在一直写钟点（一件一件做，钟是自己的），这个留给别处用
 var playing := false
 var tag := ""           ## 日历牌色条上额外的一个词（上学日、预览）
 var note := ""          ## 日历牌底下的一行小字（网络延迟）
@@ -130,7 +130,8 @@ func _calendar(f: Font, at: Vector2) -> void:
 	var parts := time_label.split(" · ")
 	var age_text := str(parts[0]) if parts.size() > 0 else ""
 	var fs := 60 if age_text.length() <= 4 else 44
-	var clock := P.clock(minute) if playing or slot_name == "" else slot_name
+	# 钟一直写着几点：一件一件做的时候，钟是自己的，做完一回就拨过去（main.gd 的 _shown_minute）
+	var clock := P.clock(minute)
 	var cw := f.get_string_size(clock, HORIZONTAL_ALIGNMENT_LEFT, -1, 34).x
 	var aw := f.get_string_size(age_text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 	var r := Rect2(at, CARD)

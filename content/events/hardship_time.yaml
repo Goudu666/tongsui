@@ -1,0 +1,198 @@
+# 三扇门（一）：时间和安全网（docs/MEANS.md 第八节）。
+#
+# 家境拉开的差距主要不写在这儿，写在日程上（tracks.yaml：清贫人家放了学帮家里、殷实人家放了学是爸妈报的班）
+# 和关口上（milestones.yaml：助学金、中专、择校费、爸妈攒的那笔钱、复读、助学贷款、爸妈心里那条线 expect）。
+# 这里是几件跟着那几样来的事：
+#   - 跟爸妈摊牌退班（class_quit）：班没了，放学那一段还给自己，代价是「记一回脸色」
+#   - 记过脸色的、家里不管了的（strain1 / fam_cut），各有一件事把这句话落到饭桌上
+#   - 看摊的傍晚、拿到助学金的那天
+#
+# 「记一回脸色」的约定（22 岁以后的事也照这个写）：没有 strain1 的打 strain1，已经有 strain1 的打 fam_cut（家里不管了）。
+# 普通事件里写成两个选项各带 requires，标记不对的那一项不摆出来；关口上按 expect 记（server/src/sim.ts → lifeFace）。
+# 写法守文风手册：不哭穷也不炫富，不评价谁家的爸妈。
+
+# ---------- 殷实：爸妈报的班 ----------
+
+- id: h_class_quit_kid
+  kind: solo
+  stage: childhood
+  weight: 3
+  requires: { minAge: 10, maxAge: 11, flags: [fam_rich], notFlags: [class_quit, fam_cut] }
+  title: 又是星期四
+  text: 放学铃一响，别人往家跑，你往班上走。老师又多留了一页，你妈说这礼拜再加一节。
+  options:
+    - id: quit
+      text: 跟爸妈说，不去了
+      requires: { notFlags: [strain1] }
+      tags: [adventure]
+      effects: { self: { mood: 8 }, flags: [class_quit, strain1] }
+    - id: quit_cut
+      text: 跟爸妈说，不去了
+      requires: { flags: [strain1] }
+      tags: [adventure]
+      effects: { self: { mood: 8 }, flags: [class_quit, fam_cut] }
+    - id: go
+      text: 背上书包接着去
+      tags: [patient]
+      effects: { self: { mood: -3 } }
+    - id: back_row
+      text: 去了，坐最后一排
+      tags: [solitude]
+      effects: { self: { mood: 2 } }
+
+- id: h_class_quit_teen
+  kind: solo
+  stage: teen
+  weight: 3
+  requires: { minAge: 13, maxAge: 14, flags: [fam_rich], notFlags: [class_quit, fam_cut, junior_key] }
+  title: 最后一节
+  text: 班上的老师念名次，念到你停了一下。回家的路上，你在桥头站了好一会儿才走。
+  options:
+    - id: quit
+      text: 回家说往后不去了
+      requires: { notFlags: [strain1] }
+      tags: [adventure]
+      effects: { self: { mood: 8 }, flags: [class_quit, strain1] }
+    - id: quit_cut
+      text: 回家说往后不去了
+      requires: { flags: [strain1] }
+      tags: [adventure]
+      effects: { self: { mood: 8 }, flags: [class_quit, fam_cut] }
+    - id: stay
+      text: 下礼拜照样去
+      tags: [patient]
+      effects: { self: { mood: -3 } }
+    - id: friend
+      text: 拉对门去桥头站会儿
+      tags: [gentle]
+      effects: { self: { mood: 4 }, other: { mood: 3 }, bond: { close: 1 } }
+
+# ---------- 记过脸色、家里不管了 ----------
+
+- id: h_face_teen
+  kind: solo
+  stage: teen
+  weight: 3
+  requires: { minAge: 13, maxAge: 17, flags: [strain1], notFlags: [fam_cut, face_told] }
+  title: 饭桌上
+  text: 饭桌上谁也不提那件事。你爸给你夹了一筷子菜，说：「自己的事，自己掂量。」
+  options:
+    - id: eat
+      text: 低头把饭吃完
+      tags: [patient]
+      effects: { self: { mood: -4 }, flags: [face_told] }
+    - id: promise
+      text: 说下回不会了
+      tags: [responsible]
+      effects: { self: { mood: -2, mind: 1 }, flags: [face_told] }
+    - id: out
+      text: 放下碗出门转转
+      tags: [adventure]
+      effects: { self: { mood: 2 }, flags: [face_told] }
+
+- id: h_face_young
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 19, maxAge: 21, flags: [strain1], notFlags: [fam_cut, face_told] }
+  title: 多做的一个菜
+  text: 你回家那天，你妈多做了一个菜，没问学校的事。你爸看了一晚上电视。
+  options:
+    - id: eat
+      text: 把那盘菜吃干净
+      tags: [patient]
+      effects: { self: { mood: -2 }, flags: [face_told] }
+    - id: talk
+      text: 主动说说往后的打算
+      tags: [responsible]
+      effects: { self: { mood: -3, charm: 1 }, flags: [face_told] }
+    - id: out
+      text: 吃完去找对门
+      tags: [gentle]
+      effects: { self: { mood: 3 }, bond: { close: 1 }, flags: [face_told] }
+
+- id: h_cut_teen
+  kind: solo
+  stage: teen
+  weight: 3
+  requires: { minAge: 13, maxAge: 17, flags: [fam_cut], notFlags: [cut_told] }
+  title: 推过来的存折
+  text: 你爸把你那本存折推过来：「往后的路你自己挑，家里不往里搭了。」那顿饭谁也没吃几口。
+  options:
+    - id: keep
+      text: 把存折收进抽屉
+      tags: [responsible]
+      effects: { self: { mood: -6 }, flags: [cut_told] }
+    - id: fine
+      text: 说那就自己挑
+      tags: [adventure]
+      effects: { self: { mood: -2, charm: 1 }, flags: [cut_told] }
+    - id: door
+      text: 去对门坐一会儿
+      tags: [gentle]
+      effects: { self: { mood: 2 }, other: { mood: 2 }, bond: { close: 2 }, flags: [cut_told] }
+
+- id: h_cut_young
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 19, maxAge: 21, flags: [fam_cut], notFlags: [cut_told] }
+  title: 一张纸的信
+  text: 家里来信，只有一张纸：「路给你铺了你不走，往后自己走吧。」信封里没夹钱。
+  options:
+    - id: keep
+      text: 把信叠好收起来
+      tags: [patient]
+      effects: { self: { mood: -6 }, flags: [cut_told] }
+    - id: reply
+      text: 回一封，只写都好
+      tags: [responsible]
+      effects: { self: { mood: -2 }, flags: [cut_told] }
+    - id: work
+      text: 第二天就去找活
+      tags: [adventure]
+      effects: { self: { body: 1, mood: -2 }, flags: [cut_told] }
+
+# ---------- 清贫：借来的时间 ----------
+
+- id: h_stall
+  kind: solo
+  stage: childhood
+  weight: 2
+  requires: { minAge: 7, maxAge: 11, flags: [fam_poor] }
+  title: 看摊
+  text: 傍晚你妈去进货，让你看一会儿摊。有人问价，你踮着脚报了一个数，报完才觉出报错了。
+  options:
+    - id: chase
+      text: 追上去说找错了
+      tags: [responsible]
+      effects: { self: { charm: 1, mood: 3 } }
+    - id: palm
+      text: 把价钱写在手心上
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: wait
+      text: 等你妈回来再说
+      tags: [gentle]
+      effects: { self: { mood: -2 } }
+
+- id: h_aid
+  kind: solo
+  stage: teen
+  weight: 3
+  requires: { minAge: 13, maxAge: 17, flags: [aid] }
+  title: 牛皮纸信封
+  text: 助学金装在一个牛皮纸信封里，班主任单把你叫到办公室给的。你妈说，往后放了学不用来摊上了。
+  options:
+    - id: study
+      text: 回家多写一页
+      tags: [competitive]
+      effects: { self: { mind: 1, mood: 3 } }
+    - id: stall
+      text: 还是去摊上转一圈
+      tags: [responsible]
+      effects: { self: { body: 1, mood: 2 } }
+    - id: share
+      text: 给对门买根冰棍
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 4 }, bond: { close: 1 } }

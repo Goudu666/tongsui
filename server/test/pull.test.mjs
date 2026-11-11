@@ -38,8 +38,9 @@ function noSwing(s) {
 const pullsOf = (s) => J(G("lifeMilestonePulls")(s, C) || {});
 const locksOf = (s) => J(G("lifeMilestoneLocks")(s, C) || {});
 
-// 中考 m_senior：far 线 7.6（76 分），near 5.8。青 73 分，梅 82 分
-const senior = (sync, q = 7.3, m = 8.2) => {
+// 中考 m_senior：far 线 8.7（87 分），near 5.8。青 84 分，梅 93 分
+// （far 线从 7.6 抬到 8.7，见 docs/MEANS.md 第八节；这里的分数整体跟着抬 11 分，差几分、富余几分都不变）
+const senior = (sync, q = 8.4, m = 9.3) => {
   const s = lifeAt(31, 15, { qing: { mind: q }, mei: { mind: m } }, { sync, close: 40 });
   const out = untilMilestone(s);
   assert.ok(out.started && out.started.eventId === "m_senior", "中考开考");
@@ -64,8 +65,8 @@ const senior = (sync, q = 7.3, m = 8.2) => {
   const e = J(r.entry);
   assert.equal(e.choices.qing, "far");
   assert.equal(e.results.qing.option, "far");
-  assert.equal(e.results.qing.score, 73, "成绩单记的是自己的分");
-  assert.equal(e.results.qing.line, 76);
+  assert.equal(e.results.qing.score, 84, "成绩单记的是自己的分");
+  assert.equal(e.results.qing.line, 87);
   assert.deepEqual(e.gate.pull.qing, { by: "mei", gap: 3, unit: "分" });
   assert.equal(e.resonance, true, "同路");
   assert.ok(e.gate.lines.some((l) => l.text.includes("3 分") && l.role === "mei"), "有一句说梅拉了青");
@@ -93,17 +94,17 @@ const senior = (sync, q = 7.3, m = 8.2) => {
   assert.ok(!(pullsOf(low).qing || {}).far, "默契低拉不动 3 分");
   assert.match(G("worldChoose")(low, C, "qing", "far", false).error || "", /走不了/);
   // 默契低、差 1 分：拉得动
-  const one = senior(0, 7.5);
+  const one = senior(0, 8.6);
   assert.equal(pullsOf(one).qing.far.gap, 1);
   assert.equal(pullsOf(one).qing.far.reach, Math.floor(R.pullFrom * 10 + 1e-6));
-  // 对门富余不够：梅 78 分，只多 2 分，青差 3 分
-  const thin = senior(35, 7.3, 7.8);
+  // 对门富余不够：梅 89 分，只多 2 分，青差 3 分
+  const thin = senior(35, 8.4, 8.9);
   assert.ok(!(pullsOf(thin).qing || {}).far, "对门富余不够");
   // 差太多：差 9 分
-  const far = senior(35, 6.7);
+  const far = senior(35, 7.8);
   assert.ok(!(pullsOf(far).qing || {}).far, "差太多拉不动");
   // 两个人都够不着
-  const both = senior(35, 7.3, 7.4);
+  const both = senior(35, 8.4, 8.5);
   assert.equal(JSON.stringify(pullsOf(both)), "{}");
 }
 
@@ -189,7 +190,7 @@ const senior = (sync, q = 7.3, m = 8.2) => {
 
 // ---------- 9. 考前的目标条上就看得见「TA 能拉你几分」 ----------
 {
-  const s = lifeAt(31, 15, { qing: { mind: 7.3 }, mei: { mind: 8.2 } }, { sync: 35, close: 40 });
+  const s = lifeAt(31, 15, { qing: { mind: 8.4 }, mei: { mind: 9.3 } }, { sync: 35, close: 40 });
   const g = J(G("lifeGoal")(s, C, "qing"));
   assert.equal(g.id, "m_senior");
   const far = g.lines.find((l) => l.id === "far");
@@ -198,10 +199,10 @@ const senior = (sync, q = 7.3, m = 8.2) => {
   const mg = J(G("lifeGoal")(s, C, "mei"));
   assert.ok(mg.lines.every((l) => !l.pull), "梅自己够得着，没有");
   // 默契低：拉不动，目标条上也不写
-  const low = lifeAt(31, 15, { qing: { mind: 7.3 }, mei: { mind: 8.2 } }, { sync: 0, close: 40 });
+  const low = lifeAt(31, 15, { qing: { mind: 8.4 }, mei: { mind: 9.3 } }, { sync: 0, close: 40 });
   assert.ok(J(G("lifeGoal")(low, C, "qing")).lines.every((l) => !l.pull));
   // 对门不在这一关（死了）：不写
-  const gone = lifeAt(31, 15, { qing: { mind: 7.3 }, mei: { mind: 8.2 } }, { sync: 35, close: 40 });
+  const gone = lifeAt(31, 15, { qing: { mind: 8.4 }, mei: { mind: 9.3 } }, { sync: 35, close: 40 });
   gone.persons.mei.alive = false;
   assert.ok(J(G("lifeGoal")(gone, C, "qing")).lines.every((l) => !l.pull));
 }

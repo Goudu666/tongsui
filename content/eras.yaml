@@ -69,6 +69,8 @@ events:
     lines:
       m_gaokao.away: 7
       m_gaokao.local: 8
+      m_retake.away: 7      # 再考一回是同一张卷子（docs/MEANS.md 第八节）
+      m_retake.local: 8
 
   # 包分配：念完书学校给分到单位，坐办公室、回去教书都容易进。到九十年代末没了
   - id: era_fenpei
@@ -230,6 +232,8 @@ events:
     lines:
       m_gaokao.away: -3
       m_gaokao.local: -4
+      m_retake.away: -3
+      m_retake.local: -4
       m_job.desk: 6
       m_job.teach: 4
 

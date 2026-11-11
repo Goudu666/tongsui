@@ -180,6 +180,9 @@ for (let seed = 1; seed <= LIVES; seed++) {
   // 老物件链要连着三世才走到头，三世一串撞不够：每隔一串当作链已经变过一回（面前摆着变过的那几件）。
   // 原来是每隔两串：「又一张」那个结局 1500 条里只走到 1 回，内容一动（多几件行动、几件小事）就抽成 0
   if (nth === 2 && Math.floor(seed / CHAIN) % 2 === 0) for (const id of ["h_photo_two", "h_nested_box", "h_noted_books"]) if (!legacy.heirlooms.includes(id)) legacy.heirlooms.unshift(id);
+  // 「两家孩子同岁、一块儿长大」的痕迹（p_kids_tongsui）要上一世两家都有孩子、又在孩子的事上同路，1500 条里只有个位数的人带着投胎，
+  // 读它的「暖气片后头」（l_door_marks）跟着内容一动就抽成 0（三扇门那一轮就是，docs/MEANS.md 第八节）：每四串当作有一串上一世留下了这个痕迹
+  if (nth === 1 && Math.floor(seed / CHAIN) % 4 === 1 && !(legacy.traces || []).includes("p_kids_tongsui")) legacy.traces = [...(legacy.traces || []), "p_kids_tongsui"];
   const { s, seen } = story(seed * 2654435761, seed % 2 ? randomChoice : steadyChoice, seed % 4, NEAR[Math.floor(seed / 4) % NEAR.length], legacy);
   legacy = JSON.parse(JSON.stringify(s.legacy));
   assert.equal(s.life, nth + 1);
@@ -224,7 +227,10 @@ for (let seed = 1; seed <= LIVES; seed++) {
   assert.deepEqual(deadPair, [], `走不到的结局：${deadPair.join(", ")}`);
   // 高寿的小结（长寿、冬泳的老人）靠的是一辈子吃好睡好心情好，这里不模拟过日子，放在 growth.test.mjs 里测
   const needsLongLife = new Set(C.endings.lives.filter((e) => (e.requires.minDiedAge ?? 0) >= 85).map((e) => e.id));
-  const deadLife = [...lifeEnd].filter(([id, n]) => n === 0 && !needsLongLife.has(id) && !held(C.endings.lives.find((e) => e.id === id).requires.flags)).map(([id]) => id);
+  // 「两家的孩子」（l_kids_tongsui）要这一世两家都有孩子、孩子的事又同路（p_kids_tongsui），1500 条里个位数，跟着随机数顺序在 0 和几回之间跳。
+  // 走不走得到由 legacy.test「一生小结：两家的孩子」按标记直接钉着，这里不靠抽样
+  const sampledRare = new Set(C.endings.lives.filter((e) => (e.requires.flags ?? []).includes("p_kids_tongsui")).map((e) => e.id));
+  const deadLife = [...lifeEnd].filter(([id, n]) => n === 0 && !needsLongLife.has(id) && !sampledRare.has(id) && !held(C.endings.lives.find((e) => e.id === id).requires.flags)).map(([id]) => id);
   assert.deepEqual(deadLife, [], `走不到的一生小结：${deadLife.join(", ")}`);
   // 结局不能一边倒：最常见的结局不超过一半
   const top = Math.max(...pairEnd.values());

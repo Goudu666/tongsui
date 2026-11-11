@@ -277,7 +277,11 @@ function lifeMilestoneFor(ev: LifeEvent, p: Person): boolean {
 /** 这条路走不走得了。走不了返回原因（给玩家看的），走得了返回 null。swing 是这次的发挥 */
 function lifeOptionLock(ev: LifeEvent, o: EventOption, p: Person, swing: number, bond?: Bond): string | null {
   var rq = o.requires || {};
-  if (!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) return o.lock || "这条路不是给你留的"; // 家里拿不出这笔钱（docs/MEANS.md）
+  if (!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) {
+    // 带着 lockBy 里的标记的人看到的是那一句（断了供的殷实人家：「家里已经不管你了」，docs/MEANS.md 第八节）
+    if (o.lockBy) for (var lf in o.lockBy) if (lifeHasFlag(p, lf)) return o.lockBy[lf];
+    return o.lock || "这条路不是给你留的"; // 家里拿不出这笔钱（docs/MEANS.md）
+  }
   var line = lifeOptionMin(o, p); // 年代挪过的线（era.ts）
   if (line) {
     var w = lifeOptionWeights(ev, o);
@@ -562,6 +566,34 @@ function lifeAddFlags(p: Person, flags: string[] | undefined) {
   for (var i = 0; i < flags.length; i++) if (!lifeHasFlag(p, flags[i])) p.flags.push(flags[i]);
 }
 
+/** effects.flagsIf：按选之前的标记挑出这个人还要打上的（清贫人家没拿助学金的上大学背助学贷款） */
+function lifeFlagsIf(p: Person, list: OptionEffects["flagsIf"]): string[] {
+  var out: string[] = [];
+  if (!list) return out;
+  for (var i = 0; i < list.length; i++) {
+    var w = list[i];
+    if (lifeHasAll(p.flags, w.flags) && lifeHasNone(p.flags, w.notFlags)) out = out.concat(w.add);
+  }
+  return out;
+}
+
+/** 关口的 expect：这个人带着哪个 exp_*、走的这条路（按 joins 算）不在爸妈的单子上。断了供（fam_cut）的不再看 */
+function lifeExpectMissed(ev: LifeEvent, o: EventOption, p: Person): boolean {
+  if (!ev.expect || lifeHasFlag(p, "fam_cut")) return false;
+  var road = o.joins || o.id;
+  for (var f in ev.expect) if (lifeHasFlag(p, f) && ev.expect[f].indexOf(road) < 0) return true;
+  return false;
+}
+
+/**
+ * 记一回脸色（docs/MEANS.md 第八节）：头一回打 strain1，已经有了的打 fam_cut（家里不管了）。
+ * 普通事件里写成两个选项各带 requires（notFlags: [strain1] 打 strain1 / flags: [strain1] 打 fam_cut），这里是关口上按 expect 记的那一回
+ */
+function lifeFace(p: Person) {
+  if (lifeHasFlag(p, "fam_cut")) return;
+  lifeAddFlags(p, [lifeHasFlag(p, "strain1") ? "fam_cut" : "strain1"]);
+}
+
 /** 摘标记：跳槽、转行的时候原来那一行和升到的那一级不跟着走（effects.drop） */
 function lifeDropFlags(p: Person, flags: string[] | undefined) {
   if (!flags || !flags.length) return;
@@ -588,6 +620,11 @@ function lifeFindOption(ev: LifeEvent, optionId: string): EventOption | null {
 }
 
 /** 影子：按玩家过去的性格标签替他选择 */
+/** 影子不替人做的决定：考过了线还去复读（小康白白用掉那笔钱）。只有没过线的才复读 */
+function lifeShadowSkips(o: EventOption, p: Person): boolean {
+  return o.effects.flags.indexOf("retake") >= 0 && !lifeHasFlag(p, "gaokao_bad");
+}
+
 function lifeShadowChoose(s: LifeState, c: Content, role: Role, eventId: string): string {
   var ev = lifeFindEvent(c, eventId);
   var tags = s.persons![role].tags;
@@ -599,10 +636,20 @@ function lifeShadowChoose(s: LifeState, c: Content, role: Role, eventId: string)
   if (follow) return follow;
   var best: EventOption[] = [];
   var bestScore = -1;
+  var me = s.persons![role];
+  // 人不在，影子不替他跟爸妈翻脸（记脸色两回就断供，挡不回来）：爸妈单子上有够得着的路，就只在那几条里挑
+  var keepFace = false;
+  if (ev.kind === "milestone" && ev.expect) {
+    for (var k = 0; k < ev.options.length; k++) {
+      var ok = ev.options[k];
+      if (!lifeOptionLock(ev, ok, me, swing, lifePairBond(s, role)) && !lifeExpectMissed(ev, ok, me) && !lifeShadowSkips(ok, me)) { keepFace = true; break; }
+    }
+  }
   for (var i = 0; i < ev.options.length; i++) {
     var o = ev.options[i];
     // 关口：走不了的路影子也不能替他选。够得着的路里，影子偏向线最高的那条（人往高处走），再看性格
-    if (lifeGated(ev) && lifeOptionLock(ev, o, s.persons![role], swing, lifePairBond(s, role))) continue;
+    if (lifeGated(ev) && lifeOptionLock(ev, o, me, swing, lifePairBond(s, role))) continue;
+    if (ev.kind === "milestone" && (lifeShadowSkips(o, me) || (keepFace && lifeExpectMissed(ev, o, me)))) continue;
     var score = ev.kind === "milestone" ? (o.min || 0) * 0.01 : 0;
     for (var j = 0; j < o.tags.length; j++) score += tags[o.tags[j]] || 0;
     if (score > bestScore) { bestScore = score; best = [o]; }
@@ -662,11 +709,16 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       if (grade) lifeAddFlags(me, grade.flags);
       var cost = lifeOptionCost(ev, o, me);
       if (cost) me.money = Math.max(0, me.money - cost);
+      if (o.effects.money) me.money += o.effects.money; // 助学金、家里出的钱
       lifeApplySelf(me, o.effects.self, grow);
       if (other.alive) lifeApplySelf(other, o.effects.other, grow);
       lifeApplyBond(s, c, o.effects.bond);
+      var also = lifeFlagsIf(me, o.effects.flagsIf);
+      var face = lifeExpectMissed(ev, o, me); // 选之前的标记：走的不是爸妈心里那条路
       lifeDropFlags(me, o.effects.drop);
       lifeAddFlags(me, o.effects.flags);
+      lifeAddFlags(me, also);
+      if (face) lifeFace(me);
       if (!entry.results) entry.results = {};
       var scored = false;
       for (var swk in sw) scored = true;
@@ -688,8 +740,12 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       lifeApplySelf(me, out.self, grow);
       if (other.alive) lifeApplySelf(other, o.effects.other, grow);
       lifeApplyBond(s, c, o.effects.bond);
-      if (out.flags === o.effects.flags) lifeDropFlags(me, o.effects.drop); // 检定没成（换了 fail 的标记）就不摘
+      var ok = out.flags === o.effects.flags; // 检定没成（换了 fail 的标记）就不摘、不给钱、不看人打标记
+      var also2 = ok ? lifeFlagsIf(me, o.effects.flagsIf) : [];
+      if (ok) lifeDropFlags(me, o.effects.drop);
+      if (ok && o.effects.money) me.money += o.effects.money; // 没成就没有这笔钱
       lifeAddFlags(me, out.flags);
+      lifeAddFlags(me, also2);
     }
     if (pe.shadow.indexOf(role) < 0) {
       for (var j = 0; j < o.tags.length; j++) me.tags[o.tags[j]] = (me.tags[o.tags[j]] || 0) + 1;

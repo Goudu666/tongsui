@@ -7,12 +7,71 @@
 #       until 是几点结束；needs / stats / money 是这一天下来的结果。两个人走同一条路，就是一起去、一起回，
 #       算「搭伴」；走了不同的路，放学下班的钟点就错开了。
 # 时间用当天的分钟数：420 = 07:00，930 = 15:30，1080 = 18:00。
+#
+# 家境的三种难度（docs/MEANS.md 第八节）：考场公平，考场外不公平。变体排在原来那条前头，group 写原来那条的 group 或 id，
+# 和同班同学还是同路、照样搭伴。
+#   清贫「时间是借来的」：6~17 岁放了学帮家里（看摊、糊纸盒），日程拖到傍晚收工（until 1110），一天少一段自己的时间，
+#        长一点体魄魅力（小学挣的交给家里，初中起一天落下一块）。拿了助学金（aid）的那一段还给自己；
+#        重点班、高中本来就上到傍晚，上学的日子不再另占。
+#        restDuty：歇着的日子（周末、假期）的日程块，只有清贫人家的路写——别人歇着的日子整天是自己的，
+#        清贫人家的孩子要看一上午摊（until 720，占上午那一段）。拿了助学金走回原来那条路，也就没有了。
+#        （为什么要这一条：bot 和大多数玩家放了学多半在歇着，光拿走傍晚，心智几乎不掉，见 MEANS.md 第八节。）
+#   殷实「路是铺好的」：6~14 岁放了学是爸妈报的班，日程也拖到傍晚。不花钱，长的是爸妈想要的那一项（exp_*），
+#        比自己练快三成上下（日程两个人同路就算搭伴，这里写的数乘过 1.5 才是一天长的）。跟爸妈摊了牌（class_quit）、
+#        家里不管了（fam_cut）的没有这个班。重点班本来就上到傍晚，不另报。
+#   学习委员、体育委员那点零头（一天零点零几）在这几条变体里不另算。
 
 - id: preschool
   label: 还没上学
   requires: { maxAge: 5 }
 
 # ---- 6~11 小学：两个人一定同路（当了不同的小干部也还是同班，group 一样就算同路） ----
+# 殷实：放了学是爸妈报的班（exp_book 奥数、exp_pull 主持和朗诵、exp_abroad 外语、exp_art 钢琴）
+- id: primary_class_book
+  label: 上小学 · 放了学上奥数班
+  group: primary
+  requires: { minAge: 6, maxAge: 11, flags: [fam_rich, exp_book], notFlags: [class_quit, fam_cut] }
+  duty: { label: 上学，放了学上奥数班, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -21, mood: -3 }, stats: { mind: 0.99, charm: 0.07 } }
+- id: primary_class_pull
+  label: 上小学 · 放了学学朗诵
+  group: primary
+  requires: { minAge: 6, maxAge: 11, flags: [fam_rich, exp_pull], notFlags: [class_quit, fam_cut] }
+  duty: { label: 上学，放了学学朗诵, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -20, mood: -3 }, stats: { mind: 0.29, charm: 0.62 } }
+- id: primary_class_abroad
+  label: 上小学 · 放了学上外语班
+  group: primary
+  requires: { minAge: 6, maxAge: 11, flags: [fam_rich, exp_abroad], notFlags: [class_quit, fam_cut] }
+  duty: { label: 上学，放了学上外语班, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -21, mood: -3 }, stats: { mind: 0.61, charm: 0.38 } }
+- id: primary_class_art
+  label: 上小学 · 放了学去学琴
+  group: primary
+  requires: { minAge: 6, maxAge: 11, flags: [fam_rich, exp_art], notFlags: [class_quit, fam_cut] }
+  duty: { label: 上学，放了学去学琴, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -20, mood: -3 }, stats: { mind: 0.39, charm: 0.55 } }
+# 清贫：放了学帮家里看摊、糊纸盒，傍晚才收工
+- id: primary_help_study
+  label: 上小学 · 学习委员，放了学帮家里
+  group: primary
+  requires: { minAge: 6, maxAge: 11, flags: [fam_poor, lead_study], notFlags: [aid] }
+  duty: { label: 上学，放了学帮家里, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -22 }, stats: { mind: 0.34, body: 0.06, charm: 0.15 } }
+  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
+- id: primary_help_sport
+  label: 上小学 · 体育委员，放了学帮家里
+  group: primary
+  requires: { minAge: 6, maxAge: 11, flags: [fam_poor, lead_sport], notFlags: [aid] }
+  duty: { label: 上学，放了学帮家里, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -24 }, stats: { mind: 0.29, body: 0.18, charm: 0.15 } }
+  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
+- id: primary_help_art
+  label: 上小学 · 文艺委员，放了学帮家里
+  group: primary
+  requires: { minAge: 6, maxAge: 11, flags: [fam_poor, lead_art], notFlags: [aid] }
+  duty: { label: 上学，放了学帮家里, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -22 }, stats: { mind: 0.29, body: 0.06, charm: 0.25 } }
+  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
+- id: primary_help
+  label: 上小学 · 放了学帮家里
+  group: primary
+  requires: { minAge: 6, maxAge: 11, flags: [fam_poor], notFlags: [aid] }
+  duty: { label: 上学，放了学帮家里, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -22 }, stats: { mind: 0.29, body: 0.06, charm: 0.15 } }
+  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
 - id: primary_study
   label: 上小学 · 学习委员
   group: primary
@@ -39,22 +98,86 @@
   label: 不念了，打零工
   requires: { minAge: 12, maxAge: 21, flags: [dropout] }
   duty: { label: 打零工, spot: bike_bench, arrive: [450, 600], until: 900, needs: { energy: -20 }, stats: { body: 0.24 }, money: 6 }
+# 重点班本来就上到五点：清贫的上学的日子不另占，歇着的日子照样看一上午摊（拿了助学金的不用）
+- id: junior_key_help
+  label: 初中 · 重点班
+  group: junior_key
+  requires: { minAge: 12, maxAge: 14, flags: [junior_key, fam_poor], notFlags: [aid] }
+  duty: { label: 上学, spot: middle_gate, arrive: [420, 510], until: 1020, needs: { hunger: 30, energy: -22, mood: -3 }, stats: { mind: 0.48, charm: 0.05 } }
+  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
 - id: junior_key
   label: 初中 · 重点班
   requires: { minAge: 12, maxAge: 14, flags: [junior_key] }
   duty: { label: 上学, spot: middle_gate, arrive: [420, 510], until: 1020, needs: { hunger: 30, energy: -22, mood: -3 }, stats: { mind: 0.48, charm: 0.05 } }
+# 普通班三点半就放学：殷实的去爸妈报的班，清贫的回家帮忙（重点班上到五点，不另占）
+- id: junior_class_book
+  label: 初中 · 放了学上奥数班
+  group: junior
+  requires: { minAge: 12, maxAge: 14, flags: [fam_rich, exp_book], notFlags: [class_quit, fam_cut] }
+  duty: { label: 上学，放了学上奥数班, spot: middle_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -21, mood: -3 }, stats: { mind: 1.01, charm: 0.1 } }
+- id: junior_class_pull
+  label: 初中 · 放了学学朗诵
+  group: junior
+  requires: { minAge: 12, maxAge: 14, flags: [fam_rich, exp_pull], notFlags: [class_quit, fam_cut] }
+  duty: { label: 上学，放了学学朗诵, spot: middle_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -20, mood: -3 }, stats: { mind: 0.31, charm: 0.65 } }
+- id: junior_class_abroad
+  label: 初中 · 放了学上外语班
+  group: junior
+  requires: { minAge: 12, maxAge: 14, flags: [fam_rich, exp_abroad], notFlags: [class_quit, fam_cut] }
+  duty: { label: 上学，放了学上外语班, spot: middle_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -21, mood: -3 }, stats: { mind: 0.63, charm: 0.41 } }
+- id: junior_class_art
+  label: 初中 · 放了学去学琴
+  group: junior
+  requires: { minAge: 12, maxAge: 14, flags: [fam_rich, exp_art], notFlags: [class_quit, fam_cut] }
+  duty: { label: 上学，放了学去学琴, spot: middle_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -20, mood: -3 }, stats: { mind: 0.41, charm: 0.58 } }
+- id: junior_help
+  label: 初中 · 放了学帮家里
+  group: junior
+  requires: { minAge: 12, maxAge: 14, flags: [fam_poor], notFlags: [aid] }
+  duty: { label: 上学，放了学帮家里, spot: middle_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -23 }, stats: { mind: 0.31, body: 0.08, charm: 0.18 }, money: 1 }
+  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
 - id: junior
   label: 初中 · 普通班
   requires: { minAge: 12, maxAge: 14 }
   duty: { label: 上学, spot: middle_gate, arrive: [420, 540], until: 930, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.31, charm: 0.1 } }
+- id: senior_key_help
+  label: 重点高中
+  group: senior_key
+  requires: { minAge: 15, maxAge: 17, flags: [school_far, fam_poor], notFlags: [aid] }
+  duty: { label: 过桥上学, spot: key_gate, arrive: [390, 480], until: 1110, needs: { hunger: 30, energy: -25, mood: -4 }, stats: { mind: 0.58, charm: 0.05 } }
+  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
 - id: senior_key
   label: 重点高中
   requires: { minAge: 15, maxAge: 17, flags: [school_far] }
   duty: { label: 过桥上学, spot: key_gate, arrive: [390, 480], until: 1110, needs: { hunger: 30, energy: -25, mood: -4 }, stats: { mind: 0.58, charm: 0.05 } }
+# 家门口的高中上到五点，傍晚本来就占着：清贫的回来顺手帮着收摊，不另占一段
+- id: senior_help
+  label: 高中 · 放了学帮家里收摊
+  group: senior
+  requires: { minAge: 15, maxAge: 17, flags: [school_near, fam_poor], notFlags: [aid] }
+  duty: { label: 上学，回来帮家里收摊, spot: middle_gate, arrive: [420, 510], until: 1110, needs: { hunger: 30, energy: -23, mood: -2 }, stats: { mind: 0.38, body: 0.04, charm: 0.14 } }
+  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
 - id: senior
   label: 高中
   requires: { minAge: 15, maxAge: 17, flags: [school_near] }
   duty: { label: 上学, spot: middle_gate, arrive: [420, 510], until: 1020, needs: { hunger: 30, energy: -20, mood: -2 }, stats: { mind: 0.38, charm: 0.1 } }
+# 中专（m_senior 的 zhongzhuan，只给清贫人家）：线比市重点低一点，三年后包分配进厂（打了 job_succeed，二十二岁起是厂里那条路）
+- id: zhongzhuan
+  label: 中专
+  requires: { minAge: 15, maxAge: 17, flags: [zhongzhuan, aid] }
+  duty: { label: 上学, spot: middle_gate, arrive: [420, 540], until: 960, needs: { hunger: 30, energy: -16 }, stats: { mind: 0.22, body: 0.12, charm: 0.1 } }
+- id: zhongzhuan_help
+  label: 中专 · 放了学帮家里
+  group: zhongzhuan
+  requires: { minAge: 15, maxAge: 17, flags: [zhongzhuan, fam_poor], notFlags: [aid] }
+  duty: { label: 上学，放了学帮家里, spot: middle_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -23 }, stats: { mind: 0.22, body: 0.18, charm: 0.16 }, money: 1 }
+  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
+- id: vocational_help
+  label: 职专 · 放了学帮家里
+  group: vocational
+  requires: { minAge: 15, maxAge: 17, flags: [fam_poor], notFlags: [aid] }
+  duty: { label: 上学，放了学帮家里, spot: middle_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -22 }, stats: { mind: 0.14, body: 0.27, charm: 0.2 }, money: 1 }
+  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
 - id: vocational
   label: 职专
   requires: { minAge: 15, maxAge: 17 }
@@ -79,6 +202,16 @@
   label: 在本市念大学
   requires: { minAge: 18, maxAge: 21, flags: [uni_near] }
   duty: { label: 去上课, spot: uni_gate, arrive: [420, 540], until: 960, needs: { hunger: 30, energy: -15 }, stats: { mind: 0.38, charm: 0.14 } }
+# 中专毕业包分配：进厂当学徒，钱比先干着少一点，稳当。二十二岁起是在厂里上班（job_succeed）
+- id: zz_assigned
+  label: 中专毕业，分配进厂
+  requires: { minAge: 18, maxAge: 21, flags: [zhongzhuan] }
+  duty: { label: 过桥上班, spot: river_bridge, arrive: [420, 480], until: 1020, needs: { hunger: 25, energy: -22 }, stats: { body: 0.1, mind: 0.05 }, money: 10 }
+# 复读（m_gaokao 的 retake）：十八岁那天考完剩下的日子就是复读的一年，十九岁早上再考一回（m_retake）
+- id: retake_class
+  label: 复读
+  requires: { minAge: 18, maxAge: 18, flags: [retake] }
+  duty: { label: 去复读班, spot: middle_gate, arrive: [420, 510], until: 1020, needs: { hunger: 30, energy: -22, mood: -4 }, stats: { mind: 0.45 } }
 - id: first_job
   label: 先干着
   requires: { minAge: 18, maxAge: 21 }

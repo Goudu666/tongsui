@@ -130,12 +130,13 @@ actions:
 
   # ---- 家境：家里才有的（docs/MEANS.md）----
   # 殷实人家花钱买的：长得比自己练快，但要钱，也占着放学后、晚上的那一段。bring：对门跟过来，两份钱你出
+  # 家里不管了（fam_cut，docs/MEANS.md 第八节）的没有这几样：学琴、补习、游泳、外语班、茶社包座都写着 notFlags: [fam_cut]
   - id: piano
     label: 去少年宫学琴
     minutes: 90
     money: -2
     bring: true
-    requires: { minAge: 6, maxAge: 14, flags: [fam_rich], hours: [930, 1200] }
+    requires: { minAge: 6, maxAge: 14, flags: [fam_rich], notFlags: [fam_cut], hours: [930, 1200] }
     needs: { energy: -6, mood: -3 }
     stats: { charm: 0.4, mind: 0.15 }
     together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 一架琴两个人坐，你弹右手，TA 弹左手，老师说拍子对上了。 }
@@ -144,7 +145,7 @@ actions:
     minutes: 120
     money: -3
     bring: true
-    requires: { minAge: 12, maxAge: 17, flags: [fam_rich], hours: [1080, 1260] }
+    requires: { minAge: 12, maxAge: 17, flags: [fam_rich], notFlags: [fam_cut], hours: [1080, 1260] }
     needs: { energy: -14, mood: -6 }
     stats: { mind: 0.62 }
     together: { needs: { mood: 5 }, bond: { close: 1 }, text: 回来的末班车上，两个人把今天的卷子对了一遍，错的是同一道。 }
@@ -336,7 +337,7 @@ actions:
     minutes: 90
     money: -2
     bring: true
-    requires: { minAge: 6, maxAge: 11, flags: [fam_rich], hours: [930, 1200] }
+    requires: { minAge: 6, maxAge: 11, flags: [fam_rich], notFlags: [fam_cut], hours: [930, 1200] }
     needs: { energy: -12, hunger: -8 }
     stats: { body: 0.55 }
     together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 一块浮板两个人扒着，你踢左腿，TA 踢右腿，在池子里转了个圈。 }
@@ -345,7 +346,7 @@ actions:
     minutes: 120
     money: -4
     bring: true
-    requires: { minAge: 18, maxAge: 21, flags: [fam_rich], hours: [1080, 1290] }
+    requires: { minAge: 18, maxAge: 21, flags: [fam_rich], notFlags: [fam_cut], hours: [1080, 1290] }
     needs: { energy: -12, mood: -4 }
     stats: { mind: 0.5, charm: 0.2 }
     together: { needs: { mood: 5 }, bond: { close: 1 }, text: 老师让同桌对话。你们俩用外语问对方吃了吗，说完都笑了。 }
@@ -543,7 +544,7 @@ actions:
     minutes: 90
     money: -3
     bring: true
-    requires: { minAge: 6, flags: [fam_rich], hours: [780, 1260] }
+    requires: { minAge: 6, flags: [fam_rich], notFlags: [fam_cut], hours: [780, 1260] }
     needs: { mood: 16, energy: 2 }
     stats: { charm: 0.2 }
     together: { needs: { mood: 8 }, bond: { close: 1, sync: 1 }, text: 茶社伙计给你们端来一碟瓜子，说是老先生送的。台上正讲到要紧处，你们都忘了嗑。 }

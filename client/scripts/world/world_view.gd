@@ -13,6 +13,7 @@ const Weather := preload("res://scripts/world/weather.gd")
 const Folks := preload("res://scripts/world/folks.gd")
 const Atmos := preload("res://scripts/world/atmos.gd")
 const Era := preload("res://scripts/ui/era.gd")
+const HomeLife := preload("res://scripts/world/home_life.gd")
 const SPOT_RADIUS := 100.0  ## 比服务器的 110 小一点，避免边缘抖动
 const MOVE_SEND_INTERVAL := 0.1
 const SnapshotBuffer := preload("res://scripts/net/snapshot_buffer.gd")
@@ -34,6 +35,12 @@ var kid_age := -1  ## 我孩子几岁（WORLD actors[我].kid.age）；没孩子
 var goal_keys: Array = []    ## 纸带上正盯着的那条线看哪几项（main 喂）：能长这几项的点位，标签上写「长魅力」、用自己的颜色
 var duties: Dictionary = {}  ## role -> 今天该去的地方 { label, spot, arrive, until, done, open }，没有是 null（服务器 WORLD 里的 tracks）
 var unlocks: Dictionary = {} ## role -> 关口上挣来的去处（带 requires.flags 的行动 id，服务器 WORLD 里的 tracks[role].unlocks）
+var homes: Dictionary = {}   ## role -> 这一刻那户人家有哪些东西（物件 id：tv、books…，服务器 WORLD.homes）。老服务器不发 = 两家都空
+var buys: Dictionary = {}    ## role -> 这个人现在能在自己家买的（行动 id：buy_tape…，服务器 WORLD.buys）
+var _zone_owner: Dictionary = {}  ## 地点 id -> 哪一户（content.map.zones 的 owner），没有就不在表里
+var home: HomeLife  ## 两家屋里的东西和家境陈设（只是画面）
+var home_wealth: Dictionary = {}  ## role -> 0 清贫 / 1 小康 / 2 殷实（main 喂）
+var decade := ""                  ## 年代名（era.decade）：电视、电脑长什么样
 var minute := 0.0            ## 现在几点（一天里的第几分钟）：有的去处只在一段钟点里开
 var slot := 0                ## 现在是一天里的第几段（SLOTS）。离线预览跟着 minute 算
 var playing := false         ## 两个人都定了，这一段正在眼前过：这时候不能走、不能做事
@@ -77,11 +84,17 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 		actions[a.id] = a
 	for sc in map.get("scenes", []):
 		scenes[str(sc.id)] = sc
+	for z in map.get("zones", []):
+		if z.has("owner") and z.owner != null:
+			_zone_owner[str(z.id)] = str(z.owner)
 	my_role = role
 	y_sort_enabled = true
 	art = SceneArt.new()
 	art.z_index = -10
 	add_child(art)
+	home = HomeLife.new()
+	home.z_index = -9  ## 贴在底图上面、人和互动点下面
+	add_child(home)
 	light = PrintLight.new()
 	add_child(light)
 	weather = Weather.new()
@@ -156,6 +169,8 @@ func _enter_scene(sc: Dictionary) -> void:
 		street.show_scene(sc)
 	if atmos != null:
 		atmos.set_scene(sc)
+	if home != null:
+		home.show_scene(sc)
 	_refresh_visible()
 
 
@@ -202,6 +217,7 @@ func _apply_scene_look() -> void:
 	if art != null:
 		art.set_stage(key)
 		art.queue_redraw()
+	_push_home()
 
 
 ## 季节（只是画面：树、天气）。LifeTime.season_of(turn)；turn 决定这一天下不下雨雪
@@ -303,6 +319,11 @@ func apply_world(view: Dictionary) -> void:
 		for r in tracks:
 			duties[r] = tracks[r].get("duty") if tracks[r] is Dictionary else null
 			unlocks[r] = tracks[r].get("unlocks", []) if tracks[r] is Dictionary else []
+	# 家里的东西：老服务器没有这两样，当两家都空着
+	homes = _role_lists(view.get("homes"))
+	buys = _role_lists(view.get("buys"))
+	if home != null:
+		home.set_items(homes)
 	if view.has("minute"):
 		set_minute(float(view.minute))
 	if view.has("slot"):
@@ -570,6 +591,34 @@ func my_duty() -> Dictionary:
 	return {}
 
 
+## WORLD 里 { qing: [...], mei: [...] } 这种按人分的单子；不是这个形状就当空的
+static func _role_lists(v: Variant) -> Dictionary:
+	var out := {"qing": [], "mei": []}
+	if v is Dictionary:
+		for r in out:
+			var l: Variant = v.get(r)
+			if l is Array:
+				out[r] = (l as Array).map(func(x): return str(x))
+	return out
+
+
+## 这个点位是哪一户的：点位所在地点的 owner；不在哪户人家里（楼道、街上）是 ""
+func spot_owner(spot: Dictionary) -> String:
+	return str(_zone_owner.get(str(spot.get("zone", "")), ""))
+
+
+## 两家的家境（main 从 life 的家庭里读：0 清贫 1 小康 2 殷实）和现在的年代名（era.decade）：屋里怎么摆
+func set_home_look(wealth: Dictionary, p_decade: String) -> void:
+	home_wealth = wealth
+	decade = p_decade
+	_push_home()
+
+
+func _push_home() -> void:
+	if home != null:
+		home.set_look(home_wealth, decade, scene_look())
+
+
 ## 我现在在这个点位上能做的事。和服务器 world.ts 的 worldPickAction 一个规则：
 ## 点位上的行动按顺序看，日程只给今天该来这儿、还来得及的人，其余按年纪、关口上挣来的资格、钟点取第一件合适的。没有就是 {}
 func action_of(spot: Dictionary, want := "") -> Dictionary:
@@ -622,6 +671,18 @@ func actions_of(spot: Dictionary) -> Array:
 		# 标记在服务器手里，客户端只认它发来的那张单子
 		if (rq.has("flags") or rq.has("notFlags")) and not (unlocks.get(my_role, []) as Array).has(str(id)):
 			continue
+		# 家里得有这样东西（content/home.yaml）：看点位那一户——去对门就看对门家；不在谁家的点位看自己家
+		var need_home: Variant = rq.get("home")
+		if need_home is Array and not (need_home as Array).is_empty():
+			var owner := spot_owner(spot)
+			var have: Array = homes.get(owner if owner != "" else my_role, [])
+			if not (need_home as Array).all(func(x): return have.has(str(x))):
+				continue
+		# 攒钱买：只在自己家、而且服务器说现在买得了（buys[我] 里有它）
+		var buy: Variant = act.get("buys")
+		if buy != null and str(buy) != "":
+			if spot_owner(spot) != my_role or not (buys.get(my_role, []) as Array).has(str(id)):
+				continue
 		var hours: Variant = rq.get("hours")
 		if hours is Array and hours.size() == 2 and not overlaps(hours, slot):
 			var late := act.duplicate()

@@ -64,6 +64,10 @@ const ACTION_LOOP := {
 	"old_breakfast": "cook", "old_bikes": "fix", "mind_kids": "talk", "grandkid_park": "kite",
 	"kid_homework": "write", "kid_run": "kick", "kid_listen": "talk", "kid_class": "read",
 	"square_dance": "exercise", "pair_cook": "cook", "gk_pickup": "talk",
+	# 家里的东西（content/home.yaml）：看电视、听广播是望着；游戏机、电脑是手上忙；糊纸盒是刷浆糊；攒钱买的是搬回家
+	"hm_tv": "gaze", "hm_radio": "gaze", "hm_console": "type", "hm_books": "read", "hm_tape": "read",
+	"hm_pc": "type", "hm_pc_game": "type", "hm_milk": "eat", "hm_piece": "brush",
+	"buy_console": "carry", "buy_tape": "carry", "buy_pc": "carry",
 }
 ## 上学 / 上班（duty）按在哪个点上：坐办公桌敲电脑、修车铺修车、早点铺出摊…（没写的就招手进门）
 const DUTY_LOOP := {

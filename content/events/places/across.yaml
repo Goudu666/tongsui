@@ -79,15 +79,15 @@
     - id: soap
       text: 抢先占个水龙头
       tags: [competitive]
-      effects: { self: { clean: 20 } }
+      effects: { self: { mood: 4 } }
     - id: wait
       text: 等大人们洗完
       tags: [patient]
-      effects: { self: { clean: 15, mood: 3 } }
+      effects: { self: { mood: 3 } }
     - id: boiler
       text: 去锅炉房看烧火
       tags: [adventure]
-      effects: { self: { mood: 5, clean: -5 } }
+      effects: { self: { mood: 5 } }
   resonance:
     soap:
       text: 你们占了挨着的两个龙头，一个热一个凉，轮着换，换到手指头都起了皱。

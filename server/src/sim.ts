@@ -448,7 +448,8 @@ function lifeApplySelf(p: Person, d: SelfDelta, g?: GrowCtx) {
     if (k === "body" || k === "mind" || k === "charm" || k === "luck") {
       if (g) growthApply(p, k, v, g);
       else p.stats[k] = lifeClamp(Math.round((p.stats[k] + v) * 1000) / 1000, 0, 10);
-    } else if (k === "hunger" || k === "energy" || k === "mood" || k === "clean") {
+    } else if (k === "hunger" || k === "energy" || k === "mood") {
+      // clean 11-11 砍了，旧存档里带着的清洁不再变
       if (k === "mood" && v < 0 && lifeHasFlag(p, "tal_sunny")) v = v / 2;
       p.needs[k] = lifeClamp(p.needs[k] + v, 0, 100);
     }
@@ -684,7 +685,6 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
     // 回合之间的日子：需求回到日常水平，心情慢慢回归
     p.needs.hunger = 75;
     p.needs.energy = tired ? 65 : 90;
-    p.needs.clean = 75;
     p.needs.mood = Math.round(p.needs.mood * 0.6 + 60 * 0.4);
   }
   summary.text = "这一天过去了。" + parts.join("，") + "。";

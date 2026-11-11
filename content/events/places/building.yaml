@@ -19,11 +19,11 @@
     - id: four
       text: 一次捧四块
       tags: [competitive]
-      effects: { self: { body: 1, clean: -10 } }
+      effects: { self: { body: 1 } }
     - id: slow
       text: 两块，走慢点
       tags: [patient]
-      effects: { self: { mood: 3, clean: -5 } }
+      effects: { self: { mood: 3 } }
     - id: count
       text: 站在楼梯口数数
       tags: [responsible]

@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "fdada3625e69",
+ "version": "5541b85d8555",
  "events": [
   {
    "id": "ch_runner",
@@ -705,8 +705,7 @@ var CONTENT: Content = {
      "effects": {
       "self": {
        "body": 1,
-       "mood": 5,
-       "clean": -20
+       "mood": 5
       },
       "other": {},
       "bond": {},
@@ -1496,8 +1495,7 @@ var CONTENT: Content = {
      "effects": {
       "self": {
        "body": 1,
-       "mood": 10,
-       "clean": -10
+       "mood": 10
       },
       "other": {},
       "bond": {},
@@ -1808,8 +1806,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "body": 1,
-       "clean": -10
+       "body": 1
       },
       "other": {},
       "bond": {},
@@ -2352,8 +2349,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "body": 1,
-       "clean": -10
+       "body": 1
       },
       "other": {},
       "bond": {},
@@ -2883,8 +2879,7 @@ var CONTENT: Content = {
      "effects": {
       "self": {
        "body": 1,
-       "mood": 5,
-       "clean": -15
+       "mood": 5
       },
       "other": {},
       "bond": {},
@@ -3822,8 +3817,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "body": 1,
-       "clean": -10
+       "body": 1
       },
       "other": {},
       "bond": {},
@@ -4533,8 +4527,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "body": 1,
-       "clean": -10
+       "body": 1
       },
       "other": {},
       "bond": {},
@@ -4594,7 +4587,6 @@ var CONTENT: Content = {
      "effects": {
       "self": {
        "body": 1,
-       "clean": -15,
        "energy": -10
       },
       "other": {},
@@ -7164,7 +7156,6 @@ var CONTENT: Content = {
      "effects": {
       "self": {
        "body": 1,
-       "clean": -15,
        "mood": 5
       },
       "other": {},
@@ -7481,8 +7472,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "mood": 5,
-       "clean": -10
+       "mood": 5
       },
       "other": {},
       "bond": {},
@@ -10830,8 +10820,7 @@ var CONTENT: Content = {
        "mood": 5
       },
       "other": {
-       "mood": 5,
-       "clean": 20
+       "mood": 5
       },
       "bond": {},
       "flags": []
@@ -15254,7 +15243,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "clean": 10
+       "mood": 2
       },
       "other": {},
       "bond": {},
@@ -15999,7 +15988,6 @@ var CONTENT: Content = {
      "effects": {
       "self": {
        "body": 1,
-       "clean": 40,
        "mood": 5
       },
       "other": {},
@@ -16015,8 +16003,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "clean": 60,
-       "mood": -3
+       "mood": 3
       },
       "other": {},
       "bond": {},
@@ -16031,7 +16018,6 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "clean": 30,
        "hunger": 5,
        "mood": 8
       },
@@ -16474,8 +16460,7 @@ var CONTENT: Content = {
       "self": {
        "body": 1,
        "mood": 10,
-       "energy": -10,
-       "clean": -10
+       "energy": -10
       },
       "other": {},
       "bond": {},
@@ -17524,8 +17509,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "body": 1,
-       "clean": -10
+       "body": 1
       },
       "other": {},
       "bond": {},
@@ -20203,8 +20187,7 @@ var CONTENT: Content = {
      "effects": {
       "self": {
        "body": 1,
-       "energy": -20,
-       "clean": -10
+       "energy": -20
       },
       "other": {
        "mood": 5
@@ -21127,8 +21110,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "mind": 1,
-       "clean": -15
+       "mind": 1
       },
       "other": {},
       "bond": {},
@@ -23825,8 +23807,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "mood": 10,
-       "clean": -10
+       "mood": 10
       },
       "other": {},
       "bond": {},
@@ -25741,8 +25722,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "body": 1,
-       "clean": -15
+       "body": 1
       },
       "other": {},
       "bond": {},
@@ -26958,7 +26938,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "clean": 20
+       "mood": 4
       },
       "other": {},
       "bond": {},
@@ -26973,7 +26953,6 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "clean": 15,
        "mood": 3
       },
       "other": {},
@@ -26989,8 +26968,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "mood": 5,
-       "clean": -5
+       "mood": 5
       },
       "other": {},
       "bond": {},
@@ -27660,8 +27638,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "body": 1,
-       "clean": -10
+       "body": 1
       },
       "other": {},
       "bond": {},
@@ -27676,8 +27653,7 @@ var CONTENT: Content = {
      ],
      "effects": {
       "self": {
-       "mood": 3,
-       "clean": -5
+       "mood": 3
       },
       "other": {},
       "bond": {},
@@ -31099,7 +31075,6 @@ var CONTENT: Content = {
     "duty": false,
     "requires": {},
     "needs": {
-     "clean": 60,
      "mood": 2
     },
     "stats": {},
@@ -31229,8 +31204,7 @@ var CONTENT: Content = {
     },
     "needs": {
      "mood": 10,
-     "energy": -8,
-     "clean": -8
+     "energy": -8
     },
     "stats": {
      "body": 0.25,
@@ -31260,8 +31234,7 @@ var CONTENT: Content = {
     },
     "needs": {
      "mood": 10,
-     "energy": -8,
-     "clean": -6
+     "energy": -8
     },
     "stats": {
      "body": 0.3
@@ -31320,8 +31293,7 @@ var CONTENT: Content = {
     },
     "needs": {
      "mood": 6,
-     "energy": -14,
-     "clean": -10
+     "energy": -14
     },
     "stats": {
      "body": 0.45
@@ -31350,8 +31322,7 @@ var CONTENT: Content = {
      "maxAge": 17
     },
     "needs": {
-     "energy": -12,
-     "clean": -15
+     "energy": -12
     },
     "stats": {
      "body": 0.15,
@@ -31572,8 +31543,7 @@ var CONTENT: Content = {
      ]
     },
     "needs": {
-     "energy": -12,
-     "clean": -10
+     "energy": -12
     },
     "stats": {
      "body": 0.15,
@@ -31605,7 +31575,6 @@ var CONTENT: Content = {
      ]
     },
     "needs": {
-     "clean": 90,
      "mood": 10,
      "energy": 4
     },
@@ -31685,8 +31654,7 @@ var CONTENT: Content = {
     "requires": {},
     "needs": {
      "mood": 12,
-     "energy": -4,
-     "clean": -4
+     "energy": -4
     },
     "stats": {},
     "money": 0,
@@ -31853,7 +31821,6 @@ var CONTENT: Content = {
     },
     "needs": {
      "energy": -6,
-     "clean": -4,
      "mood": 2
     },
     "stats": {
@@ -32066,8 +32033,7 @@ var CONTENT: Content = {
     },
     "needs": {
      "hunger": 50,
-     "mood": 5,
-     "clean": -4
+     "mood": 5
     },
     "stats": {},
     "money": -1,
@@ -32302,8 +32268,7 @@ var CONTENT: Content = {
     },
     "needs": {
      "energy": -12,
-     "hunger": -8,
-     "clean": 10
+     "hunger": -8
     },
     "stats": {
      "body": 0.55
@@ -32478,8 +32443,7 @@ var CONTENT: Content = {
      ]
     },
     "needs": {
-     "energy": -12,
-     "clean": -10
+     "energy": -12
     },
     "stats": {
      "mind": 0.05
@@ -32574,8 +32538,7 @@ var CONTENT: Content = {
      ]
     },
     "needs": {
-     "energy": -18,
-     "clean": -15
+     "energy": -18
     },
     "stats": {
      "body": 0.05
@@ -35056,8 +35019,7 @@ var CONTENT: Content = {
     ],
     "until": 900,
     "needs": {
-     "energy": -20,
-     "clean": -15
+     "energy": -20
     },
     "stats": {
      "body": 0.24
@@ -35265,8 +35227,7 @@ var CONTENT: Content = {
     "until": 1050,
     "needs": {
      "hunger": 35,
-     "energy": -28,
-     "clean": -15
+     "energy": -28
     },
     "stats": {
      "body": 0.5,
@@ -35352,8 +35313,7 @@ var CONTENT: Content = {
     ],
     "until": 1020,
     "needs": {
-     "energy": -22,
-     "clean": -15
+     "energy": -22
     },
     "stats": {
      "body": 0.19
@@ -35445,8 +35405,7 @@ var CONTENT: Content = {
     ],
     "until": 780,
     "needs": {
-     "energy": -22,
-     "clean": -10
+     "energy": -22
     },
     "stats": {
      "charm": 0.08
@@ -35474,8 +35433,7 @@ var CONTENT: Content = {
     ],
     "until": 900,
     "needs": {
-     "energy": -20,
-     "clean": -15
+     "energy": -20
     },
     "stats": {
      "body": 0.07
@@ -35591,8 +35549,7 @@ var CONTENT: Content = {
     ],
     "until": 840,
     "needs": {
-     "energy": -25,
-     "clean": -10
+     "energy": -25
     },
     "stats": {
      "charm": 0.12
@@ -35620,8 +35577,7 @@ var CONTENT: Content = {
     ],
     "until": 1020,
     "needs": {
-     "energy": -22,
-     "clean": -15
+     "energy": -22
     },
     "stats": {
      "body": 0.07,
@@ -35651,8 +35607,7 @@ var CONTENT: Content = {
     "until": 1050,
     "needs": {
      "hunger": 15,
-     "energy": -32,
-     "clean": -20
+     "energy": -32
     },
     "stats": {
      "body": 0.14
@@ -35681,8 +35636,7 @@ var CONTENT: Content = {
     "until": 1020,
     "needs": {
      "hunger": 25,
-     "energy": -24,
-     "clean": -12
+     "energy": -24
     },
     "stats": {
      "body": 0.07
@@ -35707,8 +35661,7 @@ var CONTENT: Content = {
     ],
     "until": 900,
     "needs": {
-     "energy": -20,
-     "clean": -15
+     "energy": -20
     },
     "stats": {
      "body": 0.07
@@ -36526,8 +36479,7 @@ var CONTENT: Content = {
    "fail": {
     "text": "连人带车拍进白菜堆，楼长的白菜碎了三棵。",
     "self": {
-     "mood": -3,
-     "clean": -10
+     "mood": -3
     },
     "flags": null
    }
@@ -36555,7 +36507,7 @@ var CONTENT: Content = {
    "fail": {
     "text": "摸了一晚上，就摸着一手泥。",
     "self": {
-     "clean": -10
+     "mood": -2
     },
     "flags": null
    }

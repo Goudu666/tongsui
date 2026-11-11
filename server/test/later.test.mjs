@@ -82,8 +82,8 @@ const where = (id) => C.map.spots.find((sp) => (sp.actions ?? [sp.action]).inclu
   // 带孙辈：有孙辈的才有，能带上对门
   const g = act("grandkid_park");
   assert.ok(g.requires.flags.includes("has_kid") && g.bring && g.together, "带孙辈：要有孙辈，能带上对门，凑一块儿算搭伴");
-  // 楼道拐角一个点位摆三样：小时候是老先生家，老了是一锅饭和看孩子
-  assert.equal(JSON.stringify(spot("hall_upstairs").actions), JSON.stringify(["old_lessons", "pair_cook", "mind_kids"]));
+  // 楼道拐角一个点位摆三样：小时候是老先生家，老了是一锅饭和看孩子（后面跟着人际圈子的「给楼里搭把手」，docs/CIRCLE.md）
+  assert.equal(JSON.stringify(spot("hall_upstairs").actions.slice(0, 3)), JSON.stringify(["old_lessons", "pair_cook", "mind_kids"]));
   console.log("✓ 开出来的去处：跳舞、一锅饭、接孙辈只给碰上那件事的人 / 带孙辈要有孙辈、能带对门 / 都在图上");
 }
 

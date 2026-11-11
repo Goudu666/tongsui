@@ -352,6 +352,8 @@ interface Action {
   bring: boolean;
   /** 只在菜单上点到才做（ACT 带 action，协议 8）。不带 action 的永远轮不到它 */
   menu: boolean;
+  /** 人际圈子（circle.ts）：做够 times 回认下门路 flag（tie_*）。只有 menu 的事有 */
+  tie?: { flag: string; times: number };
 }
 
 interface GameMap {

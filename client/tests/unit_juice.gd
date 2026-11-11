@@ -109,6 +109,26 @@ func _initialize() -> void:
 			last = c
 	check(_tags(j) == before + 1 and last != null and not last.bit and last.text_big == "+1", "30.5 → 31.1 跨过一分：飘整数「+1」")
 
+	# 人际圈子：did 带 tie（认下门路）飘一张墨色的「门路 · 老师记住你了」；带 tp（还在攒）飘小字「帮老师 3/6」；旧服务器不发就没有
+	check(Juice.circle_tags({"n": 1}).is_empty(), "did 上没有 tie / tp：不飘门路")
+	check(Juice.circle_tags({"tie": {"f": "tie_teacher", "l": "老师记住你了"}}) == [["门路 ·", "老师记住你了", "tie"]], "tie → 门路 · 老师记住你了")
+	check(Juice.circle_tags({"tp": [3, 6, "帮老师"]}) == [["帮老师", "3/6", "tp"]], "tp → 帮老师 3/6")
+	var w4 := _world(st, 18, 42)
+	w4["fine"] = w3.fine
+	w4.actors.qing["did"] = {"n": 9, "a": "class_help", "tg": false, "tie": {"f": "tie_teacher", "l": "老师记住你了"}}
+	j.on_world(w4)
+	var ties: Array = []
+	for c in j.get_children():
+		if c is Juice.Tag and c.tie:
+			ties.append(c.text_small + " " + c.text_big)
+	check(ties == ["门路 · 老师记住你了"], "做完一回认下门路：人头上一张门路（实际 %s）" % [ties])
+	var w5 := _world(st, 18, 42)
+	w5["fine"] = w3.fine
+	w5.actors.qing["did"] = {"n": 9, "a": "class_help", "tg": false, "tie": {"f": "tie_teacher", "l": "老师记住你了"}}
+	before = _tags(j)
+	j.on_world(w5)
+	check(_tags(j) == before, "同一个 did（n 没变）不再飘门路")
+
 	# 成长账：一个日子一个点，同一天只改不加；回到更早的日子（再来一世）从头记
 	j.journal = {"pts": [], "stages": {}}
 	for turn in [0, 0, 1, 2, 35, 36]:
@@ -172,5 +192,5 @@ func _initialize() -> void:
 	check(Report.has_stage([[0, 3, "childhood", 1, 1, 1, 1, 1, 1]], "childhood") and not Report.has_stage([], "teen"), "成长账里有没有这一段")
 
 	if fails == 0:
-		print("✓ 爽感层：百分制取整 / 不到 1 分不飘、做完一件才飘零点几分 / 开着弹窗不飘 / 成长账一天一点、换一世从头记 / 成绩单讲刚过完的那段 / 搭伴和关口计数 / 数等飘字落下才拨 / 过线判定")
+		print("✓ 爽感层：百分制取整 / 不到 1 分不飘、做完一件才飘零点几分 / 开着弹窗不飘 / 成长账一天一点、换一世从头记 / 成绩单讲刚过完的那段 / 门路 tie·tp / 搭伴和关口计数 / 数等飘字落下才拨 / 过线判定")
 	quit(1 if fails > 0 else 0)

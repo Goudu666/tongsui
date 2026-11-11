@@ -691,7 +691,8 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
   const pairUp = (runs) => opens(at(runs, "m_evening"), "pair");
   // 这一条两边只差几个百分点，24 条人生里一个人就能翻过来：多跑几条（一天五段以后机器人快多了）
   const runN = (n, way, talent, until) => Array.from({ length: n }, (_, i) => live((i + 1) * 7919, WAYS[way], until, climb, as(talent)));
-  const nearL = runN(64, "搭伴念书", "linked", 71), nearO = runN(64, "搭伴念书", "owl", 71), farL = run("各顾各的", "linked", 71);
+  // 家里的东西（PR #73）挪了随机数，64 条量出 61%；160 条是 54%（别人 39%）：64 条差一两个人就过线，放到 96
+  const nearL = runN(96, "搭伴念书", "linked", 71), nearO = runN(96, "搭伴念书", "owl", 71), farL = run("各顾各的", "linked", 71);
   assert.ok(pairUp(nearL) >= pairUp(nearO) - 0.05, "连心的两个人搭伴过，老了不该比别人更难并一家");
   // 并一家是够不够线的二选一，64 条里差几个点就是一两个人的事；亲近是连续的数，用它钉「连心一头宽」：同种子搭伴过的，七十岁亲近得高过别人
   const closeAt = (runs) => avg(at(runs, "m_evening"), (p) => p.close);

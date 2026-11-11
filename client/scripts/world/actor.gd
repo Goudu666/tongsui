@@ -68,6 +68,8 @@ const ACTION_LOOP := {
 	"hm_tv": "gaze", "hm_radio": "gaze", "hm_console": "type", "hm_books": "read", "hm_tape": "read",
 	"hm_pc": "type", "hm_pc_game": "type", "hm_milk": "eat", "hm_piece": "brush",
 	"buy_console": "carry", "buy_tape": "carry", "buy_pc": "carry",
+	# 人际圈子（content/circle.yaml）：攒门路的几样
+	"class_help": "chalk", "help_neighbor": "carry", "visit_kin": "talk", "treat": "eat",
 }
 ## 上学 / 上班（duty）按在哪个点上：坐办公桌敲电脑、修车铺修车、早点铺出摊…（没写的就招手进门）
 const DUTY_LOOP := {

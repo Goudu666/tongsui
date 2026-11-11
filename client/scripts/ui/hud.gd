@@ -348,7 +348,7 @@ func _kid(f: Font, r: Rect2) -> void:
 	for i in 3:
 		var x := at.x + 18.0 + pitch * i
 		var lw := Kit.text(self, Vector2(x, at.y + 84.0), str(row[i][0]), P.FS_CAPTION, P.INK_MID)
-		var hot := keys[i] == _kid_hot and _kid_bump > 0.0
+		var hot: bool = keys[i] == _kid_hot and _kid_bump > 0.0
 		Kit.text(self, Vector2(x + lw + 8.0, at.y + 84.0), str(row[i][1]), P.FS_LABEL, Kit.accent if hot else P.INK)
 
 

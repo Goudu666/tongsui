@@ -64,11 +64,17 @@ const ACTION_LOOP := {
 	"old_breakfast": "cook", "old_bikes": "fix", "mind_kids": "talk", "grandkid_park": "kite",
 	"kid_homework": "write", "kid_run": "kick", "kid_listen": "talk", "kid_class": "read",
 	"square_dance": "exercise", "pair_cook": "cook", "gk_pickup": "talk",
+	# 门外的世界：早市、海边、乡下、看病、给住院的家里人送饭（content/maps/{market,seaside,village}.yaml、map.yaml 末尾）
+	"soy_milk": "eat", "stall_sell": "talk", "market_walk": "gaze", "buy_veg": "talk", "haul_crate": "carry", "scrap_sell": "carry",
+	"shell_buy": "talk", "sea_swim": "exercise", "sand_castle": "brush", "tide_dig": "fish", "ship_watch": "gaze",
+	"feed_chicken": "carry", "farm_help": "carry", "creek_fish": "fish", "star_night": "gaze",
+	"see_doctor": "gaze", "ward_meal": "eat",
 }
 ## 上学 / 上班（duty）按在哪个点上：坐办公桌敲电脑、修车铺修车、早点铺出摊…（没写的就招手进门）
 const DUTY_LOOP := {
 	"office_desk": "type", "bike_bench": "fix", "breakfast_stall": "cook", "class_desk": "write",
 	"middle_desk": "write", "away_work": "carry", "river_bridge": "carry", "uni_gate": "read",
+	"veg_stall": "talk",  # 清贫人家的孩子歇着的日子在早市帮家里看摊（tracks.yaml 的 restDuty）
 }
 const SIT_ACTIONS := ["listen", "accompany", "tea_box"]
 const WAVE_ACTIONS := ["knock"]

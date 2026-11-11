@@ -27,7 +27,8 @@ const NEED_KEYS = ["hunger", "energy", "mood"]; // 清洁 11-11 砍了：内容�
 const SELF_KEYS = [...STAT_KEYS, ...NEED_KEYS];
 const BOND_KEYS = ["sync", "close", "distance"];
 const TAGS = ["gentle", "adventure", "solitude", "responsible", "competitive", "patient"];
-const REQ_KEYS = ["minAge", "maxAge", "flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "alone", "kidAge"];
+// either（门外的世界，server/src/outside.ts）：{ flags?, notFlags? }，两个人里至少一个人自己满足（mirror 靠它按家境分开；solo 就是这个人自己）
+const REQ_KEYS = ["minAge", "maxAge", "flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "alone", "kidAge", "either"];
 const PAIR_REQ_KEYS = ["flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "minMemories", "maxMemories", "minRate", "maxRate", "minTogether"];
 const LIFE_REQ_KEYS = ["flags", "notFlags", "stats", "minDiedAge", "maxDiedAge"];
 // 老物件的条件比一生小结多两样（server/src/legacy.ts → legacyPersonOk）
@@ -68,7 +69,9 @@ const DUTY_KEYS = ["label", "spot", "arrive", "until", "needs", "stats", "money"
 // 普通事件的选项也可以挂门槛（docs/MEANS.md 第三节）：requires 只看选的人自己的标记（家境、走过的路），cost 是花掉的积蓄。
 // 标记不对的人看不见这一项；钱不够的看得见、灰着。挂了门槛的事件至少留两个谁都能选的
 const OPTION_KEYS = ["id", "text", "tags", "effects", "requires", "cost"];
-const EFFECT_KEYS = ["self", "other", "bond", "flags", "drop", "money", "flagsIf"];
+// goto / tagAlong（门外的世界，server/src/outside.ts）：goto 是图的 id，结算后把这个人送过去、这一天的日程免了；
+// tagAlong 是同一件 mirror 里带 goto 的选项 id，对门选了其中一项，这个人也被送到同一张图。只给普通事件用（关口、主线不出门）
+const EFFECT_KEYS = ["self", "other", "bond", "flags", "drop", "money", "flagsIf", "goto", "tagAlong"];
 const RESONANCE_KEYS = ["text", "memory", "bond", "flags"];
 const DISSONANCE_KEYS = ["text", "bond", "flags"];
 const FAMILY_KEYS = ["id", "name", "wealth", "weight", "money", "desc", "bonus", "traits"];
@@ -76,7 +79,8 @@ const TALENT_KEYS = ["id", "name", "weight", "desc", "bonus", "flags", "unlock"]
 const ENDING_KEYS = ["id", "title", "text", "requires"];
 const MAP_KEYS = ["actions"];
 // content/maps/<图>.yaml：一张图一个文件，横着的一条剖面 / 街景，人只左右走
-const SCENE_KEYS = ["id", "name", "width", "floors", "unlock", "far", "areas", "exits", "spots", "npcs", "props", "art"];
+// trip：出门才到得了的图（海边、乡下），别的图的出口不许指进来，只有事件的 goto 送得来；seen：来过的人打上的标记（server/src/outside.ts）
+const SCENE_KEYS = ["id", "name", "width", "floors", "unlock", "far", "trip", "seen", "areas", "exits", "spots", "npcs", "props", "art"];
 const AREA_KEYS = ["id", "name", "span", "floor", "owner"];
 const EXIT_KEYS = ["id", "at", "floor", "to", "arrive", "arriveFloor", "label", "ride"];
 const SPOT_KEYS = ["id", "area", "at", "action", "actions", "owner"];
@@ -89,8 +93,9 @@ const PENDING_ACTIONS = [];
 const PENDING_FLAGS = [];
 // 每张图在世界坐标里占一条：第 i 张图的 y 从 i × SCENE_STRIDE 起。服务器的距离、地点判定都还是二维的，
 // 不同的图隔得远，自然够不着。顺序钉死在这张表里（存档里的坐标靠它），新图往后加，不要插队
-const SCENE_ORDER = ["building", "street", "river", "primary", "middle", "across", "away", "rental", "newhome", "park", "hospital"];
+const SCENE_ORDER = ["building", "street", "river", "primary", "middle", "across", "away", "rental", "newhome", "park", "hospital", "market", "seaside", "village"];
 const SCENE_STRIDE = 2000;
+const DAY_FROM = 390, DAY_TO = 1320; // 一天从 06:30 到 22:00（server/src/world.ts 的 DAY_START / DAY_END）
 const AREA_HEIGHT = 400; // 地点在世界坐标里的框：地面往上这么高（判定「人在不在这儿」用，美术不看它）
 const ACTION_KEYS = ["id", "label", "minutes", "quick", "sleep", "duty", "requires", "needs", "stats", "money", "together", "bring", "menu", "kid"];
 const ACTION_REQ_KEYS = ["minAge", "maxAge", "owner", "hours", "flags", "notFlags", "kidAge"];
@@ -105,6 +110,7 @@ const FAMILY_DERIVED_FLAGS = ["kids_same_age"];
 
 const errors = [];
 const events = [];
+const gotoRefs = []; // [where, 图 id]：事件选项的 goto，地图读完再查
 const seen = new Set();
 // 标记的来龙去脉：谁打上的、谁要求的。要求了却没人能打上的标记 = 永远触发不了的剧情（多半是拼错了）
 const produced = new Set();
@@ -127,6 +133,12 @@ function checkRequires(where, rq, allowed) {
       if (typeof v !== "boolean") errors.push(`${where}.requires.alone: 必须是 true / false`);
     } else if (k === "kidAge") {
       if (!(Array.isArray(v) && v.length === 2 && v.every((x) => Number.isInteger(x) && x >= 0 && x <= 40) && v[0] <= v[1])) errors.push(`${where}.requires.kidAge: 应为 [从几岁, 到几岁]，0~40 的整数，起不大于止`);
+    } else if (k === "either") {
+      if (v == null || typeof v !== "object" || Array.isArray(v)) { errors.push(`${where}.requires.either: 应为 { flags?, notFlags? }`); continue; }
+      for (const ek of Object.keys(v)) if (ek !== "flags" && ek !== "notFlags") errors.push(`${where}.requires.either: 未知条件 "${ek}"（可用：flags, notFlags）`);
+      for (const ek of ["flags", "notFlags"]) if (v[ek] !== undefined && !(Array.isArray(v[ek]) && v[ek].every((f) => typeof f === "string"))) errors.push(`${where}.requires.either.${ek}: 必须是标记列表`);
+      if (!(v.flags?.length || v.notFlags?.length)) errors.push(`${where}.requires.either: 要写 flags 或 notFlags`);
+      for (const f of Array.isArray(v.flags) ? v.flags : []) consumed.push([`${where}.requires.either`, f]);
     } else if (k === "stats") checkDeltas(`${where}.requires.stats`, v, STAT_KEYS);
     else if (k === "carried") {
       if (typeof v !== "string") errors.push(`${where}.requires.carried: 必须是老物件的 id`);
@@ -277,6 +289,26 @@ for (const file of eventFiles) {
         if (typeof e.money !== "number" || e.money <= 0 || e.money > 60) errors.push(`${oat}.effects.money: 拿到的钱写 1~60 的正数（花钱写 cost）`);
         else o.effects.money = e.money;
       }
+      // 出门（server/src/outside.ts）：图存不存在等地图读完再查（gotoRefs）
+      if (e.goto !== undefined || e.tagAlong !== undefined) {
+        if (ms) errors.push(`${oat}: 关口不出门（goto / tagAlong 只给普通事件）`);
+        if (e.goto !== undefined && e.tagAlong !== undefined) errors.push(`${oat}: goto 和 tagAlong 只写一个（自己去，或者跟着对门去）`);
+        if (e.goto !== undefined) {
+          if (typeof e.goto !== "string" || !e.goto) errors.push(`${oat}.effects.goto: 是图的 id`);
+          else { o.effects.goto = e.goto; gotoRefs.push([oat, e.goto]); }
+        }
+        if (e.tagAlong !== undefined) {
+          if (ev.kind !== "mirror") errors.push(`${oat}.effects.tagAlong: 只有 mirror 事件里有对门可跟`);
+          if (!Array.isArray(e.tagAlong) || !e.tagAlong.length || e.tagAlong.some((x) => typeof x !== "string")) errors.push(`${oat}.effects.tagAlong: 是同一件事里带 goto 的选项 id 列表`);
+          else {
+            for (const x of e.tagAlong) {
+              const t = (ev.options ?? []).find((y) => y.id === x);
+              if (!t || x === o.id || typeof t.effects?.goto !== "string") errors.push(`${oat}.effects.tagAlong: ${x} 不是这件事里另一个带 goto 的选项`);
+            }
+            o.effects.tagAlong = e.tagAlong;
+          }
+        }
+      }
     }
     if (!ms) {
       const gated = (o) => !!o.cost || !!(o.requires?.flags?.length || o.requires?.notFlags?.length);
@@ -320,7 +352,7 @@ for (const file of eventFiles) {
 // ---------- 主线：七章、每章三件一定会发生的事（content/story.yaml） ----------
 // 原样带进 content.story，不进随机池（content.events）。怎么排、什么时候发生见 server/src/story.ts；replaces 的旧事件由引擎从随机池里摘掉。
 // 字段和写法见 story.yaml 文件头。字数上限按文风手册（docs/tianjin_style.md §4.1、§9.1）。
-const STORY_SCENES = ["building", "street", "river", "primary", "middle", "across", "away", "newhome", "rental", "park", "hospital"];
+const STORY_SCENES = ["building", "street", "river", "primary", "middle", "across", "away", "newhome", "rental", "park", "hospital", "market", "seaside", "village"];
 const STORY_SLOTS = ["morning", "am", "pm", "evening", "night"];
 const STORY_CHAPTER_KEYS = ["id", "title", "ages", "opens", "intro", "closes"];
 const STORY_EVENT_KEYS = ["id", "kind", "chapter", "beat", "scene", "slot", "next", "replaces", "requires", "title", "text", "options", "resonance", "dissonance"];
@@ -412,6 +444,7 @@ const story = { chapters: [], events: [] };
       if (e.flags?.length) errors.push(`${oat}: 主线选项不发标记（路线标记由关口发，共同标记写在共鸣里）`);
       if (e.drop !== undefined) errors.push(`${oat}: 主线选项不摘标记（effects.drop 只给关口和日常小事用）`);
       if (e.money !== undefined) errors.push(`${oat}: 主线选项不给钱（effects.money 只给关口和日常小事用）`);
+      if (e.goto !== undefined || e.tagAlong !== undefined) errors.push(`${oat}: 主线选项不出门（goto / tagAlong 只给日常小事用）`);
       checkDeltas(`${oat}.self`, e.self, SELF_KEYS);
       checkDeltas(`${oat}.other`, e.other, SELF_KEYS);
       checkDeltas(`${oat}.bond`, e.bond, BOND_KEYS);
@@ -540,7 +573,8 @@ const rules = load("rules.yaml");
     legacy: ["pastKept", "heirloomOffer", "houseMax", "houseMoney", "lateEarly", "lateAfter", "lateRoom", "linkedDrift", "linkedMood", "oldSoul", "oldSoulCharm"],
   };
   // 可以不写的：bond.pullMoneyBy（塞钱的上限按塞的那个人的家境，docs/MEANS.md 第九节）、locks（锁上那句按标记换）
-  const optional = { bond: ["pullMoneyBy"] };
+  // daily.flagDuty：带着某个标记的人日程跟着变（server/src/outside.ts），点位等地图读完再查
+  const optional = { bond: ["pullMoneyBy"], daily: ["flagDuty"] };
   checkKeys("rules", rules, [...Object.keys(need), "locks"]);
   for (const [sec, keys] of Object.entries(need)) {
     if (!rules?.[sec]) { errors.push(`rules.yaml: 缺少 ${sec}`); continue; }
@@ -738,7 +772,10 @@ for (const sc of rawScenes) {
     return top + floors[n];
   };
   const unlock = sc.unlock && Object.keys(sc.unlock).length ? sc.unlock : null;
-  scenes.push({ id: sc.id, name: sc.name ?? sc.id, index, top, width: sc.width, floors: floors.map((y) => top + y), unlock, far: !!sc.far });
+  if (sc.trip !== undefined && sc.trip !== true) errors.push(`${at}.trip: 只能写 true`);
+  if (sc.seen !== undefined && !(typeof sc.seen === "string" && /^[a-z][a-z0-9_]*$/.test(sc.seen))) errors.push(`${at}.seen: 是一个标记名（小写字母、数字、下划线）`);
+  if (sc.seen) produced.add(sc.seen); // 引擎打：来过这张图（server/src/outside.ts → outsideSeen）
+  scenes.push({ id: sc.id, name: sc.name ?? sc.id, index, top, width: sc.width, floors: floors.map((y) => top + y), unlock, far: !!sc.far, ...(sc.trip ? { trip: true } : {}), ...(sc.seen ? { seen: sc.seen } : {}) });
   const mine = [];
   for (const ar of sc.areas ?? []) {
     const w = `${at}.areas#${ar.id}`;
@@ -797,9 +834,15 @@ for (const ex of exits) {
   ex.arrive = [ex.arrive, to.floors[ex.arriveFloor]];
   delete ex.arriveFloor;
 }
+// 出门才到得了的图（trip）：别的图的出口不许指进来，只有事件的 goto 送得来
+for (const ex of exits) if (sceneById.get(ex.to)?.trip) errors.push(`maps/${ex.scene}.yaml: 出口 ${ex.id} 通往 ${ex.to}，那是出门才到得了的图（trip），只有事件的 goto 送得来`);
+for (const [where, id] of gotoRefs) if (!sceneById.has(id)) errors.push(`${where}.effects.goto: 没有这张图 ${id}`);
+// 坐车回来、在车站下车的（海边、乡下、医院坐车回家）：落脚点 200 像素内有一个坐车的出口（车站）就行，不用一个通回去的出口
+const atStation = (ex) => ex.ride > 0 && exits.some((o) => o.scene === ex.to && o.ride > 0 && o.at[1] === ex.arrive[1] && Math.abs(o.at[0] - ex.arrive[0]) <= 200);
 // 每个出口都得有回来的路：到了那边，离落脚点不远就有一个通回这张图的出口
 for (const ex of exits) {
   if (!Array.isArray(ex.arrive)) continue;
+  if (atStation(ex)) continue;
   const back = exits.find((o) => o.scene === ex.to && o.to === ex.scene && o.at[1] === ex.arrive[1] && Math.abs(o.at[0] - ex.arrive[0]) <= 200);
   if (!back) errors.push(`maps/${ex.scene}.yaml: 出口 ${ex.id} 到了 ${ex.to} 那边，落脚点 200 像素内没有回来的出口`);
 }
@@ -967,6 +1010,30 @@ const tracks = (load("tracks.yaml") ?? []).map((t) => {
     ...(t.restDuty ? { restDuty: checkDuty("restDuty", t.restDuty) } : {}),
   };
 });
+// rules.daily.flagDuty：{ 标记: { minAge?, maxAge?, until?, label?, rest? } }（server/src/outside.ts → outsideFlagDuty）
+for (const [f, x] of Object.entries(rules?.daily?.flagDuty ?? {})) {
+  const at = `rules.daily.flagDuty.${f}`;
+  consumed.push([at, f]);
+  if (x == null || typeof x !== "object" || Array.isArray(x)) { errors.push(`${at}: 应为 { minAge?, maxAge?, until?, label?, rest? }`); continue; }
+  checkKeys(at, x, ["minAge", "maxAge", "until", "label", "rest"]);
+  for (const k of ["minAge", "maxAge"]) if (x[k] !== undefined && !(Number.isInteger(x[k]) && x[k] >= 0)) errors.push(`${at}.${k}: 是岁数`);
+  if (x.until !== undefined && !(Number.isInteger(x.until) && x.until > DAY_FROM && x.until <= DAY_TO)) errors.push(`${at}.until: 上学的日子拖到几点，${DAY_FROM}~${DAY_TO} 的分钟数`);
+  if (x.label !== undefined && !(typeof x.label === "string" && x.label)) errors.push(`${at}.label: 是一句话`);
+  if (x.until === undefined && x.rest === undefined) errors.push(`${at}: until 和 rest 至少写一个（不然什么也不变）`);
+  if ((x.until === undefined) !== (x.label === undefined)) errors.push(`${at}: until 和 label 一起写（拖到傍晚，日程上的字也要换）`);
+  if (x.rest !== undefined) {
+    const d = x.rest;
+    checkKeys(`${at}.rest`, d, DUTY_KEYS);
+    const sp = spotById.get(d?.spot);
+    if (!sp) errors.push(`${at}.rest: 未知点位 ${d?.spot}`);
+    else if (!sp.actions.some((a) => map.actions.find((y) => y.id === a)?.duty)) errors.push(`${at}.rest: 点位 ${d.spot} 上没有日程行动（actions 里要有 duty）`);
+    if (!(Array.isArray(d?.arrive) && d.arrive.length === 2 && d.arrive[0] < d.arrive[1] && d.arrive[1] < d.until)) errors.push(`${at}.rest: 需要 arrive: [从, 到] 且早于 until`);
+    if (!d?.label) errors.push(`${at}.rest: 需要 label`);
+    checkDeltas(`${at}.rest.needs`, d?.needs, NEED_KEYS);
+    checkDeltas(`${at}.rest.stats`, d?.stats, STAT_KEYS);
+    if (d && typeof d === "object") x.rest = { label: d.label, spot: d.spot, arrive: d.arrive, until: d.until, needs: d.needs ?? {}, stats: d.stats ?? {}, money: d.money ?? 0 };
+  }
+}
 if (tracks.length === 0 || Object.keys(tracks.at(-1).requires).length > 0) errors.push("tracks.yaml: 最后一条是兜底的路，不能有 requires");
 if (new Set(tracks.map((t) => t.id)).size !== tracks.length) errors.push("tracks.yaml: id 重复");
 const milestones = events.filter((e) => e.kind === "milestone");

@@ -49,7 +49,12 @@ const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "pla
 	"old_breakfast": "work", "old_bikes": "work", "mind_kids": "play_alley", "grandkid_park": "play_river",
 	# 带孩子（docs/FAMILY.md）
 	"kid_homework": "study", "kid_run": "play_river", "kid_listen": "listen", "kid_class": "study",
-	"square_dance": "perform", "pair_cook": "eat", "gk_pickup": "play_alley"}
+	"square_dance": "perform", "pair_cook": "eat", "gk_pickup": "play_alley",
+	# 门外的世界（content/maps/{market,seaside,village}.yaml）：早市借早点铺的吆喝、海边和河沟借河边的水声、地里的活借干活
+	"soy_milk": "eat_out", "stall_sell": "eat_out", "market_walk": "eat_out", "buy_veg": "eat_out", "haul_crate": "work", "scrap_sell": "work",
+	"shell_buy": "eat_out", "sea_swim": "play_river", "sand_castle": "play_alley", "tide_dig": "fish", "ship_watch": "play_river",
+	"feed_chicken": "play_alley", "farm_help": "work", "creek_fish": "fish", "star_night": "play_roof",
+	"see_doctor": "listen", "ward_meal": "eat"}
 ## 揭晓：名次章的音高（reveal.gd 砸横章那一下），认它来起 top
 const TOP_PITCH := 1.12
 ## 揭晓的声音隔这么久没来，下一颗算盘珠就算新的一回揭晓

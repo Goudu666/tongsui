@@ -62,6 +62,9 @@ function worldSceneAt(c: Content, y: number): Scene | null {
  * 今天要去这张图上报到的人（上学、上班）总去得了。去不了返回原因
  */
 function worldSceneLock(s: LifeState, c: Content, sc: Scene, role: Role, today?: { duty: Duty | null; story: string | null }): string | null {
+  // 今天事件的 goto 把他送来的（跟着家里出门、跟着对门去）：unlock 说不行也开着。早上排事的时候（today）还没出门，不算（outside.ts）
+  if (!today && outsideSent(s, role, sc)) return null;
+  if (sc.trip) return OUTSIDE_TRIP_LOCK; // 海边、乡下：只有 goto 送得来
   var u = sc.unlock;
   if (!u) return null;
   var duty = today ? today.duty : worldDuty(s, c, role);
@@ -284,7 +287,8 @@ function worldStartDay(s: LifeState, c: Content) {
   var together: EligibleCtx = { bond: s.bond, alone: false, kidAges: kidAges };
   if (persons.qing.alive && persons.mei.alive) {
     var both = persons.qing.flags.concat(persons.mei.flags);
-    var mirrors = c.events.filter(function (e) { return e.kind === "mirror" && lifeEligible(e, t, both, seen, together) && reach(e, "qing") && reach(e, "mei"); });
+    // requires.either 按各人自己的标记判（outside.ts）：三档人家的「夏天」，两个人里有一个是那一档的就行
+    var mirrors = c.events.filter(function (e) { return e.kind === "mirror" && lifeEligible(e, t, both, seen, together) && outsideEither(e, [persons.qing.flags, persons.mei.flags]) && reach(e, "qing") && reach(e, "mei"); });
     // 运气好的两个人，命运准备的事也多一点
     var luck = (persons.qing.stats.luck + persons.mei.stats.luck) / 2 - 5;
     if (mirrors.length > 0 && lifeRand(s) < (t.stage === "childhood" ? 0.6 : 0.45) + luck * c.rules.daily.luckFate) {
@@ -301,7 +305,7 @@ function worldStartDay(s: LifeState, c: Content) {
     // solo 按人算：对门遇到过的事，你也可能遇到（但同一天两人不会是同一件）
     var mine = lifeSeenIds(s, role);
     if (fate.qing) mine[fate.qing] = true;
-    var solos = c.events.filter(function (e) { return e.kind === "solo" && lifeEligible(e, t, flags, mine, ctx) && reach(e, role); });
+    var solos = c.events.filter(function (e) { return e.kind === "solo" && lifeEligible(e, t, flags, mine, ctx) && outsideEither(e, [flags]) && reach(e, role); });
     if (solos.length > 0 && lifeRand(s) < 0.7) {
       var pick = lifePickWeighted(s, solos, function (e) { return e.weight; })!;
       fate[role] = pick.id;
@@ -483,6 +487,7 @@ function worldExit(s: LifeState, c: Content, role: Role, exitId: string): string
   if (lock) return lock;
   a.x = ex.arrive[0];
   a.y = ex.arrive[1];
+  outsideSeen(s, to, role); // 头一回走进早市（outside.ts）
   // 过桥、坐车：路上的时间从这一段里扣（这一段再做事就只剩扣掉以后的那些；去外地一趟就是一整段）
   if (ex.ride > 0) {
     if (a.rideSlot !== w.slot) a.ride = 0;
@@ -498,8 +503,9 @@ function worldExit(s: LifeState, c: Content, role: Role, exitId: string): string
 function worldDuty(s: LifeState, c: Content, role: Role): Duty | null {
   if (s.world!.off && s.world!.off[role]) return null;
   var tr = lifeTrack(c, s.persons![role], lifeTimeAt(s.turn).age);
-  if (s.world!.rest) return tr.restDuty || null;
-  return tr.duty;
+  var d = s.world!.rest ? tr.restDuty || null : tr.duty;
+  // 带着 rules.daily.flagDuty 里的标记（家里有人住院的少年）：上学拖到傍晚，歇着的日子在医院（outside.ts，返回副本）
+  return outsideFlagDuty(s, c, role, d, !!s.world!.rest);
 }
 
 /** 这一天的工钱：路上写的数，乘上关口挣来的那一级、家境的那一截（rules.yaml → daily.wageFlags，wageFlagsFrom 岁起才乘） */
@@ -595,13 +601,18 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
     if (lock) return lock;
     // 外地和河畔里之间隔着一趟车：影子、跟着对门过去的都过不去，得本人坐车
     if (worldSceneOf(c, sp).far !== worldFarAt(c, a)) return "隔着老远";
+    // 出门在海边、乡下（trip）：只在这张图里找事做，不会被送到外地那一片去（outside.ts）
+    var here = worldSceneAt(c, a.y);
+    if (here && here.trip && here.id !== sp.scene) return "隔着老远";
   }
   var pick = worldPickAction(s, c, role, sp, want);
   if (!pick.act) return pick.why;
   var act = pick.act;
   var rq = act.requires || {};
   var p = s.persons![role];
-  if (rq.owner && lifeFind(c.map.zones, sp.zone).owner !== role) return "这不是你的家";
+  // 睡觉写着 owner：谁家屋里的床只给谁家的人睡；不分谁家的屋（出租屋、新家、招待所、姥姥家）谁都能睡
+  var spOwner = lifeFind(c.map.zones, sp.zone).owner;
+  if (rq.owner && spOwner && spOwner !== role) return "这不是你的家";
   if (rq.hours && !worldOverlaps(rq.hours, w.slot)) return "现在不是时候";
   if (act.duty && w.slot < worldDutySlots(worldDuty(s, c, role)!)[0]) return "还没到点";
   if (act.id === "letter" && !postApart(s, c, role)) return s.persons![lifeOther(role)].alive ? "TA 就在跟前，用不着写信" : "信寄不到了";
@@ -871,6 +882,7 @@ function worldAct(s: LifeState, c: Content, role: Role, spotId: string, once?: b
   var p = s.persons![role];
   var sp = lifeFind(c.map.spots, spotId);
   var act = worldPickAction(s, c, role, sp, want).act!;
+  outsideSeen(s, worldSceneOf(c, sp), role); // 在那张图上做过事就算来过（影子直接到点位上，不走出口）
   a.x = sp.at[0];
   a.y = sp.at[1];
   a.shadow = false;
@@ -1513,6 +1525,7 @@ function worldChoose(s: LifeState, c: Content, role: Role, optionId: string, fro
   duetAfterEvent(s, c, pe, entry); // 猜 TA 的对错；影子替选的记一笔，等本人回话
   w.done.push(pe.eventId);
   w.event = null;
+  outsideAfterEvent(s, c, pe); // 选了出门的（goto）、跟着对门去的（tagAlong）：送到那张图上（outside.ts）
   storyAfter(s, c, pe.eventId); // 过完一件主线，同一天后面的段还能接着排下一件
   return { error: null, entry: entry };
 }

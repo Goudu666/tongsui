@@ -98,12 +98,12 @@ const shown = (s, r, ms, id) => { const o = ms.options.find((x) => x.id === id);
   s.world.rest = true;
   const dq = G("worldDuty")(s, C, "qing"), dm = G("worldDuty")(s, C, "mei");
   assert.equal(dm, null, "小康人家歇着的日子没有日程");
-  assert.ok(dq && dq.spot === "breakfast_stall");
+  assert.ok(dq && dq.spot === "veg_stall");
   assert.deepEqual(J(G("worldDutySlots")(dq)), [1, 1], "看一上午摊，就占上午那一段");
   assert.ok(C.tracks.filter((x) => x.restDuty).every((x) => (x.requires.flags || []).includes("fam_poor")), "只有清贫人家的路写 restDuty");
   // 真去看摊：上午那一段做完，长的是看摊的数
   const before = s.persons.qing.stats.charm;
-  const sp = C.map.spots.find((x) => x.id === "breakfast_stall");
+  const sp = C.map.spots.find((x) => x.id === "veg_stall");
   s.world.slot = 1; s.world.minute = 480;
   s.world.actors.qing.x = sp.at[0]; s.world.actors.qing.y = sp.at[1];
   assert.equal(G("worldPickAction")(s, C, "qing", sp).act?.id, "duty");

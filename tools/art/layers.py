@@ -245,6 +245,149 @@ def draw_far(era: int, scale=1.0):
 
 
 # ----------------------------------------------------------------------
+# 门外的远景：海边、乡下各一条，不随年代变（那是一年夏天去过的地方，不是天天看着长高的城）
+# 引擎：scene_art.gd 的 LAYOUT 里 far_kind 指到 far_<kind>.png
+# ----------------------------------------------------------------------
+
+PLACE_H = 300
+PLACES = ("sea", "village")
+
+
+def draw_place(kind: str, scale=1.0):
+    g = Sheet(STRIP, PLACE_H, scale, seed=150 + PLACES.index(kind))
+    lit = Lit(STRIP, PLACE_H, scale)
+    base = PLACE_H
+    rnd = random.Random(17 + PLACES.index(kind))
+    if kind == "sea":
+        # 岬角：从海里慢慢拱起来、到头一道陡崖，崖顶一座白灯塔
+        def cape(off):
+            x0, x1 = 120 + off, 980 + off
+            pts = [(x0, base)]
+            for i in range(1, 30):
+                t = i / 30
+                h = 170 * (min(1.0, t * 5.0) ** 0.6) * (1 - t) ** 0.55 + 8 * math.sin(t * 23)
+                pts.append((x0 + (x1 - x0) * t, base - h))
+            pts.append((x1, base))
+            block(g, pts, "qing", 0.36)
+            g.pen("qing", 0.55).line(pts[:-1], 1.6, amp=0.4)
+            # 崖面：几道竖的排线；坡上一层黑松
+            for k in range(8):
+                xx = x0 + 6 + k * 9
+                g.pen("ink", 0.25).line([(xx, base - 10), (xx + 6, base - 120 + k * 8)], 1.2, amp=0.3)
+            for k in range(26):
+                t = 0.18 + 0.6 * k / 26
+                tx = x0 + (x1 - x0) * t
+                h = 170 * (min(1.0, t * 5.0) ** 0.6) * (1 - t) ** 0.55 + 8 * math.sin(t * 23)
+                block(g, circle_pts(tx, base - h + 6, 9 + (k * 7) % 6), "qing", 0.6)
+            t = 0.2
+            lx = x0 + (x1 - x0) * t
+            ly = base - (170 * (min(1.0, t * 5.0) ** 0.6) * (1 - t) ** 0.55 + 8 * math.sin(t * 23)) + 8
+            block(g, [(lx - 10, ly), (lx - 7, ly - 46), (lx + 7, ly - 46), (lx + 10, ly)], "ink", 0.04, ("ink", None, 1.4))
+            block(g, rect_pts(lx - 9, ly - 58, 18, 12), "mei", 0.5, ("ink", None, 1.2))
+            block(g, [(lx - 11, ly - 58), (lx, ly - 70), (lx + 11, ly - 58)], "ink", 0.6)
+            for k in range(2):
+                g.pen("mei", 0.6).fill(rect_pts(lx - 10, ly - 32 + k * 14, 20, 4))
+            lit.rect(lx - off - 9, ly - 58, 18, 12, 1.0)
+        wrap(cape)
+
+        # 远处一个小岛
+        def island(off):
+            x0 = 1560 + off
+            pts = [(x0, base)] + [(x0 + 200 * i / 12, base - 34 * math.sin(math.pi * i / 12) ** 0.7) for i in range(1, 12)] + [(x0 + 200, base)]
+            block(g, pts, "qing", 0.2)
+        wrap(island)
+
+        # 货轮：长长一条船身，船尾一座白楼，甲板上码着集装箱，烟囱冒一点烟
+        def ship(off):
+            sx = 1120 + off
+            hull = [(sx - 10, base - 36), (sx + 300, base - 36), (sx + 284, base - 8), (sx + 10, base - 8)]
+            block(g, hull, "ink", 0.55)
+            block(g, rect_pts(sx - 6, base - 20, 300, 6), "mei", 0.5)
+            cols = (("qing", 0.45), ("mei", 0.45), ("ink", 0.3), ("qing", 0.3), ("mei", 0.3), ("ink", 0.45))
+            for c in range(9):
+                for r in range(2 + (c % 3 == 1)):
+                    col, d = cols[(c * 2 + r) % len(cols)]
+                    block(g, rect_pts(sx + 70 + c * 22, base - 50 - r * 13, 21, 13), col, d)
+            block(g, rect_pts(sx + 6, base - 92, 52, 56), "ink", 0.06, ("ink", None, 1.2))
+            for r in range(3):
+                g.pen("ink", 0.5).fill(rect_pts(sx + 12, base - 84 + r * 15, 40, 4))
+                lit.rect(sx - off + 12, base - 84 + r * 15, 40, 4, 0.8)
+            block(g, rect_pts(sx + 22, base - 116, 16, 24), "ink", 0.5)
+            for k in range(4):
+                g.pen("ink", 0.06 + 0.01 * k).fill(ellipse_pts(sx - 6 - k * 26, base - 128 - k * 10, 14 + k * 8, 7 + k * 3))
+            lit.rect(sx - off + 296, base - 44, 4, 4, 1.0)
+            # 船底下一道白浪
+            g.pen("qing", 0.4).line([(sx - 20, base - 6), (sx + 310, base - 6)], 1.4, amp=0.3)
+        wrap(ship)
+        # 海平线上远远的几条渔船
+        for k in range(5):
+            bx = 1500 + k * 90 + rnd.uniform(-20, 20)
+            g.pen("ink", 0.35).fill(rect_pts(bx, base - 8, 26, 5))
+            g.pen("ink", 0.35).line([(bx + 10, base - 8), (bx + 10, base - 22)], 1.0, amp=0)
+    else:
+        # 杨树行：一排排又高又瘦的杨树，沿着地头、路边
+        rows = ((0.5, 0.22, 100, 150, 22), (0.75, 0.32, 130, 190, 30))
+        for depth, d, hmin, hmax, gap in rows:
+            def trees(off, depth=depth, d=d, hmin=hmin, hmax=hmax, gap=gap):
+                r2 = random.Random(int(depth * 100))
+                x = 0.0
+                while x < STRIP:
+                    if r2.random() < 0.12:
+                        x += r2.uniform(120, 300)  # 地头断开一截
+                        continue
+                    h = r2.uniform(hmin, hmax) * depth / 0.75
+                    w = h * r2.uniform(0.18, 0.26)
+                    block(g, ellipse_pts(x + off, base - h * 0.55, w, h * 0.5), "qing", d)
+                    g.pen("ink", d).line([(x + off, base), (x + off, base - h * 0.3)], 1.4, amp=0)
+                    x += gap * r2.uniform(0.7, 1.4)
+            wrap(trees)
+
+        # 水塔：一根柱子顶着一只大罐子
+        def tower(off):
+            tx = 640 + off
+            block(g, [(tx - 16, base), (tx - 10, base - 170), (tx + 10, base - 170), (tx + 16, base)], "ink", 0.22)
+            block(g, [(tx - 40, base - 168), (tx - 46, base - 214), (tx - 30, base - 236), (tx + 30, base - 236), (tx + 46, base - 214), (tx + 40, base - 168)], "ink", 0.26, ("ink", 0.5, 1.4))
+            g.pen("ink", 0.4).line([(tx - 44, base - 190), (tx + 44, base - 190)], 1.2, amp=0)
+            lit.rect(tx - off - 2, base - 240, 4, 4, 1.0)
+        wrap(tower)
+
+        # 远处的村子：几排红砖房、一根烟囱
+        def hamlet(off, x0, n):
+            for k in range(n):
+                hx = x0 + k * 46 + off
+                block(g, rect_pts(hx, base - 30, 40, 30), "mei", 0.32)
+                block(g, [(hx - 4, base - 30), (hx + 20, base - 44), (hx + 44, base - 30)], "ink", 0.3)
+                if k % 2 == 0:
+                    lit.rect(hx - off + 12, base - 22, 8, 8, 0.8)
+        wrap(hamlet, 220, 5)
+        wrap(hamlet, 1260, 7)
+
+        # 高压线铁塔
+        def pylon(off):
+            px = 1700 + off
+            c = g.pen("ink", 0.3)
+            c.line([(px - 30, base), (px - 6, base - 200)], 1.6, amp=0)
+            c.line([(px + 30, base), (px + 6, base - 200)], 1.6, amp=0)
+            for k in range(5):
+                y = base - k * 40
+                w = 30 - k * 5
+                c.line([(px - w, y), (px + w - 5, y - 40)], 0.9, amp=0)
+                c.line([(px + w, y), (px - w + 5, y - 40)], 0.9, amp=0)
+            c.line([(px - 46, base - 160), (px + 46, base - 160)], 1.6, amp=0)
+            c.line([(px - 36, base - 190), (px + 36, base - 190)], 1.6, amp=0)
+        wrap(pylon)
+        # 底下一抹庄稼
+        for off in (-STRIP, 0, STRIP):
+            r3 = random.Random(29)
+            xx = 0.0
+            while xx < STRIP:
+                rr = r3.uniform(12, 26)
+                block(g, ellipse_pts(xx + off, base - rr * 0.2, rr * 1.8, rr * 0.5), "qing", 0.3)
+                xx += rr * 2.6
+    return g, lit
+
+
+# ----------------------------------------------------------------------
 # 中景：隔一两条街的屋顶
 # ----------------------------------------------------------------------
 
@@ -504,7 +647,7 @@ def draw_tree(kind: str, season: str, scale=1.25):
 # ----------------------------------------------------------------------
 
 FORE_H = 240
-FORE_KINDS = ("street", "river", "green", "school")
+FORE_KINDS = ("street", "river", "green", "school", "market", "sea", "field")
 
 
 def draw_fore(kind: str, scale=1.0):
@@ -613,6 +756,57 @@ def draw_fore(kind: str, scale=1.0):
                 g.ink.line([(cx - 10, base - 40), (cx + 180, base - 40)], 6)
             else:
                 bush(off, x, rnd.uniform(180, 280), rnd.uniform(60, 90), "qing", 0.66)
+        elif kind == "market":
+            cx = x + off
+            if r < 0.4:
+                # 近处一只竹筐，冒出几片菜叶
+                sil([(cx, base), (cx - 10, base - 90), (cx + 130, base - 90), (cx + 120, base)], ("ink", 0.72))
+                for k in range(5):
+                    sil(ellipse_pts(cx + 14 + k * 26, base - 98, 18, 14), ("qing", 0.7))
+                g.ink.line([(cx - 14, base - 90), (cx + 134, base - 90)], 6)
+            else:
+                # 摞起来的塑料筐
+                for k in range(2):
+                    sil(rect_pts(cx + k * 6, base - 64 - k * 64, 120, 62), ("qing", 0.62))
+                    for j in range(5):
+                        g.clear(rect_pts(cx + k * 6 + 10 + j * 22, base - 50 - k * 64, 12, 12), colors=["qing"])
+        elif kind == "sea":
+            cx = x + off
+            if r < 0.55:
+                # 沙丘上一丛海草
+                for k in range(16):
+                    a = rnd.uniform(-0.6, 0.6)
+                    L = rnd.uniform(60, 130)
+                    g.pen("ink", 0.85).line([(cx + k * 6, base), (cx + k * 6 + math.sin(a) * L * 0.5 + a * 20, base - L * 0.6), (cx + k * 6 + math.sin(a) * L, base - math.cos(a) * L)], 3.0)
+                sil([(cx - 40, base), (cx + 60, base - 40), (cx + 160, base)], ("mei", 0.4))
+            elif r < 0.8:
+                # 一截木桩，拴着一根缆绳
+                sil(rect_pts(cx, base - 140, 34, 140), ("ink", 0.75))
+                sil(ellipse_pts(cx + 17, base - 140, 17, 6), ("ink", 0.9))
+                g.ink.line([(cx + 30, base - 100), (cx + 120, base - 60), (cx + 220, base - 20)], 4)
+            else:
+                # 一只倒扣在沙滩上的小舢板
+                sil([(cx, base), (cx + 30, base - 50), (cx + 240, base - 56), (cx + 280, base)], ("qing", 0.7))
+                g.ink.line([(cx + 30, base - 50), (cx + 240, base - 56)], 4)
+        elif kind == "field":
+            cx = x + off
+            if r < 0.5:
+                # 地头的玉米：几片长叶子从镜头底下扫上来
+                for k in range(6):
+                    s = -1 if k % 2 else 1
+                    L = rnd.uniform(120, 200)
+                    sx = cx + k * 18
+                    tip = (sx + s * L * 0.8, base - rnd.uniform(90, 180))
+                    sil([(sx, base), (sx + s * L * 0.3, base - L * 0.55), tip, (sx + s * L * 0.35, base - L * 0.4), (sx + 12, base)], ("qing", 0.6))
+                g.ink.line([(cx + 40, base), (cx + 46, base - 230)], 6)
+            else:
+                # 狗尾巴草
+                for k in range(9):
+                    px = cx + k * 16
+                    py = base - rnd.uniform(90, 150)
+                    g.pen("ink", 0.85).line([(px, base), (px + 6, py + 10), (px + 16, py)], 2.4)
+                    sil(ellipse_pts(px + 18, py - 4, 8, 16), ("qing", 0.55))
+                grass(off, x - 20, 200, 60, "ink", 0.8)
 
     for it in items:
         wrap(item, *it)
@@ -623,7 +817,7 @@ def draw_fore(kind: str, scale=1.0):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", nargs="*", default=["far", "mid", "trees", "fore"])
+    ap.add_argument("what", nargs="*", default=["far", "mid", "places", "trees", "fore"])
     ap.add_argument("--preview", help="拼一张预览图")
     a = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
@@ -642,6 +836,13 @@ def main():
             lit.save(os.path.join(OUT, f"mid_{era}_lit.png"))
             prev.append(g.composite())
             print("✓ mid", era)
+    if "places" in a.what:
+        for kind in PLACES:
+            g, lit = draw_place(kind)
+            save_rgba(g, os.path.join(OUT, f"far_{kind}.png"))
+            lit.save(os.path.join(OUT, f"far_{kind}_lit.png"))
+            prev.append(g.composite())
+            print("✓ far", kind)
     if "trees" in a.what:
         for kind in TREES:
             row = []

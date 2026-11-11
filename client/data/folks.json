@@ -357,6 +357,114 @@
    }
   }
  ],
+ "market": [
+  {
+   "id": "soy_seller",
+   "name": "卖豆浆的",
+   "at": 260,
+   "floor": 0,
+   "eras": [],
+   "slots": [
+    "morning",
+    "am"
+   ],
+   "lines": {
+    "childhood": [
+     "碗烫，两只手端。",
+     "喝完了把碗搁这儿，别拿走。"
+    ],
+    "teen": [
+     "甜的咸的？上回你要的是甜的。"
+    ],
+    "young": [
+     "一块钱一碗，涨了五毛，豆子贵了。"
+    ],
+    "middle": [
+     "碗换成纸杯了。你要还想用碗，我给你留一个。"
+    ],
+    "old": [
+     "慢点儿喝，今天不赶。"
+    ]
+   }
+  },
+  {
+   "id": "veg_seller",
+   "name": "卖菜的",
+   "at": 1120,
+   "floor": 0,
+   "eras": [],
+   "slots": [
+    "morning",
+    "am"
+   ],
+   "lines": {
+    "childhood": [
+     "秤杆往上翘才算够，你看着。",
+     "这孩子算账比我快。"
+    ],
+    "teen": [
+     "别光看，蹲下帮我把烂叶子择了。",
+     "黄瓜两块一斤，三块钱给你两斤。"
+    ],
+    "young": [
+     "你小时候在对面那个摊上蹲着，我记得。"
+    ],
+    "middle": [
+     "来买菜的少了，来的还是那些人。"
+    ],
+    "old": [
+     "给您挑嫩的，回去好咬。"
+    ]
+   }
+  },
+  {
+   "id": "wholesale_boss",
+   "name": "批发棚子的老板",
+   "at": 1720,
+   "floor": 0,
+   "eras": [],
+   "slots": [
+    "morning",
+    "am"
+   ],
+   "lines": {
+    "teen": [
+     "一筐五毛，卸完一车再结。",
+     "搬不动就两个人抬，别逞能。"
+    ],
+    "young": [
+     "力气活儿，不白干。车来了，上吧。"
+    ],
+    "middle": [
+     "现在卸货有叉车了，人少了。"
+    ]
+   }
+  },
+  {
+   "id": "scrap_buyer",
+   "name": "收废品的",
+   "at": 2560,
+   "floor": 0,
+   "eras": [],
+   "slots": [
+    "morning",
+    "am",
+    "pm"
+   ],
+   "lines": {
+    "childhood": [
+     "纸壳子要压平，压平了才压秤。",
+     "瓶子一毛一个，铁的另算。"
+    ],
+    "teen": [
+     "你这是攒了一个月吧？"
+    ],
+    "default": [
+     "往秤上搁，自己看数。"
+    ]
+   }
+  }
+ ],
  "middle": [
   {
    "id": "shed_ayi",
@@ -738,6 +846,86 @@
    }
   }
  ],
+ "seaside": [
+  {
+   "id": "shell_seller",
+   "name": "卖贝壳的",
+   "at": 360,
+   "floor": 0,
+   "eras": [
+    "childhood",
+    "teen"
+   ],
+   "slots": [],
+   "lines": {
+    "default": [
+     "一串一块，挂门上，风一吹就响。",
+     "这个大的是海螺，搁耳朵上听听。",
+     "回去给同学带一串？"
+    ]
+   }
+  },
+  {
+   "id": "lifeguard",
+   "name": "救生员",
+   "at": 1300,
+   "floor": 0,
+   "eras": [
+    "childhood",
+    "teen"
+   ],
+   "slots": [
+    "am",
+    "pm",
+    "evening"
+   ],
+   "lines": {
+    "default": [
+     "别过那面红旗。",
+     "小孩儿套上圈再下去。",
+     "起浪了，往回游。"
+    ]
+   }
+  },
+  {
+   "id": "angler",
+   "name": "栈桥上钓鱼的",
+   "at": 3050,
+   "floor": 0,
+   "eras": [
+    "childhood",
+    "teen"
+   ],
+   "slots": [],
+   "lines": {
+    "default": [
+     "别跺脚，鱼听得见。",
+     "钓了一早上，就这两条，小的那条放了。"
+    ]
+   }
+  },
+  {
+   "id": "inn_clerk",
+   "name": "招待所的服务员",
+   "at": 3300,
+   "floor": 0,
+   "eras": [
+    "childhood",
+    "teen"
+   ],
+   "slots": [
+    "evening",
+    "night"
+   ],
+   "lines": {
+    "default": [
+     "热水十点就停，要洗赶紧。",
+     "沙子在门口跺干净再进屋。",
+     "明天退潮早，五点多就退了。"
+    ]
+   }
+  }
+ ],
  "street": [
   {
    "id": "shop_ayi",
@@ -834,6 +1022,66 @@
     ],
     "old": [
      "来了？老样子，推短点儿。"
+    ]
+   }
+  }
+ ],
+ "village": [
+  {
+   "id": "grandma_v",
+   "name": "姥姥",
+   "at": 960,
+   "floor": 0,
+   "eras": [
+    "childhood",
+    "teen"
+   ],
+   "slots": [],
+   "lines": {
+    "default": [
+     "饿不饿？锅里还有饼子。",
+     "城里来的孩子，脸都白。",
+     "鸡蛋别攥着，攥碎了。",
+     "晚上盖上点儿肚子，地里返凉。"
+    ]
+   }
+  },
+  {
+   "id": "gate_old",
+   "name": "村口坐着的老人",
+   "at": 300,
+   "floor": 0,
+   "eras": [
+    "childhood",
+    "teen"
+   ],
+   "slots": [],
+   "lines": {
+    "default": [
+     "谁家的？城里来的吧。",
+     "喇叭一响，就是有电影了。"
+    ]
+   }
+  },
+  {
+   "id": "cousin",
+   "name": "表哥",
+   "at": 2100,
+   "floor": 0,
+   "eras": [
+    "childhood",
+    "teen"
+   ],
+   "slots": [
+    "am",
+    "pm",
+    "evening"
+   ],
+   "lines": {
+    "default": [
+     "跟着我，别踩苗。",
+     "你们城里有河沟吗？没有吧。",
+     "晚上晒场有电影，早点去占地方。"
     ]
    }
   }

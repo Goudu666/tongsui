@@ -1,0 +1,120 @@
+# 乡下的支线（pl_vil_ 前缀）。where 用 content/maps/village.yaml 的 areas。写法见 places/building.yaml 文件头。
+# 只有夏天被送来的人在这儿（小康人家的孩子，和被他们叫上的对门），都是童年的事。
+# 「姥姥」是这张图上的老人，不写是谁家的：被叫来的对门也跟着这么叫。晒场的露天电影是 mirror，两个人都来了才碰得上。
+
+- id: pl_vil_pump
+  kind: solo
+  stage: childhood
+  where: grandma_yard
+  when: [390, 780]
+  hint: 院里的压水井吱呀吱呀响。
+  weight: 4
+  requires: { minAge: 6, maxAge: 11 }
+  title: 压水井
+  text: 院里那口压水井，得先倒一瓢水进去引着。你压了二十多下，才压上来第一股凉水。
+  options:
+    - id: press
+      text: 接着压满一桶
+      tags: [responsible]
+      effects: { self: { body: 1, energy: -8 } }
+    - id: splash
+      text: 把脑袋伸到底下冲
+      tags: [adventure]
+      effects: { self: { mood: 6 } }
+    - id: ask
+      text: 问姥姥为什么先倒水
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+
+- id: pl_vil_melon
+  kind: solo
+  stage: childhood
+  where: cornfield
+  when: [780, 1080]
+  hint: 地头有人猫着腰。
+  weight: 4
+  requires: { minAge: 7, maxAge: 11 }
+  title: 地头的瓜
+  text: 表哥说地头那片瓜是他二大爷家的，摘一个不算偷。说完他已经猫着腰钻进去了。
+  options:
+    - id: follow
+      text: 跟着钻进去
+      tags: [adventure]
+      effects: { self: { body: 1, energy: -6 } }
+    - id: watch
+      text: 在地头放风
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+    - id: back
+      text: 不去，回院里
+      tags: [solitude]
+      effects: { self: { mood: -1 } }
+    - id: pay
+      text: 揣上一块钱去敲门
+      cost: 1
+      tags: [gentle]
+      effects: { self: { charm: 1, mood: 4 } }
+
+- id: pl_vil_mosquito
+  kind: solo
+  stage: childhood
+  where: grandma_yard
+  when: [1140, 1320]
+  hint: 院里点着一盘蚊香。
+  weight: 4
+  requires: { minAge: 6, maxAge: 11 }
+  title: 一盘蚊香
+  text: 乡下的蚊子比城里的狠。姥姥点了一盘蚊香，又拿蒲扇给你扇了半宿。
+  options:
+    - id: count
+      text: 数身上的包
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: fan
+      text: 抢过扇子给姥姥扇
+      tags: [gentle]
+      effects: { self: { charm: 1, energy: -4 } }
+    - id: cover
+      text: 蒙上头睡
+      tags: [solitude]
+      effects: { self: { energy: 4 } }
+
+- id: pl_vil_movie
+  kind: mirror
+  stage: childhood
+  where: threshing
+  when: [1140, 1320]
+  hint: 晒场上支起了一块白布。
+  weight: 4
+  requires: { minAge: 6, maxAge: 11 }
+  title: 白布
+  text: 晒场上支起一块白布，放的是一部老片子。全村人搬着板凳来，你俩没有板凳，坐在麦秸垛上。
+  options:
+    - id: front
+      text: 挤到最前头
+      tags: [competitive]
+      effects: { self: { mood: 4, energy: -2 } }
+    - id: behind
+      text: 绕到白布后头看反的
+      tags: [adventure]
+      effects: { self: { mind: 1 } }
+    - id: stars
+      text: 不看电影，看星星
+      tags: [solitude]
+      effects: { self: { mood: 3 } }
+  resonance:
+    front:
+      text: 两个人挤到最前头，脖子仰得发酸。片子断了一回，全场的人都在等，你俩在笑。
+      memory: 断了一回
+      bond: { sync: 3, close: 2 }
+    behind:
+      text: 白布后头只有你们俩。人都是反着的，字也是反着的，你们俩看得比谁都认真。
+      memory: 反着的字
+      bond: { sync: 3, close: 2 }
+    stars:
+      text: 两个人在麦秸垛上躺平了。银幕上打着仗，天上一颗星也没动。
+      memory: 麦秸垛
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个挤在最前头仰着脖子，一个躺在麦秸垛上。散场的时候，两个人在村口那棵槐树底下碰上了。
+    bond: { close: 0 }

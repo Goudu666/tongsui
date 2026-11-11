@@ -1089,7 +1089,7 @@ def draw_street(g, sc):
     shop(g, sp, zs["shop"]["span"], shop_top)
     alley(g, sp, ex, zs["alley"]["span"], shop_top)
     bikeshop(g, sp, ex, zs["bikeshop"]["span"], shop_top)
-    teahouse(g, sp, zs["teahouse"]["span"], shop_top)
+    teahouse(g, sp, zs["teahouse"]["span"], shop_top, ex)
     # 最左头的路口：去小学
     g.clear(rect_pts(-40, shop_top - 80, 250, GROUND - shop_top + 80))
     g.pen("ink", 0.28).fill(rect_pts(-40, shop_top - 80, 250, GROUND - shop_top + 80))
@@ -1178,6 +1178,15 @@ def shop(g, sp, span, top):
 def alley(g, sp, ex, span, top):
     x0, x1 = span
     up = ex["upstairs"][0]
+    # 小卖部和我们那栋楼中间一条窄胡同，钻过去是早市（清贫人家的孩子天不亮就往那儿去）
+    mx = ex.get("to_market", (1390.0, GROUND))[0]
+    lane(g, mx, top + 40, 110)
+    for k in (-1, 1):
+        g.ink.line([(mx + k * 26, top - 40), (mx + k * 26, top - 12)], 1.2, amp=0.1)
+    g.clear(rect_pts(mx - 34, top - 12, 68, 34))
+    g.pen("mei", 0.08).fill(rect_pts(mx - 34, top - 12, 68, 34))
+    g.ink.rect(mx - 34, top - 12, 68, 34, lw=2.0, amp=0.4)
+    g.ink.text("早市", mx, top + 5, 22)
     # 我们那栋楼的楼门：门洞里看得见楼梯
     g.clear(rect_pts(up - 120, top - 30, 240, GROUND - top + 30))
     g.pen("mei", 0.58).fill(rect_pts(up - 120, top - 30, 240, GROUND - top + 30))
@@ -1195,18 +1204,19 @@ def alley(g, sp, ex, span, top):
     g.qing.rect(up + 84, GROUND - 230, 60, 30, lw=1.6, fill=True)
     knock(g, "qing", "3号楼", up + 114, GROUND - 215, 16)
     # 告示栏（内容随年代换，留空的格子）
-    bx = 1420
-    g.ink.line([(bx - 70, GROUND), (bx - 70, GROUND - 260)], 5)
-    g.ink.line([(bx + 70, GROUND), (bx + 70, GROUND - 260)], 5)
-    g.clear(rect_pts(bx - 80, GROUND - 270, 160, 130))
-    g.pen("ink", 0.22).fill(rect_pts(bx - 80, GROUND - 270, 160, 130))
-    g.ink.rect(bx - 80, GROUND - 270, 160, 130, lw=2.6)
-    g.pen("mei").fill([(bx - 96, GROUND - 270), (bx + 96, GROUND - 270), (bx + 80, GROUND - 292), (bx - 80, GROUND - 292)])
+    # （给去早市的胡同口让地方：往右挪了一截、窄了一点）
+    bx = 1516
+    g.ink.line([(bx - 56, GROUND), (bx - 56, GROUND - 260)], 5)
+    g.ink.line([(bx + 56, GROUND), (bx + 56, GROUND - 260)], 5)
+    g.clear(rect_pts(bx - 64, GROUND - 270, 128, 130))
+    g.pen("ink", 0.22).fill(rect_pts(bx - 64, GROUND - 270, 128, 130))
+    g.ink.rect(bx - 64, GROUND - 270, 128, 130, lw=2.6)
+    g.pen("mei").fill([(bx - 78, GROUND - 270), (bx + 78, GROUND - 270), (bx + 64, GROUND - 292), (bx - 64, GROUND - 292)])
     knock(g, "mei", "告示", bx, GROUND - 281, 18)
     for k, c in enumerate(("mei", "qing", "ink")):
-        g.clear(rect_pts(bx - 66 + k * 46, GROUND - 254 + (k % 2) * 10, 38, 50))
-        g.pen(c, 0.18).fill(rect_pts(bx - 66 + k * 46, GROUND - 254 + (k % 2) * 10, 38, 50))
-        g.ink.rect(bx - 66 + k * 46, GROUND - 254 + (k % 2) * 10, 38, 50, lw=1.4)
+        g.clear(rect_pts(bx - 54 + k * 38, GROUND - 254 + (k % 2) * 10, 32, 50))
+        g.pen(c, 0.18).fill(rect_pts(bx - 54 + k * 38, GROUND - 254 + (k % 2) * 10, 32, 50))
+        g.ink.rect(bx - 54 + k * 38, GROUND - 254 + (k % 2) * 10, 32, 50, lw=1.4)
     # 跳皮筋那一截：墙根两块砖
     rx = sp["alley_rope"]
     for k in (-1, 1):
@@ -1275,7 +1285,7 @@ def bikeshop(g, sp, ex, span, top):
     stool(g, sp["bike_bench"], GROUND, "ink", 70, 44)
 
 
-def teahouse(g, sp, span, top):
+def teahouse(g, sp, span, top, ex=None):
     x0, x1 = span
     signboard(g, (x0 + x1) / 2, top - 56, "河畔茶社", "mei", 44)
     # 木格子门脸：敞着，看见里头的小台子和茶座
@@ -1308,6 +1318,16 @@ def teahouse(g, sp, span, top):
         g.pen("mei").fill(ellipse_pts(lx, top + 120, 26, 32))
         g.ink.ellipse(lx, top + 120, 26, 32, lw=2)
         g.ink.line([(lx, top + 152), (lx, top + 180)], 2)
+    # 茶社门口的公交站牌：坐车去医院（小孩病了，大人领着从这儿上车）
+    hx = (ex or {}).get("to_hospital", (3150.0, GROUND))[0]
+    g.ink.line([(hx, GROUND + 18), (hx, GROUND - 250)], 5, amp=0.3)
+    g.clear(rect_pts(hx - 30, GROUND - 360, 60, 112))
+    g.ink.rect(hx - 30, GROUND - 360, 60, 112, lw=2.4, amp=0.3)
+    g.pen("qing").fill(rect_pts(hx - 30, GROUND - 360, 60, 30))
+    knock(g, "qing", "公交", hx, GROUND - 345, 18)
+    g.ink.text("医院", hx - 10, GROUND - 296, 15, vertical=True)
+    for k in range(4):
+        g.ink.line([(hx + 10, GROUND - 318 + k * 16), (hx + 22, GROUND - 318 + k * 16)], 1.6, amp=0.1)
 
 
 def draw_river(g, sc):
@@ -2090,7 +2110,7 @@ def draw_park(g, sc):
 
 def draw_hospital(g, sc):
     W = sc["width"]
-    sp, zs = sc["spots"], sc["zones"]
+    sp, zs, ex = sc["spots"], sc["zones"], sc["exits"]
     z = lambda k: zs[k]["span"]  # noqa: E731
     top = GROUND - 460
     sky(g, W, seed=91, horizon=top)
@@ -2108,9 +2128,10 @@ def draw_hospital(g, sc):
         g.pen("ink", d).fill(rect_pts(x0, top, x1 - x0, GROUND - top))
         g.pen("qing", 0.22).fill(rect_pts(x0, GROUND - 120, x1 - x0, 120))
         g.ink.line([(x0, GROUND - 120), (x1, GROUND - 120)], 2.4)
-    # 挂号大厅：一排窗口
-    for k in range(4):
-        wx = a0 + 160 + k * 180
+    # 挂号大厅：一排窗口（往里让了让，门口是大玻璃门）
+    q0 = sp.get("hosp_queue", a0 + 520)
+    for k in range(3):
+        wx = q0 + k * 140
         g.clear(rect_pts(wx - 60, GROUND - 270, 120, 110))
         g.pen("qing", 0.2).fill(rect_pts(wx - 60, GROUND - 270, 120, 110))
         g.ink.rect(wx - 60, GROUND - 270, 120, 110, lw=2.6)
@@ -2119,7 +2140,33 @@ def draw_hospital(g, sc):
         g.clear(rect_pts(wx - 30, GROUND - 310, 60, 26))
         g.mei.rect(wx - 30, GROUND - 310, 60, 26, fill=True)
         knock(g, "mei", str(k + 1), wx, GROUND - 297, 18)
-    signboard(g, (a0 + a1) / 2, top + 60, "挂号收费", "mei", 30, pad=8)
+    signboard(g, q0 + 140, top + 60, "挂号收费", "mei", 30, pad=8)
+    # 大门：两扇玻璃门，门外看得见公交站牌；顶上吊一块指路牌，看完病从这儿坐车回家
+    dx = ex.get("to_street", (a0 + 320, GROUND))[0]
+    d0, d1 = dx - 80, dx + 80
+    g.clear(rect_pts(d0, GROUND - 250, d1 - d0, 250))
+    g.pen("qing", 0.14).fill(rect_pts(d0, GROUND - 250, d1 - d0, 250))
+    g.pen("ink", 0.08).fill(rect_pts(d0, GROUND - 60, d1 - d0, 60))
+    # 门外：站牌、一截马路牙子
+    g.pen("qing", 0.45).line([(dx + 34, GROUND - 40), (dx + 34, GROUND - 190)], 3.4, amp=0.1)
+    g.pen("qing", 0.55).fill(rect_pts(dx + 16, GROUND - 230, 36, 54))
+    g.pen("qing", 0.35).line([(d0, GROUND - 40), (d1, GROUND - 40)], 2, amp=0.2)
+    g.ink.rect(d0, GROUND - 250, d1 - d0, 250, lw=3.2, amp=0.3)
+    g.ink.line([(d0, GROUND - 200), (d1, GROUND - 200)], 3)
+    g.ink.line([(dx, GROUND - 200), (dx, GROUND)], 3)
+    for s in (-1, 1):
+        g.ink.line([(dx + s * 14, GROUND - 120), (dx + s * 14, GROUND - 80)], 4)
+        g.qing.line([(dx + s * 60, GROUND - 180), (dx + s * 40, GROUND - 150)], 1.6, amp=0.1)
+    # 玻璃上贴的一张纸：站名
+    g.clear(rect_pts(dx - 62, GROUND - 160, 40, 56))
+    g.ink.rect(dx - 62, GROUND - 160, 40, 56, lw=1.4, amp=0.4)
+    g.ink.text("车站", dx - 42, GROUND - 132, 14, vertical=True)
+    g.ink.line([(dx - 30, top + 14), (dx - 30, top + 60)], 1.4)
+    g.ink.line([(dx + 30, top + 14), (dx + 30, top + 60)], 1.4)
+    g.clear(rect_pts(dx - 90, top + 60, 180, 34))
+    g.pen("qing").fill(rect_pts(dx - 90, top + 60, 180, 34))
+    g.ink.rect(dx - 90, top + 60, 180, 34, lw=2.2)
+    knock(g, "qing", "出口 · 公交车站", dx, top + 77, 18)
     # 走廊：两边长椅、尽头开水房冒白气
     for bx in range(int(w0 + 140), int(w1 - 200), 260):
         bench(g, bx, GROUND, 200, "qing", back=True)
@@ -2167,6 +2214,1390 @@ def draw_hospital(g, sc):
     ground_floor(g, W, GROUND, "ink", 0.08, 80)
 
 
+# ----------------------------------------------------------------------
+# 门外的三个世界：早市（清贫）、海边（殷实）、乡下（小康）
+# 三张图一眼要分得开：早市墨版压得重、天刚亮；海边青版、海平线低、天大；乡下梅版的土和玉米、树和河沟点青。
+# ----------------------------------------------------------------------
+
+def pingfang(g, x0, x1, eave, color="ink", d=0.16, seed=1, windows=(), door=None, ridge=56, tiles="ink"):
+    """一排平房的后墙和瓦顶（侧面看是一道墙、一坡瓦）。windows: [(x, w)]，door: (x, w)。"""
+    pts = rect_pts(x0, eave, x1 - x0, GROUND - eave)
+    g.clear(pts)
+    g.pen(color, d).fill(pts)
+    fbricks(g, x0, eave, x1 - x0, GROUND - eave, 28, 10, 0.8, 0.3, seed=seed)
+    roof = [(x0 - 16, eave + 4), (x0 + 10, eave - ridge), (x1 - 10, eave - ridge), (x1 + 16, eave + 4)]
+    g.clear(roof)
+    g.pen(tiles, 0.42 if tiles == "ink" else 0.5).fill(roof)
+    for k in range(int((x1 - x0) / 14)):
+        xx = x0 + 4 + k * 14
+        fline(g, "ink", [(xx, eave - ridge + 4), (xx - 3, eave + 2)], 1.1, 0.55)
+    g.ink.poly(roof, w=2.6, amp=0.4)
+    g.ink.line([(x0 + 6, eave - ridge - 4), (x1 - 6, eave - ridge - 4)], 5.0, amp=0.3)
+    g.ink.line([(x0, eave), (x0, GROUND)], 2.6, amp=0.4)
+    g.ink.line([(x1, eave), (x1, GROUND)], 2.6, amp=0.4)
+    for wx, ww in windows:
+        wy = eave + 46
+        g.clear(rect_pts(wx - ww / 2, wy, ww, 70))
+        g.pen("ink", 0.5).fill(rect_pts(wx - ww / 2, wy, ww, 70))
+        g.ink.rect(wx - ww / 2, wy, ww, 70, lw=2.4, amp=0.3)
+        for k in range(1, 3):
+            fline(g, "ink", [(wx - ww / 2 + ww * k / 3, wy), (wx - ww / 2 + ww * k / 3, wy + 70)], 1.4, 0.9)
+        g.ink.line([(wx - ww / 2 - 6, wy + 74), (wx + ww / 2 + 6, wy + 74)], 3, amp=0.3)
+    if door:
+        dx, dw = door
+        g.clear(rect_pts(dx - dw / 2, GROUND - 200, dw, 200))
+        g.pen("ink", 0.62).fill(rect_pts(dx - dw / 2, GROUND - 200, dw, 200))
+        g.ink.rect(dx - dw / 2, GROUND - 200, dw, 200, lw=2.6, amp=0.3)
+
+
+def tarp(g, x0, x1, y, depth=42, sag=16, poles=240, color="ink", d=0.44, patches=()):
+    """帆布棚：前檐在 y，往后高 depth；竹竿之间布兜下来一点。patches: {段号: (色, 浓度)} 补上的塑料布。"""
+    n = max(1, round((x1 - x0) / poles))
+    xs = [x0 + (x1 - x0) * i / n for i in range(n + 1)]
+    bottom = []
+    for i in range(n):
+        a, b = xs[i], xs[i + 1]
+        bottom += [(a + (b - a) * t / 8, y + sag * 4 * (t / 8) * (1 - t / 8)) for t in range(8)]
+    bottom.append((x1, y))
+    pts = [(x0 - 10, y - depth)] + [(x1 + 10, y - depth)] + bottom[::-1]
+    g.clear(pts)
+    g.pen(color, d).fill(pts)
+    for i in range(n):
+        spec = dict(patches).get(i)
+        a, b = xs[i], xs[i + 1]
+        seg = [(a, y - depth)] + [(b, y - depth)] + [p for p in bottom if a <= p[0] <= b][::-1]
+        if spec:
+            g.pen(spec[0], spec[1]).fill(seg)
+        # 布褶：几道斜的折痕
+        for k in range(1, 5):
+            fx = a + (b - a) * k / 5
+            fline(g, "ink", [(fx - 6, y - depth + 4), (fx + 4, y + sag * 0.6)], 1.2, 0.5)
+    g.ink.poly(pts, w=2.4, amp=0.5)
+    for px in xs:
+        # 竹竿：一道粗、一道细，几个竹节
+        g.ink.line([(px, y - depth - 14), (px + 2, GROUND)], 5, amp=0.5)
+        for k in range(1, 6):
+            yy = y + (GROUND - y) * k / 6
+            fline(g, "ink", [(px - 4, yy), (px + 6, yy)], 1.6, 0.8)
+    return xs
+
+
+def bulb_string(g, x0, x1, y, step=104, sag=26, lit_every=2, posts=None):
+    """一串灯泡：一根电线兜着，隔一段一只裸灯泡（梅色的暖光）。"""
+    posts = posts or [x0, x1]
+    for a, b in zip(posts, posts[1:]):
+        fline(g, "ink", [(a + (b - a) * t / 20, y + sag * 4 * (t / 20) * (1 - t / 20)) for t in range(21)], 1.4, 0.95)
+    i = 0
+    x = x0 + step / 2
+    while x < x1:
+        seg = max(0, min(len(posts) - 2, next((j for j in range(len(posts) - 1) if posts[j] <= x <= posts[j + 1]), 0)))
+        a, b = posts[seg], posts[seg + 1]
+        t = (x - a) / max(1.0, b - a)
+        wy = y + sag * 4 * t * (1 - t)
+        g.ink.line([(x, wy), (x, wy + 16)], 1.4, amp=0.1)
+        g.pen("ink").fill(rect_pts(x - 4, wy + 14, 8, 8))
+        g.pen("mei", 0.07).fill(circle_pts(x, wy + 31, 34))
+        g.clear(circle_pts(x, wy + 31, 9))
+        g.pen("mei", 0.62).fill(circle_pts(x, wy + 31, 9))
+        g.ink.circle(x, wy + 31, 9, lw=1.6)
+        if i % lit_every == 0:
+            mark("stall_light", x, wy + 40)
+        i += 1
+        x += step
+
+
+def produce(g, cx, base, w, kind, seed=1):
+    """一堆菜码在板子上：西红柿、黄瓜、圆白菜、土豆、鸡蛋。从下往上码成小山。"""
+    rnd = random.Random(seed)
+    r = {"tomato": 11, "cabbage": 21, "potato": 10, "egg": 7, "melon": 24, "peach": 10}.get(kind, 10)
+    if kind == "cucumber":
+        for row in range(4):
+            n = int(w / 26) - row
+            for i in range(max(0, n)):
+                x = cx - w / 2 + 16 + row * 13 + i * 26
+                y = base - 6 - row * 10
+                g.pen("qing", 0.75).line([(x - 9, y), (x + 9, y - 3)], 9, amp=0.3)
+                g.ink.line([(x - 12, y + 1), (x - 8, y)], 2, amp=0.1)
+        return
+    if kind == "scallion":
+        for i in range(int(w / 9)):
+            x = cx - w / 2 + 6 + i * 9
+            g.pen("qing", 0.7).line([(x, base - 22), (x + rnd.uniform(-8, 8), base - rnd.uniform(70, 96))], 3.2, amp=0.8)
+            g.ink.line([(x, base), (x, base - 22)], 3, amp=0.2, density=0.3)
+        g.pen("mei", 0.8).line([(cx - w / 2, base - 18), (cx + w / 2, base - 18)], 3, amp=0.2)
+        return
+    n0 = max(1, int(w / (r * 2)))
+    for rows in range(min(n0, {"cabbage": 2, "melon": 2}.get(kind, 3))):
+        n = n0 - rows
+        for i in range(n):
+            x = cx - (n - 1) * r + i * 2 * r + rnd.uniform(-1.5, 1.5)
+            y = base - r - rows * r * 1.62
+            if kind == "tomato":
+                g.clear(circle_pts(x, y, r))
+                g.pen("mei", 0.82).fill(circle_pts(x, y, r))
+                g.ink.arc(x, y, r, math.pi * 0.1, math.pi * 0.9, lw=1.6)
+                g.pen("qing").line([(x - 3, y - r + 2), (x + 3, y - r - 1)], 2.4, amp=0.1)
+            elif kind == "peach":
+                g.clear(circle_pts(x, y, r))
+                g.pen("mei", 0.45).fill(circle_pts(x, y, r))
+                g.ink.circle(x, y, r, lw=1.4)
+            elif kind == "cabbage":
+                g.clear(circle_pts(x, y, r))
+                g.pen("qing", 0.42).fill(circle_pts(x, y, r))
+                g.qing.arc(x, y, r, math.pi * 1.0, math.pi * 1.9, lw=2.2)
+                g.qing.arc(x - 4, y + 2, r * 0.6, math.pi * 1.1, math.pi * 1.8, lw=1.6)
+                g.ink.arc(x, y, r, 0.1, math.pi * 0.9, lw=1.6)
+            elif kind == "melon":
+                g.clear(circle_pts(x, y, r))
+                g.pen("qing", 0.55).fill(circle_pts(x, y, r))
+                for k in (-0.5, 0, 0.5):
+                    g.ink.arc(x + k * r * 0.9, y, r * 0.9, math.pi * 1.25, math.pi * 1.75, lw=2.0)
+                g.ink.circle(x, y, r, lw=1.6)
+            elif kind == "egg":
+                g.clear(ellipse_pts(x, y, r, r * 1.25))
+                g.pen("mei", 0.08).fill(ellipse_pts(x, y, r, r * 1.25))
+                g.ink.ellipse(x, y, r, r * 1.25, lw=1.2)
+            else:  # potato
+                g.clear(ellipse_pts(x, y, r * 1.2, r))
+                g.pen("ink", 0.32).fill(ellipse_pts(x, y, r * 1.2, r))
+                g.ink.ellipse(x, y, r * 1.2, r, lw=1.4)
+
+
+def basket(g, cx, base, w=70, h=46, color="ink", d=0.18, load=None, seed=1):
+    """竹筐：上宽下窄，编出来的斜纹；load 是筐里码的菜。"""
+    pts = [(cx - w / 2, base - h), (cx + w / 2, base - h), (cx + w / 2 - 8, base), (cx - w / 2 + 8, base)]
+    g.clear(pts)
+    g.pen(color, d).fill(pts)
+    fhatch(g, "ink", cx - w / 2, base - h, w, h, 60, 8, 1.0, 0.5)
+    fhatch(g, "ink", cx - w / 2, base - h, w, h, -60, 8, 1.0, 0.35)
+    g.ink.poly(pts, w=2.2, amp=0.3)
+    g.ink.line([(cx - w / 2 - 3, base - h), (cx + w / 2 + 3, base - h)], 3.4, amp=0.2)
+    if load:
+        produce(g, cx, base - h + 4, w - 6, load, seed)
+
+
+def steelyard(g, x, y, L=130, pan=True):
+    """杆秤：提绳挂在 x，杆往右，秤盘往左挂下来，秤砣在杆上。"""
+    g.ink.line([(x, y), (x, y + 26)], 1.4, amp=0.1)
+    g.ink.line([(x - 26, y + 30), (x + L, y + 22)], 3.2, amp=0.1)
+    for k in range(1, 9):
+        g.ink.dot(x + k * L / 9, y + 30 - 8 * k / 9 - 1.5, 1.4)
+    wx = x + L * 0.7
+    g.ink.line([(wx, y + 25), (wx, y + 40)], 1.2, amp=0.1)
+    g.pen("ink").fill([(wx - 7, y + 40), (wx + 7, y + 40), (wx + 10, y + 56), (wx - 10, y + 56)])
+    if pan:
+        px = x - 22
+        for dx in (-22, 0, 22):
+            g.ink.line([(px, y + 30), (px + dx, y + 84)], 1.0, amp=0.1)
+        g.clear(ellipse_pts(px, y + 86, 26, 6))
+        g.pen("ink", 0.3).fill(ellipse_pts(px, y + 86, 26, 6))
+        g.ink.ellipse(px, y + 86, 26, 6, lw=1.6)
+
+
+def plank_stall(g, x0, x1, base=GROUND, h=78, legs="crate"):
+    """一块门板架在两只箱子或板凳上：早市的摊子就是这么支的。"""
+    top = base - h
+    g.clear(rect_pts(x0, top, x1 - x0, 12))
+    g.pen("ink", 0.36).fill(rect_pts(x0, top, x1 - x0, 12))
+    g.ink.rect(x0, top, x1 - x0, 12, lw=2.4, amp=0.3)
+    for lx in (x0 + 14, x1 - 64):
+        if legs == "crate":
+            pts = rect_pts(lx, top + 12, 50, h - 12)
+            g.clear(pts)
+            g.pen("mei", 0.18).fill(pts)
+            g.pen("ink", 0.14).fill(pts)
+            g.ink.rect(lx, top + 12, 50, h - 12, lw=2.0, amp=0.3)
+            g.ink.line([(lx, top + 12 + (h - 12) * 0.45), (lx + 50, top + 12 + (h - 12) * 0.45)], 1.6, amp=0.2)
+        else:
+            g.ink.line([(lx + 6, top + 12), (lx, base)], 3.4)
+            g.ink.line([(lx + 44, top + 12), (lx + 50, base)], 3.4)
+            g.ink.line([(lx + 4, top + 40), (lx + 46, top + 40)], 2)
+    return top
+
+
+def crate_stack(g, x, base, cols=2, rows=3, w=58, h=40, color="qing", d=0.5, seed=1):
+    """塑料筐摞起来：一格一格的透气孔。"""
+    rnd = random.Random(seed)
+    for c in range(cols):
+        for r in range(rows):
+            if r == rows - 1 and rnd.random() < 0.3:
+                continue
+            cx = x + c * (w + 4) + (r % 2) * 3
+            cy = base - (r + 1) * h
+            pts = rect_pts(cx, cy, w, h)
+            g.clear(pts)
+            g.pen(color, d).fill(pts)
+            for i in range(4):
+                for j in range(2):
+                    g.clear(rect_pts(cx + 6 + i * 13, cy + 8 + j * 14, 8, 8), colors=[color])
+            g.ink.rect(cx, cy, w, h, lw=2.0, amp=0.2)
+
+
+def cartons(g, x, base, cols, rows, w=70, h=50, seed=1, top=None):
+    """纸箱码到顶：牛皮纸色（梅 + 墨叠出来的土黄），一道封箱带。"""
+    rnd = random.Random(seed)
+    for c in range(cols):
+        n = rows if top is None else rows - (c % 2)
+        for r in range(n):
+            cx = x + c * w + (r % 2) * rnd.uniform(-6, 6)
+            cy = base - (r + 1) * h
+            pts = rect_pts(cx, cy, w - 2, h)
+            g.clear(pts)
+            g.pen("mei", 0.2).fill(pts)
+            g.pen("ink", 0.14).fill(pts)
+            g.ink.rect(cx, cy, w - 2, h, lw=1.8, amp=0.2)
+            fline(g, "ink", [(cx + 4, cy + h * 0.5), (cx + w - 6, cy + h * 0.5)], 2.2, 0.5)
+            if rnd.random() < 0.35:
+                g.pen("qing", 0.5).fill(rect_pts(cx + w * 0.3, cy + 8, w * 0.32, h * 0.26))
+
+
+def tricycle(g, x, base, facing=1, load=None, seed=1):
+    """平板三轮：后头一块板子装货，前头一个轮子、车把、车座。"""
+    f = facing
+    rw, fw = x - 60 * f, x + 84 * f
+    for wx in (rw, fw):
+        g.ink.circle(wx, base - 26, 26, lw=2.6)
+        g.ink.dot(wx, base - 26, 3)
+        for k in range(6):
+            a = k * math.pi / 3
+            fline(g, "ink", [(wx, base - 26), (wx + math.cos(a) * 24, base - 26 + math.sin(a) * 24)], 0.9, 0.7)
+    bed0, bed1 = x - 130 * f, x + 10 * f
+    lo, hi = min(bed0, bed1), max(bed0, bed1)
+    g.clear(rect_pts(lo, base - 70, hi - lo, 16))
+    g.pen("ink", 0.4).fill(rect_pts(lo, base - 70, hi - lo, 16))
+    g.ink.rect(lo, base - 70, hi - lo, 16, lw=2.2)
+    g.ink.line([(lo, base - 70), (lo, base - 100)], 2.2)
+    g.ink.line([(hi, base - 70), (hi, base - 100)], 2.2)
+    seat = (x + 34 * f, base - 92)
+    bar = (x + 80 * f, base - 112)
+    g.ink.line([(bed1, base - 62), seat, (x + 60 * f, base - 40), (bed1, base - 62)], 2.8)
+    g.ink.line([seat, bar, (fw, base - 26)], 2.8)
+    g.ink.line([(seat[0] - 12, seat[1] - 4), (seat[0] + 12, seat[1] - 4)], 5)
+    g.ink.line([(bar[0] - 8 * f, bar[1] - 2), (bar[0] + 10 * f, bar[1] - 8)], 3)
+    if load:
+        produce(g, (lo + hi) / 2, base - 70, hi - lo - 8, load, seed)
+
+
+def ground_market(g, W, seed=1):
+    """早市的地：踩实的水泥地，一道路沿；前头的路上一地烂菜叶、几摊水、一块压扁的纸壳。"""
+    y = GROUND
+    g.clear(rect_pts(-50, y, W + 100, BOTTOM - y + 60))
+    g.pen("ink", 0.42).fill(rect_pts(-50, y, W + 100, 30))
+    fhatch(g, "ink", -50, y, W + 100, 30, 20, 7, 0.8, 0.3)
+    g.ink.line([(-50, y), (W + 50, y)], 4.5, amp=0.6)
+    g.pen("ink", 0.3).fill(rect_pts(-50, y + 30, W + 100, BOTTOM - y))
+    fhatch(g, "ink", -50, y + 30, W + 100, BOTTOM - y, 80, 22, 0.8, 0.22)
+    g.ink.line([(-50, y + 30), (W + 50, y + 30)], 2.6, amp=0.5)
+    rnd = random.Random(seed)
+    # 几摊水（反着灯泡的光）
+    for i in range(int(W / 520)):
+        px = rnd.uniform(80, W - 80)
+        py = rnd.uniform(y + 70, y + 170)
+        pw = rnd.uniform(70, 150)
+        g.clear(ellipse_pts(px, py, pw, 9), colors=["ink"])
+        g.pen("qing", 0.22).fill(ellipse_pts(px, py, pw, 9))
+        g.pen("mei", 0.25).fill(ellipse_pts(px + rnd.uniform(-20, 20), py, 10, 3))
+    # 菜叶子、烂西红柿、一截葱
+    for i in range(int(W / 38)):
+        lx = rnd.uniform(-20, W + 20)
+        ly = rnd.uniform(y + 34, y + 210)
+        k = rnd.random()
+        if k < 0.6:
+            a = rnd.uniform(-0.6, 0.6)
+            L = rnd.uniform(10, 22)
+            g.pen("qing", 0.7).fill([(lx - L, ly + a * L), (lx, ly - 5), (lx + L, ly - a * L), (lx, ly + 5)])
+        elif k < 0.75:
+            g.pen("mei", 0.6).fill(ellipse_pts(lx, ly, 8, 4))
+        elif k < 0.9:
+            g.pen("qing").line([(lx, ly), (lx + rnd.uniform(18, 34), ly + rnd.uniform(-4, 4))], 2.4, amp=0.2)
+        else:
+            g.ink.line([(lx, ly), (lx + rnd.uniform(14, 26), ly + rnd.uniform(-3, 3))], 1.4, amp=0.3)
+    # 一块压扁的纸壳
+    cx = W * 0.47
+    g.pen("mei", 0.2).fill([(cx, y + 110), (cx + 120, y + 100), (cx + 132, y + 140), (cx + 6, y + 150)])
+    g.pen("ink", 0.16).fill([(cx, y + 110), (cx + 120, y + 100), (cx + 132, y + 140), (cx + 6, y + 150)])
+    g.ink.poly([(cx, y + 110), (cx + 120, y + 100), (cx + 132, y + 140), (cx + 6, y + 150)], w=1.6, amp=0.3)
+
+
+def draw_market(g, sc):
+    W = sc["width"]
+    sp, ex, zs = sc["spots"], sc["exits"], sc["zones"]
+    z = lambda k: zs[k]["span"]  # noqa: E731
+    sky(g, W, seed=101, horizon=GROUND - 330)
+    skyline(g, -40, W + 40, GROUND - 330, seed=103, d=0.10, color="ink")
+    m0, m1 = z("market_mouth")
+    v0, v1 = z("veg_row")
+    h0, h1 = z("wholesale")
+    s0, s1 = z("scrap")
+    # ---- 后头：一排平房（灰砖、瓦顶），批发的大棚，收废品的院墙 ----
+    gx = ex["to_street"][0]
+    pingfang(g, -40, gx - 70, GROUND - 300, "ink", 0.34, seed=105, windows=[])
+    pingfang(g, gx + 70, m1 - 10, GROUND - 290, "ink", 0.28, seed=107, windows=[(gx + 190, 70)])
+    pingfang(g, m1 - 10, 960, GROUND - 320, "ink", 0.32, seed=109, windows=[(700, 80)])
+    pingfang(g, 960, 1230, GROUND - 300, "ink", 0.24, seed=111, windows=[(1100, 70)])
+    pingfang(g, 1230, h0 - 10, GROUND - 330, "ink", 0.3, seed=113, windows=[(1380, 70)])
+    # 进来的胡同口：从楼下那条街钻过来，黑洞洞的一条，墙上贴着一张「早市」的纸
+    g.clear(rect_pts(gx - 70, GROUND - 380, 140, 380))
+    g.pen("ink", 0.62).fill(rect_pts(gx - 70, GROUND - 380, 140, 380))
+    fhatch(g, "ink", gx - 70, GROUND - 380, 140, 380, 30, 12, 1.0, 0.5)
+    g.ink.line([(gx - 70, GROUND - 380), (gx - 70, GROUND)], 3.4)
+    g.ink.line([(gx + 70, GROUND - 380), (gx + 70, GROUND)], 3.4)
+    g.clear(rect_pts(gx + 80, GROUND - 250, 44, 66))
+    g.pen("mei", 0.12).fill(rect_pts(gx + 80, GROUND - 250, 44, 66))
+    g.ink.rect(gx + 80, GROUND - 250, 44, 66, lw=1.4, amp=0.5)
+    g.ink.text("早市", gx + 102, GROUND - 217, 15, vertical=True)
+    # 电线杆：天还没亮透，线上挂着那串灯泡的电
+    p1x = gx + 170
+    top_y = pole(g, p1x, GROUND + 18, 560)
+    # 批发的大棚：钢架、波纹铁皮顶、后墙也是铁皮
+    shed_top = GROUND - 470
+    g.clear(rect_pts(h0, shed_top, h1 - h0, GROUND - shed_top))
+    g.pen("ink", 0.36).fill(rect_pts(h0, shed_top, h1 - h0, GROUND - shed_top))
+    for xx in range(int(h0) + 6, int(h1), 16):
+        fline(g, "ink", [(xx, shed_top + 30), (xx, GROUND)], 1.4, 0.55)
+    roof = [(h0 - 40, shed_top + 40), (h0 - 10, shed_top - 10), (h1 + 10, shed_top - 10), (h1 + 40, shed_top + 40)]
+    g.clear(roof)
+    g.pen("ink", 0.5).fill(roof)
+    for xx in range(int(h0) - 30, int(h1) + 34, 12):
+        fline(g, "ink", [(xx, shed_top - 8), (xx - 4, shed_top + 38)], 1.4, 0.9)
+    g.ink.poly(roof, w=3, amp=0.3)
+    for k in range(5):
+        px = h0 + 20 + k * (h1 - h0 - 40) / 4
+        g.clear(rect_pts(px - 9, shed_top + 40, 18, GROUND - shed_top - 40))
+        g.pen("ink", 0.7).fill(rect_pts(px - 9, shed_top + 40, 18, GROUND - shed_top - 40))
+        g.ink.line([(px - 9, shed_top + 70), (px + 60, shed_top + 40)], 3)
+    signboard(g, (h0 + h1) / 2 - 120, shed_top + 76, "蔬菜批发", "ink", 30, pad=10)
+    # 棚子底下一根日光灯
+    for lx in (h0 + 230, h1 - 260):
+        g.ink.line([(lx - 50, shed_top + 44), (lx - 50, shed_top + 60)], 1.4)
+        g.ink.line([(lx + 50, shed_top + 44), (lx + 50, shed_top + 60)], 1.4)
+        g.clear(rect_pts(lx - 60, shed_top + 60, 120, 9))
+        g.pen("qing", 0.12).fill(rect_pts(lx - 60, shed_top + 60, 120, 9))
+        g.ink.rect(lx - 60, shed_top + 60, 120, 9, lw=1.6)
+        mark("stall_light", lx, shed_top + 90)
+    # 纸箱码到顶、塑料筐
+    cartons(g, h0 + 40, GROUND, 4, 6, 70, 52, seed=115)
+    cartons(g, h0 + 330, GROUND, 2, 3, 66, 48, seed=117)
+    hd = sp["haul_dock"]
+    crate_stack(g, hd - 110, GROUND, 1, 3, seed=119)
+    # 卡车：车厢的后挡板放下来，冲着 haul_dock；绿漆的老卡车，车头朝右
+    t0 = hd + 30
+    t1 = t0 + 250
+    g.clear(rect_pts(t0, GROUND - 260, t1 - t0, 170))
+    g.pen("qing", 0.42).fill(rect_pts(t0, GROUND - 260, t1 - t0, 170))
+    g.pen("ink", 0.2).fill(rect_pts(t0, GROUND - 260, t1 - t0, 170))
+    for k in range(1, 4):
+        g.ink.line([(t0, GROUND - 260 + k * 42), (t1, GROUND - 260 + k * 42)], 1.6, amp=0.3)
+    g.ink.rect(t0, GROUND - 260, t1 - t0, 170, lw=3, amp=0.3)
+    # 车厢上冒出来的筐和白菜
+    crate_stack(g, t0 + 20, GROUND - 260, 3, 2, 56, 36, "ink", 0.2, seed=121)
+    produce(g, t0 + 214, GROUND - 260, 70, "cabbage", seed=123)
+    # 放下来的后挡板
+    g.clear([(t0, GROUND - 92), (t0 - 6, GROUND - 92), (t0 - 22, GROUND - 6), (t0 - 14, GROUND - 4)])
+    g.pen("qing", 0.55).fill([(t0, GROUND - 92), (t0 - 8, GROUND - 92), (t0 - 22, GROUND - 6), (t0 - 14, GROUND - 4)])
+    g.ink.poly([(t0, GROUND - 92), (t0 - 8, GROUND - 92), (t0 - 22, GROUND - 6), (t0 - 14, GROUND - 4)], w=2.2, amp=0.2)
+    g.clear(rect_pts(t0 - 10, GROUND - 92, t1 - t0 + 140, 22))
+    g.pen("ink", 0.6).fill(rect_pts(t0 - 10, GROUND - 92, t1 - t0 + 140, 22))
+    cab = [(t1 + 6, GROUND - 70), (t1 + 6, GROUND - 236), (t1 + 70, GROUND - 236), (t1 + 112, GROUND - 160), (t1 + 132, GROUND - 150), (t1 + 132, GROUND - 70)]
+    g.clear(cab)
+    g.pen("qing", 0.45).fill(cab)
+    g.pen("ink", 0.2).fill(cab)
+    g.ink.poly(cab, w=3, amp=0.3)
+    win = [(t1 + 22, GROUND - 222), (t1 + 64, GROUND - 222), (t1 + 98, GROUND - 162), (t1 + 22, GROUND - 162)]
+    g.clear(win)
+    g.pen("qing", 0.16).fill(win)
+    g.ink.poly(win, w=2.2, amp=0.2)
+    g.ink.line([(t1 + 20, GROUND - 150), (t1 + 20, GROUND - 80)], 1.8)
+    for wx in (t0 + 56, t0 + 196, t1 + 92):
+        g.clear(circle_pts(wx, GROUND - 40, 40))
+        g.pen("ink", 0.8).fill(circle_pts(wx, GROUND - 40, 40))
+        g.clear(circle_pts(wx, GROUND - 40, 17))
+        g.pen("ink", 0.25).fill(circle_pts(wx, GROUND - 40, 17))
+        g.ink.circle(wx, GROUND - 40, 17, lw=2)
+    # 收废品的：院墙，墙头上冒出一座纸壳和瓶子的山；一杆大秤；铁皮棚子
+    g.clear(rect_pts(h1, GROUND - 250, W - h1 + 40, 250))
+    g.pen("ink", 0.32).fill(rect_pts(h1, GROUND - 250, W - h1 + 40, 250))
+    fbricks(g, h1, GROUND - 250, W - h1 + 40, 250, 30, 11, 0.9, 0.34, seed=125)
+    g.ink.line([(h1, GROUND - 250), (W + 40, GROUND - 250)], 3, amp=0.4)
+    mound = [(s0 + 40, GROUND - 250), (s0 + 140, GROUND - 330), (s0 + 260, GROUND - 400), (s0 + 380, GROUND - 430), (s0 + 520, GROUND - 380), (s0 + 600, GROUND - 330), (s0 + 680, GROUND - 250)]
+    g.clear(mound)
+    g.pen("mei", 0.16).fill(mound)
+    g.pen("ink", 0.16).fill(mound)
+    rnd = random.Random(127)
+    with g.clip(mound):
+        # 压扁的纸壳一层一层
+        for i in range(60):
+            bx = rnd.uniform(s0 + 40, s0 + 680)
+            by = rnd.uniform(GROUND - 430, GROUND - 250)
+            bw = rnd.uniform(40, 90)
+            a = rnd.uniform(-8, 8)
+            fline(g, "ink", [(bx, by), (bx + bw, by + a)], 1.6, 0.7)
+        # 一袋一袋的瓶子
+        for i in range(40):
+            bx = rnd.uniform(s0 + 300, s0 + 620)
+            by = rnd.uniform(GROUND - 420, GROUND - 260)
+            g.clear(rect_pts(bx, by, 9, 22), colors=["mei", "ink"])
+            g.pen("qing", 0.35).fill(rect_pts(bx, by, 9, 22))
+            fline(g, "ink", [(bx, by + 22), (bx, by), (bx + 3, by - 6), (bx + 6, by - 6), (bx + 9, by), (bx + 9, by + 22)], 1.1, 0.9)
+    g.ink.poly(mound, w=2.6, amp=1.2)
+    # 院墙前头：一摞摞捆好的纸壳
+    for i, (bx, n) in enumerate(((s0 + 30, 4), (s0 + 150, 3), (s1 - 520, 5))):
+        for r in range(n):
+            pts = rect_pts(bx + (r % 2) * 6, GROUND - (r + 1) * 30, 104, 30)
+            g.clear(pts)
+            g.pen("mei", 0.22).fill(pts)
+            g.pen("ink", 0.18).fill(pts)
+            for k in range(1, 6):
+                fline(g, "ink", [(bx + (r % 2) * 6, GROUND - (r + 1) * 30 + k * 5), (bx + 104 + (r % 2) * 6, GROUND - (r + 1) * 30 + k * 5)], 0.8, 0.5)
+            g.ink.rect(bx + (r % 2) * 6, GROUND - (r + 1) * 30, 104, 30, lw=1.8, amp=0.3)
+        g.ink.line([(bx + 34, GROUND), (bx + 34, GROUND - n * 30)], 1.4)
+        g.ink.line([(bx + 74, GROUND), (bx + 74, GROUND - n * 30)], 1.4)
+    # 大秤：三根木杆搭个架子，吊一杆大秤，秤钩上挂着一捆纸壳
+    sx = sp["scrap_scale"]
+    apex = (sx - 30, GROUND - 360)
+    g.ink.line([(sx - 170, GROUND), apex], 5, amp=0.6)
+    g.ink.line([(sx + 110, GROUND), apex], 5, amp=0.6)
+    g.ink.line([(sx - 40, GROUND - 30), apex], 3, amp=0.4, density=0.6)
+    g.ink.line([apex, (apex[0], apex[1] + 70)], 2.0, amp=0.1)
+    by = apex[1] + 70
+    g.ink.line([(apex[0] - 50, by + 8), (apex[0] + 190, by - 6)], 4.6, amp=0.1)
+    for k in range(1, 14):
+        g.ink.dot(apex[0] - 50 + k * 240 / 14, by + 8 - 14 * k / 14 - 2, 1.6)
+    wx = apex[0] + 150
+    g.ink.line([(wx, by - 4), (wx, by + 18)], 1.6, amp=0.1)
+    g.pen("ink").fill([(wx - 12, by + 18), (wx + 12, by + 18), (wx + 16, by + 44), (wx - 16, by + 44)])
+    hx = apex[0] - 40
+    g.ink.line([(hx, by + 8), (hx, by + 60)], 2.0, amp=0.1)
+    g.ink.arc(hx + 6, by + 64, 7, math.pi * 0.0, math.pi * 1.2, lw=2.4)
+    bale = rect_pts(hx - 60, by + 74, 120, 64)
+    g.clear(bale)
+    g.pen("mei", 0.22).fill(bale)
+    g.pen("ink", 0.18).fill(bale)
+    g.ink.rect(hx - 60, by + 74, 120, 64, lw=2, amp=0.4)
+    g.ink.line([(hx, by + 70), (hx - 40, by + 76), (hx - 40, by + 138)], 1.4)
+    g.ink.line([(hx, by + 70), (hx + 40, by + 76), (hx + 40, by + 138)], 1.4)
+    # 铁皮棚子：收购点，门口一只灯泡，一块手写的牌子
+    k0, k1 = s1 - 300, s1 - 30
+    g.clear(rect_pts(k0, GROUND - 280, k1 - k0, 280))
+    g.pen("ink", 0.3).fill(rect_pts(k0, GROUND - 280, k1 - k0, 280))
+    for xx in range(int(k0) + 6, int(k1), 14):
+        fline(g, "ink", [(xx, GROUND - 280), (xx, GROUND)], 1.3, 0.6)
+    g.ink.rect(k0, GROUND - 280, k1 - k0, 280, lw=3)
+    rf = [(k0 - 20, GROUND - 270), (k1 + 24, GROUND - 300), (k1 + 24, GROUND - 312), (k0 - 20, GROUND - 284)]
+    g.clear(rf)
+    g.pen("ink", 0.55).fill(rf)
+    g.ink.poly(rf, w=2.4, amp=0.3)
+    g.clear(rect_pts(k0 + 60, GROUND - 190, 90, 190))
+    g.pen("ink", 0.7).fill(rect_pts(k0 + 60, GROUND - 190, 90, 190))
+    g.ink.rect(k0 + 60, GROUND - 190, 90, 190, lw=2.6)
+    g.clear(rect_pts(k0 + 170, GROUND - 236, 86, 44))
+    g.pen("mei", 0.1).fill(rect_pts(k0 + 170, GROUND - 236, 86, 44))
+    g.ink.rect(k0 + 170, GROUND - 236, 86, 44, lw=1.8, amp=0.6)
+    g.ink.text("收废品", k0 + 213, GROUND - 213, 22)
+    bulb(g, k0 + 105, GROUND - 272, 26)
+    tricycle(g, s0 + 330, GROUND, -1, None, seed=129)
+    for k in range(3):
+        pts = rect_pts(s0 + 206 + k * 4, GROUND - 100 - k * 26, 132, 26)
+        g.clear(pts)
+        g.pen("mei", 0.2).fill(pts)
+        g.pen("ink", 0.2).fill(pts)
+        g.ink.rect(s0 + 206 + k * 4, GROUND - 100 - k * 26, 132, 26, lw=1.6, amp=0.3)
+    # ---- 菜摊：一溜帆布棚，棚檐底下一串灯泡 ----
+    tarp_y = GROUND - 300
+    # 棚子底下暗：天还没亮透，靠灯泡照着
+    g.pen("ink", 0.24).fill(rect_pts(v0 + 20, tarp_y - 40, v1 - v0 - 50, GROUND - tarp_y + 40))
+    xs = tarp(g, v0 + 20, v1 - 30, tarp_y, 46, 16, 230, "ink", 0.6, patches={1: ("qing", 0.45), 3: ("ink", 0.25)})
+    bulb_string(g, v0 + 20, v1 - 30, tarp_y + 14, 92, 18, 2, posts=xs)
+    # 豆浆摊在胡同口：一小块棚子、一口大锅、蜂窝煤炉子、一张折叠桌
+    sx = sp["market_soy"]
+    g.pen("ink", 0.2).fill(rect_pts(sx - 150, GROUND - 330, 300, 330))
+    xs2 = tarp(g, sx - 150, sx + 150, GROUND - 290, 40, 12, 300, "ink", 0.55)
+    bulb_string(g, sx - 150, sx + 150, GROUND - 278, 300, 10, 1, posts=xs2)
+    g.clear(rect_pts(sx - 140, GROUND - 74, 64, 74))
+    g.pen("ink", 0.5).fill(rect_pts(sx - 140, GROUND - 74, 64, 74))
+    g.ink.rect(sx - 140, GROUND - 74, 64, 74, lw=2.4)
+    for k in range(3):
+        g.clear(circle_pts(sx - 124 + k * 16, GROUND - 40, 4), colors=["ink"])
+    pot = [(sx - 152, GROUND - 74), (sx - 64, GROUND - 74), (sx - 70, GROUND - 140), (sx - 146, GROUND - 140)]
+    g.clear(pot)
+    g.pen("ink", 0.12).fill(pot)
+    g.ink.poly(pot, w=2.6, amp=0.3)
+    g.ink.ellipse(sx - 108, GROUND - 140, 40, 7, lw=2.4)
+    for k in range(3):
+        cx = sx - 128 + k * 20
+        g.ink.line([(cx, GROUND - 150), (cx - 8, GROUND - 190), (cx + 6, GROUND - 230), (cx - 4, GROUND - 270)], 1.4, amp=2.0, density=0.45)
+    table(g, sx + 40, GROUND, 150, 70)
+    for k in range(4):
+        bx = sx - 10 + k * 34
+        g.clear([(bx - 13, GROUND - 92), (bx + 13, GROUND - 92), (bx + 8, GROUND - 74), (bx - 8, GROUND - 74)])
+        g.ink.poly([(bx - 13, GROUND - 92), (bx + 13, GROUND - 92), (bx + 8, GROUND - 74), (bx - 8, GROUND - 74)], w=1.6, amp=0.2)
+        g.qing.line([(bx - 10, GROUND - 88), (bx + 10, GROUND - 88)], 1.4, amp=0.1)
+    # 一筐炸好的油条
+    basket(g, sx + 140, GROUND, 60, 34)
+    for k in range(5):
+        g.pen("mei", 0.35).line([(sx + 118 + k * 8, GROUND - 34), (sx + 126 + k * 8, GROUND - 70)], 6, amp=0.4)
+    stool(g, sx - 30, GROUND, "ink", 34, 30)
+    stool(g, sx + 110, GROUND, "ink", 34, 30)
+    # 菜摊一：圆白菜、土豆，竹筐摆一地
+    plank_stall(g, v0 + 40, v0 + 220, GROUND, 74)
+    produce(g, v0 + 130, GROUND - 74, 170, "cabbage", seed=131)
+    basket(g, v0 + 60, GROUND, 66, 44, load="potato", seed=133)
+    basket(g, v0 + 236, GROUND, 66, 44, load="potato", seed=135)
+    # 自家的摊子（veg_stall）：门板支在两只木箱上，西红柿、黄瓜、一把葱；杆秤挂在棚檐底下
+    vx = sp["veg_stall"]
+    plank_stall(g, vx - 120, vx + 120, GROUND, 80)
+    produce(g, vx - 56, GROUND - 80, 110, "tomato", seed=137)
+    produce(g, vx + 56, GROUND - 80, 100, "cucumber", seed=139)
+    produce(g, vx + 100, GROUND - 100, 0, "scallion", seed=141)
+    produce(g, vx + 136, GROUND, 34, "scallion", seed=143)
+    steelyard(g, vx - 40, tarp_y + 10, 120)
+    # 一只装零钱的铁盒、一块写价钱的纸板（字归街景层）
+    g.clear(rect_pts(vx - 20, GROUND - 98, 36, 18))
+    g.pen("qing", 0.4).fill(rect_pts(vx - 20, GROUND - 98, 36, 18))
+    g.ink.rect(vx - 20, GROUND - 98, 36, 18, lw=1.6)
+    g.clear(rect_pts(vx - 150, GROUND - 160, 54, 40))
+    g.pen("mei", 0.15).fill(rect_pts(vx - 150, GROUND - 160, 54, 40))
+    g.ink.rect(vx - 150, GROUND - 160, 54, 40, lw=1.4, amp=0.6)
+    g.ink.line([(vx - 123, GROUND - 160), (vx - 123, GROUND - 80)], 1.6)
+    basket(g, vx - 170, GROUND, 60, 42, load="tomato", seed=145)
+    stool(g, vx + 160, GROUND, "ink", 34, 30)
+    # 三轮车拉来一车西瓜
+    tricycle(g, 1110, GROUND, 1, "melon", seed=147)
+    # 鸡蛋、豆腐、一盆鱼
+    e0 = sp["market_walk"] - 20
+    plank_stall(g, e0 - 40, e0 + 160, GROUND, 76, legs="trestle")
+    basket(g, e0 + 10, GROUND - 76, 70, 30, d=0.1, load="egg", seed=149)
+    for k in range(3):
+        g.clear(rect_pts(e0 + 70 + k * 26, GROUND - 100, 24, 24))
+        g.pen("ink", 0.06).fill(rect_pts(e0 + 70 + k * 26, GROUND - 100, 24, 24))
+        g.ink.rect(e0 + 70 + k * 26, GROUND - 100, 24, 24, lw=1.4)
+    g.pen("qing", 0.25).fill([(e0 + 64, GROUND - 104), (e0 + 150, GROUND - 104), (e0 + 156, GROUND - 92), (e0 + 60, GROUND - 92)])
+    tub = [(e0 + 190, GROUND - 40), (e0 + 330, GROUND - 40), (e0 + 318, GROUND), (e0 + 202, GROUND)]
+    g.clear(tub)
+    g.pen("ink", 0.3).fill(tub)
+    g.ink.poly(tub, w=2.4, amp=0.3)
+    g.pen("qing", 0.55).fill(ellipse_pts(e0 + 260, GROUND - 40, 68, 8))
+    for k in range(3):
+        fx = e0 + 220 + k * 30
+        g.ink.line([(fx, GROUND - 42), (fx + 18, GROUND - 40)], 4, amp=0.2)
+    produce(g, e0 + 380, GROUND, 90, "peach", seed=151)
+    # 前头的电线：从胡同口那根杆子扯过来
+    wires(g, [p1x, v0 + 20], top_y + 2, 60, 2)
+    ground_market(g, W, seed=153)
+
+
+def annulus(cx, cy, R, r, a0=0.0, a1=math.tau, n=36):
+    """圆环（或圆环的一段）：外圈顺着走、内圈倒着走，中间是空的。"""
+    outer = [(cx + R * math.cos(a0 + (a1 - a0) * i / n), cy + R * math.sin(a0 + (a1 - a0) * i / n)) for i in range(n + 1)]
+    inner = [(cx + r * math.cos(a0 + (a1 - a0) * i / n), cy + r * math.sin(a0 + (a1 - a0) * i / n)) for i in range(n + 1)]
+    return outer + inner[::-1]
+
+
+def lifebuoy(g, cx, cy, R=26, r=14):
+    """救生圈：白底四段梅红。"""
+    g.clear(annulus(cx, cy, R, r))
+    for k in range(4):
+        a = k * math.pi / 2 + math.pi / 4
+        g.pen("mei", 0.9).fill(annulus(cx, cy, R, r, a - 0.42, a + 0.42, 10))
+    g.ink.circle(cx, cy, R, lw=2.0)
+    g.ink.circle(cx, cy, r, lw=1.6)
+
+
+def parasol(g, x, base, r=110, h=236, color="mei", lean=0.0, seed=1):
+    """遮阳伞：一片一片的伞面梅白相间，伞杆插进沙子，底下一块影子。"""
+    ax, ay = x + lean, base - h
+    rim = [(ax - r + 2 * r * i / 8, ay + 40 + 6 * math.sin(math.pi * i / 8)) for i in range(9)]
+    canopy = [(ax - r, ay + 40)] + [(ax - r * math.cos(math.pi * i / 12) , ay + 40 - 44 * math.sin(math.pi * i / 12)) for i in range(13)] + [(ax + r, ay + 40)]
+    g.pen("ink", 0.14).fill(ellipse_pts(x + 30, base + 4, r * 0.8, 7))
+    g.ink.line([(ax, ay - 12), (x, base + 4)], 3.4, amp=0.2)
+    g.clear(canopy + rim[::-1])
+    for i in range(8):
+        a = rim[i]
+        b = rim[i + 1]
+        if i % 2 == 0:
+            seg = [(ax, ay - 4), (a[0], a[1]), (b[0], b[1])]
+            g.pen(color, 0.85).fill(seg)
+    g.ink.poly(canopy + rim[::-1], w=2.2, amp=0.3)
+    for i in range(9):
+        fline(g, "ink", [(ax, ay - 4), rim[i]], 1.0, 0.7)
+    for i in range(8):
+        a, b = rim[i], rim[i + 1]
+        g.pen(color if i % 2 == 0 else "ink", 0.85 if i % 2 == 0 else 0.4).arc((a[0] + b[0]) / 2, a[1] + 2, (b[0] - a[0]) / 2, 0, math.pi, lw=1.6, amp=0.1)
+
+
+def deckchair(g, x, base, facing=1, color="qing"):
+    f = facing
+    g.ink.line([(x - 40 * f, base), (x + 30 * f, base - 46)], 2.6)
+    g.ink.line([(x + 40 * f, base), (x - 10 * f, base - 30)], 2.6)
+    cloth = [(x - 36 * f, base - 18), (x + 26 * f, base - 50), (x + 40 * f, base - 92), (x + 32 * f, base - 96), (x + 16 * f, base - 56), (x - 40 * f, base - 26)]
+    g.pen(color, 0.55).fill(cloth)
+    g.ink.line([(x + 26 * f, base - 50), (x + 44 * f, base - 98)], 2.6)
+
+
+def sea(g, x0, x1, hz, shore, seed=1):
+    """海：海平线一道深青，越往近处越浅、浪越长，几点亮光；岸边一道白浪。"""
+    pts = rect_pts(x0, hz, x1 - x0, shore - hz)
+    g.clear(pts)
+    g.pen("qing", 0.34).fill(pts)
+    g.pen("qing", 0.3).fill(rect_pts(x0, hz, x1 - x0, (shore - hz) * 0.45))
+    g.pen("qing", 0.4).fill(rect_pts(x0, hz, x1 - x0, 10))
+    g.qing.line([(x0, hz), (x1, hz)], 2.6, amp=0.2)
+    rnd = random.Random(seed)
+    for i in range(int((x1 - x0) * (shore - hz) / 1600)):
+        y = rnd.uniform(hz + 6, shore - 10)
+        t = (y - hz) / (shore - hz)
+        x = rnd.uniform(x0, x1)
+        L = 10 + 90 * t * rnd.uniform(0.5, 1.2)
+        fline(g, "qing", [(x, y), (x + L * 0.5, y - 1.5 * t), (x + L, y)], 1.0 + 1.6 * t, 0.9)
+    for i in range(int((x1 - x0) / 60)):
+        y = rnd.uniform(hz + 8, hz + (shore - hz) * 0.6)
+        x = rnd.uniform(x0, x1)
+        g.clear(rect_pts(x, y, rnd.uniform(8, 30), 2.4), colors=["qing"])
+    # 岸边的白浪：一道挖空的花边，下面一抹湿沙
+    fy = shore - 4
+    g.clear(rect_pts(x0, fy - 6, x1 - x0, 12), colors=["qing"])
+    k = x0
+    while k < x1:
+        w = rnd.uniform(26, 60)
+        fline(g, "qing", [(k, fy + 6), (k + w * 0.3, fy - 2), (k + w * 0.7, fy - 3), (k + w, fy + 6)], 1.6, 0.8)
+        k += w
+
+
+def draw_seaside(g, sc):
+    W = sc["width"]
+    sp, ex, zs = sc["spots"], sc["exits"], sc["zones"]
+    z = lambda k: zs[k]["span"]  # noqa: E731
+    HZ = GROUND - 150   # 海平线压得低：天占一大半
+    SHORE = GROUND - 34
+    sky(g, W, seed=201, horizon=HZ)
+    layer_note("far_base", HZ)
+    a0, a1 = z("sea_street")
+    b0, b1 = z("sand")
+    r0, r1 = z("rocks")
+    p0, p1 = z("pier")
+    i0, i1 = z("inn")
+    sea(g, -40, W + 40, HZ, SHORE + 30, seed=203)
+    # 远处一条打鱼的小船、一只浮标
+    bx = r0 + 330
+    hull = [(bx - 46, HZ + 44), (bx + 52, HZ + 44), (bx + 38, HZ + 58), (bx - 36, HZ + 58)]
+    g.clear(hull)
+    g.pen("ink", 0.5).fill(hull)
+    g.ink.line([(bx - 10, HZ + 44), (bx - 6, HZ - 6)], 2)
+    g.pen("ink", 0.3).fill([(bx - 4, HZ - 2), (bx + 30, HZ + 40), (bx - 4, HZ + 40)])
+    g.pen("mei", 0.8).fill(circle_pts(b0 + 520, HZ + 70, 5))
+    g.ink.line([(b0 + 520, HZ + 64), (b0 + 520, HZ + 52)], 1.4)
+    # 礁石：从海里拱出来，黑的，浪打在脚底下
+    for (cx, w, h, sd) in ((r0 + 120, 260, 190, 1), (r0 + 360, 120, 90, 2), (r1 - 150, 300, 230, 3)):
+        rnd = random.Random(205 + sd)
+        n = 9
+        pts = [(cx - w / 2, SHORE + 24)]
+        for i in range(1, n):
+            t = i / n
+            pts.append((cx - w / 2 + w * t + rnd.uniform(-12, 12), SHORE + 20 - h * math.sin(math.pi * t) ** 0.7 * rnd.uniform(0.75, 1.05)))
+        pts.append((cx + w / 2, SHORE + 24))
+        g.clear(pts)
+        g.pen("ink", 0.62).fill(pts)
+        with g.clip(pts):
+            fhatch(g, "ink", cx - w / 2, SHORE - h, w, h + 30, 60, 8, 1.2, 0.6)
+        g.ink.poly(pts, w=3, amp=0.6)
+        for i in range(4):
+            fx = cx - w / 2 + 20 + i * (w - 40) / 3
+            fline(g, "qing", [(fx - 18, SHORE + 18), (fx, SHORE + 12), (fx + 20, SHORE + 18)], 2, 0.9)
+    # ---- 海边的街：石头栏杆、车站、卖贝壳的摊子 ----
+    def balustrade(xa, xb, base, h=84):
+        g.clear(rect_pts(xa, base - h, xb - xa, 14))
+        g.pen("ink", 0.12).fill(rect_pts(xa, base - h, xb - xa, 14))
+        g.ink.rect(xa, base - h, xb - xa, 14, lw=2.2, amp=0.3)
+        x = xa
+        while x <= xb:
+            g.clear(rect_pts(x - 10, base - h + 14, 20, h - 14))
+            g.pen("ink", 0.08).fill(rect_pts(x - 10, base - h + 14, 20, h - 14))
+            g.ink.rect(x - 10, base - h + 14, 20, h - 14, lw=2.0, amp=0.2)
+            x += 110
+        for x in range(int(xa) + 20, int(xb), 22):
+            fline(g, "ink", [(x, base - h + 18), (x, base - 6)], 1.4, 0.6)
+    balustrade(-40, b0 - 20, GROUND)
+    sx = ex["to_home"][0]
+    # 站牌：一根杆子上一块长牌，底下一条长椅
+    g.ink.line([(sx + 40, GROUND), (sx + 40, GROUND - 300)], 5)
+    g.clear(rect_pts(sx + 6, GROUND - 330, 68, 120))
+    g.pen("qing").fill(rect_pts(sx + 6, GROUND - 330, 68, 120))
+    g.ink.rect(sx + 6, GROUND - 330, 68, 120, lw=2.4)
+    knock(g, "qing", "车站", sx + 40, GROUND - 270, 26, vertical=True)
+    bench(g, sx - 50, GROUND, 120, "ink", back=False)
+    lamp(g, a0 + 260, GROUND, 440, 1)
+    tree(g, a0 + 600, GROUND, 360, 90, "young", seed=207)
+    # 卖贝壳的：一把伞、一张桌、一杆挂满贝壳串的竹竿、一摞救生圈
+    shx = sp["shell_stall"]
+    parasol(g, shx - 10, GROUND, 120, 250, "mei", seed=209)
+    table(g, shx, GROUND, 170, 76)
+    rnd = random.Random(211)
+    for k in range(9):
+        cx = shx - 70 + k * 17
+        if k % 3 == 0:
+            g.clear([(cx - 8, GROUND - 78), (cx + 8, GROUND - 78), (cx, GROUND - 104)])
+            g.ink.poly([(cx - 8, GROUND - 78), (cx + 8, GROUND - 78), (cx, GROUND - 104)], w=1.4, amp=0.2)
+            g.ink.line([(cx - 6, GROUND - 86), (cx + 4, GROUND - 92)], 1.0, amp=0.1)
+        else:
+            g.clear([(cx - 8, GROUND - 78), (cx + 8, GROUND - 78), (cx + 9, GROUND - 88), (cx, GROUND - 96), (cx - 9, GROUND - 88)])
+            g.pen("mei", 0.25 if k % 2 else 0.05).fill([(cx - 8, GROUND - 78), (cx + 8, GROUND - 78), (cx + 9, GROUND - 88), (cx, GROUND - 96), (cx - 9, GROUND - 88)])
+            g.ink.poly([(cx - 8, GROUND - 78), (cx + 8, GROUND - 78), (cx + 9, GROUND - 88), (cx, GROUND - 96), (cx - 9, GROUND - 88)], w=1.2, amp=0.1)
+    g.ink.line([(shx + 96, GROUND), (shx + 100, GROUND - 230)], 3)
+    g.ink.line([(shx + 70, GROUND - 210), (shx + 150, GROUND - 216)], 2)
+    for k in range(4):
+        cx = shx + 76 + k * 22
+        g.ink.line([(cx, GROUND - 212), (cx + 2, GROUND - 130 + (k % 2) * 16)], 1.0, amp=0.1)
+        for j in range(5):
+            g.clear(circle_pts(cx + 1, GROUND - 196 + j * 14, 4.6))
+            g.pen("mei" if (j + k) % 3 == 0 else "ink", 0.3 if (j + k) % 3 else 0.6).fill(circle_pts(cx + 1, GROUND - 196 + j * 14, 4.6))
+            g.ink.circle(cx + 1, GROUND - 196 + j * 14, 4.6, lw=1.0)
+    for k in range(3):
+        lifebuoy(g, shx - 120, GROUND - 26 - k * 10, 30, 15)
+    # 草帽挂在伞杆上
+    g.clear(ellipse_pts(shx - 10, GROUND - 160, 30, 6))
+    g.pen("mei", 0.22).fill(ellipse_pts(shx - 10, GROUND - 160, 30, 6))
+    g.pen("ink", 0.12).fill(ellipse_pts(shx - 10, GROUND - 170, 14, 11))
+    g.ink.ellipse(shx - 10, GROUND - 160, 30, 6, lw=1.6)
+    # ---- 沙滩：一排遮阳伞、救生员的高椅子、挂着救生圈的杆子、晒着的泳衣 ----
+    for k, (ux, lean) in enumerate(((b0 + 120, -6), (b0 + 300, 8), (b0 + 660, -4), (b1 - 140, 6))):
+        parasol(g, ux, GROUND, 104, 226, "mei", lean, seed=213 + k)
+        deckchair(g, ux + 40, GROUND, -1 if k % 2 else 1, "qing")
+    sw = sp["sea_swim"]
+    # 救生员的高椅子
+    hx = sw - 120
+    g.ink.line([(hx - 40, GROUND), (hx - 20, GROUND - 170)], 4)
+    g.ink.line([(hx + 40, GROUND), (hx + 20, GROUND - 170)], 4)
+    for yy in (GROUND - 60, GROUND - 120):
+        t = (GROUND - yy) / 170
+        g.ink.line([(hx - 40 + 20 * t, yy), (hx + 40 - 20 * t, yy)], 3)
+    g.clear(rect_pts(hx - 30, GROUND - 178, 60, 10))
+    g.pen("qing").fill(rect_pts(hx - 30, GROUND - 178, 60, 10))
+    g.ink.rect(hx - 30, GROUND - 178, 60, 10, lw=2)
+    g.ink.line([(hx + 20, GROUND - 178), (hx + 26, GROUND - 236)], 3)
+    g.pen("qing").fill(rect_pts(hx + 16, GROUND - 240, 16, 50))
+    # 救生圈挂在杆子上
+    lx = sw + 110
+    g.ink.line([(lx, GROUND), (lx, GROUND - 200)], 4)
+    g.ink.line([(lx - 6, GROUND - 190), (lx + 16, GROUND - 190)], 3)
+    lifebuoy(g, lx + 10, GROUND - 150, 30, 16)
+    g.clear(rect_pts(lx - 30, GROUND - 236, 60, 30))
+    g.pen("mei", 0.9).fill(rect_pts(lx - 30, GROUND - 236, 60, 30))
+    knock(g, "mei", "救生", lx, GROUND - 221, 18)
+    # 一双拖鞋
+    for k in range(2):
+        g.pen("qing", 0.7).fill(ellipse_pts(sw + 10 + k * 22, GROUND - 3, 10, 3))
+    # 晒衣绳：两根竹竿，泳衣、毛巾
+    c0, c1 = b0 + 760, b0 + 900
+    for cx in (c0, c1):
+        g.ink.line([(cx, GROUND), (cx, GROUND - 210)], 3)
+    rope = [(c0 + (c1 - c0) * t / 12, GROUND - 200 + 14 * 4 * (t / 12) * (1 - t / 12)) for t in range(13)]
+    fline(g, "ink", rope, 1.3)
+    hang = (("suit", "mei", 0.7), ("towel", "qing", 0.5), ("trunk", "qing", 0.8), ("suit", "qing", 0.6), ("towel", "mei", 0.35))
+    for k, (kind, col, d) in enumerate(hang):
+        t = (k + 0.7) / 5.6
+        hx2 = c0 + (c1 - c0) * t
+        hy = GROUND - 200 + 14 * 4 * t * (1 - t)
+        if kind == "suit":
+            pts = [(hx2 - 9, hy), (hx2 - 5, hy + 16), (hx2 - 9, hy + 34), (hx2, hy + 42), (hx2 + 9, hy + 34), (hx2 + 5, hy + 16), (hx2 + 9, hy)]
+        elif kind == "trunk":
+            pts = [(hx2 - 12, hy), (hx2 + 12, hy), (hx2 + 13, hy + 22), (hx2 + 3, hy + 22), (hx2, hy + 12), (hx2 - 3, hy + 22), (hx2 - 13, hy + 22)]
+        else:
+            pts = rect_pts(hx2 - 11, hy, 22, 48)
+        g.clear(pts)
+        g.pen(col, d).fill(pts)
+        g.ink.poly(pts, w=1.3, amp=0.2)
+        if kind == "towel":
+            for j in range(3):
+                fline(g, col, [(hx2 - 11, hy + 10 + j * 12), (hx2 + 11, hy + 10 + j * 12)], 2.4, 1.0)
+    # 堆沙子：一座沙堡、一只梅红的小桶、一把铲子
+    sd = sp["sand_pile"]
+    castle = [(sd - 70, GROUND), (sd - 60, GROUND - 30), (sd - 40, GROUND - 30), (sd - 40, GROUND - 52), (sd - 30, GROUND - 52), (sd - 30, GROUND - 46), (sd - 20, GROUND - 46), (sd - 20, GROUND - 52), (sd - 6, GROUND - 52), (sd - 6, GROUND - 74), (sd + 14, GROUND - 74), (sd + 14, GROUND - 40), (sd + 40, GROUND - 32), (sd + 66, GROUND)]
+    g.clear(castle)
+    g.pen("mei", 0.22).fill(castle)
+    g.pen("ink", 0.1).fill(castle)
+    g.ink.poly(castle, w=1.8, amp=0.4)
+    g.ink.line([(sd + 4, GROUND - 74), (sd + 4, GROUND - 104)], 1.4)
+    g.pen("mei").fill([(sd + 4, GROUND - 104), (sd + 24, GROUND - 98), (sd + 4, GROUND - 92)])
+    pail = [(sd + 80, GROUND - 34), (sd + 112, GROUND - 34), (sd + 108, GROUND), (sd + 84, GROUND)]
+    g.clear(pail)
+    g.pen("mei", 0.85).fill(pail)
+    g.ink.poly(pail, w=1.6, amp=0.2)
+    g.ink.arc(sd + 96, GROUND - 34, 16, math.pi, math.tau, lw=1.4)
+    g.ink.line([(sd - 100, GROUND), (sd - 120, GROUND - 46)], 2.6)
+    g.pen("qing").fill([(sd - 104, GROUND - 2), (sd - 92, GROUND - 4), (sd - 96, GROUND + 6)])
+    # ---- 栈桥：从堤上一直伸到海里去（往远处走，越走越窄） ----
+    pe = sp["pier_end"]
+    cx_far = pe + 30
+    near0, near1 = pe - 110, pe + 110
+    far0, far1 = cx_far - 7, cx_far + 7
+    fy = HZ + 14
+    ny = GROUND - 30
+    deck = [(near0, ny), (far0, fy), (far1, fy), (near1, ny)]
+    g.clear(deck)
+    g.pen("ink", 0.3).fill(deck)
+    for k in range(1, 8):
+        t = k / 8
+        fline(g, "ink", [(near0 + (near1 - near0) * t, ny), (far0 + (far1 - far0) * t, fy)], 1.0, 0.6)
+    # 桥墩：桥面底下一排桩子，越远越矮
+    for k in range(14):
+        t = (k / 14) ** 1.6
+        yy = ny + (fy - ny) * t
+        for (xa, xb) in ((near0, far0), (near1, far1)):
+            xx = xa + (xb - xa) * t
+            fline(g, "ink", [(xx, yy), (xx, yy + 24 * (1 - t) + 3)], 2.6 * (1 - t) + 0.8, 0.9)
+    g.ink.poly(deck, w=2.2, amp=0.2)
+    # 栏杆和路灯：越远越小
+    for (xa, xb) in ((near0, far0), (near1, far1)):
+        g.ink.line([(xa, ny - 46), (xb, fy - 4)], 2.0, amp=0.2)
+        for k in range(10):
+            t = (k / 10) ** 1.5
+            xx, yy = xa + (xb - xa) * t, ny + (fy - ny) * t
+            fline(g, "ink", [(xx, yy), (xx, yy - 46 * (1 - t) - 4)], 1.8 * (1 - t) + 0.6, 0.9)
+    for k, t in enumerate((0.12, 0.38, 0.62)):
+        xx, yy = near1 + (far1 - near1) * t, ny + (fy - ny) * t
+        hh = 150 * (1 - t) + 10
+        g.ink.line([(xx, yy), (xx, yy - hh)], 3 * (1 - t) + 0.8, amp=0.1)
+        g.ink.circle(xx, yy - hh - 6 * (1 - t), 7 * (1 - t) + 1.5, lw=1.6)
+        if k < 2:
+            mark("street_lamp", xx, yy - hh)
+    # 桥头远处一座小亭子
+    g.clear([(cx_far - 12, fy - 2), (cx_far - 12, fy - 16), (cx_far - 16, fy - 16), (cx_far, fy - 26), (cx_far + 16, fy - 16), (cx_far + 12, fy - 16), (cx_far + 12, fy - 2)])
+    g.pen("ink", 0.5).fill([(cx_far - 16, fy - 16), (cx_far, fy - 26), (cx_far + 16, fy - 16)])
+    g.ink.poly([(cx_far - 12, fy - 2), (cx_far - 12, fy - 16), (cx_far - 16, fy - 16), (cx_far, fy - 26), (cx_far + 16, fy - 16), (cx_far + 12, fy - 16), (cx_far + 12, fy - 2)], w=1.2, amp=0.1)
+    mark("far_light", cx_far, fy - 10)
+    # 堤上的铁栏杆，到桥头断开
+    for (xa, xb) in ((p0, near0 - 30), (near1 + 30, i0 - 10)):
+        g.ink.line([(xa, GROUND - 76), (xb, GROUND - 76)], 3, amp=0.3)
+        g.ink.line([(xa, GROUND - 40), (xb, GROUND - 40)], 2, amp=0.3)
+        x = xa
+        while x <= xb + 1:
+            g.ink.line([(x, GROUND), (x, GROUND - 82)], 4, amp=0.1)
+            x += 70
+    for px in (near0 - 30, near1 + 30):
+        g.clear(rect_pts(px - 16, GROUND - 110, 32, 110))
+        g.pen("ink", 0.3).fill(rect_pts(px - 16, GROUND - 110, 32, 110))
+        g.ink.rect(px - 16, GROUND - 110, 32, 110, lw=2.4)
+    signboard(g, near0 - 30, GROUND - 150, "栈桥", "qing", 22, vertical=True, pad=8)
+    lamp(g, p0 + 60, GROUND, 440, 1)
+    # ---- 招待所：带阳台的两层楼，窗口晾着毛巾；一楼剖开：饭堂、一间客房 ----
+    top1 = GROUND - 250
+    top2 = GROUND - 490
+    g.clear(rect_pts(i0 + 10, top2, i1 - i0, GROUND - top2))
+    g.pen("qing", 0.1).fill(rect_pts(i0 + 10, top2, i1 - i0, GROUND - top2))
+    g.ink.rect(i0 + 10, top2, i1 - i0, GROUND - top2, lw=3, amp=0.3)
+    g.clear(rect_pts(i0 - 4, top2 - 22, i1 - i0 + 28, 24))
+    g.pen("ink", 0.3).fill(rect_pts(i0 - 4, top2 - 22, i1 - i0 + 28, 24))
+    g.ink.rect(i0 - 4, top2 - 22, i1 - i0 + 28, 24, lw=2.4)
+    signboard(g, (i0 + i1) / 2, top2 - 54, "海滨招待所", "qing", 30, pad=10)
+    # 二楼：三间带阳台的屋子，门窗上头一条青色的檐
+    for k in range(3):
+        wx = i0 + 60 + k * 190
+        lit = k == 1
+        window(g, wx, top2 + 40, 70, 120, panes=2, lit=lit, curtain="qing" if k != 1 else None, sill=False, night=True)
+        g.clear(rect_pts(wx + 84, top2 + 40, 56, 160))
+        g.pen("ink", 0.35).fill(rect_pts(wx + 84, top2 + 40, 56, 160))
+        g.ink.rect(wx + 84, top2 + 40, 56, 160, lw=2.2)
+        slab_y = top2 + 200
+        g.clear(rect_pts(wx - 14, slab_y, 170, 14))
+        g.pen("ink", 0.3).fill(rect_pts(wx - 14, slab_y, 170, 14))
+        g.ink.rect(wx - 14, slab_y, 170, 14, lw=2.2)
+        g.ink.line([(wx - 14, slab_y - 56), (wx + 156, slab_y - 56)], 2.6)
+        for j in range(12):
+            fline(g, "ink", [(wx - 8 + j * 14, slab_y - 56), (wx - 8 + j * 14, slab_y)], 1.6, 0.9)
+        # 阳台栏杆上搭着的毛巾、泳衣
+        for j, (col, d) in enumerate((("mei", 0.7), ("qing", 0.55), ("mei", 0.3))[: 2 + (k % 2)]):
+            tx = wx + 6 + j * 44
+            pts = rect_pts(tx, slab_y - 58, 30, 50 - j * 6)
+            g.clear(pts)
+            g.pen(col, d).fill(pts)
+            fline(g, col, [(tx, slab_y - 46), (tx + 30, slab_y - 46)], 2.4, 1.0)
+            g.ink.rect(tx, slab_y - 58, 30, 50 - j * 6, lw=1.2, amp=0.2)
+        g.pen("qing", 0.55).fill(rect_pts(wx - 14, top2 + 26, 170, 10))
+    # 一楼剖开：前墙没了，看得见屋里
+    g.clear(rect_pts(i0 + 24, top1 + 14, i1 - i0 - 28, GROUND - top1 - 14))
+    g.pen("ink", 0.14).fill(rect_pts(i0 + 24, top1 + 14, i1 - i0 - 28, GROUND - top1 - 14))
+    g.pen("qing", 0.24).fill(rect_pts(i0 + 24, GROUND - 100, i1 - i0 - 28, 100))
+    g.ink.line([(i0 + 24, GROUND - 100), (i1, GROUND - 100)], 2)
+    slab(g, i0 + 10, i1 + 10, top1, top1 + 14)
+    mid = (sp["inn_table"] + sp["inn_bed"]) / 2 + 10
+    cut_wall(g, mid, top1 + 14, GROUND - 230, 22, "ink")
+    cut_wall(g, i0 + 17, top1, GROUND, 24, "ink")
+    cut_wall(g, i1 + 6, top1, GROUND, 24, "ink")
+    # 饭堂：圆桌、方凳、暖壶，墙上一台电扇
+    tx = sp["inn_table"]
+    round_table(g, tx, GROUND, 180, "qing")
+    g.ink.circle(tx - 110, top1 + 80, 24, lw=2)
+    for k in range(3):
+        a = k * math.tau / 3 + 0.3
+        g.ink.line([(tx - 110, top1 + 80), (tx - 110 + math.cos(a) * 20, top1 + 80 + math.sin(a) * 20)], 3)
+    window(g, tx + 40, top1 + 50, 110, 80, panes=2, lit=True)
+    bulb(g, tx, top1 + 14, 40)
+    # 客房：一张床、蚊帐叠在床头、床头柜上一只暖壶
+    bx2 = sp["inn_bed"]
+    bed(g, bx2, GROUND, 230, -1, "qing")
+    window(g, bx2 - 60, top1 + 50, 90, 80, panes=2, curtain="mei", night=True)
+    g.ink.rect(bx2 - 170, GROUND - 60, 40, 60, lw=2)
+    g.pen("qing", 0.5).fill(rect_pts(bx2 - 162, GROUND - 100, 22, 40))
+    # ---- 地面：街上铺石板，沙滩，礁石，水泥堤 ----
+    g.clear(rect_pts(-50, GROUND, W + 100, BOTTOM - GROUND + 60))
+    # 石板街
+    g.pen("ink", 0.14).fill(rect_pts(-50, GROUND, b0 + 50, 30))
+    for x in range(-40, int(b0), 80):
+        fline(g, "ink", [(x, GROUND + 2), (x - 4, GROUND + 30)], 1.2, 0.5)
+    g.pen("ink", 0.1).fill(rect_pts(-50, GROUND + 30, b0 + 50, BOTTOM - GROUND))
+    fbricks(g, -50, GROUND + 30, b0 + 50, BOTTOM - GROUND, 90, 34, 1.0, 0.3, seed=215)
+    # 沙滩：梅一点、墨一点，像晒热的沙子；脚印、贝壳
+    g.pen("mei", 0.16).fill(rect_pts(b0, GROUND, b1 - b0, BOTTOM - GROUND + 40))
+    g.pen("ink", 0.05).fill(rect_pts(b0, GROUND, b1 - b0, BOTTOM - GROUND + 40))
+    rnd = random.Random(217)
+    for i in range(int((b1 - b0) / 5)):
+        g.ink.dot(rnd.uniform(b0, b1), rnd.uniform(GROUND + 4, BOTTOM), rnd.uniform(0.8, 1.6))
+    for i in range(14):
+        fx = b0 + 40 + i * 80 + rnd.uniform(-10, 10)
+        fy2 = GROUND + 60 + 40 * math.sin(i * 0.7) + (i % 2) * 18
+        g.pen("ink", 0.3).fill(ellipse_pts(fx, fy2, 8, 4))
+    for i in range(18):
+        cx, cy = rnd.uniform(b0, b1), rnd.uniform(GROUND + 30, BOTTOM - 20)
+        g.pen("mei", 0.5).fill([(cx - 6, cy), (cx + 6, cy), (cx, cy - 8)])
+    # 礁石滩：黑的石头面，退了潮的水洼
+    g.clear(rect_pts(r0, GROUND, r1 - r0, BOTTOM - GROUND + 40))
+    g.pen("ink", 0.42).fill(rect_pts(r0, GROUND, r1 - r0, BOTTOM - GROUND + 40))
+    fhatch(g, "ink", r0, GROUND, r1 - r0, BOTTOM - GROUND + 40, 55, 12, 1.0, 0.45)
+    tp = sp["tide_pool"]
+    for (px, py, pw, ph) in ((tp - 60, GROUND + 40, 110, 16), (tp + 120, GROUND + 90, 80, 12), (tp - 200, GROUND + 120, 70, 10), (tp + 20, GROUND + 160, 140, 18)):
+        g.clear(ellipse_pts(px, py, pw, ph))
+        g.pen("qing", 0.5).fill(ellipse_pts(px, py, pw, ph))
+        g.ink.ellipse(px, py, pw, ph, lw=2)
+        g.clear(rect_pts(px - pw * 0.5, py - ph * 0.3, pw * 0.4, 2.4), colors=["qing"])
+    # 一只小螃蟹、一条海星、几缕海草
+    cx = tp + 60
+    g.pen("ink", 0.8).fill(ellipse_pts(cx, GROUND + 34, 9, 6))
+    for s in (-1, 1):
+        g.ink.line([(cx + 8 * s, GROUND + 34), (cx + 16 * s, GROUND + 28), (cx + 18 * s, GROUND + 36)], 1.4)
+    for k in range(5):
+        a = -math.pi / 2 + k * math.tau / 5
+        g.pen("mei", 0.7).line([(tp - 140, GROUND + 70), (tp - 140 + math.cos(a) * 12, GROUND + 70 + math.sin(a) * 12)], 4, amp=0.1)
+    for k in range(6):
+        sx2 = r0 + 40 + k * 110
+        g.qing.line([(sx2, GROUND + 2), (sx2 + 6, GROUND - 14), (sx2 - 2, GROUND - 26)], 2.2, amp=0.6)
+    # 水泥堤：一块块大方砖
+    g.clear(rect_pts(p0, GROUND, W - p0 + 50, BOTTOM - GROUND + 40))
+    g.pen("ink", 0.2).fill(rect_pts(p0, GROUND, W - p0 + 50, 30))
+    g.pen("ink", 0.12).fill(rect_pts(p0, GROUND + 30, W - p0 + 50, BOTTOM - GROUND))
+    fbricks(g, p0, GROUND + 30, W - p0 + 50, BOTTOM - GROUND, 140, 46, 1.2, 0.4, seed=219)
+    g.ink.line([(-50, GROUND), (W + 50, GROUND)], 4.5, amp=0.6)
+    g.ink.line([(-50, GROUND + 30), (b0, GROUND + 30)], 2.6, amp=0.4)
+    g.ink.line([(p0, GROUND + 30), (W + 50, GROUND + 30)], 2.6, amp=0.4)
+
+
+def corn(g, x, base, h=270, seed=1, ear=True):
+    """一棵玉米：墨色的秆子，青色的长叶子从秆上拱出去再耷拉下来，顶上梅色的穗，腰上一个梅色的棒子。"""
+    rnd = random.Random(seed)
+    top = base - h
+    g.ink.line([(x, base), (x + rnd.uniform(-6, 6), top)], 3.2, amp=0.4)
+    for k in range(6):
+        y = base - h * (0.16 + 0.13 * k)
+        s = 1 if k % 2 else -1
+        L = rnd.uniform(95, 130) * (1.1 - k * 0.09)
+        # 一片叶子：一道二次曲线，先往上拱、再往下耷拉，根上宽、梢上尖
+        A = (x, y)
+        C = (x + s * L * 0.45, y - L * rnd.uniform(0.38, 0.5))
+        B = (x + s * L, y + L * rnd.uniform(0.05, 0.25))
+        mid, up, dn = [], [], []
+        for i in range(13):
+            t = i / 12
+            px = (1 - t) ** 2 * A[0] + 2 * (1 - t) * t * C[0] + t * t * B[0]
+            py = (1 - t) ** 2 * A[1] + 2 * (1 - t) * t * C[1] + t * t * B[1]
+            dx = 2 * (1 - t) * (C[0] - A[0]) + 2 * t * (B[0] - C[0])
+            dy = 2 * (1 - t) * (C[1] - A[1]) + 2 * t * (B[1] - C[1])
+            n = math.hypot(dx, dy) or 1.0
+            w = 6.5 * math.sin(math.pi * min(1.0, t * 1.15 + 0.08)) * (1 - t * 0.6)
+            mid.append((px, py))
+            up.append((px - dy / n * w, py + dx / n * w))
+            dn.append((px + dy / n * w, py - dx / n * w))
+        g.pen("qing", 0.55).fill(up + dn[::-1])
+        g.pen("qing").line(mid, 1.0, amp=0.1)
+    for k in range(5):
+        a = -math.pi / 2 + (k - 2) * 0.35
+        g.pen("mei", 0.8).line([(x, top), (x + math.cos(a) * 26, top + math.sin(a) * 26 + 10)], 1.6, amp=0.2)
+    if ear:
+        ey = base - h * 0.5
+        g.clear(ellipse_pts(x + 9, ey, 7, 22))
+        g.pen("mei", 0.5).fill(ellipse_pts(x + 9, ey, 7, 22))
+        g.ink.ellipse(x + 9, ey, 7, 22, lw=1.4)
+        g.pen("mei", 0.8).line([(x + 9, ey - 22), (x + 14, ey - 34)], 1.6, amp=0.4)
+
+
+def corn_string(g, x, y, n=7):
+    """屋檐底下挂的一嘟噜玉米（晒干了留种）。"""
+    g.ink.line([(x, y), (x, y + 14)], 1.4)
+    for k in range(n):
+        cx = x + (k - n / 2) * 7
+        cy = y + 18 + k * 9
+        g.clear(ellipse_pts(cx, cy + 12, 7, 15))
+        g.pen("mei", 0.62).fill(ellipse_pts(cx, cy + 12, 7, 15))
+        g.ink.ellipse(cx, cy + 12, 7, 15, lw=1.1)
+
+
+def hen(g, x, base, facing=1, peck=False):
+    f = facing
+    body = ellipse_pts(x, base - 20, 17, 13)
+    g.clear(body)
+    g.pen("ink", 0.05).fill(body)
+    g.ink.poly(body, w=1.6, amp=0.3)
+    hx, hy = (x + 16 * f, base - 18) if peck else (x + 14 * f, base - 38)
+    g.clear(circle_pts(hx, hy, 7))
+    g.ink.circle(hx, hy, 7, lw=1.4)
+    g.pen("mei").fill([(hx - 4, hy - 6), (hx + 2, hy - 12), (hx + 5, hy - 5)])
+    g.pen("mei", 0.9).fill([(hx + 6 * f, hy), (hx + 12 * f, hy + 2), (hx + 6 * f, hy + 4)])
+    g.ink.line([(x - 15 * f, base - 26), (x - 24 * f, base - 40)], 3, amp=0.2)
+    g.ink.line([(x - 3, base - 8), (x - 4, base)], 1.4)
+    g.ink.line([(x + 4, base - 8), (x + 5, base)], 1.4)
+
+
+def draw_village(g, sc):
+    W = sc["width"]
+    sp, ex, zs = sc["spots"], sc["exits"], sc["zones"]
+    z = lambda k: zs[k]["span"]  # noqa: E731
+    HZ = GROUND - 190
+    sky(g, W, seed=301, horizon=HZ)
+    layer_note("far_base", HZ)
+    v0, v1 = z("village_gate")
+    y0, y1 = z("grandma_yard")
+    c0, c1 = z("cornfield")
+    k0, k1 = z("creek")
+    t0, t1 = z("threshing")
+    # ---- 远处的地：一垄一垄铺到天边，麦茬、豆子地、菜地 ----
+    g.clear(rect_pts(-40, HZ, W + 80, GROUND - HZ))
+    rnd = random.Random(303)
+    yy = HZ
+    k = 0
+    while yy < GROUND:
+        hh = 6 + (yy - HZ) * 0.18
+        col, d = (("mei", 0.2), ("qing", 0.14), ("mei", 0.28), ("mei", 0.12), ("qing", 0.2))[k % 5]
+        g.pen(col, d).fill(rect_pts(-40, yy, W + 80, hh))
+        fline(g, "ink", [(-40, yy), (W + 40, yy)], 0.8, 0.35)
+        yy += hh
+        k += 1
+    # 地里的人家：远处一溜矮房子、一个草垛
+    for (fx, fw) in ((420, 90), (1720, 140), (2280, 70), (3140, 110)):
+        g.pen("mei", 0.3).fill(rect_pts(fx, HZ + 4, fw, 16))
+        g.pen("ink", 0.3).fill([(fx - 4, HZ + 6), (fx + fw / 2, HZ - 6), (fx + fw + 4, HZ + 6)])
+    # 河沟往远处去：一道青色，越远越细
+    kc = sp["creek_bank"]
+    # 河沟从侧面看：地平线底下一道矮矮的、平的水，岸上一道土坎（石板搭在路上，见最后）
+    cb0, cb1 = kc - 300, kc + 300
+    cy0, cy1 = GROUND - 34, GROUND - 4
+    g.clear(rect_pts(cb0, cy0 - 8, cb1 - cb0, cy1 - cy0 + 8))
+    g.pen("mei", 0.3).fill(rect_pts(cb0, cy0 - 8, cb1 - cb0, 8))
+    g.pen("qing", 0.5).fill(rect_pts(cb0, cy0, cb1 - cb0, cy1 - cy0))
+    for k in range(10):
+        rx = cb0 + 30 + k * 56
+        ry = cy0 + 8 + (k % 3) * 7
+        fline(g, "qing", [(rx, ry), (rx + 30, ry)], 1.6, 0.9)
+    for k in range(6):
+        g.clear(rect_pts(cb0 + 50 + k * 90, cy0 + 4 + (k % 2) * 10, 18, 2.2), colors=["qing"])
+    g.ink.line([(cb0, cy0 - 8), (cb1, cy0 - 8)], 1.6, amp=0.4)
+    g.qing.line([(cb0, cy0), (cb1, cy0)], 1.4, amp=0.2)
+    # ---- 村口：大槐树、电线杆上一只大喇叭、一个石碾子 ----
+    tree(g, v0 + 300, GROUND, 680, 210, "huai", seed=305)
+    px = v0 + 540
+    g.ink.line([(px - 4, GROUND), (px - 2, GROUND - 520)], 9, amp=0.6)
+    g.ink.line([(px - 40, GROUND - 490), (px + 40, GROUND - 490)], 4)
+    horn = [(px + 2, GROUND - 450), (px + 64, GROUND - 478), (px + 64, GROUND - 422)]
+    g.clear(horn)
+    g.pen("ink", 0.4).fill(horn)
+    g.ink.poly(horn, w=2.4, amp=0.2)
+    g.ink.ellipse(px + 64, GROUND - 450, 6, 28, lw=2.2)
+    fline(g, "ink", [(px - 2, GROUND - 486), (px + 2 - 30, GROUND - 400), (px + 6, GROUND - 300)], 1.2, 0.8)
+    # 坐车回去的地方：路边一块班车的牌子
+    sx = ex["to_home"][0]
+    g.ink.line([(sx - 40, GROUND), (sx - 40, GROUND - 250)], 4)
+    g.clear(rect_pts(sx - 70, GROUND - 290, 60, 90))
+    g.pen("qing").fill(rect_pts(sx - 70, GROUND - 290, 60, 90))
+    g.ink.rect(sx - 70, GROUND - 290, 60, 90, lw=2.2)
+    knock(g, "qing", "班车", sx - 40, GROUND - 245, 22, vertical=True)
+    # 石碾子
+    rx = v0 + 200
+    g.clear(rect_pts(rx - 60, GROUND - 26, 120, 26))
+    g.pen("ink", 0.3).fill(rect_pts(rx - 60, GROUND - 26, 120, 26))
+    g.ink.rect(rx - 60, GROUND - 26, 120, 26, lw=2.2)
+    g.clear(rect_pts(rx - 40, GROUND - 70, 80, 44))
+    g.pen("ink", 0.4).fill(rect_pts(rx - 40, GROUND - 70, 80, 44))
+    fhatch(g, "ink", rx - 40, GROUND - 70, 80, 44, 0, 9, 1.0, 0.5)
+    g.ink.rect(rx - 40, GROUND - 70, 80, 44, lw=2.2)
+    # ---- 姥姥家：红砖瓦房，门楼贴着褪了色的对联；前墙剖开，看得见炕 ----
+    eave = GROUND - 300
+    hx0, hx1 = y0 + 100, y0 + 600
+    # 院子后墙
+    g.clear(rect_pts(y0, GROUND - 190, y1 - y0, 190))
+    g.pen("mei", 0.4).fill(rect_pts(y0, GROUND - 190, y1 - y0, 190))
+    fbricks(g, y0, GROUND - 190, y1 - y0, 190, 30, 11, 0.9, 0.4, seed=307)
+    g.clear(rect_pts(y0 - 6, GROUND - 204, y1 - y0 + 12, 16))
+    g.pen("ink", 0.4).fill(rect_pts(y0 - 6, GROUND - 204, y1 - y0 + 12, 16))
+    g.ink.rect(y0 - 6, GROUND - 204, y1 - y0 + 12, 16, lw=2.2)
+    # 正房
+    g.clear(rect_pts(hx0, eave, hx1 - hx0, GROUND - eave))
+    g.pen("mei", 0.5).fill(rect_pts(hx0, eave, hx1 - hx0, GROUND - eave))
+    fbricks(g, hx0, eave, hx1 - hx0, GROUND - eave, 30, 11, 0.9, 0.4, seed=309)
+    roof = [(hx0 - 40, eave + 6), (hx0 + 30, eave - 110), (hx1 - 30, eave - 110), (hx1 + 40, eave + 6)]
+    g.clear(roof)
+    g.pen("ink", 0.45).fill(roof)
+    with g.clip(roof):
+        for xx in range(int(hx0) - 30, int(hx1) + 40, 13):
+            fline(g, "ink", [(xx + 26, eave - 106), (xx, eave + 4)], 1.2, 0.8)
+    g.ink.poly(roof, w=3, amp=0.4)
+    g.ink.line([(hx0 + 20, eave - 116), (hx1 - 20, eave - 116)], 7, amp=0.3)
+    for ex2 in (hx0 + 26, hx1 - 26):
+        g.pen("ink").fill([(ex2 - 10, eave - 116), (ex2 + 10, eave - 116), (ex2, eave - 140)])
+    # 剖开的那一间：炕、蚊帐、窗台、墙上的年画
+    rb0, rb1 = hx0 + 14, hx0 + 270
+    g.clear(rect_pts(rb0, eave + 14, rb1 - rb0, GROUND - eave - 14))
+    g.pen("mei", 0.08).fill(rect_pts(rb0, eave + 14, rb1 - rb0, GROUND - eave - 14))
+    g.pen("ink", 0.08).fill(rect_pts(rb0, eave + 14, rb1 - rb0, GROUND - eave - 14))
+    cut_wall(g, hx0 + 7, eave, GROUND, 16, "mei")
+    cut_wall(g, rb1 + 8, eave, GROUND, 16, "mei")
+    kx = sp["yard_bed"]
+    kang = rect_pts(rb0, GROUND - 92, rb1 - rb0, 92)
+    g.clear(kang)
+    g.pen("mei", 0.45).fill(kang)
+    fbricks(g, rb0, GROUND - 92, rb1 - rb0, 92, 30, 11, 0.9, 0.4, seed=311)
+    g.ink.rect(rb0, GROUND - 92, rb1 - rb0, 92, lw=2.6)
+    g.clear(rect_pts(rb0, GROUND - 100, rb1 - rb0, 10))
+    g.pen("qing", 0.45).fill(rect_pts(rb0, GROUND - 100, rb1 - rb0, 10))
+    g.ink.rect(rb0, GROUND - 100, rb1 - rb0, 10, lw=1.8)
+    # 叠好的被子、枕头
+    quilt = [(kx + 40, GROUND - 100), (kx + 40, GROUND - 150), (kx + 120, GROUND - 150), (kx + 120, GROUND - 100)]
+    g.clear(quilt)
+    g.pen("mei", 0.75).fill(quilt)
+    g.ink.poly(quilt, w=2, amp=0.3)
+    for k in range(3):
+        fline(g, "ink", [(kx + 40, GROUND - 112 - k * 12), (kx + 120, GROUND - 112 - k * 12)], 1.2, 0.6)
+    g.clear(ellipse_pts(kx - 60, GROUND - 110, 30, 10))
+    g.pen("qing", 0.3).fill(ellipse_pts(kx - 60, GROUND - 110, 30, 10))
+    g.ink.ellipse(kx - 60, GROUND - 110, 30, 10, lw=1.6)
+    # 蚊帐：从房梁上吊下来，半透的一层网
+    net = [(rb0 + 10, eave + 30), (rb1 - 10, eave + 30), (rb1 - 4, GROUND - 100), (rb0 + 4, GROUND - 100)]
+    g.pen("ink", 0.06).fill(net)
+    g.ink.poly(net, w=1.0, amp=0.4)
+    for k in range(6):
+        fline(g, "ink", [(rb0 + 20 + k * 44, eave + 32), (rb0 + 16 + k * 45, GROUND - 102)], 0.7, 0.4)
+    frame_pic(g, rb0 + 30, eave + 50, 60, 76, "mei", "two")
+    # 堂屋：门上挂着帘子，窗户是木格子；屋檐下挂着玉米
+    dx = sp["yard_table"] - 10
+    g.clear(rect_pts(dx - 50, GROUND - 210, 100, 210))
+    g.pen("ink", 0.6).fill(rect_pts(dx - 50, GROUND - 210, 100, 210))
+    g.clear(rect_pts(dx - 44, GROUND - 204, 88, 170))
+    g.pen("qing", 0.35).fill(rect_pts(dx - 44, GROUND - 204, 88, 170))
+    for k in range(5):
+        fline(g, "qing", [(dx - 40 + k * 20, GROUND - 204), (dx - 40 + k * 20, GROUND - 34)], 2.4, 1.0)
+    g.ink.rect(dx - 50, GROUND - 210, 100, 210, lw=2.8)
+    wx = hx1 - 52
+    g.clear(rect_pts(wx - 45, eave + 60, 90, 110))
+    g.pen("mei", 0.08).fill(rect_pts(wx - 45, eave + 60, 90, 110))
+    for k in range(1, 5):
+        fline(g, "ink", [(wx - 45 + k * 18, eave + 60), (wx - 45 + k * 18, eave + 170)], 1.4, 0.9)
+    for k in range(1, 6):
+        fline(g, "ink", [(wx - 45, eave + 60 + k * 18), (wx + 45, eave + 60 + k * 18)], 1.4, 0.9)
+    g.ink.rect(wx - 45, eave + 60, 90, 110, lw=2.6)
+    mark("window_light", wx, eave + 115)
+    for k, cx in enumerate((rb1 + 32, rb1 + 64)):
+        corn_string(g, cx, eave + 6, 6 + k % 2)
+    # 蒜辫子
+    gx0 = rb1 + 104
+    g.ink.line([(gx0, eave + 6), (gx0, eave + 18)], 1.4)
+    for k in range(7):
+        cx, cy = gx0 + (3 if k % 2 else -3), eave + 24 + k * 9
+        g.clear(circle_pts(cx, cy, 6.5))
+        g.pen("mei", 0.12).fill(circle_pts(cx, cy, 6.5))
+        g.ink.circle(cx, cy, 6.5, lw=1.1)
+    # 院里一盏灯：屋檐下一只灯泡
+    bulb(g, dx, eave + 8, 30)
+    # 小方桌、小板凳、一把蒲扇、两只碗
+    tx = sp["yard_table"]
+    table(g, tx - 10, GROUND, 110, 54)
+    for bx2 in (tx - 34, tx + 6):
+        g.clear(ellipse_pts(bx2, GROUND - 60, 13, 6))
+        g.ink.ellipse(bx2, GROUND - 60, 13, 6, lw=1.6)
+        g.qing.line([(bx2 - 10, GROUND - 60), (bx2 + 10, GROUND - 60)], 1.6)
+    g.pen("mei", 0.3).fill(ellipse_pts(tx + 34, GROUND - 58, 18, 6))
+    g.ink.line([(tx + 50, GROUND - 58), (tx + 66, GROUND - 56)], 2)
+    stool(g, tx - 90, GROUND, "ink", 34, 26)
+    stool(g, tx + 70, GROUND, "ink", 34, 26)
+    # 压水井：铁杆子一压，水从嘴里出来，底下一只水桶
+    pw = hx1 + 50
+    g.clear(rect_pts(pw - 12, GROUND - 120, 24, 120))
+    g.pen("ink", 0.55).fill(rect_pts(pw - 12, GROUND - 120, 24, 120))
+    g.ink.rect(pw - 12, GROUND - 120, 24, 120, lw=2.2)
+    g.ink.line([(pw + 10, GROUND - 100), (pw + 34, GROUND - 92)], 6)
+    g.ink.line([(pw - 6, GROUND - 124), (pw - 70, GROUND - 170)], 5)
+    g.pen("qing", 0.6).line([(pw + 34, GROUND - 90), (pw + 36, GROUND - 52)], 3, amp=0.6)
+    bucket = [(pw + 18, GROUND - 46), (pw + 58, GROUND - 46), (pw + 52, GROUND), (pw + 24, GROUND)]
+    g.clear(bucket)
+    g.pen("ink", 0.25).fill(bucket)
+    g.ink.poly(bucket, w=2, amp=0.2)
+    g.pen("qing", 0.5).fill(ellipse_pts(pw + 38, GROUND - 46, 20, 4))
+    g.clear(rect_pts(pw - 40, GROUND - 6, 80, 6))
+    g.pen("ink", 0.4).fill(rect_pts(pw - 40, GROUND - 6, 80, 6))
+    # 晒着的玉米：一领苇席上摊开一片
+    mx0 = hx0 - 90
+    g.pen("mei", 0.25).fill([(mx0 - 60, GROUND), (mx0 - 50, GROUND - 12), (mx0 + 60, GROUND - 12), (mx0 + 70, GROUND)])
+    fhatch(g, "ink", mx0 - 60, GROUND - 12, 130, 12, 30, 8, 0.8, 0.4)
+    for k in range(7):
+        cx = mx0 - 44 + k * 15
+        g.clear(ellipse_pts(cx, GROUND - 16, 6, 4))
+        g.pen("mei", 0.7).fill(ellipse_pts(cx, GROUND - 16, 6, 4))
+        g.ink.ellipse(cx, GROUND - 16, 6, 4, lw=0.9)
+    # 鸡窝：靠着后墙，砖垒的小房子，门口几只鸡
+    cx = sp["yard_chicken"]
+    coop = [(cx - 30, GROUND), (cx - 30, GROUND - 90), (cx + 64, GROUND - 106), (cx + 64, GROUND)]
+    g.clear(coop)
+    g.pen("mei", 0.3).fill(coop)
+    g.pen("ink", 0.16).fill(coop)
+    fbricks(g, cx - 30, GROUND - 106, 94, 106, 20, 9, 0.8, 0.4, seed=313)
+    g.ink.poly(coop, w=2.4, amp=0.3)
+    g.clear(rect_pts(cx - 4, GROUND - 44, 40, 44))
+    g.pen("ink", 0.7).fill(rect_pts(cx - 4, GROUND - 44, 40, 44))
+    g.ink.rect(cx - 4, GROUND - 44, 40, 44, lw=2)
+    hen(g, cx - 64, GROUND, 1, True)
+    hen(g, cx + 50, GROUND, -1)
+    hen(g, cx + 10, GROUND - 98, 1)
+    g.pen("ink", 0.3).fill(ellipse_pts(cx - 10, GROUND - 3, 24, 4))
+    for k in range(10):
+        g.mei.dot(cx - 70 + (k * 37) % 120, GROUND + 4 + (k * 13) % 14, 1.6)
+    # 门楼：院子的大门开在右手，两扇木门敞着，对联褪成粉的
+    gx = y1 - 50
+    g.clear(rect_pts(gx - 60, GROUND - 250, 120, 250))
+    g.pen("mei", 0.5).fill(rect_pts(gx - 60, GROUND - 250, 120, 250))
+    fbricks(g, gx - 60, GROUND - 250, 120, 250, 20, 9, 0.8, 0.4, seed=315)
+    groof = [(gx - 84, GROUND - 246), (gx - 60, GROUND - 290), (gx + 60, GROUND - 290), (gx + 84, GROUND - 246)]
+    g.clear(groof)
+    g.pen("ink", 0.5).fill(groof)
+    g.ink.poly(groof, w=2.4, amp=0.3)
+    g.clear(rect_pts(gx - 38, GROUND - 200, 76, 200))
+    g.pen("ink", 0.62).fill(rect_pts(gx - 38, GROUND - 200, 76, 200))
+    g.ink.rect(gx - 38, GROUND - 200, 76, 200, lw=2.4)
+    for s in (-1, 1):
+        g.clear(rect_pts(gx + s * 50 - 7, GROUND - 196, 14, 120))
+        g.pen("mei", 0.55).fill(rect_pts(gx + s * 50 - 7, GROUND - 196, 14, 120))
+    g.clear(rect_pts(gx - 34, GROUND - 236, 68, 22))
+    g.pen("mei", 0.55).fill(rect_pts(gx - 34, GROUND - 236, 68, 22))
+    # ---- 玉米地：一人多高，田埂边上留一道口子，锄头靠着，一筐掰下来的棒子 ----
+    cr = sp["corn_row"]
+    rnd = random.Random(319)
+    x = c0 + 20
+    i = 0
+    while x < c1 - 10:
+        if abs(x - cr) > 70:
+            corn(g, x, GROUND - 16, rnd.uniform(250, 290), seed=321 + i, ear=rnd.random() < 0.6)
+        x += rnd.uniform(26, 38)
+        i += 1
+    x = c0 + 36
+    while x < c1 - 10:
+        if abs(x - cr) > 50:
+            corn(g, x, GROUND, rnd.uniform(240, 280), seed=421 + i, ear=rnd.random() < 0.5)
+        x += rnd.uniform(34, 50)
+        i += 1
+    g.ink.line([(cr + 60, GROUND), (cr + 30, GROUND - 150)], 3)
+    g.pen("ink").fill([(cr + 22, GROUND - 150), (cr + 50, GROUND - 156), (cr + 46, GROUND - 140)])
+    basket(g, cr - 70, GROUND, 74, 46)
+    for k in range(5):
+        g.clear(ellipse_pts(cr - 92 + k * 11, GROUND - 52, 6, 15))
+        g.pen("mei", 0.6).fill(ellipse_pts(cr - 92 + k * 11, GROUND - 52, 6, 15))
+        g.ink.ellipse(cr - 92 + k * 11, GROUND - 52, 6, 15, lw=1.0)
+    # 稻草人
+    sr = c1 - 150
+    g.ink.line([(sr, GROUND), (sr, GROUND - 300)], 4)
+    g.ink.line([(sr - 60, GROUND - 230), (sr + 60, GROUND - 236)], 4)
+    g.clear(circle_pts(sr, GROUND - 300, 20))
+    g.pen("mei", 0.3).fill(circle_pts(sr, GROUND - 300, 20))
+    g.ink.circle(sr, GROUND - 300, 20, lw=2)
+    g.pen("ink", 0.5).fill([(sr - 34, GROUND - 312), (sr + 34, GROUND - 312), (sr, GROUND - 336)])
+    shirt = [(sr - 50, GROUND - 232), (sr + 50, GROUND - 238), (sr + 30, GROUND - 160), (sr - 30, GROUND - 160)]
+    g.clear(shirt)
+    g.pen("qing", 0.5).fill(shirt)
+    g.ink.poly(shirt, w=2, amp=0.5)
+    # 电线杆和电线：沿着土路走
+    poles = [px, y1 + 60, c1 + 40, t0 + 200]
+    tops = [GROUND - 486, pole(g, poles[1], GROUND + 10, 500), pole(g, poles[2], GROUND + 10, 500), pole(g, poles[3], GROUND + 10, 500)]
+    wires(g, poles, tops[1] + 2, 46, 2)
+    # ---- 河沟：两岸的柳树、芦苇，沟上搭一块石板 ----
+    tree(g, k0 + 60, GROUND, 560, 140, "willow", seed=323)
+    tree(g, k1 - 80, GROUND, 520, 130, "willow", seed=325)
+    for k in range(4):
+        rx = (k0 + 140 + k * 26) if k < 2 else (k1 - 180 + k * 22)
+        for j in range(6):
+            g.qing.line([(rx + j * 5, GROUND), (rx + j * 5 + (j - 3) * 4, GROUND - 60 - j * 6)], 2.2, amp=0.4)
+    # ---- 晒场：一大片压平的地，碌碡、麦秸垛、一张苇席 ----
+    for (hx, hw, hh) in ((t1 - 160, 220, 210), (t1 + 40, 180, 170)):
+        stack = [(hx - hw / 2, GROUND)] + [(hx + hw / 2 * math.cos(math.pi - math.pi * i / 12), GROUND - hh * 0.55 - hh * 0.45 * math.sin(math.pi * i / 12)) for i in range(13)] + [(hx + hw / 2, GROUND)]
+        g.clear(stack)
+        g.pen("mei", 0.34).fill(stack)
+        g.pen("ink", 0.08).fill(stack)
+        with g.clip(stack):
+            fhatch(g, "ink", hx - hw / 2, GROUND - hh, hw, hh, 70, 10, 1.0, 0.5)
+        g.ink.poly(stack, w=2.4, amp=0.8)
+        g.ink.line([(hx, GROUND - hh), (hx + 4, GROUND - hh - 26)], 2.4)
+    roller = t0 + 140
+    g.clear(rect_pts(roller - 50, GROUND - 64, 100, 64))
+    g.pen("ink", 0.4).fill(rect_pts(roller - 50, GROUND - 64, 100, 64))
+    fhatch(g, "ink", roller - 50, GROUND - 64, 100, 64, 0, 10, 1.4, 0.6)
+    g.ink.rect(roller - 50, GROUND - 64, 100, 64, lw=2.6)
+    g.ink.ellipse(roller + 50, GROUND - 32, 8, 32, lw=2.4)
+    g.ink.line([(roller - 50, GROUND - 32), (roller - 130, GROUND - 6)], 3)
+    g.ink.line([(roller + 50, GROUND - 32), (roller - 120, GROUND - 2)], 3)
+    th = sp["threshing_ground"]
+    mat = [(th - 100, GROUND + 2), (th - 86, GROUND - 10), (th + 92, GROUND - 10), (th + 104, GROUND + 2)]
+    g.pen("mei", 0.3).fill(mat)
+    fhatch(g, "ink", th - 100, GROUND - 10, 204, 12, 20, 7, 0.8, 0.45)
+    g.ink.poly(mat, w=1.6, amp=0.3)
+    # 木杈子靠在草垛上
+    g.ink.line([(t1 - 290, GROUND), (t1 - 230, GROUND - 230)], 3)
+    for s in (-8, 0, 8):
+        g.ink.line([(t1 - 230, GROUND - 230), (t1 - 226 + s, GROUND - 262)], 2)
+    # ---- 地：土路（梅 + 墨，车辙），晒场压得平，河沟上一块石板 ----
+    g.clear(rect_pts(-50, GROUND, W + 100, BOTTOM - GROUND + 60))
+    g.pen("mei", 0.32).fill(rect_pts(-50, GROUND, W + 100, BOTTOM - GROUND + 60))
+    g.pen("ink", 0.1).fill(rect_pts(-50, GROUND, W + 100, BOTTOM - GROUND + 60))
+    g.pen("mei", 0.2).fill(rect_pts(-50, GROUND, W + 100, 30))
+    rnd = random.Random(327)
+    for i in range(int(W / 4)):
+        g.ink.dot(rnd.uniform(-40, W + 40), rnd.uniform(GROUND + 4, BOTTOM), rnd.uniform(0.6, 1.5))
+    for yy in (GROUND + 90, GROUND + 104, GROUND + 160, GROUND + 174):
+        pts = [(x, yy + 4 * math.sin(x * 0.004 + yy)) for x in range(-40, int(W) + 60, 60)]
+        fline(g, "ink", pts, 2.0, 0.35)
+    # 路边的草
+    for i in range(int(W / 50)):
+        gx2 = rnd.uniform(-20, W + 20)
+        gy = rnd.uniform(GROUND + 30, GROUND + 60)
+        for j in range(4):
+            g.qing.line([(gx2 + j * 4, gy), (gx2 + j * 4 + (j - 1.5) * 4, gy - rnd.uniform(10, 22))], 1.6, amp=0.2)
+    # 晒场的地面：抹得平，淡一点
+    g.clear(rect_pts(t0, GROUND, t1 - t0 + 50, 30), colors=["ink"])
+    g.pen("mei", 0.12).fill(rect_pts(t0, GROUND, t1 - t0 + 50, 30))
+    # 河沟：路在这儿被一道沟切开，水在底下，上头搭一块石板
+    ch0, ch1 = kc - 150, kc + 150
+    g.clear(rect_pts(ch0, GROUND + 26, ch1 - ch0, BOTTOM - GROUND + 40))
+    bank = [(ch0, GROUND + 20), (ch0 + 40, GROUND + 120), (ch1 - 40, GROUND + 120), (ch1, GROUND + 20)]
+    g.pen("mei", 0.3).fill(rect_pts(ch0, GROUND + 26, ch1 - ch0, BOTTOM - GROUND + 40))
+    g.pen("ink", 0.2).fill(rect_pts(ch0, GROUND + 26, ch1 - ch0, BOTTOM - GROUND + 40))
+    g.clear(bank)
+    g.pen("qing", 0.55).fill(bank)
+    for k in range(5):
+        fline(g, "qing", [(ch0 + 30 + k * 50, GROUND + 50 + k * 12), (ch0 + 70 + k * 50, GROUND + 50 + k * 12)], 2.2, 0.9)
+    g.clear(rect_pts(ch0 + 50, GROUND + 60, 30, 2.4), colors=["qing"])
+    g.ink.poly(bank, w=2.2, amp=0.5)
+    for k in range(3):
+        fx = ch0 + 90 + k * 50
+        g.pen("ink", 0.7).fill(ellipse_pts(fx, GROUND + 80 + (k % 2) * 16, 9, 3))
+    slab_pts = rect_pts(ch0 - 30, GROUND, ch1 - ch0 + 60, 28)
+    g.clear(slab_pts)
+    g.pen("ink", 0.3).fill(slab_pts)
+    fhatch(g, "ink", ch0 - 30, GROUND, ch1 - ch0 + 60, 28, 20, 9, 1.0, 0.5)
+    g.ink.rect(ch0 - 30, GROUND, ch1 - ch0 + 60, 28, lw=2.6, amp=0.4)
+    g.ink.line([(-50, GROUND), (W + 50, GROUND)], 4.0, amp=0.8)
+
+
 DRAW = {
     "building": draw_building,
     "street": draw_street,
@@ -2179,6 +3610,9 @@ DRAW = {
     "newhome": draw_newhome,
     "park": draw_park,
     "hospital": draw_hospital,
+    "market": draw_market,
+    "seaside": draw_seaside,
+    "village": draw_village,
 }
 
 

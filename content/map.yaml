@@ -643,3 +643,134 @@ actions:
     needs: { energy: -6, mood: -3 }
     kid: { mind: 3.6 }
     together: { needs: { mood: 3 }, bond: { close: 1 }, text: 走廊里一排长椅，坐的都是等孩子的。你们俩挨着，把一份报纸分成两半看。 }
+
+  # ---- 门外的世界（outside/SPEC.md 第二节）：三档人家夏天见到的三个地方，和看病、送饭 ----
+  # 早市（maps/market.yaml）：清贫人家的孩子六岁起就来，别人十八岁以后。被夏天那件事带进来的对门也做得了这几样，所以不写家境，图的锁管谁进得来
+  - id: soy_milk
+    label: 喝碗豆浆
+    quick: true
+    minutes: 20
+    money: -1
+    requires: { hours: [390, 660] }
+    needs: { hunger: 30, mood: 3 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 折叠桌上两只碗，一个吹着喝，一个等它凉了一口闷。 }
+  # 帮家里卖菜：比楼下帮家里干活短，长的是见人的本事和算账
+  - id: stall_sell
+    label: 帮着卖菜
+    menu: true
+    minutes: 60
+    money: 2
+    requires: { minAge: 6, maxAge: 17, hours: [390, 720] }
+    needs: { energy: -8 }
+    stats: { charm: 0.25, mind: 0.1 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 一个看秤，一个装袋。找零的时候两个人同时伸手，把一张毛票撕成了两半。 }
+  - id: market_walk
+    label: 在早市上转转
+    minutes: 40
+    requires: { hours: [390, 720] }
+    needs: { mood: 4, energy: -3 }
+    stats: { charm: 0.12 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 从这头挤到那头，一人手里多了一根人家给尝的黄瓜。 }
+  - id: buy_veg
+    label: 买菜
+    menu: true
+    quick: true
+    minutes: 20
+    money: -2
+    requires: { minAge: 22, hours: [390, 720] }
+    needs: { mood: 3 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 一个挑，一个跟人讲价，讲下来的五毛钱，买了一把香菜。 }
+  # 卸货：最累，挣得比码头的夜活多一点，长的是体魄。十八岁以后谁都能来，到二十一岁（往后有码头的夜活）
+  - id: haul_crate
+    label: 帮批发的卸菜
+    minutes: 90
+    money: 3
+    requires: { minAge: 12, maxAge: 21, hours: [390, 660] }
+    needs: { energy: -16, hunger: -8 }
+    stats: { body: 0.35 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 两个人抬一筐，一个喊一二，一个喊三，筐落地的时候谁也没喊。 }
+  - id: scrap_sell
+    label: 把攒的瓶子拿去卖
+    minutes: 30
+    money: 1
+    requires: { minAge: 6, maxAge: 13 }
+    needs: { mood: 2 }
+    stats: { mind: 0.08 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 两个人蹲在秤边上数瓶子，数到第四十一个，收废品的说不用数了，按四十二算。 }
+
+  # 海边（maps/seaside.yaml）、乡下（maps/village.yaml）：只有被夏天那件事送去的人在，所以不写家境。被叫上一块儿去的对门也做得了
+  - id: shell_buy
+    label: 买一串贝壳
+    quick: true
+    minutes: 15
+    money: -1
+    needs: { mood: 6 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 一串贝壳拆成两半，一人一半，回去各挂各家的门上。 }
+  - id: sea_swim
+    label: 下海
+    minutes: 90
+    requires: { minAge: 6, hours: [540, 1080] }
+    needs: { energy: -14, hunger: -10, mood: 4 }
+    stats: { body: 0.5 }
+    together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 一个浪打过来，两个人手拉着手往上蹦，蹦晚了，一嘴咸水。 }
+  - id: sand_castle
+    label: 堆沙子
+    minutes: 60
+    needs: { mood: 8, energy: -4 }
+    stats: { mind: 0.15 }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 一个挖沟，一个垒墙。水上来了，两个人拿身子挡了一回。 }
+  - id: tide_dig
+    label: 去礁石上赶海
+    minutes: 90
+    requires: { hours: [390, 780] }
+    needs: { energy: -8, hunger: -6 }
+    stats: { body: 0.2, mind: 0.25 }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 一个翻石头，一个拿小桶接。螃蟹横着跑了，两个人横着追。 }
+  - id: ship_watch
+    label: 在栈桥头看船
+    minutes: 60
+    needs: { mood: 3 }
+    stats: { mind: 0.3, charm: 0.1 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 远处一条货轮，两个人一个数烟囱，一个数窗户，数到它看不见了。 }
+  - id: feed_chicken
+    label: 喂鸡、捡鸡蛋
+    minutes: 40
+    needs: { mood: 5, energy: -3 }
+    stats: { charm: 0.1 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 一个撒米把鸡引开，一个钻进鸡窝摸蛋。出来的时候头上顶着一根鸡毛。 }
+  - id: farm_help
+    label: 跟着下地
+    minutes: 120
+    requires: { minAge: 6, hours: [390, 1080] }
+    needs: { energy: -16, hunger: -10 }
+    stats: { body: 0.45 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 玉米叶子拉得胳膊一道一道的红。两个人在地头对着看，谁的道多。 }
+  - id: creek_fish
+    label: 在河沟里摸鱼
+    minutes: 60
+    needs: { mood: 6, energy: -8 }
+    stats: { body: 0.25 }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 一个在上游搅浑了水，一个在下游拿裤腿兜着，兜上来两条小鱼和一只鞋。 }
+  - id: star_night
+    label: 躺在晒场上看星星
+    minutes: 60
+    requires: { hours: [1110, 1320] }
+    needs: { mood: 6 }
+    stats: { mind: 0.25 }
+    together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 晒场上的星星比楼顶上多。两个人数到一百，数不下去了，就那么躺着。 }
+
+  # 医院（maps/hospital.yaml）：排队看病谁都能来；送饭只给家里有人住院的少年（kin_care，events/outside.yaml）
+  - id: see_doctor
+    label: 排队看病
+    minutes: 90
+    requires: { hours: [390, 1020] }
+    needs: { energy: 12, mood: -3 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 两个人挨着坐在长椅上，一个攥着挂号条，一个替他数前头还有几个。 }
+  - id: ward_meal
+    label: 给家里人送饭
+    menu: true
+    minutes: 60
+    requires: { minAge: 10, maxAge: 17, flags: [kin_care], hours: [660, 1260] }
+    needs: { mood: -2, energy: -4 }
+    stats: { charm: 0.1 }
+    together: { needs: { mood: 6 }, bond: { close: 2 }, text: 两只饭盒并排搁在床头柜上，两个人坐在一条长凳上，等着把空饭盒拿回去。 }

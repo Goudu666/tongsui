@@ -304,6 +304,28 @@ lives:
     title: 开心果
     text: "{name} 走到哪儿，哪儿就热闹。告别那天来了很多人，大家想起 {name}，都先笑了。"
     requires: { stats: { charm: 9.5 } }
+  # ---- 门外的世界（content/events/outside.yaml）：小时候夏天见过的那个地方。比「守着河畔里」「普通的一生」具体，排在它们前面 ----
+  # 被对门带去的那一个排在最前头（p_took_* 两个人都有，所以用家境把带人的那一个摘出去）
+  - id: l_took_sea
+    title: 借来的泳裤
+    text: "{name} 头一回看见海，是跟着对门家去的，泳裤是借的。后来自己去过很多回海边，跟人说起海，说的还是那一回。"
+    requires: { flags: [p_took_sea], notFlags: [fam_rich] }
+  - id: l_took_market
+    title: 看过一上午摊
+    text: "{name} 小时候跟着对门家去过一回早市，帮着看了一上午摊。后来不管住到哪儿，买菜从不跟人讲那五毛钱。"
+    requires: { flags: [p_took_market], notFlags: [fam_poor] }
+  - id: l_sea_summer
+    title: 那年夏天的海
+    text: "{name} 小时候在海边住过几天招待所，关了灯还听得见浪。后来住的屋离海很远，睡不着的时候，还是数浪。"
+    requires: { flags: [saw_sea] }
+  - id: l_threshing
+    title: 姥姥家的晒场
+    text: "{name} 记得姥姥家的晒场，夜里躺上去，星星比楼顶上多。后来晒场上盖了房，{name} 回去过一趟，还指得出当年躺的是哪一块。"
+    requires: { flags: [saw_village] }
+  - id: l_dawn_market
+    title: 天不亮的早市
+    text: "{name} 是在早市上长大的：一串灯泡，一杆秤，一摞空筐。后来日子宽了，还是天不亮就醒，醒了就想出门。"
+    requires: { flags: [saw_market] }
   - id: l_stayer
     title: 守着河畔里
     text: "{name} 一辈子没离开过天津。楼拆了，人散了，{name} 还能闭着眼走到海河边。"

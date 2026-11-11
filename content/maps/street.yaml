@@ -20,8 +20,12 @@ exits:
   # 车站：在外地念书、上班的人放假坐车回来，从这儿下车，也从这儿走（锁跟着外地那张图：没走那条路的人去不了）
   - { id: to_away, at: 330, to: away, arrive: 200, label: 坐车去外地, ride: 240 }
   - { id: to_middle, at: 2540, to: middle, arrive: 60, label: 去中学 }
+  # 胡同口进去是早市（market.yaml）：清贫人家的孩子六岁起就跟着去，别人十八岁以后才来
+  - { id: to_market, at: 1390, to: market, arrive: 120, label: 去早市 }
   - { id: upstairs, at: 1700, to: building, arrive: 1500, arriveFloor: 1, label: 上楼 }
   - { id: to_park, at: 2300, to: park, arrive: 60, label: 去公园 }
+  # 茶社门口的公交站：坐车去医院（家里有人住院的少年送饭、小孩看完病坐回来，hospital.yaml 的 to_street）
+  - { id: to_hospital, at: 3150, to: hospital, arrive: 320, label: 坐车去医院, ride: 30 }
   - { id: to_river, at: 3940, to: river, arrive: 60, label: 去海河边 }
 
 spots:

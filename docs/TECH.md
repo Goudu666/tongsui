@@ -199,12 +199,12 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 | `families.yaml` | 投胎能抽到的人家：家境、零花钱、属性加成、家庭标记 |
 | `talents.yaml` | 先天天赋 |
 | `map.yaml` | 行动：时长、需求/属性变化、花钱挣钱、搭伴效果、条件、`quick`（顺手的事，不占一段） |
-| `maps/<图>.yaml` | 一张侧视横图一个文件：宽、楼层（floors）、解锁条件（unlock）、地点（areas：横着的一段 span）、出口（exits：走到就换图或换楼层，不花时间）、互动点（spots：只写横坐标，一个点可以用 `actions` 挂几个行动，按年纪取第一个合适的）。构建时检查出口有回头路、地点不重叠、互动点在自己的地点里 |
+| `maps/<图>.yaml` | 一张侧视横图一个文件：宽、楼层（floors）、解锁条件（unlock）、地点（areas：横着的一段 span）、出口（exits：走到就换图或换楼层，不花时间）、互动点（spots：只写横坐标，一个点可以用 `actions` 挂几个行动，按年纪取第一个合适的）。`far: true` 是外地那一片（和河畔里隔着一趟车）；`trip: true` 是出门才到得了的图（海边、乡下），别的图的出口不许指进来，只有事件的 `goto` 送得来；`seen: <标记>` 是来过这张图的人打上的标记（被送来、走进来、在那儿做过事）。构建时检查出口有回头路（坐车回来、在车站下车的出口除外：落脚点 200 像素内有一个 `ride` 的出口就行）、地点不重叠、互动点在自己的地点里 |
 | `events/places/<图>.yaml` | 这张图上的地点支线事件 |
 | `events/milestones.yaml` | 人生关口：`kind: milestone` 的事件，按 `age` 到来，选项上的 `min` 是分数线。格式见文件头 |
-| `tracks.yaml` | 人生路线：由标记推出来的日程（白天去哪、去多久、长什么、挣多少）。按顺序匹配，最后一条兜底 |
+| `tracks.yaml` | 人生路线：由标记推出来的日程（白天去哪、去多久、长什么、挣多少）。按顺序匹配，最后一条兜底。`restDuty` 是歇着的日子也有的那一段（只写在清贫人家的路上：早市看摊 `veg_stall`） |
 | `endings.yaml` | 结局：两个人的结局（pair）和每个人的一生小结（lives），按顺序匹配，最后一条兜底 |
-| `rules.yaml` | 数值规则：投胎预算、成长、衰老、检定、寿命、亲近（规则代码在 `server/src/growth.ts`，说明见 [GROWTH.md](GROWTH.md)） |
+| `rules.yaml` | 数值规则：投胎预算、成长、衰老、检定、寿命、亲近（规则代码在 `server/src/growth.ts`，说明见 [GROWTH.md](GROWTH.md)）。`daily.flagDuty`：`{ 标记: { minAge?, maxAge?, until, label, rest? } }`，带着这个标记的人上学的日子日程拖到 `until`（只往后拖，拖了才换 `label`），歇着的日子换成 `rest`（一段日程，盖过 `restDuty`，点位上要有 `duty` 行动）；规则在 `server/src/outside.ts` |
 | `checks.yaml` | 检定：挂在已有事件的选项上，成不成看属性和运气 |
 | `duet.yaml` | 接话：「搭上了」（按事件 id 挂上去的互补选项组合）、猜 TA 和回话的旁白。格式见文件头和 [DUET.md](DUET.md) |
 
@@ -221,7 +221,8 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
   weight: 3              # 抽取权重
   requires: { minAge: 6, flags: [erhu], notFlags: [] }   # 可选，flags 可以是家庭/天赋/事件打的标记（mirror 看两人的并集）
   # requires 还可以写：minClose/maxClose 亲近、minSync/maxSync 默契、minDistance/maxDistance 距离、
-  #   alone: true（只在对方已经离开以后，仅 solo）/ false（只在两人都在世时）
+  #   alone: true（只在对方已经离开以后，仅 solo）/ false（只在两人都在世时）、
+  #   either: { flags, notFlags }（两个人里至少一个人自己满足，不看并集；mirror 按家境分开用，见 server/src/outside.ts）
   title: 楼顶的夏夜
   text: 夏天晚上，楼顶比屋里凉快……
   options:
@@ -233,6 +234,9 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
         other: { mood: 5 }               # 对对方的影响
         bond:  { sync: 1, close: 1 }     # sync 默契 / close 亲近 / distance 距离
         flags: [saw_stars]
+        # goto: seaside        # 可选，出门：结算后这个人被送到这张图（第一个出口跟前），手上的事撤掉、今天的日程免了，第二天在家醒来
+        # tagAlong: [invite]   # 可选，mirror 里跟着去：对门选的是这几项之一（那一项带 goto），这个人也被送过去。goto / tagAlong 不用在关口、主线上
+        #                      # 影子替人选时，有别的项可选就不选带 goto / tagAlong 的（影子不出门）
   resonance:                             # mirror 专用：两人选到同一项
     stars: { text: ……, memory: 第四十七颗星, bond: { sync: 3 }, flags: [p_stars] }   # flags：共同标记，两人都得到，必须 p_ 开头
   dissonance: { text: ……, bond: { close: 1 }, flags: [] }   # mirror 专用：选得不一样

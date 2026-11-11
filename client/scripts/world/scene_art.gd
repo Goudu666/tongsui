@@ -26,13 +26,15 @@ const MID_SCALE := 0.9
 const FORE_PARALLAX := 1.55 ## 前景：比人走得快（贴着镜头）
 const FORE_SCALE := 1.8     ## 前景放大贴：离镜头近，东西大、虚（fore_dof.gdshader）
 const FORE := {"street": "street", "river": "river", "park": "green", "newhome": "green", "primary": "school",
-	"middle": "school", "across": "street", "away": "street"}
+	"middle": "school", "across": "street", "away": "street", "market": "market", "seaside": "sea", "village": "field"}
 const ERAS := {"childhood": "child", "teen": "teen", "young": "young", "middle": "middle", "old": "old"}
 ## 树：画布多大（世界像素）、画的是多高的树（anchors 里的 h 按它缩放），和 tools/art/layers.py 的 TREES 一致
 const TREES := {"huai": [620, 700, 620], "willow": [640, 680, 580], "young": [300, 380, 320]}
 const TREE_SCALE := 1.25
 ## 每张图的远景、中景放在哪（楼脚的 y，这张图自己的坐标）；null = 这张图不要这一层
 ## 没写的图用 anchors 里记的地平线：远景楼脚在地平线，中景楼脚压在地面线上头一点（反正被近处的楼挡着）
+## far_kind：远景不用城里那几条（按年代长高的楼），换成 far_<kind>.png（海边的岬角和货轮、乡下的杨树行和水塔），不随年代变；
+## far_scale / far_haze：这一层贴多大、多淡
 const LAYOUT := {
 	"building": {"far": 300.0, "mid": 330.0},
 	"street": {"far": 420.0, "mid": 640.0},
@@ -45,6 +47,9 @@ const LAYOUT := {
 	"newhome": {"far": 500.0, "mid": 620.0},
 	"park": {"far": 560.0, "mid": 640.0, "mid_haze": 0.35},
 	"hospital": {"far": 300.0, "mid": null},
+	"market": {"far": 400.0, "mid": 470.0},
+	"seaside": {"far": 610.0, "mid": null, "far_kind": "sea", "far_scale": 0.8, "far_haze": 0.34},
+	"village": {"far": 570.0, "mid": null, "far_kind": "village", "far_scale": 0.8, "far_haze": 0.32},
 }
 
 var scene: Dictionary = {}
@@ -277,14 +282,15 @@ func _set_layers() -> void:
 		var spr: Sprite2D = pair[0]
 		var mat: ShaderMaterial = pair[1]
 		var kind: String = pair[2]
-		var path := "res://art/layers/%s_%s.png" % [kind, era]
+		var suffix := str(lay.get(kind + "_kind", era))
+		var path := "res://art/layers/%s_%s.png" % [kind, suffix]
 		var base: Variant = lay.get(kind, _horizon if kind == "far" else _horizon + 60.0)
 		if base == null or not has_art or not ResourceLoader.exists(path):
 			spr.visible = false
 			continue
 		spr.visible = true
 		spr.texture = load(path)
-		var lit := "res://art/layers/%s_%s_lit.png" % [kind, era]
+		var lit := "res://art/layers/%s_%s_lit.png" % [kind, suffix]
 		if ResourceLoader.exists(lit):
 			mat.set_shader_parameter("lit_tex", load(lit))
 		var tsize := spr.texture.get_size()

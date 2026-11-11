@@ -191,6 +191,6 @@ func _juice_journal(turns: int) -> void:
 		"list": [{"a": 9, "t": "三年级", "o": "进数学小组", "ok": true}]},
 		"teen": {"tg": 14, "res": 3, "ms": 2, "list": [
 			{"a": 12, "t": "小升初", "o": "去普通班", "gap": 2, "u": "分", "mt": "去重点班"},
-			{"a": 15, "t": "中考", "o": "过桥去念重点高中", "ok": true}]}}}
+			{"a": 15, "t": "中考", "o": "过桥去念重点高中", "ok": true, "g": "考进全区前五十"}]}}}
 	_stats.qing = {"body": q[0] / 10.0, "mind": q[1] / 10.0, "charm": q[2] / 10.0, "luck": 5.0}
 	_stats.mei = {"body": m[0] / 10.0, "mind": m[1] / 10.0, "charm": m[2] / 10.0, "luck": 4.0}

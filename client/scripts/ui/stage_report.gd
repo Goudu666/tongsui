@@ -168,9 +168,9 @@ func _ledger(f: Font, w: float) -> float:
 			draw_string(f, Vector2(x, y), pt, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Color(_fg, 0.85 * k))
 			x += f.get_string_size(pt, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x + 20.0
 		# 印：过了线盖一方自己颜色的（有成绩档写成绩档），没过线的灰框
-		if row.has("ok"):
-			var ok := bool(row.ok)
-			var txt := str(row.get("g", "")) if ok and str(row.get("g", "")).length() <= 5 and str(row.get("g", "")) != "" else ("过线" if ok else "没过线")
+		if row.has("ok") or row.has("g"):
+			var ok := bool(row.get("ok", true))
+			var txt := str(row.g) if row.has("g") else ("过线" if ok else "没过线")
 			var tw := f.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x
 			var sk := _ease(0.45 + i * 0.22, 0.6 + i * 0.22)
 			var sc := lerpf(1.6, 1.0, sk)

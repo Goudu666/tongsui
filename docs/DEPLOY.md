@@ -25,7 +25,7 @@
 | 服务 | `tongsui.service`（Nakama 3.41.0 官方二进制，用户 `tongsui`，`MemoryMax=768M`） |
 | 数据库 | 本机 PostgreSQL（apt 装的 `postgresql.service`），库 `nakama`、角色 `tongsui`，只听 localhost |
 | 目录 | `/opt/tongsui/`：`bin/nakama`、`modules/index.js`、`config.yml`（640，含密钥）、`secrets.env`（600，第一次生成后不再变）、`data/`、`client-server.json` |
-| 端口 | Nakama 7349 / 7350 / 7351 全绑 127.0.0.1；公网只有 nginx 新增的 **8080**（`/etc/nginx/sites-available/tongsui`，HTTP + WebSocket 反代到 7350） |
+| 端口 | Nakama 7348 / 7349 / 7350 / 7351 全绑 127.0.0.1；公网只有 nginx 新增的 **8080**（`/etc/nginx/sites-available/tongsui`，HTTP + WebSocket 反代到 7350） |
 | 客户端地址 | `{"host": "34.92.141.255", "port": 8080, "scheme": "http", "server_key": "…"}`，已写进仓库变量 `TONGSUI_SERVER` |
 | 备份 | `tongsui-backup.timer` 每天 04:30 JST `pg_dump` 到 `/opt/tongsui-backups/`，保留 14 天；更新前也自动备份一次 |
 | 防火墙 | GCE 规则 `allow-cakery-web`（标签 `cakery-server`）本来就放行 tcp:8080；机器上没开 ufw |

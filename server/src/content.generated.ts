@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "192c7471114f",
+ "version": "a7937ab05c42",
  "events": [
   {
    "id": "ch_runner",
@@ -7339,6 +7339,397 @@ var CONTENT: Content = {
     },
     "flags": []
    },
+   "catches": []
+  },
+  {
+   "id": "mk_school",
+   "kind": "milestone",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid"
+    ]
+   },
+   "title": "孩子上学",
+   "text": "报名那天，校门口排到了路口。前头的人手里一沓表，你手里就一个户口本。",
+   "options": [
+    {
+     "id": "key",
+     "text": "送去那所好小学",
+     "min": 4.6,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kid_prim_key"
+      ]
+     }
+    },
+    {
+     "id": "near",
+     "text": "就近上，走着去",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kid_prim_near"
+      ]
+     }
+    }
+   ],
+   "resonance": {
+    "key": {
+     "text": "开学那天你们俩都站在校门外头。铃响了，谁也没先走。",
+     "bond": {
+      "close": 1
+     },
+     "flags": []
+    },
+    "near": {
+     "text": "学校就在拐角。放学的时候，你们俩一个在楼下，一个在窗口。",
+     "bond": {
+      "close": 1
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "",
+    "bond": {},
+    "flags": []
+   },
+   "kidAge": 6,
+   "score": {
+    "kid_mind": 0.6,
+    "kid_charm": 0.4
+   },
+   "swing": false,
+   "grades": [],
+   "catches": []
+  },
+  {
+   "id": "mk_junior",
+   "kind": "milestone",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid"
+    ]
+   },
+   "title": "小升初",
+   "text": "分班的榜贴在传达室窗户上。你从底下往上找，找了两遍。",
+   "options": [
+    {
+     "id": "key",
+     "text": "去那所重点初中",
+     "min": 5.8,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kid_mid_key"
+      ]
+     }
+    },
+    {
+     "id": "near",
+     "text": "就近上初中",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kid_mid_near"
+      ]
+     }
+    }
+   ],
+   "resonance": {
+    "key": {
+     "text": "回来的路上你们俩谁都没说话，到了楼门口才一起笑出来。",
+     "bond": {
+      "close": 1
+     },
+     "flags": []
+    },
+    "near": {
+     "text": "新书包挂在门后头。你们俩说，近点好，早上能多睡一会儿。",
+     "bond": {
+      "close": 1
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "",
+    "bond": {},
+    "flags": []
+   },
+   "kidAge": 12,
+   "score": {
+    "kid_mind": 1
+   },
+   "swing": true,
+   "grades": [],
+   "catches": []
+  },
+  {
+   "id": "mk_senior",
+   "kind": "milestone",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid"
+    ]
+   },
+   "title": "孩子中考",
+   "text": "孩子考完回来，书包往门后一挂，说饿了。分数要等半个月。",
+   "options": [
+    {
+     "id": "key",
+     "text": "上重点高中",
+     "min": 6.6,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kid_high_key"
+      ]
+     }
+    },
+    {
+     "id": "high",
+     "text": "上普通高中",
+     "min": 5.2,
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kid_high"
+      ]
+     }
+    },
+    {
+     "id": "trade",
+     "text": "去念职高，学门手艺",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kid_trade"
+      ]
+     }
+    }
+   ],
+   "resonance": {
+    "key": {
+     "text": "榜上那个名字，你们俩一人用手指着念了一遍。",
+     "bond": {
+      "close": 1
+     },
+     "flags": []
+    },
+    "high": {
+     "text": "学校离家三站地。你们俩算了算，一个月的车钱是二十四块。",
+     "bond": {
+      "close": 1
+     },
+     "flags": []
+    },
+    "trade": {
+     "text": "你们俩去看了那间车床车间。孩子在机床前头站了很久。",
+     "bond": {
+      "close": 1
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "",
+    "bond": {},
+    "flags": []
+   },
+   "kidAge": 15,
+   "score": {
+    "kid_mind": 0.8,
+    "kid_body": 0.2
+   },
+   "swing": true,
+   "grades": [],
+   "catches": []
+  },
+  {
+   "id": "mk_gaokao",
+   "kind": "milestone",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid"
+    ]
+   },
+   "title": "孩子高考",
+   "text": "志愿表又摊在饭桌上。这回拿笔的不是你，你在旁边倒了杯水。",
+   "options": [
+    {
+     "id": "top",
+     "text": "去考上的那所好大学",
+     "min": 7.4,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kid_uni_top"
+      ]
+     }
+    },
+    {
+     "id": "away",
+     "text": "让孩子去外地念书",
+     "min": 6.4,
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kid_away"
+      ]
+     }
+    },
+    {
+     "id": "uni",
+     "text": "念本市的大学",
+     "min": 5.6,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kid_uni"
+      ]
+     }
+    },
+    {
+     "id": "work",
+     "text": "不念了，先找活干",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kid_work"
+      ]
+     }
+    }
+   ],
+   "resonance": {
+    "top": {
+     "text": "通知书寄到那天，你们俩把信封翻过来看了三遍邮戳。",
+     "memory": "三遍邮戳",
+     "bond": {
+      "close": 2
+     },
+     "flags": [
+      "p_kid_uni"
+     ]
+    },
+    "away": {
+     "text": "站台上你们俩一人拎一头行李。车开了，手还举着。",
+     "memory": "一人一头",
+     "bond": {
+      "close": 2
+     },
+     "flags": [
+      "p_kid_uni"
+     ]
+    },
+    "uni": {
+     "text": "学校隔着四站地。你们俩说，周末回来吃饭，菜还是那几样。",
+     "bond": {
+      "close": 2
+     },
+     "flags": [
+      "p_kid_uni"
+     ]
+    },
+    "work": {
+     "text": "孩子拿回第一个月的钱，你们俩一人分了一张，压在玻璃板底下。",
+     "bond": {
+      "close": 1
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "",
+    "bond": {},
+    "flags": []
+   },
+   "kidAge": 18,
+   "score": {
+    "kid_mind": 1
+   },
+   "swing": true,
+   "grades": [],
    "catches": []
   },
   {
@@ -32764,6 +33155,150 @@ var CONTENT: Content = {
      "text": "老先生一人给一杯茶，茶凉了，他才说今天就到这儿。"
     },
     "bring": true
+   },
+   {
+    "id": "kid_homework",
+    "label": "陪孩子写作业",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 22,
+     "kidAge": [
+      6,
+      18
+     ]
+    },
+    "needs": {
+     "energy": -8,
+     "mood": -4
+    },
+    "stats": {},
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两个孩子一张桌子，你们俩一人守一头。谁家的先写完，谁家的先去玩。"
+    },
+    "bring": false,
+    "kid": {
+     "mind": 1.2
+    }
+   },
+   {
+    "id": "kid_run",
+    "label": "带孩子去跑跑",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 22,
+     "kidAge": [
+      2,
+      18
+     ]
+    },
+    "needs": {
+     "energy": -10,
+     "mood": 4
+    },
+    "stats": {},
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两个孩子在前头跑，你们俩在后头走。喊了三回，谁也没回头。"
+    },
+    "bring": false,
+    "kid": {
+     "body": 1.2
+    }
+   },
+   {
+    "id": "kid_listen",
+    "label": "带孩子去茶社",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 22,
+     "kidAge": [
+      3,
+      18
+     ],
+     "hours": [
+      540,
+      1260
+     ]
+    },
+    "needs": {
+     "mood": 6
+    },
+    "stats": {},
+    "money": -1,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "台上一拍醒木，两个孩子同时坐直了。你们俩对看了一眼。"
+    },
+    "bring": false,
+    "kid": {
+     "charm": 1.2
+    }
+   },
+   {
+    "id": "kid_class",
+    "label": "给孩子报补习班",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 22,
+     "kidAge": [
+      9,
+      18
+     ],
+     "hours": [
+      1080,
+      1260
+     ]
+    },
+    "needs": {
+     "energy": -6,
+     "mood": -3
+    },
+    "stats": {},
+    "money": -3,
+    "together": {
+     "needs": {
+      "mood": 3
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "走廊里一排长椅，坐的都是等孩子的。你们俩挨着，把一份报纸分成两半看。"
+    },
+    "bring": false,
+    "kid": {
+     "mind": 1.8
+    }
    }
   ],
   "scenes": [
@@ -33870,6 +34405,19 @@ var CONTENT: Content = {
     "action": "duty"
    },
    {
+    "id": "kid_class_door",
+    "zone": "office",
+    "scene": "across",
+    "at": [
+     5350,
+     10760
+    ],
+    "actions": [
+     "kid_class"
+    ],
+    "action": "kid_class"
+   },
+   {
     "id": "away_field",
     "zone": "campus",
     "scene": "away",
@@ -34015,6 +34563,19 @@ var CONTENT: Content = {
     "action": "picture_book"
    },
    {
+    "id": "kid_desk_qing",
+    "zone": "home_qing",
+    "scene": "building",
+    "at": [
+     660,
+     720
+    ],
+    "actions": [
+     "kid_homework"
+    ],
+    "action": "kid_homework"
+   },
+   {
     "id": "table_qing",
     "zone": "home_qing",
     "scene": "building",
@@ -34133,6 +34694,19 @@ var CONTENT: Content = {
      "read"
     ],
     "action": "picture_book"
+   },
+   {
+    "id": "kid_desk_mei",
+    "zone": "home_mei",
+    "scene": "building",
+    "at": [
+     2540,
+     720
+    ],
+    "actions": [
+     "kid_homework"
+    ],
+    "action": "kid_homework"
    },
    {
     "id": "corner_mei",
@@ -34278,6 +34852,19 @@ var CONTENT: Content = {
     "action": "read"
    },
    {
+    "id": "kid_new_desk",
+    "zone": "flat",
+    "scene": "newhome",
+    "at": [
+     900,
+     16760
+    ],
+    "actions": [
+     "kid_homework"
+    ],
+    "action": "kid_homework"
+   },
+   {
     "id": "new_balcony",
     "zone": "flat",
     "scene": "newhome",
@@ -34302,6 +34889,19 @@ var CONTENT: Content = {
      "walk_river"
     ],
     "action": "walk_river"
+   },
+   {
+    "id": "kid_garden",
+    "zone": "garden",
+    "scene": "newhome",
+    "at": [
+     2450,
+     16760
+    ],
+    "actions": [
+     "kid_run"
+    ],
+    "action": "kid_run"
    },
    {
     "id": "lake_walk",
@@ -34502,6 +35102,19 @@ var CONTENT: Content = {
     "action": "play_river"
    },
    {
+    "id": "kid_river",
+    "zone": "river",
+    "scene": "river",
+    "at": [
+     820,
+     4760
+    ],
+    "actions": [
+     "kid_run"
+    ],
+    "action": "kid_run"
+   },
+   {
     "id": "river_rail",
     "zone": "river",
     "scene": "river",
@@ -34664,6 +35277,19 @@ var CONTENT: Content = {
      "listen"
     ],
     "action": "listen"
+   },
+   {
+    "id": "kid_tea",
+    "zone": "teahouse",
+    "scene": "street",
+    "at": [
+     3760,
+     2760
+    ],
+    "actions": [
+     "kid_listen"
+    ],
+    "action": "kid_listen"
    }
   ],
   "exits": [
@@ -36553,6 +37179,32 @@ var CONTENT: Content = {
    },
    "driftDistance": 0.35,
    "driftFloor": 5
+  },
+  "family": {
+   "names": [
+    "小满",
+    "豆豆",
+    "石头",
+    "小雨",
+    "冬冬",
+    "小舟",
+    "果果",
+    "小麦"
+   ],
+   "start": {
+    "body": 1.5,
+    "mind": 1,
+    "charm": 1
+   },
+   "inherit": 0.3,
+   "noise": 0.6,
+   "room": 7,
+   "selfGrow": {
+    "body": 0.18,
+    "mind": 0.12,
+    "charm": 0.12
+   },
+   "sameAge": 2
   },
   "legacy": {
    "pastKept": 6,

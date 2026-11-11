@@ -35,6 +35,7 @@ spots:
   - { id: bike_bench, at: 2710, area: bikeshop, actions: [ duty, work, side_fix ] }
   - { id: tea_stage, at: 3310, area: teahouse, actions: [ club_art, perform ] }
   - { id: tea_seat, at: 3580, area: teahouse, actions: [ listen ] }
+  - { id: kid_tea, at: 3760, area: teahouse, actions: [ kid_listen ] }
 
 npcs:
   - id: shop_ayi

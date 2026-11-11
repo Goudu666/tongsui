@@ -8,6 +8,8 @@ extends Node
 ##   set_life(...)                        每帧：人在哪儿、几点、哪个阶段、两人多近、默契多少
 ##   cue(name) / act(action_id)           界面音、行动音
 ##   sting(kind)                          默契乐句
+##   reveal_cue(cue, db, pitch)           关口揭晓那把尺子的声音：音效照放，再起高光（rise / pass / top / miss）
+##   grow(stage)                          长大：放 grow_<阶段>，这一段配乐收掉，放完从新阶段开始
 ##   step(role, pos, moved, mine)         脚步
 ##
 ## 设计说明见 docs/AUDIO.md；素材由 tools/audio/build_audio.py 生成。
@@ -17,17 +19,13 @@ const Soundscape := preload("res://scripts/audio/soundscape.gd")
 const Observer := preload("res://scripts/audio/main_observer.gd")
 const P := preload("res://scripts/ui/palette.gd")
 const Kit := preload("res://scripts/ui/kit.gd")
+## 三条总线和每个音效的音量（BUS_DB / CUE_DB）：改音量只改那一个文件
+const Mix := preload("res://scripts/audio/mix_table.gd")
 
 const SFX_DIR := "res://audio/sfx/"
 const MANIFEST := "res://audio/manifest.json"
 const SETTINGS := "user://audio.cfg"
 const STAGE_FILE := {"childhood": "child", "teen": "teen", "young": "young", "middle": "middle", "old": "old"}
-const BUS_DB := {"Music": 2.0, "Ambience": 1.0, "Sfx": -1.0}
-## 单个音效的音量微调（dB）。没列出来的是 -6
-const CUE_DB := {"tap": -7.0, "page": -9.0, "toast": -9.0, "type": -12.0, "xingmu": -3.0, "stamp": -4.0,
-	"birth": -3.0, "day_end": -3.0, "death": -2.0, "shake": -4.0, "bell_duet": -7.0, "door_open": -9.0, "door_close": -9.0,
-	# 爽感层（ui/juice.gd、ui/reveal.gd）：长一点、算盘珠、盖大印、够线、差一点、一个阶段过完
-	"gain": -8.0, "bead": -13.0, "seal": -5.0, "pass": -4.0, "miss": -6.0, "settle": -4.0}
 ## 一步多长（像素）。小孩步子碎，老人步子慢
 const STRIDE := {"child": 44.0, "teen": 54.0, "young": 60.0, "middle": 60.0, "old": 48.0}
 const STEP_PITCH := {"child": 1.18, "teen": 1.06, "young": 1.0, "middle": 0.96, "old": 0.92}
@@ -43,6 +41,10 @@ const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "pla
 	"swim_class": "play_river", "lang_class": "study", "banquet": "eat_out", "night_class": "study",
 	"side_tutor": "study", "side_fix": "work", "night_market": "eat_out", "overtime": "study", "night_shift": "work",
 	"run_dawn": "play_river", "old_lessons": "study"}
+## 揭晓：名次章的音高（reveal.gd 砸横章那一下），认它来起 top
+const TOP_PITCH := 1.12
+## 揭晓的声音隔这么久没来，下一颗算盘珠就算新的一回揭晓
+const REVEAL_GAP := 4.0
 ## 设置按钮的三档：全开 → 只关音乐 → 静音
 const LEVELS := ["乐", "响", "静"]
 ## 横屏：菜单页在右上角；河畔里排在右上「对门的牌」下面（ui/hud.gd：横带 y 40~196，再空 16）
@@ -65,6 +67,9 @@ var _button: Button
 var _boxes: Array[StyleBox] = []
 var _map: Dictionary = {}
 var _focus := 0.0
+var _reveal_at := -100.0  ## 上一下揭晓的声音是什么时候（秒）
+var _rose := false        ## 这一回揭晓的 rise 起过了
+var _took_over_at := -100.0  ## 上一回揭晓的高光真响起来是什么时候
 
 
 func _ready() -> void:
@@ -100,8 +105,8 @@ func _player(bus: String) -> AudioStreamPlayer:
 # ---------------------------------------------------------------- 总线 ----
 
 func _make_buses() -> void:
-	for bus_name in BUS_DB:
-		_bus(bus_name, "Master")
+	for bus_name in Mix.BUS_DB:  # 总线的音量也照表（原来只有 Ambience 在 set_life 里设了，Music / Sfx 一直是 0）
+		AudioServer.set_bus_volume_db(_bus(bus_name, "Master"), float(Mix.BUS_DB[bus_name]))
 	var steps := _bus("Steps", "Sfx")
 	if AudioServer.get_bus_effect_count(steps) == 0:
 		var rv := AudioEffectReverb.new()  # 楼道里的脚步有回声，出了楼道就关掉
@@ -210,9 +215,10 @@ func set_scene(scene: String) -> void:
 	scape.active = scene == "life"
 
 
-## 河畔里每帧的状态
+## 河畔里每帧的状态。weather：rain / snow / catkin / leaf / ""（world.weather.kind，屋里的图没有天气）
 func set_life(map: Dictionary, my_role: String, me_pos: Vector2, other_pos: Variant, partner_live: bool,
-		turn: int, stage: String, season: String, minute: float, school_day: bool, sync: float, focus: bool) -> void:
+		turn: int, stage: String, season: String, minute: float, school_day: bool, sync: float, focus: bool,
+		weather := "") -> void:
 	if not scape.is_setup or not is_same(map, _map):  # 内容热更新后地图会换一份（比如多了茶馆）
 		_map = map
 		scape.setup(map)
@@ -221,11 +227,11 @@ func set_life(map: Dictionary, my_role: String, me_pos: Vector2, other_pos: Vari
 	var near := 0.0
 	if other_pos is Vector2:
 		near = 1.0 - smoothstep(260.0, 1300.0, me_pos.distance_to(other_pos))
-	music.set_mix(my_role, near, partner_live, sync, minute)
-	scape.update(get_process_delta_time(), me_pos, minute, _stage, season, school_day)
+	music.set_mix(my_role, near, partner_live, sync, minute, weather)
+	scape.update(get_process_delta_time(), me_pos, minute, _stage, season, school_day, weather)
 	# 弹窗（事件、一天结束）出来的时候，把环境音让一让
 	_focus = move_toward(_focus, 1.0 if focus else 0.0, get_process_delta_time() * 2.0)
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambience"), BUS_DB.Ambience - 6.0 * _focus)
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambience"), Mix.BUS_DB.Ambience - 6.0 * _focus)
 	AudioServer.set_bus_effect_enabled(AudioServer.get_bus_index("Steps"), 0, scape.zone_at(me_pos) == "hallway")
 
 
@@ -233,7 +239,7 @@ func set_life(map: Dictionary, my_role: String, me_pos: Vector2, other_pos: Vari
 func idle() -> void:
 	if scape.is_setup:
 		scape.update(get_process_delta_time(), Vector2.ZERO, 720.0, _stage, "spring", false)
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambience"), BUS_DB.Ambience)
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambience"), Mix.BUS_DB.Ambience)
 
 
 func cue(cue_name: String, db := 0.0, pitch := 1.0) -> void:
@@ -243,7 +249,7 @@ func cue(cue_name: String, db := 0.0, pitch := 1.0) -> void:
 	var p := _pool[_pool_i]
 	_pool_i = (_pool_i + 1) % _pool.size()
 	p.stream = s
-	p.volume_db = float(CUE_DB.get(cue_name, -6.0)) + db
+	p.volume_db = float(Mix.CUE_DB.get(cue_name, -6.0)) + db
 	p.pitch_scale = pitch
 	p.play()
 
@@ -271,6 +277,43 @@ func sting(kind: String, db := 0.0) -> void:
 
 func hush(rest_seconds := 6.0) -> void:
 	music.hush(rest_seconds)
+
+
+## 关口揭晓：我那把尺子（ui/reveal.gd）的声音从这里过。音效照放，再按这一下是什么起高光：
+##   第一颗算盘珠 → <阶段>_rise（一次揭晓只起一回）；够线 pass → _pass；差一点 miss → _miss；
+##   名次章（seal，音高 1.12）→ _top。对方那把尺子仍然走 cue，不起高光
+func reveal_cue(cue_name: String, db := 0.0, pitch := 1.0) -> void:
+	cue(cue_name, db, pitch)
+	var now := Time.get_ticks_msec() / 1000.0
+	if now - _reveal_at > REVEAL_GAP:
+		_rose = false  # 隔了这么久，是新的一回揭晓了
+	_reveal_at = now
+	var hl := ""
+	match cue_name:
+		"bead":
+			if not _rose:
+				_rose = true
+				hl = _stage + "_rise"
+		"pass", "miss":
+			hl = "%s_%s" % [_stage, cue_name]
+		"seal":
+			if absf(pitch - TOP_PITCH) < 0.02:
+				hl = _stage + "_top"
+	if hl != "" and music.highlight(hl):
+		_took_over_at = now
+
+
+## 刚才几秒里揭晓的高光有没有真响起来（观察者用：接管了，日志里「关口」那句乐句就不再叠一遍；
+## 老素材没有高光文件，就还是那句乐句）
+func reveal_active(within := REVEAL_GAP) -> bool:
+	return Time.get_ticks_msec() / 1000.0 - _took_over_at < within
+
+
+## 长大了：stage 是 LifeTime 的阶段名（childhood / teen ...）或者文件名（child / teen ...）都行
+func grow(stage: String) -> void:
+	var s: String = STAGE_FILE.get(stage, stage)
+	_stage = s
+	music.grow(s)
 
 
 ## 脚步。moved：这一帧走了多远；gain 0~1：离听的人多近

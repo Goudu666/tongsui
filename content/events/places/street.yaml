@@ -159,3 +159,146 @@
   dissonance:
     text: 一个进去买汽水，出来时另一个靠着长凳打起了盹。汽水就搁在他手边。
     bond: { close: 0 }
+
+# ---------- 补空档（11-11）：青年、中年 ----------
+# 每件挂在下一道关前面：十八九岁那件接着高考后的夏天，二十出头那件在找事由（22）前面给一点手艺；
+# 中年两件是钱和人的取舍：花两块钱的那条路会让四十五、六十那两道看积蓄的关紧一点点。
+
+- id: pl_st_books
+  kind: mirror
+  stage: young
+  where: alley
+  when: [930, 1200]
+  hint: 巷子口有人吆喝收旧书。
+  weight: 2
+  requires: { minAge: 18, maxAge: 19 }
+  title: 论斤称
+  text: 考完那个夏天，巷子口来了个收旧书的，论斤称。两家的课本捆成两摞，并排搁在秤边。
+  options:
+    - id: sell
+      text: 都卖了
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: keep
+      text: 抽出一本留着
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: give
+      text: 挑几本给楼里的小孩
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+  resonance:
+    sell:
+      text: 两摞一共三十一斤。收书的多给了两毛，说你们的书干净，没怎么翻。
+      memory: 三十一斤
+      bond: { sync: 3, close: 2 }
+    keep:
+      text: 你们抽出来的是同一本，书皮上写着对方的名字。当年借了，一直没还。
+      memory: 没还的那本
+      bond: { sync: 3, close: 2 }
+    give:
+      text: 楼里的小四儿抱走了一摞，走两步回头问：「里头有答案吗？」
+      memory: 抱走的一摞
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一摞已经上了秤，另一摞的绳子又被解开了。收书的蹲着等，没催。
+    bond: { close: 0 }
+
+- id: pl_st_minding
+  kind: solo
+  stage: young
+  where: bikeshop
+  when: [720, 1110]
+  hint: 车铺的卷帘门半开着。
+  weight: 2
+  requires: { minAge: 19, maxAge: 23 }
+  title: 看半天铺子
+  text: 修车爷爷要过桥配零件，让你帮着看半天铺子。工具摆了一地，哪样是哪样，他说了两遍。
+  options:
+    - id: fix
+      text: 来一辆修一辆
+      tags: [responsible]
+      effects: { self: { body: 1, mind: 1, energy: -10 } }
+    - id: watch
+      text: 只收车，等他回来修
+      tags: [patient]
+      effects: { self: { charm: 1, energy: -3 } }
+    - id: close
+      text: 挂个牌子，跟他过桥
+      tags: [adventure]
+      effects: { self: { mood: 4, energy: -6 } }
+
+- id: pl_st_tab
+  kind: mirror
+  stage: middle
+  where: breakfast
+  when: [390, 480]
+  hint: 鏊子已经热了。
+  weight: 2
+  requires: { minAge: 32 }
+  title: 一张桌
+  text: 上班前在早点铺碰上，就剩一张桌。老板娘问：「还是老样子？」
+  options:
+    - id: treat
+      text: 抢着把两份都付了
+      tags: [gentle]
+      cost: 2
+      effects: { self: { mood: 4 }, bond: { close: 1 } }
+    - id: pack
+      text: 多买一份给爸妈带回去
+      tags: [responsible]
+      cost: 2
+      effects: { self: { mood: 3 } }
+    - id: quick
+      text: 站着吃完就走
+      tags: [competitive]
+      effects: { self: { energy: 4 } }
+    - id: sit
+      text: 坐下，晚到一会儿
+      tags: [patient]
+      effects: { self: { mood: 5, energy: -2 } }
+  resonance:
+    treat:
+      text: 两个人同时把钱拍在案子上。老板娘两份都收了，给你俩各添了半碗豆浆。
+      memory: 半碗豆浆
+      bond: { sync: 3, close: 2 }
+    pack:
+      text: 两个塑料袋挂在同一根车把上，你们推着车走到路口才分开。
+      memory: 一根车把
+      bond: { sync: 3, close: 2 }
+    quick:
+      text: 两碗一块儿见底，碗往桌上一搁，一前一后出了门。
+      memory: 两只空碗
+      bond: { sync: 2, close: 1 }
+    sit:
+      text: 两个人都迟到了一刻钟，谁也没跟谁说。
+      memory: 一刻钟
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个站在门口吃完就走了，一个坐下才发现对面空着，桌上留了一份没动的果子。
+    bond: { close: 0 }
+
+- id: pl_st_tab_owed
+  kind: solo
+  stage: middle
+  where: shop
+  when: [1110, 1320]
+  hint: 便利店的灯还亮着。
+  weight: 2
+  requires: { minAge: 38 }
+  title: 垫上的两块
+  text: 便利店的小伙子叫住你：「你爸下午来买药，差两块钱，我先垫上了。」
+  options:
+    - id: pay
+      text: 把账结了，多放两块
+      tags: [responsible]
+      cost: 4
+      effects: { self: { mood: 4, charm: 1 } }
+    - id: home
+      text: 先回家看看他
+      tags: [gentle]
+      effects: { self: { mood: 3, energy: -6 } }
+    - id: ask
+      text: 问问买的什么药
+      tags: [patient]
+      effects: { self: { mind: 1 } }

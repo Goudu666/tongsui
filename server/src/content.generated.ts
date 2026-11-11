@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "702af10dbcca",
+ "version": "b1fce8e1289d",
  "events": [
   {
    "id": "ch_runner",
@@ -4683,7 +4683,8 @@ var CONTENT: Content = {
      "id": "take",
      "text": "拿起扳手",
      "tags": [
-      "responsible"
+      "responsible",
+      "patient"
      ],
      "effects": {
       "self": {
@@ -28099,6 +28100,375 @@ var CONTENT: Content = {
    "catches": []
   },
   {
+   "id": "pl_ac_shelf",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "bookstore",
+   "when": [
+    1020,
+    1200
+   ],
+   "hint": "书店的灯一排一排关了。",
+   "requires": {
+    "minAge": 34
+   },
+   "title": "站着看完",
+   "text": "下了班过桥，在大书店站着看一本书，看到第三晚。店员说下礼拜这本就下架了。",
+   "options": [
+    {
+     "id": "buy",
+     "text": "买回去慢慢看",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 3,
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "finish",
+     "text": "今晚站着看完",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "leave",
+     "text": "记下书名，回家",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_ac_reunion",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "mall",
+   "when": [
+    1080,
+    1260
+   ],
+   "hint": "商场楼上有人在点名。",
+   "requires": {
+    "minAge": 36
+   },
+   "title": "同学会",
+   "text": "小学同学聚会订在商场楼上。班长挨个点名，点到你俩，满屋子的人都笑了。",
+   "options": [
+    {
+     "id": "speak",
+     "text": "站起来说两句",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "pay",
+     "text": "悄悄把账结了",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 10,
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "eat",
+     "text": "低头吃菜",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "list",
+     "text": "记下每个人的电话",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "speak": {
+     "text": "一个刚起了个头，另一个就接上了。说的是同一件事，班长说三十年了还对得上词。",
+     "memory": "对得上词",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "pay": {
+     "text": "两个人在柜台前碰上，钱都掏出来了。服务员问你们，到底算谁的。",
+     "memory": "算谁的",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "eat": {
+     "text": "一桌人说得热闹，你俩隔着一个转盘，把一盘鱼吃完了。",
+     "memory": "一盘鱼",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    },
+    "list": {
+     "text": "散场时对了对，两张单子记的是同一串人，连顺序都一样。",
+     "memory": "同一串人",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个站起来说话，一个在桌底下踢了踢他的鞋。说完坐下，鞋带开了。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_ac_oldclass",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "youth_palace",
+   "when": [
+    480,
+    720
+   ],
+   "hint": "琴房里有人在弹练习曲。",
+   "requires": {},
+   "title": "老年班",
+   "text": "少年宫上午开了老年班。教琴的，是当年那位老师的学生。",
+   "options": [
+    {
+     "id": "join",
+     "text": "报个名",
+     "tags": [
+      "adventure"
+     ],
+     "cost": 3,
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "listen",
+     "text": "在走廊里听一会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "过桥回去",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_ac_chimney",
+   "kind": "mirror",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "factory",
+   "when": [
+    480,
+    930
+   ],
+   "hint": "老厂的烟囱还立着。",
+   "requires": {},
+   "title": "烟囱",
+   "text": "老厂拆了，烟囱留着，底下围了一圈栏杆。",
+   "options": [
+    {
+     "id": "round",
+     "text": "绕着走一圈",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "touch",
+     "text": "伸手摸摸砖",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "count",
+     "text": "数一数有多少层",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "round": {
+     "text": "你们一个往左一个往右，在烟囱背后碰上了。",
+     "memory": "烟囱背后",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "touch": {
+     "text": "两只手按在同一块砖上，砖是温的。",
+     "memory": "温的砖",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "count": {
+     "text": "数到一半就花了眼。两个人报的数差了三层。",
+     "memory": "差了三层",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个绕到了烟囱背后，一个还站在栏杆外头仰着脖子数。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
    "id": "pl_aw_bowl",
    "kind": "solo",
    "stage": "young",
@@ -28760,6 +29130,376 @@ var CONTENT: Content = {
    "catches": []
   },
   {
+   "id": "pl_bd_silou",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    1110,
+    1320
+   ],
+   "hint": "楼梯灯底下有人在念叨。",
+   "requires": {
+    "minAge": 19,
+    "maxAge": 26
+   },
+   "title": "楼梯灯",
+   "text": "四楼新搬来个租房的，每晚坐在楼梯灯底下背书，说在考一个证。灯一灭，他就跺一脚。",
+   "options": [
+    {
+     "id": "join",
+     "text": "拿本书坐他下一级",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "lamp",
+     "text": "把屋里的台灯借他",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sleep",
+     "text": "点个头，回屋睡",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_bd_water",
+   "kind": "mirror",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    390,
+    720
+   ],
+   "hint": "楼下水龙头排了一串桶。",
+   "requires": {},
+   "title": "停水",
+   "text": "楼里停水，只有一楼院里的龙头还出水。各家的桶排了一串，一直排到楼门口。",
+   "options": [
+    {
+     "id": "carry",
+     "text": "一手一桶往上拎",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "help",
+     "text": "先给二楼奶奶拎",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "等来水再说",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "carry": {
+     "text": "你们一前一后拎到三楼，才发现拎的都是对方家的桶。",
+     "memory": "拎错的桶",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "help": {
+     "text": "二楼奶奶家的缸满了。她一人塞给你们一个苹果，说够吃到来水。",
+     "memory": "两个苹果",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "你们两家的桶排在最后，挨着。来水的时候，天已经黑了。",
+     "memory": "挨着的桶",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个已经拎着桶上了三楼，一个还在楼门口排着。上去的那个又下来了，接过一只桶。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_bd_chair",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    930,
+    1200
+   ],
+   "hint": "楼道里多了一辆轮椅。",
+   "requires": {
+    "minAge": 32,
+    "maxAge": 38,
+    "notFlags": [
+     "home_own"
+    ]
+   },
+   "title": "轮椅",
+   "text": "楼道里多了辆轮椅，是你爸的。上下楼，得两个人抬。",
+   "options": [
+    {
+     "id": "carry",
+     "text": "背他下楼晒太阳",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4,
+       "energy": -12
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "knock",
+     "text": "敲对门搭把手",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "energy": -5
+      },
+      "other": {},
+      "bond": {
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "pay",
+     "text": "花钱请人每天抬",
+     "tags": [
+      "competitive"
+     ],
+     "cost": 8,
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "window",
+     "text": "推到窗口，开开窗",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_bd_bulb",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    1110,
+    1320
+   ],
+   "hint": "楼道灯又不亮了。",
+   "requires": {
+    "minAge": 30,
+    "maxAge": 38,
+    "notFlags": [
+     "home_own"
+    ]
+   },
+   "title": "灯泡",
+   "text": "楼道灯坏了三天。两家下夜班的都摸黑上楼，脚底下数着台阶。",
+   "options": [
+    {
+     "id": "buy",
+     "text": "买个灯泡换上",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 1,
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "torch",
+     "text": "门口挂个手电",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "count",
+     "text": "接着数台阶",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "buy": {
+     "text": "两个人各买了一个，站在凳子上一比，一样的瓦数。多的那个搁在了电表箱上。",
+     "memory": "电表箱上那个",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "torch": {
+     "text": "两家门口各挂了一只手电，谁晚回来谁拿，第二天再挂回对方门口。",
+     "memory": "换着挂的手电",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "count": {
+     "text": "一共四十六级。两个人数的都是四十六，不用开灯也到得了门口。",
+     "memory": "四十六级",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个换好了灯泡，一个摸黑上楼时还在数台阶，数到一半，灯亮了。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
    "id": "pl_hp_queue",
    "kind": "solo",
    "stage": "middle",
@@ -29357,6 +30097,352 @@ var CONTENT: Content = {
    "catches": []
   },
   {
+   "id": "pl_md_talk",
+   "kind": "mirror",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "middle_class",
+   "when": [
+    930,
+    1110
+   ],
+   "hint": "教室里坐满了初三的。",
+   "requires": {
+    "minAge": 18,
+    "maxAge": 20
+   },
+   "title": "讲两句",
+   "text": "班主任托人捎话，让你们回去给初三的讲两句。还是那间教室，讲台矮了一截。",
+   "options": [
+    {
+     "id": "speak",
+     "text": "上讲台讲",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back",
+     "text": "站在后门听别人讲",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "board",
+     "text": "在黑板角上写一行",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "speak": {
+     "text": "一个讲到一半忘了词，另一个在底下张了张嘴。台下笑成一片，班主任也笑了。",
+     "memory": "张了张嘴",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "back": {
+     "text": "后门一边站一个，跟当年罚站一样。班主任看见了，没叫你们进来。",
+     "memory": "后门两边",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "board": {
+     "text": "黑板角上两行字，一行在上一行在下，写的都是「别怕」。",
+     "memory": "两行别怕",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个站上了讲台，一个靠在后门。讲的那个一抬头，正对上后门那张脸。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_md_meeting",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "middle_class",
+   "when": [
+    1080,
+    1260
+   ],
+   "hint": "中学的教室亮着灯。",
+   "requires": {
+    "minAge": 38,
+    "maxAge": 48,
+    "flags": [
+     "has_kid"
+    ]
+   },
+   "title": "隔壁班的",
+   "text": "孩子的班主任，是你当年隔壁班的。散了会，他叫住你，说孩子像你。",
+   "options": [
+    {
+     "id": "grades",
+     "text": "问问孩子的分数",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "dinner",
+     "text": "请他吃顿饭",
+     "tags": [
+      "gentle"
+     ],
+     "cost": 4,
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "smile",
+     "text": "笑笑，没往下问",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_md_drill",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "middle_field",
+   "when": [
+    390,
+    480
+   ],
+   "hint": "操场上放起了早操曲。",
+   "requires": {},
+   "title": "早操",
+   "text": "中学操场早上开给附近的人。喇叭里还是那支早操曲。",
+   "options": [
+    {
+     "id": "follow",
+     "text": "跟着做一遍",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "walk",
+     "text": "绕跑道走一圈",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stand",
+     "text": "站在当年那一排",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3,
+       "energy": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_md_owed",
+   "kind": "mirror",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "middle_front",
+   "when": [
+    480,
+    930
+   ],
+   "hint": "文具店的门还开着。",
+   "requires": {},
+   "title": "两毛钱",
+   "text": "校门口的文具店还开着。老板眯眼看你俩：「欠我两毛那俩。」",
+   "options": [
+    {
+     "id": "pay",
+     "text": "掏钱还他",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "pens",
+     "text": "买两支笔",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "问他记了多少年",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "pay": {
+     "text": "两个人一块儿掏钱，都掏的是两毛。他收了一份，另一份推回来。",
+     "memory": "推回来的两毛",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "pens": {
+     "text": "两支笔，一黑一红。他照当年的价收的。",
+     "memory": "一黑一红",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "ask": {
+     "text": "他想了想，说记不清了，就记得是两个人。",
+     "memory": "两个人",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在掏兜，一个已经挑起了笔。老板一手收钱，一手找零。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
    "id": "pl_nh_neighbor",
    "kind": "solo",
    "stage": "middle",
@@ -29599,6 +30685,197 @@ var CONTENT: Content = {
    "catches": []
   },
   {
+   "id": "pl_nh_lift",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "landing",
+   "when": [
+    480,
+    930
+   ],
+   "hint": "电梯间贴了张新条。",
+   "requires": {
+    "flags": [
+     "home_own"
+    ]
+   },
+   "title": "停电梯",
+   "text": "电梯间贴了张条：礼拜三检修，停一天。你家在十六楼。",
+   "options": [
+    {
+     "id": "stairs",
+     "text": "一层一层走下去",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "叫对门的来坐一天",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "order",
+     "text": "让物业把菜送上来",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 3,
+     "effects": {
+      "self": {
+       "mood": 2,
+       "energy": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stay",
+     "text": "那天就不出门了",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_nh_scallion",
+   "kind": "mirror",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": "garden",
+   "when": [
+    480,
+    930
+   ],
+   "hint": "花坛边上冒出一垄绿。",
+   "requires": {},
+   "title": "一垄葱",
+   "text": "花园角上有人偷偷种了一垄葱。物业的小伙子装没看见。",
+   "options": [
+    {
+     "id": "plant",
+     "text": "挨着也种一垄",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "water",
+     "text": "帮着浇浇水",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "pick",
+     "text": "掐两根回去",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "plant": {
+     "text": "一垄变成了三垄。物业的小伙子路过，帮你们插了块牌子。",
+     "memory": "三垄葱",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "water": {
+     "text": "你们拎着同一只壶，一人浇一头。",
+     "memory": "一只壶",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "pick": {
+     "text": "两个人各掐了两根，晚上两家都是葱花饼。",
+     "memory": "葱花饼",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个蹲着种，一个蹲着掐。掐的那个，掐的是刚种下的。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
    "id": "pl_pk_water",
    "kind": "mirror",
    "stage": "old",
@@ -29799,6 +31076,178 @@ var CONTENT: Content = {
    ],
    "resonance": null,
    "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_pk_round",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "lake_path",
+   "when": [
+    390,
+    480
+   ],
+   "hint": "湖边有人在喊口号。",
+   "requires": {
+    "minAge": 45
+   },
+   "title": "两千步",
+   "text": "上班前绕湖一圈，正好两千步。今天有人从后面追上来，喊你的名字，是中学同学。",
+   "options": [
+    {
+     "id": "run",
+     "text": "跟他再跑一圈",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "talk",
+     "text": "放慢了，边走边聊",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sit",
+     "text": "坐亭子里歇会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_pk_pressure",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "square",
+   "when": [
+    930,
+    1110
+   ],
+   "hint": "空地上支了张小桌子。",
+   "requires": {
+    "minAge": 46
+   },
+   "title": "量血压",
+   "text": "傍晚，空地上有人支了张桌子，免费量血压。排队的大都比你们大一轮。",
+   "options": [
+    {
+     "id": "measure",
+     "text": "伸胳膊量一个",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "替爸妈问问吃什么药",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "pass",
+     "text": "摆摆手，接着走",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "measure": {
+     "text": "两个人的数一个高一个低。量血压的说，你俩匀一匀就正好了。",
+     "memory": "匀一匀",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "ask": {
+     "text": "你们问的是同一种药。量血压的写了张条，一人抄了一份。",
+     "memory": "抄了一份",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "pass": {
+     "text": "走出去十几步，两个人又都回头看了一眼那条队。",
+     "memory": "那条队",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个坐下伸了胳膊，一个站在队尾等。量完一看，等的那个手里拿着两瓶水。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
    "catches": []
   },
   {
@@ -30230,6 +31679,507 @@ var CONTENT: Content = {
    "catches": []
   },
   {
+   "id": "pl_pr_workbook",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "school",
+   "when": [
+    930,
+    1110
+   ],
+   "hint": "有人在校门口喊你。",
+   "requires": {
+    "minAge": 13,
+    "maxAge": 15
+   },
+   "title": "旧习题集",
+   "text": "路过小学，当年教数学的老师在门口叫住你，从包里掏出一本旧习题集：「中考考这个。」",
+   "options": [
+    {
+     "id": "do",
+     "text": "拿回去一页页做完",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "share",
+     "text": "撕开一半给对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {
+       "mind": 1
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "shelf",
+     "text": "道声谢，先搁着",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_pr_hoop",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "yard",
+   "when": [
+    930,
+    1110
+   ],
+   "hint": "小学操场上没人。",
+   "requires": {
+    "minAge": 13
+   },
+   "title": "矮了的篮筐",
+   "text": "放学绕回小学操场。当年够不着的篮筐，现在一伸手就摸到了网。",
+   "options": [
+    {
+     "id": "shoot",
+     "text": "投到天黑",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "step",
+     "text": "坐在当年那级台阶上",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "kids",
+     "text": "教小孩子运球",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "shoot": {
+     "text": "天黑透了，最后一个球在框上转了三圈。你们俩谁也没去捡。",
+     "memory": "转了三圈",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "step": {
+     "text": "那级台阶现在只坐得下两个人，你们挤着坐上去，正好。",
+     "memory": "那级台阶",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "kids": {
+     "text": "你们一人带一拨小孩比了一场。比分拿粉笔写在地上，天黑前是平的。",
+     "memory": "地上的比分",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在篮下投个不停，一个坐在台阶上看。球滚过去，坐着的那个伸脚挡住了。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_pr_desks",
+   "kind": "mirror",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "yard",
+   "when": [
+    720,
+    1110
+   ],
+   "hint": "操场上堆着旧桌椅。",
+   "requires": {
+    "minAge": 20
+   },
+   "title": "旧课桌",
+   "text": "小学换了新课桌，旧的堆在操场上，谁要谁搬走。你们在那一堆里找当年那一张。",
+   "options": [
+    {
+     "id": "find",
+     "text": "一张张翻着找",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "carry",
+     "text": "扛一张回家",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sit",
+     "text": "坐上去比比个子",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "find": {
+     "text": "你们在同一张前面停下。桌面当中一道刻痕，一边宽一边窄。",
+     "memory": "一边宽一边窄",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "carry": {
+     "text": "两个人扛着一张桌子回去，一人一头，进楼道时都喊「低头」。",
+     "memory": "一人一头",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "sit": {
+     "text": "两个人挤在一张桌子后头，胳膊肘又碰在了一块儿。",
+     "memory": "碰着的胳膊肘",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在桌子堆里翻，一个已经扛起一张走了。翻的那个找着时，扛走的那张就是。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_pr_firstyear",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "school",
+   "when": [
+    420,
+    1020
+   ],
+   "hint": "预备铃响了。",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 25,
+    "flags": [
+     "job_teach"
+    ]
+   },
+   "title": "头一年",
+   "text": "头一年上讲台。最后一排那个男孩在桌肚里弹玻璃球，跟你当年一个样。",
+   "options": [
+    {
+     "id": "take",
+     "text": "收了，下课还他",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "叫他上来做这道题",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "let",
+     "text": "装没看见，接着讲",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_pr_window",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "classroom",
+   "when": [
+    1080,
+    1290
+   ],
+   "hint": "窗户外头站着个人。",
+   "requires": {
+    "minAge": 30,
+    "flags": [
+     "job_teach"
+    ]
+   },
+   "title": "窗外那个",
+   "text": "晚上教室后排补课，来了七个。还有一个交不起钱，天天站在窗户外头听。",
+   "options": [
+    {
+     "id": "in",
+     "text": "叫他进来坐",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "after",
+     "text": "散了单给他讲一遍",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "shut",
+     "text": "把窗关上",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "energy": 3,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_pr_parents",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "classroom",
+   "when": [
+    1080,
+    1260
+   ],
+   "hint": "教室里点着灯，人坐满了。",
+   "requires": {
+    "minAge": 32,
+    "maxAge": 42,
+    "flags": [
+     "has_kid"
+    ]
+   },
+   "title": "家长会",
+   "text": "家长会。你坐在孩子的座位上，膝盖顶着桌板。还是你当年那间教室。",
+   "options": [
+    {
+     "id": "note",
+     "text": "记满一页纸",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "hand",
+     "text": "举手说一句",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "desk",
+     "text": "伸手摸摸桌肚",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
    "id": "pl_rt_stove",
    "kind": "solo",
    "stage": "young",
@@ -30420,6 +32370,151 @@ var CONTENT: Content = {
       },
       "other": {},
       "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_rt_heir",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "rent_room",
+   "when": [
+    930,
+    1200
+   ],
+   "hint": "有人敲门，是个生面孔。",
+   "requires": {
+    "minAge": 34
+   },
+   "title": "房东的儿子",
+   "text": "房东换成了房东的儿子。他翻着本子说，你在这屋住的年头，比他在家住的还长。",
+   "options": [
+    {
+     "id": "renew",
+     "text": "一签就签三年",
+     "tags": [
+      "patient"
+     ],
+     "cost": 6,
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "bargain",
+     "text": "拿出水电账讲讲价",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "charm": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "as_is",
+     "text": "照旧，一年一签",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_rt_salt",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "rent_hall",
+   "when": [
+    1080,
+    1320
+   ],
+   "hint": "走廊里有人在找盐。",
+   "requires": {
+    "minAge": 32
+   },
+   "title": "盐在哪儿",
+   "text": "合用的厨房里，只剩你是老住户。新搬来的小伙子端着锅，问你盐在哪儿。",
+   "options": [
+    {
+     "id": "cook",
+     "text": "顺手给他炒一个",
+     "tags": [
+      "gentle"
+     ],
+     "cost": 1,
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "point",
+     "text": "指给他，回屋",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "回屋给对门打个电话",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {
+       "mood": 3
+      },
+      "bond": {
+       "close": 2
+      },
       "flags": []
      }
     }
@@ -30772,6 +32867,206 @@ var CONTENT: Content = {
    },
    "dissonance": {
     "text": "一个碰了一下，一个掏出手绢去擦。指印擦花了，还看得出是两个。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_rv_runner",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "river",
+   "when": [
+    1110,
+    1320
+   ],
+   "hint": "有人跑过去，又跑回来。",
+   "requires": {
+    "minAge": 40
+   },
+   "title": "跟一段",
+   "text": "夜跑的人每晚从你身边过三回。今晚第三回，他放慢了，冲你一扬下巴。",
+   "options": [
+    {
+     "id": "run",
+     "text": "跟着跑到桥头",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "walk",
+     "text": "照自己的步子走",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": -2,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "靠着栏杆给家里打电话",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_rv_proof",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "river",
+   "when": [
+    690,
+    1020
+   ],
+   "hint": "拍照的在翻一本旧册子。",
+   "requires": {
+    "minAge": 33
+   },
+   "title": "旧样片",
+   "text": "河边拍照的翻他的旧样册给人看。翻到一张：两个小孩扒着栏杆，是你俩。",
+   "options": [
+    {
+     "id": "buy",
+     "text": "把这张买下来",
+     "tags": [
+      "gentle"
+     ],
+     "cost": 5,
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "again",
+     "text": "照原样再拍一张",
+     "tags": [
+      "adventure"
+     ],
+     "cost": 5,
+     "effects": {
+      "self": {
+       "mood": 4,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "look",
+     "text": "看一会儿，还给他",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "问他是哪年拍的",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "buy": {
+     "text": "两个人都掏了钱。拍照的只有一张，他想了想，把底片也找了出来。",
+     "memory": "一张底片",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "again": {
+     "text": "还是那段栏杆，扒不上去了，就靠着。拍照的说比上回站得近。",
+     "memory": "靠着栏杆",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "look": {
+     "text": "两个人看了很久，谁也没说要。拍照的合上册子，说他一直留着。",
+     "memory": "他一直留着",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    },
+    "ask": {
+     "text": "他记不得了，只记得那天风大，你俩谁也不肯先松手。",
+     "memory": "那天风大",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个伸手要买，一个已经把册子合上了。拍照的把那一页折了个角。",
     "bond": {
      "close": 0
     },
@@ -31207,6 +33502,384 @@ var CONTENT: Content = {
     },
     "flags": []
    },
+   "catches": []
+  },
+  {
+   "id": "pl_st_books",
+   "kind": "mirror",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "alley",
+   "when": [
+    930,
+    1200
+   ],
+   "hint": "巷子口有人吆喝收旧书。",
+   "requires": {
+    "minAge": 18,
+    "maxAge": 19
+   },
+   "title": "论斤称",
+   "text": "考完那个夏天，巷子口来了个收旧书的，论斤称。两家的课本捆成两摞，并排搁在秤边。",
+   "options": [
+    {
+     "id": "sell",
+     "text": "都卖了",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "keep",
+     "text": "抽出一本留着",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "give",
+     "text": "挑几本给楼里的小孩",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "sell": {
+     "text": "两摞一共三十一斤。收书的多给了两毛，说你们的书干净，没怎么翻。",
+     "memory": "三十一斤",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "keep": {
+     "text": "你们抽出来的是同一本，书皮上写着对方的名字。当年借了，一直没还。",
+     "memory": "没还的那本",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "give": {
+     "text": "楼里的小四儿抱走了一摞，走两步回头问：「里头有答案吗？」",
+     "memory": "抱走的一摞",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一摞已经上了秤，另一摞的绳子又被解开了。收书的蹲着等，没催。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_st_minding",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": "bikeshop",
+   "when": [
+    720,
+    1110
+   ],
+   "hint": "车铺的卷帘门半开着。",
+   "requires": {
+    "minAge": 19,
+    "maxAge": 23
+   },
+   "title": "看半天铺子",
+   "text": "修车爷爷要过桥配零件，让你帮着看半天铺子。工具摆了一地，哪样是哪样，他说了两遍。",
+   "options": [
+    {
+     "id": "fix",
+     "text": "来一辆修一辆",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mind": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "watch",
+     "text": "只收车，等他回来修",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "energy": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "close",
+     "text": "挂个牌子，跟他过桥",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_st_tab",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "breakfast",
+   "when": [
+    390,
+    480
+   ],
+   "hint": "鏊子已经热了。",
+   "requires": {
+    "minAge": 32
+   },
+   "title": "一张桌",
+   "text": "上班前在早点铺碰上，就剩一张桌。老板娘问：「还是老样子？」",
+   "options": [
+    {
+     "id": "treat",
+     "text": "抢着把两份都付了",
+     "tags": [
+      "gentle"
+     ],
+     "cost": 2,
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "pack",
+     "text": "多买一份给爸妈带回去",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 2,
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "quick",
+     "text": "站着吃完就走",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "energy": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sit",
+     "text": "坐下，晚到一会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "energy": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "treat": {
+     "text": "两个人同时把钱拍在案子上。老板娘两份都收了，给你俩各添了半碗豆浆。",
+     "memory": "半碗豆浆",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "pack": {
+     "text": "两个塑料袋挂在同一根车把上，你们推着车走到路口才分开。",
+     "memory": "一根车把",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "quick": {
+     "text": "两碗一块儿见底，碗往桌上一搁，一前一后出了门。",
+     "memory": "两只空碗",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    },
+    "sit": {
+     "text": "两个人都迟到了一刻钟，谁也没跟谁说。",
+     "memory": "一刻钟",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个站在门口吃完就走了，一个坐下才发现对面空着，桌上留了一份没动的果子。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "pl_st_tab_owed",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "shop",
+   "when": [
+    1110,
+    1320
+   ],
+   "hint": "便利店的灯还亮着。",
+   "requires": {
+    "minAge": 38
+   },
+   "title": "垫上的两块",
+   "text": "便利店的小伙子叫住你：「你爸下午来买药，差两块钱，我先垫上了。」",
+   "options": [
+    {
+     "id": "pay",
+     "text": "把账结了，多放两块",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 4,
+     "effects": {
+      "self": {
+       "mood": 4,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "先回家看看他",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "问问买的什么药",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
    "catches": []
   }
  ],

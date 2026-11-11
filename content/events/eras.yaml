@@ -1,0 +1,156 @@
+# 只在某个年代才有的事：requires 读 content/eras.yaml 发的 era_* 标记（说明见 docs/ERAS.md）
+
+# 下海那几年（era_xiahai）：比 lv_sea 早，二十几岁就碰得上。只有坐办公室、托关系、教书、在厂里的人碰得上
+- id: lv_era_tingxin
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 22, maxAge: 29, flags: [era_xiahai], notFlags: [job_trade, job_craft, job_labor, job_odd, left_city, own_shop, own_stall, laid_off, no_job, quit_job] }
+  title: 停薪留职
+  text: 同屋的老同事办了停薪留职，在街口盘了个门脸卖衣裳。他来找你：缺个合伙的。
+  options:
+    - id: go
+      text: 办了手续跟他干
+      tags: [adventure]
+      effects: { self: { charm: 0.2 }, flags: [own_shop, quit_job] }
+    - id: family
+      text: 家里出本钱，自己开
+      tags: [competitive]
+      requires: { flags: [fam_rich] }
+      effects: { self: { charm: 0.2 }, flags: [own_shop, quit_job] }
+    - id: stay
+      text: 不去，接着上班
+      tags: [patient]
+      effects: { self: { mood: -2 } }
+    - id: ask
+      text: 回去问问对门
+      tags: [gentle]
+      effects: { self: { mood: 2 }, bond: { close: 1 } }
+
+# 分房那几年（era_fenfang）：在厂里的人二十几岁排的队，三十岁那道关的 unit 接着它
+- id: lv_era_queue
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 24, maxAge: 29, flags: [job_succeed, era_fenfang], notFlags: [left_city, laid_off] }
+  title: 分房榜
+  text: 分房的榜贴在食堂门口，按工龄排。你从上往下数，数到第四十几个才是自己。
+  options:
+    - id: ask
+      text: 托老师傅说句话
+      tags: [gentle]
+      effects: { self: { charm: 0.1, mood: -2 } }
+    - id: wait
+      text: 接着排
+      tags: [patient]
+      effects: { self: { mood: -1 } }
+    - id: dorm
+      text: 先住单身宿舍
+      tags: [solitude]
+      effects: { self: { body: 0.1, mood: -1 } }
+
+# 下岗那几年（era_xiagang）：六十年代生的三十出头就碰上了（m_layoff 要 39 岁以后）。发的标记和 m_layoff 一样，后面接「再就业」
+- id: lv_era_list
+  kind: solo
+  stage: middle
+  weight: 4
+  requires: { minAge: 30, maxAge: 38, flags: [job_succeed, era_xiagang], notFlags: [laid_off, no_job, own_stall, own_shop, left_city] }
+  title: 厂门口
+  text: 厂门口的名单贴了三张纸，你的名字在第二张上。门卫把茶缸子往你这边推了推。
+  options:
+    - id: stall
+      text: 在楼下支个摊
+      tags: [adventure]
+      effects: { self: { charm: 0.1, mood: -4 }, flags: [laid_off, own_stall] }
+    - id: south
+      text: 去南边再找活
+      tags: [competitive]
+      effects: { self: { luck: 0.2, mood: -4 }, bond: { distance: 1 }, flags: [laid_off, left_city] }
+    - id: wait
+      text: 回家等厂里的信儿
+      tags: [patient]
+      effects: { self: { mood: 2, energy: 10 }, flags: [laid_off, no_job] }
+
+# 抢购那两年（era_qianggou）：七十年代生的这时候上初中
+- id: t_era_queue
+  kind: solo
+  stage: teen
+  weight: 3
+  requires: { minAge: 12, maxAge: 17, flags: [era_qianggou] }
+  title: 排队
+  text: 副食店门口的队排到了拐角。你被派来排着，前头的人也说不清在买什么。
+  options:
+    - id: stay
+      text: 排到底
+      tags: [patient]
+      effects: { self: { body: 0.1, mood: -2 } }
+    - id: swap
+      text: 叫对门来替一会儿
+      tags: [gentle]
+      effects: { bond: { close: 1 } }
+    - id: home
+      text: 先回家报个信
+      tags: [responsible]
+      effects: { self: { mood: 1 } }
+
+# 手机那些年（era_shouji）：〇〇后的少年没有网吧（t_netcafe_door 要 era_wangba），有这个
+- id: t_era_phone
+  kind: solo
+  stage: teen
+  weight: 3
+  requires: { minAge: 13, maxAge: 17, flags: [era_shouji] }
+  title: 课间
+  text: 课间，有人把手机从书包夹层里掏出来，一圈人围着看。晚上的作业答案在群里传。
+  options:
+    - id: look
+      text: 凑过去看一眼
+      tags: [adventure]
+      effects: { self: { mood: 3 } }
+    - id: own
+      text: 接着写自己的
+      tags: [patient]
+      effects: { self: { mind: 0.2, mood: -1 } }
+    - id: text
+      text: 借来给对门发一条
+      tags: [gentle]
+      effects: { bond: { close: 1 } }
+
+# 卷起来以后（era_juan）：二十二岁那道关的 desk 线高了 6 分，这件事给肯起早的人补一点心智
+- id: y_era_seat
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 20, maxAge: 23, flags: [era_juan], notFlags: [dropout, vocational, work_early, army] }
+  title: 占座
+  text: 天不亮，图书馆门口排起了长队。占座的书码了一排，人还没到。
+  options:
+    - id: line
+      text: 去排队占个座
+      tags: [competitive]
+      effects: { self: { mind: 0.3, mood: -3, energy: -10 } }
+    - id: sleep
+      text: 回宿舍接着睡
+      tags: [solitude]
+      effects: { self: { mood: 3 } }
+    - id: intern
+      text: 去实习单位递简历
+      tags: [adventure]
+      effects: { self: { charm: 0.2, mood: -1 } }
+
+# 装上电梯以后（era_dianti）
+- id: o_era_lift
+  kind: solo
+  stage: old
+  weight: 3
+  requires: { minAge: 60, flags: [era_dianti] }
+  title: 头一趟
+  text: 电梯头一天开，楼里的老人都下来了，挨个坐了一趟。
+  options:
+    - id: ride
+      text: 也去坐一趟
+      tags: [gentle]
+      effects: { self: { mood: 3 } }
+    - id: stairs
+      text: 还是走楼梯
+      tags: [patient]
+      effects: { self: { body: 0.1, energy: -5 } }

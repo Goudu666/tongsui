@@ -72,13 +72,14 @@ function pullReachMoney(c: Content, close: number): number {
 }
 
 /** 这条路要多少钱才走得了（积蓄线和交的钱里大的那个）；不看钱返回 0 */
-function pullMoneyNeed(ev: LifeEvent, o: EventOption): number {
+function pullMoneyNeed(ev: LifeEvent, o: EventOption, p: Person): number {
   var w = lifeOptionWeights(ev, o);
-  var need = o.cost || 0;
-  if (o.min && w.money && !w.close) {
+  var need = lifeOptionCost(ev, o, p); // 年代挪过的线和钱（era.ts）
+  var min = lifeOptionMin(o, p);
+  if (min && w.money && !w.close) {
     var other = 0;
     for (var k in w) if (k !== "money") other++;
-    if (other === 0) need = Math.max(need, o.min / (w.money as number));
+    if (other === 0) need = Math.max(need, min / (w.money as number));
   }
   return need;
 }
@@ -100,14 +101,14 @@ function pullOffer(s: LifeState, c: Content, ev: LifeEvent, pe: PendingEvent, ro
   if (!lifeHasAll(me.flags, rq.flags) || !lifeHasNone(me.flags, rq.notFlags)) return null; // 不是给这户人家留的路，拉不进来
   var w = lifeOptionWeights(ev, o);
   if (w.close) return null; // 亲近是两个人同一个数
-  var moneyNeed = pullMoneyNeed(ev, o);
+  var moneyNeed = pullMoneyNeed(ev, o, me);
   var scoreLine = !!o.min && !lifeScoreRaw(w);
   if (scoreLine) {
     // 看分的线：差的分和富余的分都按百分制往下取整（和锁上那句、揭晓卡上的数一样）
-    var line = lifePoints(o.min!);
+    var line = lifePoints(lifeOptionMin(o, me)); // 两个人同一年生，年代挪的线是同一条
     var gap = line - lifePoints(lifeScore(me, w) + swingMe);
     var spare = lifePoints(lifeScore(them, w) + swingThem) - line;
-    if (gap <= 0 || o.cost && me.money < o.cost) return null; // 分和钱都差的，一把拉不过来
+    if (gap <= 0 || o.cost && me.money < lifeOptionCost(ev, o, me)) return null; // 分和钱都差的，一把拉不过来
     var reach = pullReachPoints(c, s.bond.sync);
     if (gap > reach || spare < gap) return null;
     return { by: other, gap: gap, unit: "分", reach: reach };

@@ -21,6 +21,16 @@ var eff := 1.0                  ## 现在做事的效率（1.0 上下）
 var track := ""                 ## 现在走在哪条路上（上小学 / 机关上班）
 var stats: Dictionary = {}      ## 我的属性（0~10），没有关口时显示
 var _sig: Array = []
+## 「还差几分」跟着动（爽感层，ui/juice.gd）：我的分涨了，先等飘字飞到（LAND 秒），再一格一格拨上去，
+## 分数后面挂一个「+3」，那一截纸带闪一下；拨过线的那一下写「够着了」
+const LAND := 1.55
+var land_in := LAND      ## 这一回等多久（juice.gd 按飘字什么时候落下来设）
+var _line_id := ""
+var _have := -1.0        ## 正在显示的我的分
+var _from := 0.0         ## 这一回从多少开始拨
+var _roll_at := 0.0      ## 什么时候开始拨
+var _gain := 0           ## 这一回涨了几分
+var _t := 0.0
 
 
 func _ready() -> void:
@@ -37,9 +47,31 @@ func _gui_input(event: InputEvent) -> void:
 		pressed.emit()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_t += delta
+	var line := target_line(goal)
+	var animating := false
+	if line.is_empty():
+		_line_id = ""
+	else:
+		var real := float(line.have)
+		if str(line.id) != _line_id or real < _have - 0.01 or _have < 0.0:
+			_line_id = str(line.id)
+			_have = real  # 换了一条线、掉了分：直接到位
+			_gain = 0
+		elif real > _have + 0.01 and (_gain == 0 or _t > _roll_at + 2.0):
+			_from = _have
+			_gain = int(round(real - _have))
+			_roll_at = _t + land_in
+			land_in = LAND
+		if _gain != 0 and _t >= _roll_at and _have < real:
+			_have = minf(real, _from + (real - _from) * clampf((_t - _roll_at) / 0.5, 0.0, 1.0))
+		animating = _gain != 0 and _t < _roll_at + 1.8
+		if not animating and _gain != 0:
+			_gain = 0
+			_have = real
 	var sig := [str(goal), str(their_goal), my_color, eff, track, str(stats), their_name, size]
-	if sig != _sig:
+	if animating or sig != _sig:
 		_sig = sig
 		queue_redraw()
 
@@ -146,8 +178,17 @@ func _draw() -> void:
 	# 靠左：我。实心点 + 我的分 / 线
 	draw_circle(Vector2(x0 + 12, 34) + Vector2(2, 2), 9.0, my_color, true, -1.0, true)
 	draw_arc(Vector2(x0 + 12, 34), 9.0, 0, TAU, 20, P.INK, 2.5, true)
-	_score(f, x0 + 32.0, str(int(line.have)), " / %d %s" % [int(line.need), unit])
-	var sub := "够着了" if bool(line.ok) else "还差 %d %s" % [int(ceil(float(line.need) - float(line.have))), unit]
+	var have := _have if _line_id == str(line.id) and _have >= 0.0 else float(line.have)
+	var k := clampf((_t - _roll_at) / 1.8, 0.0, 1.0) if _gain != 0 and _t >= _roll_at else (0.0 if _gain != 0 else 1.0)
+	if _gain != 0 and _t >= _roll_at and k < 1.0:
+		# 涨分的那一下：分数底下垫一块自己的颜色，慢慢淡掉
+		draw_rect(Rect2(x0 - 6, 8, side - 6.0, 52), Color(my_color, 0.28 * (1.0 - k)))
+	_score(f, x0 + 32.0, str(int(have)), " / %d %s" % [int(line.need), unit])
+	if _gain != 0 and _t >= _roll_at and k < 1.0:
+		var gw := f.get_string_size(str(int(have)) + " / %d %s" % [int(line.need), unit], HORIZONTAL_ALIGNMENT_LEFT, -1, 30).x
+		draw_string(f, Vector2(x0 + 40.0 + gw, 30 - k * 10.0), "+%d" % _gain, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Color(my_color, 1.0 - k * k))
+	var reached := have >= float(line.need) - 0.001
+	var sub := "够着了" if reached else "还差 %d %s" % [int(ceil(float(line.need) - have)), unit]
 	var eff_text := _eff_text(" · ")
 	if f.get_string_size(sub + eff_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x > side - 6.0:
 		eff_text = ""  # 放不下就只说还差多少
@@ -179,7 +220,9 @@ func _draw() -> void:
 		var name_w := minf(f.get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x, rw - 96.0)
 		draw_string(f, Vector2(rx, 36), name_text, HORIZONTAL_ALIGNMENT_LEFT, name_w, 26, P.INK)
 		draw_string(f, Vector2(rx + name_w + 14, 36), "看" + str(line.by), HORIZONTAL_ALIGNMENT_LEFT, rw - name_w - 14.0, 20, P.INK_SOFT)
-		draw_ruler(self, Vector2(rx + 6, 68), rw - 12.0, line, their_have(their_goal, str(line.id)), my_color, their_color)
+		var shown_line := line.duplicate()
+		shown_line["have"] = have
+		draw_ruler(self, Vector2(rx + 6, 68), rw - 12.0, shown_line, their_have(their_goal, str(line.id)), my_color, their_color)
 	# 可以点开
 	var cx := size.x - 20.0
 	var cy := size.y / 2.0

@@ -264,7 +264,7 @@ function worldStartDay(s: LifeState, c: Content) {
   // 孩子的关口（family.ts）：自己今天没有关口的日子，孩子到了岁数的那道今天过
   // 主线照排（不当自己的关口那样让开）：中年一个日子三年，四道孩子的关口再占四天，第五章的三件就排不下了
   var kidGate = msDue ? null : kidGateToday(s, c);
-  var story = storyToday(s, c, t, msDue);
+  var story = storyToday(s, c, t, msDue && !msToday!.withStory); // withStory 的关口（挑大梁）那天主线照排
   var storyScene = function (r: Role): string | null {
     var id = story[r] || story.mirror;
     return id ? storyFindEvent(c, id)!.scene : null;
@@ -349,7 +349,7 @@ function worldStartDay(s: LifeState, c: Content) {
   //   - 回来的那一天（主线在另一片）
   //   - 主线那件事落在大人上班的钟点上（傍晚的楼下、对岸）。上学上班不逃，不然只有碰上歇班日才过得上，
   //     多半拖到章末强制。小孩上学的那几件（一路去上学）本来就写在上学的钟点，不算
-  if (msDue) off = {};  // 孩子的关口那天主线照排，给碰上主线的人放的那一天也照给
+  if (msDue && !msToday!.withStory) off = {};  // 主线照排的关口（孩子的、挑大梁）那天，碰上主线的照样放一天
   else {
     for (var sri = 0; sri < ROLES.length; sri++) {
       var sr0 = ROLES[sri];

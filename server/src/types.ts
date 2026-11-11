@@ -88,6 +88,8 @@ interface LifeEvent {
   grades?: Grade[];
   /** 孩子的关口：孩子到了这个岁数之后，爹妈第一个没有自己关口的日子早上发生（没有 age） */
   kidAge?: number;
+  /** 关口那天主线照排（docs/CAREER.md：36 岁挑大梁占着第五章的一个空日子，不让的话第五章天天强制） */
+  withStory?: boolean;
 }
 
 interface EventRequires {

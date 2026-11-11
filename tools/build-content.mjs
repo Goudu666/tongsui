@@ -55,7 +55,7 @@ const REMEMBERED_MAX = 19;
 // 事件就变成「没有条件」「没有效果」；现在直接报错。加新字段时先加到这里，再去 types.ts 和 sim.ts 里用它。
 const EVENT_KEYS = ["id", "kind", "stage", "where", "when", "hint", "seasons", "weight", "requires", "title", "text", "options", "resonance", "dissonance"];
 // 关口（kind: milestone）多出来的字段，见 content/events/milestones.yaml 文件头
-const MILESTONE_KEYS = [...EVENT_KEYS, "age", "score", "swing", "grades", "kidAge"];
+const MILESTONE_KEYS = [...EVENT_KEYS, "age", "score", "swing", "grades", "kidAge", "withStory"];
 const MILESTONE_OPTION_KEYS = ["id", "text", "tags", "effects", "min", "score", "cost", "requires", "lock", "joins", "hide"];
 const SCORE_KEYS = ["body", "mind", "charm", "luck", "money", "close", "kid_mind", "kid_body", "kid_charm"];
 // 孩子（docs/FAMILY.md）：带孩子的行动只长这三项；关口按 kid_* 读孩子的属性
@@ -191,6 +191,7 @@ for (const file of eventFiles) {
         g.flags = g.flags ?? [];
       }
       if (ev.grades?.length && ev.grades.at(-1).min > 0) errors.push(`${at}.grades: 最后一档是兜底，min 必须是 0`);
+      if (ev.withStory !== undefined && ev.withStory !== true) errors.push(`${at}.withStory: 只能写 true（这道关那天主线照排）`);
       const open = (ev.options ?? []).filter((o) => !o.min && !o.requires && !o.cost);
       if (open.length === 0) errors.push(`${at}: 关口至少要有一条谁都能走的路（没有 min / cost / requires 的选项）`);
     }
@@ -266,7 +267,7 @@ for (const file of eventFiles) {
       where: ev.where ?? null, when: ev.when ?? null, hint: ev.hint ?? null,
       requires: ev.requires ?? {}, title: ev.title, text: ev.text, options: ev.options,
       resonance: ev.resonance ?? null, dissonance: ev.dissonance ?? null,
-      ...(ms ? { ...(ev.kidAge !== undefined ? { kidAge: ev.kidAge } : { age: ev.age }), score: ev.score ?? {}, swing: !!ev.swing, grades: ev.grades ?? [] } : {}),
+      ...(ms ? { ...(ev.kidAge !== undefined ? { kidAge: ev.kidAge } : { age: ev.age }), score: ev.score ?? {}, swing: !!ev.swing, grades: ev.grades ?? [], ...(ev.withStory ? { withStory: true } : {}) } : {}),
     });
   }
 }

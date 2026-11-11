@@ -1,0 +1,211 @@
+# 后半生：四十五往后，每个日子都有得押（玩法总把关：新内容要说得出挂在哪道关上）。
+#
+# 六十岁以后一天五段都是自己的，七十岁那道关三条线一起摆着：并一家（亲近）、自己下楼走一圈（体魄）、请个人来照应（积蓄）。
+# 这一篇的事都在问同一个问题：这一段、这笔钱，押给哪一条？
+#   - 老年团、补习班、借钱、请人照应：花积蓄换亲近或者心安，积蓄那条线往回退（请人照应 160）
+#   - 一锅饭、接孙辈、跳舞：开出地图上一个新去处（content/map.yaml 后半生那一节），往后每天多一个押时间的地方
+#   - 摔了一跤、陪床、看海：叫上对门一块儿，亲近那条线往前走（并一家 60）
+# 中年那两件（看海、跳舞）在四十九到五十七岁：六十岁退休那天之前碰得上，开出来的去处退休以后接着用。
+# 老年的事都写成各自碰上的（solo）：六十到七十那几个日子，两个人一块儿碰上的那一格被主线第七章占着。
+# 老年的事都从六十一岁起（六十岁那天早上是退休的关口，不写 where 的事会在关口当天早上马上冒出来），
+# 六十到七十之间只有六十五岁那一个日子，所以七十岁那道关之前碰得上的就是这几件。
+# 写法守文风手册：老年正文三十字以内，选项十五字以内，旁白不用方言，不写年份。
+
+# ======================== 中年：退休以前开出来的 ========================
+
+- id: lt_dance
+  kind: solo
+  stage: middle
+  where: lake_path
+  when: [390, 600]
+  hint: 湖边有人放着录音机。
+  weight: 3
+  requires: { minAge: 49, maxAge: 57, notFlags: [dance_team] }
+  title: 缺个人
+  text: 湖边晨练的舞队缺一个人。领舞的朝你招手：晚上在空地上跳，会不会都行，站最后一排。
+  options:
+    - id: join
+      text: 站到最后一排
+      tags: [adventure]
+      effects: { self: { mood: 6 }, flags: [dance_team] }
+    - id: watch
+      text: 在边上看一会儿
+      tags: [patient]
+      effects: { self: { mood: 4 } }
+    - id: leave
+      text: 摆摆手走了
+      tags: [solitude]
+      effects: {}
+
+- id: lt_sea
+  kind: mirror
+  stage: middle
+  where: hallway
+  when: [1080, 1320]
+  hint: 对门在楼道里站着。
+  weight: 2
+  requires: { minAge: 51, maxAge: 57 }
+  title: 看海
+  text: 楼道里，对门说退了休想去看一回海。说完自己先笑了：说说而已。
+  options:
+    - id: save
+      text: 那从现在攒着
+      tags: [responsible]
+      effects: { self: { mood: 4 }, flags: [sea_save] }
+    - id: go
+      text: 想去就去
+      tags: [adventure]
+      effects: { self: { mood: 4 } }
+    - id: no
+      text: 海有什么好看的
+      tags: [solitude]
+      effects: {}
+  resonance:
+    save:
+      text: 两个人各找了个铁盒子。谁也没说存了多少，路过楼道都拍一下对方的门。
+      memory: 两个铁盒子
+      bond: { close: 3, sync: 2 }
+    go:
+      text: 你们俩都说想去就去。说完又都说，等退了休。
+      bond: { close: 2 }
+  dissonance:
+    text: 一个说攒着，一个说算了。那天晚上两扇门都关得比平时晚。
+    bond: { close: 0 }
+
+# ======================== 老年：六十五岁那个日子 ========================
+
+- id: lt_tour
+  kind: solo
+  stage: old
+  where: hallway
+  when: [480, 1080]
+  hint: 楼道里贴了张新单子。
+  weight: 3
+  requires: { minAge: 61, maxAge: 74, alone: false }
+  title: 老年团
+  text: 居委会在楼道里贴了老年团的单子，五天四夜，管吃管住。
+  options:
+    - id: go
+      text: 叫上对门一块儿报
+      tags: [adventure]
+      cost: 25
+      effects: { self: { mood: 10 }, bond: { close: 5, sync: 2 } }
+    - id: bus
+      text: 坐公交到终点站
+      tags: [gentle]
+      effects: { self: { mood: 5, energy: -6 }, bond: { close: 2 } }
+    - id: stay
+      text: 钱留着
+      tags: [patient]
+      effects: {}
+
+- id: lt_meal
+  kind: solo
+  stage: old
+  where: hallway
+  when: [1020, 1200]
+  hint: 楼道里飘着两家的饭味。
+  weight: 3
+  requires: { minAge: 60, notFlags: [pair_meal], alone: false }
+  title: 一锅饭
+  text: 两家的锅都太大了。对门端着半碗饺子站在门口。
+  options:
+    - id: share
+      text: 往后凑一锅吃
+      tags: [gentle]
+      effects: { self: { mood: 6 }, bond: { close: 2 }, flags: [pair_meal] }
+    - id: once
+      text: 今天先凑一顿
+      tags: [patient]
+      effects: { self: { mood: 5, hunger: 30 }, bond: { close: 1 } }
+    - id: own
+      text: 各吃各的，清净
+      tags: [solitude]
+      effects: {}
+
+- id: lt_gk_class
+  kind: solo
+  stage: old
+  weight: 3
+  requires: { minAge: 61, maxAge: 72, flags: [has_kid] }
+  title: 补习班
+  text: 儿女来商量：孙辈想上补习班，一学期不少钱。
+  options:
+    - id: pay
+      text: 这钱我出
+      tags: [responsible]
+      cost: 30
+      effects: { self: { mood: 8 } }
+    - id: pick
+      text: 钱不多，我天天接送
+      tags: [patient]
+      effects: { self: { mood: 4 }, flags: [gk_pickup] }
+    - id: no
+      text: 让他们自己想办法
+      tags: [solitude]
+      effects: { self: { mood: -3 } }
+
+- id: lt_borrow
+  kind: solo
+  stage: old
+  weight: 2
+  requires: { minAge: 61, maxAge: 74 }
+  title: 开口
+  text: 老街坊的儿子赔了买卖。他在楼下转了三圈才上来。
+  options:
+    - id: lend
+      text: 借给他
+      tags: [gentle]
+      cost: 20
+      effects: { self: { mood: 6, charm: 1 } }
+    - id: sit
+      text: 钱不借，陪他坐会儿
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+    - id: no
+      text: 实在拿不出
+      tags: [solitude]
+      effects: { self: { mood: -4 } }
+
+- id: lt_fall
+  kind: solo
+  stage: old
+  weight: 2
+  requires: { minAge: 61, maxAge: 74, alone: false }
+  title: 楼梯
+  text: 对门在楼梯上摔了一跤，没伤着骨头，就是不敢下楼了。
+  options:
+    - id: walk
+      text: 天天陪着下楼
+      tags: [responsible]
+      effects: { self: { energy: -10 }, other: { body: 1, mood: 6 }, bond: { close: 3 } }
+    - id: carer
+      text: 请个人来照应
+      tags: [responsible]
+      cost: 20
+      effects: { other: { body: 1 }, bond: { close: 1 } }
+    - id: call
+      text: 给TA孩子打电话
+      tags: [patient]
+      effects: { self: { mood: -2 } }
+
+- id: lt_ward
+  kind: solo
+  stage: old
+  weight: 2
+  requires: { minAge: 61, maxAge: 78, alone: false }
+  title: 陪床
+  text: 楼里老刘住院了，儿女在外地，床边一下午没人。
+  options:
+    - id: both
+      text: 叫上对门一块儿去
+      tags: [gentle]
+      effects: { self: { mood: 4, energy: -10 }, bond: { close: 2 } }
+    - id: self
+      text: 自己去坐一下午
+      tags: [responsible]
+      effects: { self: { charm: 1, energy: -10 } }
+    - id: phone
+      text: 打个电话问问
+      tags: [solitude]
+      effects: { self: { mood: -2 } }

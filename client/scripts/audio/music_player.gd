@@ -24,6 +24,7 @@ const SILENT := -60.0
 const FADE_RATE := 28.0   ## 分轨音量每秒最多变多少 dB
 const LAYER_RATE := 10.0  ## morn / eve 两层慢一点（天气说变就变，耳朵里要慢慢变）
 const REVEAL_DUCK := -12.0  ## 揭晓的高光响着，配乐压这么多
+const HL_RELEASE := 1.5     ## 高光还剩这么多秒（都是余音了）配乐就开始放开
 const HL_DB := 0.0        ## 高光文件本身是 -18 LUFS，比配乐全开（-20）响一点，不再加减
 const RISE_FADE := 0.12   ## pass / top / miss 来了，rise 用多久淡掉
 const GROW_TAIL := 0.2    ## 长大那段还剩这么多秒时，新阶段的第一段就起
@@ -468,8 +469,8 @@ func _process(delta: float) -> void:
 				h.rate = 0.0
 		if h.to <= SILENT and h.p.volume_db <= SILENT + 0.5:
 			h.p.stop()
-		elif h.kind != "grow":
-			revealing = true
+		elif h.kind != "grow" and h.p.stream != null and h.p.stream.get_length() - h.p.get_playback_position() > HL_RELEASE:
+			revealing = true  # 高光剩最后一截余音时配乐就开始回来，别等它放完留一个坑
 
 	# 压低：默契乐句、揭晓的高光。压下去快，回来慢
 	if _duck_left > 0.0:

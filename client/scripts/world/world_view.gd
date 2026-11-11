@@ -54,6 +54,8 @@ var buffers: Dictionary = {}    ## role -> SnapshotBuffer（只用于对方）
 var _correction := Vector2.ZERO ## 本地角色还没消化掉的服务器校正量
 var _corrected_upto := 0        ## 这个序号及以前的 MOVE 是在校正之前发的，不再拿来校正（避免重复校正）
 var _stage_set := false
+var _flash: Dictionary = {}  ## role -> {act, label, tg, until}：刚当场做完的一回，人在那个点上把它做一会儿给人看
+const FLASH_SECS := 1.1
 
 
 func setup(content: Dictionary, role: String, names: Dictionary) -> void:
@@ -285,6 +287,7 @@ func apply_world(view: Dictionary) -> void:
 		a.at_spot = str(s.get("spot", "")) if s.get("spot") != null else ""
 		a.action_label = "" if act == null or a.asleep else _doing_label(r, str(act))
 		a.together = bool(s.get("tg", false)) and a.action_label != ""
+		_apply_flash(r, a, act == null and not a.asleep)
 		if a.is_local:
 			_reconcile(a, server_pos, act != null or a.asleep, int(s.get("seq", 0)))
 		else:
@@ -331,6 +334,30 @@ func _reconcile(a: Actor, server_pos: Vector2, busy: bool, seq: int) -> void:
 
 
 ## 头顶上写的「正在做什么」。日程（duty）的名字跟着这个人走的路：上学 / 出摊 / 过桥上班
+## 服务器刚当场结算了一回（main 看到 did 变了）：这个人在那个点上做一会儿这件事
+func flash_doing(role: String, act: String, label: String, together: bool) -> void:
+	_flash[role] = {"act": act, "label": label, "tg": together, "until": Time.get_ticks_msec() + int(FLASH_SECS * 1000.0)}
+	var a: Actor = actors.get(role)
+	if a != null:
+		_apply_flash(role, a, a.doing == "" and not a.asleep)
+
+
+func _apply_flash(role: String, a: Actor, idle: bool) -> void:
+	var f: Dictionary = _flash.get(role, {})
+	if f.is_empty():
+		return
+	if not idle or Time.get_ticks_msec() > int(f.until):
+		_flash.erase(role)
+		if idle:
+			a.doing = ""
+			a.action_label = ""
+			a.together = false
+		return
+	a.doing = str(f.act)
+	a.action_label = str(f.label)
+	a.together = bool(f.tg)
+
+
 func _doing_label(role: String, act: String) -> String:
 	if bool(actions.get(act, {}).get("duty", false)):
 		var d: Variant = duties.get(role)

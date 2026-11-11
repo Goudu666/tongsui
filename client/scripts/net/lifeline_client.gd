@@ -617,8 +617,12 @@ func sent_position(seq: int) -> Variant:
 	return p
 
 
-func act(spot_id: String) -> void:
-	_send(Op.ACT, {"spot": spot_id})
+## once：做一回、当场结算（协议 7）；false 是「做到点」，把这一段剩下的时间整段押上
+func act(spot_id: String, once := false) -> void:
+	var body := {"spot": spot_id}
+	if once:
+		body["once"] = true
+	_send(Op.ACT, body)
 
 
 func choose(option_id: String) -> void:

@@ -9,6 +9,9 @@ extends Node
 ##   断线（socket closed / 8 秒没收到任何东西 / App 从后台回来发现连接死了）
 ##     → 退避重连 1s 2s 4s 8s 10s… → 重新 open_lifeline（房间可能已关闭重开）→ 服务器重发快照
 ##
+## 单机（网页版）：页面里的 window.TongsuiLocal（web/local.js）跑着同一份服务器规则和对门的电脑，
+##   use_local() 以后 RPC、进房、收发消息都走它，不连 Nakama；其余流程一模一样。
+##
 ## 版本：服务器和安装包是分开更新的。每次 open_lifeline 双方互报协议版本（protocol.gd 的 VERSION）和内容指纹：
 ##   协议对不上 → 提示更新，不进房间；内容不一样 → 从服务器下载这一版内容（content_store.gd），再进房间。
 
@@ -67,6 +70,24 @@ var _ping_timer := 0.0
 var _wait_timer := 0.0
 var _move_seq := 0
 var _move_history := {}      ## seq -> Vector2，服务器回 seq 时拿来对照
+var local: Variant = null    ## 单机：页面里的 TongsuiLocal（JavaScriptObject）；联机时是 null
+
+
+## 网页版页面里带着单机服务器（web/local.js）吗
+static func local_available() -> bool:
+	return OS.has_feature("web") and JavaScriptBridge.get_interface("TongsuiLocal") != null
+
+
+## 改走单机：之后的 RPC、房间都在页面里跑，对门是电脑
+func use_local() -> bool:
+	if not local_available():
+		return false
+	local = JavaScriptBridge.get_interface("TongsuiLocal")
+	return true
+
+
+func is_local() -> bool:
+	return local != null
 
 
 static func addon_available() -> bool:
@@ -79,7 +100,7 @@ func _nakama():
 
 
 func server_address() -> String:
-	return Config.url()
+	return "这台设备上（单机）" if local != null else Config.url()
 
 
 # ======================================================================
@@ -97,7 +118,7 @@ func _device_id() -> String:
 		if saved.length() >= 10:
 			return saved
 	# 安卓上 get_unique_id 是 ANDROID_ID：卸载重装也不变，人生线不会丢
-	var uid := OS.get_unique_id()
+	var uid := "" if OS.has_feature("web") else OS.get_unique_id()  # 网页上没有设备号，调了会报错
 	var id := ("tongsui-" + uid) if uid.length() >= 4 else "tongsui-%d-%d" % [Time.get_unix_time_from_system(), randi()]
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f != null:
@@ -145,6 +166,8 @@ func _forget_session() -> void:
 
 ## 保证手里有一个还能用一会儿的会话：先用存下来的，快过期就刷新，刷新不了就重新设备登录
 func _ensure_session() -> bool:
+	if local != null:
+		return true
 	if client == null:
 		client = _nakama().create_client(Config.SERVER_KEY, Config.HOST, Config.PORT, Config.SCHEME, 8, LOG_ERROR)
 		session = _load_session()
@@ -263,6 +286,10 @@ func connect_server() -> bool:
 
 
 func _open_socket() -> bool:
+	if local != null:
+		connected = true
+		_last_rx = ServerClock.local_now()
+		return true
 	if not await _ensure_session():
 		return false
 	_drop_socket()
@@ -281,6 +308,8 @@ func _open_socket() -> bool:
 
 
 func _drop_socket() -> void:
+	if local != null and match_id != "":
+		local.leaveMatch()
 	connected = false
 	match_id = ""
 	if socket == null:
@@ -301,6 +330,8 @@ func _on_socket_closed() -> void:
 
 
 func is_online() -> bool:
+	if local != null:
+		return connected
 	return connected and socket != null and socket.is_connected_to_host()
 
 
@@ -339,6 +370,9 @@ func go_offline() -> void:
 func _process(delta: float) -> void:
 	if not _want_online or _reconnecting:
 		return
+	if local != null:
+		_drain_local()
+		return
 	if match_id != "" and connected:
 		_ping_timer += delta
 		if _ping_timer >= PING_INTERVAL:
@@ -371,6 +405,12 @@ func _notification(what: int) -> void:
 # ======================================================================
 
 func _rpc(id: String, payload: Dictionary) -> Variant:
+	if local != null:
+		var r: Variant = JSON.parse_string(str(local.rpcCall(id, JSON.stringify(payload))))
+		if r is Dictionary and r.has("__error"):
+			failed.emit(str(r.__error))
+			return null
+		return r
 	if not await _ensure_session():
 		return null
 	var res = await client.rpc_async(session, id, JSON.stringify(payload))
@@ -382,6 +422,11 @@ func _rpc(id: String, payload: Dictionary) -> Variant:
 
 func create_lifeline(player_name: String) -> void:
 	var r = await _rpc("lifeline_create", {"name": player_name})
+	if r != null and local != null:
+		# 单机：对门的电脑已经输好配对码了，直接进屋投胎
+		_remember(str(r.lifelineId))
+		await open_lifeline(str(r.lifelineId))
+		return
 	if r != null:
 		waiting_lifeline = str(r.lifelineId)
 		_remember(waiting_lifeline)
@@ -421,7 +466,7 @@ func open_lifeline(id: String, quiet := false) -> bool:
 	waiting_lifeline = ""
 	if not quiet:
 		opened.emit(r)
-	if socket == null:
+	if socket == null and local == null:
 		return false
 	# 先把房间记下来再进：服务器的进房快照可能比 join 的回执先到，
 	# 界面收到快照马上要发消息（比如确认投胎），这时 match_id 必须已经有了
@@ -433,6 +478,12 @@ func open_lifeline(id: String, quiet := false) -> bool:
 	_move_history.clear()
 	clock.reset()
 	# 进房时报上安装包的协议版本：服务器据此知道哪些新消息能发给这个连接，也告诉对门
+	if local != null:
+		if not bool(local.joinMatch(match_id, JSON.stringify({"protocol": str(Op.VERSION)}))):
+			match_id = ""
+			failed.emit("进入房间失败")
+			return false
+		return true
 	var m = await socket.join_match_async(r.matchId, {"protocol": str(Op.VERSION)})
 	if m.is_exception():
 		match_id = ""
@@ -520,6 +571,10 @@ func last_lifeline() -> String:
 # ======================================================================
 
 func _send(op: int, body: Dictionary) -> void:
+	if local != null:
+		if match_id != "":
+			local.sendMsg(op, JSON.stringify(body))
+		return
 	if match_id != "" and socket != null and connected:
 		socket.send_match_state_async(match_id, op, JSON.stringify(body))
 
@@ -604,7 +659,11 @@ func again(yes := true) -> void:
 ## 读不到就发 null，不弹错：老服务器没有这个接口，界面照着快照里的小传画就行
 func fetch_past(life_no: int) -> void:
 	var page: Variant = null
-	if lifeline_id != "" and client != null and await _ensure_session():
+	if local != null and lifeline_id != "":
+		var lr: Variant = JSON.parse_string(str(local.rpcCall("lifeline_past", JSON.stringify({"lifelineId": lifeline_id, "life": life_no}))))
+		if lr is Dictionary and lr.get("past") is Dictionary:
+			page = lr.past
+	elif lifeline_id != "" and client != null and await _ensure_session():
 		var res = await client.rpc_async(session, "lifeline_past", JSON.stringify({"lifelineId": lifeline_id, "life": life_no}))
 		if not res.is_exception():
 			var r: Variant = JSON.parse_string(res.payload)
@@ -619,11 +678,27 @@ func server_has_legacy() -> bool:
 
 
 func _on_match_state(state) -> void:
+	_on_message(int(state.op_code), str(state.data))
+
+
+## 单机：把页面里攒下的消息取过来，照联机收到的一样处理
+func _drain_local() -> void:
+	var text := str(local.drain())
+	if text == "" or text == "<null>":
+		return
+	var batch: Variant = JSON.parse_string(text)
+	if not batch is Array:
+		return
+	for m in batch:
+		if m is Dictionary:
+			_on_message(int(m.get("op", 0)), str(m.get("data", "")))
+
+
+func _on_message(op: int, text: String) -> void:
 	_last_rx = ServerClock.local_now()
-	var data: Variant = JSON.parse_string(state.data)
+	var data: Variant = JSON.parse_string(text)
 	if not data is Dictionary:
 		return
-	var op := int(state.op_code)
 	if op == Op.WORLD:
 		if data.has("tick"):
 			clock.observe(int(data.tick))

@@ -1,0 +1,74 @@
+name: web
+
+# 网页单机版（web/）：服务器规则在页面里跑，对门由电脑陪着，不需要服务器。
+# 每次 push / PR：单机服务器的冒烟 + Godot 网页导出，成品在 Artifacts 的 tongsui-web 里（解压后 python3 -m http.server 就能玩）。
+# main：再发到 GitHub Pages（https://<用户>.github.io/<仓库>/）。要先在 Settings → Pages → Source 选「GitHub Actions」，
+# 没开的时候这一步会失败，但不影响别的检查。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: web-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: 网页单机版 · 冒烟 + 导出
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.7.2
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: 导出模板、字体工具
+        run: |
+          # container job 里 HOME=/github/home，镜像把模板放在 /root 下
+          if [ "$HOME" != "/root" ]; then
+            mkdir -p ~/.local/share/godot/export_templates
+            cp -rn /root/.local/share/godot/export_templates/4.7.2.stable ~/.local/share/godot/export_templates/ 2>/dev/null || true
+          fi
+          ls ~/.local/share/godot/export_templates/4.7.2.stable | grep web
+          if ! python3 -c 'import fontTools' 2>/dev/null; then
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update -qq && apt-get install -y -qq --no-install-recommends curl ca-certificates python3-fonttools >/dev/null
+          fi
+      - name: 构建
+        run: |
+          npm ci
+          npm --prefix server install --no-audit --no-fund
+          bash web/build.sh build/web
+      - name: 单机服务器冒烟（投胎、电脑替两个人过二十五分钟、存档接着过）
+        run: node web/local.test.mjs build/web/tongsui-local.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tongsui-web
+          path: build/web
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          path: build/web
+
+  pages:
+    name: 网页单机版 · 发到 GitHub Pages
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    continue-on-error: true # Pages 没开时别把 main 标红
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

@@ -511,8 +511,13 @@ func _show_title() -> void:
 	if content.is_empty():
 		_label(col, "没有找到 data/content.json，请先在仓库根目录运行 npm run content", 32, P.MEI)
 		return
-	_primary(col, "联机 · 和 TA 一起过一辈子", _show_online)
-	_button(col, "先逛逛河畔里（不联网）", _start_preview)
+	if NetClient.local_available():
+		# 网页版：页面里带着单机服务器，打开就能从投胎过到结局
+		_primary(col, "一个人过 · 对门有人陪着", _show_solo)
+		_button(col, "联机 · 和 TA 一起过一辈子", _show_online)
+	else:
+		_primary(col, "联机 · 和 TA 一起过一辈子", _show_online)
+		_button(col, "先逛逛河畔里（不联网）", _start_preview)
 
 
 # ======================================================================
@@ -751,6 +756,20 @@ func _show_online() -> void:
 		_label(body, "没有找到 nakama-godot 插件（client/addons/com.heroiclabs.nakama）。\n确认 project.godot 里注册了 autoload「Nakama」，然后用 Godot 重新打开项目。", 36, P.MEI)
 		_quiet(body, "返回", _show_title)
 		return
+	if net != null and net.is_local():
+		_drop_net()
+	_make_net()
+	_status(body)
+	var ok: bool = await net.connect_server()
+	if not ok:
+		_server_row(body)
+		_primary(body, "重试", _show_online)
+		_quiet(body, "返回", _show_title)
+		return
+	_show_lobby()
+
+
+func _make_net() -> void:
 	if net == null:
 		net = NetClient.new()
 		add_child(net)
@@ -771,13 +790,42 @@ func _show_online() -> void:
 		net.log_entries.connect(_on_log_entries)
 		net.presence.connect(_on_presence)
 		net.again_state.connect(legacy.on_again)
-	_status(body)
-	var ok: bool = await net.connect_server()
-	if not ok:
-		_server_row(body)
-		_primary(body, "重试", _show_online)
-		_quiet(body, "返回", _show_title)
-		return
+
+
+# ======================================================================
+# 一个人过（网页版）：服务器规则在页面里跑（web/local.js），对门由电脑陪着
+# ======================================================================
+
+func _show_solo() -> void:
+	if net != null and not net.is_local():
+		_drop_net()
+	_make_net()
+	net.use_local()
+	await net.connect_server()
+	_show_screen("solo")
+	var cols := _columns(body, 1.0, 1.0)
+	var left: VBoxContainer = cols[0]
+	var right: VBoxContainer = cols[1]
+	_label(left, "一个人过", 96)
+	_label(left, "你住三楼，是青。对门的梅由电脑陪着：你在做事，TA 多半会过来一起；主线里的事，TA 也会按时赶到。", 32, P.INK_SOFT)
+	_label(left, "不用联网，存档留在这个浏览器里。", 28, P.INK_SOFT)
+	lobby_list = VBoxContainer.new()
+	lobby_list.add_theme_constant_override("separation", 20)
+	left.add_child(lobby_list)
+	net.list_lifelines()
+	_quiet(left, "返回", _show_title)
+	_gap(right, 24)
+	var name_edit := LineEdit.new()
+	name_edit.placeholder_text = "你的名字（空着就叫小满）"
+	name_edit.max_length = 12
+	right.add_child(name_edit)
+	Kit.tint(_primary(right, "从三岁开始（我是青）", func():
+		var nm := name_edit.text.strip_edges()
+		net.create_lifeline(nm if nm != "" else "小满")), P.QING)
+	_status(right)
+
+
+func _show_lobby() -> void:
 	# 连上了：左边是「接着过」，右边是「新开一条 / 加入 TA 的」
 	_show_screen("online")
 	var cols := _columns(body, 1.0, 1.0)

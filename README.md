@@ -92,6 +92,13 @@ docker compose -f deploy/docker-compose.yml up -d
 本地出包：`docker run --rm -v "$PWD":/w -w /w barichello/godot-ci:4.7.2 bash tools/ci/build_apk.sh`。
 APK 连哪台服务器、怎么配正式签名，见 [docs/DEPLOY.md](docs/DEPLOY.md)。
 
+### 网页单机版（不用服务器）
+
+`bash web/build.sh`（要装 Godot 4.7.2 和它的 Web 导出模板）出 `build/web/`：服务器规则（`server/build/index.js`，和 Nakama 上跑的是同一份）
+直接在页面里跑（`web/local.js`：假 Nakama + 存档进 localStorage），对门由电脑陪着过（从 `tools/playthrough.mjs` 的机器人改来，会过来和你搭伴、按时去赶主线）。
+标题页上多一个「一个人过」。本地试：`cd build/web && python3 -m http.server`；任何静态托管都能放（不带线程，不需要跨源隔离头）。
+要放到单个文件有大小上限的地方（比如 claude.ai 的 Artifact，单个二进制 15 MB），先 `node web/split.mjs build/web <输出>`：大文件压缩后切块，外壳里的加载器自己拼回去。
+
 ## 路线图
 
 - [x] **M0 骨架**：世界观、玩法、技术选型、内容管线、投胎、实时同框房间、影子、客户端原型

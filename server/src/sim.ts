@@ -300,12 +300,22 @@ function lifeMilestoneFallback(ev: LifeEvent): EventOption {
   return best;
 }
 
+/** 这件事的选项有没有门槛：关口、主线，还有挂了家境标记或要花钱的普通事件（docs/MEANS.md 第三节） */
+function lifeGated(ev: LifeEvent): boolean {
+  if (ev.kind === "milestone" || storyIs(ev)) return true;
+  for (var i = 0; i < ev.options.length; i++) {
+    var rq = ev.options[i].requires;
+    if (ev.options[i].cost || (rq && ((rq.flags && rq.flags.length) || (rq.notFlags && rq.notFlags.length)))) return true;
+  }
+  return false;
+}
+
 /** 正在进行的关口里，每个人哪些路是锁着的：{ role: { optionId: 原因 } }。不在关口里返回 null */
 function lifeMilestoneLocks(s: LifeState, c: Content): { [R in Role]?: { [optionId: string]: string } } | null {
   var pe = s.world && s.world.event;
   if (!pe) return null;
   var ev = lifeFindEvent(c, pe.eventId);
-  if (pe.kind !== "milestone" && !storyIs(ev)) return null; // 主线的选项也有门槛：家底、积蓄
+  if (!lifeGated(ev)) return null; // 主线和普通事件的选项也可以有门槛：家底、积蓄
   var out: { [R in Role]?: { [optionId: string]: string } } = {};
   for (var i = 0; i < pe.roles.length; i++) {
     var r = pe.roles[i];
@@ -357,6 +367,18 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
     var have = lifeScore(p, w, lifePairBond(s, role));
     var raw = lifeScoreRaw(w);
     lines.push({ id: o.id, text: o.text, by: lifeWeightsLabel(w), unit: w.money ? "块" : "分", have: raw ? Math.floor(have) : lifePoints(have), need: raw ? o.min : lifePoints(o.min), ok: have >= o.min });
+  }
+  // 比最高那条路还高的名次（grades）也摆上来：起点高的人不会开局就无事可冲，每道关都还有一条够一够的线
+  var gw = best.score || {};
+  if (best.grades && !lifeScoreRaw(gw) && lifeWeightsLabel(gw)) {
+    var top = 0;
+    for (var t = 0; t < lines.length; t++) if (lines[t].unit === "分") top = Math.max(top, lines[t].need);
+    var ghave = lifeScore(p, gw, lifePairBond(s, role));
+    for (var gi = best.grades.length - 1; gi >= 0; gi--) {
+      var gr = best.grades[gi];
+      if (lifePoints(gr.min) <= top) continue;
+      lines.push({ id: "grade:" + gi, text: gr.label, by: lifeWeightsLabel(gw), unit: "分", have: lifePoints(ghave), need: lifePoints(gr.min), ok: ghave >= gr.min });
+    }
   }
   return { id: best.id, title: best.title, age: best.age!, turns: lifeTurnsUntilAge(s.turn, best.age!), lines: lines };
 }
@@ -470,7 +492,7 @@ function lifeShadowChoose(s: LifeState, c: Content, role: Role, eventId: string)
   for (var i = 0; i < ev.options.length; i++) {
     var o = ev.options[i];
     // 关口：走不了的路影子也不能替他选。够得着的路里，影子偏向线最高的那条（人往高处走），再看性格
-    if ((ev.kind === "milestone" || storyIs(ev)) && lifeOptionLock(ev, o, s.persons![role], swing, lifePairBond(s, role))) continue;
+    if (lifeGated(ev) && lifeOptionLock(ev, o, s.persons![role], swing, lifePairBond(s, role))) continue;
     var score = ev.kind === "milestone" ? (o.min || 0) * 0.01 : 0;
     for (var j = 0; j < o.tags.length; j++) score += tags[o.tags[j]] || 0;
     if (score > bestScore) { bestScore = score; best = [o]; }
@@ -512,6 +534,8 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       for (var g = 0; g < (ev.grades || []).length; g++) if (gscore >= ev.grades![g].min) { grade = ev.grades![g]; break; }
       // 成绩单上的数要在扣钱、长属性之前算：那是走进考场那一刻的本事
       var sw = o.min ? w : gw;
+      // 差一点：离哪条没走成的路最近（结局页上「差一点」读它，见 atlas.ts）。也是走进考场那一刻的数
+      var near = atlasMilestoneNear(ev, o.id, me, swing, lifePairBond(s, role));
       var shown = lifeScoreRaw(sw) ? Math.floor(lifeScore(me, sw, s.bond)) : lifePoints(lifeScore(me, sw, s.bond) + swing);
       if (grade) lifeAddFlags(me, grade.flags);
       if (o.cost) me.money = Math.max(0, me.money - o.cost);
@@ -527,13 +551,15 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
         // 走的是不看分的路、这一关也没有统一的卷子：没有分数可记。score 照旧是数字（旧安装包拿它当数字用），画不画看 scored
         scored: scored,
         unit: sw.money ? "块" : "分",
-        grade: grade ? grade.label : null,
+        grade: grade && grade.label ? grade.label : null, // 兜底那档不写字
         option: o.id,
         track: lifeTrack(c, me, entry.age).id,
       };
+      if (near) entry.results[role]!.near = near;
     } else {
       // 检定：这个选项成不成，看本事也看运气（见 growth.ts → growthResolveCheck）
       var out = growthResolveCheck(s, c, pe, ev, o, role, entry);
+      if (o.cost) me.money = Math.max(0, me.money - o.cost); // 主线、普通事件里花的钱（选之前已经按积蓄上过锁）
       lifeApplySelf(me, out.self, grow);
       if (other.alive) lifeApplySelf(other, o.effects.other, grow);
       lifeApplyBond(s, c, o.effects.bond);
@@ -653,6 +679,7 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
     legacyDerive(s); // 这一世走完才看得出来的事（同一年走的、干了一辈子同一行……），结局读得到
     s.ending = lifeEnding(s, c);
     legacyAbsorb(s, c); // 记进传承：各自留下了什么，街坊记住了什么
+    atlasAbsorb(s, c); // 差一点就……；这一世的结局记进图鉴
     var end = lifeEntry(s, "end", lifeEndingText(s, c, s.ending) + lifeEpitaph(s));
     out.push(end);
     s.log.push(end);

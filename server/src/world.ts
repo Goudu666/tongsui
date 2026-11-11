@@ -1411,7 +1411,7 @@ function worldChoose(s: LifeState, c: Content, role: Role, optionId: string, fro
   var ev = lifeFindEvent(c, w.event.eventId);
   var opt = lifeFindOption(ev, optionId);
   if (!opt) return { error: "没有这个选项", entry: null };
-  if (w.event.kind === "milestone" || storyIs(ev)) {
+  if (lifeGated(ev)) {
     var lock = lifeOptionLock(ev, opt, s.persons![role], (w.event.swing && w.event.swing[role]) || 0, lifePairBond(s, role));
     if (lock) return { error: "这条路现在走不了（" + lock + "）", entry: null };
   }

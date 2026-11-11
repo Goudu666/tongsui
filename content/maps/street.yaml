@@ -31,7 +31,8 @@ spots:
   - { id: mailbox, at: 1250, area: shop, actions: [ letter ] }
   - { id: alley_rope, at: 1530, area: alley, actions: [ play_alley, chat ] }
   - { id: chess_table, at: 2010, area: alley, actions: [ chess ] }
-  - { id: bike_bench, at: 2710, area: bikeshop, actions: [ duty, work ] }
+  - { id: alley_night, at: 2260, area: alley, actions: [ night_market ] }
+  - { id: bike_bench, at: 2710, area: bikeshop, actions: [ duty, work, side_fix ] }
   - { id: tea_stage, at: 3310, area: teahouse, actions: [ club_art, perform ] }
   - { id: tea_seat, at: 3580, area: teahouse, actions: [ listen ] }
 

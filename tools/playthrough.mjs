@@ -25,6 +25,14 @@ const PERSONA = process.env.PERSONA || "careful";
 const AWAY = (process.env.AWAY || "").split(":").map(Number);
 // ONCE=1：正经事一回一回地按（新安装包的默认按法，world.ts 的 worldActOnce），做完一回再按，偶尔换一件；不设就是「做到点」，整段押上
 const ONCE = !!process.env.ONCE;
+// SNAP=1：每个日子收工时记下两个人纸带上的线（lifeGoal），tools/sprint.mjs 拿它量关口冲刺有没有得拼
+const SNAP = !!process.env.SNAP;
+function snapGoals(s) {
+  return Object.fromEntries(["qing", "mei"].map((r) => {
+    const g = s.persons[r].alive ? G("lifeGoal")(s, C, r) : null;
+    return [r, { goal: g && { t: g.title, turns: g.turns, lines: g.lines.map((l) => ({ id: l.id, have: l.have, need: l.need })) } }];
+  }));
+}
 
 const OP = G("OP");
 const TICK = 10; // 一秒十跳（main.ts TICK_RATE）
@@ -183,8 +191,9 @@ function decide(s, P, partnerPlan) {
     const fun = free.filter((o) => (o.act.needs.mood || 0) >= 8);
     if (fun.length) return { ...nearest(fun, a), why: "fun" };
   }
-  const goal = G("lifeGoal")(s, C, role);
-  const want = goal && goal.stat ? goal.stat : ["mind", "body", "charm"][s.turn % 3];
+  // 盯着纸带上那条线练（和影子一个算法：还没够着的线里最低的那条，都够着了就最高的那条）。
+  // 原来读的 goal.stat 在 GoalView 上不存在，「认真的人」其实是三项轮着练（11-11 玩法总把关查出来的）
+  const want = G("worldShadowNeed")(s, C, role) || ["mind", "body", "charm"][s.turn % 3];
   const grow = free.filter((o) => (o.act.stats[want] || 0) > 0).sort((x, y) => (y.act.stats[want] || 0) - (x.act.stats[want] || 0));
   if (grow.length && rand() < 0.75) return { ...grow[0], why: "grow:" + want };
   return { ...pick(free), why: "variety" };
@@ -245,7 +254,7 @@ function playLife(seed) {
     // 新的一天
     if (s.turn !== lastTurn) {
       if (lastTurn >= 0 && lastSlot >= 0) daySlots.push(curSlotRec());
-      if (lastTurn >= 0) rep.days.push({ turn: lastTurn, endEnergy: prevEnergy, sec: seconds() - dayStart, slots: daySlots, storyMiss: dayStory.filter((id) => !rep.story.some((x) => x.id === id && x.turn === lastTurn)) });
+      if (lastTurn >= 0) rep.days.push({ ...(SNAP ? { snap: snapGoals(s) } : {}), turn: lastTurn, endEnergy: prevEnergy, sec: seconds() - dayStart, slots: daySlots, storyMiss: dayStory.filter((id) => !rep.story.some((x) => x.id === id && x.turn === lastTurn)) });
       dayStory = [w.fate.mirror, w.fate.qing, w.fate.mei].filter((id) => id && storyOf(id));
       lastTurn = s.turn; dayStart = seconds(); daySlots = []; lastSlot = -1;
       for (const P of Object.values(players)) { P.wait = THINK.dayEnd * TICK; P.plan = null; P.tried.clear(); }
@@ -371,7 +380,7 @@ function playLife(seed) {
     }
   }
   const s = R.life();
-  if (lastTurn >= 0) rep.days.push({ turn: lastTurn, sec: seconds() - dayStart, slots: daySlots });
+  if (lastTurn >= 0) rep.days.push({ ...(SNAP ? { snap: snapGoals(s) } : {}), turn: lastTurn, sec: seconds() - dayStart, slots: daySlots });
   rep.end = rep.end || { phase: s.phase, died: s.persons && Object.fromEntries(["qing", "mei"].map((r) => [r, s.persons[r].diedAtAge])), ending: s.ending && s.ending.pair, turns: s.turn };
   // 章耗时
   for (const d of rep.days) {
@@ -434,7 +443,14 @@ if (CHECK) {
     if (r.faults.length) bad.push(`seed ${r.seed} 房间报错：${r.faults[0]}`);
     if (r.end.phase !== "ended") bad.push(`seed ${r.seed} 没走完：${JSON.stringify(r.end)}`);
     const beats = new Set(r.story.map((x) => x.chapter + "-" + x.beat));
-    if (beats.size < 21) bad.push(`seed ${r.seed} 主线只走了 ${beats.size}/21 件`);
+    // 人走得早，排在那之后的主线（第七章 70 岁傍晚的长椅）本来就过不到：只数两个人里后走的那个还活着时排得上的
+    const lastAge = r.end.died ? Math.max(...Object.values(r.end.died)) : 999;
+    let want = 0;
+    C.story.chapters.forEach((ch, i) => {
+      const n = G("storyBeats")(C, i + 1).length;
+      for (let k = 0; k < n; k++) if (G("lifeTimeAt")(G("storyOpenTurn")(C, ch, k, n)).age <= lastAge) want++;
+    });
+    if (beats.size < want) bad.push(`seed ${r.seed} 主线只走了 ${beats.size}/${want} 件（后走的那个活到 ${lastAge}）`);
     if (r.again !== "roll") bad.push(`seed ${r.seed} 再来一世没进投胎：${r.again}`);
   }
   if (bad.length) { console.error("✗ 通关：\n  " + bad.join("\n  ")); process.exit(1); }

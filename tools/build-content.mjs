@@ -29,8 +29,9 @@ const REQ_KEYS = ["minAge", "maxAge", "flags", "notFlags", "minClose", "maxClose
 const PAIR_REQ_KEYS = ["flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "minMemories", "maxMemories", "minRate", "maxRate", "minTogether"];
 const LIFE_REQ_KEYS = ["flags", "notFlags", "stats", "minDiedAge", "maxDiedAge"];
 // 老物件的条件比一生小结多两样（server/src/legacy.ts → legacyPersonOk）
-const HEIRLOOM_REQ_KEYS = [...LIFE_REQ_KEYS, "anyStat", "minMoney"];
-const HEIRLOOM_KEYS = ["id", "name", "desc", "from", "bonus", "money", "close", "flags"];
+// carried：带着那一件出生的（老物件会变，见 server/src/atlas.ts）
+const HEIRLOOM_REQ_KEYS = [...LIFE_REQ_KEYS, "anyStat", "minMoney", "carried"];
+const HEIRLOOM_KEYS = ["id", "name", "desc", "from", "bonus", "money", "close", "flags", "hint"];
 // 老物件不占投胎的点数，所以要小（见 content/heirlooms.yaml 文件头）
 const HEIRLOOM_MAX_BONUS = 0.5;
 // 开局从上一世带来的钱，老物件和家业加起来的上限。买房那条线很陡（十块钱在线附近差十来个点），钱得是这辈子挣的
@@ -59,7 +60,9 @@ const GRADE_KEYS = ["min", "label", "flags"];
 const TRACK_KEYS = ["id", "label", "requires", "group", "duty"];
 const TRACK_REQ_KEYS = ["minAge", "maxAge", "flags", "notFlags"];
 const DUTY_KEYS = ["label", "spot", "arrive", "until", "needs", "stats", "money"];
-const OPTION_KEYS = ["id", "text", "tags", "effects"];
+// 普通事件的选项也可以挂门槛（docs/MEANS.md 第三节）：requires 只看选的人自己的标记（家境、走过的路），cost 是花掉的积蓄。
+// 标记不对的人看不见这一项；钱不够的看得见、灰着。挂了门槛的事件至少留两个谁都能选的
+const OPTION_KEYS = ["id", "text", "tags", "effects", "requires", "cost"];
 const EFFECT_KEYS = ["self", "other", "bond", "flags"];
 const RESONANCE_KEYS = ["text", "memory", "bond", "flags"];
 const DISSONANCE_KEYS = ["text", "bond", "flags"];
@@ -115,7 +118,9 @@ function checkRequires(where, rq, allowed) {
     } else if (k === "alone") {
       if (typeof v !== "boolean") errors.push(`${where}.requires.alone: 必须是 true / false`);
     } else if (k === "stats") checkDeltas(`${where}.requires.stats`, v, STAT_KEYS);
-    else if (typeof v !== "number") errors.push(`${where}.requires.${k}: 必须是数字`);
+    else if (k === "carried") {
+      if (typeof v !== "string") errors.push(`${where}.requires.carried: 必须是老物件的 id`);
+    } else if (typeof v !== "number") errors.push(`${where}.requires.${k}: 必须是数字`);
   }
 }
 
@@ -163,7 +168,8 @@ for (const file of eventFiles) {
       checkDeltas(`${at}.score`, ev.score, SCORE_KEYS);
       for (const [gi, g] of (ev.grades ?? []).entries()) {
         checkKeys(`${at}.grades[${gi}]`, g, GRADE_KEYS);
-        if (typeof g.min !== "number" || !g.label) errors.push(`${at}.grades[${gi}]: 需要 min 和 label`);
+        if (typeof g.min !== "number" || (!g.label && g.min > 0)) errors.push(`${at}.grades[${gi}]: 需要 min 和 label（只有兜底那档 min 0 可以不写字）`);
+        g.label = g.label ?? "";
         for (const f of g.flags ?? []) produced.add(f);
         g.flags = g.flags ?? [];
       }
@@ -179,6 +185,10 @@ for (const file of eventFiles) {
       const oat = `${at}.${o.id}`;
       if (!o.id || !o.text) errors.push(`${oat}: 选项缺少 id 或 text`);
       checkKeys(oat, o, ms ? MILESTONE_OPTION_KEYS : OPTION_KEYS);
+      if (!ms) {
+        checkRequires(oat, o.requires, ["flags", "notFlags"]);
+        if (o.cost !== undefined && !(o.cost > 0 && o.cost <= 60)) errors.push(`${oat}.cost: 是 1~60 的正数（买房那条线才 200）`);
+      }
       if (ms) {
         checkDeltas(`${oat}.score`, o.score, SCORE_KEYS);
         checkRequires(oat, o.requires, ["flags", "notFlags"]);
@@ -200,6 +210,10 @@ for (const file of eventFiles) {
       checkDeltas(`${oat}.bond`, e.bond, BOND_KEYS);
       o.tags = o.tags ?? [];
       o.effects = { self: e.self ?? {}, other: e.other ?? {}, bond: e.bond ?? {}, flags: e.flags ?? [] };
+    }
+    if (!ms) {
+      const gated = (o) => !!o.cost || !!(o.requires?.flags?.length || o.requires?.notFlags?.length);
+      if ((ev.options ?? []).some(gated) && (ev.options ?? []).filter((o) => !gated(o)).length < 2) errors.push(`${at}: 有选项挂了门槛，就要留至少两个谁都能选的（不带 requires / cost）`);
     }
     for (const o of ev.options ?? []) {
       if (o.joins !== undefined && (!optionIds.has(o.joins) || o.joins === o.id || ev.options.find((x) => x.id === o.joins)?.joins)) errors.push(`${at}.${o.id}.joins: 要写同一关里另一条不带 joins 的路`);
@@ -442,7 +456,7 @@ const rules = load("rules.yaml");
 {
   const need = {
     roll: ["budget", "wealthAdjust", "statMin", "statMax", "rerolls"],
-    growth: ["eventScale", "actionScale", "room", "floor", "bornWeight", "plasticity", "plainBonus"],
+    growth: ["eventScale", "actionScale", "room", "floor", "bornWeight", "plasticity", "plainBonus", "turnWeight"],
     aging: ["body", "mind", "activeFactor"],
     daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "needsUse", "wageFlags"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],
@@ -455,6 +469,15 @@ const rules = load("rules.yaml");
     if (!rules?.[sec]) { errors.push(`rules.yaml: 缺少 ${sec}`); continue; }
     checkKeys(`rules.${sec}`, rules[sec], keys);
     for (const k of keys) if (rules[sec][k] === undefined) errors.push(`rules.yaml: 缺少 ${sec}.${k}`);
+  }
+  {
+    // room、turnWeight 可以是一个数或者按阶段写；按阶段写就五个阶段都要有，漏一个成长会算成 NaN
+    const STAGES = ["childhood", "teen", "young", "middle", "old"];
+    for (const k of ["room", "turnWeight"]) {
+      const v = rules?.growth?.[k];
+      if (v === undefined || typeof v === "number") continue;
+      if (typeof v !== "object" || STAGES.some((st) => typeof v[st] !== "number" || !(v[st] > 0))) errors.push(`rules.yaml: growth.${k} 要么写一个数，要么五个阶段（${STAGES.join(" / ")}）都写正数`);
+    }
   }
   if (rules?.daily && rules.daily.needsUse !== undefined && !(typeof rules.daily.needsUse === "number" && rules.daily.needsUse >= 0 && rules.daily.needsUse <= 1)) errors.push("rules.yaml: daily.needsUse 是一段里多做的那几遍按几成算需求，要在 0 到 1 之间");
   if (rules?.daily && !(typeof rules.daily.slotUse === "number" && rules.daily.slotUse > 0 && rules.daily.slotUse <= 1)) errors.push("rules.yaml: daily.slotUse 是一段里真花在那件事上的一份，要在 0 到 1 之间");
@@ -530,8 +553,19 @@ const heirlooms = (load("heirlooms.yaml") ?? []).map((h) => {
   if (sum > HEIRLOOM_MAX_BONUS || Object.values(h.bonus ?? {}).some((v) => v < 0)) errors.push(`${at}: bonus 合计不能超过 ${HEIRLOOM_MAX_BONUS}，也不能是负的`);
   if ((h.money ?? 0) < 0 || (h.money ?? 0) > LEGACY_MAX_MONEY) errors.push(`${at}: money 要在 0~${LEGACY_MAX_MONEY} 之间`);
   for (const f of h.flags ?? []) produced.add(f);
-  return { id: h.id, name: h.name, desc: h.desc, from: h.from ?? {}, bonus: h.bonus ?? {}, money: h.money ?? 0, close: h.close ?? 0, flags: h.flags ?? [] };
+  return { id: h.id, name: h.name, desc: h.desc, from: h.from ?? {}, bonus: h.bonus ?? {}, money: h.money ?? 0, close: h.close ?? 0, flags: h.flags ?? [], hint: h.hint };
 });
+// 老物件会变：carried 要指着一件真有的；变来的那件要写 hint（住户本里写在上一件底下），不是变来的不写
+for (const h of heirlooms) {
+  const at = `heirlooms#${h.id}`;
+  const from = h.from.carried;
+  if (from !== undefined && !heirlooms.some((x) => x.id === from)) errors.push(`${at}.from.carried: 没有老物件 "${from}"`);
+  if (from === h.id) errors.push(`${at}.from.carried: 不能是它自己`);
+  if ((from !== undefined) !== (h.hint !== undefined)) errors.push(`${at}: from.carried 和 hint 要一起写（变来的那件才有那一句）`);
+  if (h.hint !== undefined && [...String(h.hint)].length > 20) errors.push(`${at}.hint: 超过 20 字`);
+  if (h.hint !== undefined) h.hint = String(h.hint);
+  else delete h.hint;
+}
 if (heirlooms.length === 0 || Object.keys(heirlooms.at(-1).from).length > 0) errors.push("heirlooms.yaml: 最后一件是兜底，不能有 from 条件（每个人都得留下点什么）");
 if (new Set(heirlooms.map((h) => h.id)).size !== heirlooms.length) errors.push("heirlooms.yaml: id 重复");
 {
@@ -840,6 +874,46 @@ for (const [where, f] of consumed) {
 legacyTraces.sort();
 const legacyMarks = [...new Set(talents.filter((t) => t.unlock).map((t) => t.unlock))].sort();
 
+// ---------- 图鉴和差一点（server/src/atlas.ts）----------
+const atlas = { hidden: [], sad: [], riddles: {}, says: {} };
+{
+  const raw = load("atlas.yaml") ?? {};
+  checkKeys("atlas", raw, ["hidden", "sad", "riddles", "says"]);
+  const endingIds = new Set([...endings.pair, ...endings.lives].map((e) => e.id));
+  const rememberedIds = new Set(remembered.map((a) => a.id));
+  for (const id of raw.hidden ?? []) {
+    if (!endingIds.has(id) && !rememberedIds.has(id)) errors.push(`atlas.hidden: 没有结局或街坊记住的事 "${id}"`);
+    else atlas.hidden.push(id);
+  }
+  for (const id of raw.sad ?? []) {
+    if (!endingIds.has(id)) errors.push(`atlas.sad: 没有结局 "${id}"`);
+    else atlas.sad.push(id);
+  }
+  for (const [id, t] of Object.entries(raw.riddles ?? {})) {
+    if (!endingIds.has(id)) errors.push(`atlas.riddles: 没有结局 "${id}"`);
+    else if (atlas.hidden.includes(id)) errors.push(`atlas.riddles.${id}: 藏着的结局不写谜面（图鉴里只有一个空框）`);
+    else if ([...String(t)].length > 16) errors.push(`atlas.riddles.${id}: 超过 16 字`);
+    else atlas.riddles[id] = String(t);
+  }
+  // 接下家里营生的那些一生：按人家自动写
+  for (const e of endings.lives) {
+    if (atlas.riddles[e.id] || atlas.hidden.includes(e.id)) continue;
+    const fl = e.requires.flags ?? [];
+    const fam = families.find((f) => fl.length === 2 && fl.includes("took_over") && f.traits.includes(fl.find((x) => x !== "took_over")));
+    if (fam) atlas.riddles[e.id] = `生在${String(fam.name).split(" · ")[0]}，接下了家里的营生。`;
+  }
+  for (const part of ["pair", "lives"]) {
+    for (const e of endings[part]) {
+      if (!atlas.hidden.includes(e.id) && !atlas.riddles[e.id]) errors.push(`atlas.riddles: 结局 "${e.id}" 没有谜面（没见过的时候，图鉴里那一格写什么）`);
+    }
+  }
+  for (const [f, t] of Object.entries(raw.says ?? {})) {
+    if (!produced.has(f)) errors.push(`atlas.says.${f}: 没有任何人家、天赋、选项或规则会打上这个标记`);
+    else if ([...String(t)].length > 14) errors.push(`atlas.says.${f}: 超过 14 字`);
+    else atlas.says[f] = String(t);
+  }
+}
+
 const orphan = consumed.filter(([, f]) => !produced.has(f));
 for (const [where, f] of orphan) errors.push(`${where}: 要求标记 "${f}"，但没有任何人家、天赋、选项或共鸣会打上它（多半是拼错了）`);
 
@@ -886,7 +960,7 @@ if (errors.length) {
 
 // 内容版本 = 内容本身的指纹。服务器在 lifeline_open 里报出它的版本，客户端发现和自己带的不一样，
 // 就用 content_get 把服务器这份下载下来用（改剧情只需要更新服务器，不用两台手机重装 APK）。
-const body = { events, families, talents, map, tracks, endings, rules, checks, duet, letters, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks }, story };
+const body = { events, families, talents, map, tracks, endings, rules, checks, duet, letters, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks }, atlas, story };
 const version = createHash("sha256").update(JSON.stringify(body)).digest("hex").slice(0, 12);
 const content = { version, ...body };
 const json = JSON.stringify(content, null, 1);

@@ -247,3 +247,123 @@
   dissonance:
     text: 一个想分，一个想留。澡票揣在兜里，过了一冬天谁也没用上。
     bond: { close: 0 }
+
+# ======================== 同一道关，不同的冲法（docs/MEANS.md 第六节） ========================
+# 殷实人家拿钱换分、清贫人家拿时间换钱。每件事写在它挂的那道关前面：
+#   15 中考 ← 家教（花积蓄，能把对门一块儿叫上）；22 找事由 ← 头一个月的工资袋（清贫人家的夜校学费）；
+#   30 安家以后 ← 家里给的本钱（换一条路走）、家底出了事（积蓄往回填，45 岁那道 110 块、70 岁那道 160 块跟着紧）。
+
+- id: mn_rich_tutor
+  kind: solo
+  stage: teen
+  weight: 3
+  requires: { minAge: 13, maxAge: 14, flags: [fam_rich] }
+  title: 家教
+  text: 中考前，家里托人请了个大学生，一礼拜来两回。你妈问：对门那孩子要不要一块儿听？
+  options:
+    - id: both
+      text: 叫上对门一块儿听
+      tags: [gentle]
+      cost: 10
+      effects: { self: { mind: 0.4 }, other: { mind: 0.4 }, bond: { close: 1 } }
+    - id: alone
+      text: 自己听
+      tags: [competitive]
+      cost: 6
+      effects: { self: { mind: 0.5 } }
+    - id: no
+      text: 不用，我自己能行
+      tags: [solitude]
+      effects: { self: { mood: 2 } }
+    - id: once
+      text: 先听一回试试
+      tags: [patient]
+      effects: { self: { mind: 0.1 } }
+
+- id: mn_poor_wage
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 19, maxAge: 22, flags: [fam_poor], notFlags: [uni_away, uni_near, uni_abroad, army] }
+  title: 工资袋
+  text: 头一个月的工资袋，你原封不动交给家里。你妈数了两遍，抽出两张塞回你兜里。
+  options:
+    - id: school
+      text: 拿去交夜校的学费
+      tags: [responsible]
+      effects: { self: { mind: 0.3, mood: 2 } }
+    - id: save
+      text: 压在褥子底下
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+    - id: treat
+      text: 请对门吃顿好的
+      tags: [gentle]
+      effects: { self: { mood: 4 }, other: { mood: 6 }, bond: { close: 1 } }
+
+# 家里给的本钱：殷实人家二十几岁多一条路——辞了手上的事，自己开个铺子（job_own）。一天 22 块，比托关系进的单位多，比坐办公室少；
+# 也躲不开后面那件「月底」以外的事（下海那条不看手气，家里出的钱不会赔光）
+- id: mn_rich_startup
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 23, maxAge: 28, flags: [fam_rich], notFlags: [own_shop, left_city] }
+  title: 本钱
+  text: 爸妈把你叫回家，说你要是想自己干点什么，家里出本钱。存折搁在饭桌上。
+  options:
+    - id: shop
+      text: 辞了，开个铺子
+      tags: [adventure]
+      effects: { self: { charm: 0.2 }, flags: [own_shop, quit_job] }
+    - id: keep
+      text: 留着，以后买房
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+    - id: no
+      text: 不要，自己挣
+      tags: [competitive]
+      effects: { self: { mood: 3, mind: 0.1 } }
+
+- id: mn_rich_fall
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minAge: 39, maxAge: 54, flags: [fam_rich] }
+  title: 家底
+  text: 你爸那边的买卖出了事。你妈打电话来，话说得很慢，说家里那套房怕是保不住。
+  options:
+    - id: all
+      text: 把积蓄都拿出来
+      tags: [responsible]
+      cost: 40
+      effects: { self: { mood: -4 }, flags: [rich_saved] }
+    - id: half
+      text: 拿出一半
+      tags: [patient]
+      cost: 20
+      effects: { self: { mood: -6 } }
+    - id: stay
+      text: 回去陪他们住一阵
+      tags: [gentle]
+      effects: { self: { mood: -3, energy: -10 } }
+    - id: wait
+      text: 让他们先别急
+      tags: [solitude]
+      effects: { self: { mood: -8 } }
+
+- id: mn_rich_saved_old
+  kind: solo
+  stage: old
+  weight: 3
+  requires: { flags: [rich_saved] }
+  title: 那套房
+  text: 那套差点没保住的房子，现在挂着你爸妈的相片。
+  options:
+    - id: dust
+      text: 擦一擦相框
+      tags: [patient]
+      effects: { self: { mood: 6 } }
+    - id: sit
+      text: 在老位置坐一会儿
+      tags: [gentle]
+      effects: { self: { mood: 5 } }

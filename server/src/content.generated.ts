@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "29ca0a3d8749",
+ "version": "ded61849a501",
  "events": [
   {
    "id": "ch_runner",
@@ -32274,7 +32274,7 @@ var CONTENT: Content = {
      "clean": 10
     },
     "stats": {
-     "body": 0.4
+     "body": 0.55
     },
     "money": -2,
     "together": {
@@ -32312,8 +32312,8 @@ var CONTENT: Content = {
      "mood": -4
     },
     "stats": {
-     "mind": 0.35,
-     "charm": 0.25
+     "mind": 0.5,
+     "charm": 0.2
     },
     "money": -4,
     "together": {
@@ -32351,8 +32351,8 @@ var CONTENT: Content = {
      "mood": -3
     },
     "stats": {
-     "charm": 0.4,
-     "mind": 0.05
+     "charm": 0.45,
+     "mind": 0.15
     },
     "money": -5,
     "together": null,
@@ -32575,7 +32575,7 @@ var CONTENT: Content = {
      "hunger": -10
     },
     "stats": {
-     "body": 0.4
+     "body": 0.5
     },
     "money": 0,
     "together": {

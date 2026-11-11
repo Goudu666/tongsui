@@ -78,3 +78,5 @@ says:
   has_kid: 有个自己的孩子
   left_city: 去外地闯一闯
   shop_two: 再开一家铺子
+  # 成家和下一代 · 孩子（content/events/kids.yaml）
+  p_kids_tongsui: 两家孩子一起长大

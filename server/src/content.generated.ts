@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "192c7471114f",
+ "version": "4f60c148403f",
  "events": [
   {
    "id": "ch_runner",
@@ -7339,6 +7339,2213 @@ var CONTENT: Content = {
     },
     "flags": []
    },
+   "catches": []
+  },
+  {
+   "id": "kd_stairs",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid"
+    ],
+    "kidAge": [
+     2,
+     4
+    ]
+   },
+   "title": "一级一级",
+   "text": "孩子下楼非要自己走，两只手扶着栏杆，一级一级往下挪。你上班要迟到了。",
+   "options": [
+    {
+     "id": "wait",
+     "text": "陪着一级一级走完",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "carry",
+     "text": "一把抱起来就走",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3,
+       "mind": 0.5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "door",
+     "text": "托对门帮着看一会儿",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {
+       "energy": -5
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_fever",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid"
+    ],
+    "kidAge": [
+     2,
+     8
+    ]
+   },
+   "title": "三十九度",
+   "text": "半夜，孩子额头烫手，三十九度。外头下着雨，楼下一个人也没有。",
+   "options": [
+    {
+     "id": "run",
+     "text": "裹上被子背着跑",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5,
+       "energy": -20,
+       "body": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "towel",
+     "text": "拧凉毛巾，守到天亮",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5,
+       "energy": -15
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "knock",
+     "text": "敲对门的门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2,
+       "energy": -10
+      },
+      "other": {
+       "energy": -10
+      },
+      "bond": {
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "cab",
+     "text": "打电话叫车去急诊",
+     "tags": [
+      "competitive"
+     ],
+     "cost": 3,
+     "effects": {
+      "self": {
+       "mood": -2,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_first_day",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid"
+    ],
+    "kidAge": [
+     5,
+     7
+    ]
+   },
+   "title": "校门口",
+   "text": "头一天上学。到了校门口，孩子把手抽回去，跟着人往里走，一回头也没回。",
+   "options": [
+    {
+     "id": "stand",
+     "text": "在门口站到打铃",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "work",
+     "text": "转身去上班",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3,
+       "mind": 0.5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "guard",
+     "text": "跟传达室的大爷说一声",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3,
+       "charm": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_meeting",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid"
+    ],
+    "kidAge": [
+     7,
+     11
+    ]
+   },
+   "title": "家长会",
+   "text": "家长会，你坐在孩子的小椅子上，膝盖顶着桌板。老师念了一串名字，没有你家的。",
+   "options": [
+    {
+     "id": "stay",
+     "text": "散了会留下来问问",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "quiet",
+     "text": "回家什么也不提",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "office",
+     "text": "散了会回单位加班",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5,
+       "mind": 0.8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_slam",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid"
+    ],
+    "kidAge": [
+     13,
+     16
+    ]
+   },
+   "title": "摔门",
+   "text": "孩子把门摔上了，隔着门板说：「你们懂什么。」桌上的饭热过一回，又凉了。",
+   "options": [
+    {
+     "id": "sit",
+     "text": "在门口坐着等",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "heat",
+     "text": "把饭再热一回",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "walk",
+     "text": "自己出门去河边走走",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "body": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "knock",
+     "text": "隔着门敲三下",
+     "tags": [
+      "gentle"
+     ],
+     "requires": {
+      "flags": [
+       "p_knock"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_far_talk",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid"
+    ],
+    "kidAge": [
+     15,
+     18
+    ]
+   },
+   "title": "外地",
+   "text": "吃着饭，孩子说想考到外地去。说完就低头扒饭，没看你。",
+   "options": [
+    {
+     "id": "go",
+     "text": "「想去就去。」",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3,
+       "charm": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "near",
+     "text": "「家门口的不好吗？」",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "map",
+     "text": "把地图找出来摊开",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "mind": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_prim_key",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kid_prim_key"
+    ],
+    "kidAge": [
+     6,
+     9
+    ]
+   },
+   "title": "过桥上学",
+   "text": "小学在河对岸，早上得早起四十分钟。孩子在后座上又睡着了，书包还抱在怀里。",
+   "options": [
+    {
+     "id": "early",
+     "text": "再早起二十分钟",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ride",
+     "text": "骑慢点，让孩子睡",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "bus",
+     "text": "教孩子自己坐车",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3,
+       "mind": 0.5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_prim_near",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kid_prim_near"
+    ],
+    "kidAge": [
+     6,
+     9
+    ]
+   },
+   "title": "拐角的小学",
+   "text": "小学就在拐角，放学孩子自己走回来。传达室的大爷认得是谁家的，也认得跟谁一块儿走。",
+   "options": [
+    {
+     "id": "meet",
+     "text": "下班绕过去接一回",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "let",
+     "text": "让孩子自己走",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2,
+       "mind": 0.5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "guard",
+     "text": "给大爷递根烟",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_mid_near",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kid_mid_near"
+    ],
+    "kidAge": [
+     12,
+     14
+    ]
+   },
+   "title": "蓝校服",
+   "text": "初中分在片儿里那所，校服是蓝的。孩子说挺好，离家近，中午能回来吃饭。",
+   "options": [
+    {
+     "id": "cook",
+     "text": "中午赶回来炒个菜",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "money",
+     "text": "把午饭钱给够",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2,
+       "mind": 0.5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "class",
+     "text": "托人打听个补习班",
+     "tags": [
+      "competitive"
+     ],
+     "cost": 5,
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_mid_key",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kid_mid_key"
+    ],
+    "kidAge": [
+     12,
+     14
+    ]
+   },
+   "title": "趴着睡了",
+   "text": "进了重点初中，头一个月，孩子回家放下书包就趴在桌上睡着了。饭还没端上来。",
+   "options": [
+    {
+     "id": "coat",
+     "text": "给孩子披件衣裳",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wake",
+     "text": "叫醒了先吃饭",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "own",
+     "text": "你也去看会儿书",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -1,
+       "mind": 0.5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_high_key",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kid_high_key"
+    ],
+    "kidAge": [
+     15,
+     17
+    ]
+   },
+   "title": "一罐咸菜",
+   "text": "重点高中要住校，礼拜天下午走。你把一罐咸菜塞进箱子，又拿出来，又塞了回去。",
+   "options": [
+    {
+     "id": "walk",
+     "text": "送到宿舍楼底下",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "gate",
+     "text": "送到车站就回",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2,
+       "mind": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "jar",
+     "text": "再塞一罐",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_trade",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kid_trade"
+    ],
+    "kidAge": [
+     15,
+     19
+    ]
+   },
+   "title": "手稳",
+   "text": "孩子在职高学修车。礼拜天蹲在车铺门口给人换链条，修车爷爷看了半天，说：「手稳。」",
+   "options": [
+    {
+     "id": "watch",
+     "text": "站边上看着干完",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "towel",
+     "text": "递条毛巾过去",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "回屋，就当没看见",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "mind": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_uni_top",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kid_uni_top"
+    ],
+    "kidAge": [
+     18,
+     20
+    ]
+   },
+   "title": "通知书",
+   "text": "通知书到了。孩子拆开看完，递给你。你没看字，先摸了摸那张纸，挺厚。",
+   "options": [
+    {
+     "id": "call",
+     "text": "给家里老人打电话",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "drawer",
+     "text": "收进抽屉最底下",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "feast",
+     "text": "请一大家子吃顿好的",
+     "tags": [
+      "adventure"
+     ],
+     "cost": 6,
+     "effects": {
+      "self": {
+       "mood": 10,
+       "charm": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_uni",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kid_uni"
+    ],
+    "kidAge": [
+     18,
+     20
+    ]
+   },
+   "title": "分数条",
+   "text": "考上了，不是最好的那所。孩子自己挺高兴。你把分数条看了三遍，折起来夹进自己的本子。",
+   "options": [
+    {
+     "id": "keep",
+     "text": "夹好，不提了",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "say",
+     "text": "「考得不赖。」",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "again",
+     "text": "问孩子想不想再考一回",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3,
+       "mind": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_away_call",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kid_away"
+    ],
+    "kidAge": [
+     18,
+     24
+    ]
+   },
+   "title": "礼拜天晚上",
+   "text": "孩子在外地，礼拜天晚上打电话回来。这个礼拜天没打。你把电话搁在枕头边上。",
+   "options": [
+    {
+     "id": "call",
+     "text": "打过去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "再等一会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sleep",
+     "text": "关灯睡觉",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2,
+       "energy": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_work",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kid_work"
+    ],
+    "kidAge": [
+     18,
+     22
+    ]
+   },
+   "title": "一兜水果",
+   "text": "孩子头一个月的工资，买了一兜水果拎回来。在门口换鞋，说下个月给你买件衣裳。",
+   "options": [
+    {
+     "id": "keep",
+     "text": "「留着自己花。」",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "eat",
+     "text": "洗一个，当面吃了",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "kitchen",
+     "text": "转身进了厨房",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_door",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": "hallway",
+   "when": [
+    960,
+    1200
+   ],
+   "hint": "楼道里有人在敲门。",
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kids_same_age"
+    ],
+    "kidAge": [
+     3,
+     5
+    ]
+   },
+   "title": "门板",
+   "text": "楼道里，一个孩子在门外，一个在门里，隔着门板一下一下地敲。你俩都在屋里听着。",
+   "options": [
+    {
+     "id": "open",
+     "text": "把门拉开",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "先不开，听一会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "knock",
+     "text": "也在门上敲三下",
+     "tags": [
+      "gentle"
+     ],
+     "requires": {
+      "flags": [
+       "p_knock"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "open": {
+     "text": "两扇门一块儿开了。两个孩子在当间愣着，你俩在门口也愣着。",
+     "memory": "两扇门",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "谁也没开门。敲累了，两个孩子一边一个坐在门槛上，隔着门板说起了话。",
+     "memory": "隔着门板",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": [
+      "p_kids_tongsui"
+     ]
+    },
+    "knock": {
+     "text": "你在门里敲了三下，对门门里也敲了三下。两个孩子不敲了，扭头看大人。",
+     "memory": "大人也敲了",
+     "bond": {
+      "sync": 4,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一扇门开了，一扇门还关着。门外的孩子把耳朵贴上去，听了半天。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "kd_fight",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": "alley",
+   "when": null,
+   "hint": "楼下有孩子在哭。",
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kids_same_age"
+    ],
+    "kidAge": [
+     7,
+     11
+    ]
+   },
+   "title": "一身土",
+   "text": "两家孩子在楼下打起来了，滚了一身土。你俩从两头跑过来，一人拽住一个。",
+   "options": [
+    {
+     "id": "home",
+     "text": "拽回家，各管各的",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "talk",
+     "text": "让两个孩子把话说开",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "check",
+     "text": "先看看伤着没有",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "home": {
+     "text": "一个拽进东门，一个拽进西门。晚饭的时候，两家窗户里都有人在挨说。",
+     "memory": "两家都挨说",
+     "bond": {
+      "sync": 2
+     },
+     "flags": []
+    },
+    "talk": {
+     "text": "你俩一人揪着一个领子，谁也没撒手。两个孩子低着头嘟囔了半天，扑哧一声，一块儿笑了。",
+     "memory": "扑哧一声",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "check": {
+     "text": "两个人蹲下来，一个看膝盖，一个看胳膊。看完了，换过来又看一遍。",
+     "memory": "换过来看",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个把孩子拽回了家，一个还蹲在那儿，拍着另一个孩子身上的土。",
+    "bond": {
+     "close": -1
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "kd_dark",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": "hallway",
+   "when": [
+    1140,
+    1380
+   ],
+   "hint": "楼道里有人拿着手电。",
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kids_same_age"
+    ],
+    "kidAge": [
+     9,
+     13
+    ]
+   },
+   "title": "天黑透了",
+   "text": "天黑透了，两家孩子都没回来。你俩在楼道里撞上，一个拿着手电，一个搭着两件外套。",
+   "options": [
+    {
+     "id": "roof",
+     "text": "上楼顶找",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "river",
+     "text": "去河边找",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "在楼门口等",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "roof": {
+     "text": "楼顶上，两个孩子并排躺着，指着天在数什么。数乱了，吵了两句，又从头数。",
+     "memory": "又从头数",
+     "bond": {
+      "sync": 4,
+      "close": 3
+     },
+     "flags": [
+      "p_kids_tongsui"
+     ]
+    },
+    "river": {
+     "text": "河边栏杆底下，两个孩子在比谁的石子扔得远。手电一照，两个都没跑。",
+     "memory": "都没跑",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": [
+      "p_kids_tongsui"
+     ]
+    },
+    "wait": {
+     "text": "你俩在楼门口站着，胳膊上各搭一件外套。快十点，路口晃过来两个影子。",
+     "memory": "两个影子",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个上了楼顶，一个去了河边。孩子们自己回来了，坐在楼门口等大人。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "kd_queue",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": "breakfast",
+   "when": [
+    390,
+    540
+   ],
+   "hint": "早点铺排着队。",
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kids_same_age"
+    ],
+    "kidAge": [
+     12,
+     16
+    ]
+   },
+   "title": "一前一后",
+   "text": "早点铺排队。两家孩子一前一后站着，好些天不说话了。你俩排在后头。",
+   "options": [
+    {
+     "id": "smooth",
+     "text": "打个圆场",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "let",
+     "text": "由着两个孩子",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "pay",
+     "text": "替对门家孩子付了",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "smooth": {
+     "text": "两个大人同时开口，一句话撞在一块儿。前头两个孩子没忍住，回头看了一眼。",
+     "memory": "撞在一块儿",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "let": {
+     "text": "你俩也不说话，就这么排着。轮到了，老板娘看看前头两个，看看后头两个，一样磕了两个鸡蛋。",
+     "memory": "一样两个鸡蛋",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": [
+      "p_kids_tongsui"
+     ]
+    },
+    "pay": {
+     "text": "你俩同时掏钱，各替对方家的孩子付了。两个孩子扭头看了一眼，又转回去，耳朵红了。",
+     "memory": "耳朵红了",
+     "bond": {
+      "sync": 4,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个开口打圆场，一个摆手说由着去。前头两个孩子，这话都听见了。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "kd_exam_gate",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": "middle_front",
+   "when": [
+    420,
+    720
+   ],
+   "hint": "校门口站满了大人。",
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kids_same_age"
+    ],
+    "kidAge": [
+     14,
+     18
+    ]
+   },
+   "title": "两瓶水",
+   "text": "考试那天，两家孩子进了同一个校门。你俩在门口碰上了，手里都拎着一瓶水。",
+   "options": [
+    {
+     "id": "stand",
+     "text": "走过去站一块儿",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "own",
+     "text": "各站各的",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "food",
+     "text": "去买两份早点",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "stand": {
+     "text": "「几考场？」「三考场。」「我家的也是。」再没话了，一直站到打铃。",
+     "memory": "三考场",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "own": {
+     "text": "隔着一棵树，你俩各站各的，谁也没看谁。打铃的时候，一块儿踮了一下脚。",
+     "memory": "踮了一下脚",
+     "bond": {
+      "sync": 3,
+      "close": 1
+     },
+     "flags": []
+    },
+    "food": {
+     "text": "两个人拎着两份早点回来，撞了个对脸。四份早点，搁在同一个台阶上。",
+     "memory": "四份早点",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个走过去了，一个正低头看表。两瓶水搁在了同一个台阶上。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "kd_two_cases",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": "alley",
+   "when": [
+    420,
+    660
+   ],
+   "hint": "楼下有箱子轱辘响。",
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kids_same_age",
+     "kid_away"
+    ],
+    "kidAge": [
+     17,
+     20
+    ]
+   },
+   "title": "两个箱子",
+   "text": "两家孩子同一天走，一个往南，一个往北。楼下两个箱子的轱辘，一个声。",
+   "options": [
+    {
+     "id": "corner",
+     "text": "送到路口",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "window",
+     "text": "在窗户里看着",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "pack",
+     "text": "往箱子里塞一兜鸡蛋",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "corner": {
+     "text": "送到路口，两个孩子各上各的车。你俩站着，等两辆车都拐没了，才往回走。",
+     "memory": "都拐没了",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "window": {
+     "text": "两扇窗户，两个大人。楼下的孩子同时抬头，冲上头挥了挥手。",
+     "memory": "两扇窗户",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "pack": {
+     "text": "两兜鸡蛋塞进了两个箱子。都是煮熟的，都是六个。",
+     "memory": "六个鸡蛋",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个送到了路口，一个在窗户里看着。两个孩子回头的时候，看的是不同的地方。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "kd_ask",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": "river",
+   "when": [
+    1020,
+    1200
+   ],
+   "hint": "河边有孩子在问话。",
+   "requires": {
+    "flags": [
+     "has_kid",
+     "p_married"
+    ],
+    "kidAge": [
+     6,
+     12
+    ]
+   },
+   "title": "认识吗",
+   "text": "傍晚河边，孩子走在你俩当中，忽然问：「你们小时候就认识吗？」",
+   "options": [
+    {
+     "id": "door",
+     "text": "「住对门。」",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "tease",
+     "text": "「不认识。」",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "bridge",
+     "text": "指指那座铁桥",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "door": {
+     "text": "你俩同时说「对门」，说完对看了一眼。孩子不信，非要问是哪扇门。",
+     "memory": "哪扇门",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "tease": {
+     "text": "你俩一口咬定不认识。孩子看看这个，看看那个，说：「骗人。」",
+     "memory": "骗人",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "bridge": {
+     "text": "两只手同时抬起来，指的都是铁桥。孩子顺着看过去，桥上什么也没有。",
+     "memory": "两只手",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个说住对门，一个说不认识。孩子来回看了半天，更想知道了。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "kd_old_gate",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 65,
+    "maxAge": 75,
+    "flags": [
+     "has_kid"
+    ]
+   },
+   "title": "接孙辈",
+   "text": "校门口接孙辈，你站在一堆老人当中。这道门，你接过两回了。",
+   "options": [
+    {
+     "id": "front",
+     "text": "往前挤一挤",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back",
+     "text": "站后头等",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "guard",
+     "text": "跟传达室的聊两句",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_old_room",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 65,
+    "flags": [
+     "has_kid"
+    ]
+   },
+   "title": "那屋",
+   "text": "孩子那屋空了好些年，台灯还插着电。",
+   "options": [
+    {
+     "id": "unplug",
+     "text": "拔了",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "leave",
+     "text": "留着",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sit",
+     "text": "进去坐会儿",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "kd_old_new_year",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 75,
+    "flags": [
+     "has_kid",
+     "kids_same_age"
+    ]
+   },
+   "title": "一块儿进门",
+   "text": "过年，两家孩子一块儿进的门，一人拎着一兜橘子。",
+   "options": [
+    {
+     "id": "peel",
+     "text": "先剥一个",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "look",
+     "text": "站在门口多看两眼",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "问对门家的孩子好",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
    "catches": []
   },
   {
@@ -37753,7 +39960,8 @@ var CONTENT: Content = {
    "erhu_life": "把二胡拉一辈子",
    "has_kid": "有个自己的孩子",
    "left_city": "去外地闯一闯",
-   "shop_two": "再开一家铺子"
+   "shop_two": "再开一家铺子",
+   "p_kids_tongsui": "两家孩子一起长大"
   }
  },
  "story": {

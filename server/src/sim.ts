@@ -368,6 +368,18 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
     var raw = lifeScoreRaw(w);
     lines.push({ id: o.id, text: o.text, by: lifeWeightsLabel(w), unit: w.money ? "块" : "分", have: raw ? Math.floor(have) : lifePoints(have), need: raw ? o.min : lifePoints(o.min), ok: have >= o.min });
   }
+  // 比最高那条路还高的名次（grades）也摆上来：起点高的人不会开局就无事可冲，每道关都还有一条够一够的线
+  var gw = best.score || {};
+  if (best.grades && !lifeScoreRaw(gw) && lifeWeightsLabel(gw)) {
+    var top = 0;
+    for (var t = 0; t < lines.length; t++) if (lines[t].unit === "分") top = Math.max(top, lines[t].need);
+    var ghave = lifeScore(p, gw, lifePairBond(s, role));
+    for (var gi = best.grades.length - 1; gi >= 0; gi--) {
+      var gr = best.grades[gi];
+      if (lifePoints(gr.min) <= top) continue;
+      lines.push({ id: "grade:" + gi, text: gr.label, by: lifeWeightsLabel(gw), unit: "分", have: lifePoints(ghave), need: lifePoints(gr.min), ok: ghave >= gr.min });
+    }
+  }
   return { id: best.id, title: best.title, age: best.age!, turns: lifeTurnsUntilAge(s.turn, best.age!), lines: lines };
 }
 
@@ -539,7 +551,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
         // 走的是不看分的路、这一关也没有统一的卷子：没有分数可记。score 照旧是数字（旧安装包拿它当数字用），画不画看 scored
         scored: scored,
         unit: sw.money ? "块" : "分",
-        grade: grade ? grade.label : null,
+        grade: grade && grade.label ? grade.label : null, // 兜底那档不写字
         option: o.id,
         track: lifeTrack(c, me, entry.age).id,
       };

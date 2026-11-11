@@ -168,7 +168,8 @@ for (const file of eventFiles) {
       checkDeltas(`${at}.score`, ev.score, SCORE_KEYS);
       for (const [gi, g] of (ev.grades ?? []).entries()) {
         checkKeys(`${at}.grades[${gi}]`, g, GRADE_KEYS);
-        if (typeof g.min !== "number" || !g.label) errors.push(`${at}.grades[${gi}]: 需要 min 和 label`);
+        if (typeof g.min !== "number" || (!g.label && g.min > 0)) errors.push(`${at}.grades[${gi}]: 需要 min 和 label（只有兜底那档 min 0 可以不写字）`);
+        g.label = g.label ?? "";
         for (const f of g.flags ?? []) produced.add(f);
         g.flags = g.flags ?? [];
       }
@@ -455,7 +456,7 @@ const rules = load("rules.yaml");
 {
   const need = {
     roll: ["budget", "wealthAdjust", "statMin", "statMax", "rerolls"],
-    growth: ["eventScale", "actionScale", "room", "floor", "bornWeight", "plasticity", "plainBonus"],
+    growth: ["eventScale", "actionScale", "room", "floor", "bornWeight", "plasticity", "plainBonus", "turnWeight"],
     aging: ["body", "mind", "activeFactor"],
     daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "needsUse", "wageFlags"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],
@@ -468,6 +469,15 @@ const rules = load("rules.yaml");
     if (!rules?.[sec]) { errors.push(`rules.yaml: 缺少 ${sec}`); continue; }
     checkKeys(`rules.${sec}`, rules[sec], keys);
     for (const k of keys) if (rules[sec][k] === undefined) errors.push(`rules.yaml: 缺少 ${sec}.${k}`);
+  }
+  {
+    // room、turnWeight 可以是一个数或者按阶段写；按阶段写就五个阶段都要有，漏一个成长会算成 NaN
+    const STAGES = ["childhood", "teen", "young", "middle", "old"];
+    for (const k of ["room", "turnWeight"]) {
+      const v = rules?.growth?.[k];
+      if (v === undefined || typeof v === "number") continue;
+      if (typeof v !== "object" || STAGES.some((st) => typeof v[st] !== "number" || !(v[st] > 0))) errors.push(`rules.yaml: growth.${k} 要么写一个数，要么五个阶段（${STAGES.join(" / ")}）都写正数`);
+    }
   }
   if (rules?.daily && rules.daily.needsUse !== undefined && !(typeof rules.daily.needsUse === "number" && rules.daily.needsUse >= 0 && rules.daily.needsUse <= 1)) errors.push("rules.yaml: daily.needsUse 是一段里多做的那几遍按几成算需求，要在 0 到 1 之间");
   if (rules?.daily && !(typeof rules.daily.slotUse === "number" && rules.daily.slotUse > 0 && rules.daily.slotUse <= 1)) errors.push("rules.yaml: daily.slotUse 是一段里真花在那件事上的一份，要在 0 到 1 之间");

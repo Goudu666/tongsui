@@ -817,11 +817,16 @@ func _check_did(data: Dictionary) -> void:
 			continue
 		var n := int(did.get("n", 0))
 		var first := not _did_seen.has(r)
-		if not first and int(_did_seen[r]) == n:
+		var prev := int(_did_seen.get(r, -1))
+		if not first and prev == n:
 			continue
 		_did_seen[r] = n
-		if first or bool(did.get("j", false)):
-			if not first and r == my_role:
+		if first:
+			continue
+		# j：TA 后到、把先做的那一回补成搭伴。先做的那一条已经看过了就只出一张纸条；
+		# 同一跳里 TA 就赶上了（那一条被 j 顶掉、没看到过），就照常拨钟演一回，带上「和 TA 一起」
+		if bool(did.get("j", false)) and prev == n - 1:
+			if r == my_role:
 				_toast("TA 也来了 · 刚才那一回%s算搭伴" % str(did.get("l", "")))
 			continue
 		if world != null:

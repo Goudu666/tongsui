@@ -672,7 +672,8 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
   assert.ok(m(late, "m_junior") < m(owl, "m_junior") - 0.3, `大器晚成 12 岁心智 ${m(late, "m_junior").toFixed(2)}，不比别人（${m(owl, "m_junior").toFixed(2)}）慢`);
   assert.ok(opens(at(late, "m_junior"), "key") < opens(at(owl, "m_junior"), "key"), "大器晚成进重点班的不该和别人一样多");
   assert.ok(opens(at(late, "m_gaokao"), "away") < opens(at(owl, "m_gaokao"), "away"), "大器晚成考去外地的不该和别人一样多");
-  assert.ok(m(late, "m_retire") > m(owl, "m_retire") + 0.1, `大器晚成 60 岁心智 ${m(late, "m_retire").toFixed(2)}，没有追过别人（${m(owl, "m_retire").toFixed(2)}）`);
+  // 关口冲刺（11-11）以后少年起每个日子算得更重，专心念书的人六十岁都碰到 10 的顶：钉「追上了、不落在后头」，22 岁那道关起就不比别人低
+  assert.ok(m(late, "m_retire") >= m(owl, "m_retire") && m(late, "m_job") >= m(owl, "m_job"), `大器晚成 22 岁心智 ${m(late, "m_job").toFixed(2)}、60 岁 ${m(late, "m_retire").toFixed(2)}，没有追上别人（${m(owl, "m_job").toFixed(2)}、${m(owl, "m_retire").toFixed(2)}）`);
   const gap60 = avg(at(late, "m_retire"), total3) - avg(at(owl, "m_retire"), total3);
   assert.ok(Math.abs(gap60) < 1.2, `大器晚成 60 岁三项合计和别人差了 ${gap60.toFixed(2)}，换一种活法不该差出一大截`);
 

@@ -68,7 +68,7 @@ const DUTY_KEYS = ["label", "spot", "arrive", "until", "needs", "stats", "money"
 // 普通事件的选项也可以挂门槛（docs/MEANS.md 第三节）：requires 只看选的人自己的标记（家境、走过的路），cost 是花掉的积蓄。
 // 标记不对的人看不见这一项；钱不够的看得见、灰着。挂了门槛的事件至少留两个谁都能选的
 const OPTION_KEYS = ["id", "text", "tags", "effects", "requires", "cost"];
-const EFFECT_KEYS = ["self", "other", "bond", "flags", "drop"];
+const EFFECT_KEYS = ["self", "other", "bond", "flags", "drop", "money"];
 const RESONANCE_KEYS = ["text", "memory", "bond", "flags"];
 const DISSONANCE_KEYS = ["text", "bond", "flags"];
 const FAMILY_KEYS = ["id", "name", "wealth", "weight", "money", "desc", "bonus", "traits"];
@@ -232,6 +232,10 @@ for (const file of eventFiles) {
       if (e.drop !== undefined && (!Array.isArray(e.drop) || !e.drop.length || e.drop.some((f) => typeof f !== "string"))) errors.push(`${oat}.effects.drop: 是要摘掉的标记列表（先摘再打 flags，两边都写的标记留着）`);
       o.effects = { self: e.self ?? {}, other: e.other ?? {}, bond: e.bond ?? {}, flags: e.flags ?? [] };
       if (e.drop?.length) o.effects.drop = e.drop;
+      if (e.money !== undefined) {
+        if (typeof e.money !== "number" || e.money <= 0 || e.money > 60) errors.push(`${oat}.effects.money: 拿到的钱写 1~60 的正数（花钱写 cost）`);
+        else o.effects.money = e.money;
+      }
     }
     if (!ms) {
       const gated = (o) => !!o.cost || !!(o.requires?.flags?.length || o.requires?.notFlags?.length);
@@ -366,6 +370,7 @@ const story = { chapters: [], events: [] };
       const e = o.effects ?? {};
       if (e.flags?.length) errors.push(`${oat}: 主线选项不发标记（路线标记由关口发，共同标记写在共鸣里）`);
       if (e.drop !== undefined) errors.push(`${oat}: 主线选项不摘标记（effects.drop 只给关口和日常小事用）`);
+      if (e.money !== undefined) errors.push(`${oat}: 主线选项不给钱（effects.money 只给关口和日常小事用）`);
       checkDeltas(`${oat}.self`, e.self, SELF_KEYS);
       checkDeltas(`${oat}.other`, e.other, SELF_KEYS);
       checkDeltas(`${oat}.bond`, e.bond, BOND_KEYS);
@@ -435,6 +440,11 @@ const families = load("families.yaml").map((f) => {
   const tr = f.traits ?? [];
   if ((f.wealth === 2) !== tr.includes("fam_rich")) errors.push(`families#${f.id}: 殷实人家（wealth 2）必须带 fam_rich，别的人家不能带`);
   if ((f.wealth === 0) !== tr.includes("fam_poor")) errors.push(`families#${f.id}: 清贫人家（wealth 0）必须带 fam_poor，别的人家不能带`);
+  // 家境的难度（docs/MEANS.md 第八节）：每档一个起手的标记
+  if ((f.wealth === 0) !== tr.includes("send_home")) errors.push(`families#${f.id}: 清贫人家带 send_home（工钱寄一截回家），别的人家不带`);
+  if ((f.wealth === 1) !== tr.includes("fam_nest")) errors.push(`families#${f.id}: 小康人家带 fam_nest（爸妈攒的那笔钱），别的人家不带`);
+  const exps = tr.filter((t) => t.startsWith("exp_"));
+  if (f.wealth === 2 ? exps.length !== 1 || !["exp_book", "exp_pull", "exp_abroad", "exp_art"].includes(exps[0]) : exps.length) errors.push(`families#${f.id}: 殷实人家带一个 exp_book / exp_pull / exp_abroad / exp_art（爸妈心里那条路），别的人家不带`);
   checkKeys(`families#${f.id}`, f, FAMILY_KEYS);
   checkDeltas(`families#${f.id}.bonus`, f.bonus, STAT_KEYS);
   return { id: f.id, name: f.name, wealth: f.wealth, weight: f.weight ?? 1, money: f.money ?? 0, desc: f.desc ?? "", bonus: f.bonus ?? {}, traits: f.traits ?? [] };

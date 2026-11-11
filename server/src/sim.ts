@@ -662,6 +662,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       if (grade) lifeAddFlags(me, grade.flags);
       var cost = lifeOptionCost(ev, o, me);
       if (cost) me.money = Math.max(0, me.money - cost);
+      if (o.effects.money) me.money += o.effects.money; // 助学金、家里出的钱
       lifeApplySelf(me, o.effects.self, grow);
       if (other.alive) lifeApplySelf(other, o.effects.other, grow);
       lifeApplyBond(s, c, o.effects.bond);
@@ -689,6 +690,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       if (other.alive) lifeApplySelf(other, o.effects.other, grow);
       lifeApplyBond(s, c, o.effects.bond);
       if (out.flags === o.effects.flags) lifeDropFlags(me, o.effects.drop); // 检定没成（换了 fail 的标记）就不摘
+      if (out.flags === o.effects.flags && o.effects.money) me.money += o.effects.money; // 没成就没有这笔钱
       lifeAddFlags(me, out.flags);
     }
     if (pe.shadow.indexOf(role) < 0) {

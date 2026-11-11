@@ -22,6 +22,8 @@ interface OptionEffects {
   flags: string[];
   /** 摘掉的标记（跳槽、转行：原来那一行的标记和升到的那一级不跟着走）。先摘再打，同一个标记两边都写等于留着 */
   drop?: string[];
+  /** 拿到的一笔钱（助学金、家里出的钱，docs/MEANS.md 第八节）。在 cost 之后进积蓄；普通事件检定没成就没有 */
+  money?: number;
 }
 
 interface EventOption {

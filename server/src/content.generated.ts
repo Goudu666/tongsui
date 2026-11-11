@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "f32205474a57",
+ "version": "675bce029c0f",
  "events": [
   {
    "id": "m_rise",
@@ -42776,7 +42776,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_handy",
-    "fam_factory"
+    "fam_factory",
+    "fam_nest"
    ]
   },
   {
@@ -42791,7 +42792,8 @@ var CONTENT: Content = {
     "charm": -1
    },
    "traits": [
-    "fam_strict"
+    "fam_strict",
+    "fam_nest"
    ]
   },
   {
@@ -42805,7 +42807,8 @@ var CONTENT: Content = {
     "charm": 1
    },
    "traits": [
-    "fam_breakfast"
+    "fam_breakfast",
+    "fam_nest"
    ]
   },
   {
@@ -42820,7 +42823,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_rich",
-    "fam_father_away"
+    "fam_father_away",
+    "exp_abroad"
    ]
   },
   {
@@ -42836,7 +42840,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_grandma",
-    "fam_poor"
+    "fam_poor",
+    "send_home"
    ]
   },
   {
@@ -42851,7 +42856,8 @@ var CONTENT: Content = {
     "luck": 1
    },
    "traits": [
-    "fam_tailor"
+    "fam_tailor",
+    "fam_nest"
    ]
   },
   {
@@ -42867,7 +42873,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_rich",
-    "fam_outsider"
+    "fam_outsider",
+    "exp_art"
    ]
   },
   {
@@ -42883,7 +42890,8 @@ var CONTENT: Content = {
    "traits": [
     "fam_poor",
     "fam_independent",
-    "fam_factory"
+    "fam_factory",
+    "send_home"
    ]
   },
   {
@@ -42897,7 +42905,8 @@ var CONTENT: Content = {
     "charm": 2
    },
    "traits": [
-    "fam_crosstalk"
+    "fam_crosstalk",
+    "fam_nest"
    ]
   },
   {
@@ -42912,7 +42921,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_poor",
-    "fam_siblings"
+    "fam_siblings",
+    "send_home"
    ]
   },
   {
@@ -42928,7 +42938,8 @@ var CONTENT: Content = {
     "luck": -1
    },
    "traits": [
-    "fam_head"
+    "fam_head",
+    "fam_nest"
    ]
   },
   {
@@ -42944,7 +42955,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_pigeon",
-    "fam_poor"
+    "fam_poor",
+    "send_home"
    ]
   },
   {
@@ -42961,7 +42973,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_taxi",
-    "fam_single"
+    "fam_single",
+    "fam_nest"
    ]
   },
   {
@@ -42977,7 +42990,8 @@ var CONTENT: Content = {
     "body": -1
    },
    "traits": [
-    "fam_shop"
+    "fam_shop",
+    "fam_nest"
    ]
   },
   {
@@ -42992,7 +43006,8 @@ var CONTENT: Content = {
     "charm": 1
    },
    "traits": [
-    "fam_dale"
+    "fam_dale",
+    "fam_nest"
    ]
   },
   {
@@ -43009,7 +43024,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_oldmoney",
-    "fam_poor"
+    "fam_poor",
+    "send_home"
    ]
   },
   {
@@ -43025,7 +43041,8 @@ var CONTENT: Content = {
    "traits": [
     "fam_wrestle",
     "fam_poor",
-    "fam_factory"
+    "fam_factory",
+    "send_home"
    ]
   },
   {
@@ -43040,7 +43057,8 @@ var CONTENT: Content = {
     "luck": 1
    },
    "traits": [
-    "fam_kite"
+    "fam_kite",
+    "fam_nest"
    ]
   },
   {
@@ -43057,7 +43075,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_rich",
-    "fam_cadre"
+    "fam_cadre",
+    "exp_pull"
    ]
   },
   {
@@ -43073,7 +43092,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_rich",
-    "fam_doctor"
+    "fam_doctor",
+    "exp_book"
    ]
   }
  ],

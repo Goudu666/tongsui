@@ -814,7 +814,8 @@ def desk(g, x, base, w=200, lamp_side=1, books=True, color="ink"):
     g.ink.line([(cx + 24 * -lamp_side, base - 50), (cx + 26 * -lamp_side, base - 120)], 3.4)
 
 
-def round_table(g, x, base, w=190, cloth="mei"):
+def round_table(g, x, base, w=190, cloth="mei", stools="side"):
+    """饭桌：暖壶、茶杯。stools="side" 两只凳子摆在两头，"under" 塞在桌子底下（屋里挤，桌边要让给别的家具）。"""
     table(g, x, base, w, 82, cloth=cloth)
     # 暖壶、茶杯
     tx = x - 40
@@ -824,8 +825,12 @@ def round_table(g, x, base, w=190, cloth="mei"):
     g.ink.rect(tx - 8, base - 150, 16, 10, lw=1.8)
     g.ink.rect(x + 20, base - 104, 18, 22, lw=1.8)
     g.ink.rect(x + 46, base - 102, 16, 20, lw=1.8)
-    stool(g, x - w / 2 - 30, base)
-    stool(g, x + w / 2 + 30, base)
+    if stools == "under":
+        stool(g, x - w * 0.24, base)
+        stool(g, x + w * 0.24, base)
+    else:
+        stool(g, x - w / 2 - 30, base)
+        stool(g, x + w / 2 + 30, base)
 
 
 def basin_stand(g, x, base, color="qing"):
@@ -983,13 +988,13 @@ def home(g, sc, role, span, top, base):
         window(g, wx - 110, top + 80, 220, 170, panes=3, curtain=accent, night=True)
     bed(g, s("bed"), base, 300, face, quilt=accent)
     wardrobe(g, s("corner"), base, 140, 300)
-    # 五斗柜上的收音机、镜框
+    # 五斗柜上立着一个相框，靠床那头；靠书桌那头空着，收音机（家里的东西那一层，tools/art/home.py）摆那儿
     cx = s("corner")
-    frame_pic(g, cx - 50, top + 70, 100, 76, accent, "two")
+    frame_pic(g, cx - 62 if face > 0 else cx - 2, base - 300 - 60, 64, 60, accent, "two")
     desk(g, s("desk"), base, 210, face, color="ink")
-    round_table(g, s("table"), base, 180, cloth=other)
+    # 凳子塞在饭桌底下：桌子两边让给缝纫机 / 沙发 / 布帘子和电视柜（home.py）。墙上的钟也归那一层：清贫人家没有
+    round_table(g, s("table"), base, 180, cloth=other, stools="under")
     basin_stand(g, s("basin"), base, color=accent)
-    clock(g, s("table") + 120 * face, top + 70)
     calendar(g, s("desk") + 130 * face, top + 70, accent)
     # 屋顶吊灯
     g.ink.line([(s("table"), top), (s("table"), top + 60)], 1.6)

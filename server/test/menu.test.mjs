@@ -91,7 +91,8 @@ const doIt = (s, r, sp, a, once = true) => G("worldAct")(s, C, r, sp, once, a);
   const ADDED = C.map.actions.filter((a) => a.menu).map((a) => a.id);
   assert.ok(ADDED.length >= 14, "后添的事都标了 menu");
   const STAGES = [[3, 11], [12, 17], [18, 29], [30, 59], [60, 90]];
-  const open = (a, lo, hi) => !(a.requires?.minAge > hi) && !(a.requires?.maxAge < lo) && !a.requires?.flags && !a.quick && !a.duty && !a.sleep;
+  // 靠标记的（关口上挣来的、家境带的）和靠家里东西的（requires.home：家里有书柜、复读机，docs/HOME.md）不算：那是资源差异，本来就该快
+  const open = (a, lo, hi) => !(a.requires?.minAge > hi) && !(a.requires?.maxAge < lo) && !a.requires?.flags && !a.requires?.home && !a.quick && !a.duty && !a.sleep;
   for (const [lo, hi] of STAGES) {
     const old = C.map.actions.filter((a) => open(a, lo, hi) && !ADDED.includes(a.id));
     for (const k of ["body", "mind", "charm"]) {

@@ -1,0 +1,72 @@
+# 家里的东西：一样东西哪一年进这户人家的门（规则在 server/src/home.ts，说明见 docs/HOME.md）
+#
+# 同一年，三户人家不在同一个年代。殷实人家早几年过上了下一个年代，清贫人家晚几年，有的东西一直没有。
+# 两个人同一年生、住对门，可对门家里先有了电视、书柜、电脑，你家还没有：去对门看、去对门翻，一起用就是搭伴。
+#
+# 字段
+#   id      物件 id。身上的标记是 hm_<id>：「这个人爸妈家里有」。行动 requires.home 写的是 id，看的是那个点位那一户（去对门家就看对门）
+#   name    给人看的名字（≤ 5 字）
+#   arrive  哪一年进门：rich 殷实 / mid 小康 / poor 清贫，按日历年（出生年 + 岁数，content/eras.yaml）。不写那一档 = 那一档一直没有。
+#           也能按人家写（families.yaml 的 id），压过家境那一档：教书先生家书早，老城里搬来的金家穷了，书还在
+#           家道中落（fam_fallen）以后按小康算，已经进门的东西不收走
+#   gone    这一年以后家家都收起来了（换了新的、没人用了），标记摘掉。不写 = 一直在
+#   text    进门那天的一句（≤ 30 字，手册 §1：不写品牌、不写年份）。三岁以前进门的悄悄有，不记长卷
+#   buy     家里没有的，自己攒钱买：{ price 块, from 这一年起有卖的, minAge }。买了就是这户人家的（对门也能过来用）
+#
+# 年份按城里人家的大致先后摆（电视八十年代中普及、九十年代中家家有；电话九十年代中往后；电脑千禧年以后），
+# 殷实比小康早五六年，小康比清贫再早五六年到十年。只给引擎算，不给人看。
+#
+# 文风守 docs/tianjin_style.md：东西就是东西，不当年代符号摆；一句话写这户人家怎么用它。
+
+items:
+  - id: radio
+    name: 收音机
+    arrive: { rich: 1958, mid: 1962, poor: 1970, gu: 1952 }
+    gone: 1998
+    text: 收音机摆在柜子顶上，盖着一块钩花的白布。
+
+  - id: tv
+    name: 电视
+    arrive: { rich: 1979, mid: 1984, poor: 1990 }
+    text: 家里有电视了。头一天晚上，椅子摆了两排。
+
+  - id: fridge
+    name: 冰箱
+    arrive: { rich: 1985, mid: 1991, poor: 1999, liu: 1986 }
+    text: 冰箱进门那天，你妈拿抹布擦了三遍。
+
+  - id: books
+    name: 一柜子书
+    arrive: { rich: 1960, mid: 1993, lin: 1972, jin: 1950, zheng: 1955 }
+    text: 墙边立起一个书柜，玻璃门，一层一层码满了。
+
+  - id: milk
+    name: 订的牛奶
+    arrive: { rich: 1980, mid: 1994 }
+    text: 门口钉了个木头箱子，天不亮就有人往里放一瓶奶。
+
+  - id: phone
+    name: 电话
+    arrive: { rich: 1990, mid: 1996, poor: 2002, liu: 1989 }
+    gone: 2016
+    text: 装电话了。你妈把号码抄在本上，挨家告诉了一遍。
+
+  - id: console
+    name: 游戏机
+    arrive: { rich: 1991, mid: 1996, xu: 1989 }
+    gone: 2007
+    text: 一台插卡的游戏机，接在电视后头，线绕了两圈。
+    buy: { price: 12, from: 1992, minAge: 8 }
+
+  - id: tape
+    name: 复读机
+    arrive: { rich: 1994, mid: 1999, xu: 1990 }
+    gone: 2012
+    text: 一台复读机，说是学英语用的，按键一按咔哒一声。
+    buy: { price: 15, from: 1995, minAge: 10 }
+
+  - id: pc
+    name: 电脑
+    arrive: { rich: 1998, mid: 2004, poor: 2012 }
+    text: 电脑搬进屋角，罩着一块布，开机要等好一阵。
+    buy: { price: 60, from: 2000, minAge: 16 }

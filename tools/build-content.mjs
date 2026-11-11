@@ -92,8 +92,8 @@ const PENDING_FLAGS = [];
 const SCENE_ORDER = ["building", "street", "river", "primary", "middle", "across", "away", "rental", "newhome", "park", "hospital"];
 const SCENE_STRIDE = 2000;
 const AREA_HEIGHT = 400; // 地点在世界坐标里的框：地面往上这么高（判定「人在不在这儿」用，美术不看它）
-const ACTION_KEYS = ["id", "label", "minutes", "quick", "sleep", "duty", "requires", "needs", "stats", "money", "together", "bring", "menu", "kid", "tie"];
-const ACTION_REQ_KEYS = ["minAge", "maxAge", "owner", "hours", "flags", "notFlags", "kidAge"];
+const ACTION_KEYS = ["id", "label", "minutes", "quick", "sleep", "duty", "requires", "needs", "stats", "money", "together", "bring", "menu", "kid", "buys", "tie"];
+const ACTION_REQ_KEYS = ["minAge", "maxAge", "owner", "hours", "flags", "notFlags", "kidAge", "home"];
 const TOGETHER_KEYS = ["needs", "bond", "text"];
 // 规则代码（server/src/sim.ts、world.ts）里按名字写死的行动和标记：影子靠这些行动过日子，天赋效果靠这些标记生效。
 // 在内容里改名或删掉它们，规则会悄悄失效，所以在这里钉住。
@@ -698,6 +698,52 @@ if (remembered.length > REMEMBERED_MAX) errors.push(`remembered.yaml: ${remember
 // ---------- 地图 ----------
 for (const f of PENDING_FLAGS) produced.add(f);
 for (const f of FAMILY_DERIVED_FLAGS) produced.add(f);
+// ---------- 家里的东西（home.yaml）：一样东西哪一年进这户人家的门（规则在 server/src/home.ts，说明见 docs/HOME.md） ----------
+const home = { items: [] };
+{
+  let raw = {};
+  try { raw = load("home.yaml") ?? {}; } catch (e) { errors.push(`home.yaml: 读不了（${e.message}）`); }
+  checkKeys("home.yaml", raw, ["items"]);
+  const famIds = new Set(families.map((f) => f.id));
+  const seenItem = new Set();
+  const year = (y) => Number.isInteger(y) && y >= 1900 && y <= 2100;
+  const text = (where, t, max) => {
+    if (!t || typeof t !== "string") errors.push(`${where}: 缺少文字`);
+    else if ([...t].length > max) errors.push(`${where}: ${[...t].length} 字，超过 ${max} 字（${t}）`);
+  };
+  for (const [i, it] of (raw.items ?? []).entries()) {
+    const at = `home.items#${it.id ?? i}`;
+    checkKeys(at, it, ["id", "name", "arrive", "gone", "text", "buy"]);
+    if (!/^[a-z]+$/.test(it.id ?? "")) errors.push(`${at}: id 只用小写字母（标记是 hm_<id>）`);
+    if (seenItem.has(it.id)) errors.push(`${at}: id 重复`);
+    seenItem.add(it.id);
+    text(`${at}.name`, it.name, 5);
+    text(`${at}.text`, it.text, 30);
+    const arrive = it.arrive ?? {};
+    for (const [k, y] of Object.entries(arrive)) {
+      if (!["rich", "mid", "poor"].includes(k) && !famIds.has(k)) errors.push(`${at}.arrive.${k}: 只能是 rich / mid / poor 或者 families.yaml 里的人家 id`);
+      if (!year(y)) errors.push(`${at}.arrive.${k}: 年份要是 1900~2100 的整数`);
+    }
+    if (!Object.keys(arrive).length && !it.buy) errors.push(`${at}: 哪户人家都不会有（没写 arrive，也买不到）`);
+    // 殷实不晚于小康、小康不晚于清贫：年份写反了多半是笔误
+    const tierYears = ["rich", "mid", "poor"].map((k) => arrive[k] ?? Infinity);
+    if (tierYears[0] > tierYears[1] || tierYears[1] > tierYears[2]) errors.push(`${at}.arrive: 殷实 ≤ 小康 ≤ 清贫（${tierYears.join(" / ")}）`);
+    if (it.gone !== undefined && (!year(it.gone) || it.gone <= Math.min(...Object.values(arrive), it.buy?.from ?? Infinity))) errors.push(`${at}.gone: 要比最早进门的那一年晚`);
+    if (it.buy !== undefined) {
+      checkKeys(`${at}.buy`, it.buy, ["price", "from", "minAge"]);
+      if (!(it.buy.price > 0 && it.buy.price <= 100)) errors.push(`${at}.buy.price: 1~100 块`);
+      if (!year(it.buy.from)) errors.push(`${at}.buy.from: 年份`);
+      if (it.gone !== undefined && it.buy.from >= it.gone) errors.push(`${at}.buy.from: 收起来以前才有卖的`);
+      if (it.buy.minAge !== undefined && !(Number.isInteger(it.buy.minAge) && it.buy.minAge >= 3)) errors.push(`${at}.buy.minAge: 三岁以上的整数`);
+    }
+    produced.add(`hm_${it.id}`);
+    home.items.push({
+      id: it.id, name: it.name, arrive, gone: it.gone ?? null, text: it.text ?? "",
+      ...(it.buy ? { buy: { price: it.buy.price, from: it.buy.from, minAge: it.buy.minAge ?? 3 } } : {}),
+    });
+  }
+}
+const homeItem = new Map(home.items.map((it) => [it.id, it]));
 // ---------- 人际圈子（circle.yaml，docs/CIRCLE.md）：门路 tie_* 和欠的人情 owe_* ----------
 const circleRaw = load("circle.yaml") ?? {};
 checkKeys("circle.yaml", circleRaw, ["ties", "owes"]);
@@ -871,6 +917,21 @@ map.actions = map.actions.map((a) => {
   if (a.quick && Object.keys(a.stats ?? {}).length > 0) errors.push(`map.actions#${a.id}: 顺手的事不长属性，要长属性就去掉 quick`);
   // menu：只在菜单上点到才做（协议 8）。不点菜单的（旧安装包、影子、机器人）永远轮不到它，校准过的活法数不动
   if (a.menu !== undefined && (a.menu !== true || a.sleep || a.duty)) errors.push(`map.actions#${a.id}.menu: 只能写 true，睡觉和日程不能是`);
+  // 家里的东西（server/src/home.ts）：requires.home 看点位那一户有没有；buys 是自己攒钱买，钱数就是 home.yaml 的价
+  if (a.requires?.home !== undefined) {
+    if (!Array.isArray(a.requires.home) || !a.requires.home.length) errors.push(`map.actions#${a.id}.requires.home: 物件 id 的列表`);
+    for (const id of a.requires.home ?? []) if (!homeItem.has(id)) errors.push(`map.actions#${a.id}.requires.home: home.yaml 里没有 "${id}"`);
+    if (!a.menu) errors.push(`map.actions#${a.id}: 看家里东西的事要写 menu: true（不点菜单的机器人、影子轮不到它，校准的数不动）`);
+    if (a.sleep || a.duty || a.bring) errors.push(`map.actions#${a.id}: 睡觉、日程、带人的事不看家里的东西`);
+  }
+  if (a.buys !== undefined) {
+    const it = homeItem.get(a.buys);
+    if (!it) errors.push(`map.actions#${a.id}.buys: home.yaml 里没有 "${a.buys}"`);
+    else if (!it.buy) errors.push(`map.actions#${a.id}.buys: ${a.buys} 没写 buy（外头没卖的）`);
+    else if (a.money !== -it.buy.price) errors.push(`map.actions#${a.id}.money: 要写 -${it.buy.price}（home.yaml 的价）`);
+    if (!a.quick || !a.menu) errors.push(`map.actions#${a.id}: 买东西是顺手的事、要写 menu: true`);
+    if (a.requires?.home) errors.push(`map.actions#${a.id}: 买东西不写 requires.home`);
+  }
   // tie：做够 times 回认下一个门路（人际圈子，server/src/circle.ts）。只能是菜单上点的事（机器人、影子不走动），门路得在 circle.yaml 里
   if (a.tie !== undefined) {
     checkKeys(`map.actions#${a.id}.tie`, a.tie, ["flag", "times"]);
@@ -886,6 +947,7 @@ map.actions = map.actions.map((a) => {
     together: a.together ? { needs: a.together.needs ?? {}, bond: a.together.bond ?? {}, text: a.together.text ?? "" } : null,
     bring: !!a.bring, menu: !!a.menu,
     ...(a.kid ? { kid: a.kid } : {}),
+    ...(a.buys ? { buys: a.buys } : {}),
     ...(a.tie ? { tie: { flag: a.tie.flag, times: a.tie.times } } : {}),
   };
 });
@@ -1230,7 +1292,7 @@ for (const e of events) for (const o of e.options) for (const f of o.effects?.fl
 
 // 内容版本 = 内容本身的指纹。服务器在 lifeline_open 里报出它的版本，客户端发现和自己带的不一样，
 // 就用 content_get 把服务器这份下载下来用（改剧情只需要更新服务器，不用两台手机重装 APK）。
-const body = { events, families, talents, map, tracks, endings, rules, checks, duet, letters, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks }, atlas, story, eras, circle };
+const body = { events, families, talents, map, tracks, endings, rules, checks, duet, letters, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks }, atlas, story, eras, home, circle };
 const version = createHash("sha256").update(JSON.stringify(body)).digest("hex").slice(0, 12);
 const content = { version, ...body };
 const json = JSON.stringify(content, null, 1);

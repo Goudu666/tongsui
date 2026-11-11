@@ -20,6 +20,7 @@ python3 tools/art/actors.py           # 角色（侧视骨骼）→ client/art/a
 python3 tools/art/folks.py            # 横版街坊和路人 → client/art/folks/（先 npm run content 出 client/data/folks.json）
 python3 tools/art/layers.py           # 远景、中景、四季的树、前景 → client/art/layers/
 python3 tools/art/street.py           # 街坊、车、年代道具 → client/art/street/
+python3 tools/art/home.py             # 两户人家屋里的东西和家境陈设 → client/art/home/
 ```
 
 生成结果已经提交，不改美术不用跑。生成后用 Godot 打开一次项目让它重新导入。
@@ -42,6 +43,7 @@ python3 tools/art/scenes.py --preview street --x 1200 --w 1600 --scale 0.5 --out
 | `folks.py` | 横版街坊（一人一种营生：摇蒲扇、织毛衣、吆喝、剃头、遛狗、推婴儿车、指挥…）和六种路人，同一副骨架、浅一档的网点 |
 | `street_fig.py` | 街坊的参数化小人：体型、朝向、站/坐、衣裳、手里拿的东西，一个字典画一个人 |
 | `street.py` | 街景图集：街坊、公告栏、电话亭、快递柜、共享单车、面的、出租、骑车的人、对岸天际线 |
+| `home.py` | 家里的东西：红砖楼两户人家屋里随年代进门的物件（收音机、电视、冰箱、书柜、电话、游戏机、复读机、电脑、牛奶箱）和按家境摆的陈设 |
 
 ## 立体感（`scenes.py` 的 `RELIEF`）
 
@@ -83,6 +85,19 @@ python3 tools/art/scenes.py --preview street --x 1200 --w 1600 --scale 0.5 --out
 
 分寸：这是一条普通的老街，不是景点。不摆城市名片，不堆方言，街坊只叫行当不起姓（姓留给玩家可能投胎到的那几户人家）。
 年代靠街上的东西自己说：面的换成小出租，黑板报换成公告栏，对岸的烟囱换成楼。越往后越虚，老年只留不变的。
+
+## 家里的东西：随家境和年代变的那一层（`home.py`）
+
+楼里那张底图（`scenes.py` 的 `home()`）只画两家都有的：床、五斗柜、书桌、饭桌（凳子塞在桌子底下）、脸盆架、窗、日历。
+哪户人家有什么、什么时候进门由服务器定（`content/home.yaml`，WORLD 里的 `homes`），家境由投的那户人家定，这一层把它们摆出来：
+
+- 家境陈设：清贫是屋当间一道系起来的布帘子、一张折起来的钢丝床和被卷、红漆木箱子当电视柜、一摞摞糊好的纸盒；
+  小康是蒙着罩布的缝纫机、矮柜、墙上的圆钟；殷实是地板革、搭着白沙发巾的单人沙发、玻璃拉门电视柜、摆钟
+- 物件：收音机（五斗柜 / 书柜顶上，盖钩花布）、电视（黑白小方盒 → 彩电 → 薄的，按年代和家境）、游戏机（搁在地上，两个手柄）、
+  冰箱（进门那块地方）、书柜（玻璃门，整个盖住五斗柜）、电话和复读机（书桌上）、电脑（屋角一张电脑桌，大脑袋罩着布 → 薄的）、楼道门边的牛奶箱
+- 每张精灵按它在图上的世界坐标印（原点 4 的倍数、1.25 倍），网点、套印错位、墙脚的阴影和底图对得上；引擎原样贴回去。梅家是印之前翻坐标得到的镜像
+- 挑哪几张：`home.py` 的 `pick()` 和 `client/scripts/world/home_life.gd` 的 `pick()` 一致（`client/tests/unit_home.gd` 查图集里都有）
+- 预览：`python3 tools/art/home.py --preview qing --wealth 0 --items radio,tv --decade 3 --out /tmp/h.png`；游戏里的对比图：`tools/shots/home.gd`
 
 ## 主视觉和商店图（`keyart.py`）
 

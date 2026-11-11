@@ -173,6 +173,7 @@ function lifeConfirm(s: LifeState, c: Content, role: Role, names: { [R in Role]:
   s.persons = { qing: lifeNewPerson(s, c, s.rolls.qing, names.qing), mei: lifeNewPerson(s, c, s.rolls.mei, names.mei) };
   legacyBirth(s, c); // 家业、带着的老物件、上一世留在河畔里的痕迹
   eraStart(s, c); // 生之前的年代大事悄悄生效（era.ts）
+  homeSync(s, c, null); // 生下来家里已经有的东西（home.ts）
   s.phase = "life";
   worldStartDay(s, c);
   return true;
@@ -883,6 +884,7 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
     s.log.push(end);
   } else {
     eraTick(s, c, out); // 到了年份的年代大事（era.ts），赶在新一天开张之前：今天的行动和关口按新的规矩
+    homeSync(s, c, out); // 家里添了什么、收起了什么（home.ts）：三档人家各按各的年份
     worldStartDay(s, c);
   }
   return out;

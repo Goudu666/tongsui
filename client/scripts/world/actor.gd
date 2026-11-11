@@ -64,6 +64,10 @@ const ACTION_LOOP := {
 	"old_breakfast": "cook", "old_bikes": "fix", "mind_kids": "talk", "grandkid_park": "kite",
 	"kid_homework": "write", "kid_run": "kick", "kid_listen": "talk", "kid_class": "read",
 	"square_dance": "exercise", "pair_cook": "cook", "gk_pickup": "talk",
+	# 家里的东西（content/home.yaml）：看电视、听广播是望着；游戏机、电脑是手上忙；糊纸盒是刷浆糊；攒钱买的是搬回家
+	"hm_tv": "gaze", "hm_radio": "gaze", "hm_console": "type", "hm_books": "read", "hm_tape": "read",
+	"hm_pc": "type", "hm_pc_game": "type", "hm_milk": "eat", "hm_piece": "brush",
+	"buy_console": "carry", "buy_tape": "carry", "buy_pc": "carry",
 	# 人际圈子（content/circle.yaml）：攒门路的几样
 	"class_help": "chalk", "help_neighbor": "carry", "visit_kin": "talk", "treat": "eat",
 }

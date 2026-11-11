@@ -373,7 +373,7 @@
         var rq = o.requires || {};
         if (rq.flags && !rq.flags.every(function (f) { return person.flags.indexOf(f) >= 0; })) return false;
         if (rq.notFlags && rq.notFlags.some(function (f) { return person.flags.indexOf(f) >= 0; })) return false;
-        if (o.cost && person.money < o.cost) return false;
+        if (o.cost && person.money < (ev.kind === "milestone" ? S.lifeOptionCost(ev, o, person) : o.cost)) return false; // 年代挪了积蓄线，要掏的钱跟着挪
         return true;
       });
       if (!ok.length) ok = ev.options.slice(-1);

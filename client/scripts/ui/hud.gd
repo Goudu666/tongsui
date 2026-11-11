@@ -17,6 +17,7 @@ const Icons := preload("res://scripts/ui/icons.gd")
 const NEED_KEYS := ["hunger", "energy", "mood"]  ## 清洁 11-11 砍了（#47；旧服务器还会发，不画）
 const NEED_GLYPH := {"hunger": "饱", "energy": "精", "mood": "心", "clean": "净"}
 const STAGE_NAME := {"childhood": "童年", "teen": "少年", "young": "青年", "middle": "中年", "old": "老年"}
+const WHEN := ["立春", "立夏", "立秋", "立冬", "上学期", "下学期"]  ## LifeTime 标签里岁数后面那一截（没有的就写人生阶段）
 
 const LOW := 30.0          ## 需求低于这个数：圆表变梅红并抖动
 const TOP := 28.0          ## 顶上那条横带的上沿
@@ -42,7 +43,7 @@ const CARD := Vector2(ME_W, BAND + AGE_H)  ## 只有日历那一截（离线逛�
 const CLOCK_FS := 36
 const CHAPTER_NUM := ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"]
 
-var time_label := ""    ## LifeTime.at().label，例如 "7 岁 · 立夏"
+var time_label := ""    ## LifeTime.at().label，例如 "7 岁 · 立夏"；服务器给了年代，后面再跟年代名（"7 岁 · 立夏 · 九十年代"，ui/era.gd）
 var stage := "childhood"
 var minute := 390.0
 var slot_name := ""     ## 一天五段里的哪一段（早上 / 上午……）。日历牌上现在一直写钟点（一件一件做，钟是自己的），这个留给别处用
@@ -254,6 +255,20 @@ func _scrim() -> void:
 		PackedColorArray([clear, clear, thick, thick]))
 
 
+## 日历牌色条上的字：time_label 岁数后面那几截（节气 / 学期、年代名）；只有岁数的（青年往后）写人生阶段，再跟年代名
+static func band_text(label: String, p_stage: String, p_tag := "") -> String:
+	var parts := label.split(" · ")
+	var rest: Array = []
+	for i in range(1, parts.size()):
+		rest.append(parts[i])
+	if rest.is_empty() or not str(rest[0]) in WHEN:
+		rest.push_front(str(STAGE_NAME.get(p_stage, "")))
+	var band := " · ".join(PackedStringArray(rest.filter(func(x): return str(x) != "")))
+	if p_tag != "":
+		band += (" · " if band != "" else "") + p_tag
+	return band
+
+
 ## 「我」的牌：一张纸从上到下三截，细线分开
 func _me(f: Font, r: Rect2) -> void:
 	var at := r.position
@@ -266,13 +281,14 @@ func _me(f: Font, r: Rect2) -> void:
 	var aw := f.get_string_size(age_text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 	# 年纪长了（"34 岁那几年"）一行放不下年纪和钟点：钟点挪到色条右头，顶掉那两个孔
 	var long := aw + cw + 92.0 > r.size.x
-	# 色条：节气 / 学期 / 人生阶段
-	var band := str(parts[1]) if parts.size() > 1 else str(STAGE_NAME.get(stage, ""))
-	if tag != "":
-		band += " · " + tag
+	# 色条：节气 / 学期 / 人生阶段，后面跟年代名
+	var band := band_text(time_label, stage, tag)
 	Kit.draw_band(self, r, Kit.accent, BAND)
 	var band_room := r.size.x - (f.get_string_size(clock, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_LABEL).x + 48.0 if long else 96.0)
-	Kit.text(self, at + Vector2(18, 34), band, P.FS_LABEL, P.PAPER_HI, false, band_room)
+	var band_fs := P.FS_LABEL
+	while band_fs > P.FS_CAPTION - 2 and f.get_string_size(band, HORIZONTAL_ALIGNMENT_LEFT, -1, band_fs).x > band_room:
+		band_fs -= 1  # 带上年代名、上学日一行放不下：字收一收
+	Kit.text(self, at + Vector2(18, 34), band, band_fs, P.PAPER_HI, false, band_room)
 	if long:
 		Kit.text(self, at + Vector2(r.size.x - 16, 34), clock, P.FS_LABEL, P.PAPER_HI, true)
 	else:

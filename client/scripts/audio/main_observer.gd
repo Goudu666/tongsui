@@ -12,6 +12,7 @@ extends Node
 
 const LifeTime := preload("res://scripts/ui/life_time.gd")
 const P := preload("res://scripts/ui/palette.gd")
+const Era := preload("res://scripts/ui/era.gd")
 
 ## 从主场景（scripts/main.gd）读的属性
 const READS := ["world", "net", "life", "last_world", "my_role", "content", "events_by_id", "ui", "screen",
@@ -293,7 +294,7 @@ func _process(delta: float) -> void:
 	_watch_grow(stage)
 	audio.set_life(_dict("content").get("map", {}), me, a.position, other_pos, _partner_live or preview, turn,
 		stage, LifeTime.season_of(turn), minute, school_day,
-		sync, modal != null and modal.visible, _weather(world))
+		sync, modal != null and modal.visible, _weather(world), Era.look_for("", Era.era_of(last, life)))
 
 	# 脚步
 	for r in actors:

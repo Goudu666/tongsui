@@ -6,12 +6,14 @@ extends Control
 ##   - 线之间的细针脚是搭伴的日子：离得再远，那天也是缝在一起的。
 ##   - 线中间的小点是共同回忆，名字写在下面；褪了色的只剩一个空圈。
 ##   - 一个人先走了，线停在那一年；剩下的那条线回到纸的正中间，一个人走完。
+##   - 纸的上沿一排小字是年代大事（log kind "era"）：「年代 · 标题」，那一年在纸边上掐一道。
 ## 数据全部来自结局时服务器给的 life（log / memories / persons / ending）和内容表，不另存东西。
 ## 横屏优先：高度固定 HEIGHT，宽度按站数算（约五千像素），外面套一层横向滚动（见 view()）。
 
 const P := preload("res://scripts/ui/palette.gd")
 const Kit := preload("res://scripts/ui/kit.gd")
 const LifeTime := preload("res://scripts/ui/life_time.gd")
+const Era := preload("res://scripts/ui/era.gd")
 
 const HEIGHT := 880.0
 const LEFT := 420.0        ## 卷首（标题）占的宽度，第一站之前
@@ -41,7 +43,7 @@ static func _dict(v: Variant) -> Dictionary:
 
 
 ## 把 life 整理成长卷要画的东西（纯数据，单测用）。
-## 返回 { last, close, stations, stitches, memories, deaths, pair, lives, counts }
+## 返回 { last, close, stations, stitches, memories, deaths, pair, lives, counts, eras }
 static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 	var events := {}
 	for ev in _list(content.get("events")):
@@ -57,11 +59,14 @@ static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 	var stations: Array = []
 	var stitches: Array = []
 	var deaths := {}
+	var eras: Array = []
 	var counts := {"days": 0, "together": 0, "same": 0, "apart": 0, "memories": _list(life.get("memories")).size()}
 	var last := 0
 	for e in _list(life.get("log")):
 		var turn := int(e.get("turn", 0))
 		match str(e.get("kind", "")):
+			"era":
+				eras.append({"turn": turn, "line": Era.log_line(e)})
 			"day":
 				counts.days += 1
 				last = maxi(last, turn)
@@ -124,7 +129,7 @@ static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 				var nm := str(_dict(_dict(life.get("persons")).get(r)).get("name", P.ROLE_NAME[r]))
 				lives[r] = {"title": str(it.title), "text": str(it.text).replace("{name}", nm)}
 	var close := float(life.get("bond", {}).get("close", 0.0)) if life.get("bond") is Dictionary else 0.0
-	return {"last": last, "close": close, "stations": stations, "stitches": stitches, "memories": memories, "deaths": deaths, "pair": pair, "lives": lives, "counts": counts}
+	return {"last": last, "close": close, "stations": stations, "stitches": stitches, "memories": memories, "deaths": deaths, "pair": pair, "lives": lives, "counts": counts, "eras": eras}
 
 
 static func _road(ev: Dictionary, option: String) -> String:
@@ -310,6 +315,7 @@ func _draw() -> void:
 	_draw_stitches()
 	_draw_lines()
 	_draw_memories(f)
+	_draw_eras(f)
 	for i in model.stations.size():
 		_draw_station(f, i)
 	_draw_ends(f)
@@ -429,6 +435,26 @@ func _draw_memories(f: Font) -> void:
 				draw_line(Vector2(x, MID + SEP_APART + 96.0), Vector2(x, y - 26.0), Color(P.INK_SOFT, 0.45), 1.5, true)
 				_text(f, Vector2(x, y), title, 24, P.OVERLAP if vivid else P.INK_SOFT)
 				break
+
+
+## 年代大事：纸的上沿掐一道，旁边一行小字。挤到前一条上的就往后让，让不开（同一天连着几件）就并成一行
+func _draw_eras(f: Font) -> void:
+	var right := -1e9
+	var y := 46.0
+	var merged: Array = []
+	for it in model.get("eras", []):
+		var x := x_of(float(it.turn) + 0.5)
+		if not merged.is_empty() and absf(x - float(merged[-1].x)) < 1.0:
+			merged[-1].line = str(merged[-1].line) + "、" + str(it.line).trim_prefix("年代 · ")
+		else:
+			merged.append({"x": x, "line": str(it.line)})
+	for it in merged:
+		var x := float(it.x)
+		draw_line(Vector2(x, 14.0), Vector2(x, 28.0), Color(P.INK, 0.55), 2.0, true)
+		var tw := f.get_string_size(str(it.line), HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x
+		var at := maxf(x + 6.0, right + 16.0)
+		draw_string(f, Vector2(at, y), str(it.line), HORIZONTAL_ALIGNMENT_LEFT, -1, 20, P.INK_MID)
+		right = at + tw
 
 
 func _score_text(road: Dictionary) -> String:

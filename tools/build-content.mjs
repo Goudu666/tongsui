@@ -976,6 +976,104 @@ const atlas = { hidden: [], sad: [], riddles: {}, says: {} };
   }
 }
 
+
+// ---------- 年代大事（eras.yaml）：出生年代、日历年、一件件大事（规则在 server/src/era.ts，说明见 docs/ERAS.md） ----------
+// 引擎读 era_* 标记：行动、关口选项、事件、路线的 requires 都能读它。lines 编进关口选项的 eraLines（引擎的 lifeOptionMin），
+// 单位和给人看的一样：分数线按百分制分，积蓄 / 亲近线按块 / 分。
+const ERA_KEYS = ["id", "year", "until", "title", "text", "flags", "clears", "lines", "wages", "hits"];
+const ERA_HIT_KEYS = ["requires", "text", "flags", "clears", "money", "savings"];
+const ERA_HIT_REQ_KEYS = ["flags", "notFlags", "minAge", "maxAge"];
+const eras = { decades: [], cohorts: [], events: [] };
+{
+  let raw = {};
+  try { raw = load("eras.yaml") ?? {}; } catch (e) { errors.push(`eras.yaml: 读不了（${e.message}）`); }
+  checkKeys("eras.yaml", raw, ["decades", "cohorts", "events"]);
+  for (const [i, d] of (raw.decades ?? []).entries()) {
+    const at = `eras.decades[${i}]`;
+    checkKeys(at, d, ["from", "name", "look"]);
+    if (!Number.isInteger(d.from)) errors.push(`${at}.from: 要是年份`);
+    needText(`${at}.name`, d.name, 6);
+    if (!STAGES.includes(d.look)) errors.push(`${at}.look: 要是 ${STAGES.join(" / ")} 之一（客户端用哪一套街景）`);
+    if (i > 0 && d.from <= raw.decades[i - 1].from) errors.push(`${at}: from 要从早到晚排`);
+    eras.decades.push({ from: d.from, name: d.name, look: d.look });
+  }
+  const cohortIds = new Set();
+  for (const [i, co] of (raw.cohorts ?? []).entries()) {
+    const at = `eras.cohorts#${co.id ?? i}`;
+    checkKeys(at, co, ["id", "name", "born", "weight", "note", "default"]);
+    if (!co.id || cohortIds.has(co.id)) errors.push(`${at}: id 缺少或重复`);
+    cohortIds.add(co.id);
+    needText(`${at}.name`, co.name, 8);
+    needText(`${at}.note`, co.note, 30);
+    if (!Number.isInteger(co.born)) errors.push(`${at}.born: 要是年份`);
+    if (!(co.weight > 0)) errors.push(`${at}.weight: 要大于 0`);
+    if (eras.decades.length && co.born < eras.decades[0].from) errors.push(`${at}: 生得比 decades 第一条还早`);
+    eras.cohorts.push({ id: co.id, name: co.name, born: co.born, weight: co.weight, note: co.note, ...(co.default ? { default: true } : {}) });
+  }
+  if (eras.cohorts.length && eras.cohorts.filter((c) => c.default).length !== 1) errors.push("eras.cohorts: 要有且只有一个 default: true（老存档和测试用它）");
+  const msById = new Map(milestones.map((m) => [m.id, m]));
+  const eraIds = new Set();
+  const eraFlagOwner = new Map();
+  for (const [i, ev] of (raw.events ?? []).entries()) {
+    const at = `eras.events#${ev.id ?? i}`;
+    checkKeys(at, ev, ERA_KEYS);
+    if (!ev.id || eraIds.has(ev.id)) errors.push(`${at}: id 缺少或重复`);
+    eraIds.add(ev.id);
+    if (!Number.isInteger(ev.year)) errors.push(`${at}.year: 要是年份`);
+    if (ev.until != null && !(Number.isInteger(ev.until) && ev.until > ev.year)) errors.push(`${at}.until: 要是比 year 晚的年份`);
+    needText(`${at}.title`, ev.title, 7);
+    needText(`${at}.text`, ev.text, 45);
+    if (/\d{4}|[一二三四五六七八九〇零]{4}年/.test(String(ev.text) + String(ev.title))) errors.push(`${at}: 不写年份（GDD），用「八十年代末」这种说法`);
+    const flags = ev.flags ?? [];
+    if (!Array.isArray(flags) || flags.length === 0) errors.push(`${at}.flags: 至少一个 era_ 开头的标记`);
+    for (const f of flags) {
+      if (!String(f).startsWith("era_")) errors.push(`${at}.flags: "${f}" 要以 era_ 开头`);
+      if (eraFlagOwner.has(f)) errors.push(`${at}.flags: "${f}" 已经由 ${eraFlagOwner.get(f)} 发了（一个年代标记只由一件事发，until 才摘得干净）`);
+      eraFlagOwner.set(f, ev.id);
+      produced.add(f);
+    }
+    for (const f of ev.clears ?? []) if (!String(f).startsWith("era_")) errors.push(`${at}.clears: 只能摘 era_ 标记`);
+    for (const [key, d] of Object.entries(ev.lines ?? {})) {
+      const [mid, oid] = key.split(".");
+      const ms = msById.get(mid);
+      const o = ms?.options.find((x) => x.id === oid);
+      if (!o) { errors.push(`${at}.lines.${key}: 没有这个关口选项（<关口id>.<选项id>）`); continue; }
+      if (!o.min) { errors.push(`${at}.lines.${key}: 这条路没有线，挪不了`); continue; }
+      if (typeof d !== "number" || d === 0) { errors.push(`${at}.lines.${key}: 要是不为 0 的数`); continue; }
+      const w = o.score ?? ms.score ?? {};
+      const raw = !!(w.money || w.close);
+      const dd = raw ? d : d / 10;
+      if (o.min + dd <= 0) errors.push(`${at}.lines.${key}: 挪完线 ≤ 0`);
+      if (Math.abs(dd) > o.min * 0.6) errors.push(`${at}.lines.${key}: 一次挪了线的六成以上，太猛`);
+      (o.eraLines ??= []).push({ flags: [...flags], d: Math.round(dd * 100) / 100 });
+    }
+    for (const [f, x] of Object.entries(ev.wages ?? {})) {
+      if (!(typeof x === "number" && x > 0 && x <= 3)) errors.push(`${at}.wages.${f}: 要是 0~3 之间的乘数`);
+      consumed.push([`${at}.wages`, f]);
+    }
+    const hits = (ev.hits ?? []).map((h, hi) => {
+      const hat = `${at}.hits[${hi}]`;
+      checkKeys(hat, h, ERA_HIT_KEYS);
+      checkKeys(`${hat}.requires`, h.requires ?? {}, ERA_HIT_REQ_KEYS);
+      needText(`${hat}.text`, h.text, 30);
+      for (const f of h.requires?.flags ?? []) consumed.push([`${hat}.requires`, f]);
+      for (const f of h.requires?.notFlags ?? []) consumed.push([`${hat}.requires`, f]);
+      for (const f of h.flags ?? []) produced.add(f);
+      if (h.money != null && typeof h.money !== "number") errors.push(`${hat}.money: 要是数`);
+      if (h.savings != null && !(h.savings > 0 && h.savings <= 2)) errors.push(`${hat}.savings: 要是 0~2 之间的乘数`);
+      return { requires: h.requires ?? {}, text: h.text, flags: h.flags ?? [], clears: h.clears ?? [], money: h.money ?? 0, savings: h.savings ?? 1 };
+    });
+    eras.events.push({ id: ev.id, year: ev.year, until: ev.until ?? null, title: ev.title, text: ev.text, flags, clears: ev.clears ?? [], lines: ev.lines ?? {}, wages: ev.wages ?? {}, hits });
+  }
+  // 每件大事至少要动一样：挪线、乘工钱、落到人头上，或者有内容读它的标记。纯新闻不收
+  const read = new Set(consumed.map(([, f]) => f));
+  for (const ev of eras.events) {
+    const moves = Object.keys(ev.lines).length || Object.keys(ev.wages).length || ev.hits.length || ev.flags.some((f) => read.has(f));
+    if (!moves) errors.push(`eras.events#${ev.id}: 什么都不动（没有 lines / wages / hits，也没有内容读 ${ev.flags.join("、")}），纯新闻不收`);
+  }
+  for (const ev of eras.events) for (const f of ev.clears) if (!eraFlagOwner.has(f)) errors.push(`eras.events#${ev.id}.clears: 没有哪件大事发 "${f}"`);
+}
+
 const orphan = consumed.filter(([, f]) => !produced.has(f));
 for (const [where, f] of orphan) errors.push(`${where}: 要求标记 "${f}"，但没有任何人家、天赋、选项或共鸣会打上它（多半是拼错了）`);
 
@@ -1022,7 +1120,7 @@ if (errors.length) {
 
 // 内容版本 = 内容本身的指纹。服务器在 lifeline_open 里报出它的版本，客户端发现和自己带的不一样，
 // 就用 content_get 把服务器这份下载下来用（改剧情只需要更新服务器，不用两台手机重装 APK）。
-const body = { events, families, talents, map, tracks, endings, rules, checks, duet, letters, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks }, atlas, story };
+const body = { events, families, talents, map, tracks, endings, rules, checks, duet, letters, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks }, atlas, story, eras };
 const version = createHash("sha256").update(JSON.stringify(body)).digest("hex").slice(0, 12);
 const content = { version, ...body };
 const json = JSON.stringify(content, null, 1);

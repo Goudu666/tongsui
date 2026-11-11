@@ -229,7 +229,8 @@ var rpcLifelineJoin: nkruntime.RpcFunction = function (ctx, logger, nk, payload)
 
   rec.members.mei = ctx.userId;
   rec.names.mei = cleanName(p.name, "梅");
-  rec.life = lifeCreate(Math.floor(Math.random() * 0x7fffffff), CONTENT);
+  var seed = Math.floor(Math.random() * 0x7fffffff);
+  rec.life = lifeCreate(seed, CONTENT, undefined, eraPickCohort(CONTENT, seed)); // 生在哪个年代按种子抽（era.ts）
   saveLifeline(nk, rec);
   nk.storageWrite([
     { collection: COL_MINE, key: rec.id, userId: ctx.userId, value: { role: "mei", code: code }, permissionRead: 1, permissionWrite: 0 },
@@ -428,6 +429,11 @@ function snapshot(s: LifelineMatch, role: Role) {
     view[k] = (life as any)[k];
   }
   if (life.phase !== "roll") view.duet = duetView(life, role);
+  // 出生年代和现在是哪个年代（era.ts）：给人看的名字，不给年份
+  var ev0 = eraView(life, CONTENT);
+  view.cohort = ev0.cohort;
+  view.era = life.phase === "life" ? ev0.era : null;
+  delete view.eras;
   // 还欠着话的那几天，日志里的猜测也先摘掉，等回完话再揭晓
   view.log = duetLogView(life, role, life.phase === "ended" ? life.log : life.log.slice(-SNAPSHOT_LOG_TAIL));
   view.logTotal = life.log.length;
@@ -518,6 +524,8 @@ function worldView(s: LifelineMatch) {
     stats: stats, fine: fine, eff: eff, goals: goals, tracks: tracks,
     // 纸带：这一章，和今天的「下一件事」（主线，story.ts）
     story: storyView(life, CONTENT),
+    // 现在是哪个年代、街景用哪一套（era.ts）
+    era: eraView(life, CONTENT).era,
   };
 }
 

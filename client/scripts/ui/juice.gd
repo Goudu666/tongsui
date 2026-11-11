@@ -9,6 +9,8 @@ extends CanvasLayer
 ##          长大那张墨卡上的阶段成绩单、点开 HUD 成长账看的曲线都从这里来（ui/stage_report.gd）。
 ##
 ## 数从哪来：一律是服务器 WORLD 里 stats / money / bond 前后两帧的差（百分制往下取整，和关口纸带一个口径）。
+## 服务器给了 fine（百分制带一位小数）就按它算：小时候一回只长零点几分，整数不动，
+## 刚做完一件（did）时照样飘一张「+0.3」飞进成长账，格子底下那道「攒着的」细条往前走一截，攒满一分数字才跳。
 ## 服务器要是在 actors[role].did 里说了「刚做完哪一件」（n 递增），就拿它认搭伴和倍率；没有也照样飘。
 ## 开着弹窗、过场卡的时候不飘：那些数在弹窗里另有交代（关口揭晓、当天小结）。
 
@@ -25,7 +27,7 @@ const SCALE := [1.0, 1.1225, 1.2599, 1.4983, 1.6818, 2.0, 2.245, 2.52]
 var main: Node
 var journal: Dictionary = {"pts": [], "stages": {}}
 var _id := ""                ## 人生线
-var _base: Dictionary = {}   ## role -> {body, mind, charm}（百分制）
+var _base: Dictionary = {}   ## role -> {body, mind, charm}（百分制，带一位小数）
 var _money := -1.0
 var _bond: Dictionary = {}
 var _did: Dictionary = {}    ## role -> 上一次看到的 did.n
@@ -64,6 +66,11 @@ static func points(v: Variant) -> int:
 	return int(floor(float(v) * 10.0 + 0.001))
 
 
+## 0~10 的属性 → 百分制带一位小数（往下取整，和服务器 lifeFinePoints 一样）
+static func fine_of(v: Variant) -> float:
+	return floor(float(v) * 100.0 + 0.001) / 10.0
+
+
 func _quiet() -> bool:
 	if main == null:
 		return true
@@ -96,10 +103,15 @@ func on_snapshot(data: Dictionary) -> void:
 		return
 	var persons: Dictionary = life.persons
 	var stats: Dictionary = {}
+	var fine: Dictionary = {}
 	for r in persons:
 		if persons[r] is Dictionary and bool(persons[r].get("alive", true)):
 			stats[r] = persons[r].get("stats", {})
-	_rebase(stats, float(_dict(persons.get(_role())).get("money", -1)), _dict(life.get("bond")))
+			var row: Dictionary = {}
+			for k in KEYS:
+				row[k] = fine_of(_dict(stats[r]).get(k, 0))
+			fine[r] = row
+	_rebase(stats, float(_dict(persons.get(_role())).get("money", -1)), _dict(life.get("bond")), fine)
 	_record(int(life.get("turn", 0)), stats)
 
 
@@ -117,9 +129,10 @@ func on_world(data: Dictionary) -> void:
 	var money := float(_dict(data.get("money")).get(me, -1))
 	var bond: Dictionary = _dict(data.get("bond"))
 	var quiet := _quiet()
+	var fine: Dictionary = _dict(data.get("fine"))
 	if not _base.is_empty() and not quiet:
-		_burst(stats, money, bond, fresh_did, did, mine)
-	_rebase(stats, money, bond)
+		_burst(stats, money, bond, fresh_did, did, mine, fine)
+	_rebase(stats, money, bond, fine)
 	var act := str(mine.get("act", "")) if mine.get("act") != null else ""
 	_was_tg = bool(mine.get("tg", false)) and act != ""
 	if act != "" and act != _act and not quiet:
@@ -190,12 +203,13 @@ func milestone_row(e: Dictionary, res: Dictionary) -> Dictionary:
 	return row
 
 
-func _rebase(stats: Dictionary, money: float, bond: Dictionary) -> void:
+func _rebase(stats: Dictionary, money: float, bond: Dictionary, fine := {}) -> void:
 	_base = {}
 	for r in stats:
 		var row: Dictionary = {}
+		var fr: Dictionary = _dict(fine.get(r))
 		for k in KEYS:
-			row[k] = points(_dict(stats[r]).get(k, 0))
+			row[k] = float(fr[k]) if fr.has(k) else float(points(_dict(stats[r]).get(k, 0)))
 		_base[r] = row
 	_money = money
 	_bond = {"close": int(bond.get("close", 0)), "sync": int(bond.get("sync", 0))}
@@ -205,16 +219,22 @@ func _rebase(stats: Dictionary, money: float, bond: Dictionary) -> void:
 # 飘字
 # ======================================================================
 
-func _burst(stats: Dictionary, money: float, bond: Dictionary, fresh_did: bool, did: Dictionary, mine: Dictionary) -> void:
+func _burst(stats: Dictionary, money: float, bond: Dictionary, fresh_did: bool, did: Dictionary, mine: Dictionary, fine := {}) -> void:
 	var me := _role()
-	var items: Array = []  # [文字, 数, 颜色, 飞去哪 key]
+	var items: Array = []  # [文字, 数, 飞去哪 key, 零点几分?]
 	var row: Dictionary = _dict(stats.get(me))
+	var frow: Dictionary = _dict(fine.get(me))
 	var was: Dictionary = _dict(_base.get(me))
 	if not was.is_empty():
 		for k in KEYS:
-			var d := points(row.get(k, 0)) - int(was.get(k, 0))
+			var now := float(frow[k]) if frow.has(k) else float(points(row.get(k, 0)))
+			var before := float(was.get(k, 0))
+			var d := int(floor(now + 0.001)) - int(floor(before + 0.001))
 			if d != 0:
 				items.append([P.STAT_NAME[k], d, k])
+			elif fresh_did and now - before >= 0.099:
+				# 只长了零点几分：整数没动，也得让人看见这一回没白做
+				items.append([P.STAT_NAME[k], snappedf(now - before, 0.1), k, true])
 	if _money >= 0.0 and money >= 0.0:
 		var dm := int(round(money - _money))
 		if dm != 0:
@@ -226,7 +246,7 @@ func _burst(stats: Dictionary, money: float, bond: Dictionary, fresh_did: bool, 
 	var together := bool(did.get("tg", false)) if fresh_did else (_was_tg and not items.is_empty())
 	var grew := false
 	for it in items:
-		if it[2] in KEYS and int(it[1]) > 0:
+		if it[2] in KEYS and float(it[1]) > 0.0:
 			grew = true
 	# 服务器说了刚做完哪一件（did）：「一天行动循环」那边先把钟拨过去、人在点上把这件事做完（约一秒），字再出来
 	var delay := DID_LEAD if fresh_did and not bool(did.get("j", false)) else 0.0  # j：对门后赶上来补的搭伴，那边不拨钟，不用等
@@ -242,8 +262,10 @@ func _burst(stats: Dictionary, money: float, bond: Dictionary, fresh_did: bool, 
 	var owas: Dictionary = _dict(_base.get(other))
 	if not owas.is_empty():
 		var theirs: Array = []
+		var ofine: Dictionary = _dict(fine.get(other))
 		for k in KEYS:
-			var d := points(orow.get(k, 0)) - int(owas.get(k, 0))
+			var onow := float(ofine[k]) if ofine.has(k) else float(points(orow.get(k, 0)))
+			var d := int(floor(onow + 0.001)) - int(floor(float(owas.get(k, 0)) + 0.001))
 			if d > 0:
 				theirs.append([P.STAT_NAME[k], d, k])
 		if not theirs.is_empty():
@@ -301,13 +323,18 @@ func _pop_items(role: String, items: Array, delay: float, fly: bool) -> void:
 		side = -70.0 if other_at.x > at.x else 70.0
 	for i in n:
 		var it: Array = items[i]
+		var bit: bool = it.size() > 3 and bool(it[3])  ## 零点几分
 		var amount := int(it[1])
 		var key := str(it[2])
 		var tag := Tag.new()
-		var up := amount > 0
+		var up := float(it[1]) > 0.0
 		if key == "money":
 			tag.text_big = ("+%d" % amount) if up else ("−%d" % -amount)
 			tag.text_small = "块"
+		elif bit:
+			tag.text_small = str(it[0])
+			tag.text_big = "+%.1f" % float(it[1])
+			tag.bit = true
 		else:
 			tag.text_small = str(it[0])
 			tag.text_big = ("+%d" % amount) if up else ("−%d" % -amount)
@@ -329,11 +356,25 @@ func _pop_items(role: String, items: Array, delay: float, fly: bool) -> void:
 				gp.land_in = t0 + 1.25  # 纸带上「还差几分」也等第一张落下来再拨
 		elif target != null and key == "money" and main.hud.has_method("hold_money"):
 			main.hud.hold_money(t0 + 1.25)
+		var frac := float(it[1]) if bit else 0.0
 		tag.play(start, target, t0, func():
-			_landed(key, amount, role))
+			if bit:
+				_landed_bit(key, frac, role)
+			else:
+				_landed(key, amount, role))
 
 
 var _combo_i := 0
+
+
+## 零点几分飞到了：格子底下攒着的那道细条往前走，轻轻响一下（比整分的那一下轻）
+func _landed_bit(key: String, amount: float, role: String) -> void:
+	if role != _role():
+		return
+	var strip: Variant = main.get("stat_strip")
+	if key in KEYS and strip is Control and strip.has_method("land_bit"):
+		strip.land_bit(key, amount)
+	cue("bead", -12.0, SCALE[mini(_combo_i, SCALE.size() - 1)])
 
 
 ## 飞到了：格子里的数拨上去，响一下（连着的一下比一下高）
@@ -524,6 +565,7 @@ class Tag extends Control:
 	var text_big := ""
 	var color := P.QING
 	var small := false
+	var bit := false  ## 零点几分：字小一号
 	var _box := Vector2.ZERO
 
 	func _init() -> void:
@@ -532,10 +574,10 @@ class Tag extends Control:
 
 	func _measure() -> void:
 		var f := P.font()
-		var fs := 22 if small else 26
-		var fb := 34 if small else 44
+		var fs := 22 if small or bit else 26
+		var fb := 34 if small or bit else 44
 		var w := f.get_string_size(text_small, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x + f.get_string_size(text_big, HORIZONTAL_ALIGNMENT_LEFT, -1, fb).x + 34.0
-		_box = Vector2(w, 46.0 if small else 60.0)
+		_box = Vector2(w, 46.0 if small or bit else 60.0)
 		size = _box
 		pivot_offset = _box / 2.0
 
@@ -571,8 +613,8 @@ class Tag extends Control:
 
 	func _draw() -> void:
 		var f := P.font()
-		var fs := 22 if small else 26
-		var fb := 34 if small else 44
+		var fs := 22 if small or bit else 26
+		var fb := 34 if small or bit else 44
 		var r := Rect2(Vector2.ZERO, _box)
 		draw_rect(Rect2(r.position + Vector2(5, 5), r.size), color)
 		draw_rect(r, P.PAPER)

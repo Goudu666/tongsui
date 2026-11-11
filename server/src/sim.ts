@@ -244,6 +244,11 @@ function lifePoints(v: number): number {
   return Math.floor(v * 10 + 1e-6);
 }
 
+/** 百分制带一位小数（往下取整）：整数部分和 lifePoints 一样 */
+function lifeFinePoints(v: number): number {
+  return Math.floor(v * 100 + 1e-6) / 10;
+}
+
 function lifeWeightsLabel(w: ScoreWeights): string {
   var parts: string[] = [];
   for (var k in w) parts.push(STAT_LABEL[k] || k);
@@ -362,7 +367,8 @@ function lifeTurnsUntilAge(turn: number, age: number): number {
 }
 
 /** have / need：给人看的数。属性类的线按「分」算（属性 × 10，满分 100），钱类的按块 */
-interface GoalLine { id: string; text: string; by: string; unit: string; have: number; need: number; ok: boolean }
+// hx：分数线的「攒着的」那一截，百分制带一位小数往下取整（have 是它的整数部分）。小时候一回只长零点几分，界面拿它让尺上的点和分数后面的小数挪一挪
+interface GoalLine { id: string; text: string; by: string; unit: string; have: number; need: number; ok: boolean; hx?: number }
 interface GoalView { id: string; title: string; age: number; turns: number; lines: GoalLine[] }
 
 /**
@@ -414,7 +420,9 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
     var w = lifeOptionWeights(best, o);
     var have = lifeScore(p, w, lifePairBond(s, role));
     var raw = lifeScoreRaw(w);
-    lines.push({ id: o.id, text: o.text, by: lifeWeightsLabel(w), unit: w.money ? "块" : "分", have: raw ? Math.floor(have) : lifePoints(have), need: raw ? o.min : lifePoints(o.min), ok: have >= o.min });
+    var gl: GoalLine = { id: o.id, text: o.text, by: lifeWeightsLabel(w), unit: w.money ? "块" : "分", have: raw ? Math.floor(have) : lifePoints(have), need: raw ? o.min : lifePoints(o.min), ok: have >= o.min };
+    if (!raw) gl.hx = lifeFinePoints(have);
+    lines.push(gl);
   }
   // 比最高那条路还高的名次（grades）也摆上来：起点高的人不会开局就无事可冲，每道关都还有一条够一够的线
   var gw = best.score || {};
@@ -422,7 +430,7 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
   var ghave = lifeScore(p, gw, lifePairBond(s, role));
   for (var gi = 0; gi < gis.length; gi++) {
     var gr = best.grades![gis[gi]];
-    lines.push({ id: "grade:" + gis[gi], text: gr.label, by: lifeWeightsLabel(gw), unit: "分", have: lifePoints(ghave), need: lifePoints(gr.min), ok: ghave >= gr.min });
+    lines.push({ id: "grade:" + gis[gi], text: gr.label, by: lifeWeightsLabel(gw), unit: "分", have: lifePoints(ghave), need: lifePoints(gr.min), ok: ghave >= gr.min, hx: lifeFinePoints(ghave) });
   }
   return { id: best.id, title: best.title, age: best.age!, turns: lifeTurnsUntilAge(s.turn, best.age!), lines: lines };
 }

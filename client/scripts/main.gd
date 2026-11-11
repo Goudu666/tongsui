@@ -1807,6 +1807,8 @@ func _path_ruler(b: Button, my_goal: Dictionary, their_goal: Dictionary, pe: Dic
 	if line.is_empty() or float(line.get("need", 0)) <= 0.0 or str(line.get("unit", "分")) != "分":
 		return
 	var swing: Dictionary = _dict(pe.get("swing"))
+	if str(line.get("by", "")).contains("亲近"):  # 看亲近原数的线不算发挥（sim.ts lifeScoreRaw）
+		swing = {}
 	line["have"] = path_have(float(line.get("have", 0)), float(swing.get(my_role, 0.0)), float(line.need), locked)
 	var theirs := GoalPanel.their_have(their_goal if str(their_goal.get("id", "")) == event_id else null, option_id)
 	if theirs >= 0.0:
@@ -1832,10 +1834,14 @@ func _path_ruler(b: Button, my_goal: Dictionary, their_goal: Dictionary, pe: Dic
 
 
 ## 路票尺子上的点：本事加今天的发挥（swing 是属性单位，×10 是分），再以锁为准
+## 锁着又不够线：是分数锁，最多画到旗前一格。锁着但分数够：锁的是标记、家底或花销，照实画在旗后，让锁上那句话去解释。
+## 没锁：分数一定够，往上夹到线（差得多了说明 line 和锁算的不是一个数，报一声）。
 static func path_have(have: float, swing: float, need: float, locked: bool) -> float:
 	var v := have + swing * 10.0
 	if locked:
-		return minf(v, need - 1.0)
+		return v if v >= need else minf(v, need - 1.0)
+	if v < need - 3.0:
+		push_warning("路票尺子：没锁的路 %.1f 分，线是 %.1f 分，和锁对不上" % [v, need])
 	return maxf(v, need)
 
 

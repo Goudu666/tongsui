@@ -8,6 +8,7 @@ extends Node2D
 
 const P := preload("res://scripts/ui/palette.gd")
 const SHADER := preload("res://shaders/night_plate.gdshader")
+const GLOW := preload("res://shaders/lamp_glow.gdshader")
 const BAKE_STEP := 8.0  ## 灯光图一格 = 8 世界像素
 ## 每种灯：照多远（世界像素）、多亮
 const LAMPS := {
@@ -26,6 +27,9 @@ var minute := 390.0
 var night := 0.0
 var _mat: ShaderMaterial
 var _quad: Sprite2D
+var _glow: Sprite2D        ## 灯晕：同一张灯光图往上加暖光（夜版只能压暗）
+var _glow_mat: ShaderMaterial
+var wet := 0.0             ## 雨雪天：晕大一点（weather 设）
 var _dusk := 0.0
 var _dawn := 0.0
 var _age := 0.0
@@ -47,6 +51,15 @@ func setup(size: Vector2, anchors: Dictionary) -> void:
 	_quad.scale = map_size
 	_quad.material = _mat
 	add_child(_quad)
+	_glow_mat = ShaderMaterial.new()
+	_glow_mat.shader = GLOW
+	_glow = Sprite2D.new()
+	_glow.texture = _quad.texture
+	_glow.centered = false
+	_glow.scale = map_size
+	_glow.material = _glow_mat
+	add_child(_glow)
+	_glow_mat.set_shader_parameter("light_map", _mat.get_shader_parameter("light_map"))
 	set_minute(minute)
 
 
@@ -54,7 +67,10 @@ func setup(size: Vector2, anchors: Dictionary) -> void:
 func relight(size: Vector2, anchors: Dictionary, mask: Texture2D = null) -> void:
 	map_size = size
 	_mat.set_shader_parameter("map_size", map_size)
-	_mat.set_shader_parameter("light_map", _bake(anchors))
+	var lm := _bake(anchors)
+	_mat.set_shader_parameter("light_map", lm)
+	_glow_mat.set_shader_parameter("light_map", lm)
+	_glow.scale = map_size
 	_mat.set_shader_parameter("scene_mask", mask)
 	_mat.set_shader_parameter("use_mask", mask != null)
 	_quad.scale = map_size
@@ -102,6 +118,9 @@ func set_minute(m: float) -> void:
 	night = smoothstep(1090.0, 1200.0, m) if m >= 390.0 else 1.0
 	_dusk = smoothstep(990.0, 1105.0, m) * (1.0 - smoothstep(1130.0, 1210.0, m))
 	_dawn = 1.0 - smoothstep(390.0, 500.0, m) if m >= 390.0 else 0.0
+	if _glow_mat != null:
+		_glow_mat.set_shader_parameter("night", night)
+		_glow_mat.set_shader_parameter("wet", wet)
 	if _mat != null:
 		_mat.set_shader_parameter("night", night)
 		_mat.set_shader_parameter("dusk", _dusk)
@@ -119,6 +138,7 @@ func _process(delta: float) -> void:
 	if _mat == null:
 		return
 	# 大白天、纸也是新的：什么都不用印，整块版收起来，省一次全屏绘制
+	_glow.visible = night > 0.001
 	_quad.visible = night > 0.001 or _dusk > 0.001 or _dawn > 0.001 or _age > 0.001 or _age_target > 0.001
 	if not is_equal_approx(_age, _age_target):
 		_age = move_toward(_age, _age_target, delta * 0.25)

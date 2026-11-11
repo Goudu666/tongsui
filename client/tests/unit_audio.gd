@@ -222,6 +222,16 @@ func _check_mix(manifest: Dictionary) -> void:
 	for i in 200:
 		m._step_fx(0.1)
 	_ok(not AudioServer.is_bus_effect_enabled(bus, m._lpf_i) and not AudioServer.is_bus_effect_enabled(bus, m._rev_i), "天晴了低通和混响都关掉")
+	# 下着雨离开河畔里（走完一生进结局）：低通和混响拨回去
+	m.set_mode("life")
+	m.set_mix("qing", 0.5, true, 40.0, 600.0, "rain")
+	for i in 60:
+		m._step_fx(0.1)
+	m.set_mode("ending")
+	_ok(is_equal_approx(m._cut_target, 20000.0) and is_equal_approx(m._wet_target, 0.0), "离开河畔里低通和混响的目标要拨回去")
+	for i in 200:
+		m._step_fx(0.1)
+	_ok(not AudioServer.is_bus_effect_enabled(bus, m._lpf_i) and not AudioServer.is_bus_effect_enabled(bus, m._rev_i), "结局那首不该带着雨天的低通")
 	var m2 := MusicPlayer.new()
 	root.add_child(m2)
 	_ok(AudioServer.get_bus_effect_count(bus) == n_fx and m2._lpf == m._lpf, "再建一个播放器不该重复挂效果器")

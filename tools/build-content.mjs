@@ -349,6 +349,7 @@ const story = { chapters: [], events: [] };
       checkKeys(`${oat}.effects`, o.effects, EFFECT_KEYS);
       const e = o.effects ?? {};
       if (e.flags?.length) errors.push(`${oat}: 主线选项不发标记（路线标记由关口发，共同标记写在共鸣里）`);
+      if (e.drop !== undefined) errors.push(`${oat}: 主线选项不摘标记（effects.drop 只给关口和日常小事用）`);
       checkDeltas(`${oat}.self`, e.self, SELF_KEYS);
       checkDeltas(`${oat}.other`, e.other, SELF_KEYS);
       checkDeltas(`${oat}.bond`, e.bond, BOND_KEYS);

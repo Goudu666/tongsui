@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "328a7c70d13e",
+ "version": "b57552894a3e",
  "events": [
   {
    "id": "m_rise",
@@ -11,7 +11,14 @@ var CONTENT: Content = {
    "where": null,
    "when": null,
    "hint": null,
-   "requires": {},
+   "requires": {
+    "notFlags": [
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
    "title": "站住脚",
    "text": "干了四年，手上的活儿熟了。往上走一步，换个地方，还是就这么干下去？",
    "options": [
@@ -53,7 +60,7 @@ var CONTENT: Content = {
     },
     {
      "id": "up_pull",
-     "text": "调进要紧的科室",
+     "text": "调进了吃香的科室",
      "score": {
       "charm": 0.6,
       "mind": 0.4
@@ -132,8 +139,8 @@ var CONTENT: Content = {
       "charm": 0.7,
       "luck": 0.3
      },
-     "min": 7.5,
-     "cost": 30,
+     "min": 7.2,
+     "cost": 20,
      "requires": {
       "flags": [
        "job_trade"
@@ -170,7 +177,7 @@ var CONTENT: Content = {
       "body": 0.5,
       "mind": 0.5
      },
-     "min": 8.1,
+     "min": 7.8,
      "requires": {
       "flags": [
        "job_craft"
@@ -360,6 +367,8 @@ var CONTENT: Content = {
       "notFlags": [
        "job_odd",
        "job_succeed",
+       "job_trade",
+       "job_craft",
        "own_shop",
        "own_stall",
        "no_job",
@@ -403,7 +412,7 @@ var CONTENT: Content = {
        "laid_off"
       ]
      },
-     "lock": "不是你这一行",
+     "lock": "这一步你用不着",
      "hide": true,
      "tags": [
       "competitive"
@@ -451,7 +460,7 @@ var CONTENT: Content = {
        "laid_off"
       ]
      },
-     "lock": "不是你这一行",
+     "lock": "这一步你用不着",
      "hide": true,
      "tags": [
       "adventure"
@@ -502,7 +511,7 @@ var CONTENT: Content = {
        "laid_off"
       ]
      },
-     "lock": "不是你这一行",
+     "lock": "这一步你用不着",
      "hide": true,
      "tags": [
       "patient"
@@ -603,7 +612,7 @@ var CONTENT: Content = {
      "flags": []
     },
     "steady": {
-     "text": "两个人都没动。下了班还是一前一后进楼门，日子跟去年一样，也挺好。",
+     "text": "两个人都没动。下了班还是一前一后进楼门，日子跟去年一样。",
      "memory": "一前一后",
      "bond": {
       "sync": 2
@@ -612,7 +621,7 @@ var CONTENT: Content = {
     }
    },
    "dissonance": {
-    "text": "一个往上走了一步，一个还在原地。见了面先问对方忙不忙，问完就没话了。",
+    "text": "两个人各走各的那一步。见了面先问对方忙不忙，问完了，就没话了。",
     "bond": {
      "close": -2
     },
@@ -633,7 +642,14 @@ var CONTENT: Content = {
    "where": null,
    "when": null,
    "hint": null,
-   "requires": {},
+   "requires": {
+    "notFlags": [
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
    "title": "挑大梁",
    "text": "三十六了。上头的人要退，底下的人等着，你正好卡在中间。",
    "options": [
@@ -757,7 +773,7 @@ var CONTENT: Content = {
       "money": 1
      },
      "min": 90,
-     "cost": 50,
+     "cost": 40,
      "requires": {
       "flags": [
        "job_trade",
@@ -795,7 +811,7 @@ var CONTENT: Content = {
       "money": 1
      },
      "min": 70,
-     "cost": 40,
+     "cost": 30,
      "requires": {
       "flags": [
        "job_craft",
@@ -833,7 +849,7 @@ var CONTENT: Content = {
       "money": 1
      },
      "min": 60,
-     "cost": 30,
+     "cost": 20,
      "requires": {
       "flags": [
        "job_labor",
@@ -909,7 +925,7 @@ var CONTENT: Content = {
       "money": 1
      },
      "min": 45,
-     "cost": 20,
+     "cost": 15,
      "requires": {
       "flags": [
        "job_odd",
@@ -981,12 +997,12 @@ var CONTENT: Content = {
     },
     {
      "id": "study",
-     "text": "读个在职，评了上去",
+     "text": "进修两年，评了上去",
      "score": {
       "money": 1
      },
      "min": 80,
-     "cost": 50,
+     "cost": 40,
      "requires": {
       "flags": [
        "rank1"
@@ -1040,7 +1056,7 @@ var CONTENT: Content = {
        "laid_off"
       ]
      },
-     "lock": "不是你这一行",
+     "lock": "这一步你用不着",
      "hide": true,
      "tags": [
       "patient"
@@ -1154,8 +1170,8 @@ var CONTENT: Content = {
    ],
    "resonance": {
     "top_desk": {
-     "text": "两个人都挑上了大梁。回家越来越晚，楼道的灯是后回来的那个关的。",
-     "memory": "后回来的关灯",
+     "text": "两个人都挑上了大梁。饭桌上的话越来越少，电话铃一响，两家一起抬头。",
+     "memory": "一起抬头",
      "bond": {
       "sync": 2
      },
@@ -1170,7 +1186,7 @@ var CONTENT: Content = {
      "flags": []
     },
     "hold": {
-     "text": "两个人都没往上挤。礼拜天还能一块儿去河边，这个比什么都值。",
+     "text": "两个人都没往上挤。礼拜天还能一块儿去河边。",
      "memory": "礼拜天的河边",
      "bond": {
       "sync": 2
@@ -1179,7 +1195,7 @@ var CONTENT: Content = {
     }
    },
    "dissonance": {
-    "text": "一个忙得脚不沾地，一个按点下班。忙的那个有时候在楼下抽根烟，看对门的灯。",
+    "text": "一个周末也在单位，一个按点回家。按点回家的那个，把对门的报纸顺手收进来。",
     "bond": {
      "close": -2
     },
@@ -39912,10 +39928,11 @@ var CONTENT: Content = {
      "rank2"
     ],
     "notFlags": [
-     "came_back"
+     "came_back",
+     "laid_off"
     ]
    },
-   "group": null,
+   "group": "job_away",
    "duty": {
     "label": "上班",
     "spot": "away_work",
@@ -39947,10 +39964,11 @@ var CONTENT: Content = {
      "rank1"
     ],
     "notFlags": [
-     "came_back"
+     "came_back",
+     "laid_off"
     ]
    },
-   "group": null,
+   "group": "job_away",
    "duty": {
     "label": "上班",
     "spot": "away_work",
@@ -40099,7 +40117,7 @@ var CONTENT: Content = {
      "rank2"
     ]
    },
-   "group": null,
+   "group": "job_desk",
    "duty": {
     "label": "过桥上班",
     "spot": "office_desk",
@@ -40131,7 +40149,7 @@ var CONTENT: Content = {
      "rank1"
     ]
    },
-   "group": null,
+   "group": "job_desk",
    "duty": {
     "label": "过桥上班",
     "spot": "office_desk",
@@ -40193,7 +40211,7 @@ var CONTENT: Content = {
      "rank2"
     ]
    },
-   "group": null,
+   "group": "job_pull",
    "duty": {
     "label": "过桥上班",
     "spot": "office_desk",
@@ -40215,7 +40233,7 @@ var CONTENT: Content = {
   },
   {
    "id": "job_pull_r1",
-   "label": "托关系进的单位 · 要紧科室",
+   "label": "托关系进的单位 · 吃香的科室",
    "requires": {
     "minAge": 22,
     "maxAge": 59,
@@ -40224,7 +40242,7 @@ var CONTENT: Content = {
      "rank1"
     ]
    },
-   "group": null,
+   "group": "job_pull",
    "duty": {
     "label": "过桥上班",
     "spot": "office_desk",
@@ -40281,7 +40299,7 @@ var CONTENT: Content = {
      "rank2"
     ]
    },
-   "group": null,
+   "group": "job_teach",
    "duty": {
     "label": "去上课",
     "spot": "school_gate",
@@ -40312,7 +40330,7 @@ var CONTENT: Content = {
      "rank1"
     ]
    },
-   "group": null,
+   "group": "job_teach",
    "duty": {
     "label": "去上课",
     "spot": "school_gate",
@@ -40364,7 +40382,7 @@ var CONTENT: Content = {
   },
   {
    "id": "job_trade_r2",
-   "label": "做买卖 · 做批发",
+   "label": "做买卖 · 批发",
    "requires": {
     "minAge": 22,
     "maxAge": 59,
@@ -40373,7 +40391,7 @@ var CONTENT: Content = {
      "rank2"
     ]
    },
-   "group": null,
+   "group": "job_trade",
    "duty": {
     "label": "出摊",
     "spot": "breakfast_stall",
@@ -40403,7 +40421,7 @@ var CONTENT: Content = {
      "rank1"
     ]
    },
-   "group": null,
+   "group": "job_trade",
    "duty": {
     "label": "出摊",
     "spot": "breakfast_stall",
@@ -40460,7 +40478,7 @@ var CONTENT: Content = {
      "rank2"
     ]
    },
-   "group": null,
+   "group": "job_craft",
    "duty": {
     "label": "上工",
     "spot": "bike_bench",
@@ -40490,7 +40508,7 @@ var CONTENT: Content = {
      "rank1"
     ]
    },
-   "group": null,
+   "group": "job_craft",
    "duty": {
     "label": "上工",
     "spot": "bike_bench",
@@ -40549,7 +40567,7 @@ var CONTENT: Content = {
      "rank2"
     ]
    },
-   "group": null,
+   "group": "job_labor",
    "duty": {
     "label": "过桥上工",
     "spot": "river_bridge",
@@ -40580,7 +40598,7 @@ var CONTENT: Content = {
      "rank1"
     ]
    },
-   "group": null,
+   "group": "job_labor",
    "duty": {
     "label": "过桥上工",
     "spot": "river_bridge",
@@ -40639,7 +40657,7 @@ var CONTENT: Content = {
      "rank2"
     ]
    },
-   "group": null,
+   "group": "job_succeed",
    "duty": {
     "label": "过桥上班",
     "spot": "river_bridge",
@@ -40670,7 +40688,7 @@ var CONTENT: Content = {
      "rank1"
     ]
    },
-   "group": null,
+   "group": "job_succeed",
    "duty": {
     "label": "过桥上班",
     "spot": "river_bridge",
@@ -40730,7 +40748,7 @@ var CONTENT: Content = {
      "rank2"
     ]
    },
-   "group": null,
+   "group": "job_odd",
    "duty": {
     "label": "打零工",
     "spot": "bike_bench",
@@ -40760,7 +40778,7 @@ var CONTENT: Content = {
      "rank1"
     ]
    },
-   "group": null,
+   "group": "job_odd",
    "duty": {
     "label": "打零工",
     "spot": "bike_bench",

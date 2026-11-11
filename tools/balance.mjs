@@ -173,7 +173,7 @@ function botChoose(s, role, ev, style, R) {
   if (style === "steady") return lifeShadowChoose(s, C, role, ev.id);
   // 人生关口上够不着的路选不了
   const swing = (s.world.event && s.world.event.swing && s.world.event.swing[role]) || 0;
-  const open = ev.kind === "milestone" ? ev.options.filter((o) => !lifeOptionLock(ev, o, s.persons[role], swing, G("lifePairBond")(s, role))) : ev.options;
+  const open = G("lifeGated")(ev) ? ev.options.filter((o) => !lifeOptionLock(ev, o, s.persons[role], swing, G("lifePairBond")(s, role))) : ev.options;
   return open[Math.floor(R() * open.length)].id;
 }
 

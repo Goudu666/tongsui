@@ -201,6 +201,16 @@ lives:
     text: "{name} 扎了一辈子风筝。开春河边天上的风筝，十只里有三只出自 {name} 的手。剩下七只塑料的，线也是 {name} 给理顺的。"
     requires: { flags: [fam_kite, took_over] }
 
+  # ---- 半路上换了的活法（content/events/lives.yaml） ----
+  - id: l_two_shops
+    title: 两家铺子
+    text: "{name} 半路辞了事由，开了自己的铺子，后来开到第二家。两家隔着一条马路，{name} 一天来回跑八趟。"
+    requires: { flags: [own_shop, shop_two], notFlags: [shop_closed] }
+  - id: l_restart
+    title: 又支起来了
+    text: "{name} 四十多岁丢了饭碗，在楼下支了个摊。天不亮就起，起了十几年，摊子上的灯总是楼里第一盏亮的。"
+    requires: { flags: [laid_off, own_stall] }
+
   # ---- 活成了什么样 ----
   - id: l_early
     title: 早走的人

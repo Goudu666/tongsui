@@ -1,0 +1,71 @@
+# 奇遇：碰上了，就多一条冲关的路（玩法总把关：新内容要说得出挂在哪道关上）。
+#
+# 很少碰上（weight 0.3，一成多的人生碰得上一件），碰上了也要接得住（检定看本事或手气）。接住了，地图上多一个不要钱的去处：
+#   - 海河边晨跑的老头 → 天不亮跟着跑（体魄，冲 9 岁体校、18 岁当兵、22 岁卖力气）
+#   - 楼上的老先生     → 放了学去他家念书（心智，冲 12 / 15 / 18 那三道看心智的关）
+# 这两样不要钱，所以清贫人家的孩子碰上了最划算：家里给不了的，碰上的人给。都能带上对门（bring）。
+# 写法守文风手册：老人是普通人，不神化，不报绝活。
+
+- id: ch_runner
+  kind: solo
+  stage: childhood
+  weight: 0.3
+  requires: { minAge: 8, maxAge: 11 }
+  title: 倒着跑的人
+  text: 天刚亮，海河边有个老头光着膀子跑步。他从你身边跑过去，又倒着跑回来：小孩儿，跟不跟？
+  options:
+    - id: follow
+      text: 跟着跑一圈
+      tags: [adventure]
+      effects: { self: { body: 0.2, energy: -10 }, flags: [ch_runner] }
+    - id: watch
+      text: 站着看他跑远
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+    - id: home
+      text: 回去接着睡
+      tags: [solitude]
+      effects: { self: { energy: 10 } }
+
+- id: ch_scholar
+  kind: solo
+  stage: childhood
+  weight: 0.3
+  requires: { minAge: 9, maxAge: 11 }
+  title: 一箱书
+  text: 楼上搬来个退休的老先生。你帮他把一箱书抬上楼，他翻开一本，指着一个字问你认不认得。
+  options:
+    - id: guess
+      text: 猜一个
+      tags: [adventure]
+      effects: { self: { mind: 0.2 }, flags: [ch_scholar] }
+    - id: honest
+      text: 说不认得
+      tags: [patient]
+      effects: { self: { mood: 2 }, flags: [ch_scholar] }
+    - id: leave
+      text: 放下箱子就跑
+      tags: [solitude]
+      effects: { self: { mood: 1 } }
+
+# 点歌：挂在 70 岁那道「两家并一家」上（看亲近）。两个人之间的一次惊喜
+- id: ch_radio
+  kind: solo
+  stage: young
+  weight: 0.5
+  requires: { minAge: 19, maxAge: 29, notFlags: [p_estranged] }
+  title: 打通了
+  text: 你往电台打点歌的电话，打了一年没打通过，今天通了。主持人问：点给谁？
+  options:
+    - id: door
+      text: 点给对门
+      tags: [gentle]
+      effects: { self: { mood: 8 }, other: { mood: 10 }, bond: { close: 2 } }
+    - id: home
+      text: 点给爸妈
+      tags: [responsible]
+      effects: { self: { mood: 8 } }
+    - id: hang
+      text: 一紧张挂了
+      tags: [solitude]
+      effects: { self: { mood: -2 } }

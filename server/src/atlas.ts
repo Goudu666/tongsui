@@ -135,15 +135,27 @@ function atlasMilestoneGap(n: MilestoneNear): number {
  * 关口结算时调用（lifeResolveEvent，扣钱、长属性之前）：这个人离哪条没走成的路最近。
  * 走的就是那条、或者差得太远，返回 null。
  */
-function atlasMilestoneNear(ev: LifeEvent, chosen: string, p: Person, swing: number, bond?: Bond): MilestoneNear | null {
+function atlasMilestoneNear(ev: LifeEvent, chosen: string, p: Person, swing: number, bond?: Bond, gscore?: number): MilestoneNear | null {
   var best: MilestoneNear | null = null, gap = 2;
+  var cands: MilestoneNear[] = [];
   for (var i = 0; i < ev.options.length; i++) {
     var o = ev.options[i];
     if (o.id === chosen) continue;
     var n = atlasOptionShort(ev, o, p, swing, bond);
-    if (!n) continue;
-    var g = atlasMilestoneGap(n);
-    if (g > 0 && g <= 1 && g < gap) { best = n; gap = g; }
+    if (n) cands.push(n);
+  }
+  // 名次也算：目标条上摆着的那几档（lifeTapeGrades），分数用的是这一关真拿去评名次的那个（gscore）
+  if (gscore !== undefined) {
+    var gis = lifeTapeGrades(ev, p);
+    for (var k = 0; k < gis.length; k++) {
+      var gr = ev.grades![gis[k]];
+      if (gscore >= gr.min || !gr.label) continue;
+      cands.push({ option: "grade:" + gis[k], have: lifePoints(gscore), need: lifePoints(gr.min), unit: "分", label: lifeWeightsLabel(ev.score || {}) });
+    }
+  }
+  for (var j = 0; j < cands.length; j++) {
+    var g = atlasMilestoneGap(cands[j]);
+    if (g > 0 && g <= 1 && g < gap) { best = cands[j]; gap = g; }
   }
   return best;
 }
@@ -246,6 +258,16 @@ function atlasPickNear<T extends { id: string; requires: any }>(c: Content, list
   return best;
 }
 
+/** 关口上差的那条线叫什么：一条路（option id）或一档名次（grade:<下标>，和目标条上的 id 一样） */
+function atlasNearWhat(ev: LifeEvent, id: string): string | null {
+  if (id.indexOf("grade:") === 0) {
+    var gr = (ev.grades || [])[Number(id.slice(6))];
+    return gr && gr.label ? gr.label : null;
+  }
+  var o = lifeFindOption(ev, id);
+  return o ? o.text : null;
+}
+
 /** 一世走完：差一点就……（先关口，再两个人的结局，再一个人的一生） */
 function atlasNear(s: LifeState, c: Content, seen: AtlasSeen): NearLine[] {
   var out: NearLine[] = [];
@@ -262,12 +284,12 @@ function atlasNear(s: LifeState, c: Content, seen: AtlasSeen): NearLine[] {
       if (g <= 0 || g > 1 || g >= mGap) continue;
       var evId = en.events[ROLES[r]];
       var ev = evId ? lifeFindEventOrNull(c, evId) : null;
-      var o = ev ? lifeFindOption(ev, n.option) : null;
-      if (!ev || !o) continue;
+      var what = ev ? atlasNearWhat(ev, n.option) : null;
+      if (!ev || !what) continue;
       mGap = g;
       mBest = {
         kind: "milestone", id: ev.id, role: ROLES[r],
-        text: en.age + " 岁" + ev.title + "，" + s.persons![ROLES[r]].name + n.label + "差 " + (n.need - n.have) + " " + n.unit + "，没够上「" + o.text + "」。",
+        text: en.age + " 岁" + ev.title + "，" + s.persons![ROLES[r]].name + n.label + "差 " + (n.need - n.have) + " " + n.unit + "，没够上「" + what + "」。",
       };
     }
   }

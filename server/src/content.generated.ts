@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "192c7471114f",
+ "version": "86e70fccb692",
  "events": [
   {
    "id": "ch_runner",
@@ -4482,6 +4482,554 @@ var CONTENT: Content = {
      "flags": []
     }
    ]
+  },
+  {
+   "id": "lv_era_tingxin",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 22,
+    "maxAge": 29,
+    "flags": [
+     "era_xiahai"
+    ],
+    "notFlags": [
+     "job_trade",
+     "job_craft",
+     "job_labor",
+     "job_odd",
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "laid_off",
+     "no_job",
+     "quit_job"
+    ]
+   },
+   "title": "停薪留职",
+   "text": "同屋的老同事办了停薪留职，在街口盘了个门脸卖衣裳。他来找你：缺个合伙的。",
+   "options": [
+    {
+     "id": "go",
+     "text": "办了手续跟他干",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "own_shop",
+       "quit_job"
+      ]
+     }
+    },
+    {
+     "id": "family",
+     "text": "家里出本钱，自己开",
+     "tags": [
+      "competitive"
+     ],
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ]
+     },
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "own_shop",
+       "quit_job"
+      ]
+     }
+    },
+    {
+     "id": "stay",
+     "text": "不去，接着上班",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "回去问问对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_era_queue",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 24,
+    "maxAge": 29,
+    "flags": [
+     "job_succeed",
+     "era_fenfang"
+    ],
+    "notFlags": [
+     "left_city",
+     "laid_off"
+    ]
+   },
+   "title": "分房榜",
+   "text": "分房的榜贴在食堂门口，按工龄排。你从上往下数，数到第四十几个才是自己。",
+   "options": [
+    {
+     "id": "ask",
+     "text": "托老师傅说句话",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "接着排",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "dorm",
+     "text": "先住单身宿舍",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.1,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_era_list",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 4,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 30,
+    "maxAge": 38,
+    "flags": [
+     "job_succeed",
+     "era_xiagang"
+    ],
+    "notFlags": [
+     "laid_off",
+     "no_job",
+     "own_stall",
+     "own_shop",
+     "left_city"
+    ]
+   },
+   "title": "厂门口",
+   "text": "厂门口的名单贴了三张纸，你的名字在第二张上。门卫把茶缸子往你这边推了推。",
+   "options": [
+    {
+     "id": "stall",
+     "text": "在楼下支个摊",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "laid_off",
+       "own_stall"
+      ]
+     }
+    },
+    {
+     "id": "south",
+     "text": "去南边再找活",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "luck": 0.2,
+       "mood": -4
+      },
+      "other": {},
+      "bond": {
+       "distance": 1
+      },
+      "flags": [
+       "laid_off",
+       "left_city"
+      ]
+     }
+    },
+    {
+     "id": "wait",
+     "text": "回家等厂里的信儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2,
+       "energy": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "laid_off",
+       "no_job"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "t_era_queue",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 12,
+    "maxAge": 17,
+    "flags": [
+     "era_qianggou"
+    ]
+   },
+   "title": "排队",
+   "text": "副食店门口的队排到了拐角。你被派来排着，前头的人也说不清在买什么。",
+   "options": [
+    {
+     "id": "stay",
+     "text": "排到底",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.1,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "swap",
+     "text": "叫对门来替一会儿",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "先回家报个信",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "t_era_phone",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 17,
+    "flags": [
+     "era_shouji"
+    ]
+   },
+   "title": "课间",
+   "text": "课间，有人把手机从书包夹层里掏出来，一圈人围着看。晚上的作业答案在群里传。",
+   "options": [
+    {
+     "id": "look",
+     "text": "凑过去看一眼",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "own",
+     "text": "接着写自己的",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "text",
+     "text": "借来给对门发一条",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "y_era_seat",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 20,
+    "maxAge": 23,
+    "flags": [
+     "era_juan"
+    ],
+    "notFlags": [
+     "dropout",
+     "vocational",
+     "work_early",
+     "army"
+    ]
+   },
+   "title": "占座",
+   "text": "天不亮，图书馆门口排起了长队。占座的书码了一排，人还没到。",
+   "options": [
+    {
+     "id": "line",
+     "text": "去排队占个座",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "mood": -3,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sleep",
+     "text": "回宿舍接着睡",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "intern",
+     "text": "去实习单位递简历",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "o_era_lift",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 60,
+    "flags": [
+     "era_dianti"
+    ]
+   },
+   "title": "头一趟",
+   "text": "电梯头一天开，楼里的老人都下来了，挨个坐了一趟。",
+   "options": [
+    {
+     "id": "ride",
+     "text": "也去坐一趟",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stairs",
+     "text": "还是走楼梯",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.1,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
   },
   {
    "id": "f_chen_patch",
@@ -13926,7 +14474,21 @@ var CONTENT: Content = {
       "flags": [
        "uni_away"
       ]
-     }
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_pre_kuozhao"
+       ],
+       "d": 0.7
+      },
+      {
+       "flags": [
+        "era_juan"
+       ],
+       "d": -0.3
+      }
+     ]
     },
     {
      "id": "abroad",
@@ -13967,7 +14529,21 @@ var CONTENT: Content = {
       "flags": [
        "uni_near"
       ]
-     }
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_pre_kuozhao"
+       ],
+       "d": 0.8
+      },
+      {
+       "flags": [
+        "era_juan"
+       ],
+       "d": -0.4
+      }
+     ]
     },
     {
      "id": "army",
@@ -14132,7 +14708,27 @@ var CONTENT: Content = {
       "flags": [
        "job_desk"
       ]
-     }
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_fenpei"
+       ],
+       "d": -0.6
+      },
+      {
+       "flags": [
+        "era_kuozhao"
+       ],
+       "d": 0.4
+      },
+      {
+       "flags": [
+        "era_juan"
+       ],
+       "d": 0.6
+      }
+     ]
     },
     {
      "id": "pull",
@@ -14181,7 +14777,21 @@ var CONTENT: Content = {
       "flags": [
        "job_teach"
       ]
-     }
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_fenpei"
+       ],
+       "d": -0.5
+      },
+      {
+       "flags": [
+        "era_juan"
+       ],
+       "d": 0.4
+      }
+     ]
     },
     {
      "id": "trade",
@@ -14201,7 +14811,15 @@ var CONTENT: Content = {
       "flags": [
        "job_trade"
       ]
-     }
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_xiahai"
+       ],
+       "d": -0.5
+      }
+     ]
     },
     {
      "id": "craft",
@@ -14420,7 +15038,45 @@ var CONTENT: Content = {
       "flags": [
        "home_own"
       ]
-     }
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_fenfang"
+       ],
+       "d": -60
+      },
+      {
+       "flags": [
+        "era_fanggai"
+       ],
+       "d": -40
+      },
+      {
+       "flags": [
+        "era_fangjia1"
+       ],
+       "d": 15
+      },
+      {
+       "flags": [
+        "era_fangjia2"
+       ],
+       "d": 15
+      },
+      {
+       "flags": [
+        "era_huiluo"
+       ],
+       "d": -15
+      },
+      {
+       "flags": [
+        "era_laolou"
+       ],
+       "d": -25
+      }
+     ]
     },
     {
      "id": "help",
@@ -14447,7 +15103,45 @@ var CONTENT: Content = {
        "home_own",
        "home_help"
       ]
-     }
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_fenfang"
+       ],
+       "d": -50
+      },
+      {
+       "flags": [
+        "era_fanggai"
+       ],
+       "d": -35
+      },
+      {
+       "flags": [
+        "era_fangjia1"
+       ],
+       "d": 12
+      },
+      {
+       "flags": [
+        "era_fangjia2"
+       ],
+       "d": 12
+      },
+      {
+       "flags": [
+        "era_huiluo"
+       ],
+       "d": -12
+      },
+      {
+       "flags": [
+        "era_laolou"
+       ],
+       "d": -20
+      }
+     ]
     },
     {
      "id": "unit",
@@ -14456,10 +15150,11 @@ var CONTENT: Content = {
      "cost": 40,
      "requires": {
       "flags": [
-       "job_succeed"
+       "job_succeed",
+       "era_fenfang"
       ]
      },
-     "lock": "单位不分房",
+     "lock": "厂里不分房了",
      "joins": "buy",
      "tags": [
       "patient"
@@ -14473,6 +15168,34 @@ var CONTENT: Content = {
       "flags": [
        "home_own",
        "home_unit"
+      ]
+     }
+    },
+    {
+     "id": "quota",
+     "text": "排上了一套保障房",
+     "min": 40,
+     "cost": 40,
+     "requires": {
+      "flags": [
+       "job_succeed",
+       "era_huiluo"
+      ]
+     },
+     "lock": "没排上保障房",
+     "joins": "buy",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "home_own",
+       "home_quota"
       ]
      }
     },
@@ -14493,7 +15216,45 @@ var CONTENT: Content = {
       "flags": [
        "home_rent"
       ]
-     }
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_fenfang"
+       ],
+       "d": -40
+      },
+      {
+       "flags": [
+        "era_fanggai"
+       ],
+       "d": -25
+      },
+      {
+       "flags": [
+        "era_fangjia1"
+       ],
+       "d": 8
+      },
+      {
+       "flags": [
+        "era_fangjia2"
+       ],
+       "d": 8
+      },
+      {
+       "flags": [
+        "era_huiluo"
+       ],
+       "d": -8
+      },
+      {
+       "flags": [
+        "era_laolou"
+       ],
+       "d": -12
+      }
+     ]
     },
     {
      "id": "stay",
@@ -14711,7 +15472,15 @@ var CONTENT: Content = {
        "retired",
        "retire_mentor"
       ]
-     }
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_yanchi"
+       ],
+       "d": -0.5
+      }
+     ]
     },
     {
      "id": "rest",
@@ -14751,7 +15520,15 @@ var CONTENT: Content = {
        "retired",
        "retire_trip"
       ]
-     }
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_yanchi"
+       ],
+       "d": 20
+      }
+     ]
     }
    ],
    "resonance": {
@@ -14847,7 +15624,15 @@ var CONTENT: Content = {
       "flags": [
        "old_spry"
       ]
-     }
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_dianti"
+       ],
+       "d": -0.6
+      }
+     ]
     },
     {
      "id": "care",
@@ -14869,7 +15654,21 @@ var CONTENT: Content = {
       "flags": [
        "old_care"
       ]
-     }
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_laolou"
+       ],
+       "d": 20
+      },
+      {
+       "flags": [
+        "era_dianti"
+       ],
+       "d": -35
+      }
+     ]
     },
     {
      "id": "sit",
@@ -22414,7 +23213,10 @@ var CONTENT: Content = {
    ],
    "hint": "楼下新挂了一块棉门帘。",
    "requires": {
-    "minAge": 13
+    "minAge": 13,
+    "flags": [
+     "era_wangba"
+    ]
    },
    "title": "楼下开了网吧",
    "text": "楼下原先的粮店改成了网吧，门口挂着厚棉门帘，里面噼里啪啦全是键盘声。门口还摆了张掉漆的台球桌，一块钱一局。",
@@ -42648,6 +43450,504 @@ var CONTENT: Content = {
     ],
     "resonance": null,
     "dissonance": null
+   }
+  ]
+ },
+ "eras": {
+  "decades": [
+   {
+    "from": 1960,
+    "name": "六十年代",
+    "look": "childhood"
+   },
+   {
+    "from": 1970,
+    "name": "七十年代",
+    "look": "childhood"
+   },
+   {
+    "from": 1980,
+    "name": "八十年代",
+    "look": "childhood"
+   },
+   {
+    "from": 1990,
+    "name": "九十年代",
+    "look": "childhood"
+   },
+   {
+    "from": 2000,
+    "name": "千禧年头上",
+    "look": "teen"
+   },
+   {
+    "from": 2010,
+    "name": "一〇年代",
+    "look": "young"
+   },
+   {
+    "from": 2020,
+    "name": "二〇年代",
+    "look": "middle"
+   },
+   {
+    "from": 2030,
+    "name": "三〇年代",
+    "look": "middle"
+   },
+   {
+    "from": 2035,
+    "name": "三〇年代",
+    "look": "old"
+   },
+   {
+    "from": 2040,
+    "name": "四〇年代",
+    "look": "old"
+   },
+   {
+    "from": 2050,
+    "name": "五〇年代",
+    "look": "old"
+   },
+   {
+    "from": 2060,
+    "name": "六〇年代",
+    "look": "old"
+   },
+   {
+    "from": 2070,
+    "name": "七〇年代",
+    "look": "old"
+   },
+   {
+    "from": 2080,
+    "name": "八〇年代",
+    "look": "old"
+   }
+  ],
+  "cohorts": [
+   {
+    "id": "c65",
+    "name": "六十年代中生",
+    "born": 1965,
+    "weight": 2,
+    "note": "粮本压在抽屉最底下，全院就一台电视。"
+   },
+   {
+    "id": "c75",
+    "name": "七十年代中生",
+    "born": 1975,
+    "weight": 2,
+    "note": "铁皮铅笔盒，楼道里码着蜂窝煤。"
+   },
+   {
+    "id": "c85",
+    "name": "八十年代中生",
+    "born": 1985,
+    "weight": 2,
+    "note": "小人书一分钱看一本，家里刚有了彩电。"
+   },
+   {
+    "id": "c92",
+    "name": "九十年代初生",
+    "born": 1992,
+    "weight": 3,
+    "note": "画片和玻璃球，下班的车铃响成一片。",
+    "default": true
+   },
+   {
+    "id": "c02",
+    "name": "〇〇后",
+    "born": 2002,
+    "weight": 2,
+    "note": "爸妈的手机里，存着学走路的那一段。"
+   }
+  ],
+  "events": [
+   {
+    "id": "era_pre_kuozhao",
+    "year": 1963,
+    "until": null,
+    "title": "考大学",
+    "text": "大学一年收的人不多。楼里谁家孩子考上了，通知书能在楼道里传一圈。",
+    "flags": [
+     "era_pre_kuozhao"
+    ],
+    "clears": [],
+    "lines": {
+     "m_gaokao.away": 7,
+     "m_gaokao.local": 8
+    },
+    "wages": {},
+    "hits": []
+   },
+   {
+    "id": "era_fenpei",
+    "year": 1963,
+    "until": 1997,
+    "title": "分配",
+    "text": "念完书，学校给分到单位。谁家孩子分到了哪儿，饭桌上能说一个礼拜。",
+    "flags": [
+     "era_fenpei"
+    ],
+    "clears": [],
+    "lines": {
+     "m_job.desk": -6,
+     "m_job.teach": -5
+    },
+    "wages": {},
+    "hits": []
+   },
+   {
+    "id": "era_fenfang",
+    "year": 1963,
+    "until": null,
+    "title": "等分房",
+    "text": "房子是单位分的，按工龄排队。谁家分着了，全楼帮着搬，搬完在新屋里吃顿饺子。",
+    "flags": [
+     "era_fenfang"
+    ],
+    "clears": [],
+    "lines": {
+     "m_settle.buy": -60,
+     "m_settle.help": -50,
+     "m_settle.rent": -40
+    },
+    "wages": {},
+    "hits": []
+   },
+   {
+    "id": "era_qianggou",
+    "year": 1988,
+    "until": 1990,
+    "title": "抢购",
+    "text": "一夜之间满街排队。有人扛回来一箱火柴，有人扛回来两袋盐。",
+    "flags": [
+     "era_qianggou"
+    ],
+    "clears": [],
+    "lines": {},
+    "wages": {},
+    "hits": [
+     {
+      "requires": {
+       "minAge": 16
+      },
+      "text": "存折上的数没动，能买的东西少了一截。",
+      "flags": [],
+      "clears": [],
+      "money": 0,
+      "savings": 0.85
+     }
+    ]
+   },
+   {
+    "id": "era_xiahai",
+    "year": 1992,
+    "until": 2001,
+    "title": "下海",
+    "text": "楼里有人停薪留职去了南边，过年回来穿着新皮鞋。街口一下多了好几个摊子。",
+    "flags": [
+     "era_xiahai"
+    ],
+    "clears": [],
+    "lines": {
+     "m_job.trade": -5
+    },
+    "wages": {
+     "job_trade": 1.25,
+     "own_shop": 1.15
+    },
+    "hits": []
+   },
+   {
+    "id": "era_xiagang",
+    "year": 1996,
+    "until": 2006,
+    "title": "名单",
+    "text": "厂门口贴了名单，围着看的人都不说话。早点铺早上多了几个不着急走的人。",
+    "flags": [
+     "era_xiagang"
+    ],
+    "clears": [],
+    "lines": {},
+    "wages": {
+     "job_succeed": 0.8
+    },
+    "hits": [
+     {
+      "requires": {
+       "flags": [
+        "job_succeed"
+       ],
+       "notFlags": [
+        "laid_off"
+       ],
+       "minAge": 22
+      },
+      "text": "厂里活少了，工钱只开八成。",
+      "flags": [],
+      "clears": [],
+      "money": 0,
+      "savings": 1
+     },
+     {
+      "requires": {
+       "flags": [
+        "fam_factory"
+       ],
+       "maxAge": 21
+      },
+      "text": "爸妈下班早了，饭桌上没人提厂里。",
+      "flags": [],
+      "clears": [],
+      "money": 0,
+      "savings": 1
+     }
+    ]
+   },
+   {
+    "id": "era_fanggai",
+    "year": 1998,
+    "until": 2010,
+    "title": "房改",
+    "text": "单位不再分房了。住着的公房交一笔钱，就成了自己的，房本上头一回写了名字。",
+    "flags": [
+     "era_fanggai"
+    ],
+    "clears": [
+     "era_fenfang"
+    ],
+    "lines": {
+     "m_settle.buy": -40,
+     "m_settle.help": -35,
+     "m_settle.rent": -25
+    },
+    "wages": {},
+    "hits": [
+     {
+      "requires": {
+       "flags": [
+        "home_unit"
+       ]
+      },
+      "text": "厂里分的那套交了一笔钱，房本上写了你的名字。",
+      "flags": [],
+      "clears": [],
+      "money": -10,
+      "savings": 1
+     }
+    ]
+   },
+   {
+    "id": "era_kuozhao",
+    "year": 1999,
+    "until": 2012,
+    "title": "多招了",
+    "text": "大学一下多招了好些人。楼里同一年走了三个大学生，毕业那年找活的也多了。",
+    "flags": [
+     "era_kuozhao"
+    ],
+    "clears": [
+     "era_pre_kuozhao"
+    ],
+    "lines": {
+     "m_job.desk": 4
+    },
+    "wages": {},
+    "hits": []
+   },
+   {
+    "id": "era_wangba",
+    "year": 2000,
+    "until": null,
+    "title": "网吧",
+    "text": "楼下的粮店改成了网吧，门口挂着厚棉门帘。谁家买了电脑，孩子放学先往谁家跑。",
+    "flags": [
+     "era_wangba"
+    ],
+    "clears": [],
+    "lines": {},
+    "wages": {},
+    "hits": []
+   },
+   {
+    "id": "era_fangjia1",
+    "year": 2004,
+    "until": null,
+    "title": "售楼处",
+    "text": "对岸起了一片新楼，售楼处门口排着队。楼下下棋的几位，话头从棋换成了房子。",
+    "flags": [
+     "era_fangjia1"
+    ],
+    "clears": [],
+    "lines": {
+     "m_settle.buy": 15,
+     "m_settle.help": 12,
+     "m_settle.rent": 8
+    },
+    "wages": {},
+    "hits": []
+   },
+   {
+    "id": "era_chaiqian",
+    "year": 2008,
+    "until": 2016,
+    "title": "红线",
+    "text": "河这边好几片老房子划进了红线。墙上画了圈，拆迁办的人挨家敲门。",
+    "flags": [
+     "era_chaiqian"
+    ],
+    "clears": [],
+    "lines": {},
+    "wages": {},
+    "hits": [
+     {
+      "requires": {
+       "flags": [
+        "home_old"
+       ],
+       "minAge": 30
+      },
+      "text": "老屋在红线里，按平米补了一笔钱。",
+      "flags": [],
+      "clears": [],
+      "money": 50,
+      "savings": 1
+     }
+    ]
+   },
+   {
+    "id": "era_fangjia2",
+    "year": 2010,
+    "until": null,
+    "title": "价牌",
+    "text": "中介的门脸开到了早点铺隔壁。玻璃上贴的价一个月换一回，越换越长。",
+    "flags": [
+     "era_fangjia2"
+    ],
+    "clears": [
+     "era_fanggai"
+    ],
+    "lines": {
+     "m_settle.buy": 15,
+     "m_settle.help": 12,
+     "m_settle.rent": 8
+    },
+    "wages": {},
+    "hits": []
+   },
+   {
+    "id": "era_shouji",
+    "year": 2014,
+    "until": null,
+    "title": "扫码",
+    "text": "鏊子边上贴了张收钱的码。送外卖的电动车在楼下排成一排，网吧关了门。",
+    "flags": [
+     "era_shouji"
+    ],
+    "clears": [
+     "era_wangba"
+    ],
+    "lines": {},
+    "wages": {
+     "own_stall": 1.1,
+     "own_shop": 0.92
+    },
+    "hits": []
+   },
+   {
+    "id": "era_juan",
+    "year": 2016,
+    "until": null,
+    "title": "占座",
+    "text": "城边上又起了几所大学。图书馆天不亮就有人排队占座，考公的教室坐得满满的。",
+    "flags": [
+     "era_juan"
+    ],
+    "clears": [],
+    "lines": {
+     "m_gaokao.away": -3,
+     "m_gaokao.local": -4,
+     "m_job.desk": 6,
+     "m_job.teach": 4
+    },
+    "wages": {},
+    "hits": []
+   },
+   {
+    "id": "era_huiluo",
+    "year": 2019,
+    "until": null,
+    "title": "往下改",
+    "text": "中介门口的价牌往下改了一回。租房的年轻人多了，城边上盖了几片保障房。",
+    "flags": [
+     "era_huiluo"
+    ],
+    "clears": [
+     "era_fangjia2"
+    ],
+    "lines": {
+     "m_settle.buy": -15,
+     "m_settle.help": -12,
+     "m_settle.rent": -8
+    },
+    "wages": {},
+    "hits": []
+   },
+   {
+    "id": "era_yanchi",
+    "year": 2025,
+    "until": 2048,
+    "title": "晚几年",
+    "text": "退休的岁数往后挪了几年。早上过桥上班的人里，头发白的多了。",
+    "flags": [
+     "era_yanchi"
+    ],
+    "clears": [],
+    "lines": {
+     "m_retire.mentor": -5,
+     "m_retire.trip": 20
+    },
+    "wages": {},
+    "hits": []
+   },
+   {
+    "id": "era_laolou",
+    "year": 2030,
+    "until": 2061,
+    "title": "空了几户",
+    "text": "楼里空了好几户，晚上亮灯的窗户少了。请人照应倒难请了，价钱一年一涨。",
+    "flags": [
+     "era_laolou"
+    ],
+    "clears": [],
+    "lines": {
+     "m_settle.buy": -25,
+     "m_settle.help": -20,
+     "m_settle.rent": -12,
+     "m_evening.care": 20
+    },
+    "wages": {},
+    "hits": []
+   },
+   {
+    "id": "era_dianti",
+    "year": 2063,
+    "until": null,
+    "title": "装了电梯",
+    "text": "公示贴了好几回，楼外头总算装上了电梯。社区里有人上门照应，价钱不高。",
+    "flags": [
+     "era_dianti"
+    ],
+    "clears": [],
+    "lines": {
+     "m_evening.walk": -6,
+     "m_evening.care": -35
+    },
+    "wages": {},
+    "hits": []
    }
   ]
  }

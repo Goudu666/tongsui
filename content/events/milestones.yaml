@@ -476,11 +476,21 @@
       text: 等到了厂里分的房
       min: 40
       cost: 40
-      requires: { flags: [job_succeed] }
-      lock: 单位不分房
+      requires: { flags: [job_succeed, era_fenfang] }   # 只在分房那几年有（content/eras.yaml，房改以后摘掉）
+      lock: 厂里不分房了
       joins: buy
       tags: [patient]
       effects: { self: { mood: 12 }, flags: [home_own, home_unit] }
+    # 房价回落以后城边上盖了保障房（eras.yaml 的 era_huiluo）：在厂里上班的人顶上原来分房那条路，数值照抄 unit
+    - id: quota
+      text: 排上了一套保障房
+      min: 40
+      cost: 40
+      requires: { flags: [job_succeed, era_huiluo] }
+      lock: 没排上保障房
+      joins: buy
+      tags: [patient]
+      effects: { self: { mood: 10 }, flags: [home_own, home_quota] }
     - id: rent
       text: 在附近租一间
       min: 100

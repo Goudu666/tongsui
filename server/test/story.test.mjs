@@ -32,7 +32,7 @@ const byId = new Map(C.events.concat(C.story.events).map((e) => [e.id, e]));
  * legacy：上一世留下的传承（不传就是头一世）。
  */
 function story(seed, choose, rerolls = 0, near = 0.5, legacy = undefined) {
-  const s = lifeCreate(seed, C, legacy);
+  const s = lifeCreate(seed, C, legacy, G("eraPickCohort")(C, seed)); // 五个出生年代都抽（只在某个年代才有的事也要出得来）
   for (let i = 0; i < rerolls; i++) { lifeReroll(s, C, "qing"); lifeReroll(s, C, "mei"); }
   // 老物件会变（atlas.ts）：面前摆着会变的那几件，就带上（先挑变过一回的），链尾那几个藏着的结局才走得到
   for (const r of ["qing", "mei"]) {

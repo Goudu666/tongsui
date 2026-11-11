@@ -64,7 +64,7 @@ python3 tools/art/scenes.py --preview street --x 1200 --w 1600 --scale 0.5 --out
   行 0 是走路八帧（一步一个周期）；行 1 列 0~3 站着（列 3 眨眼）、列 4~7 在忙；行 2 列 0~1 坐、2~3 睡、4~7 招手；
   行 3 高兴 / 泄气，行 4 击掌 / 挠头（各 4 帧）。引擎按走过的距离推帧（`actor.gd` 的 `STRIDE`），所以快慢都不滑步。
   体态随年纪变：小孩走路一颠一颠（`hop`）、少年微含胸、中年发福（`belly`）、老人驼背屈膝（`lean`、`knee_bend`）。
-- **专属动作表**：`{qing|mei}_{stage}_act.png`，8 列 × 10 行、1.5 倍输出（2400×3300，省显存）。每行两套 4 帧循环，顺序是 `actor_acts.ACTS`，
+- **专属动作表**：`{qing|mei}_{stage}_act.png`，8 列 × 11 行、1.5 倍输出（2400×3630，省显存）。每行两套 4 帧循环，顺序是 `actor_acts.ACTS`，
   和 `actor.gd` 的 `ACT_LOOP` 一一对应（`client/tests/unit_life.gd` 对着查）。行动 id 对到哪一套在 `actor.gd` 的 `ACTION_LOOP` / `DUTY_LOOP`。
   脸上的表情是 `actors._face` 的 expr（笑、大笑、说话、唱、专心、琢磨、使劲、难过、嚼、不好意思…），头可以低头抬头（pose 的 `tilt`）。
 - **街坊**：`client/art/folks/<图>.png` 一位一行（列 0~3 营生、4~7 歇着），`walkers.png` 一种路人一行 8 帧走路，`index.json` 记谁在哪一行。

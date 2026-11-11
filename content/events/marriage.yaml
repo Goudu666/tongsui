@@ -1,0 +1,423 @@
+# 成家以后（docs/FAMILY.md 第一节、第二节「谁有孩子」）。二十八岁「成家」（milestones.yaml 的 m_wed）分出来的几条路各自的日子：
+#   p_confidant  做一辈子的老朋友（知己）：和两口子并列的好结局，不是安慰奖
+#   p_married    跟对门过成了一家（中年：吵架、分家务、一起扛事）
+#   married_other 和别人成了家：和对门之间的分寸
+#   single_life  一个人过：体面、自在，也有难处
+# 要孩子的事也在这儿：两口子一件 mirror，和别人成家的、一个人过的各一件 solo。has_kid 一打上，服务器就给这个人生一个孩子。
+# 中年一个日子是三年（30、33…57），老年是 60/65/70/75；60~70 岁的 mirror 被主线第七章占着，老年的事写 solo。
+
+# ---------- 知己 ----------
+
+- id: mw_banns
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 30, maxAge: 39, flags: [p_confidant], notFlags: [married_other, p_married, single_life] }
+  title: 头一张请帖
+  text: 你要办喜事了。请帖印了六十张，头一张没往邮局送，你揣着上了三楼。
+  options:
+    - id: best
+      text: 请对门当伴郎伴娘
+      tags: [gentle]
+      effects: { self: { mood: 10 }, other: { mood: 8 }, bond: { close: 2 }, flags: [married_other] }
+    - id: simple
+      text: 不办了，两家吃顿饭
+      tags: [patient]
+      effects: { self: { mood: 6 }, flags: [married_other] }
+    - id: later
+      text: 请帖收回抽屉里
+      tags: [solitude]
+      effects: { self: { mood: -3 } }
+
+- id: mw_night_call
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minAge: 33, flags: [p_confidant] }
+  title: 夜里一点
+  text: 夜里一点，手机亮了，是对门的。接起来那头半天没说话，只听得见风。
+  options:
+    - id: wait
+      text: 不催，等 TA 开口
+      tags: [patient]
+      effects: { self: { energy: -10 }, other: { mood: 8 }, bond: { close: 2 } }
+    - id: go
+      text: 穿上外套出门
+      tags: [adventure, responsible]
+      effects: { self: { energy: -15 }, other: { mood: 10 }, bond: { close: 3 } }
+    - id: here
+      text: 说一句「我在」
+      tags: [gentle]
+      effects: { other: { mood: 5 }, bond: { close: 1 } }
+
+- id: mw_pipe
+  kind: mirror
+  stage: middle
+  where: hallway
+  when: [1020, 1320]
+  hint: 楼道里有哗哗的水声。
+  weight: 2
+  requires: { minAge: 36, flags: [p_confidant] }
+  title: 暖气管子
+  text: 谁家有事，另一个总先到。这回是一家的暖气管子裂了，水漫到了门口。
+  options:
+    - id: bucket
+      text: 拎桶接水
+      tags: [responsible]
+      effects: { self: { energy: -10 } }
+    - id: wrench
+      text: 去楼长家借扳手
+      tags: [adventure]
+      effects: { self: { energy: -5 } }
+    - id: lift
+      text: 先把东西往高处搬
+      tags: [patient]
+      effects: { self: { energy: -10 } }
+  resonance:
+    bucket:
+      text: 两只桶轮着接，一只满了另一只刚好递过来。拖完地，两个人坐在门槛上歇着。
+      memory: 两只桶
+      bond: { sync: 3, close: 3 }
+    wrench:
+      text: 两个人在楼长家门口撞上，一人拿了一把扳手。拧到最后一扣，是两只手一块儿使的劲。
+      memory: 两把扳手
+      bond: { sync: 3, close: 3 }
+    lift:
+      text: 一个搬箱子，一个抱相册。相册最底下压着一张两个人小时候的照片，谁也没提。
+      memory: 压着的照片
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个在楼下找扳手，一个在屋里拿脸盆舀水。水停了，两个人裤腿都湿到了膝盖。
+    bond: { close: 1 }
+
+- id: mw_paper
+  kind: solo
+  stage: old
+  weight: 2
+  requires: { minAge: 65, flags: [p_confidant] }
+  title: 一份报纸
+  text: 对门的每天傍晚来坐一会儿，带一份报纸。看完了就走。
+  options:
+    - id: tea
+      text: 先把茶沏上
+      tags: [gentle]
+      effects: { self: { mood: 6 }, other: { mood: 4 } }
+    - id: read
+      text: 抢过来先看
+      tags: [adventure]
+      effects: { self: { mood: 5 }, bond: { close: 1 } }
+    - id: sit
+      text: 坐着，不说话
+      tags: [patient]
+      effects: { self: { mood: 4 } }
+
+# ---------- 两口子过日子 ----------
+
+- id: mw_quarrel
+  kind: mirror
+  stage: middle
+  where: hallway
+  when: [1140, 1380]
+  hint: 有一扇门关得很响。
+  weight: 2
+  requires: { minAge: 30, flags: [p_married] }
+  title: 电费单子
+  text: 吵了一架，为的是谁忘了交电费。一个在楼道里站着，一个在屋里把灯关了又开。
+  options:
+    - id: hungry
+      text: 先开口说饿了
+      tags: [gentle]
+      effects: { self: { mood: 3 } }
+    - id: bill
+      text: 把单子拍到桌上
+      tags: [competitive]
+      effects: { self: { mood: -3 } }
+    - id: walk
+      text: 下楼转一圈
+      tags: [solitude]
+      effects: { self: { energy: -5 } }
+  resonance:
+    hungry:
+      text: 两个人同时说饿了。冰箱里只剩两个鸡蛋，一人一个，就着凉馒头吃完了。
+      memory: 两个鸡蛋
+      bond: { sync: 3, close: 3 }
+    bill:
+      text: 两张单子一块儿拍到桌上，都交了。多交的那份，够用到明年开春。
+      memory: 交了两回
+      bond: { sync: 3, close: 2 }
+    walk:
+      text: 一个往桥那边走，一个往路口走。绕了一圈，在楼门口碰上，一块儿上的楼。
+      memory: 楼门口碰上
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个在楼道里等着对方先开门，一个在门后等着对方先敲门。灯一直亮着。
+    bond: { close: -1 }
+
+- id: mw_chores
+  kind: mirror
+  stage: middle
+  where: hallway
+  when: [1080, 1320]
+  hint: 冰箱门上贴了张纸。
+  weight: 2
+  requires: { minAge: 33, flags: [p_married] }
+  title: 冰箱上的纸
+  text: 家务要分一分了。冰箱门上贴了张纸，谁洗碗、谁拖地、谁倒垃圾，写了三行，又划掉两行。
+  options:
+    - id: dish
+      text: 碗归我
+      tags: [responsible]
+      effects: { self: { energy: -5 } }
+    - id: floor
+      text: 地归我
+      tags: [patient]
+      effects: { self: { energy: -5, body: 1 } }
+    - id: turns
+      text: 一人一天，轮着来
+      tags: [gentle]
+      effects: { self: { mood: 2 } }
+  resonance:
+    dish:
+      text: 两个人都要洗碗。后来一个洗一个擦，水池前头站两个人，正好。
+      memory: 一个洗一个擦
+      bond: { sync: 3, close: 3 }
+    floor:
+      text: 两个人都要拖地，从两头往中间拖，在屋当间碰上了，谁也不让谁。
+      memory: 屋当间
+      bond: { sync: 3, close: 2 }
+    turns:
+      text: 纸上画了一张表，一人一天。过了半年，表还在，谁也没照着来过。
+      memory: 没照着来
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个把碗刷了，一个把地拖了，垃圾谁都没倒。第二天早上，楼道里一股味儿。
+    bond: { close: 0 }
+
+- id: mw_savings
+  kind: mirror
+  stage: middle
+  where: river
+  when: [1080, 1320]
+  hint: 河边的长椅有人坐着。
+  weight: 2
+  requires: { minAge: 39, flags: [p_married] }
+  title: 存折
+  text: 家里的积蓄赔进去一大半。晚上两个人在河边坐着，存折在一个人兜里，谁也没拿出来。
+  options:
+    - id: work
+      text: 说明天去找活
+      tags: [responsible]
+      effects: { self: { mood: -3, energy: -5 } }
+    - id: count
+      text: 掏出存折算一遍
+      tags: [patient]
+      effects: { self: { mind: 1, mood: -3 } }
+    - id: joke
+      text: 说今年不用愁花钱了
+      tags: [gentle]
+      effects: { self: { mood: 3 } }
+  resonance:
+    work:
+      text: 两个人同时说明天去找活。说完对着看了一眼，又同时说：你在家歇着。
+      memory: 你在家歇着
+      bond: { sync: 3, close: 4 }
+    count:
+      text: 一个念数，一个在手心里记。算到最后，还够过个年。
+      memory: 还够过个年
+      bond: { sync: 3, close: 3 }
+    joke:
+      text: 一个说今年省心了，另一个接了句：明年也省。两个人笑得河边的人直回头。
+      memory: 明年也省
+      bond: { sync: 4, close: 3 }
+  dissonance:
+    text: 一个在算往后的日子，一个在说宽心的话。回家的路上，两个人的手揣在一个兜里。
+    bond: { close: 1 }
+
+# ---------- 和别人成了家 ----------
+
+- id: mw_two_gifts
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minAge: 30, maxAge: 48, flags: [married_other] }
+  title: 两份礼
+  text: 对门的过生日。礼你备好了，又多买了一份一样的，拿回家给爱人。
+  options:
+    - id: together
+      text: 两口子一块儿送过去
+      tags: [gentle, responsible]
+      effects: { self: { mood: 5 }, other: { mood: 5 } }
+    - id: parents
+      text: 托爸妈捎过去
+      tags: [patient]
+      effects: { other: { mood: 3 } }
+    - id: text
+      text: 只发一句生日快乐
+      tags: [solitude]
+      effects: { self: { mood: -2 } }
+
+- id: mw_ladder
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minAge: 36, flags: [married_other] }
+  title: 借梯子
+  text: 对门家的那位来借梯子。你递过去，顺嘴说了一句：那个灯口拧不紧，得往左先退半圈。
+  options:
+    - id: go
+      text: 跟过去帮着换
+      tags: [responsible]
+      effects: { self: { energy: -5 }, other: { mood: 4 } }
+    - id: stay
+      text: 说完就关门
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+    - id: call
+      text: 喊自家那位去搭把手
+      tags: [gentle]
+      effects: { self: { mood: 4 }, other: { mood: 3 } }
+
+# ---------- 一个人过 ----------
+
+- id: mw_porridge
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minAge: 30, flags: [single_life] }
+  title: 一锅粥
+  text: 一个人过。早上熬一锅粥，够吃两顿。阳台上的几盆花是自己挑的，一盆也没养死。
+  options:
+    - id: plant
+      text: 再添一盆
+      tags: [patient]
+      effects: { self: { mood: 6 } }
+    - id: share
+      text: 盛一碗给对门
+      tags: [gentle]
+      effects: { self: { mood: 4 }, other: { mood: 4 }, bond: { close: 1 } }
+    - id: trip
+      text: 收拾行李出趟远门
+      tags: [adventure]
+      effects: { self: { mood: 8, energy: -10, charm: 1 } }
+
+- id: mw_fever
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minAge: 39, flags: [single_life] }
+  title: 柜子顶上
+  text: 半夜发烧，自己摸黑找药。药箱搁在柜子顶上，够了三回才够着。
+  options:
+    - id: call
+      text: 给对门打个电话
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { energy: -10 }, bond: { close: 2 } }
+    - id: wait
+      text: 自己挨到天亮
+      tags: [solitude]
+      effects: { self: { energy: -15, mood: -5 } }
+    - id: taxi
+      text: 叫车去医院
+      tags: [responsible]
+      effects: { self: { energy: -10 } }
+
+- id: mw_one_key
+  kind: solo
+  stage: old
+  weight: 2
+  requires: { minAge: 65, flags: [single_life] }
+  title: 一把钥匙
+  text: 一个人过了大半辈子。备用钥匙只配了一把，挂在对门。
+  options:
+    - id: knock
+      text: 去对门坐坐
+      tags: [gentle]
+      effects: { self: { mood: 5 }, other: { mood: 3 } }
+    - id: home
+      text: 在自己屋里听收音机
+      tags: [solitude]
+      effects: { self: { mood: 4 } }
+
+# ---------- 要个孩子 ----------
+
+- id: mw_pram
+  kind: mirror
+  stage: middle
+  where: hallway
+  when: [1020, 1260]
+  hint: 楼道里停着一辆婴儿车。
+  weight: 4
+  requires: { minAge: 30, maxAge: 39, flags: [p_married], notFlags: [has_kid] }
+  title: 婴儿车
+  text: 楼道里不知谁家的婴儿车，挡了半边路。你俩侧着身子挤过去，到了门口，谁都没急着掏钥匙。
+  options:
+    - id: yes
+      text: 要个孩子吧
+      tags: [responsible, gentle]
+      effects: { self: { mood: 10, energy: -10 }, flags: [has_kid] }
+    - id: wait
+      text: 再过两年
+      tags: [patient]
+      effects: { self: { mood: -2 } }
+    - id: two
+      text: 就咱俩也挺好
+      tags: [solitude]
+      effects: { self: { mood: 4 } }
+  resonance:
+    yes:
+      text: 两个人同时开的口。钥匙掏出来，谁也没开门，在楼道里又站了好一会儿。
+      memory: 没开的门
+      bond: { sync: 3, close: 3 }
+    wait:
+      text: 「再过两年。」两个人都这么说，进门的时候，都回头看了一眼那辆车。
+      memory: 回头看一眼
+      bond: { sync: 2, close: 2 }
+    two:
+      text: 一个说就咱俩挺好，一个说我也是。那天晚上把剩下的半瓶酒喝了。
+      memory: 半瓶酒
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个在门口站住了，一个已经进屋开了灯。那辆婴儿车，第二天让人推走了。
+    bond: { close: 0 }
+
+- id: mw_circle
+  kind: solo
+  stage: middle
+  weight: 4
+  requires: { minAge: 30, maxAge: 42, flags: [married_other], notFlags: [has_kid] }
+  title: 画了个圈
+  text: 吃晚饭的时候，爱人把一张日历推过来。下个月的一天，用红笔画了个圈。
+  options:
+    - id: yes
+      text: 要个孩子吧
+      tags: [responsible, gentle]
+      effects: { self: { mood: 10, energy: -10 }, flags: [has_kid] }
+    - id: wait
+      text: 再等等
+      tags: [patient]
+      effects: { self: { mood: -3 } }
+    - id: no
+      text: 两个人过也挺好
+      tags: [solitude]
+      effects: { self: { mood: 3 } }
+
+- id: mw_notice
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 33, maxAge: 45, flags: [single_life], notFlags: [has_kid] }
+  title: 一张纸
+  text: 福利院门口的告示栏贴了张纸，说想给几个孩子找人家。你在那张纸前头站了一会儿。
+  options:
+    - id: ask
+      text: 进去问问
+      tags: [responsible, gentle]
+      effects: { self: { mood: 8, energy: -10 }, flags: [has_kid] }
+    - id: think
+      text: 回家再想想
+      tags: [patient]
+      effects: { self: { mood: -2 } }
+    - id: no
+      text: 一个人就挺好
+      tags: [solitude]
+      effects: { self: { mood: 3 } }

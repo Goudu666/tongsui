@@ -1,5 +1,5 @@
 {
- "version": "192c7471114f",
+ "version": "7d36e56b5816",
  "events": [
   {
    "id": "ch_runner",
@@ -10187,6 +10187,1273 @@
    "catches": []
   },
   {
+   "id": "mw_banns",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 30,
+    "maxAge": 39,
+    "flags": [
+     "p_confidant"
+    ],
+    "notFlags": [
+     "married_other",
+     "p_married",
+     "single_life"
+    ]
+   },
+   "title": "头一张请帖",
+   "text": "你要办喜事了。请帖印了六十张，头一张没往邮局送，你揣着上了三楼。",
+   "options": [
+    {
+     "id": "best",
+     "text": "请对门当伴郎伴娘",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {
+       "mood": 8
+      },
+      "bond": {
+       "close": 2
+      },
+      "flags": [
+       "married_other"
+      ]
+     }
+    },
+    {
+     "id": "simple",
+     "text": "不办了，两家吃顿饭",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "married_other"
+      ]
+     }
+    },
+    {
+     "id": "later",
+     "text": "请帖收回抽屉里",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mw_night_call",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 33,
+    "flags": [
+     "p_confidant"
+    ]
+   },
+   "title": "夜里一点",
+   "text": "夜里一点，手机亮了，是对门的。接起来那头半天没说话，只听得见风。",
+   "options": [
+    {
+     "id": "wait",
+     "text": "不催，等 TA 开口",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": -10
+      },
+      "other": {
+       "mood": 8
+      },
+      "bond": {
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "go",
+     "text": "穿上外套出门",
+     "tags": [
+      "adventure",
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "energy": -15
+      },
+      "other": {
+       "mood": 10
+      },
+      "bond": {
+       "close": 3
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "here",
+     "text": "说一句「我在」",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {
+       "mood": 5
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mw_pipe",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    1020,
+    1320
+   ],
+   "hint": "楼道里有哗哗的水声。",
+   "requires": {
+    "minAge": 36,
+    "flags": [
+     "p_confidant"
+    ]
+   },
+   "title": "暖气管子",
+   "text": "谁家有事，另一个总先到。这回是一家的暖气管子裂了，水漫到了门口。",
+   "options": [
+    {
+     "id": "bucket",
+     "text": "拎桶接水",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wrench",
+     "text": "去楼长家借扳手",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "lift",
+     "text": "先把东西往高处搬",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "bucket": {
+     "text": "两只桶轮着接，一只满了另一只刚好递过来。拖完地，两个人坐在门槛上歇着。",
+     "memory": "两只桶",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "wrench": {
+     "text": "两个人在楼长家门口撞上，一人拿了一把扳手。拧到最后一扣，是两只手一块儿使的劲。",
+     "memory": "两把扳手",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "lift": {
+     "text": "一个搬箱子，一个抱相册。相册最底下压着一张两个人小时候的照片，谁也没提。",
+     "memory": "压着的照片",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在楼下找扳手，一个在屋里拿脸盆舀水。水停了，两个人裤腿都湿到了膝盖。",
+    "bond": {
+     "close": 1
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "mw_paper",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 65,
+    "flags": [
+     "p_confidant"
+    ]
+   },
+   "title": "一份报纸",
+   "text": "对门的每天傍晚来坐一会儿，带一份报纸。看完了就走。",
+   "options": [
+    {
+     "id": "tea",
+     "text": "先把茶沏上",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {
+       "mood": 4
+      },
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "read",
+     "text": "抢过来先看",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "sit",
+     "text": "坐着，不说话",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mw_quarrel",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    1140,
+    1380
+   ],
+   "hint": "有一扇门关得很响。",
+   "requires": {
+    "minAge": 30,
+    "flags": [
+     "p_married"
+    ]
+   },
+   "title": "电费单子",
+   "text": "吵了一架，为的是谁忘了交电费。一个在楼道里站着，一个在屋里把灯关了又开。",
+   "options": [
+    {
+     "id": "hungry",
+     "text": "先开口说饿了",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "bill",
+     "text": "把单子拍到桌上",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "walk",
+     "text": "下楼转一圈",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "hungry": {
+     "text": "两个人同时说饿了。冰箱里只剩两个鸡蛋，一人一个，就着凉馒头吃完了。",
+     "memory": "两个鸡蛋",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "bill": {
+     "text": "两张单子一块儿拍到桌上，都交了。多交的那份，够用到明年开春。",
+     "memory": "交了两回",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "walk": {
+     "text": "一个往桥那边走，一个往路口走。绕了一圈，在楼门口碰上，一块儿上的楼。",
+     "memory": "楼门口碰上",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在楼道里等着对方先开门，一个在门后等着对方先敲门。灯一直亮着。",
+    "bond": {
+     "close": -1
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "mw_chores",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    1080,
+    1320
+   ],
+   "hint": "冰箱门上贴了张纸。",
+   "requires": {
+    "minAge": 33,
+    "flags": [
+     "p_married"
+    ]
+   },
+   "title": "冰箱上的纸",
+   "text": "家务要分一分了。冰箱门上贴了张纸，谁洗碗、谁拖地、谁倒垃圾，写了三行，又划掉两行。",
+   "options": [
+    {
+     "id": "dish",
+     "text": "碗归我",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "floor",
+     "text": "地归我",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": -5,
+       "body": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "turns",
+     "text": "一人一天，轮着来",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "dish": {
+     "text": "两个人都要洗碗。后来一个洗一个擦，水池前头站两个人，正好。",
+     "memory": "一个洗一个擦",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "floor": {
+     "text": "两个人都要拖地，从两头往中间拖，在屋当间碰上了，谁也不让谁。",
+     "memory": "屋当间",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "turns": {
+     "text": "纸上画了一张表，一人一天。过了半年，表还在，谁也没照着来过。",
+     "memory": "没照着来",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个把碗刷了，一个把地拖了，垃圾谁都没倒。第二天早上，楼道里一股味儿。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "mw_savings",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "river",
+   "when": [
+    1080,
+    1320
+   ],
+   "hint": "河边的长椅有人坐着。",
+   "requires": {
+    "minAge": 39,
+    "flags": [
+     "p_married"
+    ]
+   },
+   "title": "存折",
+   "text": "家里的积蓄赔进去一大半。晚上两个人在河边坐着，存折在一个人兜里，谁也没拿出来。",
+   "options": [
+    {
+     "id": "work",
+     "text": "说明天去找活",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3,
+       "energy": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "count",
+     "text": "掏出存折算一遍",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "joke",
+     "text": "说今年不用愁花钱了",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "work": {
+     "text": "两个人同时说明天去找活。说完对着看了一眼，又同时说：你在家歇着。",
+     "memory": "你在家歇着",
+     "bond": {
+      "sync": 3,
+      "close": 4
+     },
+     "flags": []
+    },
+    "count": {
+     "text": "一个念数，一个在手心里记。算到最后，还够过个年。",
+     "memory": "还够过个年",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "joke": {
+     "text": "一个说今年省心了，另一个接了句：明年也省。两个人笑得河边的人直回头。",
+     "memory": "明年也省",
+     "bond": {
+      "sync": 4,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在算往后的日子，一个在说宽心的话。回家的路上，两个人的手揣在一个兜里。",
+    "bond": {
+     "close": 1
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "mw_two_gifts",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 30,
+    "maxAge": 48,
+    "flags": [
+     "married_other"
+    ]
+   },
+   "title": "两份礼",
+   "text": "对门的过生日。礼你备好了，又多买了一份一样的，拿回家给爱人。",
+   "options": [
+    {
+     "id": "together",
+     "text": "两口子一块儿送过去",
+     "tags": [
+      "gentle",
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {
+       "mood": 5
+      },
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "parents",
+     "text": "托爸妈捎过去",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {},
+      "other": {
+       "mood": 3
+      },
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "text",
+     "text": "只发一句生日快乐",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mw_ladder",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 36,
+    "flags": [
+     "married_other"
+    ]
+   },
+   "title": "借梯子",
+   "text": "对门家的那位来借梯子。你递过去，顺嘴说了一句：那个灯口拧不紧，得往左先退半圈。",
+   "options": [
+    {
+     "id": "go",
+     "text": "跟过去帮着换",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "energy": -5
+      },
+      "other": {
+       "mood": 4
+      },
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stay",
+     "text": "说完就关门",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "喊自家那位去搭把手",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {
+       "mood": 3
+      },
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mw_porridge",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 30,
+    "flags": [
+     "single_life"
+    ]
+   },
+   "title": "一锅粥",
+   "text": "一个人过。早上熬一锅粥，够吃两顿。阳台上的几盆花是自己挑的，一盆也没养死。",
+   "options": [
+    {
+     "id": "plant",
+     "text": "再添一盆",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "share",
+     "text": "盛一碗给对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {
+       "mood": 4
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "trip",
+     "text": "收拾行李出趟远门",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8,
+       "energy": -10,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mw_fever",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 39,
+    "flags": [
+     "single_life"
+    ]
+   },
+   "title": "柜子顶上",
+   "text": "半夜发烧，自己摸黑找药。药箱搁在柜子顶上，够了三回才够着。",
+   "options": [
+    {
+     "id": "call",
+     "text": "给对门打个电话",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {
+       "energy": -10
+      },
+      "bond": {
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "自己挨到天亮",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": -15,
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "taxi",
+     "text": "叫车去医院",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mw_one_key",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 65,
+    "flags": [
+     "single_life"
+    ]
+   },
+   "title": "一把钥匙",
+   "text": "一个人过了大半辈子。备用钥匙只配了一把，挂在对门。",
+   "options": [
+    {
+     "id": "knock",
+     "text": "去对门坐坐",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {
+       "mood": 3
+      },
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "在自己屋里听收音机",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mw_pram",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 4,
+   "where": "hallway",
+   "when": [
+    1020,
+    1260
+   ],
+   "hint": "楼道里停着一辆婴儿车。",
+   "requires": {
+    "minAge": 30,
+    "maxAge": 39,
+    "flags": [
+     "p_married"
+    ],
+    "notFlags": [
+     "has_kid"
+    ]
+   },
+   "title": "婴儿车",
+   "text": "楼道里不知谁家的婴儿车，挡了半边路。你俩侧着身子挤过去，到了门口，谁都没急着掏钥匙。",
+   "options": [
+    {
+     "id": "yes",
+     "text": "要个孩子吧",
+     "tags": [
+      "responsible",
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "has_kid"
+      ]
+     }
+    },
+    {
+     "id": "wait",
+     "text": "再过两年",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "two",
+     "text": "就咱俩也挺好",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "yes": {
+     "text": "两个人同时开的口。钥匙掏出来，谁也没开门，在楼道里又站了好一会儿。",
+     "memory": "没开的门",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "「再过两年。」两个人都这么说，进门的时候，都回头看了一眼那辆车。",
+     "memory": "回头看一眼",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "two": {
+     "text": "一个说就咱俩挺好，一个说我也是。那天晚上把剩下的半瓶酒喝了。",
+     "memory": "半瓶酒",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在门口站住了，一个已经进屋开了灯。那辆婴儿车，第二天让人推走了。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "mw_circle",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 4,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 30,
+    "maxAge": 42,
+    "flags": [
+     "married_other"
+    ],
+    "notFlags": [
+     "has_kid"
+    ]
+   },
+   "title": "画了个圈",
+   "text": "吃晚饭的时候，爱人把一张日历推过来。下个月的一天，用红笔画了个圈。",
+   "options": [
+    {
+     "id": "yes",
+     "text": "要个孩子吧",
+     "tags": [
+      "responsible",
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "has_kid"
+      ]
+     }
+    },
+    {
+     "id": "wait",
+     "text": "再等等",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "no",
+     "text": "两个人过也挺好",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mw_notice",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 33,
+    "maxAge": 45,
+    "flags": [
+     "single_life"
+    ],
+    "notFlags": [
+     "has_kid"
+    ]
+   },
+   "title": "一张纸",
+   "text": "福利院门口的告示栏贴了张纸，说想给几个孩子找人家。你在那张纸前头站了一会儿。",
+   "options": [
+    {
+     "id": "ask",
+     "text": "进去问问",
+     "tags": [
+      "responsible",
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "has_kid"
+      ]
+     }
+    },
+    {
+     "id": "think",
+     "text": "回家再想想",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "no",
+     "text": "一个人就挺好",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
    "id": "f_dong_phone",
    "kind": "mirror",
    "stage": "childhood",
@@ -14385,6 +15652,157 @@
    },
    "age": 22,
    "score": {},
+   "swing": false,
+   "grades": [],
+   "catches": []
+  },
+  {
+   "id": "m_wed",
+   "kind": "milestone",
+   "stage": "young",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "notFlags": [
+     "p_married",
+     "married_other"
+    ]
+   },
+   "title": "成家",
+   "text": "二十八了。两家的饭桌上一年问一回，今年问得最勤。往后跟谁过、怎么过，该自己拿个主意了。",
+   "options": [
+    {
+     "id": "us",
+     "text": "跟对门过",
+     "min": 50,
+     "requires": {
+      "notFlags": [
+       "p_estranged"
+      ]
+     },
+     "lock": "吵翻过那一回",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "other",
+     "text": "和别人成家",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "married_other"
+      ]
+     }
+    },
+    {
+     "id": "friend",
+     "text": "做一辈子的老朋友",
+     "min": 25,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "alone",
+     "text": "一个人过",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "single_life"
+      ]
+     }
+    }
+   ],
+   "resonance": {
+    "us": {
+     "text": "一个说「要不就咱俩」，另一个说「我也这么想」。两家的妈在门口听着，谁也没出声。",
+     "memory": "就咱俩",
+     "bond": {
+      "sync": 3,
+      "close": 4
+     },
+     "flags": [
+      "p_lovers",
+      "p_married"
+     ]
+    },
+    "other": {
+     "text": "两个人是同一年办的事。喜糖互相送了一包，一样的牌子，谁也没拆。",
+     "memory": "两包喜糖",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    },
+    "friend": {
+     "text": "话说开了，一个人笑，另一个也笑。下楼买了两瓶汽水，在楼道里喝完的。",
+     "memory": "两瓶汽水",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": [
+      "p_confidant"
+     ]
+    },
+    "alone": {
+     "text": "两个人都说一个人挺好。两家的妈对着叹气，你俩在屋里各吃各的，吃得都挺香。",
+     "memory": "各吃各的",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个想了很久要怎么开口，另一个先把自己的打算说了。那句话就没再说出来。",
+    "bond": {
+     "close": -2
+    },
+    "flags": [
+     "p_missed"
+    ]
+   },
+   "age": 28,
+   "score": {
+    "close": 1
+   },
    "swing": false,
    "grades": [],
    "catches": []
@@ -26820,7 +28238,8 @@
    "requires": {
     "minAge": 26,
     "notFlags": [
-     "has_kid"
+     "has_kid",
+     "single_life"
     ]
    },
    "title": "虎头鞋",
@@ -35891,6 +37310,17 @@
     }
    },
    {
+    "id": "e_confidant",
+    "title": "老朋友",
+    "text": "没成一家，也没走远。彼此的喜事上都站在头一排，谁家半夜有事，先到的总是对门。",
+    "requires": {
+     "flags": [
+      "p_confidant"
+     ],
+     "minClose": 40
+    }
+   },
+   {
     "id": "e_reunited",
     "title": "重逢",
     "text": "走散过很多年。后来在海河边又碰上了，谁也没提那些年，只说了一句：「吃了吗您？」",
@@ -36378,6 +37808,16 @@
      "stats": {
       "charm": 9.5
      }
+    }
+   },
+   {
+    "id": "l_single",
+    "title": "一个人",
+    "text": "{name} 一个人过了一辈子。阳台上的花年年换，饭做得比谁都讲究，备用钥匙挂在对门。",
+    "requires": {
+     "flags": [
+      "single_life"
+     ]
     }
    },
    {
@@ -37688,6 +39128,7 @@
    "e_same_year": "拉过的钩，到老也没松开。",
    "e_white_hair": "成了一家，到老还亲。",
    "e_dinner_table": "成了一家，吵也吵不散。",
+   "e_confidant": "没成一家，做了一辈子的老朋友。",
    "e_reunited": "走散了，又在河边碰上。",
    "e_partners": "两个人合开一间铺子。",
    "e_neighbors": "拉过钩，后来也没搬远。",
@@ -37710,6 +39151,7 @@
    "l_wanderer": "去了外地，就没再回来。",
    "l_parent": "有了自己的孩子。",
    "l_charmer": "走到哪儿，哪儿热闹。",
+   "l_single": "一个人，也把日子过得好好的。",
    "l_stayer": "一辈子没离开过天津。",
    "l_ordinary": "过了普通的一生。",
    "l_heir_breakfast": "生在周家，接下了家里的营生。",
@@ -37752,7 +39194,9 @@
    "erhu_life": "把二胡拉一辈子",
    "has_kid": "有个自己的孩子",
    "left_city": "去外地闯一闯",
-   "shop_two": "再开一家铺子"
+   "shop_two": "再开一家铺子",
+   "p_confidant": "做一辈子的老朋友",
+   "single_life": "一个人过"
   }
  },
  "story": {

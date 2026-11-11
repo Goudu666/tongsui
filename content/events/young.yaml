@@ -844,7 +844,7 @@
   kind: solo
   stage: young
   weight: 2
-  requires: { minAge: 26, notFlags: [has_kid] }
+  requires: { minAge: 26, notFlags: [has_kid, single_life] }
   title: 虎头鞋
   text: 你妈把你小时候那双虎头鞋翻了出来，洗得干干净净，搁在你床头。什么也没说。
   options:

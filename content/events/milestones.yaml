@@ -447,6 +447,66 @@
     text: 一个出门早，一个回来晚。对门的灯，各亮各的钟点。
     bond: { close: -3 }
 
+# 二十八岁：成家（docs/FAMILY.md 第一节）。看的是两个人的亲近，不是本事。早先在楼顶办过喜事、和别人成了家的不过这道关。
+# 两个人都选跟对门过才成一家，都选老朋友才是知己；一个想跟对门过、一个没有，就是错过（p_missed）。
+# 错位是整道关一份（引擎不分是哪两条路错开的），所以别的路错开也记成错过：到了二十八还没往一处想，也算。
+# 线（tools/paths.mjs 的 live() 过到 28 岁量的亲近，每种活法 12 世）：搭伴念书 中位 83（最低 63），搭伴练身体 中位 58（p25 51），
+#   一个人念书 中位 35（p75 41），不上心 中位 8，各顾各的 中位 5，影子陪着念书 中位 33。
+#   跟对门过 50：认真搭伴的够得着（念书的全够，练身体的八成），一个人用功的、随便过的够不着。
+#   老朋友 25：一个人用功的、影子陪着的一半多够得着，随便过的一成多。
+- id: m_wed
+  kind: milestone
+  stage: young
+  age: 28
+  requires: { notFlags: [p_married, married_other] }
+  score: { close: 1 }
+  title: 成家
+  text: 二十八了。两家的饭桌上一年问一回，今年问得最勤。往后跟谁过、怎么过，该自己拿个主意了。
+  options:
+    - id: us
+      text: 跟对门过
+      min: 50
+      requires: { notFlags: [p_estranged] }
+      lock: 吵翻过那一回
+      tags: [responsible]
+      effects: { self: { mood: 8 } }
+    - id: other
+      text: 和别人成家
+      tags: [responsible]
+      effects: { self: { mood: 5 }, flags: [married_other] }
+    - id: friend
+      text: 做一辈子的老朋友
+      min: 25
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: alone
+      text: 一个人过
+      tags: [solitude]
+      effects: { self: { mood: 3 }, flags: [single_life] }
+  resonance:
+    us:
+      text: 一个说「要不就咱俩」，另一个说「我也这么想」。两家的妈在门口听着，谁也没出声。
+      memory: 就咱俩
+      bond: { sync: 3, close: 4 }
+      flags: [p_lovers, p_married]
+    other:
+      text: 两个人是同一年办的事。喜糖互相送了一包，一样的牌子，谁也没拆。
+      memory: 两包喜糖
+      bond: { sync: 2, close: 1 }
+    friend:
+      text: 话说开了，一个人笑，另一个也笑。下楼买了两瓶汽水，在楼道里喝完的。
+      memory: 两瓶汽水
+      bond: { sync: 3, close: 3 }
+      flags: [p_confidant]
+    alone:
+      text: 两个人都说一个人挺好。两家的妈对着叹气，你俩在屋里各吃各的，吃得都挺香。
+      memory: 各吃各的
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个想了很久要怎么开口，另一个先把自己的打算说了。那句话就没再说出来。
+    bond: { close: -2 }
+    flags: [p_missed]
+
 - id: m_settle
   kind: milestone
   stage: middle

@@ -61,3 +61,12 @@ xvfb-run -a godot --path client --rendering-driver opengl3 --resolution 1920x108
 ```
 
 真服务器状态的 HUD 和日结卡用 `tools/shots/day.gd`（见文件头）。
+
+## 孩子的小牌（成家和下一代，见 docs/FAMILY.md）
+
+- WORLD 里我身上带 `kid`（`{ name, age, stats, shared }`）时，「我」的牌底下隔 16 多一张小牌（`hud.kid_rect()`，宽同 `ME_W`，高 96）：上一行名字（`FS_LABEL`）+ 几岁（`FS_CAPTION`，0 岁写「不到一岁」），细线，下一行体魄 / 心智 / 魅力（百分制往下取整，和纸带一个口径）。没孩子不画、不占地方。
+- 错位色块是我的颜色；两口子共用的孩子（`shared`）色块换成两色叠印 `OVERLAP`，右头两个叠着的小圆 +「两家的」。
+- 行动的 Did 带 `k`（这一回孩子长了多少）：飘「孩子 心智 +3」，飞进这张小牌；落下之前牌上的数和纸带上孩子关口的「还差几分」都不拨，落下时那一项印成我的颜色、牌子跳一下。
+- 带孩子的事按钮小字写「孩子长心智」；`requires.kidAge` 不在段里的事客户端也不显示（`world_view.kid_age`）。
+- 孩子的关口（事件带 `kidAge`）揭晓：一个人过时签头是「孩子的关口」，尺子上的名字写「小满 · 石头」。
+- 截图：`tools/shots/family.gd`（用法同 `ui.gd`），出有孩子的 HUD、飘字飞向孩子牌、孩子关口揭晓。

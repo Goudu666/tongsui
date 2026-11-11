@@ -475,7 +475,7 @@ func _process(delta: float) -> void:
 	if _duck_left > 0.0:
 		_duck_left -= delta
 	var duck_want := minf(_duck if _duck_left > 0.0 else 0.0, REVEAL_DUCK if revealing else 0.0)
-	_duck_db = move_toward(_duck_db, duck_want, (80.0 if duck_want < _duck_db else 10.0) * delta)
+	_duck_db = move_toward(_duck_db, duck_want, (80.0 if duck_want < _duck_db else 24.0) * delta)  # 高光一完就放开，别留一个坑
 
 	# 单曲（标题 / 投胎 / 一生）：先把上一首淡掉，再换下一首
 	if _single_now != _single_want:

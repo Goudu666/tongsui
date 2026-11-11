@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "4f60c148403f",
+ "version": "b1c442a16b51",
  "events": [
   {
    "id": "ch_runner",
@@ -7958,7 +7958,7 @@ var CONTENT: Content = {
     },
     {
      "id": "guard",
-     "text": "给大爷递根烟",
+     "text": "跟大爷打声招呼",
      "tags": [
       "responsible"
      ],
@@ -8219,7 +8219,7 @@ var CONTENT: Content = {
     ]
    },
    "title": "手稳",
-   "text": "孩子在职高学修车。礼拜天蹲在车铺门口给人换链条，修车爷爷看了半天，说：「手稳。」",
+   "text": "孩子在职高学修车。礼拜天蹲在楼下给人换链条，下棋的老街坊看了半天，说：「手稳。」",
    "options": [
     {
      "id": "watch",
@@ -9104,7 +9104,7 @@ var CONTENT: Content = {
      "flags": []
     },
     "food": {
-     "text": "两个人拎着两份早点回来，撞了个对脸。四份早点，搁在同一个台阶上。",
+     "text": "两个人拎着早点回来，撞了个对脸。打开一看，买的是一样的。",
      "memory": "四份早点",
      "bond": {
       "sync": 3,
@@ -9530,7 +9530,7 @@ var CONTENT: Content = {
     },
     {
      "id": "ask",
-     "text": "问对门家的孩子好",
+     "text": "多摆两双筷子",
      "tags": [
       "responsible"
      ],

@@ -477,6 +477,9 @@ function worldView(s: LifelineMatch) {
     needs[r] = { hunger: r1(p.needs.hunger), energy: r1(p.needs.energy), mood: r1(p.needs.mood), clean: r1(p.needs.clean) };
     money[r] = p.money;
     if (!p.alive || !a) continue;
+    // 孩子（family.ts，docs/FAMILY.md）：没有就不发。只加了可选字段，PROTOCOL_VERSION 不动
+    var kv = kidView(life, r);
+    if (kv) actors[r].kid = kv;
     stats[r] = { body: lifeRound1(p.stats.body), mind: lifeRound1(p.stats.mind), charm: lifeRound1(p.stats.charm), luck: lifeRound1(p.stats.luck) };
     eff[r] = worldEfficiency(p);
     goals[r] = lifeGoal(life, CONTENT, r);

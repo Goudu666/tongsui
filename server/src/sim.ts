@@ -534,6 +534,8 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       for (var g = 0; g < (ev.grades || []).length; g++) if (gscore >= ev.grades![g].min) { grade = ev.grades![g]; break; }
       // 成绩单上的数要在扣钱、长属性之前算：那是走进考场那一刻的本事
       var sw = o.min ? w : gw;
+      // 差一点：离哪条没走成的路最近（结局页上「差一点」读它，见 atlas.ts）。也是走进考场那一刻的数
+      var near = atlasMilestoneNear(ev, o.id, me, swing, lifePairBond(s, role));
       var shown = lifeScoreRaw(sw) ? Math.floor(lifeScore(me, sw, s.bond)) : lifePoints(lifeScore(me, sw, s.bond) + swing);
       if (grade) lifeAddFlags(me, grade.flags);
       if (o.cost) me.money = Math.max(0, me.money - o.cost);
@@ -553,6 +555,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
         option: o.id,
         track: lifeTrack(c, me, entry.age).id,
       };
+      if (near) entry.results[role]!.near = near;
     } else {
       // 检定：这个选项成不成，看本事也看运气（见 growth.ts → growthResolveCheck）
       var out = growthResolveCheck(s, c, pe, ev, o, role, entry);
@@ -658,6 +661,7 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
     legacyDerive(s); // 这一世走完才看得出来的事（同一年走的、干了一辈子同一行……），结局读得到
     s.ending = lifeEnding(s, c);
     legacyAbsorb(s, c); // 记进传承：各自留下了什么，街坊记住了什么
+    atlasAbsorb(s, c); // 差一点就……；这一世的结局记进图鉴
     var end = lifeEntry(s, "end", lifeEndingText(s, c, s.ending) + lifeEpitaph(s));
     out.push(end);
     s.log.push(end);

@@ -22,6 +22,7 @@ const DAILY = C.map.actions.filter((a) => Object.keys(a.stats).length > 0);
 const lifeEligible = G("lifeEligible"), lifeTimeAt = G("lifeTimeAt"), lifeEnding = G("lifeEnding");
 const lifeMilestoneFor = G("lifeMilestoneFor"), lifeSeenIds = G("lifeSeenIds"), lifeOptionLock = G("lifeOptionLock"), lifeTrack = G("lifeTrack");
 
+const CHAIN_PICK = ["h_photo_two", "h_nested_box", "h_noted_books", "h_photo", "h_tin_box", "h_books"];
 const byId = new Map(C.events.concat(C.story.events).map((e) => [e.id, e]));
 
 /**
@@ -33,6 +34,11 @@ const byId = new Map(C.events.concat(C.story.events).map((e) => [e.id, e]));
 function story(seed, choose, rerolls = 0, near = 0.5, legacy = undefined) {
   const s = lifeCreate(seed, C, legacy);
   for (let i = 0; i < rerolls; i++) { lifeReroll(s, C, "qing"); lifeReroll(s, C, "mei"); }
+  // 老物件会变（atlas.ts）：面前摆着会变的那几件，就带上（先挑变过一回的），链尾那几个藏着的结局才走得到
+  for (const r of ["qing", "mei"]) {
+    const pick = CHAIN_PICK.find((id) => (s.rolls[r].offer || []).includes(id));
+    if (pick) G("legacyPick")(s, r, pick);
+  }
   lifeConfirm(s, C, "qing", { qing: "青", mei: "梅" });
   lifeConfirm(s, C, "mei", { qing: "青", mei: "梅" });
   // 这里不走地图，没人写作业也没人踢球，属性不会自己长。按种子把属性铺开，
@@ -171,6 +177,8 @@ for (let seed = 1; seed <= LIVES; seed++) {
   const nth = (seed - 1) % CHAIN;
   if (nth === 0) legacy = undefined;
   if (nth === 1 && Math.floor(seed / CHAIN) % 2 === 0) legacy.marks = [...C.legacy.marks];
+  // 老物件链要连着三世才走到头，三世一串撞不够：每隔几串当作链已经变过一回（面前摆着变过的那几件）
+  if (nth === 2 && Math.floor(seed / CHAIN) % 3 === 0) for (const id of ["h_photo_two", "h_nested_box", "h_noted_books"]) if (!legacy.heirlooms.includes(id)) legacy.heirlooms.unshift(id);
   const { s, seen } = story(seed * 2654435761, seed % 2 ? randomChoice : steadyChoice, seed % 4, NEAR[Math.floor(seed / 4) % NEAR.length], legacy);
   legacy = JSON.parse(JSON.stringify(s.legacy));
   assert.equal(s.life, nth + 1);

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, viewport-fit=cover">
+		<meta name="theme-color" content="#F4EEE1">
+		<title>同岁</title>
+		<!-- 网页单机版的外壳（Godot 导出时套上）：孔版纸色的载入页 + 页面里的单机服务器 tongsui-local.js -->
+		<style>
+:root { --paper: #F4EEE1; --ink: #2B2A33; --qing: #2E8B7A; --mei: #D9485F; }
+html, body, #canvas { margin: 0; padding: 0; border: 0; }
+body { background: var(--paper); color: var(--ink); overflow: hidden; touch-action: none; }
+#canvas { display: block; }
+#canvas:focus { outline: none; }
+#status {
+	position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
+	background: var(--paper);
+	background-image: radial-gradient(rgba(43, 42, 51, 0.10) 1px, transparent 1.2px);
+	background-size: 7px 7px;
+	font-family: "LXGW WenKai", "Songti SC", "Noto Serif SC", "Source Han Serif SC", serif;
+	transition: opacity 0.6s ease;
+}
+#status.gone { opacity: 0; pointer-events: none; }
+.mark { position: relative; width: 108px; height: 64px; }
+.mark i { position: absolute; top: 0; width: 64px; height: 64px; border-radius: 50%; mix-blend-mode: multiply; }
+.mark i:first-child { left: 0; background: var(--qing); }
+.mark i:last-child { right: 0; background: var(--mei); }
+h1 { margin: 0; font-size: 56px; font-weight: 400; letter-spacing: 0.4em; padding-left: 0.4em; }
+.sub { font-size: 15px; letter-spacing: 0.2em; opacity: 0.6; }
+.bar { width: min(360px, 70vw); height: 4px; background: rgba(43, 42, 51, 0.12); position: relative; overflow: hidden; }
+.bar b { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--ink); transition: width 0.2s; }
+#note { font-size: 14px; opacity: 0.55; min-height: 1.4em; text-align: center; padding: 0 24px; line-height: 1.6; }
+#note.err { opacity: 1; color: var(--mei); }
+		</style>
+		<script src="parts.js"></script>
+		<script src="tongsui-local.js"></script>
+		$GODOT_HEAD_INCLUDE
+	</head>
+	<body>
+		<canvas id="canvas">这个浏览器不支持 canvas。</canvas>
+		<noscript>要打开 JavaScript 才能玩。</noscript>
+		<div id="status">
+			<div class="mark"><i></i><i></i></div>
+			<h1>同岁</h1>
+			<div class="sub">两个人 · 一辈子 · 门对着门</div>
+			<div class="bar"><b id="bar"></b></div>
+			<div id="note">正在把河畔里搬进来……</div>
+		</div>
+
+		<script>
+// 托管的地方单个文件有大小上限时（parts.js 里写着），大文件是压缩后切成几块传上去的：这里拦下 Godot 的 fetch，
+// 把几块取回来、解压、拼好，再交给 Godot。没有 parts.js（本地、GitHub Pages）就照常取。
+(function () {
+	const parts = window.TONGSUI_PARTS || null;
+	if (!parts) return;
+	const rawFetch = window.fetch.bind(window);
+	window.fetch = async function (input, init) {
+		const url = typeof input === 'string' ? input : input.url;
+		const name = url.split('/').pop().split('?')[0];
+		const p = parts[name];
+		if (!p) return rawFetch(input, init);
+		const bufs = [];
+		for (const chunk of p.chunks) {
+			const r = await rawFetch(chunk);
+			if (!r.ok) throw new Error('取不到 ' + chunk);
+			bufs.push(await r.arrayBuffer());
+		}
+		let blob = new Blob(bufs);
+		if (p.gzip) blob = await new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).blob();
+		return new Response(blob, { status: 200, headers: { 'Content-Type': p.type || 'application/octet-stream', 'Content-Length': String(blob.size) } });
+	};
+}());
+		</script>
+		<script src="$GODOT_URL"></script>
+		<script>
+const GODOT_CONFIG = $GODOT_CONFIG;
+const GODOT_THREADS_ENABLED = $GODOT_THREADS_ENABLED;
+const engine = new Engine(GODOT_CONFIG);
+(function () {
+	const status = document.getElementById('status');
+	const bar = document.getElementById('bar');
+	const note = document.getElementById('note');
+	function fail(err) {
+		console.error(err);
+		note.className = 'err';
+		note.textContent = '没打开：' + (err && err.message ? err.message : String(err)) + '。换个浏览器（Chrome / Safari 新版）再试试。';
+	}
+	const missing = Engine.getMissingFeatures({ threads: GODOT_THREADS_ENABLED });
+	if (missing.length) { fail(new Error('浏览器缺少 ' + missing.join('、'))); return; }
+	if (!window.TongsuiLocal) { fail(new Error('单机服务器 tongsui-local.js 没载进来')); return; }
+	engine.startGame({
+		onProgress: function (current, total) {
+			if (current > 0 && total > 0) bar.style.width = Math.min(100, (100 * current) / total) + '%';
+			if (total > 0 && current >= total) note.textContent = '快好了……';
+		},
+	}).then(function () {
+		status.classList.add('gone');
+		setTimeout(function () { status.remove(); }, 700);
+	}, fail);
+}());
+		</script>
+	</body>
+</html>

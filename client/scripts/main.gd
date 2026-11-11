@@ -31,6 +31,7 @@ const Juice := preload("res://scripts/ui/juice.gd")
 const StatStrip := preload("res://scripts/ui/stat_strip.gd")
 const Reveal := preload("res://scripts/ui/reveal.gd")
 const Icons := preload("res://scripts/ui/icons.gd")
+const PathRuler := preload("res://scripts/ui/path_ruler.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -752,6 +753,12 @@ func _show_spot_action() -> void:
 		# 没点过：TA 正在这儿做菜单上的哪一件，就先摆那一件（一按就是搭伴）
 		for a in menu:
 			if not bool(a.get("duty", false)) and (world.partner_doing(spot, a) or _partner_did_here(spot, a)):
+				want = str(a.id)
+				break
+	if want == "" and bool(world.action_of(spot).get("_late", true)):
+		# 原来那几件这会儿都不在钟点上：先摆菜单上现在就能做的那件
+		for a in menu:
+			if not bool(a.get("_late", false)) and not bool(a.get("duty", false)) and not bool(a.get("sleep", false)):
 				want = str(a.id)
 				break
 	var act := world.action_of(spot, want)
@@ -1798,6 +1805,7 @@ func _on_event_started(data: Dictionary) -> void:
 		Kit.chip(head, "%s · %s" % [Hud.story_text({"chapter": ev.chapter})[0], str(ch.get("title", ""))], P.INK)
 	if mirror:
 		Kit.chip(head, "默契时刻 · 不要商量", P.role_color(my_role))
+	_head_when(head)
 	_label(modal_body, str(ev.get("title", "")), P.FS_TITLE + 4)
 	Kit.rule(modal_body)
 	_label(modal_body, str(ev.get("text", "")), P.FS_BODY + 2, P.INK)
@@ -1849,8 +1857,11 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 	head.add_theme_constant_override("separation", 16)
 	modal_body.add_child(head)
 	Kit.chip(head, "人生关口", P.INK)
-	var sub := _label(head, "各选各的，可以商量" if both else "这一关只有你过", 30, P.INK_SOFT)
+	var sub := _label(head, "各选各的，可以商量" if both else "这一关只有你过", P.FS_LABEL, P.INK_MID)
 	sub.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	sub.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	sub.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_head_when(head)
 	_label(modal_body, str(ev.get("title", "")), P.FS_TITLE + 4)
 	Kit.rule(modal_body)
 	_label(modal_body, str(ev.get("text", "")), P.FS_BODY + 2, P.INK)
@@ -1868,19 +1879,92 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 	var their_name := str(names.get(_other(), "TA"))
 	# 几条路并排摆着：够不着的是灰的，写着差多少；够得着的下面写对门走不走得了
 	var grid := _options(modal_body, opts.size())
+	var goals: Dictionary = _dict(last_world.get("goals"))
+	var my_goal: Dictionary = _dict(goals.get(my_role))
+	var their_goal: Dictionary = _dict(goals.get(_other()))
 	for o in opts:
 		var oid: String = o.id
 		var otext: String = o.text
 		var gated: bool = o.has("min") or o.has("cost")
+		var b: Button
 		if my_locks.has(oid):
-			var b := _option(grid, "%s\n%s" % [otext, str(my_locks[oid])], func(): pass)
+			b = _option(grid, "%s\n%s" % [otext, str(my_locks[oid])], func(): pass)
 			b.disabled = true
 		else:
 			var note := ""
 			if both and gated:
 				note = ("\n%s 够不着这条" if their_locks.has(oid) else "\n%s 也走得了") % their_name
-			_option(grid, otext + note, _pick_path.bind(oid, otext, both))
+			b = _option(grid, otext + note, _pick_path.bind(oid, otext, both))
+		_path_ruler(b, my_goal, their_goal, pe, oid, my_locks.has(oid), their_locks.has(oid), opts.size() > 6)
 	_gap(modal_body, 4)
+
+
+## 弹窗头一行最右边：这是哪一天（「7 岁 · 立夏」），像日记本页眉
+func _head_when(head: HBoxContainer) -> void:
+	var when := str(hud.time_label) if hud != null else ""
+	var room := Control.new()
+	room.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	room.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	head.add_child(room)
+	if when != "":
+		var l := _label(head, when, P.FS_LABEL, P.INK_MID, HORIZONTAL_ALIGNMENT_RIGHT)
+		l.size_flags_horizontal = Control.SIZE_SHRINK_END
+		l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		l.autowrap_mode = TextServer.AUTOWRAP_OFF
+
+
+## 路票底下垫一把小尺：这条路的线、我到哪了、对门到哪了（只有带分数线的路才有）。
+## 尺上的点要和锁上那句话对得上：服务器锁路时用的是「本事 + 今天的发挥」（lifeOptionLock），
+## lifeGoal 的 have 不带发挥，这里补上 swing；再以锁为准夹一下：锁着的点不过旗，没锁的点不落在旗前。
+## compact：路多（超过 6 条）时票不另加高，尺子压进票底下一窄条，只给字让出这一条
+func _path_ruler(b: Button, my_goal: Dictionary, their_goal: Dictionary, pe: Dictionary, option_id: String,
+		locked: bool, their_locked: bool, compact: bool) -> void:
+	var event_id := str(pe.get("eventId", ""))
+	if str(my_goal.get("id", "")) != event_id:
+		return
+	var line: Dictionary = {}
+	for l in my_goal.get("lines", []):
+		if l is Dictionary and str(l.get("id", "")) == option_id:
+			line = l.duplicate()
+	if line.is_empty() or float(line.get("need", 0)) <= 0.0 or str(line.get("unit", "分")) != "分":
+		return
+	var swing: Dictionary = _dict(pe.get("swing"))
+	if str(line.get("by", "")).contains("亲近"):  # 看亲近原数的线不算发挥（sim.ts lifeScoreRaw）
+		swing = {}
+	line["have"] = path_have(float(line.get("have", 0)), float(swing.get(my_role, 0.0)), float(line.need), locked)
+	var theirs := GoalPanel.their_have(their_goal if str(their_goal.get("id", "")) == event_id else null, option_id)
+	if theirs >= 0.0:
+		theirs = path_have(theirs, float(swing.get(_other(), 0.0)), float(line.need), their_locked)
+	var r := PathRuler.new(line, theirs, P.role_color(my_role), P.role_color(_other()), b.disabled)
+	r.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	r.offset_left = 34
+	r.offset_right = -30
+	r.offset_top = -34 if compact else -46
+	r.offset_bottom = -6 if compact else -14
+	b.add_child(r)
+	if not compact:
+		b.custom_minimum_size.y = 168
+	var lift := 12.0 if compact else 20.0
+	for c in b.get_children():  # 甲乙丙那枚印跟着字往上挪，别落在尺子上
+		if c is Label:
+			c.offset_top -= lift
+			c.offset_bottom -= lift
+	for st in ["normal", "hover", "pressed", "disabled"]:
+		var sb: StyleBox = b.get_theme_stylebox(st)
+		if sb != null:
+			sb.content_margin_bottom = 34.0 if compact else 52.0
+
+
+## 路票尺子上的点：本事加今天的发挥（swing 是属性单位，×10 是分），再以锁为准
+## 锁着又不够线：是分数锁，最多画到旗前一格。锁着但分数够：锁的是标记、家底或花销，照实画在旗后，让锁上那句话去解释。
+## 没锁：分数一定够，往上夹到线（差得多了说明 line 和锁算的不是一个数，报一声）。
+static func path_have(have: float, swing: float, need: float, locked: bool) -> float:
+	var v := have + swing * 10.0
+	if locked:
+		return v if v >= need else minf(v, need - 1.0)
+	if v < need - 3.0:
+		push_warning("路票尺子：没锁的路 %.1f 分，线是 %.1f 分，和锁对不上" % [v, need])
+	return maxf(v, need)
 
 
 ## 关口上选路。waiting：对门也过这一关，选完要等 TA

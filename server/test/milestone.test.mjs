@@ -322,11 +322,11 @@ function sleep(s, r) {
     assert.ok(sum <= 8, "所有的好路都走到也只多活 " + sum + " 年");
   }
 
-  // 从三岁第一天起眼前就有一道关：上小学
+  // 从三岁第一天起眼前就有一道关：四岁的六一（关口冲刺 11-11，开局十分钟里要揭晓一回）
   {
     const s = lifeAt(3, 3);
     const goal = G("lifeGoal")(s, C, "qing");
-    assert.equal(goal.id, "m_school");
+    assert.equal(goal.id, "m_kinder");
     assert.ok(goal.lines.length >= 3);
   }
   // 走了不看分的那条路，长卷上不记「0 分」

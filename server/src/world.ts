@@ -515,6 +515,8 @@ function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot, want?: 
   for (var i = 0; i < sp.actions.length; i++) {
     if (want && sp.actions[i] !== want) continue;
     var act = worldFindAction(c, sp.actions[i]);
+    // 菜单上后添的事只在点到时做：不点的（旧安装包、影子、机器人）还是原来那几件，头一件不在钟点上照旧回「现在不是时候」
+    if (!want && act.menu) continue;
     if (act.duty) {
       var d = worldDutyOpen(s, c, role);
       if (d && d.spot === sp.id) return { act: act, why: "" };
@@ -977,14 +979,14 @@ function worldNeedsUse(c: Content): number {
 // ---------- 影子：离线时按需求和习惯自己过日子 ----------
 
 /** 影子去一个点位做事（它不用走路）。做不了返回 false */
-function worldShadowGo(s: LifeState, c: Content, role: Role, spot: Spot | null): boolean {
-  if (!spot || worldCanAct(s, c, role, spot.id, true)) return false;
-  var pk = worldPickAction(s, c, role, spot).act;
+function worldShadowGo(s: LifeState, c: Content, role: Role, spot: Spot | null, want?: string): boolean {
+  if (!spot || worldCanAct(s, c, role, spot.id, true, want)) return false;
+  var pk = worldPickAction(s, c, role, spot, want).act;
   if (pk && meansNeedsHost(s.persons![role], pk)) return false; // 影子不被对门带着花钱（means.ts）
   var a = s.world!.actors[role]!;
   a.x = spot.at[0];
   a.y = spot.at[1];
-  if (worldAct(s, c, role, spot.id).error) return false;
+  if (worldAct(s, c, role, spot.id, undefined, want).error) return false;
   a.shadow = true;
   return true;
 }
@@ -1008,16 +1010,15 @@ function worldShadowNeed(s: LifeState, c: Content, role: Role): StatKey | null {
   if (!goal) return null;
   var ev = lifeFindEvent(c, goal.id);
   var p = s.persons![role];
-  // 盯着还没够着的线里最低的那条；都够着了就盯最高的那条
-  var target: EventOption | null = null;
+  // 盯着还没够着的线里差得最少的那条（差几成，和纸带 goal_panel.target_line 一个算法）；都够着了就盯最高的那条
+  var target: EventOption | null = null, tGap = Infinity;
   for (var i = 0; i < ev.options.length; i++) {
     var o = ev.options[i];
     if (!o.min) continue;
-    var short = lifeScore(p, lifeOptionWeights(ev, o), s.bond) < o.min;
-    if (!target) { target = o; continue; }
-    var tShort = lifeScore(p, lifeOptionWeights(ev, target), s.bond) < target.min!;
-    if (short && (!tShort || o.min < target.min!)) target = o;
-    else if (!short && !tShort && o.min > target.min!) target = o;
+    var gap = (o.min - lifeScore(p, lifeOptionWeights(ev, o), s.bond)) / Math.max(o.min, 1e-9);
+    if (!target) { target = o; tGap = gap; continue; }
+    if (gap > 0 && (tGap <= 0 || gap < tGap)) { target = o; tGap = gap; }
+    else if (gap <= 0 && tGap <= 0 && o.min > target.min!) { target = o; tGap = gap; }
   }
   if (!target) return null;
   var w = lifeOptionWeights(ev, target);
@@ -1084,8 +1085,10 @@ function worldShadowStep(s: LifeState, c: Content, role: Role) {
   }
   if (partner && pAct && pSpot && !partner.asleep && lifeRand(s) < SHADOW_FOLLOW) {
     var there = lifeFind(c.map.spots, pSpot);
-    var mine = worldPickAction(s, c, role, there).act;
-    if (mine && mine.id === pAct && !mine.duty && worldShadowGo(s, c, role, there)) return;
+    // TA 点的是菜单上的哪件就跟哪件
+    var pWant = there.actions.indexOf(pAct) >= 0 ? pAct : undefined;
+    var mine = worldPickAction(s, c, role, there, pWant).act;
+    if (mine && mine.id === pAct && !mine.duty && worldShadowGo(s, c, role, there, pWant)) return;
   }
   // 3. 心情差就去玩；不然朝下一个关口使劲；没有关口了就随便转转
   var need = p.needs.mood < 40 ? null : worldShadowNeed(s, c, role);

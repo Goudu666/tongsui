@@ -107,6 +107,14 @@ func _menu() -> void:
 	var early: Array = w.actions_of(sp)
 	_check(early.size() == 3 and bool(early[0].get("_late", false)), "一早茶社没开：几件都列着，带着几点才有")
 	_check(Main._late_text(early[0]) == "09:00–21:00 才有", "按钮上写几点才有：%s" % Main._late_text(early[0]))
+	# 后添的事（menu）只在点到时做：头一件不在钟点上，不点还是头一件，不会掉到后添的那件上（和服务器一样）
+	w.actions["boat"] = {"id": "boat", "label": "划船", "minutes": 60, "menu": true, "requires": {"minAge": 45, "hours": [540, 1080]}}
+	w.actions["morning_walk"] = {"id": "morning_walk", "label": "遛弯", "minutes": 60, "requires": {"hours": [360, 540]}}
+	w.age = 70
+	w.slot = 2
+	var lake := {"id": "lake_walk", "actions": ["morning_walk", "boat"]}
+	_check(str(w.action_of(lake).get("id")) == "morning_walk", "下午不点：还是遛弯（不是时候），不去划船")
+	_check(str(w.action_of(lake, "boat").get("id")) == "boat", "点了划船才划船")
 	var chip := Main.menu_chip("在茶社跑堂", true, false)
 	_check(chip.text == "在茶社跑堂", "牌子上写着那件事")
 	chip.free()

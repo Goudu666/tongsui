@@ -13,6 +13,7 @@ const P := preload("res://scripts/ui/palette.gd")
 const SKY_SHADER := preload("res://shaders/sky.gdshader")
 const LAYER_SHADER := preload("res://shaders/far_layer.gdshader")
 const SWAY_SHADER := preload("res://shaders/sway.gdshader")
+const FORE_SHADER := preload("res://shaders/fore_dof.gdshader")
 const SLICE := 1024.0   ## 每片多宽（世界像素）
 const TOP := -200.0     ## 切片从这张图的 y = TOP 画起（楼顶上头还有一截天）
 const BOTTOM := 1000.0
@@ -22,7 +23,8 @@ const FAR_PARALLAX := 0.1
 const MID_PARALLAX := 0.32
 const FAR_SCALE := 0.62   ## 远景条缩小了贴：远处的楼小
 const MID_SCALE := 0.9
-const FORE_PARALLAX := 1.4  ## 前景：比人走得快（贴着镜头）
+const FORE_PARALLAX := 1.55 ## 前景：比人走得快（贴着镜头）
+const FORE_SCALE := 1.8     ## 前景放大贴：离镜头近，东西大、虚（fore_dof.gdshader）
 const FORE := {"street": "street", "river": "river", "park": "green", "newhome": "green", "primary": "school",
 	"middle": "school", "across": "street", "away": "street"}
 const ERAS := {"childhood": "child", "teen": "teen", "young": "young", "middle": "middle", "old": "old"}
@@ -60,6 +62,7 @@ var _fore: Sprite2D
 var _sky_mat: ShaderMaterial
 var _far_mat: ShaderMaterial
 var _mid_mat: ShaderMaterial
+var _fore_mat: ShaderMaterial
 var _horizon := 760.0
 var _time := Vector3.ZERO  ## night, dusk, dawn
 var _day_t := 0.3
@@ -76,11 +79,15 @@ func _ready() -> void:
 	add_child(_sky)
 	_far_mat = _layer_mat(0.0)
 	_far = _strip(_far_mat, -2)
+	_far_mat.set_shader_parameter("blur", 1.1)
 	_mid_mat = _layer_mat(7.0)
+	_mid_mat.set_shader_parameter("blur", 0.5)
 	_mid = _strip(_mid_mat, -1)
-	_fore = _strip(null, 0)
+	_fore_mat = ShaderMaterial.new()
+	_fore_mat.shader = FORE_SHADER
+	_fore = _strip(_fore_mat, 0)
 	_fore.z_as_relative = false
-	_fore.z_index = 50
+	_fore.z_index = 69  ## 在光与空气（atmos 68）上面：不进倒影、不被调色压两遍；夜色自己在 fore_dof 里压
 
 
 func _quad(mat: ShaderMaterial) -> Sprite2D:
@@ -161,8 +168,11 @@ func _set_fore() -> void:
 	_fore.texture = load(path)
 	var floors: Array = scene.floors
 	var h := _fore.texture.get_height()
+	var fs := FORE_SCALE * (0.75 if kind == "river" else 1.0)  ## 河边的栏杆放太大像一根横梁
+	_fore.scale = Vector2.ONE * fs
+	_fore_mat.set_shader_parameter("tex_px", _fore.texture.get_size())
 	# 底边压在镜头下沿再往下一点：东西只露出上半截
-	_fore.position.y = float(floors[-1]) - float(scene.top) + 250.0 - h
+	_fore.position.y = float(floors[-1]) - float(scene.top) + (390.0 if kind == "river" else 300.0) - h * fs
 	_fore.set_meta("h", h)
 
 
@@ -219,6 +229,7 @@ func set_season(p_season: String) -> void:
 func set_time(night: float, dusk: float, dawn: float, minute: float) -> void:
 	_time = Vector3(night, dusk, dawn)
 	_day_t = clampf((minute - 390.0) / (1110.0 - 390.0), 0.0, 1.0)
+	_fore_mat.set_shader_parameter("night", night)
 	for m in [_far_mat, _mid_mat]:
 		m.set_shader_parameter("night", night)
 		m.set_shader_parameter("dusk", dusk)
@@ -231,6 +242,25 @@ func set_time(night: float, dusk: float, dawn: float, minute: float) -> void:
 	var hz := Color(0.90, 0.92, 0.88).lerp(Color(0.97, 0.80, 0.66), dusk * 0.8).lerp(Color(0.80, 0.83, 0.90), night * 0.6)
 	_far_mat.set_shader_parameter("haze_col", hz)
 	_mid_mat.set_shader_parameter("haze_col", hz)
+
+
+## 太阳在世界里的位置（和 sky.gdshader 里算的一样）：光与空气那一层（atmos.gd）从这儿打光柱
+func sun_world() -> Vector2:
+	var cam := get_viewport().get_camera_2d()
+	if cam == null:
+		return Vector2.ZERO
+	var center := cam.get_screen_center_position() - position
+	var view := get_viewport_rect().size / cam.zoom
+	var top := center.y - view.y * 0.5
+	var sx := center.x + view.x * lerpf(-0.34, 0.34, _day_t)
+	var sy := lerpf(top + view.y * 0.12, _horizon - 40.0, pow(absf(_day_t - 0.5) * 2.0, 1.6))
+	sy = lerpf(sy, _horizon - 70.0, _time.y)
+	return position + Vector2(sx, sy)
+
+
+## 远景楼脚（地平线）在世界里的 y
+func horizon_world() -> float:
+	return position.y + _horizon
 
 
 func set_overcast(v: float) -> void:

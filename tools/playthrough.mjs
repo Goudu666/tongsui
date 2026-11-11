@@ -198,7 +198,7 @@ function decide(s, P, partnerPlan) {
   if (PERSONA === "casual") return { ...pick(free), why: "random" };
   // 纸带上还没够着的最低那条线看亲近（退休、七十）：认真的人去找对门一块儿做事（真人会约）
   const gl = G("lifeGoal")(s, C, role);
-  const low = gl && gl.lines.filter((l) => !l.ok).sort((x, y) => x.need - y.need)[0];
+  const low = gl && gl.lines.filter((l) => !l.ok).sort((x, y) => (x.need - x.have) / Math.max(1, x.need) - (y.need - y.have) / Math.max(1, y.need))[0]; // 和纸带一个算法（goal_panel.target_line）：差得最少的那条
   if (low && low.by === "亲近") {
     const tog = free.filter((o) => o.act.together && !w.done.includes("together:" + o.act.id)); // 同一件事搭伴一天只算一回，换着做
     if (tog.length && rand() < 0.75) return { ...(partnerPlan && tog.find((o) => o.act.id === partnerPlan.act?.id)) || nearest(tog, a), why: "together" };

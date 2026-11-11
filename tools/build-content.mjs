@@ -82,6 +82,8 @@ const UNLOCK_ANY_KEYS = ["minAge", "maxAge", "flags", "notFlags"];
 const PENDING_ACTIONS = [];
 // 地图和地点支线先读着、等别的线程发的标记：资源差异（fam_factory、uni_abroad、school_paid、job_pull、job_succeed、home_unit）。发标记的合进来以后从这里删掉
 const PENDING_FLAGS = [];
+// 成家和下一代（docs/FAMILY.md）：传承那一路先读着、等成家 / 孩子 / 引擎三路发的标记。合进来以后从这里删掉
+const FAMILY_PENDING_FLAGS = ["p_confidant", "single_life", "p_kids_tongsui", "p_kid_uni", "kid_uni_top", "kid_uni", "kid_away"];
 // 每张图在世界坐标里占一条：第 i 张图的 y 从 i × SCENE_STRIDE 起。服务器的距离、地点判定都还是二维的，
 // 不同的图隔得远，自然够不着。顺序钉死在这张表里（存档里的坐标靠它），新图往后加，不要插队
 const SCENE_ORDER = ["building", "street", "river", "primary", "middle", "across", "away", "rental", "newhome", "park", "hospital"];
@@ -596,6 +598,7 @@ if (remembered.length > REMEMBERED_MAX) errors.push(`remembered.yaml: ${remember
 
 // ---------- 地图 ----------
 for (const f of PENDING_FLAGS) produced.add(f);
+for (const f of FAMILY_PENDING_FLAGS) produced.add(f);
 const map = load("map.yaml");
 const actionIds = new Set(map.actions.map((a) => a.id));
 checkKeys("map", map, MAP_KEYS);

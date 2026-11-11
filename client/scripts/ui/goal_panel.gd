@@ -190,15 +190,17 @@ func _draw() -> void:
 	if _gain != 0 and _t >= _roll_at and k < 1.0:
 		# 涨分的那一下：分数底下垫一块自己的颜色，慢慢淡掉
 		draw_rect(Rect2(x0 - 8, 10, side - 4.0, size.y - 20.0), Color(my_color, 0.28 * (1.0 - k)))
-	var sw := _score(f, x0 + 28.0, top, str(int(have)), " / %d %s" % [int(line.need), unit])
+	_score(f, x0 + 28.0, top, str(int(have)), " / %d %s" % [int(line.need), unit])
+	var lead := 0.0
 	if _gain != 0 and _t >= _roll_at and k < 1.0:
-		Kit.text(self, Vector2(x0 + 36.0 + sw, top - 16.0 - k * 10.0), "+%d" % _gain, P.FS_LABEL, Color(my_color, 1.0 - k * k))
+		# 涨的那一截挂在第二行最前头（第一行右边紧挨着线的名字，放不下）
+		lead = Kit.text(self, Vector2(x0, low - k * 6.0), "+%d" % _gain, P.FS_LABEL, Color(my_color.darkened(0.2), 1.0 - k * k)) + 10.0
 	var reached := have >= float(line.need) - 0.001
 	var sub := "够着了" if reached else "还差 %d %s" % [int(ceil(float(line.need) - have)), unit]
 	var eff_text := _eff_text(" · ")
-	if f.get_string_size(sub + eff_text, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x > side - 6.0:
+	if lead + f.get_string_size(sub + eff_text, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x > side - 6.0:
 		eff_text = ""  # 放不下就只说还差多少
-	Kit.text(self, Vector2(x0, low), sub + eff_text, P.FS_CAPTION, my_color.darkened(0.25) if not reached else P.INK, false, side - 6.0)
+	Kit.text(self, Vector2(x0 + lead, low), sub + eff_text, P.FS_CAPTION, my_color.darkened(0.25) if not reached else P.INK, false, side - 6.0 - lead)
 	# 靠右：对门。空心点 + TA 在这条线上的分
 	var theirs := their_have(their_goal if _same_gate() else null, str(line.id))
 	if both:

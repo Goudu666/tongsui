@@ -536,8 +536,9 @@
     - id: home
       text: 把钱和工夫都花在家里
       score: { money: 1 }
-      min: 110
-      cost: 110
+      # 关口冲刺 11-11：#59 升了级工钱高，四十五岁开局就够 110 的人到了七成九，线抬到 170（花掉的还是 120）
+      min: 170
+      cost: 120
       tags: [responsible]
       effects: { self: { mood: 10 }, other: { mood: 4 }, bond: { close: 8 }, flags: [mid_home] }
     - id: fit
@@ -583,7 +584,8 @@
     - id: trip
       text: 和对门搭个伴，出去走走
       score: { money: 1 }
-      min: 180
+      # #59 以后六十岁积蓄中位两百多，线 180 开局就过的近七成，抬到 300
+      min: 300
       cost: 60
       tags: [adventure]
       effects: { self: { mood: 10 }, flags: [retired, retire_trip] }

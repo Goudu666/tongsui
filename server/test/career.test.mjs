@@ -80,7 +80,10 @@ const wageOf = (p, age) => G("worldWage")(C, p, G("lifeTrack")(C, p, age).duty);
     const want = (rank) => [...new Set([...(rq(base).flags || []), j, rank])].sort();
     assert.deepEqual(J(rq(`${base}_r1`).flags).sort(), want("rank1"), `${base}_r1 的标记 = 这一行 + rank1`);
     assert.deepEqual(J(rq(`${base}_r2`).flags).sort(), want("rank2"), `${base}_r2 的标记 = 这一行 + rank2`);
-    assert.deepEqual(J(rq(`${base}_r1`).notFlags || []), J(rq(base).notFlags || []), `${base}_r1 的 notFlags 和原来一样`);
+    // 外地那条另加 laid_off：下了岗的不带着科长的工钱南下（job_away 本身留着兜底）
+    const wantNot = [...new Set([...(rq(base).notFlags || []), ...(base === "job_away" ? ["laid_off"] : [])])];
+    assert.deepEqual(J(rq(`${base}_r1`).notFlags || []), wantNot, `${base}_r1 的 notFlags 和原来一样`);
+    for (const t of [`${base}_r1`, `${base}_r2`]) assert.equal(track(t).group, base, `${t} 和原来那条算同一件事（搭伴、worldSameThing）`);
     for (const t of [`${base}_r1`, `${base}_r2`]) assert.ok(track(t).label !== track(base).label && track(t).label.includes(" · "), `${t} 换了路名（「原来的 · 升到哪」）：${track(t).label}`);
   }
   for (const id of ["steady"]) assert.ok(!opt(RISE, id).requires && !opt(RISE, id).min, "26 岁有一条谁都走得了的兜底");

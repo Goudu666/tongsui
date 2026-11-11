@@ -388,7 +388,8 @@ function lifeTurnsUntilAge(turn: number, age: number): number {
 // hx：分数线的「攒着的」那一截，百分制带一位小数往下取整（have 是它的整数部分）。小时候一回只长零点几分，界面拿它让尺上的点和分数后面的小数挪一挪
 /** era：这条线被哪几件年代大事挪了（「考大学 +7」，era.ts → eraLineWhy）；没挪就不发 */
 // pull：这条我还差，到时候对门拉得动（pull.ts → pullGoalHint），界面写「TA 能拉你 3 分」
-interface GoalLine { id: string; text: string; by: string; unit: string; have: number; need: number; ok: boolean; hx?: number; pull?: PullOffer; era?: string }
+/** cost / short：线够了、要交的钱还差（坐办公室头一年垫的那一笔）。ok 只看线（旧客户端照 ok 画），short 是还差几块 */
+interface GoalLine { id: string; text: string; by: string; unit: string; have: number; need: number; ok: boolean; hx?: number; pull?: PullOffer; era?: string; cost?: number; short?: number }
 /** kid：这是孩子的关口（age 是到时候爹妈的岁数）；also：另一道（自己的、孩子的）下一道关，比这一道远 */
 interface GoalView { id: string; title: string; age: number; turns: number; lines: GoalLine[]; kid?: boolean; also?: GoalView }
 
@@ -471,6 +472,15 @@ function lifeGoalView(s: LifeState, c: Content, role: Role, best: LifeEvent, atA
     var why = eraLineWhy(c, o, at.flags, raw);
     if (why) gl.era = why;
     if (!gl.ok) { var ph = pullGoalHint(s, c, role, best, o); if (ph) gl.pull = ph; }
+    else if (!w.money && o.cost) {
+      var gcost = lifeOptionCost(best, o, p);
+      if (gcost > p.money) {
+        gl.cost = gcost;
+        gl.short = Math.ceil(gcost - p.money - 1e-6);
+        var pc = pullGoalHint(s, c, role, best, o);
+        if (pc) gl.pull = pc;
+      }
+    }
     lines.push(gl);
   }
   // 比最高那条路还高的名次（grades）也摆上来：起点高的人不会开局就无事可冲，每道关都还有一条够一够的线

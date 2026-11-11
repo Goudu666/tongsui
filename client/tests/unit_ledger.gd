@@ -139,15 +139,20 @@ func _run() -> void:
 	tab("life_2").pressed.emit()
 	check(net.asked == [2, 1] and texts(lg).contains("7 岁 墙上的名字"), "取过的那一页不再取")
 
-	# ---- 记住的事：只列记住了的，写上第几世；没记住的一个字不提 ----
+	# ---- 记住的事：记住了的写上第几世；没记住的灰着（图鉴那一节起摆出来了），隔着一世的只有问号 ----
 	tab("remembered").pressed.emit()
 	t = texts(lg)
 	check(t.contains(rem[0].title) and t.contains(rem[1].title) and t.contains("第 1 世") and t.contains("第 2 世"), "记住的事：\n" + t)
-	var untold := 0
+	check(lg.find_child("Seal_%s" % rem[0].id, true, false) != null and lg.find_child("Dim_%s" % rem[0].id, true, false) == null, "记住了的盖着章")
+	var dim := 0
 	for a in rem.slice(2):
-		if t.contains(str(a.desc)):
-			untold += 1
-	check(untold == 0 and not t.contains("/") and not t.contains("还差") and not t.contains("？"), "没记住的不显示、不占位、不数数：\n" + t)
+		if lg.find_child("Dim_%s" % a.id, true, false) != null:
+			dim += 1
+	check(dim == rem.size() - 2, "没记住的灰着摆出来：%d / %d" % [dim, rem.size() - 2])
+	var hid: Array = main.content.get("atlas", {}).get("hidden", [])
+	for a in rem:
+		if hid.has(a.id) and not legacy.remembered.has(a.id):
+			check(not t.contains(str(a.desc)), "隔着一世的不说是什么事：" + str(a.id))
 
 	# ---- 老物件：攒下的都列着，内容里没有的不列 ----
 	tab("kept").pressed.emit()

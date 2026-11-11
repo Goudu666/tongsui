@@ -1,6 +1,7 @@
 extends RefCounted
 ## 传承的界面：投胎页上摆着的老物件（自己的能挑，对门的看得见）、家业那一行，
-## 结局页的「留给河畔里」「街坊记住了」和「再来一世」，大厅里的「第几世」；翻住户本（ledger_ui.gd）的入口也在这儿。
+## 结局页的「留给河畔里」「街坊记住了」「头一回走到」「差一点」和「再来一世」，大厅里的「第几世」；翻住户本（ledger_ui.gd）的入口也在这儿。
+## 「差一点」和图鉴的数是服务器算的（server/src/atlas.ts，LifeState.near、legacy.seen），这里只画。
 ## 规则都在服务端（server/src/legacy.ts），老物件的文字在 content/heirlooms.yaml，这里只管画。设计见 docs/LEGACY.md。
 ## 用的都是 kit.gd 的部件；投票的两个圆和别处一样用 Kit.draw_pair。
 ##
@@ -82,6 +83,11 @@ func roll_head(body: Container) -> void:
 	var line := past_line()
 	if line != "":
 		m._label(body, line, 30, P.INK_SOFT)
+	# 上一世差一点就……：投胎之前再提一句，这一世就知道往哪儿使劲
+	var near := past_near()
+	if near != "":
+		var nl: Label = m._label(body, "上一世差一点：" + near.trim_prefix("差一点就是"), 30, P.MEI)
+		nl.name = "PastNear"
 	ledger_button(body)
 
 
@@ -104,6 +110,17 @@ func past_line() -> String:
 			ages.append("%s %d 岁" % [str(p.get("name", _name(r))), int(p.diedAtAge)])
 	var head := "上一世「%s」" % title if title != "" else "上一世"
 	return " · ".join([head] + ages)
+
+
+## 上一世「差一点」的头一句（小传里留着，服务器没有图鉴的时候是空的）
+func past_near() -> String:
+	var lg: Variant = m.life.get("legacy")
+	if not lg is Dictionary or not lg.get("past") is Array or lg.past.is_empty():
+		return ""
+	var near: Variant = lg.past[-1].get("near") if lg.past[-1] is Dictionary else null
+	if not near is Array or near.is_empty():
+		return ""
+	return str(near[0])
 
 
 ## 出生证里多的一行：这户人家的营生之前有人接下过
@@ -343,6 +360,8 @@ func _fill_again() -> bool:
 	var their_protocol := int(protocols.get(other, 0))
 	var here := their_protocol > 0
 	_noted(_again_box)
+	fresh_line(_again_box)
+	near_card(_again_box)
 	Kit.gap(_again_box, 10)
 	_again_box.add_child(_AgainMark.new({"qing": bool(again.get("qing", false)), "mei": bool(again.get("mei", false))}))
 	if here and their_protocol < Op.LEGACY_SINCE:
@@ -429,6 +448,60 @@ func _noted(box: Container) -> void:
 	Kit.chip(col, "街坊记住了", P.INK, 30)
 	for a in rows:
 		Ledger.seal_row(col, a, "")
+
+
+## 「头一回走到」：这一世头一回见到的结局和一生，再加一行图鉴攒到了多少（数是给人看的，不换任何东西）
+func fresh_line(box: Container) -> void:
+	var lg: Variant = m.life.get("legacy")
+	var seen: Variant = lg.get("seen") if lg is Dictionary else null
+	var endings: Variant = m.content.get("endings")
+	if not seen is Dictionary or not endings is Dictionary:
+		return
+	var n := int(m.life.get("life", 1))
+	var fresh: Array = []
+	var counts: Array = []
+	for part in ["pair", "lives"]:
+		var got: Variant = seen.get(part)
+		if not got is Dictionary:
+			got = {}
+		var total := 0
+		var have := 0
+		for e in endings.get(part, []):
+			total += 1
+			if got.has(e.id):
+				have += 1
+				if int(got[e.id]) == n:
+					fresh.append("「%s」" % str(e.title))
+		counts.append([have, total])
+	var col := VBoxContainer.new()
+	col.name = "Fresh"
+	col.add_theme_constant_override("separation", 8)
+	box.add_child(col)
+	if not fresh.is_empty():
+		var l: Label = m._label(col, "头一回走到" + "".join(fresh), 34, P.OVERLAP, HORIZONTAL_ALIGNMENT_CENTER)
+		l.name = "FreshTitles"
+	m._label(col, "结局图鉴 %d / %d　·　一生 %d / %d" % [counts[0][0], counts[0][1], counts[1][0], counts[1][1]], 28, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
+
+
+## 「差一点」：离得最近的那几样（先关口差几分，再结局、一生差一样），正对着「再来一世」
+func near_card(box: Container) -> void:
+	var near: Variant = m.life.get("near")
+	if not near is Array:
+		return
+	var rows: Array = near.filter(func(n): return n is Dictionary and str(n.get("text", "")) != "")
+	if rows.is_empty():
+		return
+	var card := Kit.card(P.MEI, 36.0, true, 9.0)
+	card.name = "Near"
+	box.add_child(card)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 14)
+	card.add_child(col)
+	Kit.chip(col, "差一点", P.MEI, 30)
+	for n in rows:
+		var who: Variant = n.get("role")
+		var color: Color = P.role_color(str(who)) if who is String and n.get("kind") == "milestone" else P.INK
+		m._label(col, str(n.text), 34, color)
 
 
 ## 这条人生线上走完过至少一世，才有住户本可翻

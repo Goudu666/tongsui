@@ -480,8 +480,8 @@ interface LogEntry {
     /** 这一场的临场发挥（已经算在 score 里），和默契替他托住的那一截（也算在 luck 里了） */
     luck?: number;
     steady?: number;
-    /** 差一点没够着的那条线：标记对得上、只是分不够的路里，离得最近的那条 */
-    miss?: { option: string; need: number; have: number };
+    /** 差一点：离哪条没走成的路最近（atlas.ts → atlasMilestoneNear；揭晓卡和结局页读同一个数） */
+    near?: MilestoneNear | null;
   } };
   /** 一天的小结：每个人今天涨了多少 */
   gains?: { [R in Role]?: Partial<Stats> };

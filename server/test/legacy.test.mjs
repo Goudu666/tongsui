@@ -81,6 +81,7 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
     if (rq.anyStat !== undefined) p.stats.luck = rq.anyStat;
     if (rq.minMoney !== undefined) p.money = rq.minMoney;
     if (rq.minDiedAge !== undefined) p.diedAtAge = rq.minDiedAge;
+    p.heirloomId = rq.carried ?? null; // 老物件会变：带着上一件出生的（atlas.test.mjs 第 6 节）
     assert.equal(G("legacyLeave")(C, p), h.id, `${h.name}：刚好够它的条件的人，留下的却是别的（被排在前面的挡住了）`);
     // 加成有上限：属性合计最多半点，钱最多十块，不许是负的
     const bonus = Object.values(h.bonus);
@@ -154,7 +155,8 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   const anyone = (f) => ROLES.some((r) => s.persons[r].flags.includes(f));
   assert.deepEqual(J(lg.traces), J(C.legacy.traces).filter(anyone));
   assert.deepEqual(J(lg.marks), J(C.legacy.marks).filter(anyone));
-  assert.deepEqual(Object.keys(lg).sort(), ["families", "heirlooms", "lives", "marks", "past", "remembered", "traces"], "河畔里不攒跨世的计数");
+  // 图鉴（seen，atlas.ts）是唯一跨世攒着的一张表：见过哪些结局。它只给人看，不进投胎（atlas.test.mjs 钉着）
+  assert.deepEqual(Object.keys(lg).sort(), ["families", "heirlooms", "lives", "marks", "past", "remembered", "seen", "traces"], "河畔里不攒别的跨世计数");
   console.log(`✓ 一世走完：留下 ${ROLES.map((r) => heir(s.left[r]).name).join("、")}，记了小传（${past.memories.length} 段回忆）和住过的人家`);
 }
 
@@ -299,7 +301,7 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   const strip = (s) => {
     const old = J(s);
     old.version = 5;
-    for (const k of ["legacy", "life", "left", "again", "noted"]) delete old[k];
+    for (const k of ["legacy", "life", "left", "again", "noted", "near"]) delete old[k];
     for (const r of ROLES) {
       for (const k of ["house", "offer", "heirloomId"]) delete old.rolls[r][k];
       if (old.persons) delete old.persons[r].heirloomId;

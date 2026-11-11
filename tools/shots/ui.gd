@@ -197,9 +197,7 @@ func _many_paths() -> void:
 		if ev.get("options", []).size() < 4:
 			continue
 		var locks: Dictionary = {}
-		for o in ev.options:
-			if o.has("min") and locks.is_empty():
-				locks[o.id] = "心智 58 分，线是 64 分"
+		var locks_mei: Dictionary = {}
 		# 路票底下的小尺：给每条带线的路编一个分（我在线上下晃，对门差一点）
 		var lines: Array = []
 		var lines_mei: Array = []
@@ -207,14 +205,20 @@ func _many_paths() -> void:
 		for o in ev.options:
 			if o.has("min") and float(o.min) > 0.0:
 				var need := int(round(float(o.min) * 10.0))
-				lines.append({"id": o.id, "text": o.text, "by": "心智", "unit": "分", "have": need + [-6, 3, -2, 8, -11, 1][k % 6], "need": need, "ok": false})
-				lines_mei.append({"id": o.id, "text": o.text, "by": "心智", "unit": "分", "have": need + [2, -4, 5, -1, 0, -7][k % 6], "need": need, "ok": false})
+				var have: int = need + [-6, 3, 4, 8, -11, 1][k % 6]
+				lines.append({"id": o.id, "text": o.text, "by": "心智", "unit": "分", "have": have, "need": need, "ok": false})
+				if have - 2 < need:  # 和服务器一样按「本事 + 今天的发挥（-2 分）」锁路
+					locks[o.id] = "心智 %d 分，线是 %d 分" % [have - 2, need]
+				var have_mei: int = need + [2, -4, 5, -1, 0, -7][k % 6]
+				lines_mei.append({"id": o.id, "text": o.text, "by": "心智", "unit": "分", "have": have_mei, "need": need, "ok": false})
+				if have_mei + 1 < need:
+					locks_mei[o.id] = "心智 %d 分，线是 %d 分" % [have_mei + 1, need]
 				k += 1
 		main.last_world.goals = {"qing": {"id": id, "title": ev.get("title", ""), "turns": 0, "lines": lines}, "mei": {"id": id, "title": ev.get("title", ""), "turns": 0, "lines": lines_mei}}
 		main._close_modal()
 		main.my_role = "qing"
 		main._on_event_started({"event": {"roles": ["qing", "mei"], "eventId": id, "kind": "milestone", "choices": {}, "swing": {"qing": -0.2, "mei": 0.1}, "steady": {"qing": 0.3}},
-			"locks": {"qing": locks, "mei": {}}})
+			"locks": {"qing": locks, "mei": locks_mei}})
 		await _wait(1.5)
 		await _snap("37_paths_%d" % ev.options.size())
 	main._close_modal()

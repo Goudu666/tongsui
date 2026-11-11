@@ -100,6 +100,9 @@ bond:
   syncSoft: 110
   syncFloor: 0.15
   slotTogether: 1.5     # 一整段都在一块儿（不是顺手的事）：那一回搭伴给的亲近和默契乘这个数
+  # 搭伴给的亲近再按阶段乘一个数（关口冲刺 11-11）。中年一个日子三年、老年五年，淡起来按阶段算（drift），
+  # 凑在一块儿原来却和童年一季一样重，六十到七十只有两个日子，七十岁并一家那条线怎么搭伴都挪不动。
+  closeWeight: { childhood: 1.0, teen: 1.0, young: 1.0, middle: 1.0, old: 3.5 }
   # 考场上手气差的那一半，按默契托住（手气好的那一半一分不多给）。对门不在了就没有。
   # 托住的份 = syncSteady × (默契 − syncSteadyFrom) / (syncSteadyFull − syncSteadyFrom)，夹在 0 到 syncSteady 之间。
   # 十八岁考场上的默契一般在 5 到 30：搭伴念书的上四分之一（20 上下）托回一半，默契个位数的几乎不托

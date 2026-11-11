@@ -2324,15 +2324,14 @@ def build(ids, scale=ART_SCALE):
         json.dump({"slice": SLICE, "top": TOP, "bottom": BOTTOM, "scale": ART_SCALE, "scenes": allanch}, f, ensure_ascii=False, separators=(",", ":"))
     for sid in ids:
         sc = scenes[sid]
-        # 先看清有哪些切片，再删：.import 留着（删了 UID 会变），只删已经没有对应切片的。
-        # （原来边删边查，listdir 的次序先删了 png 就会把它的 .import 当成孤儿一起删掉）
-        names = set(os.listdir(OUT))
-        for f in sorted(names):
-            if f.startswith(sid + "_") and (f.endswith(".png") or f.endswith(".png.import")):
-                if f.endswith(".import") and f[: -len(".import")] in names:
-                    continue
-                os.remove(os.path.join(OUT, f))
+        # 重印前删旧切片；这回还会印出来的切片和 mask 的 .import 留着（删了 UID 会变），
+        # 图变窄、切片变少，多出来的 .import 一起删。（原来边删边查「png 还在不在」，
+        # listdir 先删了 png 就会把它的 .import 当成孤儿一起删掉）
         n = math.ceil(sc["width"] / SLICE)
+        keep = {f"{sid}_{k}.png.import" for k in range(n)} | {f"{sid}_mask.png.import"}
+        for f in sorted(os.listdir(OUT)):
+            if f.startswith(sid + "_") and (f.endswith(".png") or f.endswith(".png.import")) and f not in keep:
+                os.remove(os.path.join(OUT, f))
         masks = []
         for k in range(n):
             arr = render(sc, k * SLICE, SLICE, scale)

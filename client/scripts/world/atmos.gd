@@ -13,6 +13,12 @@ var art = null    ## scene_art：太阳在哪、地平线、阴天
 var light = null  ## print_light：夜、晚霞、清早
 var subject: Node2D = null  ## 我（world_view.me()）：压角围着人
 var enabled := true
+## 手机上跟着帧率走：这层开着时连续 LOW_SECS 秒低于 LOW_FPS，就整层收起来（这一局不再开）。
+## 桌面和网页不自动收（截图、录屏的帧率不代表真机）。
+const LOW_FPS := 42.0
+const LOW_SECS := 4.0
+var auto_off := OS.has_feature("mobile")
+var _low_t := 0.0
 var _mat: ShaderMaterial
 var _quad: Sprite2D
 var _indoor := 0.0
@@ -41,7 +47,12 @@ func set_scene(sc: Dictionary) -> void:
 	_road = 1.0 if str(sc.get("id", "")) in ROAD else 0.0
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if auto_off and enabled and _quad.visible:
+		_low_t = _low_t + delta if Engine.get_frames_per_second() < LOW_FPS else 0.0
+		if _low_t > LOW_SECS:
+			enabled = false
+			print("[atmos] 帧率低于 %d，光与空气这层收起来" % int(LOW_FPS))
 	var cam := get_viewport().get_camera_2d()
 	_quad.visible = enabled and cam != null and art != null and art.has_art
 	if not _quad.visible:
@@ -66,4 +77,5 @@ func _process(_delta: float) -> void:
 		_mat.set_shader_parameter("night", light.night)
 		_mat.set_shader_parameter("dusk", light.dusk())
 		_mat.set_shader_parameter("dawn", light.dawn())
-		_mat.set_shader_parameter("wet", light.wet * _road)
+		# 只有下雨才映倒影（雪天 wet 是 0.5，只让灯晕大一点）
+		_mat.set_shader_parameter("wet", clampf(light.wet * 2.0 - 1.0, 0.0, 1.0) * _road)

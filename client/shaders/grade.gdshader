@@ -21,17 +21,17 @@ uniform float ground = 0.78;      // 地面线在屏幕上的 y（0~1）
 uniform float horizon = 0.5;      // 远景楼脚（地平线）在屏幕上的 y
 uniform vec2 cam = vec2(0.0);     // 镜头的世界坐标（光柱里的尘、雾跟着世界走，不跟屏幕）
 uniform float view_h = 1200.0;  // 镜头竖着看得见多少世界像素
-uniform float strength = 1.0;
-uniform float wet = 0.0;
-uniform vec2 focus = vec2(0.5, 0.7);  // 我在屏幕上的位置：压角以人为中心，人永远在最亮的那一圈里          // 下雨：地面湿了，倒着映出街上的灯和招牌     // 整层的总量（设置里关掉时 0）
+uniform float strength = 1.0;     // 整层的总量（atmos.gd 手机上帧率掉下来时整层收起来）
+uniform float wet = 0.0;          // 下雨：地面湿了，倒着映出街上的灯和招牌
+uniform vec2 focus = vec2(0.5, 0.7);  // 我在屏幕上的位置：压角以人为中心，人永远在最亮的那一圈里
 
-const vec3 COOL_DAY = vec3(0.86, 0.93, 0.98);
-const vec3 WARM_DAY = vec3(1.04, 1.00, 0.92);
+const vec3 COOL_DAY = vec3(0.90, 0.95, 1.0);
+const vec3 WARM_DAY = vec3(1.015, 1.0, 0.975);
 const vec3 COOL_NIGHT = vec3(0.70, 0.78, 1.02);
 const vec3 WARM_LAMP = vec3(1.10, 0.96, 0.78);
-const vec3 WARM_DUSK = vec3(1.12, 0.92, 0.78);
+const vec3 WARM_DUSK = vec3(1.06, 0.97, 0.88);
 const vec3 COOL_DUSK = vec3(0.86, 0.80, 0.96);
-const vec3 WARM_DAWN = vec3(1.07, 0.98, 0.88);
+const vec3 WARM_DAWN = vec3(1.03, 1.0, 0.95);
 const vec3 COOL_DAWN = vec3(0.88, 0.92, 1.00);
 
 float hash(vec2 p) {

@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "cf6629d1a308",
+ "version": "e5fc2c886652",
  "events": [
   {
    "id": "ch_runner",
@@ -36401,9 +36401,9 @@ var CONTENT: Content = {
    "syncSteady": 1,
    "syncSteadyFrom": 5,
    "syncSteadyFull": 35,
-   "pullFrom": 0.2,
-   "pullFull": 0.6,
-   "pullMoney": 40,
+   "pullFrom": 0.1,
+   "pullFull": 0.4,
+   "pullMoney": 20,
    "pullMoneyClose": 60,
    "reunion": {
     "close": 2,

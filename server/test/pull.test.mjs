@@ -88,13 +88,14 @@ const senior = (sync, q = 7.3, m = 8.2) => {
 
 // ---------- 3. 拉不动的几种 ----------
 {
-  // 默契低：只拉得动 pullFrom（2 分），差 3 分拉不动
+  // 默契低：只拉得动 pullFrom（1 分），差 3 分拉不动
   const low = senior(0);
   assert.ok(!(pullsOf(low).qing || {}).far, "默契低拉不动 3 分");
   assert.match(G("worldChoose")(low, C, "qing", "far", false).error || "", /走不了/);
-  // 默契低、差 2 分：拉得动
-  const two = senior(0, 7.4);
-  assert.equal(pullsOf(two).qing.far.gap, 2);
+  // 默契低、差 1 分：拉得动
+  const one = senior(0, 7.5);
+  assert.equal(pullsOf(one).qing.far.gap, 1);
+  assert.equal(pullsOf(one).qing.far.reach, Math.floor(R.pullFrom * 10 + 1e-6));
   // 对门富余不够：梅 78 分，只多 2 分，青差 3 分
   const thin = senior(35, 7.3, 7.8);
   assert.ok(!(pullsOf(thin).qing || {}).far, "对门富余不够");
@@ -106,33 +107,33 @@ const senior = (sync, q = 7.3, m = 8.2) => {
   assert.equal(JSON.stringify(pullsOf(both)), "{}");
 }
 
-// ---------- 4. 看钱的线：三十岁买房，差 30 块，对门塞过去 ----------
+// ---------- 4. 看钱的线：三十岁买房，差 15 块，对门塞过去 ----------
 {
-  const s = lifeAt(32, 30, {}, { sync: 10, close: 70 }, { qing: 172, mei: 260 });
+  const s = lifeAt(32, 30, {}, { sync: 10, close: 70 }, { qing: 185, mei: 260 });
   const out = untilMilestone(s);
   assert.ok(out.started && out.started.eventId === "m_settle");
   noSwing(s);
   const p = pullsOf(s);
-  assert.deepEqual({ by: p.qing.buy.by, gap: p.qing.buy.gap, unit: p.qing.buy.unit }, { by: "mei", gap: 28, unit: "块" });
+  assert.deepEqual({ by: p.qing.buy.by, gap: p.qing.buy.gap, unit: p.qing.buy.unit }, { by: "mei", gap: 15, unit: "块" });
   assert.equal(p.qing.buy.reach, R.pullMoney, "亲近够了塞得最多");
   assert.equal(G("worldChoose")(s, C, "qing", "buy", false).error, null);
   const e = J(G("worldChoose")(s, C, "mei", "buy", false).entry);
   assert.equal(e.results.qing.option, "buy");
-  assert.equal(e.results.qing.score, 172, "成绩单上是自己兜里的");
+  assert.equal(e.results.qing.score, 185, "成绩单上是自己兜里的");
   assert.equal(e.results.mei.score, 260, "塞钱的那个记的也是塞之前的");
-  assert.deepEqual(e.gate.pull.qing, { by: "mei", gap: 28, unit: "块" });
+  assert.deepEqual(e.gate.pull.qing, { by: "mei", gap: 15, unit: "块" });
   assert.equal(Math.round(s.persons.qing.money), 0, "塞的钱和自己的一起交了房钱");
-  assert.equal(Math.round(s.persons.mei.money), 260 - 28 - 200, "梅少了塞过去的那截");
+  assert.equal(Math.round(s.persons.mei.money), 260 - 15 - 200, "梅少了塞过去的那截");
   // 亲近低：塞不了那么多
-  const cold = lifeAt(32, 30, {}, { sync: 10, close: 15 }, { qing: 172, mei: 260 });
+  const cold = lifeAt(32, 30, {}, { sync: 10, close: 15 }, { qing: 185, mei: 260 });
   untilMilestone(cold);
   noSwing(cold);
-  assert.ok(!(pullsOf(cold).qing || {}).buy, "亲近 15 只塞得动 10 块");
+  assert.ok(!(pullsOf(cold).qing || {}).buy, "亲近 15 只塞得动 5 块");
   // 对门塞完自己就买不起了：不让塞
-  const tight = lifeAt(32, 30, {}, { sync: 10, close: 70 }, { qing: 172, mei: 210 });
+  const tight = lifeAt(32, 30, {}, { sync: 10, close: 70 }, { qing: 185, mei: 210 });
   untilMilestone(tight);
   noSwing(tight);
-  assert.ok(!(pullsOf(tight).qing || {}).buy, "梅只富余 10 块，塞不了 28");
+  assert.ok(!(pullsOf(tight).qing || {}).buy, "梅只富余 10 块，塞不了 15");
 }
 
 // ---------- 5. 看亲近的线不拉；一个人过的关不拉 ----------
@@ -159,8 +160,8 @@ const senior = (sync, q = 7.3, m = 8.2) => {
 
 // ---------- 7. 只有一条自己走得了的路、但有人拉得动另一条：要弹窗让他选，不直接替他定 ----------
 {
-  // 六岁选小干部：没有发挥。青心智 5.3（线 5.5，差 2 分），其他两项都够不着；梅心智 6.0
-  const s = lifeAt(34, 6, { qing: { mind: 5.3, body: 3, charm: 3 }, mei: { mind: 6.0, body: 3, charm: 3 } }, { sync: 0, close: 10 });
+  // 六岁选小干部：没有发挥。青心智 5.4（线 5.5，差 1 分），其他两项都够不着；梅心智 6.0
+  const s = lifeAt(34, 6, { qing: { mind: 5.4, body: 3, charm: 3 }, mei: { mind: 6.0, body: 3, charm: 3 } }, { sync: 0, close: 10 });
   const out = untilMilestone(s);
   assert.ok(out.started && out.started.eventId === "m_school", "要弹窗");
   assert.ok(!s.world.event.choices.qing, "青有两条路（自己的 go 和要人拉的 study），等他选");

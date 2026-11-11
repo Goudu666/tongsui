@@ -44,7 +44,7 @@ func _run() -> void:
 		await _wait(0.2)
 	await _wait(0.4)
 	var locks := {"qing": {"far": "心智 73 分，线是 76 分"}, "mei": {}}
-	var pulls := {"qing": {"far": {"by": "mei", "gap": 3, "unit": "分", "reach": 6}}}
+	var pulls := {"qing": {"far": {"by": "mei", "gap": 3, "unit": "分", "reach": 4}}}
 
 	# 1. 差 3 分的那个（小满）：外地那条不灰了，写着要和阿蘅一起走
 	main.my_role = "qing"
@@ -85,9 +85,9 @@ func _run() -> void:
 	# 4. 安家：差 28 块，阿蘅塞过去
 	main._on_log_entries({"entries": [{"kind": "milestone", "label": "30 岁", "age": 30, "events": {"qing": "m_settle", "mei": "m_settle"},
 		"choices": {"qing": "buy", "mei": "buy"}, "shadow": [], "resonance": true, "text": "",
-		"gate": {"pull": {"qing": {"by": "mei", "gap": 28, "unit": "块"}}, "lines": [{"text": "小满差 28 块。阿蘅没吭声，把钱塞进了小满的兜里。", "role": "mei"}]},
+		"gate": {"pull": {"qing": {"by": "mei", "gap": 15, "unit": "块"}}, "lines": [{"text": "小满差 15 块。阿蘅没吭声，把钱塞进了小满的兜里。", "role": "mei"}]},
 		"results": {
-			"qing": {"score": 172, "scored": true, "unit": "块", "grade": null, "option": "buy", "track": "", "line": 200},
+			"qing": {"score": 185, "scored": true, "unit": "块", "grade": null, "option": "buy", "track": "", "line": 200},
 			"mei": {"score": 260, "scored": true, "unit": "块", "grade": null, "option": "buy", "track": "", "line": 200}}}]})
 	await _wait(3.6)
 	await _snap("p06_money")

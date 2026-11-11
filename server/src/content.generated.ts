@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "c104334d68b2",
+ "version": "33c8fc5bde2c",
  "events": [
   {
    "id": "m_rise",
@@ -21844,7 +21844,7 @@ var CONTENT: Content = {
     ]
    },
    "title": "再考一回",
-   "text": "又是这张志愿表。去年压在暖气片上的那张，边上还卷着。",
+   "text": "又是这张志愿表。复读这一年的卷子摞起来，快跟桌子一样高了。",
    "options": [
     {
      "id": "away",
@@ -21876,7 +21876,21 @@ var CONTENT: Content = {
         ]
        }
       ]
-     }
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_pre_kuozhao"
+       ],
+       "d": 0.7
+      },
+      {
+       "flags": [
+        "era_juan"
+       ],
+       "d": -0.3
+      }
+     ]
     },
     {
      "id": "abroad",
@@ -21939,7 +21953,21 @@ var CONTENT: Content = {
         ]
        }
       ]
-     }
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_pre_kuozhao"
+       ],
+       "d": 0.8
+      },
+      {
+       "flags": [
+        "era_juan"
+       ],
+       "d": -0.4
+      }
+     ]
     },
     {
      "id": "army",
@@ -22044,7 +22072,7 @@ var CONTENT: Content = {
     },
     {
      "min": 0,
-     "label": "又没过线",
+     "label": "没过线",
      "flags": [
       "gaokao_bad"
      ]
@@ -35345,13 +35373,16 @@ var CONTENT: Content = {
    "when": null,
    "hint": null,
    "requires": {
-    "maxAge": 20,
+    "maxAge": 18,
     "flags": [
      "gaokao_bad"
     ],
     "notFlags": [
      "uni_near",
      "uni_away",
+     "uni_abroad",
+     "army",
+     "zhongzhuan",
      "retake"
     ]
    },
@@ -49540,7 +49571,10 @@ var CONTENT: Content = {
     ],
     "notFlags": [
      "class_quit",
-     "fam_cut"
+     "fam_cut",
+     "club_math",
+     "club_sport",
+     "club_art"
     ]
    },
    "group": "primary",
@@ -49576,7 +49610,10 @@ var CONTENT: Content = {
     ],
     "notFlags": [
      "class_quit",
-     "fam_cut"
+     "fam_cut",
+     "club_math",
+     "club_sport",
+     "club_art"
     ]
    },
    "group": "primary",
@@ -49612,7 +49649,10 @@ var CONTENT: Content = {
     ],
     "notFlags": [
      "class_quit",
-     "fam_cut"
+     "fam_cut",
+     "club_math",
+     "club_sport",
+     "club_art"
     ]
    },
    "group": "primary",
@@ -49648,7 +49688,10 @@ var CONTENT: Content = {
     ],
     "notFlags": [
      "class_quit",
-     "fam_cut"
+     "fam_cut",
+     "club_math",
+     "club_sport",
+     "club_art"
     ]
    },
    "group": "primary",
@@ -49683,7 +49726,10 @@ var CONTENT: Content = {
      "lead_study"
     ],
     "notFlags": [
-     "aid"
+     "aid",
+     "club_math",
+     "club_sport",
+     "club_art"
     ]
    },
    "group": "primary",
@@ -49735,7 +49781,10 @@ var CONTENT: Content = {
      "lead_sport"
     ],
     "notFlags": [
-     "aid"
+     "aid",
+     "club_math",
+     "club_sport",
+     "club_art"
     ]
    },
    "group": "primary",
@@ -49787,7 +49836,10 @@ var CONTENT: Content = {
      "lead_art"
     ],
     "notFlags": [
-     "aid"
+     "aid",
+     "club_math",
+     "club_sport",
+     "club_art"
     ]
    },
    "group": "primary",
@@ -49838,7 +49890,10 @@ var CONTENT: Content = {
      "fam_poor"
     ],
     "notFlags": [
-     "aid"
+     "aid",
+     "club_math",
+     "club_sport",
+     "club_art"
     ]
    },
    "group": "primary",
@@ -58914,7 +58969,9 @@ var CONTENT: Content = {
     "clears": [],
     "lines": {
      "m_gaokao.away": 7,
-     "m_gaokao.local": 8
+     "m_gaokao.local": 8,
+     "m_retake.away": 7,
+     "m_retake.local": 8
     },
     "wages": {},
     "hits": []
@@ -59207,6 +59264,8 @@ var CONTENT: Content = {
     "lines": {
      "m_gaokao.away": -3,
      "m_gaokao.local": -4,
+     "m_retake.away": -3,
+     "m_retake.local": -4,
      "m_job.desk": 6,
      "m_job.teach": 4
     },

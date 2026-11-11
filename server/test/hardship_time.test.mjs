@@ -194,7 +194,13 @@ const shown = (s, r, ms, id) => { const o = ms.options.find((x) => x.id === id);
   const ss = lifeAt(23, 18, "zheng", "chen", { mind: 9.5, qflags: ["fam_cut"] });
   exam(ss);
   assert.equal(locks(ss).qing.abroad, "家里已经不管你了");
-  assert.match(locks(ss).qing.retake || "", /积蓄|^$/, "断了供的复读自己出钱");
+  // 断了供的复读自己出钱：钱不够锁着写差多少，够了选了扣自己的
+  ss.persons.qing.money = 5;
+  assert.match(locks(ss).qing.retake || "", /积蓄/, "断了供、钱不够的复读锁着");
+  ss.persons.qing.money = 50;
+  assert.equal(locks(ss).qing.retake, undefined);
+  choose(ss, { qing: "retake", mei: "work" });
+  assert.equal(Math.round(ss.persons.qing.money), 50 - ev("m_gaokao").options.find((o) => o.id === "retake").cost, "断了供的复读自己出钱");
   console.log("✓ 中考：清贫的中专（线低一点、包分配、不考大学、二十二岁进厂）/ 小康动爸妈攒的钱上重点、动了就没了 / 别人家的路看不见 / 郑家择校费家里出、两回脸色就断供 / 断了供班没了、学琴补习做不了、出国锁上");
 }
 
@@ -300,4 +306,26 @@ const shown = (s, r, ms, id) => { const o = ms.options.find((x) => x.id === id);
     for (const o2 of e2.options) assert.ok([...o2.text].length <= 15, `${e2.id}.${o2.id} 选项超过 15 字`);
   }
   console.log("✓ 规则：lockBy 按标记换一句锁 / homePays 家里出、断了供自己出 / flagsIf 按选之前的标记打 / 记脸色头一回 strain1、第二回 fam_cut、断了不再记 / expect 按 joins 算路 / 新事件守字数");
+}
+
+// ---------- 7. 影子不替人跟爸妈翻脸、不替考过线的人复读（PR #68 评审） ----------
+{
+  let missed = 0, retook = 0;
+  for (let seed = 1; seed <= 20; seed++) {
+    // 郑家（exp_book）记过一回脸色，中考心智够市重点，性格偏「随和」：影子原来多半挑离家近的，一步就断供
+    const s = lifeAt(300 + seed, 15, "zheng", "chen", { mind: 9.2, qflags: ["strain1"] });
+    s.persons.qing.tags = { gentle: 6, competitive: 2 };
+    exam(s);
+    const id = G("lifeShadowChoose")(s, C, "qing", "m_senior");
+    if (G("lifeExpectMissed")(ev("m_senior"), ev("m_senior").options.find((o) => o.id === id), s.persons.qing)) missed++;
+    // 高考过了线的小康，影子不去复读（不白用那笔钱）
+    const g = lifeAt(400 + seed, 18, "lin", "chen", { mind: 8.5 });
+    g.persons.qing.tags = { patient: 6, competitive: 6 };
+    exam(g);
+    const gid = G("lifeShadowChoose")(g, C, "qing", "m_gaokao");
+    if (!g.persons.qing.flags.includes("gaokao_bad") && ev("m_gaokao").options.find((o) => o.id === gid).effects.flags.includes("retake")) retook++;
+  }
+  assert.equal(missed, 0, `影子替人选了不在爸妈单子上的路 ${missed} 回`);
+  assert.equal(retook, 0, `影子替考过线的人复读 ${retook} 回`);
+  console.log("✓ 影子：爸妈单子上有够得着的路就不替人翻脸 / 考过了线不替人复读");
 }

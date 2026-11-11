@@ -620,6 +620,11 @@ function lifeFindOption(ev: LifeEvent, optionId: string): EventOption | null {
 }
 
 /** 影子：按玩家过去的性格标签替他选择 */
+/** 影子不替人做的决定：考过了线还去复读（小康白白用掉那笔钱）。只有没过线的才复读 */
+function lifeShadowSkips(o: EventOption, p: Person): boolean {
+  return o.effects.flags.indexOf("retake") >= 0 && !lifeHasFlag(p, "gaokao_bad");
+}
+
 function lifeShadowChoose(s: LifeState, c: Content, role: Role, eventId: string): string {
   var ev = lifeFindEvent(c, eventId);
   var tags = s.persons![role].tags;
@@ -631,10 +636,20 @@ function lifeShadowChoose(s: LifeState, c: Content, role: Role, eventId: string)
   if (follow) return follow;
   var best: EventOption[] = [];
   var bestScore = -1;
+  var me = s.persons![role];
+  // 人不在，影子不替他跟爸妈翻脸（记脸色两回就断供，挡不回来）：爸妈单子上有够得着的路，就只在那几条里挑
+  var keepFace = false;
+  if (ev.kind === "milestone" && ev.expect) {
+    for (var k = 0; k < ev.options.length; k++) {
+      var ok = ev.options[k];
+      if (!lifeOptionLock(ev, ok, me, swing, lifePairBond(s, role)) && !lifeExpectMissed(ev, ok, me) && !lifeShadowSkips(ok, me)) { keepFace = true; break; }
+    }
+  }
   for (var i = 0; i < ev.options.length; i++) {
     var o = ev.options[i];
     // 关口：走不了的路影子也不能替他选。够得着的路里，影子偏向线最高的那条（人往高处走），再看性格
-    if (lifeGated(ev) && lifeOptionLock(ev, o, s.persons![role], swing, lifePairBond(s, role))) continue;
+    if (lifeGated(ev) && lifeOptionLock(ev, o, me, swing, lifePairBond(s, role))) continue;
+    if (ev.kind === "milestone" && (lifeShadowSkips(o, me) || (keepFace && lifeExpectMissed(ev, o, me)))) continue;
     var score = ev.kind === "milestone" ? (o.min || 0) * 0.01 : 0;
     for (var j = 0; j < o.tags.length; j++) score += tags[o.tags[j]] || 0;
     if (score > bestScore) { bestScore = score; best = [o]; }

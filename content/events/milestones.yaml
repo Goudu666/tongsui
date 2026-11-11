@@ -446,11 +446,11 @@
   swing: true
   requires: { flags: [retake] }
   title: 再考一回
-  text: 又是这张志愿表。去年压在暖气片上的那张，边上还卷着。
+  text: 又是这张志愿表。复读这一年的卷子摞起来，快跟桌子一样高了。
   grades:
     - { min: 9.3, label: 考进全市前一百, flags: [gaokao_good, gaokao_top] }
     - { min: 6.8, label: 过了本科线, flags: [gaokao_good] }
-    - { min: 0, label: 又没过线, flags: [gaokao_bad] }
+    - { min: 0, label: 没过线, flags: [gaokao_bad] }
   expect:
     exp_book: [away, local, abroad]
     exp_abroad: [abroad]

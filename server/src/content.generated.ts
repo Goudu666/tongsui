@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "e5fc2c886652",
+ "version": "702af10dbcca",
  "events": [
   {
    "id": "ch_runner",
@@ -7342,6 +7342,608 @@ var CONTENT: Content = {
    "catches": []
   },
   {
+   "id": "lt_dance",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": "lake_path",
+   "when": [
+    390,
+    600
+   ],
+   "hint": "湖边有人放着录音机。",
+   "requires": {
+    "minAge": 49,
+    "maxAge": 57,
+    "notFlags": [
+     "dance_team"
+    ]
+   },
+   "title": "缺个人",
+   "text": "湖边晨练的舞队缺一个人。领舞的朝你招手：晚上在空地上跳，会不会都行，站最后一排。",
+   "options": [
+    {
+     "id": "join",
+     "text": "站到最后一排",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "dance_team"
+      ]
+     }
+    },
+    {
+     "id": "watch",
+     "text": "在边上看一会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "leave",
+     "text": "摆摆手走了",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lt_sea",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    1080,
+    1320
+   ],
+   "hint": "对门在楼道里站着。",
+   "requires": {
+    "minAge": 51,
+    "maxAge": 57
+   },
+   "title": "看海",
+   "text": "楼道里，对门说退了休想去看一回海。说完自己先笑了：说说而已。",
+   "options": [
+    {
+     "id": "save",
+     "text": "那从现在攒着",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "sea_save"
+      ]
+     }
+    },
+    {
+     "id": "go",
+     "text": "想去就去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "no",
+     "text": "海有什么好看的",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "save": {
+     "text": "两个人各找了个铁盒子。谁也没说存了多少，路过楼道都拍一下对方的门。",
+     "memory": "两个铁盒子",
+     "bond": {
+      "close": 3,
+      "sync": 2
+     },
+     "flags": []
+    },
+    "go": {
+     "text": "你们俩都说想去就去。说完又都说，等退了休。",
+     "bond": {
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个说攒着，一个说算了。那天晚上两扇门都关得比平时晚。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "lt_tour",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": "hallway",
+   "when": [
+    480,
+    1080
+   ],
+   "hint": "楼道里贴了张新单子。",
+   "requires": {
+    "minAge": 61,
+    "maxAge": 74,
+    "alone": false
+   },
+   "title": "老年团",
+   "text": "居委会在楼道里贴了老年团的单子，五天四夜，管吃管住。",
+   "options": [
+    {
+     "id": "go",
+     "text": "叫上对门一块儿报",
+     "tags": [
+      "adventure"
+     ],
+     "cost": 25,
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {},
+      "bond": {
+       "close": 5,
+       "sync": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "bus",
+     "text": "坐公交到终点站",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "stay",
+     "text": "钱留着",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lt_meal",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": "hallway",
+   "when": [
+    1020,
+    1200
+   ],
+   "hint": "楼道里飘着两家的饭味。",
+   "requires": {
+    "minAge": 60,
+    "notFlags": [
+     "pair_meal"
+    ],
+    "alone": false
+   },
+   "title": "一锅饭",
+   "text": "两家的锅都太大了。对门端着半碗饺子站在门口。",
+   "options": [
+    {
+     "id": "share",
+     "text": "往后凑一锅吃",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {
+       "close": 2
+      },
+      "flags": [
+       "pair_meal"
+      ]
+     }
+    },
+    {
+     "id": "once",
+     "text": "今天先凑一顿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "hunger": 30
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "own",
+     "text": "各吃各的，清净",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lt_gk_class",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 61,
+    "maxAge": 72,
+    "flags": [
+     "has_kid"
+    ]
+   },
+   "title": "补习班",
+   "text": "儿女来商量：孙辈想上补习班，一学期不少钱。",
+   "options": [
+    {
+     "id": "pay",
+     "text": "这钱我出",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 30,
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "pick",
+     "text": "钱不多，我天天接送",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "gk_pickup"
+      ]
+     }
+    },
+    {
+     "id": "no",
+     "text": "让他们自己想办法",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lt_borrow",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 61,
+    "maxAge": 74
+   },
+   "title": "开口",
+   "text": "老街坊的儿子赔了买卖。他在楼下转了三圈才上来。",
+   "options": [
+    {
+     "id": "lend",
+     "text": "借给他",
+     "tags": [
+      "gentle"
+     ],
+     "cost": 20,
+     "effects": {
+      "self": {
+       "mood": 6,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sit",
+     "text": "钱不借，陪他坐会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "no",
+     "text": "实在拿不出",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lt_fall",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 61,
+    "maxAge": 74,
+    "alone": false
+   },
+   "title": "楼梯",
+   "text": "对门在楼梯上摔了一跤，没伤着骨头，就是不敢下楼了。",
+   "options": [
+    {
+     "id": "walk",
+     "text": "天天陪着下楼",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "energy": -10
+      },
+      "other": {
+       "body": 1,
+       "mood": 6
+      },
+      "bond": {
+       "close": 3
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "carer",
+     "text": "请个人来照应",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 20,
+     "effects": {
+      "self": {},
+      "other": {
+       "body": 1
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "给TA孩子打电话",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lt_ward",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 61,
+    "maxAge": 78,
+    "alone": false
+   },
+   "title": "陪床",
+   "text": "楼里老刘住院了，儿女在外地，床边一下午没人。",
+   "options": [
+    {
+     "id": "both",
+     "text": "叫上对门一块儿去",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "self",
+     "text": "自己去坐一下午",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "phone",
+     "text": "打个电话问问",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
    "id": "l_wall_old_names",
    "kind": "mirror",
    "stage": "childhood",
@@ -13199,6 +13801,149 @@ var CONTENT: Content = {
    "catches": []
   },
   {
+   "id": "m_kinder",
+   "kind": "milestone",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {},
+   "title": "六一",
+   "text": "幼儿园要过六一。阿姨拿着花名册挨个看：领唱的、翻跟头的、背诗的，台上各要一个。",
+   "options": [
+    {
+     "id": "sing",
+     "text": "站在最前头领唱",
+     "score": {
+      "charm": 1
+     },
+     "min": 6.3,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "k_sing"
+      ]
+     }
+    },
+    {
+     "id": "tumble",
+     "text": "在台上翻跟头",
+     "score": {
+      "body": 1
+     },
+     "min": 6.5,
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "k_tumble"
+      ]
+     }
+    },
+    {
+     "id": "poem",
+     "text": "一口气背完一首长诗",
+     "score": {
+      "mind": 1
+     },
+     "min": 6.5,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "k_poem"
+      ]
+     }
+    },
+    {
+     "id": "clap",
+     "text": "坐在台下拍巴掌",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "sing": {
+     "text": "阿姨挑不出来，让两个人一块儿领。唱到一半忘了词，两个人对着看了一眼，接着往下哼。",
+     "memory": "一块儿哼过去",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "tumble": {
+     "text": "一个翻过去，一个翻过来，在台中间差点撞上。底下的家长以为是排好的，鼓掌鼓得最响。",
+     "memory": "差点撞上",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "poem": {
+     "text": "两个人背的是同一首，一人一句轮着背。轮到最后一句，两个人一块儿张的嘴。",
+     "memory": "一人一句",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "clap": {
+     "text": "两个小板凳挨着。台上唱什么你们都没听，光顾着比谁拍得响。",
+     "memory": "比谁拍得响",
+     "bond": {
+      "sync": 1,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在台上，一个在台下。下了台，台下的那个把攥热了的糖塞过去一块。",
+    "bond": {
+     "close": 1
+    },
+    "flags": []
+   },
+   "age": 4,
+   "score": {},
+   "swing": false,
+   "grades": [],
+   "catches": []
+  },
+  {
    "id": "m_school",
    "kind": "milestone",
    "stage": "childhood",
@@ -14691,7 +15436,7 @@ var CONTENT: Content = {
      "score": {
       "body": 1
      },
-     "min": 5,
+     "min": 7.5,
      "tags": [
       "patient"
      ],
@@ -26671,7 +27416,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "young",
    "seasons": [],
-   "weight": 2,
+   "weight": 4,
    "where": null,
    "when": null,
    "hint": null,
@@ -30987,7 +31732,8 @@ var CONTENT: Content = {
     "stats": {},
     "money": 0,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "eat_out",
@@ -31017,7 +31763,8 @@ var CONTENT: Content = {
      },
      "text": "「俩鸡蛋，多放葱花。」你们说的是同一句。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "dine",
@@ -31048,7 +31795,8 @@ var CONTENT: Content = {
      },
      "text": "一张小桌，两瓶汽水，说到人家收摊。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "sleep",
@@ -31064,7 +31812,8 @@ var CONTENT: Content = {
     "stats": {},
     "money": 0,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "wash",
@@ -31080,7 +31829,8 @@ var CONTENT: Content = {
     "stats": {},
     "money": 0,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "duty",
@@ -31102,7 +31852,8 @@ var CONTENT: Content = {
      },
      "text": "你们是一路去的。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "picture_book",
@@ -31131,7 +31882,8 @@ var CONTENT: Content = {
      },
      "text": "两个脑袋凑在一本书上，谁也不让谁翻页。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "study",
@@ -31161,7 +31913,8 @@ var CONTENT: Content = {
      },
      "text": "一张桌子两头坐，写一会儿，抬头看一眼对面写到哪了。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "read",
@@ -31190,7 +31943,8 @@ var CONTENT: Content = {
      },
      "text": "各看各的，半天没人说话，也不觉得闷。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "play_alley",
@@ -31220,7 +31974,8 @@ var CONTENT: Content = {
      },
      "text": "「小皮球，架脚踢……」你们俩跳得一样快。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "play_river",
@@ -31249,7 +32004,8 @@ var CONTENT: Content = {
      },
      "text": "一个人拽线，一个人举着风筝跑。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "walk_river",
@@ -31278,7 +32034,8 @@ var CONTENT: Content = {
      },
      "text": "从桥这头走到那头，话说了一半，又走回来。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "ball",
@@ -31308,7 +32065,8 @@ var CONTENT: Content = {
      },
      "text": "两个人，一个球，书包摆成门。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "work",
@@ -31338,7 +32096,8 @@ var CONTENT: Content = {
      },
      "text": "爷爷说你们俩加一块儿顶半个学徒。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "club_math",
@@ -31375,7 +32134,8 @@ var CONTENT: Content = {
      },
      "text": "一道题两种解法，你们各讲各的，讲到传达室的大爷来锁门。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "club_sport",
@@ -31413,7 +32173,8 @@ var CONTENT: Content = {
      },
      "text": "压腿的时候背靠着背，谁也不敢先喊疼。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "club_art",
@@ -31450,7 +32211,8 @@ var CONTENT: Content = {
      },
      "text": "茶社下午没有客人，台子借给孩子们。你们一个打板，一个数拍子。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "piano",
@@ -31489,7 +32251,8 @@ var CONTENT: Content = {
      },
      "text": "一架琴两个人坐，你弹右手，TA 弹左手，老师说拍子对上了。"
     },
-    "bring": true
+    "bring": true,
+    "menu": false
    },
    {
     "id": "tutor",
@@ -31526,7 +32289,8 @@ var CONTENT: Content = {
      },
      "text": "回来的末班车上，两个人把今天的卷子对了一遍，错的是同一道。"
     },
-    "bring": true
+    "bring": true,
+    "menu": false
    },
    {
     "id": "help_out",
@@ -31559,7 +32323,8 @@ var CONTENT: Content = {
      },
      "text": "对门过来搭了把手，干完了，你家大人塞给你们一人一个苹果。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "factory_bath",
@@ -31589,7 +32354,8 @@ var CONTENT: Content = {
      },
      "text": "出来的时候头发还冒着热气，两个人一人一瓶汽水，坐在厂门口晾着。"
     },
-    "bring": true
+    "bring": true,
+    "menu": false
    },
    {
     "id": "chat",
@@ -31617,7 +32383,8 @@ var CONTENT: Content = {
      },
      "text": "街坊问你们俩怎么老在一块儿，你们同时说「顺路」。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "knock",
@@ -31642,7 +32409,8 @@ var CONTENT: Content = {
      },
      "text": "两扇门同时开了，你们在楼道里对着乐。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "play_roof",
@@ -31667,7 +32435,8 @@ var CONTENT: Content = {
      },
      "text": "鸽子绕着楼顶飞了三圈，你们数的圈数不一样。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "listen",
@@ -31701,7 +32470,8 @@ var CONTENT: Content = {
      },
      "text": "台上讲到最要紧的地方停了一下。你们俩同时笑出了声，又同时捂住了嘴。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "perform",
@@ -31735,7 +32505,8 @@ var CONTENT: Content = {
      },
      "text": "你忘了词，TA 在旁边接了下去，像排练过一样。台下有人叫了声好。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "fish",
@@ -31769,7 +32540,8 @@ var CONTENT: Content = {
      },
      "text": "漂动了。你们俩同时喊「上钩了！」鱼吓跑了。大爷没恼，笑了笑，又挂了一条蚯蚓。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "chess",
@@ -31802,7 +32574,8 @@ var CONTENT: Content = {
      },
      "text": "你们俩对着下，大爷们围了一圈，谁也不许支招。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "blackboard",
@@ -31837,7 +32610,8 @@ var CONTENT: Content = {
      },
      "text": "一个画报头，一个抄字，粉笔灰落了两个人一头。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "broadcast",
@@ -31872,7 +32646,8 @@ var CONTENT: Content = {
      },
      "text": "一个念稿，一个放歌。念错一个字，全校都听见你们俩在笑。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "rail_talk",
@@ -31899,7 +32674,8 @@ var CONTENT: Content = {
      },
      "text": "船过去了三条，话说了一半。剩下那一半，明天再说。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "window_shop",
@@ -31930,7 +32706,8 @@ var CONTENT: Content = {
      },
      "text": "什么也没买，从一楼逛到顶楼，又坐滚梯下来。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "dine_west",
@@ -31963,7 +32740,8 @@ var CONTENT: Content = {
      },
      "text": "刀叉摆了一排，你们从最外头那把拿起，拿错了也没人看。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "read_store",
@@ -31996,7 +32774,8 @@ var CONTENT: Content = {
      },
      "text": "你们背靠着一个书架坐在地上，一人一本，翻页的声音错开。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "night_snack",
@@ -32019,7 +32798,8 @@ var CONTENT: Content = {
     "stats": {},
     "money": -2,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "cook",
@@ -32046,7 +32826,8 @@ var CONTENT: Content = {
      },
      "text": "一个灶眼，两个人轮着炒，炒出来的是一个味儿。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "balcony",
@@ -32064,7 +32845,8 @@ var CONTENT: Content = {
     "stats": {},
     "money": 0,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "morning_walk",
@@ -32097,7 +32879,8 @@ var CONTENT: Content = {
      },
      "text": "你们一前一后走，走到第三圈，并成了一排。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "choir",
@@ -32131,7 +32914,8 @@ var CONTENT: Content = {
      },
      "text": "你们站在一排，调都起高了，谁也没往下落。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "ground_write",
@@ -32164,7 +32948,8 @@ var CONTENT: Content = {
      },
      "text": "一个写上句，一个接下句。写到第四句，第一句已经干了。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "accompany",
@@ -32191,7 +32976,8 @@ var CONTENT: Content = {
      },
      "text": "两把椅子拼在一起，你们轮着眯一会儿。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "letter",
@@ -32211,7 +32997,8 @@ var CONTENT: Content = {
     },
     "money": 0,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "club_campus",
@@ -32246,7 +33033,8 @@ var CONTENT: Content = {
      },
      "text": "社团里没人知道你们是一条街上长大的。你们也没说。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "swim_class",
@@ -32284,7 +33072,8 @@ var CONTENT: Content = {
      },
      "text": "一块浮板两个人扒着，你踢左腿，TA 踢右腿，在池子里转了个圈。"
     },
-    "bring": true
+    "bring": true,
+    "menu": false
    },
    {
     "id": "lang_class",
@@ -32322,7 +33111,8 @@ var CONTENT: Content = {
      },
      "text": "老师让同桌对话。你们俩用外语问对方吃了吗，说完都笑了。"
     },
-    "bring": true
+    "bring": true,
+    "menu": false
    },
    {
     "id": "banquet",
@@ -32353,7 +33143,8 @@ var CONTENT: Content = {
     },
     "money": -5,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "night_class",
@@ -32393,7 +33184,8 @@ var CONTENT: Content = {
      },
      "text": "教室里坐的都是下了班的人。你们俩挨着，一个记笔记，一个替另一个盯着别睡着。"
     },
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "side_tutor",
@@ -32422,7 +33214,8 @@ var CONTENT: Content = {
     },
     "money": 2,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "side_fix",
@@ -32450,7 +33243,8 @@ var CONTENT: Content = {
     },
     "money": 2,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "night_market",
@@ -32479,7 +33273,8 @@ var CONTENT: Content = {
     },
     "money": 2,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "overtime",
@@ -32512,7 +33307,8 @@ var CONTENT: Content = {
     },
     "money": 2,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "night_shift",
@@ -32545,7 +33341,8 @@ var CONTENT: Content = {
     },
     "money": 2,
     "together": null,
-    "bring": false
+    "bring": false,
+    "menu": false
    },
    {
     "id": "run_dawn",
@@ -32583,7 +33380,8 @@ var CONTENT: Content = {
      },
      "text": "老头在前头倒着跑，你们俩在后头追。他说，喘气要一块儿喘。"
     },
-    "bring": true
+    "bring": true,
+    "menu": false
    },
    {
     "id": "old_lessons",
@@ -32620,7 +33418,722 @@ var CONTENT: Content = {
      },
      "text": "老先生一人给一杯茶，茶凉了，他才说今天就到这儿。"
     },
-    "bring": true
+    "bring": true,
+    "menu": false
+   },
+   {
+    "id": "pancake",
+    "label": "帮着摊煎饼",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 12,
+     "maxAge": 21,
+     "hours": [
+      390,
+      600
+     ]
+    },
+    "needs": {
+     "energy": -8,
+     "mood": 2
+    },
+    "stats": {
+     "charm": 0.12
+    },
+    "money": 1,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两个人一个收钱一个递，排队的人说你们俩比老板还快。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "tea_runner",
+    "label": "在茶社跑堂",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 15,
+     "maxAge": 29,
+     "hours": [
+      540,
+      1260
+     ]
+    },
+    "needs": {
+     "energy": -12,
+     "mood": -2
+    },
+    "stats": {
+     "charm": 0.15
+    },
+    "money": 2,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个续水，一个收茶碗，台上说到热闹处，你们俩都站住了。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "mall_clerk",
+    "label": "在商场站柜台",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 16,
+     "maxAge": 25,
+     "hours": [
+      600,
+      1260
+     ]
+    },
+    "needs": {
+     "energy": -14,
+     "mood": -3
+    },
+    "stats": {
+     "charm": 0.15
+    },
+    "money": 3,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两个柜台挨着，没客人的时候，你们隔着玻璃比划着说话。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "river_run",
+    "label": "沿河堤跑一趟",
+    "minutes": 45,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 12,
+     "maxAge": 59
+    },
+    "needs": {
+     "energy": -12,
+     "hunger": -6,
+     "mood": 4
+    },
+    "stats": {
+     "body": 0.2
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "跑到桥底下，两个人一块儿停下来，扶着膝盖喘。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "laps",
+    "label": "操场跑两圈",
+    "minutes": 30,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 12,
+     "maxAge": 17
+    },
+    "needs": {
+     "energy": -8,
+     "hunger": -4
+    },
+    "stats": {
+     "body": 0.13
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "第二圈你们俩谁也不肯落后半步。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "hopscotch",
+    "label": "跳房子",
+    "minutes": 45,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 6,
+     "maxAge": 11
+    },
+    "needs": {
+     "mood": 8,
+     "energy": -6
+    },
+    "stats": {
+     "body": 0.12,
+     "charm": 0.08
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "粉笔画的格子，沙包扔到了九，两个人一块儿蹦过去捡。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "sketch",
+    "label": "在河边写生",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 10,
+     "hours": [
+      540,
+      1080
+     ]
+    },
+    "needs": {
+     "energy": -4,
+     "mood": 6
+    },
+    "stats": {
+     "charm": 0.12,
+     "mind": 0.1
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "画的是同一座桥，一个画得歪，一个画得直，你们换着看了半天。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "coal",
+    "label": "帮街坊搬蜂窝煤",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 8,
+     "maxAge": 11
+    },
+    "needs": {
+     "energy": -10,
+     "mood": 3
+    },
+    "stats": {
+     "body": 0.15,
+     "charm": 0.12
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个人在楼下递，一个人在楼梯上接，两张脸都抹黑了。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "cards",
+    "label": "跟街坊打扑克",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 18,
+     "hours": [
+      1110,
+      1320
+     ]
+    },
+    "needs": {
+     "mood": 10,
+     "energy": -4
+    },
+    "stats": {
+     "charm": 0.2
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "你们俩一伙，一个眼神就知道该出什么，对家直嚷嚷不玩了。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "teach_chess",
+    "label": "教小孩下棋",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 45,
+     "hours": [
+      720,
+      1110
+     ]
+    },
+    "needs": {
+     "mood": 6,
+     "energy": -2
+    },
+    "stats": {
+     "charm": 0.18,
+     "mind": 0.1
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "小孩问你们俩谁下得好。你们同时指了指对方。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "flowers",
+    "label": "在阳台上侍弄花",
+    "minutes": 45,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 30
+    },
+    "needs": {
+     "mood": 8
+    },
+    "stats": {
+     "mind": 0.08
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一盆茉莉开了两朵，你们一人闻了一朵。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "boat",
+    "label": "去湖上划船",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 45,
+     "hours": [
+      600,
+      1080
+     ]
+    },
+    "needs": {
+     "mood": 12,
+     "energy": -6
+    },
+    "stats": {
+     "body": 0.1
+    },
+    "money": -2,
+    "together": {
+     "needs": {
+      "mood": 8
+     },
+     "bond": {
+      "close": 2
+     },
+     "text": "两把桨划不到一块儿，船在湖当中转了个圈，你们索性不划了。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "huqin",
+    "label": "在亭子里拉胡琴",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 50,
+     "hours": [
+      480,
+      1080
+     ]
+    },
+    "needs": {
+     "mood": 8,
+     "energy": -2
+    },
+    "stats": {
+     "charm": 0.15,
+     "mind": 0.08
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "一个拉，一个哼，哼的那个跑了调，拉的那个跟着跑。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "tea_box",
+    "label": "在茶社包个座",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 6,
+     "flags": [
+      "fam_rich"
+     ],
+     "hours": [
+      780,
+      1260
+     ]
+    },
+    "needs": {
+     "mood": 16,
+     "energy": 2
+    },
+    "stats": {
+     "charm": 0.2
+    },
+    "money": -3,
+    "together": {
+     "needs": {
+      "mood": 8
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "茶社伙计给你们端来一碟瓜子，说是老先生送的。台上正讲到要紧处，你们都忘了嗑。"
+    },
+    "bring": true,
+    "menu": true
+   },
+   {
+    "id": "old_breakfast",
+    "label": "去早点铺帮着包包子",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 60,
+     "maxAge": 79,
+     "hours": [
+      360,
+      570
+     ]
+    },
+    "needs": {
+     "energy": -12,
+     "hunger": 20
+    },
+    "stats": {
+     "body": 0.05
+    },
+    "money": 3,
+    "together": null,
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "old_bikes",
+    "label": "在车棚门口看车",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 60,
+     "maxAge": 79,
+     "hours": [
+      480,
+      1080
+     ]
+    },
+    "needs": {
+     "energy": -8,
+     "mood": -3
+    },
+    "stats": {
+     "charm": 0.05
+    },
+    "money": 3,
+    "together": null,
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "mind_kids",
+    "label": "替街坊看会儿孩子",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 60,
+     "maxAge": 79,
+     "hours": [
+      780,
+      1080
+     ]
+    },
+    "needs": {
+     "energy": -10,
+     "mood": 3
+    },
+    "stats": {
+     "charm": 0.1
+    },
+    "money": 2,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两个孩子在楼道里追着跑，两个老的一人守着一头楼梯。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "grandkid_park",
+    "label": "带孙辈去湖边",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 55,
+     "maxAge": 79,
+     "flags": [
+      "has_kid"
+     ],
+     "hours": [
+      900,
+      1080
+     ]
+    },
+    "needs": {
+     "mood": 8,
+     "energy": -10
+    },
+    "stats": {
+     "body": 0.2
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 2
+     },
+     "text": "孩子在前头追鸽子，你们俩在后头喊慢点，喊着喊着自己也跑了两步。"
+    },
+    "bring": true,
+    "menu": false
+   },
+   {
+    "id": "square_dance",
+    "label": "去空地上跳舞",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 50,
+     "maxAge": 79,
+     "flags": [
+      "dance_team"
+     ],
+     "hours": [
+      1110,
+      1260
+     ]
+    },
+    "needs": {
+     "mood": 8,
+     "energy": -8
+    },
+    "stats": {
+     "body": 0.35
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "领舞的喊转身，你们俩转反了，脸对着脸。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "pair_cook",
+    "label": "两家凑一锅做饭",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 60,
+     "flags": [
+      "pair_meal"
+     ],
+     "hours": [
+      1020,
+      1200
+     ]
+    },
+    "needs": {
+     "hunger": 50,
+     "mood": 6
+    },
+    "stats": {},
+    "money": 1,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 2
+     },
+     "text": "一个择菜一个掌勺，盐放没放，两个人都说放过了。"
+    },
+    "bring": true,
+    "menu": false
+   },
+   {
+    "id": "gk_pickup",
+    "label": "去校门口接孙辈",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 60,
+     "maxAge": 79,
+     "flags": [
+      "gk_pickup"
+     ],
+     "hours": [
+      930,
+      1050
+     ]
+    },
+    "needs": {
+     "mood": 6,
+     "energy": -6
+    },
+    "stats": {
+     "body": 0.1
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两个人站在校门口等，跟三十年前等自己的孩子站的是一个地方。"
+    },
+    "bring": true,
+    "menu": false
    }
   ],
   "scenes": [
@@ -33641,7 +35154,8 @@ var CONTENT: Content = {
      10760
     ],
     "actions": [
-     "window_shop"
+     "window_shop",
+     "mall_clerk"
     ],
     "action": "window_shop"
    },
@@ -33920,7 +35434,8 @@ var CONTENT: Content = {
     ],
     "actions": [
      "study",
-     "read"
+     "read",
+     "coal"
     ],
     "action": "study"
    },
@@ -33933,7 +35448,9 @@ var CONTENT: Content = {
      720
     ],
     "actions": [
-     "old_lessons"
+     "old_lessons",
+     "pair_cook",
+     "mind_kids"
     ],
     "action": "old_lessons"
    },
@@ -34091,7 +35608,8 @@ var CONTENT: Content = {
      8760
     ],
     "actions": [
-     "ball"
+     "ball",
+     "laps"
     ],
     "action": "ball"
    },
@@ -34143,7 +35661,8 @@ var CONTENT: Content = {
      16760
     ],
     "actions": [
-     "balcony"
+     "balcony",
+     "flowers"
     ],
     "action": "balcony"
    },
@@ -34156,7 +35675,8 @@ var CONTENT: Content = {
      16760
     ],
     "actions": [
-     "walk_river"
+     "walk_river",
+     "river_run"
     ],
     "action": "walk_river"
    },
@@ -34169,9 +35689,23 @@ var CONTENT: Content = {
      18760
     ],
     "actions": [
-     "morning_walk"
+     "morning_walk",
+     "boat"
     ],
     "action": "morning_walk"
+   },
+   {
+    "id": "lake_bench",
+    "zone": "lake_path",
+    "scene": "park",
+    "at": [
+     1450,
+     18760
+    ],
+    "actions": [
+     "grandkid_park"
+    ],
+    "action": "grandkid_park"
    },
    {
     "id": "pavilion_choir",
@@ -34182,7 +35716,8 @@ var CONTENT: Content = {
      18760
     ],
     "actions": [
-     "choir"
+     "choir",
+     "huqin"
     ],
     "action": "choir"
    },
@@ -34200,6 +35735,19 @@ var CONTENT: Content = {
     "action": "ground_write"
    },
    {
+    "id": "square_dance",
+    "zone": "square",
+    "scene": "park",
+    "at": [
+     3050,
+     18760
+    ],
+    "actions": [
+     "square_dance"
+    ],
+    "action": "square_dance"
+   },
+   {
     "id": "school_gate",
     "zone": "school",
     "scene": "primary",
@@ -34212,6 +35760,19 @@ var CONTENT: Content = {
      "club_math"
     ],
     "action": "duty"
+   },
+   {
+    "id": "gate_wait",
+    "zone": "school",
+    "scene": "primary",
+    "at": [
+     620,
+     6760
+    ],
+    "actions": [
+     "gk_pickup"
+    ],
+    "action": "gk_pickup"
    },
    {
     "id": "class_board",
@@ -34262,7 +35823,8 @@ var CONTENT: Content = {
     ],
     "actions": [
      "club_sport",
-     "ball"
+     "ball",
+     "hopscotch"
     ],
     "action": "club_sport"
    },
@@ -34314,7 +35876,8 @@ var CONTENT: Content = {
      14760
     ],
     "actions": [
-     "wash"
+     "wash",
+     "chat"
     ],
     "action": "wash"
    },
@@ -34354,7 +35917,8 @@ var CONTENT: Content = {
     ],
     "actions": [
      "play_river",
-     "walk_river"
+     "walk_river",
+     "river_run"
     ],
     "action": "play_river"
    },
@@ -34367,7 +35931,8 @@ var CONTENT: Content = {
      4760
     ],
     "actions": [
-     "rail_talk"
+     "rail_talk",
+     "sketch"
     ],
     "action": "rail_talk"
    },
@@ -34410,9 +35975,23 @@ var CONTENT: Content = {
      "duty",
      "eat_out",
      "dine",
-     "help_out"
+     "help_out",
+     "pancake"
     ],
     "action": "duty"
+   },
+   {
+    "id": "breakfast_back",
+    "zone": "breakfast",
+    "scene": "street",
+    "at": [
+     760,
+     2760
+    ],
+    "actions": [
+     "old_breakfast"
+    ],
+    "action": "old_breakfast"
    },
    {
     "id": "shop_counter",
@@ -34450,7 +36029,8 @@ var CONTENT: Content = {
     ],
     "actions": [
      "play_alley",
-     "chat"
+     "chat",
+     "cards"
     ],
     "action": "play_alley"
    },
@@ -34463,7 +36043,8 @@ var CONTENT: Content = {
      2760
     ],
     "actions": [
-     "chess"
+     "chess",
+     "teach_chess"
     ],
     "action": "chess"
    },
@@ -34496,6 +36077,19 @@ var CONTENT: Content = {
     "action": "duty"
    },
    {
+    "id": "bike_shed",
+    "zone": "bikeshop",
+    "scene": "street",
+    "at": [
+     2930,
+     2760
+    ],
+    "actions": [
+     "old_bikes"
+    ],
+    "action": "old_bikes"
+   },
+   {
     "id": "tea_stage",
     "zone": "teahouse",
     "scene": "street",
@@ -34518,7 +36112,9 @@ var CONTENT: Content = {
      2760
     ],
     "actions": [
-     "listen"
+     "listen",
+     "tea_box",
+     "tea_runner"
     ],
     "action": "listen"
    }

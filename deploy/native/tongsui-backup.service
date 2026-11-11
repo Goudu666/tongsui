@@ -1,0 +1,7 @@
+[Unit]
+Description=Tongsui database backup (pg_dump)
+After=postgresql.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/tongsui/backup.sh

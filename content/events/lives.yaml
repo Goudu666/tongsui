@@ -1,0 +1,641 @@
+# 人生岔路篇：走上一条路以后的日子，和半路上的岔口（docs/MEANS.md 第六节）。
+#
+# 每件事都挂在一道关上（玩法总把关的要求：先回答「它在哪道关上改变了怎么冲，或者冲到了什么」）：
+#   - 22 岁那道关走上的路，头几年各有一件只有这条路上才碰得上的事，后面的事接着它（埋线）。
+#   - 三四十岁的岔口（下海、下岗、改制、铺子撑不住）会换掉这个人走的路（content/tracks.yaml 的 job_own / job_stall / job_lost），
+#     每天去哪儿、挣多少跟着变：冲的是 45 岁那道关的 110 块、70 岁那道关的 160 块。
+#   - 殷实人家在这些岔口上多一条路：家里出本钱、家里填窟窿、家里托人另找地方。不替人长本事，只是摔下来有人接着。
+#     清贫人家没有这一条，看不见（选项挂 requires.flags，标记不对的人那一项不摆出来）。
+#   - 六十岁以后是回声：当年那件事的另一头。
+# 写法守文风手册：说事不说情，不评价哪条路好。字数：青年 50、中年 45、老年 30。
+# 路线标记（job_*、uni_*、army）只由关口发，这里只读。这里发的是岔口自己的标记：own_shop、own_stall、laid_off、no_job、
+# shop_shaky、shop_closed、quit_job，以及埋线用的小标记。
+
+# ======================== 22 岁以后，各条路的头几年 ========================
+
+- id: lv_desk_report
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 22, maxAge: 27, flags: [job_desk] }
+  title: 对不上的数
+  text: 头一个月，科长让你把一摞报表誊三遍。誊到第二遍，你发现第三页的合计对不上。
+  options:
+    - id: speak
+      text: 拿去跟科长说
+      tags: [responsible]
+      effects: { self: { mind: 0.3 }, flags: [desk_straight] }
+    - id: copy
+      text: 照着誊，不吭声
+      tags: [patient]
+      effects: { self: { mood: -3 } }
+    - id: fix
+      text: 改对了再交上去
+      tags: [adventure]
+      effects: { self: { mind: 0.2 }, flags: [desk_straight] }
+
+- id: lv_pull_canteen
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 22, maxAge: 27, flags: [job_pull] }
+  title: 多一勺
+  text: 进单位头一天，食堂师傅多给你打了一勺菜。排你后头的人小声念了一句你爸的名字。
+  options:
+    - id: eat
+      text: 端着就走
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+    - id: back
+      text: 把那一勺拨回去
+      tags: [competitive]
+      effects: { self: { charm: 0.2, mood: -2 }, flags: [pull_proud] }
+    - id: other
+      text: 第二天换个窗口
+      tags: [solitude]
+      effects: { self: { mood: -1 } }
+
+- id: lv_teach_plane
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 22, maxAge: 27, flags: [job_teach] }
+  title: 纸飞机
+  text: 头一堂课，最后一排的男孩一直在桌底下叠纸飞机。下课铃一响，飞机落在讲台上。
+  options:
+    - id: keep
+      text: 收了，放学还他
+      tags: [responsible]
+      effects: { self: { charm: 0.2 } }
+    - id: teach
+      text: 教他叠得更远
+      tags: [gentle]
+      effects: { self: { charm: 0.3 }, flags: [teach_plane] }
+    - id: blind
+      text: 装作没看见
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+
+- id: lv_trade_fake
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 22, maxAge: 27, flags: [job_trade] }
+  title: 一张假钞
+  text: 出摊头一个月，晚上数钱数出一张假的。你想了半天，想不起是谁给的。
+  options:
+    - id: tear
+      text: 撕了，长个记性
+      tags: [patient]
+      effects: { self: { mind: 0.2 } }
+    - id: pin
+      text: 钉在钱匣盖上
+      tags: [adventure]
+      effects: { self: { charm: 0.1, mood: 2 } }
+    - id: ask
+      text: 第二天挨个问熟客
+      tags: [competitive]
+      effects: { self: { charm: 0.2, mood: -3 } }
+
+- id: lv_craft_sweep
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 22, maxAge: 27, flags: [job_craft] }
+  title: 扫三个月地
+  text: 师傅收徒，先让你扫三个月地。他说手艺在眼睛里，不在手上。
+  options:
+    - id: watch
+      text: 一边扫一边偷看
+      tags: [adventure]
+      effects: { self: { mind: 0.3 } }
+    - id: sweep
+      text: 只管扫
+      tags: [patient]
+      effects: { self: { body: 0.2 }, flags: [craft_patient] }
+    - id: quit
+      text: 不扫了，自己琢磨
+      tags: [competitive]
+      effects: { self: { mind: 0.3, mood: -2 } }
+
+- id: lv_labor_wage
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 22, maxAge: 27, flags: [job_labor] }
+  title: 下个月一起结
+  text: 工头说这个月的工钱下个月一起结。一块儿干活的老乡说，去年他也是这么说的。
+  options:
+    - id: go
+      text: 跟老乡去要
+      tags: [competitive]
+      effects: { self: { charm: 0.2 } }
+    - id: wait
+      text: 再等一个月
+      tags: [patient]
+      effects: { self: { mood: -3 } }
+    - id: switch
+      text: 换个工地
+      tags: [adventure]
+      effects: { self: { body: 0.2 } }
+
+- id: lv_factory_master
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 22, maxAge: 27, flags: [job_succeed] }
+  title: 你爸的徒弟
+  text: 进厂分了个师傅，是你爸当年带过的徒弟。他喊你的名字，跟喊你爸一个调。
+  options:
+    - id: learn
+      text: 跟他学真本事
+      tags: [responsible]
+      effects: { self: { body: 0.2, mind: 0.2 } }
+    - id: drink
+      text: 下了班陪他喝两盅
+      tags: [gentle]
+      effects: { self: { charm: 0.3, mood: 3, energy: -8 } }
+    - id: say
+      text: 跟他说别照顾我
+      tags: [competitive]
+      effects: { self: { mood: -2 } }
+
+- id: lv_odd_five
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 22, maxAge: 29, flags: [job_odd] }
+  title: 五个地方
+  text: 这个月你送过煤气、看过仓库、替人排过队。晚上算了算，换了五个地方。
+  options:
+    - id: one
+      text: 挑一样干到底
+      tags: [patient]
+      effects: { self: { body: 0.2 } }
+    - id: all
+      text: 接着什么都干
+      tags: [adventure]
+      effects: { self: { charm: 0.2 } }
+    - id: school
+      text: 去夜校报个名
+      tags: [responsible]
+      effects: { self: { mind: 0.3, energy: -8 } }
+
+- id: lv_army_blister
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 18, maxAge: 21, flags: [army] }
+  title: 三个泡
+  text: 拉练走了四十里，你脚上磨了三个泡。班长让你把鞋脱了，蹲下来拿针给你挑。
+  options:
+    - id: grit
+      text: 咬着牙不出声
+      tags: [patient]
+      effects: { self: { body: 0.3 }, flags: [army_blister] }
+    - id: thanks
+      text: 说声谢谢班长
+      tags: [gentle]
+      effects: { self: { charm: 0.2 }, flags: [army_blister] }
+    - id: self
+      text: 接过针自己来
+      tags: [competitive]
+      effects: { self: { body: 0.2 } }
+
+- id: lv_abroad_dishes
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 18, maxAge: 21, flags: [uni_abroad] }
+  title: 后厨
+  text: 在国外头一个冬天，你去中餐馆后厨刷碗。家里寄的钱够用，你没跟家里说。
+  options:
+    - id: keep
+      text: 接着刷
+      tags: [patient]
+      effects: { self: { body: 0.2, charm: 0.1 } }
+    - id: quit
+      text: 辞了，专心念书
+      tags: [competitive]
+      effects: { self: { mind: 0.3 } }
+    - id: call
+      text: 打电话告诉家里
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+
+# ======================== 三四十岁，半路上的岔口（换掉走的路） ========================
+
+# 下海：坐办公室、托关系进单位、教书的人才碰得上（notFlags 把别的路挡在外面）。
+# 跟着同学干要看手气（checks.yaml），殷实人家「家里出本钱」不看手气。走了这条路就是 job_own：一天 22 块，比坐办公室少两块，
+# 可后面那件「月底」会来——除非手气好。挂在 45 岁那道关（110 块）和 70 岁那道关（160 块）上。
+- id: lv_sea
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minAge: 33, maxAge: 45, notFlags: [job_trade, job_craft, job_labor, job_odd, job_succeed, left_city, own_shop, own_stall, laid_off, no_job] }
+  title: 来不来
+  text: 一块儿念书的同学辞了职自己干，回来请客，手腕上一块新表。散席时他问你：来不来？
+  options:
+    - id: go
+      text: 辞了，跟他合伙
+      tags: [adventure]
+      effects: { self: { charm: 0.2 }, flags: [own_shop, quit_job] }
+    - id: family
+      text: 家里出本钱，自己开
+      tags: [competitive]
+      requires: { flags: [fam_rich] }
+      effects: { self: { charm: 0.2 }, flags: [own_shop, quit_job] }
+    - id: stay
+      text: 不去，接着上班
+      tags: [patient]
+      effects: { self: { mood: -2 } }
+    - id: ask
+      text: 回去问问对门
+      tags: [gentle]
+      effects: { self: { mood: 2 }, bond: { close: 1 } }
+
+- id: lv_shop_month
+  kind: solo
+  stage: middle
+  weight: 5
+  requires: { minAge: 36, maxAge: 57, flags: [own_shop, shop_shaky], notFlags: [shop_closed] }
+  title: 月底
+  text: 铺子连着三个月没见回头钱。月底对账，你把计算器按了三遍。
+  options:
+    - id: close
+      text: 关门，找个班上
+      tags: [patient]
+      effects: { self: { mood: -5 }, flags: [shop_closed, no_job] }
+    - id: hold
+      text: 咬牙再撑一年
+      tags: [competitive]
+      effects: { self: { charm: 0.2 } }
+    - id: home
+      text: 回家跟爸妈开口
+      tags: [gentle]
+      requires: { flags: [fam_rich] }
+      effects: { self: { mood: -4 } }
+
+- id: lv_shop_second
+  kind: solo
+  stage: middle
+  weight: 2
+  requires: { minAge: 42, maxAge: 57, flags: [own_shop], notFlags: [shop_closed, shop_shaky] }
+  title: 对面的门脸
+  text: 铺子开到第五年，对面的门脸也空出来了。房东过来问你要不要。
+  options:
+    - id: take
+      text: 盘下来开第二家
+      tags: [adventure]
+      cost: 30
+      effects: { self: { charm: 0.2 }, flags: [shop_two] }
+    - id: keep
+      text: 守着这一家
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+    - id: hand
+      text: 交给伙计，歇歇
+      tags: [gentle]
+      effects: { self: { mood: 5, energy: 10 } }
+
+# 改制：接班进厂、退伍安置进厂的人。买断了就自己摆摊（job_stall，一天 12 块，早上出摊、中午收，下午的时间回来了）；
+# 留下来熬看手气，熬不过去就没了正经事由（job_lost，7 块）。和 middle.yaml 的「名单上」（m_layoff）一个人只碰一件
+- id: lv_reform
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 36, maxAge: 48, flags: [job_succeed], notFlags: [laid_off] }
+  title: 改制
+  text: 厂里开大会，说要改制。愿意买断的，按工龄一年算一份钱。
+  options:
+    - id: buy
+      text: 买断，自己干点什么
+      tags: [adventure]
+      effects: { self: { charm: 0.1 }, flags: [laid_off, own_stall] }
+    - id: stay
+      text: 留下，跟厂子熬
+      tags: [patient]
+      effects: { self: { mood: -2 } }
+    - id: back
+      text: 托老师傅调去后勤
+      tags: [gentle]
+      effects: { self: { charm: 0.1, mood: -2 } }
+
+- id: lv_after_layoff
+  kind: solo
+  stage: middle
+  weight: 5
+  requires: { minAge: 39, maxAge: 57, flags: [laid_off, no_job], notFlags: [own_stall, own_shop] }
+  title: 再就业
+  text: 街道贴了张单子：再就业培训，学面点、学开车、学修家电，管一顿午饭。
+  options:
+    - id: dough
+      text: 学面点，早上出摊
+      tags: [responsible]
+      effects: { self: { charm: 0.1 }, flags: [own_stall] }
+    - id: drive
+      text: 学开车，跑活儿
+      tags: [adventure]
+      effects: { self: { mind: 0.2, body: 0.1 } }
+    - id: home
+      text: 不去，接着打零工
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+    - id: family
+      text: 跟家里借钱开个铺子
+      tags: [competitive]
+      requires: { flags: [fam_rich] }
+      effects: { self: { mood: -2 }, flags: [own_shop] }
+
+# 45 岁那道关的「争位子」看心智和魅力：这几件是关前的最后几个日子里，路上的人给你的一次推或一次绊
+- id: lv_desk_seat
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 36, maxAge: 44, flags: [job_desk], notFlags: [quit_job, laid_off] }
+  title: 一个位子
+  text: 科里空出一个位子，你和同屋的老周都够格。他家孩子刚上学，他天天来得最早。
+  options:
+    - id: fight
+      text: 争一争
+      tags: [competitive]
+      effects: { self: { charm: 0.3, mood: -2 } }
+    - id: give
+      text: 让给老周
+      tags: [gentle]
+      effects: { self: { mood: 3 } }
+    - id: old
+      text: 去找当年那位科长
+      tags: [responsible]
+      requires: { flags: [desk_straight] }
+      effects: { self: { charm: 0.4, mind: 0.1 } }
+
+- id: lv_pull_cold
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 39, maxAge: 54, flags: [job_pull], notFlags: [quit_job, laid_off] }
+  title: 人走茶凉
+  text: 你爸退下来了。单位里原来见了你先笑的人，现在等你先笑。
+  options:
+    - id: smile
+      text: 先笑
+      tags: [gentle]
+      effects: { self: { charm: 0.3 } }
+    - id: stiff
+      text: 也不笑
+      tags: [competitive]
+      effects: { self: { mood: -4 } }
+    - id: quiet
+      text: 调去清闲的科室
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+    - id: proud
+      text: 照旧，本来也没靠谁
+      tags: [solitude]
+      requires: { flags: [pull_proud] }
+      effects: { self: { mood: 4, charm: 0.1 } }
+
+- id: lv_teach_title
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 36, maxAge: 50, flags: [job_teach] }
+  title: 评职称
+  text: 评职称要一篇文章。教研组长说他那儿有现成的，挂上你的名字就行。
+  options:
+    - id: write
+      text: 自己写，熬几个晚上
+      tags: [patient]
+      effects: { self: { mind: 0.4, energy: -15 } }
+    - id: sign
+      text: 挂个名
+      tags: [adventure]
+      effects: { self: { mood: 2 } }
+    - id: skip
+      text: 今年不评了
+      tags: [solitude]
+      effects: { self: { mood: -2 } }
+
+- id: lv_craft_kid
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 39, maxAge: 57, flags: [job_craft] }
+  title: 门口的孩子
+  text: 有个半大孩子天天蹲在铺子门口看你干活。今天他问：缺不缺扫地的？
+  options:
+    - id: sweep
+      text: 让他先扫三个月
+      tags: [patient]
+      effects: { self: { mood: 3, charm: 0.1 }, flags: [craft_heir] }
+    - id: teach
+      text: 手把手直接教
+      tags: [gentle]
+      effects: { self: { charm: 0.2 }, flags: [craft_heir] }
+    - id: school
+      text: 让他回去念书
+      tags: [responsible]
+      effects: { self: { mood: -1 } }
+
+- id: lv_labor_pipe
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 30, maxAge: 48, flags: [job_labor] }
+  title: 半步远
+  text: 脚手架上掉下来一根钢管，砸在你身边半步远。工头递过来一根烟，说没事。
+  options:
+    - id: on
+      text: 接着干
+      tags: [patient]
+      effects: { self: { body: 0.2, mood: -3 } }
+    - id: helmet
+      text: 跟工头要安全帽
+      tags: [competitive]
+      effects: { self: { charm: 0.2 } }
+    - id: home
+      text: 回家歇三天
+      tags: [gentle]
+      effects: { self: { energy: 30, mood: 4 } }
+
+- id: lv_trade_credit
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 33, maxAge: 50, flags: [job_trade] }
+  title: 一张条
+  text: 赊了半年账的熟客搬走了。门上贴着一张条：账我记着。
+  options:
+    - id: wait
+      text: 把条收好
+      tags: [patient]
+      effects: { self: { mood: 1 }, flags: [trade_note] }
+    - id: chase
+      text: 打听着去他新家要
+      tags: [competitive]
+      effects: { self: { charm: 0.2, mood: -4 } }
+    - id: tear
+      text: 撕了
+      tags: [solitude]
+      effects: { self: { mood: -2 } }
+
+# ======================== 六十岁以后：当年那件事的另一头 ========================
+
+- id: lv_old_plane
+  kind: solo
+  stage: old
+  weight: 3
+  requires: { flags: [teach_plane] }
+  title: 够远了吗
+  text: 门口站着个中年人，手里一架纸飞机。他说：老师，现在够远了吧？
+  options:
+    - id: throw
+      text: 接过来往楼道里扔
+      tags: [adventure]
+      effects: { self: { mood: 10 } }
+    - id: sit
+      text: 让他进屋坐
+      tags: [gentle]
+      effects: { self: { mood: 8 } }
+
+- id: lv_old_tower
+  kind: solo
+  stage: old
+  weight: 3
+  requires: { flags: [job_labor] }
+  title: 那栋楼
+  text: 河对岸最高的那栋楼，有一层是你砌的。你没跟人说过。
+  options:
+    - id: tell
+      text: 跟楼下孩子说一回
+      tags: [gentle]
+      effects: { self: { mood: 8 } }
+    - id: keep
+      text: 还是不说
+      tags: [solitude]
+      effects: { self: { mood: 5 } }
+
+- id: lv_old_note
+  kind: solo
+  stage: old
+  weight: 3
+  requires: { flags: [trade_note] }
+  title: 信封
+  text: 有人敲门，是当年赊账的熟客。头发全白了，手里攥着个信封。
+  options:
+    - id: take
+      text: 收下
+      tags: [patient]
+      effects: { self: { mood: 8 } }
+    - id: back
+      text: 推回去，留他吃饭
+      tags: [gentle]
+      effects: { self: { mood: 10 } }
+
+- id: lv_old_shop
+  kind: solo
+  stage: old
+  weight: 3
+  requires: { flags: [own_shop], notFlags: [shop_closed] }
+  title: 铺子的钥匙
+  text: 铺子的钥匙在你手里攥了二十多年。该交给谁了。
+  options:
+    - id: kid
+      text: 交给孩子
+      tags: [responsible]
+      requires: { flags: [has_kid] }
+      effects: { self: { mood: 6 } }
+    - id: clerk
+      text: 交给跟了多年的伙计
+      tags: [gentle]
+      effects: { self: { mood: 6 } }
+    - id: shut
+      text: 关了门，自己歇着
+      tags: [solitude]
+      effects: { self: { mood: 3 } }
+
+- id: lv_old_factory
+  kind: solo
+  stage: old
+  weight: 3
+  requires: { flags: [job_succeed] }
+  title: 一桌
+  text: 老工友聚了一桌，比上回少了四个。散的时候谁也没先起身。
+  options:
+    - id: toast
+      text: 挨个敬一圈
+      tags: [gentle]
+      effects: { self: { mood: 6 } }
+    - id: stay
+      text: 坐到最后
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+
+- id: lv_old_army
+  kind: solo
+  stage: old
+  weight: 3
+  requires: { flags: [army_blister] }
+  title: 还磨吗
+  text: 战友聚会，班长拄着拐来了。他低头看你的鞋：脚还磨吗？
+  options:
+    - id: laugh
+      text: 跺两下脚给他看
+      tags: [adventure]
+      effects: { self: { mood: 8 } }
+    - id: help
+      text: 扶他坐下
+      tags: [gentle]
+      effects: { self: { mood: 6 } }
+
+- id: lv_old_abroad
+  kind: solo
+  stage: old
+  weight: 3
+  requires: { flags: [uni_abroad] }
+  title: 忘了
+  text: 楼下孩子拿一道外语题来问你。你看了很久，说：忘了。
+  options:
+    - id: look
+      text: 陪他一起查
+      tags: [patient]
+      effects: { self: { mind: 0.1, mood: 6 } }
+    - id: other
+      text: 教他一句别的
+      tags: [adventure]
+      effects: { self: { mood: 6 } }
+
+- id: lv_old_stall
+  kind: solo
+  stage: old
+  weight: 3
+  requires: { flags: [own_stall] }
+  title: 最后一锅
+  text: 摊子交出去那天，你在灶前站到火灭了。
+  options:
+    - id: watch
+      text: 看着火灭
+      tags: [patient]
+      effects: { self: { mood: 4 } }
+    - id: last
+      text: 给楼里每家送一份
+      tags: [gentle]
+      effects: { self: { mood: 8 } }
+
+- id: lv_old_desk
+  kind: solo
+  stage: old
+  weight: 2
+  requires: { flags: [job_desk], notFlags: [quit_job, laid_off] }
+  title: 那张桌子
+  text: 单位叫退休的回去看看。你那张桌子还在，抽屉里是别人的饭盒。
+  options:
+    - id: sit
+      text: 坐一下再走
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+    - id: go
+      text: 看一眼就走
+      tags: [solitude]
+      effects: { self: { mood: 3 } }

@@ -59,7 +59,9 @@ const GRADE_KEYS = ["min", "label", "flags"];
 const TRACK_KEYS = ["id", "label", "requires", "group", "duty"];
 const TRACK_REQ_KEYS = ["minAge", "maxAge", "flags", "notFlags"];
 const DUTY_KEYS = ["label", "spot", "arrive", "until", "needs", "stats", "money"];
-const OPTION_KEYS = ["id", "text", "tags", "effects"];
+// 普通事件的选项也可以挂门槛（docs/MEANS.md 第三节）：requires 只看选的人自己的标记（家境、走过的路），cost 是花掉的积蓄。
+// 标记不对的人看不见这一项；钱不够的看得见、灰着。挂了门槛的事件至少留两个谁都能选的
+const OPTION_KEYS = ["id", "text", "tags", "effects", "requires", "cost"];
 const EFFECT_KEYS = ["self", "other", "bond", "flags"];
 const RESONANCE_KEYS = ["text", "memory", "bond", "flags"];
 const DISSONANCE_KEYS = ["text", "bond", "flags"];
@@ -180,6 +182,10 @@ for (const file of eventFiles) {
       const oat = `${at}.${o.id}`;
       if (!o.id || !o.text) errors.push(`${oat}: 选项缺少 id 或 text`);
       checkKeys(oat, o, ms ? MILESTONE_OPTION_KEYS : OPTION_KEYS);
+      if (!ms) {
+        checkRequires(oat, o.requires, ["flags", "notFlags"]);
+        if (o.cost !== undefined && !(o.cost > 0 && o.cost <= 60)) errors.push(`${oat}.cost: 是 1~60 的正数（买房那条线才 200）`);
+      }
       if (ms) {
         checkDeltas(`${oat}.score`, o.score, SCORE_KEYS);
         checkRequires(oat, o.requires, ["flags", "notFlags"]);
@@ -201,6 +207,10 @@ for (const file of eventFiles) {
       checkDeltas(`${oat}.bond`, e.bond, BOND_KEYS);
       o.tags = o.tags ?? [];
       o.effects = { self: e.self ?? {}, other: e.other ?? {}, bond: e.bond ?? {}, flags: e.flags ?? [] };
+    }
+    if (!ms) {
+      const gated = (o) => !!o.cost || !!(o.requires?.flags?.length || o.requires?.notFlags?.length);
+      if ((ev.options ?? []).some(gated) && (ev.options ?? []).filter((o) => !gated(o)).length < 2) errors.push(`${at}: 有选项挂了门槛，就要留至少两个谁都能选的（不带 requires / cost）`);
     }
     for (const o of ev.options ?? []) {
       if (o.joins !== undefined && (!optionIds.has(o.joins) || o.joins === o.id || ev.options.find((x) => x.id === o.joins)?.joins)) errors.push(`${at}.${o.id}.joins: 要写同一关里另一条不带 joins 的路`);
@@ -456,6 +466,15 @@ const rules = load("rules.yaml");
     if (!rules?.[sec]) { errors.push(`rules.yaml: 缺少 ${sec}`); continue; }
     checkKeys(`rules.${sec}`, rules[sec], keys);
     for (const k of keys) if (rules[sec][k] === undefined) errors.push(`rules.yaml: 缺少 ${sec}.${k}`);
+  }
+  {
+    // room、turnWeight 可以是一个数或者按阶段写；按阶段写就五个阶段都要有，漏一个成长会算成 NaN
+    const STAGES = ["childhood", "teen", "young", "middle", "old"];
+    for (const k of ["room", "turnWeight"]) {
+      const v = rules?.growth?.[k];
+      if (v === undefined || typeof v === "number") continue;
+      if (typeof v !== "object" || STAGES.some((st) => typeof v[st] !== "number" || !(v[st] > 0))) errors.push(`rules.yaml: growth.${k} 要么写一个数，要么五个阶段（${STAGES.join(" / ")}）都写正数`);
+    }
   }
   if (rules?.daily && rules.daily.needsUse !== undefined && !(typeof rules.daily.needsUse === "number" && rules.daily.needsUse >= 0 && rules.daily.needsUse <= 1)) errors.push("rules.yaml: daily.needsUse 是一段里多做的那几遍按几成算需求，要在 0 到 1 之间");
   if (rules?.daily && !(typeof rules.daily.slotUse === "number" && rules.daily.slotUse > 0 && rules.daily.slotUse <= 1)) errors.push("rules.yaml: daily.slotUse 是一段里真花在那件事上的一份，要在 0 到 1 之间");

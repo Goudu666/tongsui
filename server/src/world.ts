@@ -6,6 +6,12 @@
 //   每一段两个人各自挑一件正经事（或者「歇着」），两个人都定了，这一段才在眼前过去（PLAY_MIN_PER_SEC），
 //   一段做一件事 = 那件事按分钟做了几遍（Actor.scale），所以内部还是按分钟算，成长数值不用推倒。
 //   钟点仍然是一天里的第几分钟（w.minute）：定的时候停在这一段的开头，过的时候一路走到这一段的结尾。
+//
+// 一件一件做（2026-11-11，worldActOnce）：在点位上按一下，就做「一回」这件事——写作业 1.5 小时就是这个人自己的钟往前拨
+//   1.5 小时，当场结算，当场看到涨了什么、累了多少。一段里能做好几件，这一段的时间用完（或按「就这么过」）才算这个人定了。
+//   两个人各有各的钟（Actor.spent），同一个点做同一件事、各自钟上的时间对得上一半以上，才算搭伴；后到的那个人到的时候，
+//   先做的那个也补上搭伴的那一份。「做到点」（worldAct 不带 once）还是原来那样：把这一段剩下的时间整段押上，段末结算。
+//   两种做法同样的时间换同样的成长和需求（needs 的折算见 worldNeedsFactor），所以校准过的数不跟着变。
 
 var DAY_START = 390; // 06:30 醒来
 var DAY_END = 1320; // 22:00
@@ -142,6 +148,9 @@ function worldFarAt(c: Content, a: Actor): boolean {
   return !!sc && sc.far;
 }
 
+/** 这一段的时间剩不到这么多分钟（最短的正经事也要二十分钟），就算这个人定了（不用再按「就这么过」） */
+var READY_LEFT = 20;
+
 /** 这一段在路上花掉的分钟（过桥、坐车） */
 function worldRide(a: Actor, slot: number): number {
   return a.rideSlot === slot ? a.ride || 0 : 0;
@@ -177,13 +186,49 @@ function worldSlotLeft(c: Content, slot: number, ride: number): number {
   return (SLOTS[slot][1] - SLOTS[slot][0]) * c.rules.daily.slotUse - ride;
 }
 
-/** 这个人这一段定了没有：按了「就这么过」、在做一件这一段还没完的事、睡了，或者已经不在了 */
+/** 这一段里一件一件做掉了多少分钟 */
+function worldSpent(a: Actor, slot: number): number {
+  return a.spentSlot === slot ? a.spent || 0 : 0;
+}
+
+/** 这个人自己的钟：段头 + 路上 + 一件一件做掉的（不超过段尾）。整段的事、上学、睡觉不拨这个钟 */
+function worldClock(w: WorldState, a: Actor): number {
+  return Math.min(SLOTS[w.slot][0] + worldRide(a, w.slot) + worldSpent(a, w.slot), SLOTS[w.slot][1]);
+}
+
+/** 这一段这个人还剩多少分钟能花在事情上 */
+function worldTimeLeft(c: Content, w: WorldState, a: Actor): number {
+  return worldSlotLeft(c, w.slot, worldRide(a, w.slot)) - worldSpent(a, w.slot);
+}
+
+/**
+ * 需求按几回算。一段做满 K 回同一件事（K = 这一段的分钟 ÷ 这件事的分钟），需求一共按 1 + (K − 1) × needsUse 回算（rules.yaml）。
+ * 摊到每一回上就是 needsUse + (1 − needsUse) ÷ K：一件一件做和「做到点」整段做，同样的时间累得一样多。
+ * 一件事比一段还长（早上那一段修车）就按做了几分之几算
+ */
+function worldNeedsFactor(c: Content, slot: number, act: Action): number {
+  var u = worldNeedsUse(c);
+  var span = worldSlotLeft(c, slot, 0);
+  if (span <= 0 || act.minutes <= 0) return 1;
+  return Math.min(1, u + (1 - u) * act.minutes / span);
+}
+
+/** 这个人这一段定了没有：按了「就这么过」、在做一件这一段还没完的事、睡了、这一段的时间一件一件用完了，或者已经不在了 */
 function worldReady(s: LifeState, role: Role): boolean {
   var w = s.world!;
   var a = w.actors[role];
   if (!a || !s.persons![role].alive) return true;
   if (w.ready[role] || a.asleep) return true;
   return a.action !== null && a.until !== null && a.until > SLOTS[w.slot][0];
+}
+
+/** 新的一段：这一段的打算、顺手的事、一件一件做的记录都清掉 */
+function worldSlotReset(w: WorldState) {
+  w.ready = {};
+  w.quick = [];
+  w.wait = 0;
+  w.runs = {};
+  w.paid = [];
 }
 
 // ---------- 新的一天 ----------
@@ -308,13 +353,26 @@ function worldStartDay(s: LifeState, c: Content) {
     }
   }
 
+  var goal0: WorldState["goal0"] = {};
+  for (var gi = 0; gi < ROLES.length; gi++) {
+    var g0 = persons[ROLES[gi]].alive ? lifeGoal(s, c, ROLES[gi]) : null;
+    if (!g0) continue;
+    var have0: { [line: string]: number } = {};
+    for (var gl = 0; gl < g0.lines.length; gl++) have0[g0.lines[gl].id] = g0.lines[gl].have;
+    goal0[ROLES[gi]] = { id: g0.id, have: have0 };
+  }
+
   s.world = {
+    goal0: goal0,
+    segs: {},
     minute: DAY_START,
     slot: 0,
     ready: {},
     playing: false,
     wait: 0,
     quick: [],
+    runs: {},
+    paid: [],
     rest: rest,
     off: off,
     back: back,
@@ -325,6 +383,49 @@ function worldStartDay(s: LifeState, c: Content) {
     done: [],
     warm: false,
   };
+}
+
+/** 记下今天的一截时间（小结卡上画成一条）。挨着的同一件事并成一截 */
+function worldSeg(w: WorldState, role: Role, act: Action, label: string, f: number, t: number, tg: boolean) {
+  if (t - f < 1) return;
+  if (!w.segs) w.segs = {};
+  var list = w.segs[role] || (w.segs[role] = []);
+  var last = list.length ? list[list.length - 1] : null;
+  if (last && last.a === act.id && Math.abs(last.t - f) < 1 && !!last.tg === tg) { last.t = t; return; }
+  var seg: DaySeg = { a: act.id, l: label, f: f, t: t };
+  if (tg) seg.tg = true;
+  list.push(seg);
+}
+
+/**
+ * 一天收工：下一道关那条正在够的线，今天挪了多少、照这样还要几个日子。
+ * 在 lifeEndDay 里 turn 已经加过一以后调（turns 从明天算起）。今天过了那道关（目标换了）就不写
+ */
+function worldDayGoal(s: LifeState, c: Content, role: Role, goal0: { id: string; have: { [line: string]: number } } | undefined): DayGoal | null {
+  if (!goal0) return null;
+  var g = lifeGoal(s, c, role);
+  if (!g || g.id !== goal0.id || g.lines.length === 0) return null;
+  // 够不着的线里，今天挪得最多的那条（你在冲的）；都没挪就最低那条；都够着了就最高那条
+  var pick: GoalLine | null = null;
+  var gain = function (l: GoalLine) { return l.have - (goal0.have[l.id] === undefined ? l.have : goal0.have[l.id]); };
+  for (var i = 0; i < g.lines.length; i++) {
+    var l = g.lines[i];
+    if (!l.ok) {
+      if (!pick || pick.ok || gain(l) > gain(pick) || (gain(l) === gain(pick) && l.need < pick.need)) pick = l;
+    } else if (!pick || (pick.ok && l.need > pick.need)) pick = l;
+  }
+  if (!pick) return null;
+  var have0 = goal0.have[pick.id] === undefined ? pick.have : goal0.have[pick.id];
+  var out: DayGoal = { title: g.title, turns: g.turns, line: pick.text, unit: pick.unit, have0: have0, have: pick.have, need: pick.need, ok: pick.ok };
+  var moved = pick.have - have0;
+  if (!pick.ok && moved > 0) out.pace = Math.ceil((pick.need - pick.have) / moved);
+  var crossed: string[] = [];
+  for (var j = 0; j < g.lines.length; j++) {
+    var h0 = goal0.have[g.lines[j].id];
+    if (g.lines[j].ok && h0 !== undefined && h0 < g.lines[j].need) crossed.push(g.lines[j].text);
+  }
+  if (crossed.length) out.crossed = crossed;
+  return out;
 }
 
 // ---------- 走动 ----------
@@ -468,8 +569,9 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
   if (act.duty && w.slot < worldDutySlots(worldDuty(s, c, role)!)[0]) return "还没到点";
   if (act.id === "letter" && !postApart(s, c, role)) return s.persons![lifeOther(role)].alive ? "TA 就在跟前，用不着写信" : "信寄不到了";
   if (act.id === "letter" && postWroteToday(s, role)) return "今天写过了";
-  if (!act.quick && !act.duty && !act.sleep && worldSlotLeft(c, w.slot, worldRide(a, w.slot)) <= 0) return "路上把这一段花掉了";
-  var broke = meansCantPay(s, role, act, meansNeedsHost(p, act)); // 被带着做的看对门兜里（means.ts）
+  if (!act.quick && !act.duty && !act.sleep && worldTimeLeft(c, w, a) <= 0) return worldSpent(a, w.slot) > 0 ? "这一段的时间用完了" : "路上把这一段花掉了";
+  var guestHere = meansNeedsHost(p, act);
+  var broke = worldFeePaid(w, role, act.id) ? null : meansCantPay(s, role, act, guestHere); // 被带着做的看对门兜里（means.ts）；这一段付过进门钱的不再付
   if (broke) return broke;
   if (act.quick) {
     // 顺手的事不花时间，可也不能一直做：一段里同一件只做一回，吃饱了、洗干净了就不用了
@@ -529,7 +631,176 @@ function worldMealMood(c: Content, p: Person) {
  * 在一个点位上做事。顺手的事当场就做完；正经事就是这一段的打算（日程从今天该去的那段一直占到下班），
  * 定了这一段就等对门，两个人都定了才过去（worldAdvance）。返回 [错误, 搭伴日志]
  */
-function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error: string | null; together: LogEntry | null } {
+/** 这一段这个人做这件事的进门钱已经付过了（被带着的那份也按做事的人记，钱是对门出的） */
+function worldFeePaid(w: WorldState, role: Role, actId: string): boolean {
+  return !!w.paid && w.paid.indexOf(role + ":" + actId) >= 0;
+}
+
+/** 付进门的钱：这一段同一件事只付一回（坐一下午茶社也只付一壶茶钱）。返回付了多少（正数） */
+function worldPayFee(s: LifeState, role: Role, act: Action, guest: boolean): number {
+  var w = s.world!;
+  if (act.money >= 0) return 0;
+  var payer = guest ? lifeOther(role) : role;
+  if (worldFeePaid(w, role, act.id)) return 0;
+  s.persons![payer].money += act.money;
+  if (!w.paid) w.paid = [];
+  w.paid.push(role + ":" + act.id);
+  return -act.money;
+}
+
+/** 两段时间 [f1, t1)、[f2, t2) 重叠了多少分钟 */
+function worldOverlap(f1: number, t1: number, f2: number, t2: number): number {
+  return Math.max(0, Math.min(t1, t2) - Math.max(f1, f2));
+}
+
+/** 搭伴的倍率：1.5，TA 这项比你高再多一点（带） */
+function worldBoost(p: Person, other: Person, k: string): number {
+  var lead = other.alive && k in p.stats ? lifeClamp((other.stats[k as StatKey] - p.stats[k as StatKey]) * LEAD_PER_POINT, 0, LEAD_MAX) : 0;
+  return TOGETHER_BOOST + lead;
+}
+
+/**
+ * 对门这一段一件一件做过的、和 [f, t) 在同一个点做同一件事、时间对得上一半以上的那一回（还没跟人搭过伴的）。
+ * 「一半」按两回里短的那一回算
+ */
+function worldPartnerRun(w: WorldState, role: Role, actId: string, spotId: string, f: number, t: number): Run | null {
+  var runs = (w.runs && w.runs[lifeOther(role)]) || [];
+  for (var i = 0; i < runs.length; i++) {
+    var r = runs[i];
+    if (r.tg || r.a !== actId || r.sp !== spotId) continue;
+    var ov = worldOverlap(f, t, r.f, r.t);
+    if (ov > 0 && ov * 2 >= Math.min(t - f, r.t - r.f)) return r;
+  }
+  return null;
+}
+
+/** 对门后来赶上了：先做的那一回补上搭伴多出来的那一份（成长按现在的年纪和底子折算），记成一条 did 给他的客户端飘 */
+function worldJoinLate(s: LifeState, c: Content, role: Role, run: Run) {
+  var p = s.persons![role];
+  var other = s.persons![lifeOther(role)];
+  var a = s.world!.actors[role];
+  run.tg = true;
+  var segs = s.world!.segs && s.world!.segs[role];
+  if (segs) for (var si = 0; si < segs.length; si++) if (segs[si].a === run.a && segs[si].f <= run.f && segs[si].t >= run.t) segs[si].tg = true;
+  var extra: SelfDelta = {};
+  var b = 0;
+  for (var k in run.raw) {
+    var m = worldBoost(p, other, k);
+    b = Math.max(b, m);
+    (extra as any)[k] = ((run.raw as any)[k] as number) * (m - 1);
+  }
+  var before = worldStatsCopy(p);
+  lifeApplySelf(p, extra, growthCtx(s, c, "action"));
+  if (!a) return;
+  var act = worldFindAction(c, run.a);
+  a.did = { n: ((a.did && a.did.n) || 0) + 1, a: run.a, l: act.label, f: run.f, t: run.t, s: worldStatsDiff(before, p), nd: {}, m: 0, tg: true, b: Math.round(b * 100) / 100, j: true };
+}
+
+function worldStatsCopy(p: Person): Stats {
+  return { body: p.stats.body, mind: p.stats.mind, charm: p.stats.charm, luck: p.stats.luck };
+}
+
+function worldStatsDiff(before: Stats, p: Person): Partial<Stats> {
+  var out: Partial<Stats> = {};
+  for (var i = 0; i < STAT_KEYS.length; i++) {
+    var k = STAT_KEYS[i];
+    var d = Math.round((p.stats[k] - before[k]) * 1000) / 1000;
+    if (d !== 0) out[k] = d;
+  }
+  return out;
+}
+
+function worldNeedsDiff(before: Needs, p: Person): Partial<Needs> {
+  var out: Partial<Needs> = {};
+  var keys: (keyof Needs)[] = ["hunger", "energy", "mood", "clean"];
+  for (var i = 0; i < keys.length; i++) {
+    var d = Math.round(p.needs[keys[i]] - before[keys[i]]);
+    if (d !== 0) out[keys[i]] = d;
+  }
+  return out;
+}
+
+/**
+ * 一件一件做：在这个点位上做「一回」这件事（写作业就是一个半钟头）。当场结算：这个人自己的钟往前拨这么多分钟，
+ * 属性、需求、钱当场变，这段时间里饿了困了也当场掉。这一段剩的时间不够一整回，就做剩下的那一截（按比例）。
+ * 搭伴：对门这一段在同一个点做过同一件事、时间对得上（worldPartnerRun），或者正整段地做着它，这一回就是搭伴。
+ */
+function worldActOnce(s: LifeState, c: Content, role: Role, sp: Spot, act: Action): { error: string | null; together: LogEntry | null } {
+  var w = s.world!;
+  var a = w.actors[role]!;
+  var p = s.persons![role];
+  var other = s.persons![lifeOther(role)];
+  var b = w.actors[lifeOther(role)];
+  var f = worldClock(w, a);
+  var left = worldTimeLeft(c, w, a);
+  var use = Math.min(act.minutes, left);
+  var times = act.minutes > 0 ? use / act.minutes : 1;
+  var t = f + use;
+  var guest = meansNeedsHost(p, act);
+  var beforeStats = worldStatsCopy(p);
+  var beforeNeeds: Needs = { hunger: p.needs.hunger, energy: p.needs.energy, mood: p.needs.mood, clean: p.needs.clean };
+  var moneyBefore = p.money;
+  var fee = worldPayFee(s, role, act, guest);
+
+  // 搭伴：对门一件一件做过的那一回，或者对门正整段地做着它（那一段从他的 start 一直到段尾）
+  var run = other.alive ? worldPartnerRun(w, role, act.id, sp.id, f, t) : null;
+  var deferred = !run && other.alive && !!b && !b.asleep && b.action === act.id && b.spot === sp.id && b.from === w.slot
+    && worldOverlap(f, t, b.start === undefined ? SLOTS[w.slot][0] : b.start, SLOTS[w.slot][1]) * 2 >= use;
+  var together = !!run || deferred;
+
+  var eff = worldEfficiency(p);
+  var raw: SelfDelta = {};
+  var boosted: SelfDelta = {};
+  var bmax = 0;
+  for (var k in act.stats) {
+    var v = ((act.stats as any)[k] as number) * eff * times;
+    if (k === "mind" && lifeHasFlag(p, "tal_memory")) v *= MEMORY_BOOST; // 过目不忘：自己坐下来念的时候快一倍
+    (raw as any)[k] = v;
+    var m = together ? worldBoost(p, other, k) : 1;
+    bmax = Math.max(bmax, m);
+    (boosted as any)[k] = v * m;
+  }
+  var nf = times * worldNeedsFactor(c, w.slot, act);
+  var needs: SelfDelta = {};
+  for (var nk in act.needs) (needs as any)[nk] = ((act.needs as any)[nk] as number) * nf;
+  lifeApplySelf(p, boosted, growthCtx(s, c, "action"));
+  lifeApplySelf(p, needs);
+  worldDecay(c, p, a, t, use); // 这一个半钟头里自己也饿了、困了
+  p.money += Math.round(Math.max(0, act.money) * times * 10) / 10;
+  if (act.id === "letter") postWrite(s, c, role); // 信第二天早上到对门（post.ts）
+
+  a.x = sp.at[0];
+  a.y = sp.at[1];
+  a.shadow = false;
+  a.spent = worldSpent(a, w.slot) + use;
+  a.spentSlot = w.slot;
+  if (!w.runs) w.runs = {};
+  if (!w.runs[role]) w.runs[role] = [];
+  w.runs[role]!.push({ a: act.id, sp: sp.id, f: f, t: t, raw: raw, tg: together });
+  worldSeg(w, role, act, act.label, f, t, together);
+
+  var entry: LogEntry | null = null;
+  if (together) {
+    if (run) worldJoinLate(s, c, lifeOther(role), run);
+    else b!.tgMin = (b!.tgMin || 0) + use;
+    entry = worldTogetherBonus(s, c, act);
+  }
+  a.did = {
+    n: ((a.did && a.did.n) || 0) + 1, a: act.id, l: act.label, f: f, t: t,
+    s: worldStatsDiff(beforeStats, p), nd: worldNeedsDiff(beforeNeeds, p), m: Math.round((p.money - moneyBefore) * 10) / 10, tg: together,
+  };
+  if (together) a.did.b = Math.round(bmax * 100) / 100;
+  if (times < 1) a.did.part = Math.round(times * 100) / 100;
+  if (fee > 0 && guest) a.did.m = 0; // 被带的那份钱记在对门头上
+  if (worldTimeLeft(c, w, a) < READY_LEFT) w.ready[role] = true; // 这一段的时间用完了：定了
+  return { error: null, together: entry };
+}
+
+/**
+ * 在点位上做事。once：一件一件做，做一回当场结算（worldActOnce）；不带 once 是「做到点」，把这一段剩下的时间整段押上，段末结算。
+ * 机器人、影子、旧安装包都走「做到点」。
+ */
+function worldAct(s: LifeState, c: Content, role: Role, spotId: string, once?: boolean): { error: string | null; together: LogEntry | null } {
   var err = worldCanAct(s, c, role, spotId);
   if (err) return { error: err, together: null };
   var w = s.world!;
@@ -540,6 +811,7 @@ function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error
   a.x = sp.at[0];
   a.y = sp.at[1];
   a.shadow = false;
+  if (once && !act.quick && !act.duty && !act.sleep) return worldActOnce(s, c, role, sp, act);
   if (act.quick) {
     lifeApplySelf(p, act.needs);
     p.money += act.money;
@@ -565,9 +837,21 @@ function worldAct(s: LifeState, c: Content, role: Role, spotId: string): { error
   } else {
     // 一段做一件事，就是这件事做了几遍。use：一段里真花在这件事上的那一份（路上、吃饭、发呆占掉的不算）
     a.until = SLOTS[w.slot][1];
-    a.scale = Math.round((worldSlotLeft(c, w.slot, worldRide(a, w.slot)) / act.minutes) * 100) / 100;
+    a.start = worldClock(w, a);
+    a.scale = Math.round((worldTimeLeft(c, w, a) / act.minutes) * 100) / 100;
     a.guest = meansNeedsHost(p, act) || undefined; // 对门带着做的（means.ts）
-    s.persons![a.guest ? lifeOther(role) : role].money += act.money < 0 ? act.money : 0; // 花的钱是进门的钱，坐一下午也只付一回；被带的那份对门出
+    a.fee = worldPayFee(s, role, act, !!a.guest) || undefined; // 花的钱是进门的钱，坐一下午也只付一回；被带的那份对门出
+    // 对门这一段一件一件做过同一件事（在这个人整段的时间里）：那几回补上搭伴，这一段按陪了多少分钟给倍率
+    var pr = s.persons![lifeOther(role)].alive && w.runs ? w.runs[lifeOther(role)] || [] : [];
+    for (var ri = 0; ri < pr.length; ri++) {
+      var rr = pr[ri];
+      if (rr.tg || rr.a !== act.id || rr.sp !== sp.id) continue;
+      var ov = worldOverlap(a.start, a.until, rr.f, rr.t);
+      if (ov * 2 < rr.t - rr.f) continue;
+      worldJoinLate(s, c, lifeOther(role), rr);
+      a.tgMin = (a.tgMin || 0) + (rr.t - rr.f);
+      worldTogetherBonus(s, c, act);
+    }
   }
   // 搭伴：先定后定都算，两个人这一段做的是同一件事
   var b = w.actors[lifeOther(role)];
@@ -599,6 +883,7 @@ function worldCancel(s: LifeState, c: Content, role: Role): string | null {
   if (w.playing) return "这一段正在过";
   if (w.event && w.event.roles.indexOf(role) >= 0) return "先做完眼前的选择";
   if (w.ready[role]) {
+    if (!a.action && worldSpent(a, w.slot) > 0 && worldTimeLeft(c, w, a) < READY_LEFT) return "这一段的时间用完了";
     delete w.ready[role];
     return null;
   }
@@ -606,7 +891,11 @@ function worldCancel(s: LifeState, c: Content, role: Role): string | null {
   if (a.from !== undefined && a.from < w.slot) return "已经在" + worldFindAction(c, a.action).label + "了";
   var act = worldFindAction(c, a.action);
   if (act.duty) w.dutyDone[role] = false;
-  if (!act.duty && !act.sleep && act.money < 0) s.persons![a.guest ? lifeOther(role) : role].money -= act.money; // 进门的钱退回来（被带的退给对门）
+  if (!act.duty && !act.sleep && a.fee) { // 进门的钱退回来（被带的退给对门）
+    var payer = a.guest ? lifeOther(role) : role;
+    s.persons![payer].money += a.fee;
+    if (w.paid) w.paid = w.paid.filter(function (k) { return k !== role + ":" + act.id; });
+  }
   worldClearAction(a);
   meansHostLeft(s, c, role); // 带人的改了主意，跟着来的那个也撤回来
   var b = w.actors[lifeOther(role)];
@@ -624,6 +913,9 @@ function worldClearAction(a: Actor) {
   delete a.together;
   delete a.scale;
   delete a.guest;
+  delete a.start;
+  delete a.tgMin;
+  delete a.fee;
 }
 
 function worldFinish(s: LifeState, c: Content, role: Role) {
@@ -644,13 +936,18 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
     if (a.together) {
       var lead = other.alive ? lifeClamp((other.stats[k as StatKey] - p.stats[k as StatKey]) * LEAD_PER_POINT, 0, LEAD_MAX) : 0;
       v *= TOGETHER_BOOST + lead;
+    } else if (a.tgMin && !act.duty && a.start !== undefined && a.until !== null) {
+      // 对门只是一件一件地陪了一阵：陪了几成时间，搭伴的倍率就给几成
+      var share = lifeClamp(a.tgMin / Math.max(1, a.until - a.start), 0, 1);
+      v *= 1 + (worldBoost(p, other, k) - 1) * share;
     }
     if (k === "mind" && !act.duty && lifeHasFlag(p, "tal_memory")) v *= MEMORY_BOOST; // 过目不忘：自己坐下来念的时候快一倍
     (stats as any)[k] = v;
   }
   // 饱腹、精力、心情、清洁不按遍数整倍放大：一段四个钟头的跳皮筋不是八回跳皮筋那么累。
   // 只乘 1 + (遍数 − 1) × needsUse（rules.yaml），不然小孩上午做一件事精力就见底，下午只能睡，一天五段过成三段
-  var ntimes = times <= 1 ? times : 1 + (times - 1) * worldNeedsUse(c);
+  // （= 每一回按 worldNeedsFactor 算：整段做满的时候和 1 + (遍数 − 1) × needsUse 一样，和一件一件做同样的时间累得一样多）
+  var ntimes = duty || act.duty ? times : a.from !== undefined && a.from >= 0 ? times * worldNeedsFactor(c, a.from, act) : times <= 1 ? times : 1 + (times - 1) * worldNeedsUse(c);
   var scaled: SelfDelta = {};
   for (var nk in needs) (scaled as any)[nk] = ((needs as any)[nk] as number) * ntimes;
   // 状态、搭伴、天赋先乘好，再交给成长规则按年纪和底子折算（growth.ts → growthApply）
@@ -659,6 +956,10 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   if (act.id === "eat") worldMealMood(c, p); // 老存档里还在吃的那一顿
   if (act.id === "letter") postWrite(s, c, role); // 信第二天早上到对门（post.ts）
   p.money += Math.round(money * 10) / 10;
+  if (a.until !== null && a.from !== undefined && a.from >= 0) {
+    var segFrom = a.start !== undefined ? a.start : SLOTS[a.from][0];
+    worldSeg(s.world!, role, act, duty ? duty.label : act.label, segFrom, Math.min(a.until, s.world!.minute), !!a.together || (a.tgMin || 0) * 2 >= a.until - segFrom);
+  }
   worldClearAction(a);
 }
 
@@ -763,10 +1064,24 @@ function worldShadowStep(s: LifeState, c: Content, role: Role) {
   }
   // 2. TA 这一段定了一件我也能做的事：过去搭伴
   var partner = w.actors[lifeOther(role)];
-  if (partner && partner.action && partner.spot && !partner.asleep && lifeRand(s) < SHADOW_FOLLOW) {
-    var there = lifeFind(c.map.spots, partner.spot);
+  // TA 一件一件做的：跟着这一段里 TA 花时间最多的那一件
+  var pRuns = (w.runs && w.runs[lifeOther(role)]) || [];
+  var pAct = partner ? partner.action : null, pSpot = partner ? partner.spot : null;
+  if (partner && !pAct && pRuns.length > 0) {
+    var most: { [k: string]: number } = {};
+    var best = "";
+    for (var pr = 0; pr < pRuns.length; pr++) {
+      var key = pRuns[pr].a + "@" + pRuns[pr].sp;
+      most[key] = (most[key] || 0) + pRuns[pr].t - pRuns[pr].f;
+      if (!best || most[key] > most[best]) best = key;
+    }
+    pAct = best.split("@")[0];
+    pSpot = best.split("@")[1];
+  }
+  if (partner && pAct && pSpot && !partner.asleep && lifeRand(s) < SHADOW_FOLLOW) {
+    var there = lifeFind(c.map.spots, pSpot);
     var mine = worldPickAction(s, c, role, there).act;
-    if (mine && mine.id === partner.action && !mine.duty && worldShadowGo(s, c, role, there)) return;
+    if (mine && mine.id === pAct && !mine.duty && worldShadowGo(s, c, role, there)) return;
   }
   // 3. 心情差就去玩；不然朝下一个关口使劲；没有关口了就随便转转
   var need = p.needs.mood < 40 ? null : worldShadowNeed(s, c, role);
@@ -897,6 +1212,11 @@ function worldStartPlay(s: LifeState, c: Content, out: WorldTick) {
   }
   w.playing = true;
   w.wait = 0;
+  // 两个人这一段一件一件做掉的那些已经过去了：钟从两个人里慢的那个的钟往后走（都做满了，这一段一下子就过去）
+  var start = SLOTS[w.slot][1];
+  var alive = worldAliveRoles(s);
+  for (var i = 0; i < alive.length; i++) start = Math.min(start, SLOTS[w.slot][0] + worldSpent(w.actors[alive[i]]!, w.slot));
+  w.minute = Math.max(w.minute, start);
 }
 
 /** 这一段在过：钟点往前走，需求跟着变，到点的事结算。走完这一段进下一段，晚上过完这一天就结束 */
@@ -906,17 +1226,18 @@ function worldPlay(s: LifeState, c: Content, dtSec: number, out: WorldTick): Wor
   var end = SLOTS[w.slot][1];
   var dm = Math.min(Math.max(dtSec, 0) * PLAY_MIN_PER_SEC, end - w.minute);
   w.minute += dm;
+  var from = w.minute - dm;
   for (var j = 0; j < roles.length; j++) {
     var a = w.actors[roles[j]]!;
-    worldDecay(c, s.persons![roles[j]], a, w.minute, dm);
+    // 一件一件做掉的那几十分钟当场就掉过了（worldActOnce），这里只掉剩下的
+    var ddm = worldOverlap(from, w.minute, SLOTS[w.slot][0] + worldSpent(a, w.slot), end);
+    if (ddm > 0) worldDecay(c, s.persons![roles[j]], a, w.minute, ddm);
     if (a.action && a.until !== null && w.minute >= a.until - 1e-6) worldFinish(s, c, roles[j]);
   }
   if (w.minute < end - 1e-6) return out;
   w.minute = end;
   w.playing = false;
-  w.ready = {};
-  w.quick = [];
-  w.wait = 0;
+  worldSlotReset(w);
   var allAsleep = roles.every(function (r) { return w.actors[r]!.asleep; });
   // 都睡下了、今天却还有躲不过的主线：先不收这一天，下一跳 worldStoryForce 把人叫起来
   if (allAsleep && w.slot < SLOTS.length - 1 && worldStoryPending(s, c)) allAsleep = false;
@@ -1000,9 +1321,7 @@ function worldStoryForce(s: LifeState, c: Content, out: WorldTick): boolean {
       // 人都早早睡下了：钟往后拨到它那一段（这中间睡着的人照睡，什么也不做），再把人叫起来
       w.slot = storySlotIndex(ev);
       w.minute = SLOTS[w.slot][0];
-      w.ready = {};
-      w.quick = [];
-      w.wait = 0;
+      worldSlotReset(w);
     }
     var roles = ev.kind === "mirror" ? worldAliveRoles(s) : ROLES.filter(function (r) { return w.fate[r] === id && s.persons![r].alive; });
     if (roles.length === 0 || (ev.kind === "mirror" && roles.length < 2)) { w.done.push(id); continue; }

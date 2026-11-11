@@ -409,6 +409,53 @@ interface Actor {
   /** 这一段（rideSlot）在路上花掉的分钟：过桥、坐车（worldExit）。这一段再做事，只剩下扣掉以后的那些 */
   ride?: number;
   rideSlot?: number;
+  /** 这一段（spentSlot）里一件一件做掉的分钟（worldActOnce，当场结算的那种）。这个人自己的钟 = 段头 + ride + spent */
+  spent?: number;
+  spentSlot?: number;
+  /** 「做到点」那种整段的事从这个人自己钟上的哪一分钟开始（之前做掉的、路上的不算在里头） */
+  start?: number;
+  /** 整段的事被对门一件一件地陪了多少分钟（只有一边是整段的搭伴）：结算时搭伴倍率按这一份给 */
+  tgMin?: number;
+  /** 整段的事这一段付了多少进门的钱（改主意退这么多） */
+  fee?: number;
+  /** 刚做完的那一件（客户端看 n 变了，飘结果）。不进长卷 */
+  did?: Did;
+}
+
+/** 当场结算的一件事 */
+interface Did {
+  /** 递增序号 */
+  n: number;
+  /** 行动 id 和名字 */
+  a: string;
+  l: string;
+  /** 这个人自己钟上的从几点到几点（一天里的第几分钟） */
+  f: number;
+  t: number;
+  /** 属性实际涨了多少（成长规则折算后的） */
+  s: Partial<Stats>;
+  /** 需求变了多少（含这段时间自己掉的） */
+  nd: Partial<Needs>;
+  /** 钱 */
+  m: number;
+  /** 搭伴了；b 是这回的倍率（含「带」） */
+  tg: boolean;
+  b?: number;
+  /** 不是自己做的，是对门后来赶上，给你补上的搭伴那一份 */
+  j?: boolean;
+  /** 只做了一部分（这一段剩的时间不够一整回） */
+  part?: number;
+}
+
+/** 这一段里一件一件做掉的事（认搭伴用：同一个点、同一件事、两个人各自钟上的时间对得上一半以上） */
+interface Run {
+  a: string;
+  sp: string;
+  f: number;
+  t: number;
+  /** 成长规则折算前的涨幅（状态、天赋已经乘了，搭伴没乘），后到的对门给这个人补搭伴时按它算 */
+  raw: SelfDelta;
+  tg: boolean;
 }
 
 interface PendingEvent {
@@ -438,6 +485,14 @@ interface WorldState {
   wait: number;
   /** 这一段做过的顺手的事（"qing:eat"），同一件一段只做一回 */
   quick: string[];
+  /** 这一段一件一件做掉的事（worldActOnce）。旧存档没有 */
+  runs?: { [R in Role]?: Run[] };
+  /** 这一段付过进门钱的（"qing:listen"）：同一件事这一段再来不再付 */
+  paid?: string[];
+  /** 今天早上每个人下一道关各条线上的分（一天收工时比一比挪了多少）。旧存档没有 */
+  goal0?: { [R in Role]?: { id: string; have: { [line: string]: number } } };
+  /** 今天的时间花在了哪（一天收工的小结卡画成一条）。旧存档没有 */
+  segs?: { [R in Role]?: DaySeg[] };
   /** 今天歇着：不上学也不上班 */
   rest: boolean;
   /** 只给这一个人放的一天（回来了、主线落在上班的钟点上）。可选：旧存档没有 */
@@ -487,6 +542,30 @@ interface LogEntry {
   gains?: { [R in Role]?: Partial<Stats> };
   /** 这件事里做过的检定 */
   checks?: { [R in Role]?: CheckResult };
+  /** 一天的小结：每个人朝下一道关挪了多少（world.ts 的 worldDayGoal） */
+  goal?: { [R in Role]?: DayGoal };
+  /** 一天的小结：每个人今天的时间花在了哪（一回一回做的、做到点的、上学上班），只发给客户端，不进长卷 */
+  spent?: { [R in Role]?: DaySeg[] };
+}
+
+/** 今天的一截时间：从几点到几点做了什么（a 是行动 id，l 是名字），tg 是搭伴 */
+interface DaySeg { a: string; l: string; f: number; t: number; tg?: boolean }
+
+/** 一天收工时，下一道关那条正在够的线：今天早上多少分、现在多少分、照今天这样还要几个日子 */
+interface DayGoal {
+  title: string;
+  /** 从明天起还有几个日子（0 = 明天就是那一天） */
+  turns: number;
+  line: string;
+  unit: string;
+  have0: number;
+  have: number;
+  need: number;
+  ok: boolean;
+  /** 照今天这样还要几个日子能够上（今天没挪、或者已经够上了就没有） */
+  pace?: number;
+  /** 今天新够上的线 */
+  crossed?: string[];
 }
 
 interface LifeState {

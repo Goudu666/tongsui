@@ -20,7 +20,17 @@ function meansGuestOk(s: LifeState, c: Content, role: Role, sp: Spot, act: Actio
   var b = w.actors[host];
   var hp = s.persons![host];
   if (!b || !hp.alive || b.shadow || b.guest) return false;
-  if (b.action !== act.id || b.spot !== sp.id) return false;
+  // 对门正整段地做着它，或者这一段一件一件地做过它、时间和你现在的钟对得上（worldActOnce）
+  var here = b.action === act.id && b.spot === sp.id;
+  if (!here && w.runs && w.actors[role]) {
+    var mine = worldClock(w, w.actors[role]!);
+    var runs = w.runs[host] || [];
+    for (var i = 0; i < runs.length && !here; i++) {
+      var r = runs[i];
+      here = r.a === act.id && r.sp === sp.id && mine < r.t && mine + act.minutes > r.f && worldOverlap(mine, mine + act.minutes, r.f, r.t) * 2 >= Math.min(act.minutes, r.t - r.f);
+    }
+  }
+  if (!here) return false;
   var rq = act.requires || {};
   return lifeHasAll(hp.flags, rq.flags) && lifeHasNone(hp.flags, rq.notFlags);
 }
@@ -46,7 +56,10 @@ function meansHostLeft(s: LifeState, c: Content, role: Role) {
   var b = w.actors[other];
   if (!b || !b.guest || !b.action || b.from !== w.slot) return;
   var act = worldFindAction(c, b.action);
-  if (act.money < 0) s.persons![role].money -= act.money;
+  if (b.fee) {
+    s.persons![role].money += b.fee;
+    if (w.paid) w.paid = w.paid.filter(function (k) { return k !== other + ":" + act.id; });
+  }
   worldClearAction(b);
 }
 
@@ -55,11 +68,16 @@ function meansGuestUnlocks(s: LifeState, c: Content, role: Role): string[] {
   var w = s.world;
   if (!w) return [];
   var b = w.actors[lifeOther(role)];
-  if (!b || !b.action || !b.spot) return [];
+  if (!b) return [];
+  // 对门整段在做的那个点，加上这一段一件一件做过的那些点
+  var spots: string[] = b.action && b.spot ? [b.spot] : [];
+  var runs = (w.runs && w.runs[lifeOther(role)]) || [];
+  for (var ri = 0; ri < runs.length; ri++) if (spots.indexOf(runs[ri].sp) < 0) spots.push(runs[ri].sp);
+  if (spots.length === 0) return [];
   var out: string[] = [];
   for (var i = 0; i < c.map.spots.length; i++) {
     var sp = c.map.spots[i];
-    if (sp.id !== b.spot) continue;
+    if (spots.indexOf(sp.id) < 0) continue;
     for (var j = 0; j < sp.actions.length; j++) {
       var act = worldFindAction(c, sp.actions[j]);
       if (meansGuestOk(s, c, role, sp, act)) out.push(act.id);

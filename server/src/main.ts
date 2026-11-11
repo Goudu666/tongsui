@@ -29,10 +29,11 @@ var SHADOW_GRACE_SECONDS = 10; // 掉线这么久之内不交给影子：切网�
  * - 旧客户端没法再用了：把 MIN_CLIENT_PROTOCOL 提到能用的最低版本，旧包会看到「请装新版」，而不是卡在看不懂的界面里
  * 剧情内容不走这个：内容有自己的指纹 CONTENT.version，客户端发现不一样会自己下载（content_get）。
  */
-var PROTOCOL_VERSION = 6; // 2：关口（上锁的选项）、日程、目标、属性进了 WORLD；schoolDay 没了  3：传承（老物件、再来一世），旧包可以忽略
+var PROTOCOL_VERSION = 7; // 2：关口（上锁的选项）、日程、目标、属性进了 WORLD；schoolDay 没了  3：传承（老物件、再来一世），旧包可以忽略
 // 4：一天五段（WORLD 多了 slot / ready / playing，新消息 PASS / CANCEL）；放风筝小游戏（20 / 21）拿掉。旧包不会按「就这么过」，一段都过不去
 // 5：一张张横着的图（世界坐标按图分条，人只左右走，新消息 EXIT 走出口）。旧包画的还是原来那张大地图，对不上
 // 6：主线（EVENT 会是 content.story 里的事、带上了锁的选项；WORLD 多了 story 纸带）。旧包找不到主线事件，弹出来是空的
+// 7：一件一件做（ACT 可以带 once，WORLD 的 actors 多了 pm / sp / did）。旧包不带 once，还是整段做到点，照样能玩
 var MIN_CLIENT_PROTOCOL = 6;
 /** 从这个协议版本起，安装包才认识传承的消息（31 AGAIN）。和 protocol.gd 的 LEGACY_SINCE 是同一个数 */
 var LEGACY_SINCE_PROTOCOL = 3;
@@ -44,7 +45,7 @@ var OP = {
   ROLL: 2, // c→s { reroll: true } | { confirm: true } | { heirloom: 老物件 id | null } 挑一件老物件带上 / 放下
   ROLL_STATE: 3, // s→c { rolls }  每人带着 house（家业传了几代）、offer（摆在面前的老物件）、heirloomId（挑中的）
   MOVE: 4, // c→s { x, y }
-  ACT: 5, // c→s { spot }
+  ACT: 5, // c→s { spot, once? }
   CHOOSE: 6, // c→s { optionId }（旧客户端带的 guess 不认了：猜 TA 砍了）
   WORLD: 7, // s→c 精简世界状态（5Hz）
   EVENT: 8, // s→c { event } 有事件开始了
@@ -470,7 +471,8 @@ function worldView(s: LifelineMatch) {
     var a = w.actors[r];
     // seq：服务器已处理到这个人的第几条 MOVE，本地玩家拿它对照自己的历史位置做校正
     // tg：这次是搭伴做的；fr：这件事从第几段开始（比这一段早就撤不回了）；rd：这一段在路上花掉的分钟（过桥、坐车，客户端拿它把按钮灰掉）
-    actors[r] = a ? { x: r1(a.x), y: r1(a.y), act: a.action, spot: a.spot, sleep: a.asleep, seq: s.moveSeq[r] || 0, tg: !!a.together, fr: a.from, rd: worldRide(a, w.slot) } : null;
+    // pm：这个人自己的钟（段头 + 路上 + 一件一件做掉的）；sp：这一段一件一件做掉的分钟；did：刚当场结算的那一件（n 递增，见 types.ts 的 Did）
+    actors[r] = a ? { x: r1(a.x), y: r1(a.y), act: a.action, spot: a.spot, sleep: a.asleep, seq: s.moveSeq[r] || 0, tg: !!a.together, fr: a.from, rd: worldRide(a, w.slot), pm: worldClock(w, a), sp: worldSpent(a, w.slot), did: a.did || null } : null;
     var p = life.persons![r];
     needs[r] = { hunger: r1(p.needs.hunger), energy: r1(p.needs.energy), mood: r1(p.needs.mood), clean: r1(p.needs.clean) };
     money[r] = p.money;
@@ -725,7 +727,7 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
       if (seq > 0) state.moveSeq[role] = seq;
       worldMove(life, CONTENT, role, Number(body.x), Number(body.y), dt);
     } else if (msg.opCode === OP.ACT) {
-      var res = worldAct(life, CONTENT, role, String(body.spot));
+      var res = worldAct(life, CONTENT, role, String(body.spot), body.once === true); // once：做一回当场结算（协议 7）；旧包不带，整段做到点
       if (res.error) sendError(dispatcher, msg.sender, res.error);
       if (res.together) broadcastLog(dispatcher, [res.together]);
     } else if (msg.opCode === OP.CHOOSE) {

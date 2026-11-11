@@ -532,17 +532,19 @@ const rules = load("rules.yaml");
     roll: ["budget", "wealthAdjust", "statMin", "statMax", "rerolls"],
     growth: ["eventScale", "actionScale", "room", "floor", "bornWeight", "plasticity", "plainBonus", "turnWeight"],
     aging: ["body", "mind", "activeFactor"],
-    daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "needsUse", "wageFlags"],
+    daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "needsUse", "wageFlags", "wageFlagsFrom"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],
     lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max", "flags"],
     bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "syncSteadyFrom", "syncSteadyFull", "slotTogether", "closeWeight", "drift", "driftDistance", "driftFloor", "pullFrom", "pullFull", "pullMoney", "pullMoneyClose", "reunion"],
     family: ["names", "start", "inherit", "noise", "room", "selfGrow", "sameAge"],
     legacy: ["pastKept", "heirloomOffer", "houseMax", "houseMoney", "lateEarly", "lateAfter", "lateRoom", "linkedDrift", "linkedMood", "oldSoul", "oldSoulCharm"],
   };
-  checkKeys("rules", rules, Object.keys(need));
+  // 可以不写的：bond.pullMoneyBy（塞钱的上限按塞的那个人的家境，docs/MEANS.md 第九节）、locks（锁上那句按标记换）
+  const optional = { bond: ["pullMoneyBy"] };
+  checkKeys("rules", rules, [...Object.keys(need), "locks"]);
   for (const [sec, keys] of Object.entries(need)) {
     if (!rules?.[sec]) { errors.push(`rules.yaml: 缺少 ${sec}`); continue; }
-    checkKeys(`rules.${sec}`, rules[sec], keys);
+    checkKeys(`rules.${sec}`, rules[sec], [...keys, ...(optional[sec] ?? [])]);
     for (const k of keys) if (rules[sec][k] === undefined) errors.push(`rules.yaml: 缺少 ${sec}.${k}`);
   }
   {
@@ -561,10 +563,18 @@ const rules = load("rules.yaml");
   // 拉一把（server/src/pull.ts）：看分的线最多拉几分（属性口径，0.6 = 6 分）、要钱的线最多塞几块。拉太多关口就不用冲了
   if (rules?.bond && !(typeof rules.bond.pullFrom === "number" && typeof rules.bond.pullFull === "number" && rules.bond.pullFrom >= 0 && rules.bond.pullFrom <= rules.bond.pullFull && rules.bond.pullFull <= 1)) errors.push("rules.yaml: bond.pullFrom / pullFull 是关口上默契最低和最高时能拉对门几分（属性口径），要 0 ≤ pullFrom ≤ pullFull ≤ 1");
   if (rules?.bond && !(typeof rules.bond.pullMoney === "number" && rules.bond.pullMoney >= 0 && rules.bond.pullMoney <= 80 && typeof rules.bond.pullMoneyClose === "number" && rules.bond.pullMoneyClose > 0 && rules.bond.pullMoneyClose <= 100)) errors.push("rules.yaml: bond.pullMoney 是关口上最多替对门垫几块（0~80），pullMoneyClose 是亲近到几垫满（1~100）");
+  if (rules?.bond?.pullMoneyBy !== undefined && !(Array.isArray(rules.bond.pullMoneyBy) && rules.bond.pullMoneyBy.length === 3 && rules.bond.pullMoneyBy.every((x) => typeof x === "number" && x >= 0 && x <= 80))) errors.push("rules.yaml: bond.pullMoneyBy 是清贫 / 小康 / 殷实三档人家最多替对门塞几块（三个 0~80 的数）");
   if (rules?.bond) checkDeltas("rules.bond.reunion", rules.bond.reunion, BOND_KEYS);
+  // 工钱的倍数：升了级的往上乘（1~2），清贫人家寄回家的、背着助学贷款的往下乘（docs/MEANS.md 第九节），不低于一半
   for (const [f, mul] of Object.entries(rules?.daily?.wageFlags ?? {})) {
     consumed.push(["rules.daily.wageFlags", f]);
-    if (typeof mul !== "number" || mul < 1 || mul > 2) errors.push(`rules.yaml: daily.wageFlags.${f} 是工钱的倍数，要在 1 到 2 之间`);
+    if (typeof mul !== "number" || mul < 0.5 || mul > 2) errors.push(`rules.yaml: daily.wageFlags.${f} 是工钱的倍数，要在 0.5 到 2 之间`);
+  }
+  const wff = rules?.daily?.wageFlagsFrom;
+  if (wff !== undefined && !(Number.isInteger(wff) && wff >= 0 && wff <= 45)) errors.push("rules.yaml: daily.wageFlagsFrom 是几岁起工钱才乘 wageFlags（0~45 的整数）");
+  for (const [f, t] of Object.entries(rules?.locks ?? {})) {
+    consumed.push(["rules.locks", f]);
+    if (typeof t !== "string" || !t || [...t].length > 12) errors.push(`rules.yaml: locks.${f} 是锁上的那句话，不超过 12 个字`);
   }
   // 关口上走的路折成的寿数：标记拼错了要报（没有任何选项打这个标记）
   for (const [f, years] of Object.entries(rules?.lifespan?.flags ?? {})) {
@@ -960,6 +970,13 @@ const tracks = (load("tracks.yaml") ?? []).map((t) => {
 if (tracks.length === 0 || Object.keys(tracks.at(-1).requires).length > 0) errors.push("tracks.yaml: 最后一条是兜底的路，不能有 requires");
 if (new Set(tracks.map((t) => t.id)).size !== tracks.length) errors.push("tracks.yaml: id 重复");
 const milestones = events.filter((e) => e.kind === "milestone");
+// 锁上那句按标记换（rules.yaml 的 locks）：关口选项的 notFlags 拦的正是这个人身上的这个标记，锁上写那一句，不写选项自己的 lock。
+// 殷实人家的路给别的人家看是「家里没有这层关系」，给家里断了的人看是「家里已经不管你了」。写了 hide 的不挂：断了的人照旧看不见
+for (const m of milestones) for (const o of m.options) {
+  if (o.hide) continue;
+  const fl = Object.entries(rules?.locks ?? {}).filter(([f]) => (o.requires?.notFlags ?? []).includes(f)).map(([flag, text]) => ({ flag, text }));
+  if (fl.length) o.flagLocks = fl;
+}
 const ownMilestones = milestones.filter((e) => e.kidAge === undefined);
 if (new Set(ownMilestones.map((e) => e.age)).size !== ownMilestones.length) errors.push("milestones: 同一个年纪只能有一个关口");
 const kidGates = milestones.filter((e) => e.kidAge !== undefined);

@@ -451,7 +451,7 @@
     - id: fly
       text: 给他买张机票
       tags: [gentle]
-      requires: { flags: [fam_rich] }
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
       cost: 20
       effects: { self: { charm: 0.3, mood: 2 } }
 
@@ -523,7 +523,7 @@
     - id: treat
       text: 过两天回请全组
       tags: [gentle]
-      requires: { flags: [fam_rich] }
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
       cost: 20
       effects: { self: { charm: 0.4, mood: -1 } }
 

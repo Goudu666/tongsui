@@ -64,11 +64,19 @@ function pullReachPoints(c: Content, sync: number): number {
   return Math.floor((r.pullFrom + (r.pullFull - r.pullFrom) * pullSyncShare(c, sync)) * 10 + 1e-6);
 }
 
-/** 要钱的线最多塞多少块 */
-function pullReachMoney(c: Content, close: number): number {
+/**
+ * 要钱的线最多塞多少块。上限按塞钱的那个人的家境（rules.bond.pullMoneyBy：清贫 / 小康 / 殷实，docs/MEANS.md 第九节）：
+ * 殷实人家塞得多，家里断了供的、家道中落的（摘了 fam_rich）按小康。没写 pullMoneyBy 的旧内容都按 pullMoney
+ */
+function pullReachMoney(c: Content, close: number, giver: Person): number {
   var r = c.rules.bond;
   if (typeof r.pullMoney !== "number" || !r.pullMoneyClose) return 0;
-  return Math.floor(r.pullMoney * lifeClamp(close / r.pullMoneyClose, 0, 1));
+  var cap = r.pullMoney;
+  if (r.pullMoneyBy && r.pullMoneyBy.length === 3) {
+    var tier = lifeHasFlag(giver, "fam_poor") ? 0 : lifeHasFlag(giver, "fam_rich") && !lifeHasFlag(giver, "fam_cut") ? 2 : 1;
+    cap = r.pullMoneyBy[tier];
+  }
+  return Math.floor(cap * lifeClamp(close / r.pullMoneyClose, 0, 1));
 }
 
 /** 这条路要多少钱才走得了（积蓄线和交的钱里大的那个）；不看钱返回 0 */
@@ -116,7 +124,7 @@ function pullOffer(s: LifeState, c: Content, ev: LifeEvent, pe: PendingEvent, ro
   if (moneyNeed <= 0) return null;
   var mgap = Math.ceil(moneyNeed - me.money - 1e-6);
   var mspare = Math.floor(them.money - moneyNeed + 1e-6);
-  var mreach = pullReachMoney(c, s.bond.close);
+  var mreach = pullReachMoney(c, s.bond.close, them);
   if (mgap <= 0 || mgap > mreach || mspare < mgap) return null;
   return { by: other, gap: mgap, unit: "块", reach: mreach };
 }

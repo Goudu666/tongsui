@@ -74,9 +74,10 @@ const index = (list, id) => list.findIndex((e) => e.id === id);
   }
   // 钱和亲近按原数；家里没有那个条件的路不算「差一点」
   const settle = C.events.find((e) => e.id === "m_settle");
-  const poor = { flags: [], stats: { body: 5, mind: 5, charm: 5, luck: 5 }, money: 180 };
+  const B = settle.options.find((o) => o.id === "buy").min;
+  const poor = { flags: [], stats: { body: 5, mind: 5, charm: 5, luck: 5 }, money: B - 20 };
   const buy = G("atlasOptionShort")(settle, settle.options.find((o) => o.id === "buy"), poor, 0, { close: 40 });
-  assert.deepEqual([buy.have, buy.need, buy.unit], [180, 200, "块"]);
+  assert.deepEqual([buy.have, buy.need, buy.unit], [B - 20, B, "块"]);
   assert.equal(G("atlasOptionShort")(settle, settle.options.find((o) => o.id === "help"), poor, 0, { close: 40 }), null, "家里没出首付的那条不是差几块的事");
   const evening = C.events.find((e) => e.id === "m_evening");
   assert.equal(G("atlasOptionShort")(evening, evening.options.find((o) => o.id === "pair"), poor, 0, undefined), null, "对门不在了，两家并一家不是差几分的事");

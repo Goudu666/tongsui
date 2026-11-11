@@ -92,6 +92,7 @@ events:
     lines:
       m_settle.buy: -40
       m_settle.help: -40
+      m_settle.nest: -40
       m_settle.rent: -30
 
   # ---------------- 八十年代 ----------------
@@ -148,6 +149,7 @@ events:
     lines:
       m_settle.buy: -40
       m_settle.help: -35
+      m_settle.nest: -35
       m_settle.rent: -25
     hits:
       - requires: { flags: [home_unit] }
@@ -183,6 +185,7 @@ events:
     lines:
       m_settle.buy: 15
       m_settle.help: 12
+      m_settle.nest: 12
       m_settle.rent: 8
 
   # 拆迁：还住老屋的（m_settle.stay → home_old）拿一笔补的钱。c92 三十岁时这一波已经过去了
@@ -209,6 +212,7 @@ events:
     lines:
       m_settle.buy: 15
       m_settle.help: 12
+      m_settle.nest: 12
       m_settle.rent: 8
 
   # 手机、外卖、扫码：楼下的摊子多了外卖的单，开门脸的铺子冷清一点。网吧摘掉。
@@ -247,6 +251,7 @@ events:
     lines:
       m_settle.buy: -15
       m_settle.help: -12
+      m_settle.nest: -12
       m_settle.rent: -8
 
   # ---------------- 二〇年代往后（越往后越虚） ----------------
@@ -273,6 +278,7 @@ events:
     lines:
       m_settle.buy: -25
       m_settle.help: -20
+      m_settle.nest: -20
       m_settle.rent: -12
       m_evening.care: 20
 

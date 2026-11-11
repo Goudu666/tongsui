@@ -243,7 +243,7 @@
     - id: family
       text: 家里出本钱，自己开
       tags: [competitive]
-      requires: { flags: [fam_rich] }
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
       effects: { self: { charm: 0.2 }, flags: [own_shop, quit_job] }
     - id: stay
       text: 不去，接着上班
@@ -273,7 +273,7 @@
     - id: home
       text: 回家跟爸妈开口
       tags: [gentle]
-      requires: { flags: [fam_rich] }
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
       effects: { self: { mood: -4 } }
 
 - id: lv_shop_second
@@ -344,7 +344,7 @@
     - id: family
       text: 跟家里借钱开个铺子
       tags: [competitive]
-      requires: { flags: [fam_rich] }
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
       effects: { self: { mood: -2 }, flags: [own_shop] }
 
 # 45 岁那道关的「争位子」看心智和魅力：这几件是关前的最后几个日子里，路上的人给你的一次推或一次绊

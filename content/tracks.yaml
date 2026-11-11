@@ -194,6 +194,17 @@
   label: 在部队
   requires: { minAge: 18, maxAge: 21, flags: [army] }
   duty: { label: 出操, spot: away_work, arrive: [390, 420], until: 1050, needs: { hunger: 35, energy: -28 }, stats: { body: 0.5, mind: 0.08 }, money: 4 }
+# 清贫人家念大学（docs/MEANS.md 第九节）：没拿过助学金的课余去打工，挣自己的饭钱，下了课那一段就没了
+- id: uni_away_work
+  label: 在外地念大学，课余打工
+  group: uni_away
+  requires: { minAge: 18, maxAge: 21, flags: [uni_away, fam_poor], notFlags: [aid] }
+  duty: { label: 上课，下了课去打工, spot: away_gate, arrive: [390, 480], until: 1260, needs: { hunger: 35, energy: -28, mood: -2 }, stats: { mind: 0.53, charm: 0.2 }, money: 2 }
+- id: uni_near_work
+  label: 在本市念大学，课余打工
+  group: uni_near
+  requires: { minAge: 18, maxAge: 21, flags: [uni_near, fam_poor], notFlags: [aid] }
+  duty: { label: 上课，下了课去打工, spot: uni_gate, arrive: [420, 540], until: 1110, needs: { hunger: 35, energy: -24, mood: -2 }, stats: { mind: 0.38, charm: 0.2 }, money: 2 }
 - id: uni_away
   label: 在外地念大学
   requires: { minAge: 18, maxAge: 21, flags: [uni_away] }

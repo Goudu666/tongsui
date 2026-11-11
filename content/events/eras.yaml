@@ -16,7 +16,7 @@
     - id: family
       text: 家里出本钱，自己开
       tags: [competitive]
-      requires: { flags: [fam_rich] }
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
       effects: { self: { charm: 0.2 }, flags: [own_shop, quit_job] }
     - id: stay
       text: 不去，接着上班

@@ -218,6 +218,17 @@ lives:
     text: "{name} 四十多岁丢了饭碗，在楼下支了个摊。天不亮就起，起了十几年，摊子上的灯总是楼里第一盏亮的。"
     requires: { flags: [laid_off, own_stall] }
 
+  # ---- 三扇门：出身和走到哪儿（docs/MEANS.md 第九节）。出身那一半这辈子改不了，所以图鉴上不拿来说「差一点」 ----
+  # 殷实人家最难的那一条：家里不管了以后，自己买了房、自己考进了办公室
+  - id: l_self_house
+    title: 没靠家里
+    text: "{name} 二十几岁起就没再花过家里的钱。新房的钥匙拿到手，{name} 一个人在空屋里坐了一下午。"
+    requires: { flags: [fam_cut, home_own], notFlags: [home_help, home_nest] }
+  - id: l_self_desk
+    title: 自己考的
+    text: "{name} 跟家里断了来往，后来坐进了办公室，靠的是自己那张卷子。逢年过节回去，饭桌上谁也不提当年。"
+    requires: { flags: [fam_cut, job_desk] }
+
   # ---- 活成了什么样 ----
   - id: l_early
     title: 早走的人
@@ -253,6 +264,20 @@ lives:
     title: 远行的人
     text: "{name} 在很远的城市过了大半辈子。那边的人都说 {name} 是天津人，可 {name} 已经说不准天津话了。"
     requires: { flags: [left_city], notFlags: [stayed] }
+  # 出身和走到哪儿的另一半（docs/MEANS.md 第九节）：比「早走的人」「读书人」这些淡一些，排在它们后面
+  - id: l_first_desk
+    title: 头一个
+    text: "{name} 是家里头一个坐办公室的。头一个月的工资袋没拆，原样寄回了家。"
+    requires: { flags: [fam_poor, job_desk] }
+  - id: l_own_door
+    title: 自己的门
+    text: "{name} 小时候一间屋四张嘴，什么都得抢。后来有了一套自己的房，进门换鞋，没人跟 {name} 抢鞋柜了。"
+    requires: { flags: [fam_siblings, home_own] }
+  - id: l_spent
+    title: 家底
+    text: "{name} 家的买卖倒在 {name} 四十几岁那年。后来的日子跟楼里别家一样过，早点铺排队，菜市场还价。"
+    requires: { flags: [fam_fallen] }
+
   # ---- 成家和下一代（docs/FAMILY.md）：孩子的关口走到了哪儿。比「当了爹妈」具体，排在它前面 ----
   - id: l_kids_tongsui
     title: 两家的孩子

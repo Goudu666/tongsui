@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "07c1e1e0ac36",
+ "version": "0194aaf2c704",
  "events": [
   {
    "id": "m_rise",
@@ -554,6 +554,7 @@ var CONTENT: Content = {
        "fam_rich"
       ],
       "notFlags": [
+       "fam_cut",
        "own_shop",
        "own_stall",
        "no_job",
@@ -576,7 +577,13 @@ var CONTENT: Content = {
        "rank1",
        "seat_pull"
       ]
-     }
+     },
+     "flagLocks": [
+      {
+       "flag": "fam_cut",
+       "text": "家里已经不管你了"
+      }
+     ]
     },
     {
      "id": "steady",
@@ -1127,6 +1134,7 @@ var CONTENT: Content = {
        "rank1"
       ],
       "notFlags": [
+       "fam_cut",
        "rank2",
        "own_shop",
        "own_stall",
@@ -5747,6 +5755,9 @@ var CONTENT: Content = {
      "requires": {
       "flags": [
        "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
       ]
      },
      "effects": {
@@ -6918,7 +6929,7 @@ var CONTENT: Content = {
    "kind": "mirror",
    "stage": "old",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": "breakfast",
    "when": [
     390,
@@ -9094,6 +9105,868 @@ var CONTENT: Content = {
     },
     "flags": []
    },
+   "catches": []
+  },
+  {
+   "id": "mx_exp_book",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 25,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 29,
+    "flags": [
+     "fam_rich",
+     "exp_book"
+    ],
+    "notFlags": [
+     "fam_cut",
+     "job_desk",
+     "job_teach",
+     "own_shop",
+     "quit_job",
+     "left_city",
+     "laid_off",
+     "no_job"
+    ]
+   },
+   "title": "一块鱼",
+   "text": "过年回家，你妈问起单位里的事。你说了在干什么，她点点头，给你夹了块鱼，一顿饭没再开口。",
+   "options": [
+    {
+     "id": "yield",
+     "text": "让家里托人进学校",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_teach",
+       "switched"
+      ],
+      "drop": [
+       "job_desk",
+       "job_pull",
+       "job_teach",
+       "job_trade",
+       "job_craft",
+       "job_labor",
+       "job_succeed",
+       "job_odd",
+       "rank1",
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "firm",
+     "text": "说这活儿是自己挑的",
+     "tags": [
+      "competitive"
+     ],
+     "requires": {
+      "notFlags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "strain1"
+      ]
+     }
+    },
+    {
+     "id": "firm_cut",
+     "text": "说这活儿是自己挑的",
+     "tags": [
+      "competitive"
+     ],
+     "requires": {
+      "flags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "fam_cut"
+      ]
+     }
+    },
+    {
+     "id": "quiet",
+     "text": "低头把鱼吃完",
+     "tags": [
+      "patient"
+     ],
+     "requires": {
+      "notFlags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "strain1"
+      ]
+     }
+    },
+    {
+     "id": "quiet_cut",
+     "text": "低头把鱼吃完",
+     "tags": [
+      "patient"
+     ],
+     "requires": {
+      "flags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "fam_cut"
+      ]
+     }
+    },
+    {
+     "id": "ask",
+     "text": "回去问问对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mx_exp_pull",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 25,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 29,
+    "flags": [
+     "fam_rich",
+     "exp_pull"
+    ],
+    "notFlags": [
+     "fam_cut",
+     "job_desk",
+     "job_pull",
+     "own_shop",
+     "quit_job",
+     "left_city",
+     "laid_off",
+     "no_job"
+    ]
+   },
+   "title": "厂办",
+   "text": "你爸托人在厂办给你留了个位子，你没去。他在楼道里碰上你，问了句吃了没，就上楼了。",
+   "options": [
+    {
+     "id": "yield",
+     "text": "去厂办报到",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_pull",
+       "switched"
+      ],
+      "drop": [
+       "job_desk",
+       "job_pull",
+       "job_teach",
+       "job_trade",
+       "job_craft",
+       "job_labor",
+       "job_succeed",
+       "job_odd",
+       "rank1",
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "firm",
+     "text": "跟他说不去了",
+     "tags": [
+      "competitive"
+     ],
+     "requires": {
+      "notFlags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "strain1"
+      ]
+     }
+    },
+    {
+     "id": "firm_cut",
+     "text": "跟他说不去了",
+     "tags": [
+      "competitive"
+     ],
+     "requires": {
+      "flags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "fam_cut"
+      ]
+     }
+    },
+    {
+     "id": "quiet",
+     "text": "回了句吃了",
+     "tags": [
+      "patient"
+     ],
+     "requires": {
+      "notFlags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "strain1"
+      ]
+     }
+    },
+    {
+     "id": "quiet_cut",
+     "text": "回了句吃了",
+     "tags": [
+      "patient"
+     ],
+     "requires": {
+      "flags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "fam_cut"
+      ]
+     }
+    },
+    {
+     "id": "ask",
+     "text": "先去找对门坐会儿",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mx_exp_abroad",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 25,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 29,
+    "flags": [
+     "fam_rich",
+     "exp_abroad"
+    ],
+    "notFlags": [
+     "fam_cut",
+     "job_desk",
+     "job_pull",
+     "own_shop",
+     "quit_job",
+     "left_city",
+     "laid_off",
+     "no_job"
+    ]
+   },
+   "title": "画册",
+   "text": "你爸跑船回来，听说你在干什么，没多问。走之前把一本外国港口的画册搁在你桌上。",
+   "options": [
+    {
+     "id": "yield",
+     "text": "托他的朋友进外贸公司",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_pull",
+       "switched"
+      ],
+      "drop": [
+       "job_desk",
+       "job_pull",
+       "job_teach",
+       "job_trade",
+       "job_craft",
+       "job_labor",
+       "job_succeed",
+       "job_odd",
+       "rank1",
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "firm",
+     "text": "跟他说就干这个了",
+     "tags": [
+      "competitive"
+     ],
+     "requires": {
+      "notFlags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "strain1"
+      ]
+     }
+    },
+    {
+     "id": "firm_cut",
+     "text": "跟他说就干这个了",
+     "tags": [
+      "competitive"
+     ],
+     "requires": {
+      "flags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "fam_cut"
+      ]
+     }
+    },
+    {
+     "id": "quiet",
+     "text": "把画册收进抽屉",
+     "tags": [
+      "solitude"
+     ],
+     "requires": {
+      "notFlags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "strain1"
+      ]
+     }
+    },
+    {
+     "id": "quiet_cut",
+     "text": "把画册收进抽屉",
+     "tags": [
+      "solitude"
+     ],
+     "requires": {
+      "flags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "fam_cut"
+      ]
+     }
+    },
+    {
+     "id": "ask",
+     "text": "拿画册去给对门看",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mx_exp_art",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 25,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 29,
+    "flags": [
+     "fam_rich",
+     "exp_art"
+    ],
+    "notFlags": [
+     "fam_cut",
+     "job_desk",
+     "job_teach",
+     "job_pull",
+     "own_shop",
+     "quit_job",
+     "left_city",
+     "laid_off",
+     "no_job"
+    ]
+   },
+   "title": "盖着的琴",
+   "text": "你妈托人在少年宫找了个教琴的差事，问你去不去。家里那架琴还在，盖着块布。",
+   "options": [
+    {
+     "id": "yield",
+     "text": "去少年宫教琴",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_teach",
+       "switched"
+      ],
+      "drop": [
+       "job_desk",
+       "job_pull",
+       "job_teach",
+       "job_trade",
+       "job_craft",
+       "job_labor",
+       "job_succeed",
+       "job_odd",
+       "rank1",
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "firm",
+     "text": "说不去了",
+     "tags": [
+      "competitive"
+     ],
+     "requires": {
+      "notFlags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "strain1"
+      ]
+     }
+    },
+    {
+     "id": "firm_cut",
+     "text": "说不去了",
+     "tags": [
+      "competitive"
+     ],
+     "requires": {
+      "flags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "fam_cut"
+      ]
+     }
+    },
+    {
+     "id": "quiet",
+     "text": "把布又盖好",
+     "tags": [
+      "patient"
+     ],
+     "requires": {
+      "notFlags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "strain1"
+      ]
+     }
+    },
+    {
+     "id": "quiet_cut",
+     "text": "把布又盖好",
+     "tags": [
+      "patient"
+     ],
+     "requires": {
+      "flags": [
+       "strain1"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "fam_cut"
+      ]
+     }
+    },
+    {
+     "id": "ask",
+     "text": "叫对门来听你弹一段",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mx_loan_paid",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 30,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 27,
+    "maxAge": 29,
+    "flags": [
+     "loan"
+    ]
+   },
+   "title": "还清了",
+   "text": "最后一笔助学贷款寄出去了。回执你折了两折，夹进了当年那张录取通知书里。",
+   "options": [
+    {
+     "id": "treat",
+     "text": "叫上对门吃顿饭",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {
+       "mood": 3
+      },
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "loan"
+      ]
+     }
+    },
+    {
+     "id": "walk",
+     "text": "一个人去河边走走",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "loan"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mx_loan_paid_late",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 30,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "flags": [
+     "loan"
+    ]
+   },
+   "title": "回执",
+   "text": "银行寄来一张单子：助学贷款还清了。你看了两遍，揣进上衣兜里。",
+   "options": [
+    {
+     "id": "treat",
+     "text": "买两瓶汽水回家",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "loan"
+      ]
+     }
+    },
+    {
+     "id": "keep",
+     "text": "把单子压在玻璃板下",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "loan"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mx_last_remit",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 30,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 40,
+    "flags": [
+     "send_home",
+     "parent_gone"
+    ]
+   },
+   "title": "汇款单",
+   "text": "月初你照常去了邮局，排到柜台才想起来，这个月不用寄了。",
+   "options": [
+    {
+     "id": "pocket",
+     "text": "把汇款单揣回兜里",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "send_home"
+      ]
+     }
+    },
+    {
+     "id": "stand",
+     "text": "在邮局门口站一会儿",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "send_home"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
    "catches": []
   },
   {
@@ -14747,6 +15620,9 @@ var CONTENT: Content = {
      "requires": {
       "flags": [
        "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
       ]
      },
      "effects": {
@@ -14863,6 +15739,9 @@ var CONTENT: Content = {
      "requires": {
       "flags": [
        "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
       ]
      },
      "effects": {
@@ -15113,6 +15992,9 @@ var CONTENT: Content = {
      "requires": {
       "flags": [
        "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
       ]
      },
      "effects": {
@@ -18487,6 +19369,7 @@ var CONTENT: Content = {
      "fam_rich"
     ],
     "notFlags": [
+     "fam_cut",
      "own_shop",
      "left_city"
     ]
@@ -18549,11 +19432,92 @@ var CONTENT: Content = {
    "catches": []
   },
   {
+   "id": "mn_mid_nest",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 28,
+    "flags": [
+     "fam_nest"
+    ],
+    "notFlags": [
+     "fam_rich",
+     "fam_poor",
+     "own_shop",
+     "left_city"
+    ]
+   },
+   "title": "铁盒",
+   "text": "你妈从柜顶上够下来一个铁盒，里头是这些年攒的。她说：想自己干点什么，就拿去。",
+   "options": [
+    {
+     "id": "shop",
+     "text": "辞了，开个铺子",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "own_shop",
+       "quit_job"
+      ],
+      "drop": [
+       "fam_nest"
+      ]
+     }
+    },
+    {
+     "id": "keep",
+     "text": "留着，以后买房",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back",
+     "text": "塞回柜顶上",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
    "id": "mn_rich_fall",
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 2,
+   "weight": 3,
    "where": null,
    "when": null,
    "hint": null,
@@ -18562,10 +19526,13 @@ var CONTENT: Content = {
     "maxAge": 54,
     "flags": [
      "fam_rich"
+    ],
+    "notFlags": [
+     "fam_cut"
     ]
    },
    "title": "家底",
-   "text": "你爸那边的买卖出了事。你妈打电话来，话说得很慢，说家里那套房怕是保不住。",
+   "text": "你爸那边的买卖倒了。你妈打电话来，话说得很慢，说家里那套房怕是也保不住。",
    "options": [
     {
      "id": "all",
@@ -18573,7 +19540,7 @@ var CONTENT: Content = {
      "tags": [
       "responsible"
      ],
-     "cost": 40,
+     "cost": 60,
      "effects": {
       "self": {
        "mood": -4
@@ -18581,7 +19548,11 @@ var CONTENT: Content = {
       "other": {},
       "bond": {},
       "flags": [
-       "rich_saved"
+       "rich_saved",
+       "fam_fallen"
+      ],
+      "drop": [
+       "fam_rich"
       ]
      }
     },
@@ -18591,14 +19562,19 @@ var CONTENT: Content = {
      "tags": [
       "patient"
      ],
-     "cost": 20,
+     "cost": 30,
      "effects": {
       "self": {
        "mood": -6
       },
       "other": {},
       "bond": {},
-      "flags": []
+      "flags": [
+       "fam_fallen"
+      ],
+      "drop": [
+       "fam_rich"
+      ]
      }
     },
     {
@@ -18614,7 +19590,12 @@ var CONTENT: Content = {
       },
       "other": {},
       "bond": {},
-      "flags": []
+      "flags": [
+       "fam_fallen"
+      ],
+      "drop": [
+       "fam_rich"
+      ]
      }
     },
     {
@@ -18629,7 +19610,12 @@ var CONTENT: Content = {
       },
       "other": {},
       "bond": {},
-      "flags": []
+      "flags": [
+       "fam_fallen"
+      ],
+      "drop": [
+       "fam_rich"
+      ]
      }
     }
    ],
@@ -19802,6 +20788,9 @@ var CONTENT: Content = {
      "requires": {
       "flags": [
        "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
       ]
      },
      "effects": {
@@ -20134,6 +21123,9 @@ var CONTENT: Content = {
      "requires": {
       "flags": [
        "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
       ]
      },
      "effects": {
@@ -21119,7 +22111,13 @@ var CONTENT: Content = {
        "junior_key",
        "junior_paid"
       ]
-     }
+     },
+     "flagLocks": [
+      {
+       "flag": "fam_cut",
+       "text": "家里已经不管你了"
+      }
+     ]
     },
     {
      "id": "normal",
@@ -21296,7 +22294,13 @@ var CONTENT: Content = {
        "school_far",
        "school_paid"
       ]
-     }
+     },
+     "flagLocks": [
+      {
+       "flag": "fam_cut",
+       "text": "家里已经不管你了"
+      }
+     ]
     },
     {
      "id": "nest",
@@ -21564,7 +22568,13 @@ var CONTENT: Content = {
       "flags": [
        "uni_abroad"
       ]
-     }
+     },
+     "flagLocks": [
+      {
+       "flag": "fam_cut",
+       "text": "家里已经不管你了"
+      }
+     ]
     },
     {
      "id": "local",
@@ -21924,7 +22934,13 @@ var CONTENT: Content = {
       "flags": [
        "uni_abroad"
       ]
-     }
+     },
+     "flagLocks": [
+      {
+       "flag": "fam_cut",
+       "text": "家里已经不管你了"
+      }
+     ]
     },
     {
      "id": "local",
@@ -22157,6 +23173,40 @@ var CONTENT: Content = {
      ]
     },
     {
+     "id": "pull_home",
+     "text": "进爸妈安排好的单位",
+     "score": {
+      "mind": 0.6,
+      "charm": 0.4
+     },
+     "min": 8.9,
+     "requires": {
+      "flags": [
+       "fam_rich",
+       "exp_pull"
+      ],
+      "notFlags": [
+       "fam_cut"
+      ]
+     },
+     "lock": "家里没有这层关系",
+     "hide": true,
+     "joins": "pull",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_pull"
+      ]
+     }
+    },
+    {
      "id": "pull",
      "text": "托家里的关系进单位",
      "score": {
@@ -22168,6 +23218,9 @@ var CONTENT: Content = {
      "requires": {
       "flags": [
        "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
       ]
      },
      "lock": "家里没有这层关系",
@@ -22183,7 +23236,13 @@ var CONTENT: Content = {
       "flags": [
        "job_pull"
       ]
-     }
+     },
+     "flagLocks": [
+      {
+       "flag": "fam_cut",
+       "text": "家里已经不管你了"
+      }
+     ]
     },
     {
      "id": "teach",
@@ -22601,8 +23660,8 @@ var CONTENT: Content = {
     {
      "id": "buy",
      "text": "买下一套自己的房",
-     "min": 200,
-     "cost": 200,
+     "min": 230,
+     "cost": 230,
      "tags": [
       "responsible"
      ],
@@ -22658,11 +23717,14 @@ var CONTENT: Content = {
     {
      "id": "help",
      "text": "爸妈出首付，买了房",
-     "min": 150,
-     "cost": 150,
+     "min": 190,
+     "cost": 190,
      "requires": {
       "flags": [
        "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
       ]
      },
      "lock": "爸妈帮不上",
@@ -22681,6 +23743,12 @@ var CONTENT: Content = {
        "home_help"
       ]
      },
+     "flagLocks": [
+      {
+       "flag": "fam_cut",
+       "text": "家里已经不管你了"
+      }
+     ],
      "eraLines": [
       {
        "flags": [
@@ -22749,6 +23817,75 @@ var CONTENT: Content = {
      }
     },
     {
+     "id": "nest",
+     "text": "爸妈拿出那笔钱，出首付",
+     "min": 215,
+     "cost": 215,
+     "requires": {
+      "flags": [
+       "fam_nest"
+      ]
+     },
+     "lock": "家里没攒下这笔钱",
+     "hide": true,
+     "joins": "buy",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "home_own",
+       "home_nest"
+      ],
+      "drop": [
+       "fam_nest"
+      ]
+     },
+     "eraLines": [
+      {
+       "flags": [
+        "era_fenfang"
+       ],
+       "d": -40
+      },
+      {
+       "flags": [
+        "era_fanggai"
+       ],
+       "d": -35
+      },
+      {
+       "flags": [
+        "era_fangjia1"
+       ],
+       "d": 12
+      },
+      {
+       "flags": [
+        "era_fangjia2"
+       ],
+       "d": 12
+      },
+      {
+       "flags": [
+        "era_huiluo"
+       ],
+       "d": -12
+      },
+      {
+       "flags": [
+        "era_laolou"
+       ],
+       "d": -20
+      }
+     ]
+    },
+    {
      "id": "quota",
      "text": "排上了一套保障房",
      "min": 40,
@@ -22773,6 +23910,55 @@ var CONTENT: Content = {
       "flags": [
        "home_own",
        "home_quota"
+      ]
+     }
+    },
+    {
+     "id": "fixed",
+     "text": "把老屋翻修一下",
+     "min": 130,
+     "cost": 110,
+     "requires": {
+      "flags": [
+       "fam_poor"
+      ]
+     },
+     "lock": "不是你家的老屋",
+     "hide": true,
+     "joins": "stay",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "home_fixed",
+       "home_old"
+      ]
+     }
+    },
+    {
+     "id": "share",
+     "text": "两家合住一个院",
+     "score": {
+      "close": 1
+     },
+     "min": 25,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "home_share"
       ]
      }
     },
@@ -22876,6 +24062,15 @@ var CONTENT: Content = {
       "close": 2
      },
      "flags": []
+    },
+    "share": {
+     "text": "两家搬进了一个院。院子不大，两扇门对着开，晾衣绳从这家窗台拴到那家窗台。",
+     "memory": "门对着门",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
     }
    },
    "dissonance": {
@@ -22951,6 +24146,50 @@ var CONTENT: Content = {
       },
       "flags": [
        "mid_home"
+      ],
+      "drop": [
+       "send_home"
+      ]
+     }
+    },
+    {
+     "id": "take",
+     "text": "把爸妈接过来住",
+     "score": {
+      "money": 1
+     },
+     "min": 110,
+     "cost": 70,
+     "requires": {
+      "flags": [
+       "send_home"
+      ],
+      "notFlags": [
+       "parent_gone"
+      ]
+     },
+     "lock": "不用往家里寄钱",
+     "hide": true,
+     "joins": "home",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {
+       "mood": 2
+      },
+      "bond": {
+       "close": 4
+      },
+      "flags": [
+       "mid_home",
+       "mid_take"
+      ],
+      "drop": [
+       "send_home"
       ]
      }
     },
@@ -34306,6 +35545,9 @@ var CONTENT: Content = {
      "requires": {
       "flags": [
        "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
       ]
      },
      "cost": 20,
@@ -34567,6 +35809,9 @@ var CONTENT: Content = {
      "requires": {
       "flags": [
        "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
       ]
      },
      "cost": 20,
@@ -45965,6 +47210,9 @@ var CONTENT: Content = {
      "flags": [
       "fam_rich"
      ],
+     "notFlags": [
+      "fam_cut"
+     ],
      "hours": [
       1080,
       1290
@@ -50751,6 +51999,76 @@ var CONTENT: Content = {
    }
   },
   {
+   "id": "uni_away_work",
+   "label": "在外地念大学，课余打工",
+   "requires": {
+    "minAge": 18,
+    "maxAge": 21,
+    "flags": [
+     "uni_away",
+     "fam_poor"
+    ],
+    "notFlags": [
+     "aid"
+    ]
+   },
+   "group": "uni_away",
+   "duty": {
+    "label": "上课，下了课去打工",
+    "spot": "away_gate",
+    "arrive": [
+     390,
+     480
+    ],
+    "until": 1260,
+    "needs": {
+     "hunger": 35,
+     "energy": -28,
+     "mood": -2
+    },
+    "stats": {
+     "mind": 0.53,
+     "charm": 0.2
+    },
+    "money": 2
+   }
+  },
+  {
+   "id": "uni_near_work",
+   "label": "在本市念大学，课余打工",
+   "requires": {
+    "minAge": 18,
+    "maxAge": 21,
+    "flags": [
+     "uni_near",
+     "fam_poor"
+    ],
+    "notFlags": [
+     "aid"
+    ]
+   },
+   "group": "uni_near",
+   "duty": {
+    "label": "上课，下了课去打工",
+    "spot": "uni_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 35,
+     "energy": -24,
+     "mood": -2
+    },
+    "stats": {
+     "mind": 0.38,
+     "charm": 0.2
+    },
+    "money": 2
+   }
+  },
+  {
    "id": "uni_away",
    "label": "在外地念大学",
    "requires": {
@@ -52276,6 +53594,32 @@ var CONTENT: Content = {
     }
    },
    {
+    "id": "l_self_house",
+    "title": "没靠家里",
+    "text": "{name} 二十几岁起就没再花过家里的钱。新房的钥匙拿到手，{name} 一个人在空屋里坐了一下午。",
+    "requires": {
+     "flags": [
+      "fam_cut",
+      "home_own"
+     ],
+     "notFlags": [
+      "home_help",
+      "home_nest"
+     ]
+    }
+   },
+   {
+    "id": "l_self_desk",
+    "title": "自己考的",
+    "text": "{name} 跟家里断了来往，后来坐进了办公室，靠的是自己那张卷子。逢年过节回去，饭桌上谁也不提当年。",
+    "requires": {
+     "flags": [
+      "fam_cut",
+      "job_desk"
+     ]
+    }
+   },
+   {
     "id": "l_early",
     "title": "早走的人",
     "text": "{name} 走得早了一些。楼里的人后来说起 {name}，还是那个跑得最快的孩子。",
@@ -52356,6 +53700,38 @@ var CONTENT: Content = {
      ],
      "notFlags": [
       "stayed"
+     ]
+    }
+   },
+   {
+    "id": "l_first_desk",
+    "title": "头一个",
+    "text": "{name} 是家里头一个坐办公室的。头一个月的工资袋没拆，原样寄回了家。",
+    "requires": {
+     "flags": [
+      "fam_poor",
+      "job_desk"
+     ]
+    }
+   },
+   {
+    "id": "l_own_door",
+    "title": "自己的门",
+    "text": "{name} 小时候一间屋四张嘴，什么都得抢。后来有了一套自己的房，进门换鞋，没人跟 {name} 抢鞋柜了。",
+    "requires": {
+     "flags": [
+      "fam_siblings",
+      "home_own"
+     ]
+    }
+   },
+   {
+    "id": "l_spent",
+    "title": "家底",
+    "text": "{name} 家的买卖倒在 {name} 四十几岁那年。后来的日子跟楼里别家一样过，早点铺排队，菜市场还价。",
+    "requires": {
+     "flags": [
+      "fam_fallen"
      ]
     }
    },
@@ -52540,8 +53916,13 @@ var CONTENT: Content = {
    "luckFate": 0.02,
    "slotUse": 1,
    "needsUse": 0.3,
+   "wageFlagsFrom": 22,
    "wageFlags": {
-    "mid_post": 1.5
+    "mid_post": 1.5,
+    "send_home": 0.7,
+    "loan": 0.9,
+    "fam_rich": 1.2,
+    "fam_cut": 0.8333
    }
   },
   "check": {
@@ -52574,6 +53955,9 @@ var CONTENT: Content = {
     "old_care": 1
    }
   },
+  "locks": {
+   "fam_cut": "家里已经不管你了"
+  },
   "bond": {
    "closeSoft": 100,
    "closeFloor": 0.12,
@@ -52595,6 +53979,11 @@ var CONTENT: Content = {
    "pullFull": 0.4,
    "pullMoney": 20,
    "pullMoneyClose": 60,
+   "pullMoneyBy": [
+    10,
+    20,
+    40
+   ],
    "reunion": {
     "close": 2,
     "sync": 2
@@ -53883,6 +55272,11 @@ var CONTENT: Content = {
    "e_doors": "住过对门。",
    "l_two_shops": "半路辞了事由，开了第二家铺子。",
    "l_restart": "丢了饭碗，又在楼下支起摊。",
+   "l_self_house": "家里不管了，房是自己买的。",
+   "l_self_desk": "家里不管了，办公室是自己考的。",
+   "l_first_desk": "家里头一个坐办公室的。",
+   "l_own_door": "四口挤一间，后来有了自己的门。",
+   "l_spent": "家里的买卖倒了。",
    "l_early": "走得早了些。",
    "l_long": "活过九十五。",
    "l_swimmer": "身子骨硬朗，活过八十五。",
@@ -57458,6 +58852,9 @@ var CONTENT: Content = {
       "requires": {
        "flags": [
         "fam_rich"
+       ],
+       "notFlags": [
+        "fam_cut"
        ]
       },
       "cost": 10,
@@ -57479,6 +58876,9 @@ var CONTENT: Content = {
       "requires": {
        "flags": [
         "fam_rich"
+       ],
+       "notFlags": [
+        "fam_cut"
        ]
       },
       "cost": 20,
@@ -57615,6 +59015,9 @@ var CONTENT: Content = {
       "requires": {
        "flags": [
         "fam_rich"
+       ],
+       "notFlags": [
+        "fam_cut"
        ]
       },
       "cost": 10,
@@ -58980,6 +60383,7 @@ var CONTENT: Content = {
     "lines": {
      "m_settle.buy": -40,
      "m_settle.help": -40,
+     "m_settle.nest": -40,
      "m_settle.rent": -30
     },
     "wages": {},
@@ -59090,6 +60494,7 @@ var CONTENT: Content = {
     "lines": {
      "m_settle.buy": -40,
      "m_settle.help": -35,
+     "m_settle.nest": -35,
      "m_settle.rent": -25
     },
     "wages": {},
@@ -59153,6 +60558,7 @@ var CONTENT: Content = {
     "lines": {
      "m_settle.buy": 15,
      "m_settle.help": 12,
+     "m_settle.nest": 12,
      "m_settle.rent": 8
     },
     "wages": {},
@@ -59201,6 +60607,7 @@ var CONTENT: Content = {
     "lines": {
      "m_settle.buy": 15,
      "m_settle.help": 12,
+     "m_settle.nest": 12,
      "m_settle.rent": 8
     },
     "wages": {},
@@ -59261,6 +60668,7 @@ var CONTENT: Content = {
     "lines": {
      "m_settle.buy": -15,
      "m_settle.help": -12,
+     "m_settle.nest": -12,
      "m_settle.rent": -8
     },
     "wages": {},
@@ -59296,6 +60704,7 @@ var CONTENT: Content = {
     "lines": {
      "m_settle.buy": -25,
      "m_settle.help": -20,
+     "m_settle.nest": -20,
      "m_settle.rent": -12,
      "m_evening.care": 20
     },

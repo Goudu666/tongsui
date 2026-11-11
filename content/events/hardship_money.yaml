@@ -1,0 +1,222 @@
+# 三扇门（二）：钱和期望（docs/MEANS.md 第九节）。二十二岁以后，三档人家各有各的难处。
+#
+#   清贫「时间是借来的」：工钱三成寄回家（send_home，rules.yaml 的 wageFlags），四十五岁把爸妈接过来、或者爸妈走了才停；
+#                       十八岁背了助学贷款的（loan）再扣一成，三十岁前后还清。
+#   殷实「路是铺好的，不是你铺的」：爸妈心里有一条路（exp_*，families.yaml）。二十二岁走的路没够上爸妈的意思，过两年饭桌上就有一回脸色。
+#
+# 记一回脸色（strain1 / fam_cut，21 岁以前那一段用的是同一套）：没有 strain1 的打 strain1，已经有 strain1 的打 fam_cut（家里不管了）。
+#   两个选项写一样的字，各带 requires 区分（普通事件里标记不对的选项不摆出来）。fam_cut 以后殷实人家专属的路全部锁上。
+#   「听家里的」换成爸妈安排的路、「问问对门」先放一放，这两条谁都能选，不记脸色；顶回去、不吭声都算一回。
+# 没够上爸妈的意思：
+#   exp_book 念书考出去 —— 没坐办公室、没教书
+#   exp_pull 进单位     —— 没坐办公室、没进托关系的单位
+#   exp_abroad 出国     —— 没坐办公室、没进托关系的单位（在外地的不算）
+#   exp_art 当体面人    —— 没坐办公室、没教书、没进托关系的单位
+#   家里出本钱开了铺子的（own_shop）、在外地的、下了岗的不算：那是另一回事。
+# 都是各自碰上的（solo），不写 where：二十三到二十九岁，权重高，没够上的人多半碰得上一回
+#   （二十二岁那天早上是找事由的关口，不写 where 的事会在关口当天早上冒出来，所以从二十三岁起）。
+
+# ======================== 殷实：爸妈的意思 ========================
+
+- id: mx_exp_book
+  kind: solo
+  stage: young
+  weight: 25
+  requires: { minAge: 23, maxAge: 29, flags: [fam_rich, exp_book], notFlags: [fam_cut, job_desk, job_teach, own_shop, quit_job, left_city, laid_off, no_job] }
+  title: 一块鱼
+  text: 过年回家，你妈问起单位里的事。你说了在干什么，她点点头，给你夹了块鱼，一顿饭没再开口。
+  options:
+    - id: yield
+      text: 让家里托人进学校
+      tags: [responsible]
+      effects: { self: { mood: -5 }, drop: [job_desk, job_pull, job_teach, job_trade, job_craft, job_labor, job_succeed, job_odd, rank1, rank2], flags: [job_teach, switched] }
+    - id: firm
+      text: 说这活儿是自己挑的
+      tags: [competitive]
+      requires: { notFlags: [strain1] }
+      effects: { self: { mood: -3 }, flags: [strain1] }
+    - id: firm_cut
+      text: 说这活儿是自己挑的
+      tags: [competitive]
+      requires: { flags: [strain1] }
+      effects: { self: { mood: -6 }, flags: [fam_cut] }
+    - id: quiet
+      text: 低头把鱼吃完
+      tags: [patient]
+      requires: { notFlags: [strain1] }
+      effects: { self: { mood: -2 }, flags: [strain1] }
+    - id: quiet_cut
+      text: 低头把鱼吃完
+      tags: [patient]
+      requires: { flags: [strain1] }
+      effects: { self: { mood: -4 }, flags: [fam_cut] }
+    - id: ask
+      text: 回去问问对门
+      tags: [gentle]
+      effects: { self: { mood: 2 }, bond: { close: 1 } }
+
+- id: mx_exp_pull
+  kind: solo
+  stage: young
+  weight: 25
+  requires: { minAge: 23, maxAge: 29, flags: [fam_rich, exp_pull], notFlags: [fam_cut, job_desk, job_pull, own_shop, quit_job, left_city, laid_off, no_job] }
+  title: 厂办
+  text: 你爸托人在厂办给你留了个位子，你没去。他在楼道里碰上你，问了句吃了没，就上楼了。
+  options:
+    - id: yield
+      text: 去厂办报到
+      tags: [responsible]
+      effects: { self: { mood: -5 }, drop: [job_desk, job_pull, job_teach, job_trade, job_craft, job_labor, job_succeed, job_odd, rank1, rank2], flags: [job_pull, switched] }
+    - id: firm
+      text: 跟他说不去了
+      tags: [competitive]
+      requires: { notFlags: [strain1] }
+      effects: { self: { mood: -3 }, flags: [strain1] }
+    - id: firm_cut
+      text: 跟他说不去了
+      tags: [competitive]
+      requires: { flags: [strain1] }
+      effects: { self: { mood: -6 }, flags: [fam_cut] }
+    - id: quiet
+      text: 回了句吃了
+      tags: [patient]
+      requires: { notFlags: [strain1] }
+      effects: { self: { mood: -2 }, flags: [strain1] }
+    - id: quiet_cut
+      text: 回了句吃了
+      tags: [patient]
+      requires: { flags: [strain1] }
+      effects: { self: { mood: -4 }, flags: [fam_cut] }
+    - id: ask
+      text: 先去找对门坐会儿
+      tags: [gentle]
+      effects: { self: { mood: 2 }, bond: { close: 1 } }
+
+- id: mx_exp_abroad
+  kind: solo
+  stage: young
+  weight: 25
+  requires: { minAge: 23, maxAge: 29, flags: [fam_rich, exp_abroad], notFlags: [fam_cut, job_desk, job_pull, own_shop, quit_job, left_city, laid_off, no_job] }
+  title: 画册
+  text: 你爸跑船回来，听说你在干什么，没多问。走之前把一本外国港口的画册搁在你桌上。
+  options:
+    - id: yield
+      text: 托他的朋友进外贸公司
+      tags: [responsible]
+      effects: { self: { mood: -5 }, drop: [job_desk, job_pull, job_teach, job_trade, job_craft, job_labor, job_succeed, job_odd, rank1, rank2], flags: [job_pull, switched] }
+    - id: firm
+      text: 跟他说就干这个了
+      tags: [competitive]
+      requires: { notFlags: [strain1] }
+      effects: { self: { mood: -3 }, flags: [strain1] }
+    - id: firm_cut
+      text: 跟他说就干这个了
+      tags: [competitive]
+      requires: { flags: [strain1] }
+      effects: { self: { mood: -6 }, flags: [fam_cut] }
+    - id: quiet
+      text: 把画册收进抽屉
+      tags: [solitude]
+      requires: { notFlags: [strain1] }
+      effects: { self: { mood: -2 }, flags: [strain1] }
+    - id: quiet_cut
+      text: 把画册收进抽屉
+      tags: [solitude]
+      requires: { flags: [strain1] }
+      effects: { self: { mood: -4 }, flags: [fam_cut] }
+    - id: ask
+      text: 拿画册去给对门看
+      tags: [gentle]
+      effects: { self: { mood: 2 }, bond: { close: 1 } }
+
+- id: mx_exp_art
+  kind: solo
+  stage: young
+  weight: 25
+  requires: { minAge: 23, maxAge: 29, flags: [fam_rich, exp_art], notFlags: [fam_cut, job_desk, job_teach, job_pull, own_shop, quit_job, left_city, laid_off, no_job] }
+  title: 盖着的琴
+  text: 你妈托人在少年宫找了个教琴的差事，问你去不去。家里那架琴还在，盖着块布。
+  options:
+    - id: yield
+      text: 去少年宫教琴
+      tags: [responsible]
+      effects: { self: { mood: -5 }, drop: [job_desk, job_pull, job_teach, job_trade, job_craft, job_labor, job_succeed, job_odd, rank1, rank2], flags: [job_teach, switched] }
+    - id: firm
+      text: 说不去了
+      tags: [competitive]
+      requires: { notFlags: [strain1] }
+      effects: { self: { mood: -3 }, flags: [strain1] }
+    - id: firm_cut
+      text: 说不去了
+      tags: [competitive]
+      requires: { flags: [strain1] }
+      effects: { self: { mood: -6 }, flags: [fam_cut] }
+    - id: quiet
+      text: 把布又盖好
+      tags: [patient]
+      requires: { notFlags: [strain1] }
+      effects: { self: { mood: -2 }, flags: [strain1] }
+    - id: quiet_cut
+      text: 把布又盖好
+      tags: [patient]
+      requires: { flags: [strain1] }
+      effects: { self: { mood: -4 }, flags: [fam_cut] }
+    - id: ask
+      text: 叫对门来听你弹一段
+      tags: [gentle]
+      effects: { self: { mood: 2 }, bond: { close: 1 } }
+
+# ======================== 清贫：借来的时间 ========================
+
+# 助学贷款还清了（loan 是十八岁那一段打的）：二十七到二十九岁一回，没碰上的三十出头再一回。权重高：这件事迟早要来
+- id: mx_loan_paid
+  kind: solo
+  stage: young
+  weight: 30
+  requires: { minAge: 27, maxAge: 29, flags: [loan] }
+  title: 还清了
+  text: 最后一笔助学贷款寄出去了。回执你折了两折，夹进了当年那张录取通知书里。
+  options:
+    - id: treat
+      text: 叫上对门吃顿饭
+      tags: [gentle]
+      effects: { self: { mood: 6 }, other: { mood: 3 }, drop: [loan] }
+    - id: walk
+      text: 一个人去河边走走
+      tags: [solitude]
+      effects: { self: { mood: 5 }, drop: [loan] }
+
+- id: mx_loan_paid_late
+  kind: solo
+  stage: middle
+  weight: 30
+  requires: { minAge: 31, flags: [loan] }
+  title: 回执
+  text: 银行寄来一张单子：助学贷款还清了。你看了两遍，揣进上衣兜里。
+  options:
+    - id: treat
+      text: 买两瓶汽水回家
+      tags: [gentle]
+      effects: { self: { mood: 5 }, drop: [loan] }
+    - id: keep
+      text: 把单子压在玻璃板下
+      tags: [patient]
+      effects: { self: { mood: 4 }, drop: [loan] }
+
+# 爸妈走了，往家里寄的那份就停了（四十五岁把爸妈接过来住的，那天已经摘了 send_home）
+- id: mx_last_remit
+  kind: solo
+  stage: middle
+  weight: 30
+  requires: { minAge: 40, flags: [send_home, parent_gone] }
+  title: 汇款单
+  text: 月初你照常去了邮局，排到柜台才想起来，这个月不用寄了。
+  options:
+    - id: pocket
+      text: 把汇款单揣回兜里
+      tags: [patient]
+      effects: { self: { mood: -3 }, drop: [send_home] }
+    - id: stand
+      text: 在邮局门口站一会儿
+      tags: [solitude]
+      effects: { self: { mood: -5 }, drop: [send_home] }

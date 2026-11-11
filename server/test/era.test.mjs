@@ -103,13 +103,13 @@ const line = (s, r, mid, oid) => G("lifeOptionMin")(opt(mid, oid), s.persons[r])
   p.flags.push("job_succeed");
   assert.ok(p.flags.includes("era_xiagang"));
   const duty = { money: 10 };
-  assert.equal(G("worldWage")(C, p, duty), 8);
+  assert.equal(G("worldWage")(C, p, duty, 33), 8);
   const x = at(born(5, "c65"), 27).persons.qing;
   x.flags.push("job_trade");
-  assert.equal(G("worldWage")(C, x, duty), 12.5);
+  assert.equal(G("worldWage")(C, x, duty, 27), 12.5);
   const y = at(born(5, "c92"), 27).persons.qing;
   y.flags.push("job_trade");
-  assert.equal(G("worldWage")(C, y, duty), 10, "九十年代初生二十七岁做买卖，下海那几年早过了");
+  assert.equal(G("worldWage")(C, y, duty, 27), 10, "九十年代初生二十七岁做买卖，下海那几年早过了");
   console.log("✓ 线跟着年代挪（锁上那句、纸带都是挪过的数）/ 积蓄线挪了要掏的钱跟着挪 / 工钱乘数只在那几年");
 }
 

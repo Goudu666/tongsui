@@ -307,7 +307,7 @@
   kind: solo
   stage: young
   weight: 3
-  requires: { minAge: 23, maxAge: 28, flags: [fam_rich], notFlags: [own_shop, left_city] }
+  requires: { minAge: 23, maxAge: 28, flags: [fam_rich], notFlags: [fam_cut, own_shop, left_city] }
   title: 本钱
   text: 爸妈把你叫回家，说你要是想自己干点什么，家里出本钱。存折搁在饭桌上。
   options:
@@ -324,32 +324,58 @@
       tags: [competitive]
       effects: { self: { mood: 3, mind: 0.1 } }
 
+# 小康人家的那笔钱（fam_nest，docs/MEANS.md 第九节）：爸妈攒了半辈子，一辈子动一回。拿去开铺子，三十岁那道关就没有爸妈出的首付了
+- id: mn_mid_nest
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 23, maxAge: 28, flags: [fam_nest], notFlags: [fam_rich, fam_poor, own_shop, left_city] }
+  title: 铁盒
+  text: 你妈从柜顶上够下来一个铁盒，里头是这些年攒的。她说：想自己干点什么，就拿去。
+  options:
+    - id: shop
+      text: 辞了，开个铺子
+      tags: [adventure]
+      effects: { self: { charm: 0.2 }, flags: [own_shop, quit_job], drop: [fam_nest] }
+    - id: keep
+      text: 留着，以后买房
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+    - id: back
+      text: 塞回柜顶上
+      tags: [gentle]
+      effects: { self: { mood: 3 } }
+
+# 家道中落（docs/MEANS.md 第九节）：买卖倒了，往后按小康人家过——摘掉 fam_rich，打上 fam_fallen。
+# 殷实人家专属的路（家里兜底、托人、出本钱）跟着没了，家里的贴补（rules.yaml 的 wageFlags.fam_rich）也没了。
+# 往回填的钱只保得住爸妈那套房（rich_saved），保不住买卖。积蓄正卡在四十五岁那道 170 块上。
+# 家里早就不管你了的（fam_cut）没有这件事：那头的事，没人打电话来跟你说
 - id: mn_rich_fall
   kind: solo
   stage: middle
-  weight: 2
-  requires: { minAge: 39, maxAge: 54, flags: [fam_rich] }
+  weight: 3
+  requires: { minAge: 39, maxAge: 54, flags: [fam_rich], notFlags: [fam_cut] }
   title: 家底
-  text: 你爸那边的买卖出了事。你妈打电话来，话说得很慢，说家里那套房怕是保不住。
+  text: 你爸那边的买卖倒了。你妈打电话来，话说得很慢，说家里那套房怕是也保不住。
   options:
     - id: all
       text: 把积蓄都拿出来
       tags: [responsible]
-      cost: 40
-      effects: { self: { mood: -4 }, flags: [rich_saved] }
+      cost: 60
+      effects: { self: { mood: -4 }, flags: [rich_saved, fam_fallen], drop: [fam_rich] }
     - id: half
       text: 拿出一半
       tags: [patient]
-      cost: 20
-      effects: { self: { mood: -6 } }
+      cost: 30
+      effects: { self: { mood: -6 }, flags: [fam_fallen], drop: [fam_rich] }
     - id: stay
       text: 回去陪他们住一阵
       tags: [gentle]
-      effects: { self: { mood: -3, energy: -10 } }
+      effects: { self: { mood: -3, energy: -10 }, flags: [fam_fallen], drop: [fam_rich] }
     - id: wait
       text: 让他们先别急
       tags: [solitude]
-      effects: { self: { mood: -8 } }
+      effects: { self: { mood: -8 }, flags: [fam_fallen], drop: [fam_rich] }
 
 - id: mn_rich_saved_old
   kind: solo

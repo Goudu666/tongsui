@@ -354,7 +354,7 @@ actions:
     label: 去饭局上应酬
     minutes: 120
     money: -5
-    requires: { minAge: 30, maxAge: 59, flags: [fam_rich], hours: [1080, 1290] }
+    requires: { minAge: 30, maxAge: 59, flags: [fam_rich], notFlags: [fam_cut], hours: [1080, 1290] }
     needs: { hunger: 40, energy: -12, mood: -3 }
     stats: { charm: 0.45, mind: 0.15 }
   # 没念大学、早早干活的人：下了班去夜校，冲 22 岁那道坐办公室的线。一回一块钱学费，比殷实人家的外语班慢一点，可谁都去得了

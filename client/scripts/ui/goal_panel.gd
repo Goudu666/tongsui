@@ -12,6 +12,7 @@ signal pressed
 const P := preload("res://scripts/ui/palette.gd")
 const Kit := preload("res://scripts/ui/kit.gd")
 const Icons := preload("res://scripts/ui/icons.gd")
+const Pull := preload("res://scripts/duet/pull_text.gd")
 
 var goal: Variant = null        ## 我的 { id, title, age, turns, lines:[{id,text,by,unit,have,need,ok}] }，没有带线的关口了是 null
 var their_goal: Variant = null  ## 对门的。两个人的关口可能不一样（一个辍学了、一个去了外地）
@@ -113,6 +114,14 @@ static func their_have(g: Variant, line_id: String) -> float:
 	return -1.0
 
 
+static func their_line(g: Variant, line_id: String) -> Dictionary:
+	if g is Dictionary:
+		for l in g.get("lines", []):
+			if l is Dictionary and str(l.id) == line_id:
+				return l
+	return {}
+
+
 static func turns_text(turns: int) -> String:
 	return "就是今天" if turns <= 0 else "还有 %d 个日子" % turns
 
@@ -211,6 +220,9 @@ func _draw() -> void:
 		lead = Kit.text(self, Vector2(x0, low - k * 6.0), gain_text, P.FS_LABEL, Color(my_color.darkened(0.2), 1.0 - k * k)) + 10.0
 	var reached := have >= float(line.need) - 0.001
 	var sub := "够着了" if reached else "还差 %d %s" % [int(ceil(float(line.need) - have)), unit]
+	var pull: Variant = line.get("pull")
+	if not reached and pull is Dictionary:
+		sub = Pull.goal_mine(pull, their_name)  # 到时候对门拉得动：押时间时就知道，不是揭晓时才知道
 	var eff_text := _eff_text(" · ")
 	if lead + f.get_string_size(sub + eff_text, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x > side - 6.0:
 		eff_text = ""  # 放不下就只说还差多少
@@ -224,7 +236,11 @@ func _draw() -> void:
 		if theirs >= 0.0:
 			_score(f, tx + 28.0, top, str(int(theirs)), " / %d %s" % [int(line.need), unit])
 			var gap := int(ceil(float(line.need) - theirs))
-			Kit.text(self, Vector2(tx, low), "%s %s" % [their_name, "够着了" if gap <= 0 else "还差 %d %s" % [gap, unit]], P.FS_CAPTION, P.INK_MID, false, side - 6.0)
+			var their_sub := "%s %s" % [their_name, "够着了" if gap <= 0 else "还差 %d %s" % [gap, unit]]
+			var tp: Variant = their_line(their_goal, str(line.id)).get("pull")
+			if gap > 0 and tp is Dictionary:
+				their_sub = Pull.goal_theirs(tp, their_name)
+			Kit.text(self, Vector2(tx, low), their_sub, P.FS_CAPTION, their_color.darkened(0.3) if tp is Dictionary and gap > 0 else P.INK_MID, false, side - 6.0)
 		elif their_goal is Dictionary and not _same_gate():
 			Kit.text(self, Vector2(tx + 28.0, top), str(their_goal.title), P.FS_LABEL, P.INK, false, side - 34.0)
 			Kit.text(self, Vector2(tx, low), "%s 过的是另一关" % their_name, P.FS_CAPTION, P.INK_MID, false, side - 6.0)

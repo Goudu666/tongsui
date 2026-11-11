@@ -7,7 +7,8 @@ extends Node2D
 ##   行 2：0~1 坐着，2~3 睡觉，4~7 挥手
 ##   行 3：0~3 高兴（蹦一下），4~7 泄气；行 4：0~3 击掌，4~7 不好意思（挠头）
 ## 每个行动还有一张专属动作表 {role}_{stage}_act.png（tools/art/actor_acts.py，1.5 倍）：
-##   10 行 × 两套 4 帧循环，顺序见 ACT_LOOP；行动 id 怎么对到哪一套见 ACTION_LOOP / DUTY_LOOP
+##   11 行 × 两套 4 帧循环，顺序见 ACT_LOOP；行动 id 怎么对到哪一套见 ACTION_LOOP / DUTY_LOOP
+##   两个人一起踢球时不颠球、换成 pass：面对面对着踢一个球（球由 pass_lead 那个人画，钟是 pass_clock）
 ## 头顶的情绪气泡（bubble.gd）：做事时按这套动作冒（FAMILY_BUBBLES），做完一回按 did 的需求变化反应（react），
 ## 闲着按精力和心情冒（needs）；碰面招手、搭伴击掌由 world_view 叫
 ## 精灵按世界像素原大画：不管 world_view 把这个节点放大多少，人还是那么高（名字牌跟着节点放大）。
@@ -21,7 +22,7 @@ const CELL := Vector2(200, 220)
 const FOOT := Vector2(100, 206)
 const COLS := 8
 const ROWS := 5
-const ACT_ROWS := 10
+const ACT_ROWS := 11
 const ACT_ART_SCALE := 1.5
 ## 每个年纪的身高（世界像素，梅比青矮 6）、走一整步前进多远
 const HEIGHT := {"childhood": 112.0, "teen": 152.0, "young": 172.0, "middle": 170.0, "old": 160.0}
@@ -31,7 +32,9 @@ const STAGES := ["childhood", "teen", "young", "middle", "old"]
 const STAGE_FILE := {"childhood": "child", "teen": "teen", "young": "young", "middle": "middle", "old": "old"}
 ## 专属动作表里的顺序（和 tools/art/actor_acts.py 的 ACTS 一致：第 i 套在第 i/2 行、第 (i%2)×4 列起）
 const ACT_LOOP := ["write", "read", "eat", "type", "kick", "hop", "fix", "carry", "cook", "fish",
-	"chess", "talk", "sing", "piano", "kite", "gaze", "wash", "exercise", "chalk", "brush"]
+	"chess", "talk", "sing", "piano", "kite", "gaze", "wash", "exercise", "chalk", "brush", "pass"]
+## 两个人一起踢球：面对面对着踢一个球（world_view._pair_faces 配对）。一来一回 PASS_PERIOD 秒，两人按同一个钟走
+const PASS_PERIOD := 1.9
 ## 行动 id（content/map.yaml）→ 哪一套动作。没写的：SIT_ACTIONS 坐着，WAVE_ACTIONS 招手，其余是通用的"在忙"
 const ACTION_LOOP := {
 	"study": "write", "club_math": "write", "tutor": "write", "lang_class": "write", "night_class": "write",
@@ -114,10 +117,15 @@ var _phase := 0.0   ## 走路走到一步里的哪儿（0~8 帧）
 var _idle := 0.0    ## 站着、坐着、在忙的小动作
 var _sprite: Sprite2D
 var _over: Node2D  ## 字和气泡那层（overlay.gd，z 71）
+var _ball: Node2D  ## 对着踢的那个球（领头的那个人画）
+var _ball_on := false  ## 上一帧画没画球
 var _last_pos := Vector2.ZERO
 var _base_tex: Texture2D
 var _act_tex: Texture2D
 var _on_act := false     ## 现在贴的是专属动作表
+var pass_with: Node2D = null  ## 对着踢球的那个人（不是 null 时，"kick" 换成 "pass"）
+var pass_lead := false        ## 球由我来画、钟由我来走（两人里只一个）
+static var pass_clock := 0.0  ## 对着踢的钟：游戏时间（不用墙上的钟：卡顿、录屏时两人和球都还对得上）
 var _loop := ""          ## 现在演的是哪一套（ACT_LOOP 里的名字，或 sit / wave / busy）
 var _loop_t := 0.0
 var _emote := ""         ## 正在演的情绪动作（EMOTE_CELL）
@@ -145,6 +153,11 @@ func setup(p_role: String, p_name: String, p_local: bool, pos: Vector2) -> void:
 	add_child(_sprite)
 	_over = Overlay.new(_draw_over)
 	add_child(_over)
+	# 对着踢的那个球：比人高一层（压在两人脚上），但还在夜版底下
+	_ball = Overlay.new(_draw_pass)
+	_ball.z_as_relative = true
+	_ball.z_index = 1
+	add_child(_ball)
 	set_stage(stage)
 
 
@@ -211,10 +224,17 @@ func _process(delta: float) -> void:
 	var art := ACT_ART_SCALE if _on_act else ART_SCALE
 	if _sprite != null and not is_equal_approx(_sprite.scale.x * scale.x, 1.0 / art):
 		_sprite.scale = Vector2.ONE / (art * maxf(scale.x, 0.01))
+	if pass_lead and _loop == "pass":
+		pass_clock += delta
 	_update_frame()
 	queue_redraw()
 	if _over != null:
 		_over.queue_redraw()
+	# 球那层：对着踢时每帧重画；刚解对那一帧也再画一次，把上一帧留下的球擦掉
+	var ball_on := pass_lead and _loop == "pass"
+	if _ball != null and (ball_on or _ball_on):
+		_ball.queue_redraw()
+	_ball_on = ball_on
 
 
 ## 贴哪张表：基础表（走、站、坐、睡、招手、情绪）还是专属动作表
@@ -234,6 +254,12 @@ func _use_sheet(act: bool) -> void:
 
 ## 正在做的这件事演哪一套："" 没在做；ACT_LOOP 里的名字；或 sit / wave / busy
 func loop_name() -> String:
+	var lp := base_loop()
+	return "pass" if lp == "kick" and pass_with != null else lp
+
+
+## 不看搭伴、光按在做什么挑的那一套
+func base_loop() -> String:
 	if asleep or action_label == "":
 		return ""
 	if doing == "duty":
@@ -355,6 +381,12 @@ func _update_frame() -> void:
 		# 专属动作：一圈 4 帧，节奏按这套动作的性子（钓鱼慢、颠球快）
 		_use_sheet(true)
 		var i := ACT_LOOP.find(lp)
+		if lp == "pass":
+			# 对着踢：球到脚边那一下才出脚（按球走到哪挑帧，不按节拍轮播）
+			var ph := _pass_phase()
+			var c := 2 if ph < 0.1 else (3 if ph < 0.24 else (1 if ph > 0.84 else 0))
+			_sprite.frame = (i / 2) * COLS + (i % 2) * 4 + c
+			return
 		var fps: float = {"fish": 2.2, "gaze": 1.8, "read": 1.6, "kick": 6.0, "hop": 6.5, "exercise": 2.6, "chess": 2.4, "piano": 6.0}.get(lp, 4.5)
 		_sprite.frame = (i / 2) * COLS + (i % 2) * 4 + int(_loop_t * fps) % 4
 		return
@@ -387,6 +419,49 @@ func _update_frame() -> void:
 		var k := int(_idle * 2.2) % 4
 		col = 3 if fmod(_idle + float(role.length()), 4.3) < 0.14 else (k if k < 3 else 1)
 	_sprite.frame = row * COLS + col
+
+
+## 对着踢这一圈走到哪了：0 = 正好轮到我出脚（领头的在 0，另一个差半圈）
+func _pass_phase() -> float:
+	var u := fmod(pass_clock / PASS_PERIOD, 1.0)
+	return u if pass_lead else fmod(u + 0.5, 1.0)
+
+
+## 两人中间那一个球：从出脚的人脚边滚到另一个人脚边，先弹两下再贴地滚，越滚越慢；转着
+func _draw_pass(cv: CanvasItem) -> void:
+	if not pass_lead or _loop != "pass" or _sprite == null or not _sprite.visible:
+		return
+	if pass_with == null or not is_instance_valid(pass_with) or not pass_with.visible:
+		return
+	var u := fmod(pass_clock / PASS_PERIOD, 1.0)
+	var f := fmod(u * 2.0, 1.0)
+	var mine := u < 0.5  # 前半圈从我脚下出去，后半圈从对面回来
+	var k := 1.0 / maxf(scale.x, 0.01)
+	var h := _height()
+	var r := 8.5 * h / 170.0 + 1.5
+	var reach := h * 0.2
+	var me := Vector2(signf(pass_with.position.x - position.x) * reach, 0.0)
+	var other := (pass_with.position - position) * k + Vector2(-signf(pass_with.position.x - position.x) * reach, 0.0)
+	var a := me if mine else other
+	var b := other if mine else me
+	var e := 1.0 - pow(1.0 - f, 1.7)
+	var x := lerpf(a.x, b.x, e)
+	var hop := absf(sin(f * PI * 2.0)) * (1.0 - f) * h * 0.09
+	var at := Vector2(x, lerpf(a.y, b.y, e) - r - hop)
+	# 影子：球离地越高越小
+	cv.draw_set_transform(Vector2(x, lerpf(a.y, b.y, e) + 1.0), 0.0, Vector2(1.0, 0.3))
+	cv.draw_circle(Vector2.ZERO, r * (1.1 - hop / (h * 0.09 + 0.01) * 0.3), Color(P.INK, 0.2))
+	cv.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	cv.draw_circle(at, r, P.PAPER_HI)
+	var spin := (x - a.x) / r * signf(b.x - a.x)
+	var pent := PackedVector2Array()
+	for i in 5:
+		pent.append(at + Vector2.from_angle(spin + i * TAU / 5.0) * r * 0.4)
+	cv.draw_colored_polygon(pent, P.INK)
+	for i in 3:
+		var d := Vector2.from_angle(spin + i * TAU / 3.0 + 0.6)
+		cv.draw_line(at + d * r * 0.44, at + d * r * 0.92, P.INK, 1.0, true)
+	cv.draw_arc(at, r, 0.0, TAU, 20, P.INK, 1.6, true)
 
 
 func _draw() -> void:

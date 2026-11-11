@@ -256,7 +256,7 @@ function worldStartDay(s: LifeState, c: Content) {
   // 主线（story.ts）：今天排上的那一件占掉命运的那一格。先算它，不吃随机数。关口那天不排
   var msToday = lifeMilestoneAt(c, t.age);
   var msDue = !!msToday && ROLES.some(function (r) { return lifeMilestoneFor(msToday!, persons[r]) && !lifeSeenIds(s, r)[msToday!.id]; });
-  var story = storyToday(s, c, t, msDue);
+  var story = storyToday(s, c, t, msDue && !msToday!.withStory); // withStory 的关口（挑大梁）那天主线照排
   var storyScene = function (r: Role): string | null {
     var id = story[r] || story.mirror;
     return id ? storyFindEvent(c, id)!.scene : null;
@@ -333,7 +333,7 @@ function worldStartDay(s: LifeState, c: Content) {
   //   - 回来的那一天（主线在另一片）
   //   - 主线那件事落在大人上班的钟点上（傍晚的楼下、对岸）。上学上班不逃，不然只有碰上歇班日才过得上，
   //     多半拖到章末强制。小孩上学的那几件（一路去上学）本来就写在上学的钟点，不算
-  if (fate.milestone) off = {};
+  if (fate.milestone && !lifeFindEvent(c, fate.milestone).withStory) off = {}; // 主线照排的关口（挑大梁）那天，碰上主线的照样放一天
   else {
     for (var sri = 0; sri < ROLES.length; sri++) {
       var sr0 = ROLES[sri];

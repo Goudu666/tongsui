@@ -96,7 +96,8 @@ function storyBeats(c: Content, n: number): StoryEvent[][] {
 /** 这个日子是不是关口那天：到了有关口的那个年纪的第一天 */
 function storyMilestoneDay(c: Content, turn: number): boolean {
   var age = lifeTimeAt(turn).age;
-  return !!lifeMilestoneAt(c, age) && (turn === 0 || lifeTimeAt(turn - 1).age < age);
+  var ms = lifeMilestoneAt(c, age);
+  return !!ms && !ms.withStory && (turn === 0 || lifeTimeAt(turn - 1).age < age);
 }
 
 /** 这一章的日子（withMilestones 为假时关口那天不算），按先后 */
@@ -254,7 +255,7 @@ function storyAfter(s: LifeState, c: Content, eventId: string) {
   var w = s.world;
   if (!w || !storyFindEvent(c, eventId)) return;
   var t = lifeTimeAt(s.turn);
-  var next = storyToday(s, c, t, !!w.fate.milestone);
+  var next = storyToday(s, c, t, !!w.fate.milestone && !lifeFindEvent(c, w.fate.milestone).withStory); // withStory 的关口那天主线照排
   var slots: ("mirror" | "qing" | "mei")[] = ["mirror", "qing", "mei"];
   for (var i = 0; i < slots.length; i++) {
     var cur = w.fate[slots[i]];

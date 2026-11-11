@@ -77,6 +77,8 @@ interface LifeEvent {
   /** 考试有发挥：得分会随手气和运气上下浮动一点 */
   swing?: boolean;
   grades?: Grade[];
+  /** 关口那天主线照排（docs/CAREER.md：36 岁挑大梁占着第五章的一个空日子，不让的话第五章天天强制） */
+  withStory?: boolean;
 }
 
 interface EventRequires {

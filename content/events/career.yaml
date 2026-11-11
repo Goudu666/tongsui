@@ -221,6 +221,8 @@
   stage: middle
   age: 36
   title: 挑大梁
+  # 这天主线照排：三十六岁在第五章（30~44）中间，中年三年一个日子，占掉一天第五章就只剩三天排三件，天天强制、家里的默契事一件也出不来
+  withStory: true
   requires: { notFlags: [own_shop, own_stall, no_job, laid_off] }
   text: 三十六了。上头的人要退，底下的人等着，你正好卡在中间。
   options:

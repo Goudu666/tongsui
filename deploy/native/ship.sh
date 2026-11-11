@@ -28,7 +28,7 @@ fi
 
 echo "==> 上传到 $TARGET:~/tongsui-upload/"
 ssh "$TARGET" 'rm -rf ~/tongsui-upload && mkdir -p ~/tongsui-upload'
-scp -q deploy/native/{setup.sh,tongsui.service,nginx-tongsui.conf,backup.sh,tongsui-backup.service,tongsui-backup.timer} \
+scp -q deploy/native/{setup.sh,tongsui.service,nginx-tongsui.conf,backup.sh,restore.sh,tongsui-backup.service,tongsui-backup.timer} \
 	server/build/index.js "$CACHE/$tarball" "$TARGET:tongsui-upload/"
 
 echo "==> 在 $TARGET 上安装 / 更新"

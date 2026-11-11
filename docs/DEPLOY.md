@@ -48,7 +48,7 @@ journalctl -u tongsui -f                       # 日志；搜 room fault 看房�
 sudo /opt/tongsui/backup.sh                    # 手动备份
 ls -lh /opt/tongsui-backups/
 cat /opt/tongsui/client-server.json            # 客户端配置
-# 恢复：sudo systemctl stop tongsui && gunzip -c 备份.sql.gz | sudo -u postgres psql -d nakama && sudo systemctl start tongsui
+sudo /opt/tongsui/restore.sh /opt/tongsui-backups/tongsui-<时间>.sql.gz   # 恢复：先备份当前、停服、整份事务导入、起服
 # 控制台：在 Mac 上 ssh -L 7351:127.0.0.1:7351 cakery，浏览器开 http://127.0.0.1:7351（账号密码：sudo grep CONSOLE /opt/tongsui/secrets.env）
 ```
 

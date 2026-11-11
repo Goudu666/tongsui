@@ -68,7 +68,7 @@ static func points(v: Variant) -> int:
 
 ## 0~10 的属性 → 百分制带一位小数（往下取整，和服务器 lifeFinePoints 一样）
 static func fine_of(v: Variant) -> float:
-	return floor(float(v) * 100.0 + 0.001) / 10.0
+	return floor(float(v) * 100.0 + 0.01) / 10.0  # ε 是 points 的十倍：整数部分恒等于 points(v)
 
 
 func _quiet() -> bool:

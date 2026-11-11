@@ -246,7 +246,7 @@ function lifePoints(v: number): number {
 
 /** 百分制带一位小数（往下取整）：整数部分和 lifePoints 一样 */
 function lifeFinePoints(v: number): number {
-  return Math.floor(v * 100 + 1e-6) / 10;
+  return Math.floor(v * 100 + 1e-5) / 10; // ε 是 lifePoints 的十倍：floor(这个数) 恒等于 lifePoints(v)
 }
 
 function lifeWeightsLabel(w: ScoreWeights): string {

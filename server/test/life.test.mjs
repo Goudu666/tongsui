@@ -268,7 +268,7 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   // fine：三项百分制带一位小数（往下取整），和 stats 一起发
   const pq = R.life().persons.qing.stats;
   assert.deepEqual(Object.keys(wv.fine.qing), ["body", "mind", "charm"]);
-  assert.equal(wv.fine.qing.mind, Math.floor(pq.mind * 100 + 1e-6) / 10);
+  assert.equal(wv.fine.qing.mind, Math.floor(pq.mind * 100 + 1e-5) / 10);
   // 站了很久再走：限速按 1 秒算，不能一步跨半张地图
   for (let i = 0; i < 50; i++) R.loop();
   R.loop([R.msg(pa, 4, { x: 2000, y: 600, seq: 4 })]);

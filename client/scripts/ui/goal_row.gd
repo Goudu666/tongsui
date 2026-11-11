@@ -15,7 +15,7 @@ func _init(p_line: Dictionary, p_theirs: float, p_mine_color: Color, p_theirs_co
 	mine_color = p_mine_color
 	theirs_color = p_theirs_color
 	compact = p_compact
-	custom_minimum_size = Vector2(0, 74 if compact else 104)
+	custom_minimum_size = Vector2(0, 76 if compact else 104)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _draw() -> void:
@@ -23,16 +23,16 @@ func _draw() -> void:
 	var unit := str(line.get("unit", "分"))
 	var need := int(line.get("need", 0))
 	var ok := bool(line.get("ok", false))
-	var ft := 28 if compact else 34
-	var fr := 26 if compact else 30
-	var fb := 22 if compact else 22
+	var ft := P.FS_LABEL if compact else 34
+	var fr := P.FS_LABEL if compact else 30
 	var ty := 28.0 if compact else 36.0
 	var right := ("%d / %d %s" % [int(line.have), need, unit]) if need > 0 else ("%d" % int(line.have))
 	var rw := f.get_string_size(right, HORIZONTAL_ALIGNMENT_LEFT, -1, fr).x
 	var by := ("看" + str(line.by) + ("  够着了" if ok else "")) if str(line.get("by", "")) != "" and need > 0 else ""
-	var bw := f.get_string_size(by, HORIZONTAL_ALIGNMENT_LEFT, -1, fb).x if by != "" else 0.0
-	draw_string(f, Vector2(0, ty), str(line.text), HORIZONTAL_ALIGNMENT_LEFT, maxf(60.0, size.x - rw - bw - 40.0), ft, P.INK)
+	var bw := f.get_string_size(by, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x if by != "" else 0.0
+	var tw := (size.x - rw - bw - 40.0) if compact else (size.x - 300.0)
+	draw_string(f, Vector2(0, ty), str(line.text), HORIZONTAL_ALIGNMENT_LEFT, maxf(60.0, tw), ft, P.INK)
 	draw_string(f, Vector2(size.x - rw, ty), right, HORIZONTAL_ALIGNMENT_LEFT, -1, fr, P.INK if ok or need == 0 else P.INK_SOFT)
 	if by != "":
-		draw_string(f, Vector2(size.x - rw - bw - 20, ty - 2.0), by, HORIZONTAL_ALIGNMENT_LEFT, -1, fb, P.MEI if ok and compact else P.INK_SOFT)
-	GoalPanel.draw_ruler(self, Vector2(8, 54.0 if compact else 76.0), size.x - 16.0, line, theirs, mine_color, theirs_color)
+		draw_string(f, Vector2(size.x - rw - bw - 20, ty - 2.0), by, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION, P.MEI if ok and compact else P.INK_MID)
+	GoalPanel.draw_ruler(self, Vector2(8, 58.0 if compact else 76.0), size.x - 16.0, line, theirs, mine_color, theirs_color)

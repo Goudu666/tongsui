@@ -46,6 +46,13 @@ func _tags(j: Node) -> int:
 
 func _initialize() -> void:
 	check(Juice.points(5.79) == 57 and Juice.points(5.8) == 58 and Juice.points(6.0) == 60, "百分制往下取整（57.9 不能显示成 58）")
+	var same := true
+	for n in 1001:
+		for dv in [0.0, -1e-6, -5e-5, -9e-5, -2e-4, 1e-6, 0.004]:
+			var v: float = n / 100.0 + float(dv)
+			if int(floor(Juice.fine_of(v) + 1e-6)) != Juice.points(v):
+				same = false
+	check(same, "带一位小数的整数部分恒等于 points（边上不差 1）")
 
 	var m := FakeMain.new()
 	m.ui = Control.new()

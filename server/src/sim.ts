@@ -282,6 +282,32 @@ function lifeOptionLock(ev: LifeEvent, o: EventOption, p: Person, swing: number,
   return null;
 }
 
+/**
+ * 关口揭晓给人看的几样（client/scripts/ui/reveal.gd 拿它演：分数往上数、过线盖章、差几分停在线前）。
+ * 只是把已经算出来的东西换成 score 的口径交出去，不影响结算。
+ *   line   选的这条路的线
+ *   luck   这一场的发挥（含默契托住的 steady）；看原数的线（积蓄、亲近）不算发挥，没有这两项
+ *   差几分没够上的那条不在这儿：用 atlasMilestoneNear 给的 results.near（和锁上那句、结局页的「差一点」同一个数）
+ */
+function lifeReveal(ev: LifeEvent, o: EventOption, swing: number, steady: number) {
+  var out: { line?: number; luck?: number; steady?: number } = {};
+  var ow = lifeOptionWeights(ev, o);
+  if (o.min) out.line = lifeScoreRaw(ow) ? o.min : lifePoints(o.min);
+  if (!lifeScoreRaw(o.min ? ow : ev.score || {})) {
+    var sl = Math.round(swing * 10) || 0;
+    if (sl !== 0) out.luck = sl;
+    var st = Math.round(steady * 10);
+    if (st > 0) out.steady = st;
+  }
+  return out;
+}
+
+function lifeRevealExtras(r: { line?: number; luck?: number; steady?: number }, x: ReturnType<typeof lifeReveal>) {
+  if (x.line !== undefined) r.line = x.line;
+  if (x.luck !== undefined) r.luck = x.luck;
+  if (x.steady !== undefined) r.steady = x.steady;
+}
+
 /** 关口上这条路算哪条路：花钱进的重点、托关系进的单位，和考进去的是同一条（joins），两个人还是同路 */
 function lifeRoad(ev: LifeEvent, optionId: string): string {
   var o = lifeFindOption(ev, optionId);
@@ -340,6 +366,28 @@ interface GoalLine { id: string; text: string; by: string; unit: string; have: n
 interface GoalView { id: string; title: string; age: number; turns: number; lines: GoalLine[] }
 
 /**
+ * 目标条上摆哪几档名次（grades 的下标，从高到低）：比这个人走得了的最高那条路还高的。
+ * 「差一点」（atlas.ts → atlasMilestoneNear）也只认这几档，两边是同一套线。
+ */
+function lifeTapeGrades(ev: LifeEvent, p: Person): number[] {
+  var gw = ev.score || {};
+  if (!ev.grades || lifeScoreRaw(gw) || !lifeWeightsLabel(gw)) return [];
+  var top = 0;
+  for (var j = 0; j < ev.options.length; j++) {
+    var o = ev.options[j];
+    if (!o.min) continue;
+    var orq = o.requires || {};
+    if (!lifeHasAll(p.flags, orq.flags) || !lifeHasNone(p.flags, orq.notFlags)) continue;
+    var w = lifeOptionWeights(ev, o);
+    if (w.money) continue;
+    top = Math.max(top, lifeScoreRaw(w) ? o.min : lifePoints(o.min));
+  }
+  var out: number[] = [];
+  for (var gi = ev.grades.length - 1; gi >= 0; gi--) if (lifePoints(ev.grades[gi].min) > top) out.push(gi);
+  return out;
+}
+
+/**
  * 界面上常驻的那一条：下一个关口是什么、还有几个日子、每条路的线离你还有多远。
  * 这是日常行动的目的。没有带线的关口了（退休以后）返回 null。
  */
@@ -370,15 +418,11 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
   }
   // 比最高那条路还高的名次（grades）也摆上来：起点高的人不会开局就无事可冲，每道关都还有一条够一够的线
   var gw = best.score || {};
-  if (best.grades && !lifeScoreRaw(gw) && lifeWeightsLabel(gw)) {
-    var top = 0;
-    for (var t = 0; t < lines.length; t++) if (lines[t].unit === "分") top = Math.max(top, lines[t].need);
-    var ghave = lifeScore(p, gw, lifePairBond(s, role));
-    for (var gi = best.grades.length - 1; gi >= 0; gi--) {
-      var gr = best.grades[gi];
-      if (lifePoints(gr.min) <= top) continue;
-      lines.push({ id: "grade:" + gi, text: gr.label, by: lifeWeightsLabel(gw), unit: "分", have: lifePoints(ghave), need: lifePoints(gr.min), ok: ghave >= gr.min });
-    }
+  var gis = lifeTapeGrades(best, p);
+  var ghave = lifeScore(p, gw, lifePairBond(s, role));
+  for (var gi = 0; gi < gis.length; gi++) {
+    var gr = best.grades![gis[gi]];
+    lines.push({ id: "grade:" + gis[gi], text: gr.label, by: lifeWeightsLabel(gw), unit: "分", have: lifePoints(ghave), need: lifePoints(gr.min), ok: ghave >= gr.min });
   }
   return { id: best.id, title: best.title, age: best.age!, turns: lifeTurnsUntilAge(s.turn, best.age!), lines: lines };
 }
@@ -535,8 +579,10 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       // 成绩单上的数要在扣钱、长属性之前算：那是走进考场那一刻的本事
       var sw = o.min ? w : gw;
       // 差一点：离哪条没走成的路最近（结局页上「差一点」读它，见 atlas.ts）。也是走进考场那一刻的数
-      var near = atlasMilestoneNear(ev, o.id, me, swing, lifePairBond(s, role));
+      var near = atlasMilestoneNear(ev, o.id, me, swing, lifePairBond(s, role), gscore);
       var shown = lifeScoreRaw(sw) ? Math.floor(lifeScore(me, sw, s.bond)) : lifePoints(lifeScore(me, sw, s.bond) + swing);
+      // 揭晓演出要的几样（线、发挥），也是走进考场那一刻的。差一点的那条就是上面的 near，不另算
+      var reveal = lifeReveal(ev, o, swing, (pe.steady && pe.steady[role]) || 0);
       if (grade) lifeAddFlags(me, grade.flags);
       if (o.cost) me.money = Math.max(0, me.money - o.cost);
       lifeApplySelf(me, o.effects.self, grow);
@@ -555,6 +601,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
         option: o.id,
         track: lifeTrack(c, me, entry.age).id,
       };
+      lifeRevealExtras(entry.results[role]!, reveal);
       if (near) entry.results[role]!.near = near;
     } else {
       // 检定：这个选项成不成，看本事也看运气（见 growth.ts → growthResolveCheck）

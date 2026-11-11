@@ -25,7 +25,9 @@ const STAGE_FILE := {"childhood": "child", "teen": "teen", "young": "young", "mi
 const BUS_DB := {"Music": 2.0, "Ambience": 1.0, "Sfx": -1.0}
 ## 单个音效的音量微调（dB）。没列出来的是 -6
 const CUE_DB := {"tap": -7.0, "page": -9.0, "toast": -9.0, "type": -12.0, "xingmu": -3.0, "stamp": -4.0,
-	"birth": -3.0, "day_end": -3.0, "death": -2.0, "shake": -4.0, "bell_duet": -7.0, "door_open": -9.0, "door_close": -9.0}
+	"birth": -3.0, "day_end": -3.0, "death": -2.0, "shake": -4.0, "bell_duet": -7.0, "door_open": -9.0, "door_close": -9.0,
+	# 爽感层（ui/juice.gd、ui/reveal.gd）：长一点、算盘珠、盖大印、够线、差一点、一个阶段过完
+	"gain": -8.0, "bead": -13.0, "seal": -5.0, "pass": -4.0, "miss": -6.0, "settle": -4.0}
 ## 一步多长（像素）。小孩步子碎，老人步子慢
 const STRIDE := {"child": 44.0, "teen": 54.0, "young": 60.0, "middle": 60.0, "old": 48.0}
 const STEP_PITCH := {"child": 1.18, "teen": 1.06, "young": 1.0, "middle": 0.96, "old": 0.92}

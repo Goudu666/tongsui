@@ -643,3 +643,103 @@ actions:
     needs: { energy: -6, mood: -3 }
     kid: { mind: 3.6 }
     together: { needs: { mood: 3 }, bond: { close: 1 }, text: 走廊里一排长椅，坐的都是等孩子的。你们俩挨着，把一份报纸分成两半看。 }
+
+  # ---- 家里的东西（content/home.yaml，docs/HOME.md）----
+  # requires.home：这个点位那一户人家得有这样东西（去对门家就看对门家）。东西是谁家的，谁家的孩子都能用，两个人一起用就是搭伴。
+  # 殷实人家的孩子这几样比写作业快两三成（和爸妈报的班一个量级）；清贫人家没有的，得去对门，或者自己攒钱买（buys）。
+  # 都是 menu：只在菜单上点到才做，机器人、影子、旧安装包轮不到，校准过的活法数不动。
+  - id: hm_tv
+    label: 看电视
+    minutes: 60
+    menu: true
+    requires: { home: [tv], hours: [720, 1320] }
+    needs: { mood: 12, energy: -2 }
+    stats: { charm: 0.04 }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 两只小板凳挨着，广告也看得一眼不眨。 }
+  - id: hm_radio
+    label: 听广播
+    minutes: 60
+    menu: true
+    requires: { home: [radio] }
+    needs: { mood: 6, energy: -2 }
+    stats: { mind: 0.12 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 收音机里说到「且听下回分解」，两个人一起叹了口气。 }
+  - id: hm_console
+    label: 打游戏机
+    minutes: 60
+    menu: true
+    requires: { minAge: 6, maxAge: 17, home: [console], hours: [720, 1320] }
+    needs: { mood: 16, energy: -5 }
+    together: { needs: { mood: 8 }, bond: { close: 2, sync: 1 }, text: 两个手柄一根线，谁死了谁把手柄递过去。 }
+  - id: hm_books
+    label: 翻家里的书
+    minutes: 60
+    menu: true
+    requires: { minAge: 6, maxAge: 29, home: [books] }
+    needs: { energy: -5, mood: 1 }
+    stats: { mind: 0.34 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 一个人抽一本，靠着书柜坐在地上，谁也不说话。 }
+  - id: hm_tape
+    label: 跟着磁带念英语
+    minutes: 60
+    menu: true
+    requires: { minAge: 10, maxAge: 21, home: [tape] }
+    needs: { energy: -5, mood: -2 }
+    stats: { mind: 0.22, charm: 0.12 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 复读机念一句，你们俩跟一句，念到后来一起笑场。 }
+  - id: hm_pc
+    label: 用电脑查东西
+    minutes: 60
+    menu: true
+    requires: { minAge: 10, home: [pc] }
+    needs: { energy: -6 }
+    stats: { mind: 0.3, charm: 0.05 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 一把椅子坐一个，另一个站在后头指着屏幕。 }
+  - id: hm_pc_game
+    label: 打电脑游戏
+    minutes: 60
+    menu: true
+    requires: { minAge: 10, maxAge: 35, home: [pc], hours: [720, 1320] }
+    needs: { mood: 18, energy: -8 }
+    together: { needs: { mood: 8 }, bond: { close: 2, sync: 1 }, text: 一个管键盘一个管鼠标，喊得楼道里都听得见。 }
+  - id: hm_milk
+    label: 喝门口的牛奶
+    quick: true
+    minutes: 10
+    menu: true
+    requires: { maxAge: 15, home: [milk], hours: [390, 600] }
+    needs: { hunger: 10, mood: 2 }
+    stats: { body: 0.03 }
+  # 清贫人家自己的：糊纸盒，家里接的外活。挣一块是一块，时间是借来的（docs/MEANS.md 第八节）。不带人，那是你家的活
+  - id: hm_piece
+    label: 帮家里糊纸盒
+    minutes: 60
+    menu: true
+    money: 1
+    requires: { minAge: 12, maxAge: 17, flags: [fam_poor], hours: [930, 1320] }
+    needs: { energy: -6, mood: -4 }
+  # 自己攒钱买：家里没有、外头有卖的，钱够就搬回家（home.ts）。只在自己家买
+  - id: buy_console
+    label: 攒钱买游戏机
+    quick: true
+    minutes: 10
+    menu: true
+    buys: console
+    money: -12
+    needs: { mood: 10 }
+  - id: buy_tape
+    label: 攒钱买复读机
+    quick: true
+    minutes: 10
+    menu: true
+    buys: tape
+    money: -15
+    needs: { mood: 6 }
+  - id: buy_pc
+    label: 攒钱买电脑
+    quick: true
+    minutes: 10
+    menu: true
+    buys: pc
+    money: -60
+    needs: { mood: 8 }

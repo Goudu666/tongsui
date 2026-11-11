@@ -27,6 +27,6 @@ func _draw() -> void:
 	draw_string(f, Vector2(size.x - rw, 36), right, HORIZONTAL_ALIGNMENT_LEFT, -1, 30, P.INK if ok or need == 0 else P.INK_SOFT)
 	if str(line.get("by", "")) != "" and need > 0:
 		var by := "看" + str(line.by) + ("  够着了" if ok else "")
-		var bw := f.get_string_size(by, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x
-		draw_string(f, Vector2(size.x - rw - bw - 20, 34), by, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, P.INK_SOFT)
+		var bw := f.get_string_size(by, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x
+		draw_string(f, Vector2(size.x - rw - bw - 20, 34), by, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION, P.INK_MID)
 	GoalPanel.draw_ruler(self, Vector2(8, 76), size.x - 16.0, line, theirs, mine_color, theirs_color)

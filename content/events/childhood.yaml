@@ -5,7 +5,7 @@
 #   kind: solo    各自事件：每个人单独遇到；没有 where 时在早上醒来触发
 # 数值键：
 #   个人属性 body 体魄 / mind 心智 / charm 魅力 / luck 运气（0~10）
-#   需求     mood 心情 / hunger 饱腹 / energy 精力 / clean 清洁（0~100）
+#   需求     mood 心情 / hunger 饱腹 / energy 精力（0~100。清洁 11-11 砍了，不要再写 clean）
 #   关系     sync 默契 / close 亲近 / distance 距离
 #   触发     where 地点（见 map.yaml 的 zones）/ when [起, 止] 分钟（1080 = 18:00）/ hint 地图上飘着的提示
 
@@ -184,7 +184,7 @@
     - id: puddle
       text: 穿上雨靴去踩水坑
       tags: [adventure]
-      effects: { self: { body: 1, mood: 5, clean: -20 } }
+      effects: { self: { body: 1, mood: 5 } }
     - id: door
       text: 去对门借一本小人书
       tags: [gentle]
@@ -491,7 +491,7 @@
     - id: jump
       text: 甩了鞋就跳
       tags: [adventure]
-      effects: { self: { body: 1, mood: 10, clean: -10 } }
+      effects: { self: { body: 1, mood: 10 } }
     - id: guard
       text: 在岸上看着衣服
       tags: [responsible]
@@ -608,7 +608,7 @@
     - id: rush
       text: 冲上去收床单
       tags: [responsible]
-      effects: { self: { body: 1, clean: -10 } }
+      effects: { self: { body: 1 } }
     - id: watch
       text: 躲在楼梯口看闪电
       tags: [adventure]
@@ -825,7 +825,7 @@
     - id: patch
       text: 撸起袖子补胎
       tags: [responsible]
-      effects: { self: { body: 1, clean: -10 } }
+      effects: { self: { body: 1 } }
     - id: steal
       text: 趁爷爷不注意先掰一块
       tags: [adventure]
@@ -1003,7 +1003,7 @@
     - id: dig
       text: 跟着去摸
       tags: [adventure]
-      effects: { self: { body: 1, mood: 5, clean: -15 } }
+      effects: { self: { body: 1, mood: 5 } }
     - id: watch
       text: 守着一只看它脱壳
       tags: [patient]

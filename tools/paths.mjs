@@ -47,7 +47,6 @@ function upkeep(s, role) {
   const p = s.persons[role], w = s.world;
   const pick = (id) => options(s, role).find((o) => o.act.id === id);
   if (p.needs.hunger < 40) { const o = pick("eat"); if (o && go(s, role, o.spot)) return true; }
-  if (p.needs.clean < 25) { const o = pick("wash"); if (o && go(s, role, o.spot)) return true; }
   if (p.needs.energy < 20) { const o = pick("sleep"); if (o && go(s, role, o.spot)) return true; }
   const d = G("worldDutyOpen")(s, C, role);
   if (d && w.slot >= G("worldDutySlots")(d)[0] && go(s, role, d.spot)) return true;

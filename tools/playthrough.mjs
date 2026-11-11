@@ -171,7 +171,6 @@ function decide(s, P, partnerPlan) {
   // 3. 过日子
   const quick = (id) => nearest(spotsFor(s, role, (act) => act.id === id), a);
   if (p.needs.hunger < 45) { const o = quick("eat") || quick("eat_out"); if (o) return { ...o, why: "eat", quick: true }; }
-  if (p.needs.clean < 30) { const o = quick("wash"); if (o) return { ...o, why: "wash", quick: true }; }
   if (w.slot === 4 || (p.needs.energy < 15 && !process.env.NIGHT_ONLY)) {
     const o = nearest(spotsFor(s, role, (act) => act.sleep), a);
     if (o) return { ...o, why: "sleep" };

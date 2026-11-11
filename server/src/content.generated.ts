@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "a5131dacdc32",
+ "version": "f84024a238c3",
  "events": [
   {
    "id": "c_roof_summer",
@@ -10803,7 +10803,20 @@ var CONTENT: Content = {
     "mind": 1
    },
    "swing": true,
-   "grades": [],
+   "grades": [
+    {
+     "min": 8.6,
+     "label": "考进年级前十",
+     "flags": [
+      "junior_top"
+     ]
+    },
+    {
+     "min": 0,
+     "label": "",
+     "flags": []
+    }
+   ],
    "catches": []
   },
   {
@@ -10941,7 +10954,20 @@ var CONTENT: Content = {
     "mind": 1
    },
    "swing": true,
-   "grades": [],
+   "grades": [
+    {
+     "min": 9,
+     "label": "考进全区前五十",
+     "flags": [
+      "senior_top"
+     ]
+    },
+    {
+     "min": 0,
+     "label": "",
+     "flags": []
+    }
+   ],
    "catches": []
   },
   {
@@ -11127,6 +11153,14 @@ var CONTENT: Content = {
    "swing": true,
    "grades": [
     {
+     "min": 9.3,
+     "label": "考进全市前一百",
+     "flags": [
+      "gaokao_good",
+      "gaokao_top"
+     ]
+    },
+    {
      "min": 6.8,
      "label": "过了本科线",
      "flags": [
@@ -11166,7 +11200,7 @@ var CONTENT: Content = {
      "score": {
       "mind": 1
      },
-     "min": 8.2,
+     "min": 8.5,
      "tags": [
       "competitive"
      ],
@@ -11186,7 +11220,7 @@ var CONTENT: Content = {
       "mind": 0.6,
       "charm": 0.4
      },
-     "min": 8,
+     "min": 8.9,
      "cost": 15,
      "requires": {
       "flags": [
@@ -32820,7 +32854,13 @@ var CONTENT: Content = {
   "growth": {
    "eventScale": 0.15,
    "actionScale": 0.1,
-   "room": 5,
+   "room": {
+    "childhood": 5,
+    "teen": 6.2,
+    "young": 6.8,
+    "middle": 7,
+    "old": 7
+   },
    "floor": 0.06,
    "bornWeight": 0.4,
    "plasticity": {
@@ -32855,7 +32895,14 @@ var CONTENT: Content = {
      "luck": 1
     }
    },
-   "plainBonus": 1.2
+   "plainBonus": 1.2,
+   "turnWeight": {
+    "childhood": 1,
+    "teen": 2.2,
+    "young": 2.5,
+    "middle": 2,
+    "old": 1.5
+   }
   },
   "aging": {
    "body": [

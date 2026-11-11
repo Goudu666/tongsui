@@ -338,7 +338,7 @@ function playLife(seed) {
           const rq = o.requires || {};
           if (rq.flags && !rq.flags.every((f) => my.flags.includes(f))) return false;
           if (rq.notFlags && rq.notFlags.some((f) => my.flags.includes(f))) return false;
-          if (o.cost && my.money < o.cost) return false;
+          if (o.cost && my.money < (ev.kind === "milestone" ? G("lifeOptionCost")(ev, o, my) : o.cost)) return false; // 年代挪了积蓄线，要掏的钱跟着挪
           return true;
         });
         // 关口上拉一把（server/src/pull.ts）：认真的两个人商量着选——差几分的那个走要人拉的路，拉得动的那个陪着走

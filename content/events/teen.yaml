@@ -231,7 +231,7 @@
   when: [900, 1260]
   hint: 楼下新挂了一块棉门帘。
   weight: 3
-  requires: { minAge: 13 }
+  requires: { minAge: 13, flags: [era_wangba] }   # 只在有网吧的那些年（content/eras.yaml）
   title: 楼下开了网吧
   text: 楼下原先的粮店改成了网吧，门口挂着厚棉门帘，里面噼里啪啦全是键盘声。门口还摆了张掉漆的台球桌，一块钱一局。
   options:

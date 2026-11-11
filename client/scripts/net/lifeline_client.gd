@@ -629,10 +629,12 @@ func sent_position(seq: int) -> Variant:
 
 
 ## once：做一回、当场结算（协议 7）；false 是「做到点」，把这一段剩下的时间整段押上
-func act(spot_id: String, once := false) -> void:
+func act(spot_id: String, once := false, action := "") -> void:
 	var body := {"spot": spot_id}
 	if once:
 		body["once"] = true
+	if action != "":
+		body["action"] = action
 	_send(Op.ACT, body)
 
 
@@ -690,6 +692,11 @@ func fetch_past(life_no: int) -> void:
 ## 服务器懂不懂传承（老物件、再来一世）。连着旧服务器时界面不给按钮，而不是点了报错
 func server_has_legacy() -> bool:
 	return server_protocol >= Op.LEGACY_SINCE
+
+
+## 服务器认不认点位菜单（ACT 带 action）。旧服务器只做菜单头一件，界面就不摆别的选项
+func server_has_menu() -> bool:
+	return server_protocol >= Op.MENU_SINCE
 
 
 func _on_match_state(state) -> void:

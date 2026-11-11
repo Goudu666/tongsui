@@ -535,8 +535,29 @@ func my_duty() -> Dictionary:
 
 ## 我现在在这个点位上能做的事。和服务器 world.ts 的 worldPickAction 一个规则：
 ## 点位上的行动按顺序看，日程只给今天该来这儿、还来得及的人，其余按年纪、关口上挣来的资格、钟点取第一件合适的。没有就是 {}
-func action_of(spot: Dictionary) -> Dictionary:
-	var late := {}
+func action_of(spot: Dictionary, want := "") -> Dictionary:
+	var menu := actions_of(spot)
+	if want != "":
+		for a in menu:
+			if str(a.get("id", "")) == want:
+				return a
+	# 不点菜单：头一件现在就能做的；都不在钟点上，还是头一件（点了服务器回「现在不是时候」）。
+	# menu 的事只在点到时做，不点的时候轮不到它（和服务器 worldPickAction 一样）
+	var first := {}
+	for a in menu:
+		if bool(a.get("menu", false)):
+			continue
+		if not bool(a.get("_late", false)):
+			return a
+		if first.is_empty():
+			first = a
+	return first
+
+
+## 这个点位的菜单：这个人现在看得见的几件事，按 spots[].actions 的顺序（和服务器 worldPickAction 同一套规矩）。
+## 不在钟点上的也列着，带 _late（按钮上写「几点以后」）；上学上班只在是自己那份日程的地方才有
+func actions_of(spot: Dictionary) -> Array:
+	var out: Array = []
 	var ids: Array = spot.get("actions", [])
 	if ids.is_empty() and spot.has("action"):
 		ids = [spot.action]
@@ -550,7 +571,7 @@ func action_of(spot: Dictionary) -> Dictionary:
 				var mine := act.duplicate()
 				mine["label"] = str(d.get("label", act.get("label", "")))
 				mine["until"] = d.get("until")
-				return mine
+				out.append(mine)
 			continue
 		var rq: Dictionary = act.get("requires", {})
 		if rq.has("minAge") and age < int(rq.minAge):
@@ -560,14 +581,14 @@ func action_of(spot: Dictionary) -> Dictionary:
 		# 标记在服务器手里，客户端只认它发来的那张单子
 		if (rq.has("flags") or rq.has("notFlags")) and not (unlocks.get(my_role, []) as Array).has(str(id)):
 			continue
-		# 不在钟点上先看后面还有没有别的事；都没有就还是它（点了服务器回「现在不是时候」）
 		var hours: Variant = rq.get("hours")
 		if hours is Array and hours.size() == 2 and not overlaps(hours, slot):
-			if late.is_empty():
-				late = act
+			var late := act.duplicate()
+			late["_late"] = true
+			out.append(late)
 			continue
-		return act
-	return late
+		out.append(act)
+	return out
 
 
 ## 这一分钟在第几段

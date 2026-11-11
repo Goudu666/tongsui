@@ -258,3 +258,106 @@
       text: 合上书，睡一会儿
       tags: [gentle]
       effects: { self: { energy: 10 } }
+
+# ---- 成家和下一代（docs/FAMILY.md 第三节）：上一世两家的孩子、做了一辈子知己的两个人、考上大学的那个孩子 ----
+# leg_p_kids_tongsui 上一世两家的孩子也同岁、一块儿长大   leg_p_confidant 上一世做了一辈子的知己
+# leg_p_kid_uni 上一世孩子考大学那一回，两口子想到了一起
+
+- id: l_door_marks
+  kind: mirror
+  stage: childhood
+  where: hallway
+  hint: 楼道里有人刮旧漆。
+  weight: 2
+  requires: { minAge: 7, flags: [leg_p_kids_tongsui] }
+  title: 门框上的道道
+  text: 楼道里刮旧漆，门框上露出两排铅笔道，一排高一点，一排矮一点，每道旁边写着岁数。写到十八，没了。
+  options:
+    - id: stand
+      text: 站过去比一比
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: draw
+      text: 在旁边画上自己的
+      tags: [gentle]
+      effects: { self: { mood: 8 } }
+    - id: keep
+      text: 跟刷漆的说留着
+      tags: [responsible]
+      effects: { self: { charm: 1 } }
+  resonance:
+    stand:
+      text: 你站高的那排，对门的站矮的那排。一比，你俩都比那两道矮一截。
+      memory: 矮一截
+      bond: { sync: 3, close: 2 }
+    draw:
+      text: 你俩在旁边又画了两排，头一道都画在今天。刷漆的师傅看了看，换了把小刷子。
+      memory: 四排铅笔道
+      bond: { sync: 3, close: 3 }
+    keep:
+      text: 师傅点点头，沿着门框贴了一圈纸条。漆干了一揭，两排道道还在。
+      memory: 一圈纸条
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个往门框上画，一个拦着刷漆的。师傅左右看看，蹲下点了根烟。
+    bond: { close: 0 }
+
+- id: l_stone_table
+  kind: mirror
+  stage: teen
+  where: river
+  hint: 河边有人收棋盘。
+  weight: 2
+  requires: { minAge: 13, flags: [leg_p_confidant] }
+  title: 石桌
+  text: 河边那张石桌上刻着棋盘，刻得很深。桌角刻着两溜正字，一边一溜，差不多一样长。下棋的老人说，刻字的早不来了。
+  options:
+    - id: play
+      text: 坐下杀一盘
+      tags: [competitive]
+      effects: { self: { mind: 1 } }
+    - id: count
+      text: 数一数谁多
+      tags: [patient]
+      effects: { self: { mood: 5 } }
+    - id: carve
+      text: 在底下刻一道
+      tags: [adventure]
+      effects: { self: { mood: 8 } }
+  resonance:
+    play:
+      text: 你俩一人一边坐下，下到天黑也没分出输赢。老人收摊，替你们把棋子码好了。
+      memory: 码好的棋子
+      bond: { sync: 3, close: 2 }
+    count:
+      text: 你数左边，对门的数右边。左边多一道。对门的看了半天：「那道是后补的。」
+      memory: 后补的一道
+      bond: { sync: 3, close: 2 }
+    carve:
+      text: 你俩在两溜正字底下各刻了一横。老人看见了，把茶缸挪开，给你们腾地方。
+      memory: 新刻的一横
+      bond: { sync: 3, close: 3 }
+  dissonance:
+    text: 一个坐下摆好了棋，一个蹲在桌角数道道。棋摆了半天，没人走第一步。
+    bond: { close: 0 }
+
+- id: l_old_notice
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 16, flags: [leg_p_kid_uni] }
+  title: 旧喜报
+  text: 楼下信报箱后头夹着一张红纸。抽出来，是一张喜报，「考取」两个字还认得，名字让雨洇没了。
+  options:
+    - id: keep
+      text: 叠好夹进课本
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: back
+      text: 原样塞回去
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: ask
+      text: 拿去问楼长
+      tags: [responsible]
+      effects: { self: { mood: 3 } }

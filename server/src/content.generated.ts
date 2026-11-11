@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "192c7471114f",
+ "version": "1794499b49a7",
  "events": [
   {
    "id": "ch_runner",
@@ -8067,6 +8067,278 @@ var CONTENT: Content = {
      "effects": {
       "self": {
        "energy": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "l_door_marks",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": null,
+   "hint": "楼道里有人刮旧漆。",
+   "requires": {
+    "minAge": 7,
+    "flags": [
+     "leg_p_kids_tongsui"
+    ]
+   },
+   "title": "门框上的道道",
+   "text": "楼道里刮旧漆，门框上露出两排铅笔道，一排高一点，一排矮一点，每道旁边写着岁数。写到十八，没了。",
+   "options": [
+    {
+     "id": "stand",
+     "text": "站过去比一比",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "draw",
+     "text": "在旁边画上自己的",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "keep",
+     "text": "跟刷漆的说留着",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "stand": {
+     "text": "你站高的那排，对门的站矮的那排。一比，你俩都比那两道矮一截。",
+     "memory": "矮一截",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "draw": {
+     "text": "你俩在旁边又画了两排，头一道都画在今天。刷漆的师傅看了看，换了把小刷子。",
+     "memory": "四排铅笔道",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    },
+    "keep": {
+     "text": "师傅点点头，沿着门框贴了一圈纸条。漆干了一揭，两排道道还在。",
+     "memory": "一圈纸条",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个往门框上画，一个拦着刷漆的。师傅左右看看，蹲下点了根烟。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "l_stone_table",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": "river",
+   "when": null,
+   "hint": "河边有人收棋盘。",
+   "requires": {
+    "minAge": 13,
+    "flags": [
+     "leg_p_confidant"
+    ]
+   },
+   "title": "石桌",
+   "text": "河边那张石桌上刻着棋盘，刻得很深。桌角刻着两溜正字，一边一溜，差不多一样长。下棋的老人说，刻字的早不来了。",
+   "options": [
+    {
+     "id": "play",
+     "text": "坐下杀一盘",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "count",
+     "text": "数一数谁多",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "carve",
+     "text": "在底下刻一道",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "play": {
+     "text": "你俩一人一边坐下，下到天黑也没分出输赢。老人收摊，替你们把棋子码好了。",
+     "memory": "码好的棋子",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "count": {
+     "text": "你数左边，对门的数右边。左边多一道。对门的看了半天：「那道是后补的。」",
+     "memory": "后补的一道",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "carve": {
+     "text": "你俩在两溜正字底下各刻了一横。老人看见了，把茶缸挪开，给你们腾地方。",
+     "memory": "新刻的一横",
+     "bond": {
+      "sync": 3,
+      "close": 3
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个坐下摆好了棋，一个蹲在桌角数道道。棋摆了半天，没人走第一步。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "l_old_notice",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 16,
+    "flags": [
+     "leg_p_kid_uni"
+    ]
+   },
+   "title": "旧喜报",
+   "text": "楼下信报箱后头夹着一张红纸。抽出来，是一张喜报，「考取」两个字还认得，名字让雨洇没了。",
+   "options": [
+    {
+     "id": "keep",
+     "text": "叠好夹进课本",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back",
+     "text": "原样塞回去",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "拿去问楼长",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
       },
       "other": {},
       "bond": {},
@@ -36362,11 +36634,60 @@ var CONTENT: Content = {
     }
    },
    {
+    "id": "l_kids_tongsui",
+    "title": "两家的孩子",
+    "text": "{name} 家的孩子和对门家的同岁，一块儿上学，一块儿挨说，一块儿考。{name} 站在楼道里看他俩，看了很多年。",
+    "requires": {
+     "flags": [
+      "has_kid",
+      "p_kids_tongsui"
+     ]
+    }
+   },
+   {
+    "id": "l_kid_far",
+    "title": "站台",
+    "text": "{name} 的孩子考到了外地。每年腊月 {name} 都去车站接，回回到得早，在站台上来回走。",
+    "requires": {
+     "flags": [
+      "has_kid",
+      "kid_away"
+     ]
+    }
+   },
+   {
+    "id": "l_kid_near",
+    "title": "隔两站地",
+    "text": "{name} 的孩子在本地念完大学，没走远，住得隔两站地。礼拜天回来吃饭，{name} 一上午都在剁馅。",
+    "requires": {
+     "flags": [
+      "has_kid",
+      "kid_uni"
+     ],
+     "notFlags": [
+      "kid_away"
+     ]
+    }
+   },
+   {
     "id": "l_parent",
     "title": "当了爹妈",
     "text": "{name} 有了自己的孩子，带孩子去海河边放风筝，就像当年有人带 {name} 去一样。",
     "requires": {
      "flags": [
+      "has_kid"
+     ]
+    }
+   },
+   {
+    "id": "l_single",
+    "title": "一个人",
+    "text": "{name} 一个人过了一辈子。早上去河边走一圈，晚上一碗面。窗台上的几盆花，一盆没死过。",
+    "requires": {
+     "flags": [
+      "single_life"
+     ],
+     "notFlags": [
       "has_kid"
      ]
     }
@@ -37396,6 +37717,40 @@ var CONTENT: Content = {
    ]
   },
   {
+   "id": "h_drawing",
+   "name": "一张蜡笔画",
+   "desc": "两个孩子趴在一张纸上画的。一个画楼，一个画河，挤在中间那块谁也没让。",
+   "from": {
+    "flags": [
+     "p_kids_tongsui"
+    ]
+   },
+   "bonus": {
+    "charm": 0.5
+   },
+   "money": 0,
+   "close": 0,
+   "flags": [
+    "heir_drawing"
+   ]
+  },
+  {
+   "id": "h_chessboard",
+   "name": "一块棋盘",
+   "desc": "背面拿圆珠笔记着输赢。正字写满了，又在边上接着写。",
+   "from": {
+    "flags": [
+     "p_confidant"
+    ]
+   },
+   "bonus": {},
+   "money": 0,
+   "close": 4,
+   "flags": [
+    "heir_chessboard"
+   ]
+  },
+  {
    "id": "h_whistle",
    "name": "鸽哨",
    "desc": "绑过那只灰鸽子尾巴的。拿嘴一吹，楼顶就有东西扑棱。",
@@ -37429,6 +37784,25 @@ var CONTENT: Content = {
    "close": 0,
    "flags": [
     "heir_tin_box"
+   ]
+  },
+  {
+   "id": "h_certificate",
+   "name": "一张奖状",
+   "desc": "孩子念小学时得的。在墙上贴了十几年，揭下来没撕破，背面粘着一层旧报纸。",
+   "from": {
+    "flags": [
+     "has_kid",
+     "kid_uni_top"
+    ]
+   },
+   "bonus": {
+    "mind": 0.5
+   },
+   "money": 0,
+   "close": 0,
+   "flags": [
+    "heir_certificate"
    ]
   },
   {
@@ -37587,6 +37961,28 @@ var CONTENT: Content = {
    }
   },
   {
+   "id": "r_kids_tongsui",
+   "title": "又一对同岁",
+   "desc": "两家的孩子也是同岁，也在这条楼道里长大。",
+   "who": "pair",
+   "requires": {
+    "flags": [
+     "p_kids_tongsui"
+    ]
+   }
+  },
+  {
+   "id": "r_confidant",
+   "title": "老朋友",
+   "desc": "没成一家，好了一辈子。",
+   "who": "pair",
+   "requires": {
+    "flags": [
+     "p_confidant"
+    ]
+   }
+  },
+  {
    "id": "r_homecoming",
    "title": "回来了",
    "desc": "有人去了外地，后来又回来了。",
@@ -37630,6 +38026,18 @@ var CONTENT: Content = {
    }
   },
   {
+   "id": "r_kid_away",
+   "title": "考出去了",
+   "desc": "有一家的孩子考到了外地，过年才回来。",
+   "who": "each",
+   "requires": {
+    "flags": [
+     "has_kid",
+     "kid_away"
+    ]
+   }
+  },
+  {
    "id": "r_again",
    "title": "又拉了一回",
    "desc": "上一世拉过钩，这一世又拉了一回。",
@@ -37656,6 +38064,9 @@ var CONTENT: Content = {
  "legacy": {
   "traces": [
    "p_capsule",
+   "p_confidant",
+   "p_kid_uni",
+   "p_kids_tongsui",
    "p_married",
    "p_pigeon",
    "p_promise",
@@ -37709,6 +38120,10 @@ var CONTENT: Content = {
    "l_erhu": "家里挂着琴，拉了一辈子。",
    "l_koi": "运气好得出奇。",
    "l_wanderer": "去了外地，就没再回来。",
+   "l_kids_tongsui": "两家的孩子也同岁。",
+   "l_kid_far": "孩子考到了外地。",
+   "l_kid_near": "孩子念完书，留在了身边。",
+   "l_single": "自己选了一个人过。",
    "l_parent": "有了自己的孩子。",
    "l_charmer": "走到哪儿，哪儿热闹。",
    "l_stayer": "一辈子没离开过天津。",

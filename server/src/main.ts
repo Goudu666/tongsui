@@ -439,6 +439,7 @@ function snapshot(s: LifelineMatch, role: Role) {
         chosen: { qing: !!w.event.choices.qing, mei: !!w.event.choices.mei },
         mine: w.event.choices[role] || null,
         locks: lifeMilestoneLocks(life, CONTENT),
+        pulls: lifeMilestonePulls(life, CONTENT),
       };
     }
     view.world = { minute: Math.floor(w.minute), slot: w.slot, ready: worldReadyView(life), playing: w.playing, rest: w.rest, actors: w.actors, event: ev, story: storyView(life, CONTENT) };
@@ -802,7 +803,7 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
 
     if (state.presences.qing || state.presences.mei) {
       var t = worldAdvance(life, CONTENT, 1 / TICK_RATE, steering(state));
-      if (t.started) send(dispatcher, OP.EVENT, { event: t.started, locks: lifeMilestoneLocks(life, CONTENT) });
+      if (t.started) send(dispatcher, OP.EVENT, { event: t.started, locks: lifeMilestoneLocks(life, CONTENT), pulls: lifeMilestonePulls(life, CONTENT) });
       broadcastLog(dispatcher, t.entries);
       if (t.dayEnded) {
         save(nk, logger, state, tick);

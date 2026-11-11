@@ -109,6 +109,17 @@ bond:
   syncSteady: 1.0       # 默契到了 syncSteadyFull 托住多少（1 = 坏手气全托回来）
   syncSteadyFrom: 5     # 默契在这以下不托
   syncSteadyFull: 35    # 默契到这儿托满
+  # 拉一把（关口上，server/src/pull.ts）：两个人都在这一关、商量着选路。一个够上了线还有富余，一个差几分，两个人都走这条，差的那个就跟着过去了。
+  # 看分的线最多拉几分看默契：默契在 syncSteadyFrom 以下拉 pullFrom，到 syncSteadyFull 拉 pullFull（属性口径，0.6 = 6 分）。
+  # 拉的人自己得多出来至少这么多分；对门走了别的路就没拉上，按自己够得着的路里线最高的那条走。
+  # 一个阶段专心过大约动 12~25 分，差 5 分以内的线约三成（关口冲刺的硬指标），所以拉的上限比「差一点」（10 分）小一半
+  pullFrom: 0.2
+  pullFull: 0.6
+  # 要钱的线（积蓄、交得起）：真把钱塞过去，最多塞多少看亲近（亲近到 pullMoneyClose 塞满 pullMoney）。塞完自己还得走得了这条
+  pullMoney: 40
+  pullMoneyClose: 60
+  # 重逢：两个人都过的上一道关走散了，这一道又走到一条路上（机器人一辈子两三回，所以给得少：七十岁并一家那条线看亲近）
+  reunion: { close: 2, sync: 2 }
   # 一个日子过完，要是这天既没同框也没共鸣，亲近按阶段往下掉（日子之间隔得越久掉得越多），再乘 (1 + 距离 × distance)
   drift: { childhood: 0.4, teen: 0.9, young: 1.6, middle: 2.4, old: 1.5 }
   driftDistance: 0.35

@@ -461,7 +461,7 @@ const rules = load("rules.yaml");
     daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "needsUse", "wageFlags"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],
     lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max", "flags"],
-    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "syncSteadyFrom", "syncSteadyFull", "slotTogether", "closeWeight", "drift", "driftDistance", "driftFloor"],
+    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "syncSteadyFrom", "syncSteadyFull", "slotTogether", "closeWeight", "drift", "driftDistance", "driftFloor", "pullFrom", "pullFull", "pullMoney", "pullMoneyClose", "reunion"],
     legacy: ["pastKept", "heirloomOffer", "houseMax", "houseMoney", "lateEarly", "lateAfter", "lateRoom", "linkedDrift", "linkedMood", "oldSoul", "oldSoulCharm"],
   };
   checkKeys("rules", rules, Object.keys(need));
@@ -483,6 +483,10 @@ const rules = load("rules.yaml");
   if (rules?.daily && !(typeof rules.daily.slotUse === "number" && rules.daily.slotUse > 0 && rules.daily.slotUse <= 1)) errors.push("rules.yaml: daily.slotUse 是一段里真花在那件事上的一份，要在 0 到 1 之间");
   if (rules?.bond && (typeof rules.bond.syncSteady !== "number" || rules.bond.syncSteady < 0 || rules.bond.syncSteady > 1)) errors.push("rules.yaml: bond.syncSteady 是默契替考场托住的那一份，要在 0 到 1 之间");
   if (rules?.bond && (rules.bond.syncSteadyFull !== undefined || rules.bond.syncSteadyFrom !== undefined) && !(typeof rules.bond.syncSteadyFull === "number" && typeof rules.bond.syncSteadyFrom === "number" && rules.bond.syncSteadyFull > rules.bond.syncSteadyFrom && rules.bond.syncSteadyFrom >= 0 && rules.bond.syncSteadyFull <= 100)) errors.push("rules.yaml: bond.syncSteadyFrom / syncSteadyFull 是默契从几开始托、到几托满，两个要一起写（只写一个引擎会退回默契 / 100 的老算法），并且 0 ≤ From < Full ≤ 100");
+  // 拉一把（server/src/pull.ts）：看分的线最多拉几分（属性口径，0.6 = 6 分）、要钱的线最多塞几块。拉太多关口就不用冲了
+  if (rules?.bond && !(typeof rules.bond.pullFrom === "number" && typeof rules.bond.pullFull === "number" && rules.bond.pullFrom >= 0 && rules.bond.pullFrom <= rules.bond.pullFull && rules.bond.pullFull <= 1)) errors.push("rules.yaml: bond.pullFrom / pullFull 是关口上默契最低和最高时能拉对门几分（属性口径），要 0 ≤ pullFrom ≤ pullFull ≤ 1");
+  if (rules?.bond && !(typeof rules.bond.pullMoney === "number" && rules.bond.pullMoney >= 0 && rules.bond.pullMoney <= 80 && typeof rules.bond.pullMoneyClose === "number" && rules.bond.pullMoneyClose > 0 && rules.bond.pullMoneyClose <= 100)) errors.push("rules.yaml: bond.pullMoney 是关口上最多替对门垫几块（0~80），pullMoneyClose 是亲近到几垫满（1~100）");
+  if (rules?.bond) checkDeltas("rules.bond.reunion", rules.bond.reunion, BOND_KEYS);
   for (const [f, mul] of Object.entries(rules?.daily?.wageFlags ?? {})) {
     consumed.push(["rules.daily.wageFlags", f]);
     if (typeof mul !== "number" || mul < 1 || mul > 2) errors.push(`rules.yaml: daily.wageFlags.${f} 是工钱的倍数，要在 1 到 2 之间`);
@@ -755,7 +759,7 @@ const needText = (where, t, max) => {
   if (!t || typeof t !== "string") errors.push(`${where}: 缺少文字`);
   else if (len(t) > max) errors.push(`${where}: ${len(t)} 字，超过 ${max} 字（${t}）`);
 };
-checkKeys("duet.yaml", duetRaw, ["catches", "echo", "epitaph"]);
+checkKeys("duet.yaml", duetRaw, ["catches", "echo", "epitaph", "gate"]);
 const eventById = new Map(events.map((e) => [e.id, e]));
 for (const ev of events) ev.catches = [];
 let catchCount = 0;
@@ -789,7 +793,10 @@ const duetTexts = (name, keys) => {
 const duet = {
   echo: duetTexts("echo", ["ask", "res", "catch", "miss", "like", "unlike", "knew", "kept", "told"]),
   epitaph: duetTexts("epitaph", ["know", "shadow"]),
+  // 关口上的拉一把 / 没拉上 / 重逢（server/src/pull.ts）。回忆的名字和搭上了一样 8 字以内
+  gate: duetTexts("gate", ["pull", "money", "miss", "reunion", "pullMemory", "moneyMemory", "reunionMemory"]),
 };
+for (const k of ["pullMemory", "moneyMemory", "reunionMemory"]) needText(`duet.gate.${k}`, duet.gate[k], 8);
 duet.epitaph.last = (duetRaw.epitaph?.last ?? []).map((l, i) => {
   needText(`duet.epitaph.last[${i}]`, l.text, 40);
   if (typeof l.minRate !== "number") errors.push(`duet.epitaph.last[${i}]: 需要 minRate`);

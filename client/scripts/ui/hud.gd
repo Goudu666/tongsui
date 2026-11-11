@@ -7,6 +7,7 @@ extends Control
 ##   中上：下一个关口的纸带（goal_panel.gd，main.gd 按 strip_rect() 摆）；
 ##         纸带底下两张小签：零花钱，主线（第几章，今天的「下一件事」在哪张图、哪一段）
 ##   右上「对门」的牌：色条是 TA 的颜色；左边两个圆，越亲近叠得越多；右边 TA 在哪、在做什么
+##   左边「我」的牌底下：有孩子时一张小牌（名字、几岁，一行三项；两口子共用的标「两家的」）
 ##   屏幕边上：对门走出画面时，一个 TA 颜色的小箭头指着方向
 ## 刘海和圆角在左右两边，inset 是要让开的宽度（Kit.safe_sides）。
 
@@ -34,6 +35,9 @@ const THEM_H := 160.0
 const STRIP_H := 112.0     ## 关口纸带的高
 const STRIP_MAX := 1280.0  ## 关口纸带最宽这么多（再长尺子就空了）
 const TAG_H := 44.0        ## 纸带底下的小签（零花钱、主线）
+## 「我」的牌底下：孩子的小牌（WORLD actors[我].kid，见 docs/FAMILY.md）
+const KID_GAP := 16.0
+const KID_H := 96.0
 const CARD := Vector2(ME_W, BAND + AGE_H)  ## 只有日历那一截（离线逛逛时就这么高）
 const CLOCK_FS := 36
 const CHAPTER_NUM := ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"]
@@ -52,11 +56,16 @@ var partner: Dictionary = {}  ## 对门的牌 { name, color, online, big, small 
 var pointer: Dictionary = {}  ## 对门走出画面了 { at: 屏幕上贴边的位置, dir: 方向, color, name }；在画面里是空的
 var inset := Vector2.ZERO     ## (左, 右) 给刘海让开的宽度
 var story: Dictionary = {}    ## 主线 { chapter, title, next, force }（WORLD 的 story，next 是我这一句）；空的不画
+var kid: Dictionary = {}      ## 我的孩子 { name, age, stats: {body, mind, charm}（0~10）, shared }；没孩子是空的
 var story_rect := Rect2()     ## 主线小签上一回画在哪（开局引导的纸条贴在它底下）
 var money_rect := Rect2()     ## 零花钱那一小块上一回画在哪（飘字的钢镚儿往这儿飞，ui/juice.gd）
 var _money_shown := -1.0      ## 零花钱正在显示的数：钢镚儿落下来才拨上去
 var _money_hold := 0.0
 var _bump := 0.0              ## 亲近 / 默契刚涨：两个圆往一块儿挤一下
+var _kid_hold := 0.0          ## 孩子牌上的数先别拨（「孩子 心智 +3」还在路上）
+var _kid_held: Dictionary = {} ## 拨之前显示的那份 stats
+var _kid_bump := 0.0          ## 飘字落进孩子牌：牌子跳一下
+var _kid_hot := ""            ## 刚落进来的是哪一项（那一项的数印成我的颜色，一会儿褪回墨色）
 var _shown: Dictionary = {}   ## 圆表上正在显示的值（慢慢追上真实值）
 var _t := 0.0
 var _idle := 0.0
@@ -93,7 +102,13 @@ func _process(delta: float) -> void:
 	if _bump > 0.0:
 		_bump = maxf(0.0, _bump - delta)
 		moving = true
-	var sig := [time_label, stage, int(minute), slot_name, playing, tag, note, money, bond.hash(), partner.hash(), pointer.hash(), story.hash(), inset, size]
+	if _kid_bump > 0.0:
+		_kid_bump = maxf(0.0, _kid_bump - delta)
+		moving = true
+	if not _kid_held.is_empty() and _t >= _kid_hold:
+		_kid_held = {}
+		moving = true
+	var sig := [time_label, stage, int(minute), slot_name, playing, tag, note, money, bond.hash(), partner.hash(), pointer.hash(), story.hash(), kid.hash(), inset, size]
 	if moving or _idle >= 0.1 or sig != _sig:
 		_sig = sig
 		_idle = 0.0
@@ -108,6 +123,44 @@ func hold_money(sec: float) -> void:
 ## 亲近、默契涨了：两个圆挤一下
 func bump() -> void:
 	_bump = 0.45
+
+
+## 孩子牌上的数先停在现在显示的样子，sec 秒后再拨（飘字飞到了 kid_land 会提前放开）
+func hold_kid(sec: float) -> void:
+	if _kid_held.is_empty():
+		_kid_held = _dict(kid.get("stats")).duplicate()
+	_kid_hold = maxf(_kid_hold, _t + sec)
+
+
+## 「孩子 心智 +3」落进孩子牌：数拨上去，牌子跳一下
+func kid_land(key: String) -> void:
+	_kid_held = {}
+	_kid_bump = 0.4
+	_kid_hot = key
+
+
+## 孩子那张小牌在 HUD 里的位置（没孩子是空的；飘字「孩子 心智 +3」往这儿飞）
+func kid_rect() -> Rect2:
+	if kid.is_empty():
+		return Rect2()
+	return Rect2(left(), me_rect().end.y + KID_GAP, ME_W, KID_H)
+
+
+## 孩子牌上那一行：[["体魄", 42], ["心智", 55], ["魅力", 38]]，百分制往下取整（和关口纸带一个口径）
+static func kid_points(stats: Dictionary) -> Array:
+	var out: Array = []
+	for k in ["body", "mind", "charm"]:
+		out.append([P.STAT_NAME[k], int(floor(float(stats.get(k, 0.0)) * 10.0 + 0.001))])
+	return out
+
+
+## 几岁：刚生下来那几年写「不到一岁」
+static func kid_age_text(age: int) -> String:
+	return "不到一岁" if age <= 0 else "%d 岁" % age
+
+
+static func _dict(v: Variant) -> Dictionary:
+	return v if v is Dictionary else {}
 
 
 ## 两个圆在 HUD 里的位置（飘字的「亲近 +1」往这儿飞）
@@ -162,6 +215,8 @@ func _draw() -> void:
 	var f := P.font()
 	_scrim()
 	_me(f, me_rect())
+	if not kid.is_empty():
+		_kid(f, kid_rect())
 	if not needs.is_empty() or not partner.is_empty():
 		_them(f, them_rect())
 	var strip := strip_rect()
@@ -264,6 +319,37 @@ func _gauge(f: Font, c: Vector2, key: String) -> void:
 	var g: String = NEED_GLYPH[key]
 	var w := f.get_string_size(g, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x
 	draw_string(f, c + Vector2(-w / 2.0, 9), g, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION, P.MEI if low else P.INK)
+
+
+## 孩子的小牌：上一行名字、几岁（两口子共用的，右头两个叠着的小圆 +「两家的」），细线，下一行三项。
+## 错位的色块是我的颜色；两家的孩子用两色叠印的那种深色
+func _kid(f: Font, r: Rect2) -> void:
+	var lift := sin(clampf(_kid_bump / 0.4, 0.0, 1.0) * PI) * 4.0
+	r.position.y -= lift
+	var at := r.position
+	var shared := bool(kid.get("shared", false))
+	Kit.draw_sheet(self, r, P.OVERLAP if shared else Kit.accent)
+	var right_room := 0.0
+	if shared:
+		var mark := "两家的"
+		var mw := f.get_string_size(mark, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x
+		Kit.text(self, Vector2(r.end.x - 16.0, at.y + 38.0), mark, P.FS_CAPTION, P.INK_MID, true)
+		Kit.draw_pair(self, Vector2(r.end.x - 16.0 - mw - 22.0, at.y + 30.0), 8.0, 7.0)
+		right_room = mw + 56.0
+	var name := str(kid.get("name", "孩子"))
+	var age := kid_age_text(int(kid.get("age", 0)))
+	var nw := Kit.text(self, Vector2(at.x + 18.0, at.y + 40.0), name, P.FS_LABEL, P.INK, false, r.size.x - 130.0 - right_room)
+	Kit.text(self, Vector2(at.x + 18.0 + nw + 14.0, at.y + 40.0), age, P.FS_CAPTION, P.INK_MID)
+	Kit.hair(self, Vector2(at.x + 14, at.y + 54.0), Vector2(r.end.x - 14, at.y + 54.0))
+	var stats: Dictionary = _kid_held if not _kid_held.is_empty() else _dict(kid.get("stats"))
+	var pitch := (r.size.x - 36.0) / 3.0
+	var keys := ["body", "mind", "charm"]
+	var row := kid_points(stats)
+	for i in 3:
+		var x := at.x + 18.0 + pitch * i
+		var lw := Kit.text(self, Vector2(x, at.y + 84.0), str(row[i][0]), P.FS_CAPTION, P.INK_MID)
+		var hot := keys[i] == _kid_hot and _kid_bump > 0.0
+		Kit.text(self, Vector2(x + lw + 8.0, at.y + 84.0), str(row[i][1]), P.FS_LABEL, Kit.accent if hot else P.INK)
 
 
 ## 零花钱：一张小签，钢镚儿 + 几块

@@ -1495,6 +1495,7 @@ func _refresh_hud() -> void:
 		hud.money = -1
 		hud.note = ""
 		hud.story = {}
+		hud.kid = {}
 		goal_panel.visible = false
 		stat_strip.visible = false
 		return
@@ -1521,6 +1522,12 @@ func _refresh_hud() -> void:
 	hud.bond = last_world.get("bond", life.get("bond", {}))
 	var st: Dictionary = _dict(last_world.get("story"))
 	hud.story = {} if st.is_empty() else {"chapter": st.get("chapter", 0), "title": st.get("title", ""), "next": _dict(st.get("next")).get(my_role), "force": st.get("force", false)}
+	hud.kid = _kid_of(my_role)
+
+
+## 某个人的孩子（WORLD actors[role].kid：{ name, age, stats, shared }，没孩子不发，见 docs/FAMILY.md）
+func _kid_of(role: String) -> Dictionary:
+	return _dict(_dict(_dict(last_world.get("actors")).get(role)).get("kid"))
 
 
 ## 对门的牌（HUD 右上）和屏幕边上的箭头：TA 在哪、在做什么；走出画面了就指个方向。每帧算一次
@@ -1555,7 +1562,7 @@ func _refresh_partner() -> void:
 	if view.grow(-20.0).has_point(at) or modal.visible:
 		hud.pointer = {}
 		return
-	var box_top := hud.stats_top() + StatStrip.SIZE.y + 24.0  # 让开左上的成长账
+	var box_top := maxf(hud.stats_top() + StatStrip.SIZE.y, hud.kid_rect().end.y) + 24.0  # 让开左上的成长账、孩子的小牌
 	var box := Rect2(70.0 + hud.inset.x, box_top, ui.size.x - 140.0 - hud.inset.x - hud.inset.y, ui.size.y - 70.0 - box_top)
 	var c := view.get_center()
 	var d := at - c
@@ -1937,7 +1944,8 @@ func _show_milestone_result(e: Dictionary) -> void:
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 16)
 	box.add_child(head)
-	Kit.chip(head, ("同路" if same else "各走各的") if both else "人生关口", P.OVERLAP if same else P.INK)
+	var kid_gate := ev.has("kidAge")  # 孩子的关口（kid_gates.yaml）：分是孩子的，路是爹妈替孩子选的
+	Kit.chip(head, ("同路" if same else "各走各的") if both else ("孩子的关口" if kid_gate else "人生关口"), P.OVERLAP if same else P.INK)
 	var when := _label(head, "%s · %s" % [str(e.label), str(ev.get("title", ""))], 30, P.INK_SOFT)
 	when.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	# 揭晓：两个人的分同时往上数（ui/reveal.gd），数完了才露出各自走了哪条路、这一关的那句话
@@ -1955,6 +1963,9 @@ func _show_milestone_result(e: Dictionary) -> void:
 		if has_line and bool(res.get("scored", true)):
 			var rv := Reveal.new()
 			rv.who = name
+			if kid_gate:
+				var kid_name := str(_kid_of(r).get("name", ""))
+				rv.who = "%s · %s" % [name, kid_name] if kid_name != "" else "%s 家的孩子" % name
 			rv.color = P.role_color(r)
 			rv.score = int(res.get("score", 0))
 			rv.unit = str(res.get("unit", "分"))

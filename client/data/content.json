@@ -1,5 +1,5 @@
 {
- "version": "0194aaf2c704",
+ "version": "6b3f48da2089",
  "events": [
   {
    "id": "m_rise",
@@ -23139,6 +23139,10 @@
       "mind": 1
      },
      "min": 8.5,
+     "cost": 21,
+     "homePays": [
+      "fam_rich"
+     ],
      "tags": [
       "competitive"
      ],
@@ -23818,8 +23822,8 @@
     {
      "id": "nest",
      "text": "爸妈拿出那笔钱，出首付",
-     "min": 215,
-     "cost": 215,
+     "min": 195,
+     "cost": 195,
      "requires": {
       "flags": [
        "fam_nest"
@@ -23915,8 +23919,8 @@
     {
      "id": "fixed",
      "text": "把老屋翻修一下",
-     "min": 130,
-     "cost": 110,
+     "min": 110,
+     "cost": 90,
      "requires": {
       "flags": [
        "fam_poor"
@@ -26815,7 +26819,7 @@
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,

@@ -116,7 +116,16 @@ function pullOffer(s: LifeState, c: Content, ev: LifeEvent, pe: PendingEvent, ro
     var line = lifePoints(lifeOptionMin(o, me)); // 两个人同一年生，年代挪的线是同一条
     var gap = line - lifePoints(lifeScore(me, w) + swingMe);
     var spare = lifePoints(lifeScore(them, w) + swingThem) - line;
-    if (gap <= 0 || o.cost && me.money < lifeOptionCost(ev, o, me)) return null; // 分和钱都差的，一把拉不过来
+    var myCost = o.cost ? lifeOptionCost(ev, o, me) : 0;
+    if (gap <= 0 && myCost > me.money) {
+      // 分够了、差的是要交的钱（坐办公室头一年垫的那一笔，docs/MEANS.md 第十节）：对门把钱塞过来，塞完自己还交得起
+      var cgap = Math.ceil(myCost - me.money - 1e-6);
+      var cspare = Math.floor(them.money - lifeOptionCost(ev, o, them) + 1e-6);
+      var creach = pullReachMoney(c, s.bond.close, them);
+      if (cgap > creach || cspare < cgap) return null;
+      return { by: other, gap: cgap, unit: "块", reach: creach };
+    }
+    if (gap <= 0 || myCost > me.money) return null; // 分和钱都差的，一把拉不过来
     var reach = pullReachPoints(c, s.bond.sync);
     if (gap > reach || spare < gap) return null;
     return { by: other, gap: gap, unit: "分", reach: reach };

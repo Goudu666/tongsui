@@ -29,7 +29,7 @@ import actor_acts  # noqa: E402
 
 CELL_W, CELL_H = 200, 220
 COLS, ROWS = 8, 5
-ACT_ROWS = 10      # 行动表：每行两套 4 帧循环（actor_acts.ACTS）
+ACT_ROWS = 11      # 行动表：每行两套 4 帧循环（actor_acts.ACTS）
 ACT_SCALE = 1.5    # 行动表输出倍数：比走路表小一点，省显存（2400×3300）
 FOOT = (100, 206)
 SCALE = 2.0

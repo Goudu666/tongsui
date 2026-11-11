@@ -40,7 +40,14 @@ const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "pla
 	# 同一道关不同的冲法、各条路下了班的营生（docs/MEANS.md 第六节）
 	"swim_class": "play_river", "lang_class": "study", "banquet": "eat_out", "night_class": "study",
 	"side_tutor": "study", "side_fix": "work", "night_market": "eat_out", "overtime": "study", "night_shift": "work",
-	"run_dawn": "play_river", "old_lessons": "study"}
+	"run_dawn": "play_river", "old_lessons": "study",
+	# 点位菜单上后添的（content/map.yaml 末尾）
+	"pancake": "eat_out", "tea_runner": "listen", "mall_clerk": "eat_out", "river_run": "play_river", "laps": "play_alley", "hopscotch": "play_alley",
+	"sketch": "study", "coal": "work", "cards": "listen", "teach_chess": "study", "flowers": "play_roof", "boat": "play_river", "huqin": "perform",
+	"tea_box": "listen",
+	# 后半生押时间（content/events/later.yaml）
+	"old_breakfast": "work", "old_bikes": "work", "mind_kids": "play_alley", "grandkid_park": "play_river",
+	"square_dance": "perform", "pair_cook": "eat", "gk_pickup": "play_alley"}
 ## 揭晓：名次章的音高（reveal.gd 砸横章那一下），认它来起 top
 const TOP_PITCH := 1.12
 ## 揭晓的声音隔这么久没来，下一颗算盘珠就算新的一回揭晓

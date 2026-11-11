@@ -205,7 +205,9 @@ function decide(s, P, partnerPlan) {
   // 盯着纸带上那条线练（和影子一个算法：还没够着的线里最低的那条，都够着了就最高的那条）。
   // 原来读的 goal.stat 在 GoalView 上不存在，「认真的人」其实是三项轮着练（11-11 玩法总把关查出来的）
   const want = G("worldShadowNeed")(s, C, role) || ["mind", "body", "charm"][s.turn % 3];
-  const grow = free.filter((o) => (o.act.stats[want] || 0) > 0).sort((x, y) => (y.act.stats[want] || 0) - (x.act.stats[want] || 0));
+  // 孩子的关口是纸带上最近的那道（kid_mind 这样的键）：认真的人带孩子去长那一项（docs/FAMILY.md）
+  const by = (act) => (want.startsWith("kid_") ? (act.kid && act.kid[want.slice(4)]) || 0 : act.stats[want] || 0);
+  const grow = free.filter((o) => by(o.act) > 0).sort((x, y) => by(y.act) - by(x.act));
   if (grow.length && rand() < 0.75) return { ...grow[0], why: "grow:" + want };
   return { ...pick(free), why: "variety" };
 }

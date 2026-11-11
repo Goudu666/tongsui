@@ -16,7 +16,7 @@
   options:
     - id: key
       text: 送去那所好小学
-      min: 4.6
+      min: 4.0
       tags: [competitive]
       effects: { flags: [kid_prim_key] }
     - id: near
@@ -43,7 +43,7 @@
   options:
     - id: key
       text: 去那所重点初中
-      min: 5.8
+      min: 5.0
       tags: [competitive]
       effects: { flags: [kid_mid_key] }
     - id: near
@@ -70,12 +70,12 @@
   options:
     - id: key
       text: 上重点高中
-      min: 6.6
+      min: 5.8
       tags: [competitive]
       effects: { flags: [kid_high_key] }
     - id: high
       text: 上普通高中
-      min: 5.2
+      min: 4.6
       tags: [patient]
       effects: { flags: [kid_high] }
     - id: trade
@@ -105,17 +105,17 @@
   options:
     - id: top
       text: 去考上的那所好大学
-      min: 7.4
+      min: 6.0
       tags: [competitive]
       effects: { flags: [kid_uni_top] }
     - id: away
       text: 让孩子去外地念书
-      min: 6.4
+      min: 5.4
       tags: [adventure]
       effects: { flags: [kid_away] }
     - id: uni
       text: 念本市的大学
-      min: 5.6
+      min: 4.6
       tags: [gentle]
       effects: { flags: [kid_uni] }
     - id: work

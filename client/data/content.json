@@ -1,5 +1,5 @@
 {
- "version": "5541b85d8555",
+ "version": "c2ce0a8b0cce",
  "events": [
   {
    "id": "ch_runner",
@@ -32620,6 +32620,501 @@
      "text": "老先生一人给一杯茶，茶凉了，他才说今天就到这儿。"
     },
     "bring": true
+   },
+   {
+    "id": "pancake",
+    "label": "帮着摊煎饼",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 12,
+     "maxAge": 21,
+     "hours": [
+      390,
+      600
+     ]
+    },
+    "needs": {
+     "energy": -8,
+     "mood": 2
+    },
+    "stats": {
+     "charm": 0.12
+    },
+    "money": 1,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个磕鸡蛋，一个刷酱，排队的人说你们俩比老板还快。"
+    },
+    "bring": false
+   },
+   {
+    "id": "tea_runner",
+    "label": "在茶社跑堂",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 15,
+     "maxAge": 29,
+     "hours": [
+      540,
+      1260
+     ]
+    },
+    "needs": {
+     "energy": -12,
+     "mood": -2
+    },
+    "stats": {
+     "charm": 0.15
+    },
+    "money": 2,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个续水，一个收茶碗，台上说到热闹处，你们俩都站住了。"
+    },
+    "bring": false
+   },
+   {
+    "id": "mall_clerk",
+    "label": "在商场站柜台",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 16,
+     "maxAge": 25,
+     "hours": [
+      600,
+      1260
+     ]
+    },
+    "needs": {
+     "energy": -14,
+     "mood": -3
+    },
+    "stats": {
+     "charm": 0.15
+    },
+    "money": 3,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两个柜台挨着，没客人的时候，你们隔着玻璃比划着说话。"
+    },
+    "bring": false
+   },
+   {
+    "id": "river_run",
+    "label": "沿河堤跑一趟",
+    "minutes": 45,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 12,
+     "maxAge": 59
+    },
+    "needs": {
+     "energy": -12,
+     "hunger": -6,
+     "mood": 4
+    },
+    "stats": {
+     "body": 0.2
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "跑到桥底下，两个人一块儿停下来，扶着膝盖喘。"
+    },
+    "bring": false
+   },
+   {
+    "id": "laps",
+    "label": "操场跑两圈",
+    "minutes": 30,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 12,
+     "maxAge": 17
+    },
+    "needs": {
+     "energy": -8,
+     "hunger": -4
+    },
+    "stats": {
+     "body": 0.13
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "第二圈你们俩谁也不肯落后半步。"
+    },
+    "bring": false
+   },
+   {
+    "id": "hopscotch",
+    "label": "跳房子",
+    "minutes": 45,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 6,
+     "maxAge": 11
+    },
+    "needs": {
+     "mood": 8,
+     "energy": -6
+    },
+    "stats": {
+     "body": 0.12,
+     "charm": 0.08
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "粉笔画的格子，沙包扔到了九，两个人一块儿蹦过去捡。"
+    },
+    "bring": false
+   },
+   {
+    "id": "sketch",
+    "label": "在河边写生",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 10,
+     "hours": [
+      540,
+      1080
+     ]
+    },
+    "needs": {
+     "energy": -4,
+     "mood": 6
+    },
+    "stats": {
+     "charm": 0.12,
+     "mind": 0.1
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "画的是同一座桥，一个画得歪，一个画得直，你们换着看了半天。"
+    },
+    "bring": false
+   },
+   {
+    "id": "coal",
+    "label": "帮街坊搬蜂窝煤",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 8,
+     "maxAge": 17
+    },
+    "needs": {
+     "energy": -10,
+     "mood": 3
+    },
+    "stats": {
+     "body": 0.15,
+     "charm": 0.12
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个人在楼下递，一个人在楼梯上接，两张脸都抹黑了。"
+    },
+    "bring": false
+   },
+   {
+    "id": "cards",
+    "label": "跟街坊打扑克",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 18,
+     "hours": [
+      1110,
+      1320
+     ]
+    },
+    "needs": {
+     "mood": 10,
+     "energy": -4
+    },
+    "stats": {
+     "charm": 0.2
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "你们俩一伙，一个眼神就知道该出什么，对家直嚷嚷不玩了。"
+    },
+    "bring": false
+   },
+   {
+    "id": "teach_chess",
+    "label": "教小孩下棋",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 45,
+     "hours": [
+      720,
+      1110
+     ]
+    },
+    "needs": {
+     "mood": 6,
+     "energy": -2
+    },
+    "stats": {
+     "charm": 0.18,
+     "mind": 0.1
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "小孩问你们俩谁下得好。你们同时指了指对方。"
+    },
+    "bring": false
+   },
+   {
+    "id": "flowers",
+    "label": "在阳台上侍弄花",
+    "minutes": 45,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 30
+    },
+    "needs": {
+     "mood": 8
+    },
+    "stats": {
+     "mind": 0.08
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一盆茉莉开了两朵，你们一人闻了一朵。"
+    },
+    "bring": false
+   },
+   {
+    "id": "boat",
+    "label": "去湖上划船",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 45,
+     "hours": [
+      600,
+      1080
+     ]
+    },
+    "needs": {
+     "mood": 12,
+     "energy": -6
+    },
+    "stats": {
+     "body": 0.1
+    },
+    "money": -2,
+    "together": {
+     "needs": {
+      "mood": 8
+     },
+     "bond": {
+      "close": 2
+     },
+     "text": "两把桨划不到一块儿，船在湖当中转了个圈，你们索性不划了。"
+    },
+    "bring": false
+   },
+   {
+    "id": "huqin",
+    "label": "在亭子里拉胡琴",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 50,
+     "hours": [
+      480,
+      1080
+     ]
+    },
+    "needs": {
+     "mood": 8,
+     "energy": -2
+    },
+    "stats": {
+     "charm": 0.15,
+     "mind": 0.08
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "一个拉，一个哼，哼的那个跑了调，拉的那个跟着跑。"
+    },
+    "bring": false
+   },
+   {
+    "id": "square_dance",
+    "label": "跳广场舞",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 45,
+     "hours": [
+      1110,
+      1260
+     ]
+    },
+    "needs": {
+     "mood": 8,
+     "energy": -8
+    },
+    "stats": {
+     "body": 0.18,
+     "charm": 0.1
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "你们站在最后一排，动作总慢半拍，慢得一模一样。"
+    },
+    "bring": false
+   },
+   {
+    "id": "tea_box",
+    "label": "在茶社包个座",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 6,
+     "flags": [
+      "fam_rich"
+     ],
+     "hours": [
+      780,
+      1260
+     ]
+    },
+    "needs": {
+     "mood": 16,
+     "energy": 2
+    },
+    "stats": {
+     "charm": 0.2
+    },
+    "money": -3,
+    "together": {
+     "needs": {
+      "mood": 8
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "茶社伙计给你们端来一碟瓜子，说是老先生送的。台上正讲到要紧处，你们都忘了嗑。"
+    },
+    "bring": true
    }
   ],
   "scenes": [
@@ -33640,7 +34135,8 @@
      10760
     ],
     "actions": [
-     "window_shop"
+     "window_shop",
+     "mall_clerk"
     ],
     "action": "window_shop"
    },
@@ -33919,7 +34415,8 @@
     ],
     "actions": [
      "study",
-     "read"
+     "read",
+     "coal"
     ],
     "action": "study"
    },
@@ -34090,7 +34587,8 @@
      8760
     ],
     "actions": [
-     "ball"
+     "ball",
+     "laps"
     ],
     "action": "ball"
    },
@@ -34142,7 +34640,8 @@
      16760
     ],
     "actions": [
-     "balcony"
+     "balcony",
+     "flowers"
     ],
     "action": "balcony"
    },
@@ -34155,7 +34654,8 @@
      16760
     ],
     "actions": [
-     "walk_river"
+     "walk_river",
+     "river_run"
     ],
     "action": "walk_river"
    },
@@ -34168,7 +34668,8 @@
      18760
     ],
     "actions": [
-     "morning_walk"
+     "morning_walk",
+     "boat"
     ],
     "action": "morning_walk"
    },
@@ -34181,7 +34682,8 @@
      18760
     ],
     "actions": [
-     "choir"
+     "choir",
+     "huqin"
     ],
     "action": "choir"
    },
@@ -34194,7 +34696,8 @@
      18760
     ],
     "actions": [
-     "ground_write"
+     "ground_write",
+     "square_dance"
     ],
     "action": "ground_write"
    },
@@ -34261,7 +34764,8 @@
     ],
     "actions": [
      "club_sport",
-     "ball"
+     "ball",
+     "hopscotch"
     ],
     "action": "club_sport"
    },
@@ -34313,7 +34817,8 @@
      14760
     ],
     "actions": [
-     "wash"
+     "wash",
+     "chat"
     ],
     "action": "wash"
    },
@@ -34353,7 +34858,8 @@
     ],
     "actions": [
      "play_river",
-     "walk_river"
+     "walk_river",
+     "river_run"
     ],
     "action": "play_river"
    },
@@ -34366,7 +34872,8 @@
      4760
     ],
     "actions": [
-     "rail_talk"
+     "rail_talk",
+     "sketch"
     ],
     "action": "rail_talk"
    },
@@ -34409,7 +34916,8 @@
      "duty",
      "eat_out",
      "dine",
-     "help_out"
+     "help_out",
+     "pancake"
     ],
     "action": "duty"
    },
@@ -34449,7 +34957,8 @@
     ],
     "actions": [
      "play_alley",
-     "chat"
+     "chat",
+     "cards"
     ],
     "action": "play_alley"
    },
@@ -34462,7 +34971,8 @@
      2760
     ],
     "actions": [
-     "chess"
+     "chess",
+     "teach_chess"
     ],
     "action": "chess"
    },
@@ -34517,7 +35027,9 @@
      2760
     ],
     "actions": [
-     "listen"
+     "listen",
+     "tea_box",
+     "tea_runner"
     ],
     "action": "listen"
    }

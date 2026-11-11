@@ -2,7 +2,7 @@ extends Control
 ## 河畔里的 HUD（横屏）。全部自己画，垫着纸片，压在地图上也看得清。
 ## 构图是「对门」：我的东西靠左，对门的靠右，中间留给河畔里。
 ## 11-11 重做：三块纸，左「我」、中「关口」、右「对门」，一样的上沿、一样的色条高、一样的线。
-##   左上「我」的牌：色条（节气 / 学期）→ 年纪大字 + 钟点（太阳 / 月亮）→ 四个圆表（饱腹、精力、心情、清洁，
+##   左上「我」的牌：色条（节气 / 学期）→ 年纪大字 + 钟点（太阳 / 月亮）→ 三个圆表（饱腹、精力、心情，
 ##         低了变梅红并且抖一下）→ 成长账（stat_strip.gd 画字）。一张纸，细线分三截
 ##   中上：下一个关口的纸带（goal_panel.gd，main.gd 按 strip_rect() 摆）；
 ##         纸带底下两张小签：零花钱，主线（第几章，今天的「下一件事」在哪张图、哪一段）
@@ -13,6 +13,7 @@ extends Control
 const P := preload("res://scripts/ui/palette.gd")
 const Kit := preload("res://scripts/ui/kit.gd")
 const Icons := preload("res://scripts/ui/icons.gd")
+const NEED_KEYS := ["hunger", "energy", "mood"]  ## 清洁 11-11 砍了（#47；旧服务器还会发，不画）
 const NEED_GLYPH := {"hunger": "饱", "energy": "精", "mood": "心", "clean": "净"}
 const STAGE_NAME := {"childhood": "童年", "teen": "少年", "young": "青年", "middle": "中年", "old": "老年"}
 
@@ -21,7 +22,7 @@ const TOP := 28.0          ## 顶上那条横带的上沿
 const SIDE := 32.0         ## 离屏幕左右边的距离（再加上 inset）
 const GAP := 20.0          ## 三块之间的空
 const BAND := 48.0         ## 牌子顶上色条的高
-## 左上「我」的牌：色条 + 年纪钟点 → 四个圆表 → 成长账（stat_strip.gd 画字，框是这里画的）
+## 左上「我」的牌：色条 + 年纪钟点 → 三个圆表 → 成长账（stat_strip.gd 画字，框是这里画的）
 const ME_W := 352.0
 const AGE_H := 92.0
 const NEEDS_H := 88.0
@@ -147,7 +148,7 @@ func strip_rect() -> Rect2:
 	return Rect2(x + maxf(0.0, (end - x - w) / 2.0), TOP, w, STRIP_H)
 
 
-## 四个圆表下面那条成长账（ui/stat_strip.gd）的上沿
+## 三个圆表下面那条成长账（ui/stat_strip.gd）的上沿
 func stats_top() -> float:
 	return TOP + BAND + AGE_H + NEEDS_H
 
@@ -237,9 +238,12 @@ func _me(f: Font, r: Rect2) -> void:
 	var y := at.y + BAND + AGE_H
 	Kit.hair(self, Vector2(at.x + 14, y), Vector2(r.end.x - 14, y))
 	var i := 0
-	var pitch := (r.size.x - 32.0) / 4.0
-	for k in ["hunger", "energy", "mood", "clean"]:
-		_gauge(f, Vector2(at.x + 16.0 + pitch * (i + 0.5), y + NEEDS_H / 2.0), k)
+	var pitch := (r.size.x - 32.0) / NEED_KEYS.size()
+	for k in NEED_KEYS:
+		var c := Vector2(at.x + 16.0 + pitch * i + 40.0, y + NEEDS_H / 2.0)
+		_gauge(f, c, k)
+		var low := float(needs.get(k, 100.0)) < LOW
+		Kit.text(self, c + Vector2(38.0, 10.0), str(int(round(float(_shown.get(k, 0.0))))), P.FS_LABEL, P.MEI if low else P.INK_MID)
 		i += 1
 	y += NEEDS_H
 	Kit.hair(self, Vector2(at.x + 14, y), Vector2(r.end.x - 14, y))

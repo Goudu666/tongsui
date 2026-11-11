@@ -22,7 +22,7 @@
     - id: bell
       text: 偷偷拆下一个车铃
       tags: [adventure]
-      effects: { self: { body: 1, clean: -10 }, flags: [chen_patch] }
+      effects: { self: { body: 1 }, flags: [chen_patch] }
     - id: run
       text: 嫌一手油，跑了
       tags: [solitude]
@@ -42,7 +42,7 @@
     - id: strip
       text: 一根辐条一根辐条地拆
       tags: [patient]
-      effects: { self: { body: 1, clean: -15, energy: -10 }, flags: [chen_rust] }
+      effects: { self: { body: 1, energy: -10 }, flags: [chen_rust] }
     - id: new
       text: 全换新零件
       tags: [responsible]
@@ -860,7 +860,7 @@
     - id: barefoot
       text: 拎着鞋光脚走回来
       tags: [adventure]
-      effects: { self: { body: 1, clean: -15, mood: 5 } }
+      effects: { self: { body: 1, mood: 5 } }
 
 - id: f_rich_toycar
   kind: solo

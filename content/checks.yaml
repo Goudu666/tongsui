@@ -39,7 +39,7 @@
   stat: body
   dc: 4.5
   pass: 歪歪扭扭骑出去半条街，愣是没倒。
-  fail: { text: 连人带车拍进白菜堆，楼长的白菜碎了三棵。, self: { mood: -3, clean: -10 } }
+  fail: { text: 连人带车拍进白菜堆，楼长的白菜碎了三棵。, self: { mood: -3 } }
 
 - event: c_paper_cards
   option: hard
@@ -53,7 +53,7 @@
   stat: luck
   dc: 5
   pass: 一晚上摸了十一只，罐头瓶都装不下。
-  fail: { text: 摸了一晚上，就摸着一手泥。, self: { clean: -10 } }
+  fail: { text: 摸了一晚上，就摸着一手泥。, self: { mood: -2 } }
 
 # ---------- 少年 ----------
 - event: t_misjudged

@@ -39,6 +39,10 @@ var pointer: Dictionary = {}  ## 对门走出画面了 { at: 屏幕上贴边的�
 var inset := Vector2.ZERO     ## (左, 右) 给刘海让开的宽度
 var story: Dictionary = {}    ## 主线 { chapter, title, next, force }（WORLD 的 story，next 是我这一句）；空的不画
 var story_rect := Rect2()     ## 主线小签上一回画在哪（开局引导的纸条贴在它底下）
+var money_rect := Rect2()     ## 零花钱那一小块上一回画在哪（飘字的钢镚儿往这儿飞，ui/juice.gd）
+var _money_shown := -1.0      ## 零花钱正在显示的数：钢镚儿落下来才拨上去
+var _money_hold := 0.0
+var _bump := 0.0              ## 亲近 / 默契刚涨：两个圆往一块儿挤一下
 var _shown: Dictionary = {}   ## 圆表上正在显示的值（慢慢追上真实值）
 var _t := 0.0
 var _idle := 0.0
@@ -67,11 +71,34 @@ func _process(delta: float) -> void:
 		_shown[k] = cur
 		if target < LOW:
 			moving = true
+	if money >= 0 and (_money_shown < 0.0 or money < _money_shown - 0.5):
+		_money_shown = float(money)  # 头一回、花了钱：直接到位
+	elif money >= 0 and absf(_money_shown - money) > 0.01 and _t >= _money_hold:
+		_money_shown = move_toward(_money_shown, float(money), maxf(1.0, absf(money - _money_shown) * 5.0) * delta)
+		moving = true
+	if _bump > 0.0:
+		_bump = maxf(0.0, _bump - delta)
+		moving = true
 	var sig := [time_label, stage, int(minute), slot_name, playing, tag, note, money, bond.hash(), partner.hash(), pointer.hash(), story.hash(), inset, size]
 	if moving or _idle >= 0.1 or sig != _sig:
 		_sig = sig
 		_idle = 0.0
 		queue_redraw()
+
+
+## 零花钱先别拨（钢镚儿还在路上）
+func hold_money(sec: float) -> void:
+	_money_hold = _t + sec
+
+
+## 亲近、默契涨了：两个圆挤一下
+func bump() -> void:
+	_bump = 0.45
+
+
+## 两个圆那张小牌在 HUD 里的位置
+func bond_rect() -> Rect2:
+	return Rect2(Vector2(right() - CARD.x - GAP - BOND_W, TOP), Vector2(BOND_W, CARD.y))
 
 
 func left() -> float:
@@ -87,6 +114,11 @@ func strip_rect() -> Rect2:
 	var x := left() + CARD.x + GAP
 	var end := right() - CARD.x - GAP - BOND_W - GAP
 	return Rect2(x, TOP, clampf(end - x, 420.0, STRIP_MAX), STRIP_H)
+
+
+## 四个圆表下面那条成长账（ui/stat_strip.gd）的上沿
+func stats_top() -> float:
+	return TOP + CARD.y + GAP + 34.0 + 32.0 + 18.0
 
 
 ## 右上角那两张牌下面第一个空着的位置（音量按钮放这儿）
@@ -185,9 +217,10 @@ func _gauge(f: Font, c: Vector2, key: String) -> void:
 
 
 func _money(f: Font, at: Vector2) -> float:
-	var text := "%d 块" % money
+	var text := "%d 块" % int(round(_money_shown if _money_shown >= 0.0 else float(money)))
 	var w := f.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 28).x
 	var r := Rect2(at, Vector2(w + 64, 42))
+	money_rect = r
 	draw_rect(r, P.PAPER)
 	draw_rect(r, P.INK, false, 2.0)
 	# 一枚钢镚儿
@@ -235,7 +268,8 @@ func _bond(f: Font, at: Vector2) -> void:
 	_paper(r)
 	var close := clampf(float(bond.get("close", 0)) / 100.0, 0.0, 1.0)
 	var rad := 27.0
-	var gap := lerpf(rad * 2.15, rad * 0.5, close) + sin(_t * 1.4) * 1.2
+	var squeeze := sin(clampf(_bump / 0.45, 0.0, 1.0) * PI) * rad * 0.55
+	var gap := lerpf(rad * 2.15, rad * 0.5, close) + sin(_t * 1.4) * 1.2 - squeeze
 	Kit.draw_pair(self, at + Vector2(64, 50), rad, gap, 1.0, 1.8)
 	for i in 2:
 		var text := ("亲近 %d" % int(bond.get("close", 0))) if i == 0 else ("默契 %d" % int(bond.get("sync", 0)))

@@ -343,12 +343,22 @@ function lifeMilestoneFallback(ev: LifeEvent): EventOption {
   return best;
 }
 
+/** 这件事的选项有没有门槛：关口、主线，还有挂了家境标记或要花钱的普通事件（docs/MEANS.md 第三节） */
+function lifeGated(ev: LifeEvent): boolean {
+  if (ev.kind === "milestone" || storyIs(ev)) return true;
+  for (var i = 0; i < ev.options.length; i++) {
+    var rq = ev.options[i].requires;
+    if (ev.options[i].cost || (rq && ((rq.flags && rq.flags.length) || (rq.notFlags && rq.notFlags.length)))) return true;
+  }
+  return false;
+}
+
 /** 正在进行的关口里，每个人哪些路是锁着的：{ role: { optionId: 原因 } }。不在关口里返回 null */
 function lifeMilestoneLocks(s: LifeState, c: Content): { [R in Role]?: { [optionId: string]: string } } | null {
   var pe = s.world && s.world.event;
   if (!pe) return null;
   var ev = lifeFindEvent(c, pe.eventId);
-  if (pe.kind !== "milestone" && !storyIs(ev)) return null; // 主线的选项也有门槛：家底、积蓄
+  if (!lifeGated(ev)) return null; // 主线和普通事件的选项也可以有门槛：家底、积蓄
   var out: { [R in Role]?: { [optionId: string]: string } } = {};
   for (var i = 0; i < pe.roles.length; i++) {
     var r = pe.roles[i];
@@ -513,7 +523,7 @@ function lifeShadowChoose(s: LifeState, c: Content, role: Role, eventId: string)
   for (var i = 0; i < ev.options.length; i++) {
     var o = ev.options[i];
     // 关口：走不了的路影子也不能替他选。够得着的路里，影子偏向线最高的那条（人往高处走），再看性格
-    if ((ev.kind === "milestone" || storyIs(ev)) && lifeOptionLock(ev, o, s.persons![role], swing, lifePairBond(s, role))) continue;
+    if (lifeGated(ev) && lifeOptionLock(ev, o, s.persons![role], swing, lifePairBond(s, role))) continue;
     var score = ev.kind === "milestone" ? (o.min || 0) * 0.01 : 0;
     for (var j = 0; j < o.tags.length; j++) score += tags[o.tags[j]] || 0;
     if (score > bestScore) { bestScore = score; best = [o]; }
@@ -580,6 +590,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
     } else {
       // 检定：这个选项成不成，看本事也看运气（见 growth.ts → growthResolveCheck）
       var out = growthResolveCheck(s, c, pe, ev, o, role, entry);
+      if (o.cost) me.money = Math.max(0, me.money - o.cost); // 主线、普通事件里花的钱（选之前已经按积蓄上过锁）
       lifeApplySelf(me, out.self, grow);
       if (other.alive) lifeApplySelf(other, o.effects.other, grow);
       lifeApplyBond(s, c, o.effects.bond);

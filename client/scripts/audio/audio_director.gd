@@ -38,7 +38,11 @@ const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "pla
 	# 家境（docs/MEANS.md）
 	"piano": "perform", "tutor": "study", "help_out": "work", "factory_bath": "wash", "letter": "study",
 	# 外地（content/maps/away.yaml）
-	"club_campus": "perform"}
+	"club_campus": "perform",
+	# 同一道关不同的冲法、各条路下了班的营生（docs/MEANS.md 第六节）
+	"swim_class": "play_river", "lang_class": "study", "banquet": "eat_out", "night_class": "study",
+	"side_tutor": "study", "side_fix": "work", "night_market": "eat_out", "overtime": "study", "night_shift": "work",
+	"run_dawn": "play_river", "old_lessons": "study"}
 ## 设置按钮的三档：全开 → 只关音乐 → 静音
 const LEVELS := ["乐", "响", "静"]
 ## 横屏：菜单页在右上角；河畔里排在右上「对门的牌」下面（ui/hud.gd：横带 y 40~196，再空 16）

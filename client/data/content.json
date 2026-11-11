@@ -1,5 +1,5 @@
 {
- "version": "d9c419a22b38",
+ "version": "6bdc2dedc417",
  "events": [
   {
    "id": "m_rise",
@@ -1204,6 +1204,7 @@
    "score": {},
    "swing": false,
    "grades": [],
+   "withStory": true,
    "catches": []
   },
   {

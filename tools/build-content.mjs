@@ -25,7 +25,7 @@ const NEED_KEYS = ["hunger", "energy", "mood"]; // 清洁 11-11 砍了：内容�
 const SELF_KEYS = [...STAT_KEYS, ...NEED_KEYS];
 const BOND_KEYS = ["sync", "close", "distance"];
 const TAGS = ["gentle", "adventure", "solitude", "responsible", "competitive", "patient"];
-const REQ_KEYS = ["minAge", "maxAge", "flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "alone"];
+const REQ_KEYS = ["minAge", "maxAge", "flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "alone", "kidAge"];
 const PAIR_REQ_KEYS = ["flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "minMemories", "maxMemories", "minRate", "maxRate", "minTogether"];
 const LIFE_REQ_KEYS = ["flags", "notFlags", "stats", "minDiedAge", "maxDiedAge"];
 // 老物件的条件比一生小结多两样（server/src/legacy.ts → legacyPersonOk）
@@ -81,7 +81,8 @@ const UNLOCK_ANY_KEYS = ["minAge", "maxAge", "flags", "notFlags"];
 // 加进来以前从点位上摘掉，不报错；加进来以后从这里删掉
 const PENDING_ACTIONS = [];
 // 地图和地点支线先读着、等别的线程发的标记：资源差异（fam_factory、uni_abroad、school_paid、job_pull、job_succeed、home_unit）。发标记的合进来以后从这里删掉
-const PENDING_FLAGS = [];
+// 成家和下一代（docs/FAMILY.md）：孩子关口 kid_gates.yaml 发的 kid_*、引擎打的 kids_same_age，引擎那路合进来以后删掉
+const PENDING_FLAGS = ["kids_same_age", "kid_prim_key", "kid_prim_near", "kid_mid_key", "kid_mid_near", "kid_high_key", "kid_high", "kid_trade", "kid_uni_top", "kid_uni", "kid_away", "kid_work"];
 // 每张图在世界坐标里占一条：第 i 张图的 y 从 i × SCENE_STRIDE 起。服务器的距离、地点判定都还是二维的，
 // 不同的图隔得远，自然够不着。顺序钉死在这张表里（存档里的坐标靠它），新图往后加，不要插队
 const SCENE_ORDER = ["building", "street", "river", "primary", "middle", "across", "away", "rental", "newhome", "park", "hospital"];
@@ -117,6 +118,9 @@ function checkRequires(where, rq, allowed) {
       else if (k === "flags") for (const f of v) consumed.push([where, f]);
     } else if (k === "alone") {
       if (typeof v !== "boolean") errors.push(`${where}.requires.alone: 必须是 true / false`);
+    } else if (k === "kidAge") {
+      // 孩子岁数在 [lo, hi] 这段才发生（没孩子不发生），docs/FAMILY.md 第二节
+      if (!(Array.isArray(v) && v.length === 2 && v.every((x) => typeof x === "number") && v[0] <= v[1])) errors.push(`${where}.requires.kidAge: 应为 [最小岁数, 最大岁数]`);
     } else if (k === "stats") checkDeltas(`${where}.requires.stats`, v, STAT_KEYS);
     else if (k === "carried") {
       if (typeof v !== "string") errors.push(`${where}.requires.carried: 必须是老物件的 id`);

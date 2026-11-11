@@ -15,6 +15,7 @@ extends Node2D
 
 const P := preload("res://scripts/ui/palette.gd")
 const Bubble := preload("res://scripts/world/bubble.gd")
+const Overlay := preload("res://scripts/world/overlay.gd")
 const WALK_SPEED := 330.0  ## 略低于服务器限速
 const CELL := Vector2(200, 220)
 const FOOT := Vector2(100, 206)
@@ -104,6 +105,7 @@ var _dir := 2       ## 2 朝右 3 朝左（侧视只有左右，竖着挪的时�
 var _phase := 0.0   ## 走路走到一步里的哪儿（0~8 帧）
 var _idle := 0.0    ## 站着、坐着、在忙的小动作
 var _sprite: Sprite2D
+var _over: Node2D  ## 字和气泡那层（overlay.gd，z 71）
 var _last_pos := Vector2.ZERO
 var _base_tex: Texture2D
 var _act_tex: Texture2D
@@ -133,6 +135,8 @@ func setup(p_role: String, p_name: String, p_local: bool, pos: Vector2) -> void:
 	_sprite.offset = -FOOT * ART_SCALE
 	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	add_child(_sprite)
+	_over = Overlay.new(_draw_over)
+	add_child(_over)
 	set_stage(stage)
 
 
@@ -201,6 +205,8 @@ func _process(delta: float) -> void:
 		_sprite.scale = Vector2.ONE / (art * maxf(scale.x, 0.01))
 	_update_frame()
 	queue_redraw()
+	if _over != null:
+		_over.queue_redraw()
 
 
 ## 贴哪张表：基础表（走、站、坐、睡、招手、情绪）还是专属动作表
@@ -382,26 +388,32 @@ func _draw() -> void:
 	draw_set_transform(Vector2(4, 2), 0.0, Vector2(1.0, 0.36))
 	draw_circle(Vector2.ZERO, w, Color(P.INK, 0.16))
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	if _sprite != null and _sprite.visible:
-		var head := -_height() / maxf(scale.x, 0.01) - 14.0
-		_name_tag(c)
-		if asleep:
-			_text("z z", Vector2(34, head + 30 + sin(_t * 2.0) * 6.0), 28, P.INK_SOFT)
-		elif action_label != "" and not quiet_label:
-			_text(_doing_text(), Vector2(label_dx, label_dy + head - 8 + sin(_t * 3.0) * 3.0), 24, P.OVERLAP if together else P.INK_SOFT)
-		_draw_bubbles(head, c)
+	if _sprite == null or not _sprite.visible:
+		_draw_fallback(c)
+
+
+## 名字牌、"正在做什么"、气泡：画在 overlay.gd 那层（z 71），不被夜色和光与空气压灰
+func _draw_over(cv: CanvasItem) -> void:
+	if _sprite == null or not _sprite.visible:
 		return
-	_draw_fallback(c)
+	var c := P.role_color(role)
+	var head := -_height() / maxf(scale.x, 0.01) - 14.0
+	_name_tag(cv, c)
+	if asleep:
+		_text(cv, "z z", Vector2(34, head + 30 + sin(_t * 2.0) * 6.0), 28, P.INK_SOFT)
+	elif action_label != "" and not quiet_label:
+		_text(cv, _doing_text(), Vector2(label_dx, label_dy + head - 8 + sin(_t * 3.0) * 3.0), 24, P.OVERLAP if together else Color(P.INK, 0.86), 6)
+	_draw_bubbles(cv, head, c)
 
 
 ## 头顶的气泡：在脑袋斜上方、朝着脸的那边（"正在做什么"那行字的旁边，不压字）
-func _draw_bubbles(head: float, c: Color) -> void:
+func _draw_bubbles(cv: CanvasItem, head: float, c: Color) -> void:
 	var side := 1.0 if (face_to if face_to != 0 and not walking else _dir) == 2 else -1.0
 	var lift := (62.0 - label_dy) if action_label != "" and not quiet_label else 10.0
 	for i in _bubbles.size():
 		var b: Dictionary = _bubbles[i]
 		var at := Vector2(side * (34.0 + i * 10.0), head - lift - i * 30.0)
-		Bubble.draw(self, str(b.kind), at, 22.0, c, float(b.t), float(b.life), -side)
+		Bubble.draw(cv, str(b.kind), at, 22.0, c, float(b.t), float(b.life), -side)
 
 
 func _doing_text() -> String:
@@ -409,15 +421,15 @@ func _doing_text() -> String:
 
 
 ## 脚下的名字：垫一小片纸，压在网点和砖缝上也看得清。自己的那片多一条色边
-func _name_tag(c: Color) -> void:
+func _name_tag(cv: CanvasItem, c: Color) -> void:
 	var f := P.font()
 	var w := f.get_string_size(display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x
 	var r := Rect2(-w / 2.0 - 9.0 + tag_dx, 12.0, w + 18.0, 30.0)
 	if is_local:
-		draw_rect(Rect2(r.position + Vector2(3, 3), r.size), c)
-	draw_rect(r, Color(P.PAPER, 0.94))
-	draw_rect(r, Color(P.INK, 0.8), false, 1.5)
-	draw_string(f, Vector2(-w / 2.0 + tag_dx, 35.0), display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, c)
+		cv.draw_rect(Rect2(r.position + Vector2(3, 3), r.size), c)
+	cv.draw_rect(r, Color(P.PAPER, 0.94))
+	cv.draw_rect(r, Color(P.INK, 0.8), false, 1.5)
+	cv.draw_string(f, Vector2(-w / 2.0 + tag_dx, 35.0), display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, c)
 
 
 ## 精灵里的人有多高（世界像素）
@@ -430,7 +442,7 @@ func _draw_fallback(c: Color) -> void:
 	if asleep:
 		draw_circle(Vector2(0, -24), 26.0, Color(c, 0.85))
 		draw_arc(Vector2(0, -24), 26.0, 0, TAU, 32, P.INK, 3.0)
-		_text("z z", Vector2(30, -64 + sin(_t * 2.0) * 6.0), 30, P.INK_SOFT)
+		_text(self, "z z", Vector2(30, -64 + sin(_t * 2.0) * 6.0), 30, P.INK_SOFT)
 		return
 	var body := Rect2(Vector2(-20, -40 + bob), Vector2(40, 44))
 	draw_rect(Rect2(body.position + Vector2(3, 2), body.size), Color(c, 0.9))
@@ -439,12 +451,15 @@ func _draw_fallback(c: Color) -> void:
 	draw_arc(Vector2(0, -66 + bob), 22.0, 0, TAU, 32, P.INK, 3.0)
 	draw_circle(Vector2(-7, -68 + bob), 2.5, P.INK)
 	draw_circle(Vector2(7, -68 + bob), 2.5, P.INK)
-	_text(display_name, Vector2(0, 36), 28, c)
+	_text(self, display_name, Vector2(0, 36), 28, c)
 	if action_label != "":
-		_text(_doing_text(), Vector2(0, -104 + sin(_t * 3.0) * 3.0), 26, P.OVERLAP if together else P.INK_SOFT)
+		_text(self, _doing_text(), Vector2(0, -104 + sin(_t * 3.0) * 3.0), 26, P.OVERLAP if together else P.INK_SOFT)
 
 
-func _text(s: String, at: Vector2, size: int, color: Color) -> void:
+## rim > 0：字外面描一圈纸色（像印在一小条贴纸上），压在夜色、网点、光柱上都读得出
+func _text(cv: CanvasItem, s: String, at: Vector2, size: int, color: Color, rim := 0) -> void:
 	var f := P.font()
 	var w := f.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
-	draw_string(f, at - Vector2(w / 2.0, 0), s, HORIZONTAL_ALIGNMENT_LEFT, -1, size, color)
+	if rim > 0:
+		cv.draw_string_outline(f, at - Vector2(w / 2.0, 0), s, HORIZONTAL_ALIGNMENT_LEFT, -1, size, rim, Color(P.PAPER_HI, 0.9))
+	cv.draw_string(f, at - Vector2(w / 2.0, 0), s, HORIZONTAL_ALIGNMENT_LEFT, -1, size, color)

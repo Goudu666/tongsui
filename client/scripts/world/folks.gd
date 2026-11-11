@@ -9,6 +9,7 @@ extends Node2D
 
 const P := preload("res://scripts/ui/palette.gd")
 const Bubble := preload("res://scripts/world/bubble.gd")
+const Overlay := preload("res://scripts/world/overlay.gd")
 const FOLKS_PATH := "res://data/folks.json"
 const INDEX_PATH := "res://art/folks/index.json"
 ## 一天五段的起点（同 world_view.SLOTS）
@@ -189,6 +190,8 @@ class Folk extends Node2D:
 	var bubbles: Array = []
 	var host: Node = null
 	var _sprite: Sprite2D
+	var _over: Node2D
+	var _lift := 0.0  ## 旁边的主角头顶正写着"在做什么"：搭的话往上让一行
 	var _row := 0
 	var _working := true
 	var _left := 0.0
@@ -213,6 +216,8 @@ class Folk extends Node2D:
 		_sprite.offset = -foot * art_scale
 		_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		add_child(_sprite)
+		_over = Overlay.new(_draw_over)
+		add_child(_over)
 		# 每人起步的节拍错开，不会一条街齐刷刷一起动
 		_phase = randf() * 4.0
 		_left = randf_range(2.0, 7.0)
@@ -251,16 +256,23 @@ class Folk extends Node2D:
 			_bub_wait = randf_range(5.0, 9.0)
 		# 主角在跟前做事（同一个点位）：街坊往旁边让半步，别叠成一团
 		var give := 0.0
+		var lift := 0.0
 		if host != null and host.world != null:
 			for a in host.world.actors.values():
-				if a.visible and absf(a.position.y - position.y) < 60.0 and absf(a.position.x - position.x) < 80.0:
+				if not a.visible or absf(a.position.y - position.y) >= 60.0:
+					continue
+				if absf(a.position.x - position.x) < 80.0:
 					give = 95.0 if a.position.x <= position.x else -95.0
+				if absf(a.position.x - position.x) < 320.0 and (str(a.action_label) != "" or a.asleep):
+					lift = 58.0
+		_lift = lerpf(_lift, lift, minf(1.0, delta * 6.0))
 		_sprite.position.x = lerpf(_sprite.position.x, give, minf(1.0, delta * 4.0))
 		var fps := 4.0 if _working else 2.0
 		var k := int(_t * fps + _phase) % 4
 		_sprite.frame = _row * 8 + (k if _working else 4 + k)
 		_sprite.flip_h = _flip
 		queue_redraw()
+		_over.queue_redraw()
 
 	func _pick_line() -> String:
 		var host_stage: String = host.stage if host != null else "childhood"
@@ -273,30 +285,33 @@ class Folk extends Node2D:
 		draw_set_transform(Vector2(3 + _sprite.position.x, 2), 0.0, Vector2(1.0, 0.34))
 		draw_circle(Vector2.ZERO, 28.0, Color(P.INK, 0.13))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+	## 搭的话和气泡：画在 overlay.gd 那层（z 71），不被夜色和光与空气压灰
+	func _draw_over(cv: CanvasItem) -> void:
 		var night: float = host.night if host != null else 0.0
 		if _say != "":
-			draw_set_transform(Vector2(_sprite.position.x * 1.6, 0.0))
-			_draw_say(night)
-			draw_set_transform(Vector2.ZERO)
+			cv.draw_set_transform(Vector2(_sprite.position.x * 1.6, 0.0))
+			_draw_say(cv, night)
+			cv.draw_set_transform(Vector2.ZERO)
 		elif _bub != "" and _bub_t < 1.8:
-			Bubble.draw(self, _bub, Vector2(-30.0 if _flip else 30.0, -196.0), 17.0, P.INK_SOFT, _bub_t, 1.8, 1.0 if _flip else -1.0)
+			Bubble.draw(cv, _bub, Vector2(-30.0 if _flip else 30.0, -196.0), 17.0, P.INK_SOFT, _bub_t, 1.8, 1.0 if _flip else -1.0)
 
 	## 搭的那句话：一条纸片，上头一行小字写是谁
-	func _draw_say(night: float) -> void:
+	func _draw_say(cv: CanvasItem, night: float) -> void:
 		var f := P.font()
 		var a := clampf(_say_t / 0.2, 0.0, 1.0) * clampf((3.6 - _say_t) / 0.4, 0.0, 1.0)
 		var dim := 1.0 - 0.25 * night
 		var w := f.get_string_size(_say, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x
-		var r := Rect2(-w / 2.0 - 12.0, -238.0 - (1.0 - a) * 8.0, w + 24.0, 40.0)
-		draw_rect(Rect2(r.position + Vector2(4, 4), r.size), Color(P.INK_SOFT, 0.5 * a))
-		draw_rect(r, Color(P.PAPER * dim, 0.96 * a))
-		draw_rect(r, Color(P.INK, 0.8 * a), false, 1.5)
+		var r := Rect2(-w / 2.0 - 12.0, -238.0 - _lift - (1.0 - a) * 8.0, w + 24.0, 40.0)
+		cv.draw_rect(Rect2(r.position + Vector2(4, 4), r.size), Color(P.INK_SOFT, 0.5 * a))
+		cv.draw_rect(r, Color(P.PAPER * dim, 0.96 * a))
+		cv.draw_rect(r, Color(P.INK, 0.8 * a), false, 1.5)
 		var tail := PackedVector2Array([Vector2(-8, r.end.y), Vector2(8, r.end.y), Vector2(0, r.end.y + 12)])
-		draw_colored_polygon(tail, Color(P.PAPER * dim, 0.96 * a))
-		draw_polyline(PackedVector2Array([tail[0], tail[2], tail[1]]), Color(P.INK, 0.8 * a), 1.5)
-		draw_string(f, Vector2(-w / 2.0, r.position.y + 28.0), _say, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(P.INK, a))
+		cv.draw_colored_polygon(tail, Color(P.PAPER * dim, 0.96 * a))
+		cv.draw_polyline(PackedVector2Array([tail[0], tail[2], tail[1]]), Color(P.INK, 0.8 * a), 1.5)
+		cv.draw_string(f, Vector2(-w / 2.0, r.position.y + 28.0), _say, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(P.INK, a))
 		var nw := f.get_string_size(display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x
-		draw_string(f, Vector2(-nw / 2.0, r.position.y - 6.0), display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color(P.INK_SOFT, a))
+		cv.draw_string(f, Vector2(-nw / 2.0, r.position.y - 6.0), display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color(P.INK_SOFT, a))
 
 
 ## ------------------------------------------------------------------

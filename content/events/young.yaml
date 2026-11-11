@@ -524,7 +524,7 @@
     - id: carry
       text: 一把接过来扛上去
       tags: [responsible]
-      effects: { self: { body: 1, clean: -15 } }
+      effects: { self: { body: 1 } }
     - id: rest
       text: 陪他一级一级歇着上
       tags: [patient, gentle]

@@ -101,7 +101,7 @@ function restart(env, id) {
     const h = createHash("md5").update(`${eventId}/${role}/${s.turn}`).digest();
     // 关口上够不着的路选不了，只在走得通的里面挑
     const swing = (s.world.event.swing && s.world.event.swing[role]) || 0;
-    const open = ev.kind === "milestone" || ev.chapter !== undefined ? ev.options.filter((o) => !G("lifeOptionLock")(ev, o, s.persons[role], swing, G("lifePairBond")(s, role))) : ev.options;
+    const open = G("lifeGated")(ev) ? ev.options.filter((o) => !G("lifeOptionLock")(ev, o, s.persons[role], swing, G("lifePairBond")(s, role))) : ev.options;
     return open[h[0] % open.length].id;
   };
   const live = (seed, reloadEvery) => {

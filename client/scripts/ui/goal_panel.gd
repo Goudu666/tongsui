@@ -11,6 +11,7 @@ signal pressed
 
 const P := preload("res://scripts/ui/palette.gd")
 const Kit := preload("res://scripts/ui/kit.gd")
+const Icons := preload("res://scripts/ui/icons.gd")
 
 var goal: Variant = null        ## 我的 { id, title, age, turns, lines:[{id,text,by,unit,have,need,ok}] }，没有带线的关口了是 null
 var their_goal: Variant = null  ## 对门的。两个人的关口可能不一样（一个辍学了、一个去了外地）
@@ -144,89 +145,96 @@ static func draw_ruler(c: CanvasItem, at: Vector2, width: float, line: Dictionar
 	c.draw_arc(Vector2(mx, at.y), 10.0, 0, TAU, 24, P.INK, 2.5, true)
 
 
+const BAND_W := 200.0  ## 左边色条：关口名 + 还剩几个日子
+const SIDE := 196.0    ## 两头各留给一个人的数
+
+
 func _draw() -> void:
 	var f := P.font()
 	var r := Rect2(Vector2.ZERO, size)
-	# 纸片 + 错位色块，和日历牌一个做法
-	draw_rect(Rect2(r.position + Vector2(6, 6), r.size), my_color)
-	draw_rect(r, P.PAPER)
-	draw_rect(r, P.INK, false, 3.0)
-	var band := 232.0
+	# 一张纸 + 错位色块，和「我」的牌一个做法
+	Kit.draw_sheet(self, r, my_color)
+	var band := BAND_W
 	draw_rect(Rect2(0, 0, band, size.y), my_color)
-	draw_line(Vector2(band, 0), Vector2(band, size.y), P.INK, 3.0)
+	draw_line(Vector2(band, 0), Vector2(band, size.y), P.INK, P.LINE, true)
+	Kit.ink_frame(self, r)
+	var top := size.y / 2.0 - 4.0  ## 第一行字的基线
+	var low := size.y - 22.0       ## 第二行
 	var line := target_line(goal)
 	if line.is_empty():
 		# 没有非过不可的关了：写现在走的路和三项属性
-		draw_string(f, Vector2(18, 42), track if track != "" else "日子", HORIZONTAL_ALIGNMENT_LEFT, band - 28, 30, P.PAPER)
-		draw_string(f, Vector2(18, 76), "照常过", HORIZONTAL_ALIGNMENT_LEFT, band - 28, 22, Color(P.PAPER, 0.85))
+		Kit.text(self, Vector2(20, top), track if track != "" else "日子", P.FS_H - 8, P.PAPER_HI, false, band - 32)
+		Kit.text(self, Vector2(20, low), "照常过", P.FS_CAPTION, Color(P.PAPER_HI, 0.85), false, band - 32)
 		var parts: Array = []
 		for k in ["body", "mind", "charm"]:
 			if stats.has(k):
 				parts.append("%s %d" % [P.STAT_NAME[k], int(floor(float(stats[k]) * 10.0 + 0.001))])
-		draw_string(f, Vector2(band + 24, 44), " · ".join(parts), HORIZONTAL_ALIGNMENT_LEFT, -1, 28, P.INK)
-		draw_string(f, Vector2(band + 24, 78), "往后没有非过不可的关了。" + _eff_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, 22, P.INK_SOFT)
+		Kit.text(self, Vector2(band + 26, top), "  ·  ".join(parts), P.FS_LABEL + 2, P.INK)
+		Kit.text(self, Vector2(band + 26, low), "往后没有非过不可的关了。" + _eff_text(), P.FS_CAPTION, P.INK_MID, false, size.x - band - 60)
 		return
-	draw_string(f, Vector2(18, 42), str(goal.title), HORIZONTAL_ALIGNMENT_LEFT, band - 28, 32, P.PAPER)
-	draw_string(f, Vector2(18, 76), turns_text(int(goal.turns)), HORIZONTAL_ALIGNMENT_LEFT, band - 28, 22, Color(P.PAPER, 0.85))
+	Kit.text(self, Vector2(20, top), str(goal.title), P.FS_H - 6, P.PAPER_HI, false, band - 32)
+	Kit.text(self, Vector2(20, low), turns_text(int(goal.turns)), P.FS_CAPTION, Color(P.PAPER_HI, 0.88), false, band - 32)
 	var unit := str(line.get("unit", "分"))
-	var side := 212.0 if size.x >= 900.0 else 196.0  ## 两头各留给一个人的数
-	var x0 := band + 22.0
-	var tx := size.x - 38.0 - side
+	var side := SIDE
+	var x0 := band + 24.0
+	var tx := size.x - 44.0 - side
 	var both := size.x >= band + side * 2.0 + 170.0  ## 太窄（小屏加刘海）就只写我的，对门只剩尺上的空心点
 	if not both:
-		tx = size.x - 38.0
+		tx = size.x - 44.0
 	# 靠左：我。实心点 + 我的分 / 线
-	draw_circle(Vector2(x0 + 12, 34) + Vector2(2, 2), 9.0, my_color, true, -1.0, true)
-	draw_arc(Vector2(x0 + 12, 34), 9.0, 0, TAU, 20, P.INK, 2.5, true)
+	var dot_y := top - 14.0
+	draw_circle(Vector2(x0 + 10, dot_y) + Vector2(2, 2), 9.0, my_color, true, -1.0, true)
+	draw_arc(Vector2(x0 + 10, dot_y), 9.0, 0, TAU, 20, P.INK, 2.5, true)
 	var have := _have if _line_id == str(line.id) and _have >= 0.0 else float(line.have)
 	var k := clampf((_t - _roll_at) / 1.8, 0.0, 1.0) if _gain != 0 and _t >= _roll_at else (0.0 if _gain != 0 else 1.0)
 	if _gain != 0 and _t >= _roll_at and k < 1.0:
 		# 涨分的那一下：分数底下垫一块自己的颜色，慢慢淡掉
-		draw_rect(Rect2(x0 - 6, 8, side - 6.0, 52), Color(my_color, 0.28 * (1.0 - k)))
-	_score(f, x0 + 32.0, str(int(have)), " / %d %s" % [int(line.need), unit])
+		draw_rect(Rect2(x0 - 8, 10, side - 4.0, size.y - 20.0), Color(my_color, 0.28 * (1.0 - k)))
+	_score(f, x0 + 28.0, top, str(int(have)), " / %d %s" % [int(line.need), unit])
+	var lead := 0.0
 	if _gain != 0 and _t >= _roll_at and k < 1.0:
-		var gw := f.get_string_size(str(int(have)) + " / %d %s" % [int(line.need), unit], HORIZONTAL_ALIGNMENT_LEFT, -1, 30).x
-		draw_string(f, Vector2(x0 + 40.0 + gw, 30 - k * 10.0), "+%d" % _gain, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Color(my_color, 1.0 - k * k))
+		# 涨的那一截挂在第二行最前头（第一行右边紧挨着线的名字，放不下）
+		lead = Kit.text(self, Vector2(x0, low - k * 6.0), "+%d" % _gain, P.FS_LABEL, Color(my_color.darkened(0.2), 1.0 - k * k)) + 10.0
 	var reached := have >= float(line.need) - 0.001
 	var sub := "够着了" if reached else "还差 %d %s" % [int(ceil(float(line.need) - have)), unit]
 	var eff_text := _eff_text(" · ")
-	if f.get_string_size(sub + eff_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x > side - 6.0:
+	if lead + f.get_string_size(sub + eff_text, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x > side - 6.0:
 		eff_text = ""  # 放不下就只说还差多少
-	draw_string(f, Vector2(x0, 78), sub + eff_text, HORIZONTAL_ALIGNMENT_LEFT, side - 6.0, 20, P.INK_SOFT)
+	Kit.text(self, Vector2(x0 + lead, low), sub + eff_text, P.FS_CAPTION, my_color.darkened(0.25) if not reached else P.INK, false, side - 6.0 - lead)
 	# 靠右：对门。空心点 + TA 在这条线上的分
 	var theirs := their_have(their_goal if _same_gate() else null, str(line.id))
 	if both:
-		draw_circle(Vector2(tx + 12, 34), 9.0, P.PAPER, true, -1.0, true)
-		draw_arc(Vector2(tx + 12, 34), 9.0, 0, TAU, 20, their_color, 3.5, true)
+		Kit.hair(self, Vector2(tx - 18, 16), Vector2(tx - 18, size.y - 16))
+		draw_circle(Vector2(tx + 10, dot_y), 9.0, P.PAPER_HI, true, -1.0, true)
+		draw_arc(Vector2(tx + 10, dot_y), 9.0, 0, TAU, 20, their_color, 3.5, true)
 		if theirs >= 0.0:
-			_score(f, tx + 32.0, str(int(theirs)), " / %d %s" % [int(line.need), unit])
+			_score(f, tx + 28.0, top, str(int(theirs)), " / %d %s" % [int(line.need), unit])
 			var gap := int(ceil(float(line.need) - theirs))
-			draw_string(f, Vector2(tx, 78), "%s %s" % [their_name, "够着了" if gap <= 0 else "还差 %d %s" % [gap, unit]], HORIZONTAL_ALIGNMENT_LEFT, side - 6.0, 20, P.INK_SOFT)
+			Kit.text(self, Vector2(tx, low), "%s %s" % [their_name, "够着了" if gap <= 0 else "还差 %d %s" % [gap, unit]], P.FS_CAPTION, P.INK_MID, false, side - 6.0)
 		elif their_goal is Dictionary and not _same_gate():
-			draw_string(f, Vector2(tx + 32.0, 44), str(their_goal.title), HORIZONTAL_ALIGNMENT_LEFT, side - 38.0, 28, P.INK)
-			draw_string(f, Vector2(tx, 78), "%s 过的是另一关" % their_name, HORIZONTAL_ALIGNMENT_LEFT, side - 6.0, 20, P.INK_SOFT)
+			Kit.text(self, Vector2(tx + 28.0, top), str(their_goal.title), P.FS_LABEL, P.INK, false, side - 34.0)
+			Kit.text(self, Vector2(tx, low), "%s 过的是另一关" % their_name, P.FS_CAPTION, P.INK_MID, false, side - 6.0)
 		else:
-			draw_string(f, Vector2(tx + 32.0, 44), "不走这条", HORIZONTAL_ALIGNMENT_LEFT, side - 38.0, 28, P.INK_SOFT)
-			draw_string(f, Vector2(tx, 78), their_name, HORIZONTAL_ALIGNMENT_LEFT, side - 6.0, 20, P.INK_SOFT)
+			Kit.text(self, Vector2(tx + 28.0, top), "不走这条", P.FS_LABEL, P.INK_MID, false, side - 34.0)
+			Kit.text(self, Vector2(tx, low), their_name, P.FS_CAPTION, P.INK_MID, false, side - 6.0)
 	# 中间：哪条线、看什么、一把尺
 	var rx := x0 + side + 6.0
-	var rw := tx - 22.0 - rx
+	var rw := tx - 30.0 - rx
 	var name_text := str(line.text)
+	Kit.hair(self, Vector2(rx - 16, 16), Vector2(rx - 16, size.y - 16))
 	if rw < 230.0:
 		# 小屏再加刘海，中间放不下一把尺：只写线的名字，两头的数照样能比
-		draw_string(f, Vector2(rx, 44), name_text, HORIZONTAL_ALIGNMENT_LEFT, rw, 26, P.INK)
-		draw_string(f, Vector2(rx, 78), "看" + str(line.by), HORIZONTAL_ALIGNMENT_LEFT, rw, 20, P.INK_SOFT)
+		Kit.text(self, Vector2(rx, top), name_text, P.FS_LABEL, P.INK, false, rw)
+		Kit.text(self, Vector2(rx, low), "看" + str(line.by), P.FS_CAPTION, P.INK_MID, false, rw)
 	else:
-		var name_w := minf(f.get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x, rw - 96.0)
-		draw_string(f, Vector2(rx, 36), name_text, HORIZONTAL_ALIGNMENT_LEFT, name_w, 26, P.INK)
-		draw_string(f, Vector2(rx + name_w + 14, 36), "看" + str(line.by), HORIZONTAL_ALIGNMENT_LEFT, rw - name_w - 14.0, 20, P.INK_SOFT)
+		var name_w := minf(f.get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_LABEL).x, rw - 90.0)
+		Kit.text(self, Vector2(rx, top - 6.0), name_text, P.FS_LABEL, P.INK, false, name_w)
+		Kit.text(self, Vector2(rx + name_w + 12, top - 6.0), "看" + str(line.by), P.FS_CAPTION, P.INK_MID, false, rw - name_w - 12.0)
 		var shown_line := line.duplicate()
 		shown_line["have"] = have
-		draw_ruler(self, Vector2(rx + 6, 68), rw - 12.0, shown_line, their_have(their_goal, str(line.id)), my_color, their_color)
+		draw_ruler(self, Vector2(rx + 6, low - 6.0), rw - 12.0, shown_line, their_have(their_goal, str(line.id)), my_color, their_color)
 	# 可以点开
-	var cx := size.x - 20.0
-	var cy := size.y / 2.0
-	draw_polyline(PackedVector2Array([Vector2(cx - 6, cy - 12), Vector2(cx + 6, cy), Vector2(cx - 6, cy + 12)]), Color(P.INK, 0.6), 3.0, true)
+	Icons.draw(self, "chevron", Vector2(size.x - 22.0, size.y / 2.0), 22.0, Color(0, 0, 0, 0), P.INK_MID)
 
 
 ## 两个人过的是不是同一关
@@ -234,11 +242,10 @@ func _same_gate() -> bool:
 	return goal is Dictionary and their_goal is Dictionary and str(their_goal.get("id", "")) == str(goal.get("id", ""))
 
 
-## 「58 / 64 分」：前面的数大，后面的线小
-func _score(f: Font, x: float, have_text: String, need_text: String) -> void:
-	var hw := f.get_string_size(have_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 40).x
-	draw_string(f, Vector2(x, 48), have_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 40, P.INK)
-	draw_string(f, Vector2(x + hw, 48), need_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, P.INK_SOFT)
+## 「58 / 64 分」：前面的数大，后面的线小。返回整串的宽
+func _score(f: Font, x: float, y: float, have_text: String, need_text: String) -> float:
+	var hw := Kit.text(self, Vector2(x, y), have_text, 44, P.INK)
+	return hw + Kit.text(self, Vector2(x + hw + 2, y), need_text, P.FS_CAPTION, P.INK_MID)
 
 
 func _eff_text(lead := "") -> String:

@@ -13,7 +13,8 @@ const SLOT_NAMES := ["早上", "上午", "下午", "傍晚", "晚上"]
 
 
 ## 往 parent 里摆：今天的一条时间、长了什么、下一道关
-static func build(parent: Container, e: Dictionary, me: String, other: String, names: Dictionary) -> void:
+## goal_parent：下一道关摆在哪（宽卡右栏）；不给就接着摆在 parent 里
+static func build(parent: Container, e: Dictionary, me: String, other: String, names: Dictionary, goal_parent: Container = null) -> void:
 	var spent: Dictionary = _d(e.get("spent"))
 	var mine: Array = spent.get(me, []) if spent.get(me) is Array else []
 	var theirs: Array = spent.get(other, []) if spent.get(other) is Array else []
@@ -35,16 +36,18 @@ static func build(parent: Container, e: Dictionary, me: String, other: String, n
 		var line := "今天花在正经事上 %s" % _hours(busy)
 		if tg > 0.0:
 			line += "，和 TA 一起 %s" % _hours(tg)
-		Kit.label(parent, line + "。", 28, P.INK_SOFT)
+		Kit.label(parent, line + "。", P.FS_LABEL, P.INK_MID)
 	var grew := gains_text(_d(_d(e.get("gains")).get(me)))
-	Kit.label(parent, ("这一天你长了：" + grew) if grew != "" else "这一天没长什么，日子照样过去。", 32, P.INK)
+	Kit.label(parent, ("这一天你长了：" + grew) if grew != "" else "这一天没长什么，日子照样过去。", P.FS_BODY - 2, P.INK)
 	var g: Dictionary = _d(_d(e.get("goal")).get(me))
+	var gp: Container = goal_parent if goal_parent != null else parent
 	if not g.is_empty():
-		Kit.rule(parent, Color(P.INK, 0.2))
-		goal_block(parent, g, P.role_color(me))
+		if goal_parent == null:
+			Kit.rule(parent, P.HAIR)
+		goal_block(gp, g, P.role_color(me))
 	var tg2: Dictionary = _d(_d(e.get("goal")).get(other))
 	if not tg2.is_empty():
-		Kit.label(parent, "%s：%s" % [str(names.get(other, "TA")), goal_line(tg2)], 26, P.INK_SOFT)
+		Kit.label(gp, "%s：%s" % [str(names.get(other, "TA")), goal_line(tg2)], P.FS_CAPTION, P.INK_MID)
 
 
 ## 下一道关：哪条线、今天从几分挪到几分、还差几分、照这样还要几个日子
@@ -52,8 +55,8 @@ static func goal_block(parent: Container, g: Dictionary, color: Color) -> void:
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 14)
 	parent.add_child(head)
-	Kit.chip(head, str(g.get("title", "")), color, 26)
-	var when := Kit.label(head, countdown(int(g.get("turns", 0))), 26, P.INK_SOFT)
+	Kit.chip(head, str(g.get("title", "")), color, P.FS_LABEL)
+	var when := Kit.label(head, countdown(int(g.get("turns", 0))), P.FS_LABEL, P.INK_MID)
 	when.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var bar := GoalBar.new()
 	bar.have0 = float(g.get("have0", 0))
@@ -66,8 +69,8 @@ static func goal_block(parent: Container, g: Dictionary, color: Color) -> void:
 	parent.add_child(bar)
 	var crossed: Array = g.get("crossed", []) if g.get("crossed") is Array else []
 	if not crossed.is_empty():
-		Kit.label(parent, "今天够上了：%s。" % "、".join(crossed), 32, P.OVERLAP)
-	Kit.label(parent, pace_text(g), 30, color if not bool(g.get("ok", false)) else P.INK)
+		Kit.label(parent, "今天够上了：%s。" % "、".join(crossed), P.FS_BODY - 2, P.OVERLAP)
+	Kit.label(parent, pace_text(g), P.FS_LABEL, color.darkened(0.2) if not bool(g.get("ok", false)) else P.INK)
 
 
 ## 照这样还要几个日子，来不来得及。纯文字，单测好测
@@ -146,9 +149,9 @@ class DayStrip extends Control:
 			var c: Color = P.OVERLAP if bool(s.get("tg", false)) else my_color
 			draw_rect(r, Color(c, 0.85))
 			var label := str(s.get("l", ""))
-			var w := f.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x
+			var w := f.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x
 			if w + 12.0 < r.size.x:
-				draw_string(f, Vector2(r.position.x + (r.size.x - w) / 2.0, top + h / 2.0 + 9.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, P.PAPER)
+				draw_string(f, Vector2(r.position.x + (r.size.x - w) / 2.0, top + h / 2.0 + 9.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION, P.PAPER_HI)
 		for i in SLOT_EDGES.size():
 			var x := _x(SLOT_EDGES[i])
 			draw_line(Vector2(x, top - 6.0), Vector2(x, top + h + 6.0), Color(P.INK, 0.5), 2.0)
@@ -156,8 +159,8 @@ class DayStrip extends Control:
 		var edges: Array = [DAY_FROM] + SLOT_EDGES + [DAY_TO]
 		for i in SLOT_NAMES.size():
 			var mid := (_x(edges[i]) + _x(edges[i + 1])) / 2.0
-			var nw := f.get_string_size(SLOT_NAMES[i], HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x
-			draw_string(f, Vector2(mid - nw / 2.0, 22.0), SLOT_NAMES[i], HORIZONTAL_ALIGNMENT_LEFT, -1, 22, P.INK_SOFT)
+			var nw := f.get_string_size(SLOT_NAMES[i], HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x
+			draw_string(f, Vector2(mid - nw / 2.0, 22.0), SLOT_NAMES[i], HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION, P.INK_MID)
 		if theirs.is_empty():
 			return
 		var t2 := top + h + 18.0
@@ -166,7 +169,7 @@ class DayStrip extends Control:
 		for s in theirs:
 			var c2: Color = P.OVERLAP if bool(s.get("tg", false)) else their_color
 			draw_rect(Rect2(_x(float(s.f)), t2, maxf(2.0, _x(float(s.t)) - _x(float(s.f))), h2), Color(c2, 0.7))
-		draw_string(f, Vector2(0, t2 + h2 + 24.0), their_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, P.INK_SOFT)
+		draw_string(f, Vector2(0, t2 + h2 + 26.0), their_name, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION, P.INK_MID)
 
 
 ## 一条线：从今天早上的分到现在的分（今天挪的那一截用实色），线的位置画一道竖杠写着要几分
@@ -193,7 +196,7 @@ class GoalBar extends Control:
 		draw_line(Vector2(lx, top - 8.0), Vector2(lx, top + h + 8.0), P.INK, 3.0)
 		var moved := int(have) - int(have0)
 		var head := "%s　%d%s%s" % [label, int(have), unit, ("（今天 +%d）" % moved) if moved > 0 else ""]
-		draw_string(f, Vector2(0, 28.0), head, HORIZONTAL_ALIGNMENT_LEFT, size.x * 0.75, 26, P.INK)
+		draw_string(f, Vector2(0, 28.0), head, HORIZONTAL_ALIGNMENT_LEFT, size.x * 0.75, P.FS_LABEL, P.INK)
 		var need_s := "线 %d" % int(need)
-		var nw := f.get_string_size(need_s, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x
-		draw_string(f, Vector2(clampf(lx - nw / 2.0, 0.0, size.x - nw), top + h + 30.0), need_s, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, P.INK_SOFT)
+		var nw := f.get_string_size(need_s, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x
+		draw_string(f, Vector2(clampf(lx - nw / 2.0, 0.0, size.x - nw), top + h + 30.0), need_s, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION, P.INK_MID)

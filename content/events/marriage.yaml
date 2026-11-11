@@ -404,6 +404,28 @@
     text: 一个在门口站住了，一个已经进屋开了灯。那辆婴儿车，第二天让人推走了。
     bond: { close: 0 }
 
+# 两口子要孩子的 solo：mw_pram 要两个人傍晚都在楼道，碰不上的人家多，这件一个人在家里也遇得到（kidSync 让两口子共用一个孩子）
+- id: mw_crib
+  kind: solo
+  stage: middle
+  weight: 6
+  requires: { minAge: 30, maxAge: 42, flags: [p_married], notFlags: [has_kid] }
+  title: 半间屋
+  text: 家里那半间屋一直空着，堆着两家搬过来的旧东西。你拿尺子量了量那面墙，正好放得下一张小床。
+  options:
+    - id: yes
+      text: 要个孩子吧
+      tags: [responsible, gentle]
+      effects: { self: { mood: 8, energy: -8 }, flags: [has_kid] }
+    - id: wait
+      text: 先接着堆东西
+      tags: [patient]
+      effects: { self: { mood: -2 }, flags: [kid_later] }
+    - id: study
+      text: 收拾成一间书房
+      tags: [solitude]
+      effects: { self: { mind: 0.5, mood: 4 } }
+
 - id: mw_circle
   kind: solo
   stage: middle

@@ -4,6 +4,7 @@ extends CanvasLayer
 ##   飘字   做完一件事，长了几分、挣了几块、亲近了几分，从人头上一张一张印出来，
 ##          停一下，再飞进 HUD 里对应的那一格（成长账 / 零花钱 / 两个圆）。落下的那一刻格子里的数才拨上去。
 ##          连着几张，声音按五声音阶往上走。TA 长的分在 TA 头上小一号地冒一下，不飞。
+##          做的是带孩子的事（did 带 k）：长的是孩子，飘「孩子 心智 +3」，飞进 HUD 上孩子那张小牌。
 ##   搭伴   两个人搭伴做完的那件事，飘字之前先在两个人中间砸一方「搭伴」的印（有倍率就写倍率）。
 ##   成长账 每个日子记一个点（两个人的三项），存在 user://growth/<人生线>.json：
 ##          长大那张墨卡上的阶段成绩单、点开 HUD 成长账看的曲线都从这里来（ui/stage_report.gd）。
@@ -28,6 +29,7 @@ var _id := ""                ## 人生线
 var _base: Dictionary = {}   ## role -> {body, mind, charm}（百分制）
 var _money := -1.0
 var _bond: Dictionary = {}
+var _kid: Dictionary = {}    ## 我孩子上一帧的 {body, mind, charm}（百分制）；没孩子是空的
 var _did: Dictionary = {}    ## role -> 上一次看到的 did.n
 var _was_tg := false         ## 上一帧我是不是在搭伴做事
 var _act := ""               ## 上一帧我在做什么
@@ -117,9 +119,11 @@ func on_world(data: Dictionary) -> void:
 	var money := float(_dict(data.get("money")).get(me, -1))
 	var bond: Dictionary = _dict(data.get("bond"))
 	var quiet := _quiet()
+	var kid_now := kid_points(_dict(_dict(mine.get("kid")).get("stats")))
 	if not _base.is_empty() and not quiet:
-		_burst(stats, money, bond, fresh_did, did, mine)
+		_burst(stats, money, bond, fresh_did, did, mine, kid_items(_dict(did.get("k")) if fresh_did else {}, _kid, kid_now))
 	_rebase(stats, money, bond)
+	_kid = kid_now
 	var act := str(mine.get("act", "")) if mine.get("act") != null else ""
 	_was_tg = bool(mine.get("tg", false)) and act != ""
 	if act != "" and act != _act and not quiet:
@@ -190,6 +194,33 @@ func milestone_row(e: Dictionary, res: Dictionary) -> Dictionary:
 	return row
 
 
+## 孩子的三项，百分制往下取整；没孩子（或没发 stats）是空的
+static func kid_points(stats: Dictionary) -> Dictionary:
+	if stats.is_empty():
+		return {}
+	var row: Dictionary = {}
+	for k in KEYS:
+		row[k] = points(stats.get(k, 0))
+	return row
+
+
+## 这一回孩子长了几分：did.k 说了长哪几项。数用孩子 stats 前后两帧的差（和自己的飘字一个口径）；
+## 前后两帧对不上（刚生、刚连上、这一帧的 stats 还没跟上）就用 k 本身折百分制。只飘涨了的，不到 1 分不飘
+static func kid_items(k: Dictionary, was: Dictionary, now: Dictionary) -> Array:
+	var items: Array = []
+	for key in KEYS:
+		if not k.has(key):
+			continue
+		var d := 0
+		if not was.is_empty() and not now.is_empty():
+			d = int(now.get(key, 0)) - int(was.get(key, 0))
+		if d <= 0:
+			d = points(k[key])
+		if d > 0:
+			items.append(["孩子 " + str(P.STAT_NAME[key]), d, "kid_" + key])
+	return items
+
+
 func _rebase(stats: Dictionary, money: float, bond: Dictionary) -> void:
 	_base = {}
 	for r in stats:
@@ -205,7 +236,7 @@ func _rebase(stats: Dictionary, money: float, bond: Dictionary) -> void:
 # 飘字
 # ======================================================================
 
-func _burst(stats: Dictionary, money: float, bond: Dictionary, fresh_did: bool, did: Dictionary, mine: Dictionary) -> void:
+func _burst(stats: Dictionary, money: float, bond: Dictionary, fresh_did: bool, did: Dictionary, mine: Dictionary, kid: Array = []) -> void:
 	var me := _role()
 	var items: Array = []  # [文字, 数, 颜色, 飞去哪 key]
 	var row: Dictionary = _dict(stats.get(me))
@@ -223,10 +254,11 @@ func _burst(stats: Dictionary, money: float, bond: Dictionary, fresh_did: bool, 
 		var db := int(bond.get(bk, 0)) - int(_bond.get(bk, 0))
 		if db > 0:
 			items.append(["亲近" if bk == "close" else "默契", db, bk])
+	items.append_array(kid)
 	var together := bool(did.get("tg", false)) if fresh_did else (_was_tg and not items.is_empty())
 	var grew := false
 	for it in items:
-		if it[2] in KEYS and int(it[1]) > 0:
+		if (it[2] in KEYS or str(it[2]).begins_with("kid_")) and int(it[1]) > 0:
 			grew = true
 	# 服务器说了刚做完哪一件（did）：「一天行动循环」那边先把钟拨过去、人在点上把这件事做完（约一秒），字再出来
 	var delay := DID_LEAD if fresh_did and not bool(did.get("j", false)) else 0.0  # j：对门后赶上来补的搭伴，那边不拨钟，不用等
@@ -283,6 +315,8 @@ func _target(key: String) -> Variant:
 		return hud.money_rect.get_center() + hud.global_position
 	if key in ["close", "sync"] and hud.has_method("bond_rect"):
 		return hud.bond_rect().get_center() + hud.global_position
+	if key.begins_with("kid_") and hud.has_method("kid_rect") and hud.kid_rect().size.x > 0.0:
+		return hud.kid_rect().get_center() + hud.global_position
 	return null
 
 
@@ -329,6 +363,8 @@ func _pop_items(role: String, items: Array, delay: float, fly: bool) -> void:
 				gp.land_in = t0 + 1.25  # 纸带上「还差几分」也等第一张落下来再拨
 		elif target != null and key == "money" and main.hud.has_method("hold_money"):
 			main.hud.hold_money(t0 + 1.25)
+		elif target != null and key.begins_with("kid_") and main.hud.has_method("hold_kid"):
+			main.hud.hold_kid(t0 + 1.25)
 		tag.play(start, target, t0, func():
 			_landed(key, amount, role))
 
@@ -345,6 +381,8 @@ func _landed(key: String, amount: int, role: String) -> void:
 		strip.land(key, amount)
 	elif key in ["close", "sync"] and main.hud.has_method("bump"):
 		main.hud.bump()
+	elif key.begins_with("kid_") and main.hud.has_method("kid_land"):
+		main.hud.kid_land(key.trim_prefix("kid_"))
 	if amount <= 0:
 		return
 	var now := Time.get_ticks_msec() / 1000.0

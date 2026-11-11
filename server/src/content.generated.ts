@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "9c1d05d1bf4d",
+ "version": "12ce466bf9ad",
  "events": [
   {
    "id": "m_rise",
@@ -8525,7 +8525,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,
@@ -10643,6 +10643,1389 @@ var CONTENT: Content = {
       "bond": {
        "close": 1
       },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_hb_rich",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [
+    "winter"
+   ],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 5,
+    "maxAge": 11,
+    "flags": [
+     "fam_rich"
+    ]
+   },
+   "title": "一摞红纸包",
+   "text": "过年家里来客一拨接一拨，走时都往你兜里塞个红纸包。你妈说：留着，开春拿去报班。",
+   "options": [
+    {
+     "id": "class",
+     "text": "交给你妈报班",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.25,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "keep",
+     "text": "自己收进铁盒里",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "money": 4
+     }
+    },
+    {
+     "id": "books",
+     "text": "买一摞小人书分对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.1,
+       "mood": 4
+      },
+      "other": {
+       "mood": 4
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_hb_mid",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [
+    "winter"
+   ],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 5,
+    "maxAge": 11,
+    "notFlags": [
+     "fam_rich",
+     "fam_poor"
+    ]
+   },
+   "title": "新存折",
+   "text": "过年收了几个红纸包。你妈拿出一本新存折，说要是存上，往后每年都记在你名下。",
+   "options": [
+    {
+     "id": "save",
+     "text": "让你妈存上",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "hb_saved"
+      ]
+     }
+    },
+    {
+     "id": "keep",
+     "text": "自己留着花",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "money": 2
+     }
+    },
+    {
+     "id": "buy",
+     "text": "买两挂小鞭分对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {
+       "mood": 4
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_hb_poor",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [
+    "winter"
+   ],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 5,
+    "maxAge": 11,
+    "flags": [
+     "fam_poor"
+    ]
+   },
+   "title": "替你存着",
+   "text": "过年收了两个红纸包，还没捂热，你妈伸过手来：「妈替你存着。」",
+   "options": [
+    {
+     "id": "give",
+     "text": "两个都交给你妈",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2,
+       "charm": 0.05
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "keep",
+     "text": "偷偷留下一张",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "hb_kept"
+      ],
+      "money": 1
+     }
+    },
+    {
+     "id": "buy",
+     "text": "拉对门去买糖堆儿",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {
+       "mood": 4
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_hb_passbook",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 20,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 20,
+    "maxAge": 21,
+    "flags": [
+     "hb_saved"
+    ],
+    "notFlags": [
+     "fam_rich",
+     "fam_poor"
+    ]
+   },
+   "title": "那本存折",
+   "text": "你妈从柜底翻出那本存折，一行一行全是过年存的。她说：拿着，上班用得着。",
+   "options": [
+    {
+     "id": "take",
+     "text": "收下，揣好",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "money": 6
+     }
+    },
+    {
+     "id": "half",
+     "text": "留一半给家里",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "money": 3
+     }
+    },
+    {
+     "id": "treat",
+     "text": "请对门吃顿好的",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {
+       "mood": 6
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": [],
+      "money": 4
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_table_poor",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 14,
+    "flags": [
+     "fam_poor"
+    ]
+   },
+   "title": "月底",
+   "text": "月底了，饭桌上一碟咸菜一锅粥。你妈说下礼拜发了工钱割二两肉。你爸没吭声，多盛了一碗。",
+   "options": [
+    {
+     "id": "lunch",
+     "text": "把午饭钱省下来",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "hunger": -10,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "money": 1
+     }
+    },
+    {
+     "id": "piece",
+     "text": "晚上帮家里糊纸盒",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": -15,
+       "mind": -0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "money": 1
+     }
+    },
+    {
+     "id": "kept",
+     "text": "拿出藏着的压岁钱",
+     "requires": {
+      "flags": [
+       "hb_kept"
+      ]
+     },
+     "cost": 1,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4,
+       "charm": 0.05
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "study",
+     "text": "吃完回屋写作业",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.15,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_table_rich",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 14,
+    "flags": [
+     "fam_rich"
+    ],
+    "notFlags": [
+     "fam_cut"
+    ]
+   },
+   "title": "考第几",
+   "text": "期中卷子发下来了。饭桌上你爸放下筷子，头一句就问考第几。你妈给你夹了块排骨，等着。",
+   "options": [
+    {
+     "id": "more",
+     "text": "说往后礼拜天也去补",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "fine",
+     "text": "说名次不要紧",
+     "requires": {
+      "notFlags": [
+       "strain1"
+      ]
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "strain1"
+      ]
+     }
+    },
+    {
+     "id": "fine_cut",
+     "text": "说名次不要紧",
+     "requires": {
+      "flags": [
+       "strain1"
+      ]
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "fam_cut"
+      ]
+     }
+    },
+    {
+     "id": "eat",
+     "text": "低头啃排骨",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "door",
+     "text": "吃完去对门写作业",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.1,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_tv_door",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 5,
+    "maxAge": 8,
+    "notFlags": [
+     "hm_tv"
+    ]
+   },
+   "title": "门槛上",
+   "text": "楼里先有电视的那家，晚上门敞着。屋里坐满了，后来的孩子就站在门槛上看。",
+   "options": [
+    {
+     "id": "nightly",
+     "text": "天天晚上去占地方",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6,
+       "energy": -8,
+       "charm": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stool",
+     "text": "搬小板凳叫上对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {
+       "mood": 4
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "help",
+     "text": "帮那家扫地端水",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "radio",
+     "text": "回家听收音机",
+     "requires": {
+      "flags": [
+       "hm_radio"
+      ]
+     },
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.15,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_tv_channel",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 16,
+    "maxAge": 17,
+    "flags": [
+     "hm_tv"
+    ]
+   },
+   "title": "换台",
+   "text": "晚上电视换着台：一个台演军营，一个台在答题，一个台在唱歌。你爸说看一个，看完睡觉。",
+   "options": [
+    {
+     "id": "army",
+     "text": "看完下楼跑两圈",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.3,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "quiz",
+     "text": "跟着答，记下不会的",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sing",
+     "text": "跟着学唱",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.25,
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "off",
+     "text": "关了电视去找对门",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_book_borrow",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 14,
+    "notFlags": [
+     "hm_books"
+    ]
+   },
+   "title": "借来的书",
+   "text": "同桌家里有一柜子书。他借你一本，用报纸包着皮，说礼拜一还，别折角。",
+   "options": [
+    {
+     "id": "night",
+     "text": "熬夜看完",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.25,
+       "energy": -15
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "copy",
+     "text": "抄下喜欢的几页",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "energy": -20,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "share",
+     "text": "先给对门看",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {
+       "mind": 0.2
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "late",
+     "text": "赖着多借两天",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.35,
+       "charm": -0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_jin_shelf",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 7,
+    "maxAge": 11,
+    "flags": [
+     "fam_oldmoney"
+    ]
+   },
+   "title": "没挪过的书柜",
+   "text": "家里三代挤一间半，墙边那个书柜一直没挪过地方。你爷爷说，什么都能卖，这个不卖。",
+   "options": [
+    {
+     "id": "read",
+     "text": "每天抽一本看",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "door",
+     "text": "叫对门来一块儿翻",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.15
+      },
+      "other": {
+       "mind": 0.15
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "sell",
+     "text": "偷拿一本去旧书摊",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "money": 1
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_phone_shop",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 4,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 20,
+    "maxAge": 21,
+    "notFlags": [
+     "hm_phone",
+     "fam_shop",
+     "uni_away",
+     "uni_abroad",
+     "army"
+    ]
+   },
+   "title": "楼下喊人",
+   "text": "有个单位的电话打到楼下小卖部。老板娘站在楼下喊了三声，你跑下去，那头已经挂了。",
+   "options": [
+    {
+     "id": "call",
+     "text": "照着号码回拨过去",
+     "cost": 1,
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.25,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ride",
+     "text": "骑车找到那个单位去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.1,
+       "charm": 0.2,
+       "energy": -20
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "watch",
+     "text": "求对门帮着守电话",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {
+       "energy": -10
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "drop",
+     "text": "算了，再等别的",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_phone_eve",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 6,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 17,
+    "maxAge": 17,
+    "flags": [
+     "hm_phone"
+    ],
+    "notFlags": [
+     "dropout",
+     "vocational",
+     "zhongzhuan"
+    ]
+   },
+   "title": "晚上的电话",
+   "text": "离高考没几天了，家里电话一到晚上就响，都是亲戚问准备得怎么样。又响了，你妈看了你一眼。",
+   "options": [
+    {
+     "id": "answer",
+     "text": "自己去接，说都好",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "unplug",
+     "text": "拔了电话线",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.1,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "door",
+     "text": "躲到对门屋里去",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {
+       "sync": 2,
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_tape",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 14,
+    "flags": [
+     "hm_tape"
+    ]
+   },
+   "title": "一盘磁带",
+   "text": "复读机是买来学英语的。一盘磁带听到第三遍，你按下了录音键，把电视里的歌录了半首。",
+   "options": [
+    {
+     "id": "study",
+     "text": "换回英语带跟着念",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "songs",
+     "text": "接着录满一盘",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "lend",
+     "text": "借给对门一礼拜",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {
+       "mind": 0.25
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_console_lock",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 10,
+    "maxAge": 11,
+    "flags": [
+     "hm_console"
+    ]
+   },
+   "title": "柜子上的锁",
+   "text": "期末前，游戏机让你爸锁进了柜子，钥匙挂在他裤腰上。卡带还在你枕头底下。",
+   "options": [
+    {
+     "id": "wait",
+     "text": "等考完再要回来",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.25,
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "pick",
+     "text": "拿发卡捅开锁",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8,
+       "mind": -0.15,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "deal",
+     "text": "跟你爸讲条件",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_pc_netcafe",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 17,
+    "flags": [
+     "era_wangba"
+    ]
+   },
+   "title": "打出来交",
+   "text": "老师说这回的作业要打出来交。家里有电脑的回家就打了，别的人放了学往网吧跑。",
+   "options": [
+    {
+     "id": "home",
+     "text": "在家里打出来",
+     "requires": {
+      "flags": [
+       "hm_pc"
+      ]
+     },
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "cafe",
+     "text": "去网吧包一个钟头",
+     "requires": {
+      "notFlags": [
+       "hm_pc"
+      ]
+     },
+     "cost": 1,
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.15,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "hand",
+     "text": "手抄一份交上去",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.1,
+       "mood": -4,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "door",
+     "text": "求对门帮着打",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {
+       "mood": -2
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ho_milk",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 5,
+    "maxAge": 8,
+    "flags": [
+     "hm_milk"
+    ]
+   },
+   "title": "门口的木箱",
+   "text": "天不亮，送奶的往门口木箱里放一瓶奶，顺手带走昨天的空瓶。你妈说，喝完再去上学。",
+   "options": [
+    {
+     "id": "drink",
+     "text": "站在门口一口喝完",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "share",
+     "text": "倒一半给对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.1
+      },
+      "other": {
+       "body": 0.1
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "pour",
+     "text": "嫌腥，偷偷倒掉",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
       "flags": []
      }
     }
@@ -34351,7 +35734,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 2,
+   "weight": 4,
    "where": null,
    "when": null,
    "hint": null,

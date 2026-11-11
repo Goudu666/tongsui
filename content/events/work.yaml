@@ -121,7 +121,7 @@
 - id: cr_teach_grandson
   kind: solo
   stage: middle
-  weight: 2
+  weight: 4 # 教书、站住了脚、三十一到三十五岁才碰得上：2 的时候 story.test 1500 世里只碰上一两回，二十岁以前多几件家里的事（events/home.yaml）挪了随机数就成了 0
   requires: { minAge: 31, maxAge: 35, flags: [job_teach, rank1], notFlags: [left_city, own_shop, own_stall, no_job, laid_off] }
   title: 校长的孙子
   text: 校长的孙子分到你班上。开学第三天，他把同桌的铅笔盒从窗户扔了出去。

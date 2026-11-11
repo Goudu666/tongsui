@@ -737,7 +737,7 @@
 - id: f_gu_fan
   kind: solo
   stage: middle
-  weight: 3
+  weight: 6 # 顾家、上过台、三十九岁以后才碰得上：3 的时候 story.test 里「说了一辈子」那个小结只撞上一回，多几件家里的事（events/home.yaml）挪了随机数就成了 0（同 f_bai_takeover）
   requires: { minAge: 39, flags: [fam_crosstalk, gu_stage] }
   title: 你接着说
   text: 你爸嗓子哑了。他把用了四十年的扇子往你手里一塞：「下礼拜那场你接着说。别让话掉地上。」

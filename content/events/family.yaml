@@ -75,7 +75,9 @@
   options:
     - id: take
       text: 拿起扳手
-      tags: [responsible]
+      # 接下车铺要耐得住性子：只挂 responsible 的时候，按性格选的人几乎都去劝关门或周末回来帮，
+      # 「车铺」那个一生小结 1500 条人生里只走到几回（11-11 加了一批中年小事以后一回都没了）
+      tags: [responsible, patient]
       effects: { self: { body: 1, mood: 5 }, flags: [took_over, chen_kept] }
     - id: close
       text: 劝他把铺子关了

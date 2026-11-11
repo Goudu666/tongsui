@@ -15,7 +15,10 @@ interface GrowCtx {
 }
 
 function growthCtx(s: LifeState, c: Content, source: "event" | "action"): GrowCtx {
-  return { c: c, stage: lifeTimeAt(s.turn).stage, scale: source === "event" ? c.rules.growth.eventScale : c.rules.growth.actionScale };
+  var stage = lifeTimeAt(s.turn).stage;
+  // 一个被记住的日子代表的时间越长（少年半年、成年一年），那天怎么过算得越重：每道关都有得拼（rules.yaml → growth.turnWeight）
+  var tw = c.rules.growth.turnWeight ? c.rules.growth.turnWeight[stage] : 1;
+  return { c: c, stage: stage, scale: source === "event" ? c.rules.growth.eventScale : c.rules.growth.actionScale * (typeof tw === "number" ? tw : 1) };
 }
 
 /** 年纪：这个人在这个阶段，这项属性长得多快 */
@@ -38,13 +41,19 @@ function growthBase(c: Content, p: Person, k: StatKey): number {
   return mid + (born - mid) * w;
 }
 
+/** 上头的空间：比底子最多高出多少。可以按阶段写（少年以后放宽，每道关都还有得长），老内容写一个数 */
+function growthRoom(c: Content, stage: Stage): number {
+  var r = c.rules.growth.room as any;
+  return typeof r === "number" ? r : r[stage];
+}
+
 /** 给一个人长（或掉）一项属性。raw 是内容里写的数，返回实际变化 */
 function growthApply(p: Person, k: StatKey, raw: number, g: GrowCtx): number {
   var before = p.stats[k];
   var v = raw * g.scale;
   if (raw > 0) {
     // 底子：离底子越远，长得越慢
-    var room = lifeClamp(1 - (before - growthBase(g.c, p, k)) / (g.c.rules.growth.room + legacyRoom(g.c, p, g.stage)), g.c.rules.growth.floor, 1);
+    var room = lifeClamp(1 - (before - growthBase(g.c, p, k)) / (growthRoom(g.c, g.stage) + legacyRoom(g.c, p, g.stage)), g.c.rules.growth.floor, 1);
     v *= growthPlasticity(g.c, p, g.stage, k) * room;
     if (p.active && (k === "body" || k === "mind")) p.active[k] = true;
   }

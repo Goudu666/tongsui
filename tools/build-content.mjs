@@ -163,7 +163,8 @@ for (const file of eventFiles) {
       checkDeltas(`${at}.score`, ev.score, SCORE_KEYS);
       for (const [gi, g] of (ev.grades ?? []).entries()) {
         checkKeys(`${at}.grades[${gi}]`, g, GRADE_KEYS);
-        if (typeof g.min !== "number" || !g.label) errors.push(`${at}.grades[${gi}]: 需要 min 和 label`);
+        if (typeof g.min !== "number" || (!g.label && g.min > 0)) errors.push(`${at}.grades[${gi}]: 需要 min 和 label（只有兜底那档 min 0 可以不写字）`);
+        g.label = g.label ?? "";
         for (const f of g.flags ?? []) produced.add(f);
         g.flags = g.flags ?? [];
       }
@@ -442,7 +443,7 @@ const rules = load("rules.yaml");
 {
   const need = {
     roll: ["budget", "wealthAdjust", "statMin", "statMax", "rerolls"],
-    growth: ["eventScale", "actionScale", "room", "floor", "bornWeight", "plasticity", "plainBonus"],
+    growth: ["eventScale", "actionScale", "room", "floor", "bornWeight", "plasticity", "plainBonus", "turnWeight"],
     aging: ["body", "mind", "activeFactor"],
     daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "needsUse", "wageFlags"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],

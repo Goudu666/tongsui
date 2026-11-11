@@ -130,6 +130,10 @@
   requires: { notFlags: [dropout] }
   title: 小升初
   text: 分班的名单贴在校门口的红纸上。重点班在最上面一栏，放学比别的班晚一个半钟头。
+  # 比重点班的线高一截的名次：起点高的人这一关也有得冲（goal 纸带上会摆出来）。最后一档是兜底，不写字
+  grades:
+    - { min: 8.6, label: 考进年级前十, flags: [junior_top] }
+    - { min: 0, label: "" }
   options:
     - id: key
       text: 去重点班
@@ -171,6 +175,9 @@
   requires: { notFlags: [dropout] }
   title: 中考
   text: 志愿表发下来了。市里的重点高中在河对岸，天不亮就得过桥；家门口的高中走路十分钟；职专下午三点就放学。
+  grades:
+    - { min: 9.0, label: 考进全区前五十, flags: [senior_top] }
+    - { min: 0, label: "" }
   options:
     - id: far
       text: 过桥去念重点高中
@@ -222,6 +229,7 @@
   title: 高考
   text: 分数出来了，志愿表摊在饭桌上。最远的那所学校，坐火车要一天一夜。
   grades:
+    - { min: 9.3, label: 考进全市前一百, flags: [gaokao_good, gaokao_top] }
     - { min: 6.8, label: 过了本科线, flags: [gaokao_good] }
     - { min: 0, label: 没过线, flags: [gaokao_bad] }
   options:
@@ -292,7 +300,8 @@
     - id: desk
       text: 过桥去坐办公室
       score: { mind: 1 }
-      min: 8.2
+      # 少年以后每个日子算得更重（rules.yaml growth.turnWeight / room 按阶段，玩法总把关 11-11）：8.2 时专心念书的人开局就过，抬到 8.5
+      min: 8.5
       tags: [competitive]
       effects: { flags: [job_desk] }
     - id: pull
@@ -300,8 +309,9 @@
       # 自己一份营生（tracks.yaml 的 job_pull），不算考进去的办公室：一天少几块，往后三道要钱的关不跟着坐办公室走。
       # 魅力只占四成：占六成的时候嘴甜的殷实孩子 85% 进得去，同样嘴甜的小康 19%，成了「魅力换办公室」（玩法评审）。
       # 时间切段（#23）以后人长得快一些，7.8 时嘴甜殷实 57% 对小康 30%，抬到 8.0（means.test 钉着差不超过 15 个点）
+      # 11-11 成长曲线放宽以后嘴甜殷实 65% 对小康 39%，跟着坐办公室抬到 8.9（嘴甜的人魅力长得快，托关系那四成魅力替他补了心智）
       score: { mind: 0.6, charm: 0.4 }
-      min: 8.0
+      min: 8.9
       cost: 15
       requires: { flags: [fam_rich] }
       lock: 家里没有这层关系

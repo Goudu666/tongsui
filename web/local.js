@@ -46,16 +46,16 @@
     } catch (e) { console.warn("[同岁] 读存档失败", e); }
   }
   var saveTimer = null;
+  function writeStore() {
+    try {
+      var items = {};
+      store.forEach(function (v, key) { items[key] = v; });
+      localStorage.setItem(STORE_KEY, JSON.stringify({ ver: ver, clock: clock, items: items }));
+    } catch (e) { console.warn("[同岁] 存档写不进浏览器", e); }
+  }
   function saveStore() {
     if (saveTimer) return;
-    saveTimer = setTimeout(function () {
-      saveTimer = null;
-      try {
-        var items = {};
-        store.forEach(function (v, key) { items[key] = v; });
-        localStorage.setItem(STORE_KEY, JSON.stringify({ ver: ver, clock: clock, items: items }));
-      } catch (e) { console.warn("[同岁] 存档写不进浏览器", e); }
-    }, 300);
+    saveTimer = setTimeout(function () { saveTimer = null; writeStore(); }, 300);
   }
   var clone = typeof structuredClone === "function" ? structuredClone : function (x) { return JSON.parse(JSON.stringify(x)); };
   var decoder = new TextDecoder(), encoder = new TextEncoder();
@@ -141,6 +141,7 @@
     var m = room;
     var msgs = m.inbox; m.inbox = [];
     if (m.pal) { try { msgs = msgs.concat(m.pal.think(m.state.record.life)); } catch (e) { console.warn("[同岁] 对门的电脑出错了", e); } }
+    if (m.auto) { try { msgs = msgs.concat(m.auto.think(m.state.record.life)); } catch (e) { console.warn("[同岁] 自动驾驶出错了", e); } }
     var res = S.matchLoop({}, logger, nk, dispatcher, m.tick++, m.state, msgs);
     if (res === null) {
       matches.delete(m.id);
@@ -152,15 +153,27 @@
   }
 
   // 页面在后台时不跑（浏览器本来也会把定时器压到一秒一次）；回来以后接着过，不追赶
-  var last = performance.now(), acc = 0;
+  var last = performance.now(), acc = 0, speed = 1;
   setInterval(function () {
     var now = performance.now();
     if (document.hidden) { last = now; acc = 0; return; }
     acc += Math.min(now - last, 500);
     last = now;
-    var dt = 1000 / TICK;
+    var dt = 1000 / TICK / speed;
     while (acc >= dt) { acc -= dt; step(); }
   }, 1000 / TICK / 2);
+
+  // 关页面、切到后台：房间平时三十秒存一次，这时候马上存一次，关掉再开从刚才那一刻接着过
+  function saveNow() {
+    if (!room) return;
+    try { S.save(nk, logger, room.state, room.tick); } catch (e) { console.warn("[同岁] 存不上", e); }
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    writeStore();
+  }
+  if (typeof addEventListener === "function") {
+    addEventListener("pagehide", saveNow);
+    addEventListener("visibilitychange", function () { if (document.hidden) saveNow(); });
+  }
 
   // ---------------- 对门：电脑陪着过 ----------------
   // 从 tools/playthrough.mjs 的「认真的人」改来，只管一个座位；另外会看你在干什么：你在做正经事，TA 多半过来一起。
@@ -464,6 +477,11 @@
     },
     /** 调试用：清掉整份存档 */
     wipe: function () { localStorage.removeItem(STORE_KEY); location.reload(); },
-    _debug: function () { return { room: room, S: S, step: step }; },
+    _debug: function () { return { room: room, S: S, step: step, saveNow: saveNow }; },
+    /** 调试用：让电脑替你也过（试玩、截图用），speed 是快进倍数 */
+    _autopilot: function (on, x) {
+      if (x) speed = Math.max(1, Math.min(8, Number(x)));
+      if (room) room.auto = on && room.me ? new Pal(room.me) : null;
+    },
   };
 })();

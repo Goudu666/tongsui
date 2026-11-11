@@ -3,11 +3,11 @@
 //
 // 用法：npm run build && node tools/origin.mjs [每格几世，默认 20] [只跑这几种活法…]
 //   两个人放进同一档人家（按种子轮流抽这一档里的各户，两人是不同的两户），用 tools/paths.mjs 的机器人过到 31 岁
-//   （UNTIL=76 过完一辈子）。关口上总选够得着的最高那条线（climb）。每格 = 一种活法 × 一档人家。
+//   （UNTIL=76 过完一辈子）。关口上总选够得着的最高那条线（climb），三十岁安家那一关先要个落脚的地方（settleFirst）。每格 = 一种活法 × 一档人家。
 //
 // 看的是方案里的目标表：
 //   中考重点 —— 中考那天够得着市重点（考的或交钱的）
-//   办公室   —— 二十二岁够得着坐办公室（考的或托关系的）
+//   办公室   —— 二十二岁够得着坐办公室（考的或托关系的，董家爸妈安排的单位也算）
 //   房 / 落脚 —— 三十岁那道关以后有自己的房（home_own）/ 有个落脚的地方（买、分、合住、翻修）
 //   助学金   —— 清贫人家拿到过 aid；断供 —— 殷实人家走到了 fam_cut
 //   ¥30      —— 三十岁那天早上积蓄的中位数
@@ -22,19 +22,27 @@ const HOMES = ["home_own", "home_share", "home_fixed"];
 if (process.argv[2] === "--one") {
   // 子进程：跑一格，输出 JSON
   const { WAYS, live, climb, C } = await import("./paths.mjs");
+  // 三十岁安家那一关想要个落脚的地方：够得着自己的房先买房，再是翻修、合住、分房这些（线高的在前），都够不着才按 climb。
+  // climb 总挑线最高的，会拿一百块去租房，不去翻修六十块的老屋（安家那一关的线都是积蓄、亲近，比得了高低）
+  const homeOf = (o) => (o.effects.flags.includes("home_own") ? 2 : HOMES.some((h) => o.effects.flags.includes(h)) ? 1 : 0);
+  const settleFirst = (s, r, ev, open) => {
+    if (ev.id !== "m_settle") return climb(s, r, ev, open);
+    const homes = open.filter((o) => homeOf(o)).sort((a, b) => homeOf(b) - homeOf(a) || (b.min || 0) - (a.min || 0));
+    return homes.length ? homes[0].id : climb(s, r, ev, open);
+  };
   const [, , , way, tier, s0, n, until] = process.argv;
   const fams = C.families.filter((f) => f.wealth === Number(tier)).map((f) => f.id);
   const out = [];
   for (let i = 0; i < Number(n); i++) {
     const seed = (Number(s0) + i) * 7919;
     const pair = [fams[i % fams.length], fams[(i + 1) % fams.length]];
-    const { s, marks } = live(seed, WAYS[way], Number(until), climb, (st) => { st.rolls.qing.familyId = pair[0]; st.rolls.mei.familyId = pair[1]; });
+    const { s, marks } = live(seed, WAYS[way], Number(until), settleFirst, (st) => { st.rolls.qing.familyId = pair[0]; st.rolls.mei.familyId = pair[1]; });
     for (const r of ["qing", "mei"]) {
       const p = s.persons[r];
       const m = (id) => marks[id]?.[r];
       out.push({
         key: m("m_senior") ? ["far", "far_aid", "paid", "nest"].some((o) => m("m_senior").open.includes(o)) : null,
-        desk: m("m_job") ? ["desk", "pull"].some((o) => m("m_job").open.includes(o)) : null,
+        desk: m("m_job") ? ["desk", "pull", "pull_home"].some((o) => m("m_job").open.includes(o)) : null,
         money30: m("m_settle") ? m("m_settle").money : null,
         settled: !!m("m_settle"),
         flags: p.flags,

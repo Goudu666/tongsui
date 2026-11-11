@@ -1271,13 +1271,13 @@ events:
         effects: { self: { mood: 3 } }
       - id: carer
         text: 请个护工替一宿
-        requires: { flags: [fam_rich] }
+        requires: { flags: [fam_rich], notFlags: [fam_cut] }
         cost: 10
         tags: [responsible]
         effects: { self: { energy: 10 } }
       - id: single
         text: 托人换个单间
-        requires: { flags: [fam_rich] }
+        requires: { flags: [fam_rich], notFlags: [fam_cut] }
         cost: 20
         tags: [competitive]
         effects: { self: { mood: 3 } }
@@ -1328,7 +1328,7 @@ events:
         effects: { self: { energy: -20, mood: 3 } }
       - id: carer
         text: 请个护工替一宿
-        requires: { flags: [fam_rich] }
+        requires: { flags: [fam_rich], notFlags: [fam_cut] }
         cost: 10
         tags: [responsible]
         effects: { self: { energy: 10 } }

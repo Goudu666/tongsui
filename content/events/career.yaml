@@ -190,7 +190,7 @@
       score: { mind: 0.5, charm: 0.5 }
       min: 8.6
       cost: 25
-      requires: { flags: [fam_rich], notFlags: [own_shop, own_stall, no_job, laid_off, rank1] }
+      requires: { flags: [fam_rich], notFlags: [fam_cut, own_shop, own_stall, no_job, laid_off, rank1] }
       lock: 家里没这层关系
       joins: up_desk
       tags: [competitive]
@@ -394,7 +394,7 @@
       score: { mind: 0.5, charm: 0.5 }
       min: 9.2
       cost: 40
-      requires: { flags: [fam_rich, rank1], notFlags: [rank2, own_shop, own_stall, no_job, laid_off] }
+      requires: { flags: [fam_rich, rank1], notFlags: [fam_cut, rank2, own_shop, own_stall, no_job, laid_off] }
       lock: 家里使不上劲
       hide: true
       joins: top_desk

@@ -199,7 +199,9 @@ function sleep(s, r) {
   const off = day(25, ["job_desk"], true);
   for (const r of ROLES) {
     assert.equal(G("lifeTrack")(C, off.s.persons[r], 25).id, "job_desk");
-    assert.equal(off.s.persons[r].money - off.before[r], desk.money, "歇班的那一年工钱照发");
+    // 工钱按家境乘过（清贫寄回家的、殷实家里贴补的，rules.yaml 的 wageFlags）
+    assert.ok(Math.abs(off.s.persons[r].money - off.before[r] - G("worldWage")(C, off.s.persons[r], desk)) < 1e-6, "歇班的那一年工钱照发");
+    assert.ok(G("worldWage")(C, off.s.persons[r], desk) > 0);
     assert.equal(G("worldDuty")(off.s, C, r), null, "歇班就是歇班，不用去");
   }
   const on = day(25, ["job_desk"], false);
@@ -286,6 +288,8 @@ function sleep(s, r) {
   // 45 岁那一关：争到位子的人工钱多五成（歇班那年也是）
   {
     const s = plain(48, { qing: ["job_desk", "mid_post"], mei: ["job_desk"] });
+    // 家境的那几个乘数（寄回家的、家里贴补的，docs/MEANS.md 第九节）摘掉，只看争到的位子
+    for (const r of ["qing", "mei"]) s.persons[r].flags = s.persons[r].flags.filter((f) => f === "mid_post" || !(f in C.rules.daily.wageFlags));
     const desk = C.tracks.find((t) => t.id === "job_desk").duty;
     assert.equal(G("worldWage")(C, s.persons.qing, desk), Math.round(desk.money * C.rules.daily.wageFlags.mid_post * 10) / 10);
     assert.equal(G("worldWage")(C, s.persons.mei, desk), desk.money);

@@ -50,6 +50,8 @@ interface EventOption {
   lockBy?: { [flag: string]: string };
   /** 只有关口用：带着这里某个标记的人走这条路，cost 家里出（不从自己的积蓄扣）。走到了 fam_cut 的不算（docs/MEANS.md 第八节） */
   homePays?: string[];
+  /** build-content 按 rules.yaml 的 locks 挂的：notFlags 拦住的是这个人身上的 flag，锁上写 text（家里断了的人，docs/MEANS.md 第九节） */
+  flagLocks?: { flag: string; text: string }[];
 }
 
 /** 关口怎么算分：各项属性乘权重相加；money 表示积蓄 */
@@ -247,11 +249,15 @@ interface Rules {
     /** 关口上走的路折成的寿数：带着这个标记的人多（或少）活几年 */
     flags?: { [flag: string]: number };
   };
+  /** 锁上那句按标记换（build-content 编进关口选项的 flagLocks，引擎不直接读） */
+  locks?: { [flag: string]: string };
   bond: {
     closeSoft: number; closeFloor: number; closeScale: number; syncSoft: number; syncFloor: number; syncSteady: number; syncSteadyFrom?: number; syncSteadyFull?: number; slotTogether?: number; closeWeight?: { [S in Stage]: number };
     drift: { [S in Stage]: number }; driftDistance: number; driftFloor: number;
     /** 关口上拉一把、重逢（server/src/pull.ts）。老内容没写就不拉 */
     pullFrom?: number; pullFull?: number; pullMoney?: number; pullMoneyClose?: number; reunion?: Partial<Bond>;
+    /** 塞钱的上限按塞的那个人的家境：[清贫, 小康, 殷实]。不写都按 pullMoney */
+    pullMoneyBy?: number[];
   };
 }
 

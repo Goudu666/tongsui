@@ -45,6 +45,11 @@ riddles:
   # 一个人
   l_two_shops: 半路辞了事由，开了第二家铺子。
   l_restart: 丢了饭碗，又在楼下支起摊。
+  l_self_house: 家里不管了，房是自己买的。
+  l_self_desk: 家里不管了，办公室是自己考的。
+  l_first_desk: 家里头一个坐办公室的。
+  l_own_door: 四口挤一间，后来有了自己的门。
+  l_spent: 家里的买卖倒了。
   l_early: 走得早了些。
   l_long: 活过九十五。
   l_swimmer: 身子骨硬朗，活过八十五。

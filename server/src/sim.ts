@@ -280,6 +280,8 @@ function lifeOptionLock(ev: LifeEvent, o: EventOption, p: Person, swing: number,
   if (!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) {
     // 带着 lockBy 里的标记的人看到的是那一句（断了供的殷实人家：「家里已经不管你了」，docs/MEANS.md 第八节）
     if (o.lockBy) for (var lf in o.lockBy) if (lifeHasFlag(p, lf)) return o.lockBy[lf];
+    // 家里断了的人看到的是「家里已经不管你了」，别的人家看到的是这条路自己的 lock（docs/MEANS.md 第九节）
+    for (var fl = 0; fl < (o.flagLocks || []).length; fl++) if (p.flags.indexOf(o.flagLocks![fl].flag) >= 0) return o.flagLocks![fl].text;
     return o.lock || "这条路不是给你留的"; // 家里拿不出这笔钱（docs/MEANS.md）
   }
   var line = lifeOptionMin(o, p); // 年代挪过的线（era.ts）

@@ -224,7 +224,7 @@
   where: breakfast
   when: [390, 600]
   hint: 早点铺的铛冒着热气。
-  weight: 3
+  weight: 6 # 早点铺人家、小时候帮过和面、老了两个人都在才碰得上，老年的日子又多半让给主线第七章：3 的时候 1500 世里只出 0~1 回
   requires: { flags: [fam_breakfast, zhou_dough] }
   title: 还是那个味儿
   text: 楼下的早点铺换过三回招牌，面糊还是周家那个方子。两个老人站在铛前，等一套煎饼果子。

@@ -74,8 +74,9 @@ function postWrite(s: LifeState, c: Content, role: Role) {
   var p = s.persons![role];
   var age = lifeTimeAt(s.turn).age;
   var side = postSideOf(s, c, role);
-  var track = lifeTrack(c, p, age).id;
-  var pool = L.lines[track] || L.lines[side === "away" ? "work" : "home"];
+  var tr = lifeTrack(c, p, age);
+  // 家境的变体（课余打工、放了学帮家里，docs/MEANS.md 第八、九节）写的 group 是原来那条：信照原来那条挑
+  var pool = L.lines[tr.id] || (tr.group ? L.lines[tr.group] : null) || L.lines[side === "away" ? "work" : "home"];
   var ends = L.ends.filter(function (e) { return e.in === null || e.in === side; });
   if (!s.postSent) s.postSent = {};
   var n = s.postSent[role] || 0;
@@ -84,7 +85,7 @@ function postWrite(s: LifeState, c: Content, role: Role) {
   var lines = [pool[a]];
   if (b !== a) lines.push(pool[b]);
   lines.push(ends[n % ends.length].text);
-  var days = track === "uni_abroad" ? 1 + POST_ABROAD_DAYS : 1; // 下一个日子的早上到；出国的再晚一个
+  var days = tr.id === "uni_abroad" ? 1 + POST_ABROAD_DAYS : 1; // 下一个日子的早上到；出国的再晚一个
   if (!s.post) s.post = [];
   s.post.push({ from: role, turn: s.turn, due: s.turn + days, lines: lines, side: side });
 }

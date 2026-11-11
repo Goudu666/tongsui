@@ -521,6 +521,18 @@
       min: 8.5
       tags: [competitive]
       effects: { flags: [job_desk] }
+    # 董家（exp_pull，爸妈心里那条路就是进单位，docs/MEANS.md 第九节）：同一条路，钱家里出，自己不掏。别的人家、别的殷实人家看不见这一条。
+    # 排在 pull 前头：两条线一样高，机器人（tools/paths.mjs 的 climb）按写的顺序取头一条
+    - id: pull_home
+      text: 进爸妈安排好的单位
+      score: { mind: 0.6, charm: 0.4 }
+      min: 8.9
+      requires: { flags: [fam_rich, exp_pull], notFlags: [fam_cut] }
+      lock: 家里没有这层关系
+      hide: true
+      joins: pull
+      tags: [competitive]
+      effects: { self: { mood: -4 }, flags: [job_pull] }
     - id: pull
       text: 托家里的关系进单位
       # 自己一份营生（tracks.yaml 的 job_pull），不算考进去的办公室：一天少几块，往后三道要钱的关不跟着坐办公室走。
@@ -530,7 +542,7 @@
       score: { mind: 0.6, charm: 0.4 }
       min: 8.9
       cost: 15
-      requires: { flags: [fam_rich] }
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
       lock: 家里没有这层关系
       tags: [competitive]
       effects: { self: { mood: -3 }, flags: [job_pull] }
@@ -682,16 +694,19 @@
     - id: buy
       text: 买下一套自己的房
       # 成年后歇班那年工钱照发以后，三十岁的积蓄整体多了四成，线跟着从 150 抬到 200（tools/paths.mjs 校准）
-      min: 200
-      cost: 200
+      # 三扇门（二）（docs/MEANS.md 第九节）：殷实人家成年后工钱多两成、小康人家有爸妈攒的那笔，200 时一个人念书的小康 88% 有房，
+      # 抬到 230（tools/origin.mjs 校准：清贫 / 小康 / 殷实三档拉开）
+      min: 230
+      cost: 230
       tags: [responsible]
       effects: { self: { mood: 15 }, flags: [home_own] }
     - id: help
       text: 爸妈出首付，买了房
-      # 爸妈出五十块。线再低，三十岁买不买得起房就几乎只看投胎了（tools/paths.mjs：殷实不上心的人 130 时九成有房）
-      min: 150
-      cost: 150
-      requires: { flags: [fam_rich] }
+      # 爸妈出四五十块。线再低，三十岁买不买得起房就几乎只看投胎了（tools/paths.mjs：殷实不上心的人 130 时九成有房）
+      # 家里不管了的（fam_cut）没有这一条，锁上写「家里已经不管你了」（rules.yaml 的 locks）
+      min: 190
+      cost: 190
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
       lock: 爸妈帮不上
       joins: buy
       tags: [responsible]
@@ -705,6 +720,18 @@
       joins: buy
       tags: [patient]
       effects: { self: { mood: 12 }, flags: [home_own, home_unit] }
+    # 小康人家（fam_nest，爸妈攒的那一笔，一辈子动一回）：和殷实人家的 help 一样的线，用了就摘掉 fam_nest。
+    # 十五、十八岁用过了（念书那头）、二十几岁拿去开了铺子的，这里就没有了。别的人家看不见这一条
+    - id: nest
+      text: 爸妈拿出那笔钱，出首付
+      min: 215
+      cost: 215
+      requires: { flags: [fam_nest] }
+      lock: 家里没攒下这笔钱
+      hide: true
+      joins: buy
+      tags: [responsible]
+      effects: { self: { mood: 10 }, flags: [home_own, home_nest], drop: [fam_nest] }
     # 房价回落以后城边上盖了保障房（eras.yaml 的 era_huiluo）：在厂里上班的人顶上原来分房那条路，数值照抄 unit
     - id: quota
       text: 排上了一套保障房
@@ -715,6 +742,26 @@
       joins: buy
       tags: [patient]
       effects: { self: { mood: 10 }, flags: [home_own, home_quota] }
+    # 清贫人家的安家是另一场冲刺（docs/MEANS.md 第九节）：工钱三成寄回家，三十岁买房几乎够不着。
+    # 翻修：还住老屋，算和「还住老屋」同一条路（还是对门）；也拿 home_old，拆迁那几年照样补钱
+    - id: fixed
+      text: 把老屋翻修一下
+      # 原来 70：清贫人家一个人念书的积蓄中位 136，人人翻得起，这道关没得冲。130 落在中位附近（tools/origin.mjs）
+      min: 130
+      cost: 110
+      requires: { flags: [fam_poor] }
+      lock: 不是你家的老屋
+      hide: true
+      joins: stay
+      tags: [patient]
+      effects: { self: { mood: 8 }, flags: [home_fixed, home_old] }
+    # 合住：看亲近，谁都能走。两个人都选是「门对着门」。给的亲近和别的共鸣一样少（legacy.test 夹着七十岁并一家）
+    - id: share
+      text: 两家合住一个院
+      score: { close: 1 }
+      min: 25
+      tags: [gentle]
+      effects: { self: { mood: 6 }, flags: [home_share] }
     - id: rent
       text: 在附近租一间
       min: 100
@@ -737,6 +784,10 @@
     stay:
       text: 还是三楼，还是对门。暖气片还是那么烫手。
       memory: 还是对门
+      bond: { sync: 2, close: 2 }
+    share:
+      text: 两家搬进了一个院。院子不大，两扇门对着开，晾衣绳从这家窗台拴到那家窗台。
+      memory: 门对着门
       bond: { sync: 2, close: 2 }
   dissonance:
     text: 一个搬走了，一个留下了。留下的那个，有时候还会朝对面那扇门看一眼。
@@ -764,7 +815,21 @@
       min: 170
       cost: 120
       tags: [responsible]
-      effects: { self: { mood: 10 }, other: { mood: 4 }, bond: { close: 8 }, flags: [mid_home] }
+      # 清贫人家花在家里了，往后工钱不再寄回去（send_home，docs/MEANS.md 第九节）
+      effects: { self: { mood: 10 }, other: { mood: 4 }, bond: { close: 8 }, flags: [mid_home], drop: [send_home] }
+    # 清贫人家（send_home）：把爸妈接过来住，往后不用再寄了。和上面那条是同一条路，线低一截，给的亲近少一半。
+    # 爸妈已经走了的没有这一条（那时候 hardship_money.yaml 的「汇款单」已经摘了 send_home）
+    - id: take
+      text: 把爸妈接过来住
+      score: { money: 1 }
+      min: 110
+      cost: 70
+      requires: { flags: [send_home], notFlags: [parent_gone] }
+      lock: 不用往家里寄钱
+      hide: true
+      joins: home
+      tags: [responsible]
+      effects: { self: { mood: 8 }, other: { mood: 2 }, bond: { close: 4 }, flags: [mid_home, mid_take], drop: [send_home] }
     - id: fit
       text: 先把身体捡起来
       tags: [patient]

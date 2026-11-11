@@ -207,6 +207,8 @@ for (let seed = 1; seed <= LIVES; seed++) {
 {
   // 等别的线程发的标记（tools/build-content.mjs 的 PENDING_FLAGS）：发标记的合进来以前，要它的事件出不来
   const PENDING = ["fam_factory", "uni_abroad", "school_paid", "job_pull", "job_succeed", "home_unit",
+    // 十八岁的助学贷款：这里的机器人高考不怎么走清贫背贷款那条，还清了那两件事抽不到
+    "loan",
     // 成家和下一代：孩子关口 kid_* 走地图那边（world.ts 按孩子岁数排的关口），这里不走地图，读它们的事件出不来
     "kid_prim_key", "kid_prim_near", "kid_mid_key", "kid_mid_near", "kid_high_key", "kid_high", "kid_trade", "kid_uni_top", "kid_uni", "kid_away", "kid_work"];
   // 这里不走地图，也就不攒钱：三十岁买不起房（m_settle 的 buy 要 200 块），要 home_own 的事件在这儿出不来，由 paths.test 那种过日子的模拟兜着
@@ -223,7 +225,13 @@ for (let seed = 1; seed <= LIVES; seed++) {
   const waits = (id) => replaced.has(id) || held(byId.get(id).requires?.flags) || sceneHeld(byId.get(id).where);
   const never = [...hit].filter(([id, n]) => n === 0 && !waits(id)).map(([id]) => id);
   assert.deepEqual(never, [], `${never.length} 个事件在 ${LIVES} 条人生里一次也没出现：${never.join(", ")}`);
-  const deadPair = [...pairEnd].filter(([, n]) => n === 0).map(([id]) => id);
+  // 藏着的、要上一世留下痕迹（leg_）的结局千里挑一（「又是对门」改之前 1500 世里 2 回），碰没碰上看随机数顺序：
+  // 只要它要的每个标记都有人带着走完过一世，就不算走不到（三扇门那次加的事挪了随机数，它落到 0 回）
+  const legRare = (id) => {
+    const e = C.endings.pair.find((x) => x.id === id), fl = e.requires.flags ?? [];
+    return C.atlas.hidden.includes(id) && fl.some((f) => f.startsWith("leg_")) && fl.every((f) => (flagsSeen.get(f) ?? 0) > 0);
+  };
+  const deadPair = [...pairEnd].filter(([id, n]) => n === 0 && !legRare(id)).map(([id]) => id);
   assert.deepEqual(deadPair, [], `走不到的结局：${deadPair.join(", ")}`);
   // 高寿的小结（长寿、冬泳的老人）靠的是一辈子吃好睡好心情好，这里不模拟过日子，放在 growth.test.mjs 里测
   const needsLongLife = new Set(C.endings.lives.filter((e) => (e.requires.minDiedAge ?? 0) >= 85).map((e) => e.id));

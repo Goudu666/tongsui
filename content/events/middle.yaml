@@ -414,7 +414,7 @@
     - id: ward
       text: 托人换个单间病房
       tags: [responsible]
-      requires: { flags: [fam_rich] }
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
       effects: { self: { mood: -3 }, flags: [parent_sick] }
 
 - id: m_parent_gone
@@ -508,7 +508,7 @@
     - id: family
       text: 家里托人另找了地方
       tags: [responsible]
-      requires: { flags: [fam_rich] }
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
       effects: { self: { mood: -3 } }
 
 - id: m_checkup

@@ -110,7 +110,8 @@ const senior = (sync, q = 8.4, m = 9.3) => {
 
 // ---------- 4. 看钱的线：三十岁买房，差 15 块，对门塞过去 ----------
 {
-  const s = lifeAt(32, 30, {}, { sync: 10, close: 70 }, { qing: 185, mei: 260 });
+  const B = C.events.find((e) => e.id === "m_settle").options.find((o) => o.id === "buy").min; // 买房那条线
+  const s = lifeAt(32, 30, {}, { sync: 10, close: 70 }, { qing: B - 15, mei: B + 60 });
   const out = untilMilestone(s);
   assert.ok(out.started && out.started.eventId === "m_settle");
   noSwing(s);
@@ -120,18 +121,18 @@ const senior = (sync, q = 8.4, m = 9.3) => {
   assert.equal(G("worldChoose")(s, C, "qing", "buy", false).error, null);
   const e = J(G("worldChoose")(s, C, "mei", "buy", false).entry);
   assert.equal(e.results.qing.option, "buy");
-  assert.equal(e.results.qing.score, 185, "成绩单上是自己兜里的");
-  assert.equal(e.results.mei.score, 260, "塞钱的那个记的也是塞之前的");
+  assert.equal(e.results.qing.score, B - 15, "成绩单上是自己兜里的");
+  assert.equal(e.results.mei.score, B + 60, "塞钱的那个记的也是塞之前的");
   assert.deepEqual(e.gate.pull.qing, { by: "mei", gap: 15, unit: "块" });
   assert.equal(Math.round(s.persons.qing.money), 0, "塞的钱和自己的一起交了房钱");
-  assert.equal(Math.round(s.persons.mei.money), 260 - 15 - 200, "梅少了塞过去的那截");
+  assert.equal(Math.round(s.persons.mei.money), B + 60 - 15 - B, "梅少了塞过去的那截");
   // 亲近低：塞不了那么多
-  const cold = lifeAt(32, 30, {}, { sync: 10, close: 15 }, { qing: 185, mei: 260 });
+  const cold = lifeAt(32, 30, {}, { sync: 10, close: 15 }, { qing: B - 15, mei: B + 60 });
   untilMilestone(cold);
   noSwing(cold);
   assert.ok(!(pullsOf(cold).qing || {}).buy, "亲近 15 只塞得动 5 块");
   // 对门塞完自己就买不起了：不让塞
-  const tight = lifeAt(32, 30, {}, { sync: 10, close: 70 }, { qing: 185, mei: 210 });
+  const tight = lifeAt(32, 30, {}, { sync: 10, close: 70 }, { qing: B - 15, mei: B + 10 });
   untilMilestone(tight);
   noSwing(tight);
   assert.ok(!(pullsOf(tight).qing || {}).buy, "梅只富余 10 块，塞不了 15");

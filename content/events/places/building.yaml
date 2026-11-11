@@ -148,3 +148,140 @@
       text: 一口气上去
       tags: [competitive]
       effects: { self: { body: 1, energy: -5 } }
+
+# ---------- 补空档（11-11）：青年、中年 ----------
+# 青年两件在找事由（22）前后：四楼租房的那件拿精力换心智，停水那件拿精力换体魄或人缘。
+# 中年两件只给还住在老楼里的人（没买房），写在拆迁那张告示之前（38 岁以前）：钱和亲近的取舍，接着七十岁那道看亲近的关。
+
+- id: pl_bd_silou
+  kind: solo
+  stage: young
+  where: hallway
+  when: [1110, 1320]
+  hint: 楼梯灯底下有人在念叨。
+  weight: 2
+  requires: { minAge: 19, maxAge: 26 }
+  title: 楼梯灯
+  text: 四楼新搬来个租房的，每晚坐在楼梯灯底下背书，说在考一个证。灯一灭，他就跺一脚。
+  options:
+    - id: join
+      text: 拿本书坐他下一级
+      tags: [competitive]
+      effects: { self: { mind: 1, energy: -8 } }
+    - id: lamp
+      text: 把屋里的台灯借他
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+    - id: sleep
+      text: 点个头，回屋睡
+      tags: [solitude]
+      effects: { self: { energy: 6 } }
+
+- id: pl_bd_water
+  kind: mirror
+  stage: young
+  where: hallway
+  when: [390, 720]
+  hint: 楼下水龙头排了一串桶。
+  weight: 2
+  title: 停水
+  text: 楼里停水，只有一楼院里的龙头还出水。各家的桶排了一串，一直排到楼门口。
+  options:
+    - id: carry
+      text: 一手一桶往上拎
+      tags: [competitive]
+      effects: { self: { body: 1, energy: -8 } }
+    - id: help
+      text: 先给二楼奶奶拎
+      tags: [gentle]
+      effects: { self: { charm: 1, energy: -5 } }
+    - id: wait
+      text: 等来水再说
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+  resonance:
+    carry:
+      text: 你们一前一后拎到三楼，才发现拎的都是对方家的桶。
+      memory: 拎错的桶
+      bond: { sync: 3, close: 2 }
+    help:
+      text: 二楼奶奶家的缸满了。她一人塞给你们一个苹果，说够吃到来水。
+      memory: 两个苹果
+      bond: { sync: 3, close: 2 }
+    wait:
+      text: 你们两家的桶排在最后，挨着。来水的时候，天已经黑了。
+      memory: 挨着的桶
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个已经拎着桶上了三楼，一个还在楼门口排着。上去的那个又下来了，接过一只桶。
+    bond: { close: 0 }
+
+- id: pl_bd_chair
+  kind: solo
+  stage: middle
+  where: hallway
+  when: [930, 1200]
+  hint: 楼道里多了一辆轮椅。
+  weight: 2
+  requires: { minAge: 32, maxAge: 38, notFlags: [home_own] }
+  title: 轮椅
+  text: 楼道里多了辆轮椅，是你爸的。上下楼，得两个人抬。
+  options:
+    - id: carry
+      text: 背他下楼晒太阳
+      tags: [responsible]
+      effects: { self: { mood: 4, energy: -12 } }
+    - id: knock
+      text: 敲对门搭把手
+      tags: [gentle]
+      effects: { self: { energy: -5 }, bond: { close: 2 } }
+    - id: pay
+      text: 花钱请人每天抬
+      tags: [competitive]
+      cost: 8
+      effects: { self: { mood: 2 } }
+    - id: window
+      text: 推到窗口，开开窗
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+
+- id: pl_bd_bulb
+  kind: mirror
+  stage: middle
+  where: hallway
+  when: [1110, 1320]
+  hint: 楼道灯又不亮了。
+  weight: 2
+  requires: { minAge: 30, maxAge: 38, notFlags: [home_own] }
+  title: 灯泡
+  text: 楼道灯坏了三天。两家下夜班的都摸黑上楼，脚底下数着台阶。
+  options:
+    - id: buy
+      text: 买个灯泡换上
+      tags: [responsible]
+      cost: 1
+      effects: { self: { mood: 3 } }
+    - id: torch
+      text: 门口挂个手电
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+    - id: count
+      text: 接着数台阶
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+  resonance:
+    buy:
+      text: 两个人各买了一个，站在凳子上一比，一样的瓦数。多的那个搁在了电表箱上。
+      memory: 电表箱上那个
+      bond: { sync: 3, close: 2 }
+    torch:
+      text: 两家门口各挂了一只手电，谁晚回来谁拿，第二天再挂回对方门口。
+      memory: 换着挂的手电
+      bond: { sync: 3, close: 2 }
+    count:
+      text: 一共四十六级。两个人数的都是四十六，不用开灯也到得了门口。
+      memory: 四十六级
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个换好了灯泡，一个摸黑上楼时还在数台阶，数到一半，灯亮了。
+    bond: { close: 0 }

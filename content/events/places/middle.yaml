@@ -146,3 +146,134 @@
       text: 头一回作业写两遍
       tags: [responsible]
       effects: { self: { mind: 1, energy: -5 } }
+
+# ---------- 补空档（11-11）：青年、中年、老年 ----------
+# 青年：考完回母校给下一届讲两句（找事由那道关的魅力）。中年：孩子上中学的家长会。
+# 老年：早上操场开给附近的人（七十那道看体魄的关），校门口的文具店（只给一段回忆）。
+
+- id: pl_md_talk
+  kind: mirror
+  stage: young
+  where: middle_class
+  when: [930, 1110]
+  hint: 教室里坐满了初三的。
+  weight: 2
+  requires: { minAge: 18, maxAge: 20 }
+  title: 讲两句
+  text: 班主任托人捎话，让你们回去给初三的讲两句。还是那间教室，讲台矮了一截。
+  options:
+    - id: speak
+      text: 上讲台讲
+      tags: [competitive]
+      effects: { self: { charm: 1, energy: -4 } }
+    - id: back
+      text: 站在后门听别人讲
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+    - id: board
+      text: 在黑板角上写一行
+      tags: [adventure]
+      effects: { self: { mind: 1 } }
+  resonance:
+    speak:
+      text: 一个讲到一半忘了词，另一个在底下张了张嘴。台下笑成一片，班主任也笑了。
+      memory: 张了张嘴
+      bond: { sync: 3, close: 2 }
+    back:
+      text: 后门一边站一个，跟当年罚站一样。班主任看见了，没叫你们进来。
+      memory: 后门两边
+      bond: { sync: 3, close: 2 }
+    board:
+      text: 黑板角上两行字，一行在上一行在下，写的都是「别怕」。
+      memory: 两行别怕
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个站上了讲台，一个靠在后门。讲的那个一抬头，正对上后门那张脸。
+    bond: { close: 0 }
+
+- id: pl_md_meeting
+  kind: solo
+  stage: middle
+  where: middle_class
+  when: [1080, 1260]
+  hint: 中学的教室亮着灯。
+  weight: 2
+  requires: { minAge: 38, maxAge: 48, flags: [has_kid] }
+  title: 隔壁班的
+  text: 孩子的班主任，是你当年隔壁班的。散了会，他叫住你，说孩子像你。
+  options:
+    - id: grades
+      text: 问问孩子的分数
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+    - id: dinner
+      text: 请他吃顿饭
+      tags: [gentle]
+      cost: 4
+      effects: { self: { charm: 1, mood: 3 } }
+    - id: smile
+      text: 笑笑，没往下问
+      tags: [patient]
+      effects: { self: { mood: 4 } }
+
+- id: pl_md_drill
+  kind: solo
+  stage: old
+  where: middle_field
+  when: [390, 480]
+  hint: 操场上放起了早操曲。
+  weight: 2
+  title: 早操
+  text: 中学操场早上开给附近的人。喇叭里还是那支早操曲。
+  options:
+    - id: follow
+      text: 跟着做一遍
+      tags: [responsible]
+      effects: { self: { body: 1, energy: -5 } }
+    - id: walk
+      text: 绕跑道走一圈
+      tags: [patient]
+      effects: { self: { mood: 4 } }
+    - id: stand
+      text: 站在当年那一排
+      tags: [solitude]
+      effects: { self: { mood: 3, energy: 2 } }
+
+- id: pl_md_owed
+  kind: mirror
+  stage: old
+  where: middle_front
+  when: [480, 930]
+  hint: 文具店的门还开着。
+  weight: 2
+  title: 两毛钱
+  text: 校门口的文具店还开着。老板眯眼看你俩：「欠我两毛那俩。」
+  options:
+    - id: pay
+      text: 掏钱还他
+      tags: [responsible]
+      effects: { self: { mood: 4 } }
+    - id: pens
+      text: 买两支笔
+      tags: [gentle]
+      effects: { self: { mood: 3 } }
+    - id: ask
+      text: 问他记了多少年
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+  resonance:
+    pay:
+      text: 两个人一块儿掏钱，都掏的是两毛。他收了一份，另一份推回来。
+      memory: 推回来的两毛
+      bond: { sync: 2, close: 2 }
+    pens:
+      text: 两支笔，一黑一红。他照当年的价收的。
+      memory: 一黑一红
+      bond: { sync: 2, close: 2 }
+    ask:
+      text: 他想了想，说记不清了，就记得是两个人。
+      memory: 两个人
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 一个在掏兜，一个已经挑起了笔。老板一手收钱，一手找零。
+    bond: { close: 0 }

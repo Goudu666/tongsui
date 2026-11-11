@@ -423,6 +423,191 @@ actions:
     stats: { mind: 0.45 }
     together: { needs: { mood: 5 }, bond: { close: 1 }, text: 老先生一人给一杯茶，茶凉了，他才说今天就到这儿。 }
 
+  # ---- 点位菜单（11-11）：一个地方几件事，各有各的取舍。同一个点位上排在后头，影子、机器人、旧安装包还是做头一件 ----
+  # 挣钱的：少年、青年也有正经的零钱来路，可钱换的是长本事的时间
+  - id: pancake
+    label: 帮着摊煎饼
+    menu: true
+    minutes: 60
+    money: 1
+    requires: { minAge: 12, maxAge: 21, hours: [390, 600] }
+    needs: { energy: -8, mood: 2 }
+    stats: { charm: 0.12 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 两个人一个收钱一个递，排队的人说你们俩比老板还快。 }
+  - id: tea_runner
+    label: 在茶社跑堂
+    menu: true
+    minutes: 120
+    money: 2
+    requires: { minAge: 15, maxAge: 29, hours: [540, 1260] }
+    needs: { energy: -12, mood: -2 }
+    stats: { charm: 0.15 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 一个续水，一个收茶碗，台上说到热闹处，你们俩都站住了。 }
+  - id: mall_clerk
+    label: 在商场站柜台
+    menu: true
+    minutes: 120
+    money: 3
+    requires: { minAge: 16, maxAge: 25, hours: [600, 1260] }
+    needs: { energy: -14, mood: -3 }
+    stats: { charm: 0.15 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 两个柜台挨着，没客人的时候，你们隔着玻璃比划着说话。 }
+  # 填空的：四十五分钟、半个钟头，剩的时间不够一整回正经事的时候
+  - id: river_run
+    label: 沿河堤跑一趟
+    menu: true
+    minutes: 45
+    requires: { minAge: 12, maxAge: 59 }
+    needs: { energy: -12, hunger: -6, mood: 4 }
+    stats: { body: 0.2 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 跑到桥底下，两个人一块儿停下来，扶着膝盖喘。 }
+  - id: laps
+    label: 操场跑两圈
+    menu: true
+    minutes: 30
+    requires: { minAge: 12, maxAge: 17 }
+    needs: { energy: -8, hunger: -4 }
+    stats: { body: 0.13 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 第二圈你们俩谁也不肯落后半步。 }
+  - id: hopscotch
+    label: 跳房子
+    menu: true
+    minutes: 45
+    requires: { minAge: 6, maxAge: 11 }
+    needs: { mood: 8, energy: -6 }
+    stats: { body: 0.12, charm: 0.08 }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 粉笔画的格子，沙包扔到了九，两个人一块儿蹦过去捡。 }
+  # 两样都沾一点的：不如专门的长得快，可心情不掉
+  - id: sketch
+    label: 在河边写生
+    menu: true
+    minutes: 60
+    requires: { minAge: 10, hours: [540, 1080] }
+    needs: { energy: -4, mood: 6 }
+    stats: { charm: 0.12, mind: 0.1 }
+    together: { needs: { mood: 5 }, bond: { close: 1, sync: 1 }, text: 画的是同一座桥，一个画得歪，一个画得直，你们换着看了半天。 }
+  - id: coal
+    label: 帮街坊搬蜂窝煤
+    menu: true
+    minutes: 60
+    requires: { minAge: 8, maxAge: 11 }
+    needs: { energy: -10, mood: 3 }
+    stats: { body: 0.15, charm: 0.12 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 一个人在楼下递，一个人在楼梯上接，两张脸都抹黑了。 }
+  - id: cards
+    label: 跟街坊打扑克
+    menu: true
+    minutes: 60
+    requires: { minAge: 18, hours: [1110, 1320] }
+    needs: { mood: 10, energy: -4 }
+    stats: { charm: 0.2 }
+    together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 你们俩一伙，一个眼神就知道该出什么，对家直嚷嚷不玩了。 }
+  - id: teach_chess
+    label: 教小孩下棋
+    menu: true
+    minutes: 60
+    requires: { minAge: 45, hours: [720, 1110] }
+    needs: { mood: 6, energy: -2 }
+    stats: { charm: 0.18, mind: 0.1 }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 小孩问你们俩谁下得好。你们同时指了指对方。 }
+  - id: flowers
+    label: 在阳台上侍弄花
+    menu: true
+    minutes: 45
+    requires: { minAge: 30 }
+    needs: { mood: 8 }
+    stats: { mind: 0.08 }
+    together: { needs: { mood: 5 }, bond: { close: 1 }, text: 一盆茉莉开了两朵，你们一人闻了一朵。 }
+  # 老了的去处：公园里早上、白天、晚上各有一样，搭伴的多，亲近涨得动（rules.yaml bond.closeWeight）
+  - id: boat
+    label: 去湖上划船
+    menu: true
+    minutes: 60
+    money: -2
+    requires: { minAge: 45, hours: [600, 1080] }
+    needs: { mood: 12, energy: -6 }
+    stats: { body: 0.1 }
+    together: { needs: { mood: 8 }, bond: { close: 2 }, text: 两把桨划不到一块儿，船在湖当中转了个圈，你们索性不划了。 }
+  - id: huqin
+    label: 在亭子里拉胡琴
+    menu: true
+    minutes: 60
+    requires: { minAge: 50, hours: [480, 1080] }
+    needs: { mood: 8, energy: -2 }
+    stats: { charm: 0.15, mind: 0.08 }
+    together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 一个拉，一个哼，哼的那个跑了调，拉的那个跟着跑。 }
+  # 家境：殷实人家的孩子在茶社能包个座，听的是整本
+  - id: tea_box
+    label: 在茶社包个座
+    menu: true
+    minutes: 90
+    money: -3
+    bring: true
+    requires: { minAge: 6, flags: [fam_rich], hours: [780, 1260] }
+    needs: { mood: 16, energy: 2 }
+    stats: { charm: 0.2 }
+    together: { needs: { mood: 8 }, bond: { close: 1, sync: 1 }, text: 茶社伙计给你们端来一碟瓜子，说是老先生送的。台上正讲到要紧处，你们都忘了嗑。 }
+  # ---- 后半生押时间（docs/MEANS.md 第七节）----
+  # 六十岁退了休，一天五段都是自己的，七十岁那道关三条线一起摆着：并一家看亲近、自己下楼看体魄、请人照应看积蓄。
+  # 原来退了休就没有进项，积蓄那条线六十岁那天定了就再也挪不动。这几样让每一段都得押：去挣那几块，还是去找对门，还是去走一圈。
+  # 退了休的营生：一回三块，两个钟头，累。六十到七十只有两个日子，全押上也就挣二十来块，够得着「差一口气」，顶不了一辈子的积蓄
+  - id: old_breakfast
+    label: 去早点铺帮着包包子
+    minutes: 120
+    money: 3
+    requires: { minAge: 60, maxAge: 79, hours: [360, 570] }
+    needs: { energy: -12, hunger: 20 }
+    stats: { body: 0.05 }
+  - id: old_bikes
+    label: 在车棚门口看车
+    minutes: 120
+    money: 3
+    requires: { minAge: 60, maxAge: 79, hours: [480, 1080] }
+    needs: { energy: -8, mood: -3 }
+    stats: { charm: 0.05 }
+  # 替上班的街坊看孩子：谁都能去，钱少一点，凑上对门两个人一人看一个
+  - id: mind_kids
+    label: 替街坊看会儿孩子
+    minutes: 120
+    money: 2
+    requires: { minAge: 60, maxAge: 79, hours: [780, 1080] }
+    needs: { energy: -10, mood: 3 }
+    stats: { charm: 0.1 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 两个孩子在楼道里追着跑，两个老的一人守着一头楼梯。 }
+  # 带孙辈去公园：有孙辈的人才有，能带上没孙辈的对门。走得动、凑得上，什么都沾一点，什么都不多
+  - id: grandkid_park
+    label: 带孙辈去湖边
+    minutes: 90
+    bring: true
+    requires: { minAge: 55, maxAge: 79, flags: [has_kid], hours: [900, 1080] }
+    needs: { mood: 8, energy: -10 }
+    stats: { body: 0.2 }
+    together: { needs: { mood: 6 }, bond: { close: 2 }, text: 孩子在前头追鸽子，你们俩在后头喊慢点，喊着喊着自己也跑了两步。 }
+  # 下面三样由后半生的事开出来（content/events/later.yaml）。一锅饭、接孙辈能带上对门：一个人说了凑一锅，对门端着碗过来就算
+  - id: square_dance
+    label: 去空地上跳舞
+    minutes: 90
+    requires: { minAge: 50, maxAge: 79, flags: [dance_team], hours: [1110, 1260] }
+    needs: { mood: 8, energy: -8 }
+    stats: { body: 0.35 }
+    together: { needs: { mood: 5 }, bond: { close: 1, sync: 1 }, text: 领舞的喊转身，你们俩转反了，脸对着脸。 }
+  - id: pair_cook
+    label: 两家凑一锅做饭
+    minutes: 90
+    money: 1
+    bring: true
+    requires: { minAge: 60, flags: [pair_meal], hours: [1020, 1200] }
+    needs: { hunger: 50, mood: 6 }
+    stats: {}
+    together: { needs: { mood: 4 }, bond: { close: 2 }, text: 一个择菜一个掌勺，盐放没放，两个人都说放过了。 }
+  - id: gk_pickup
+    label: 去校门口接孙辈
+    minutes: 90
+    bring: true
+    requires: { minAge: 60, maxAge: 79, flags: [gk_pickup], hours: [930, 1050] }
+    needs: { mood: 6, energy: -6 }
+    stats: { body: 0.1 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 两个人站在校门口等，跟三十年前等自己的孩子站的是一个地方。 }
   # ---- 带孩子（成家和下一代，docs/FAMILY.md；server/src/family.ts）----
   # kid：这件事长的是孩子，不是自己（自己照样累、照样花钱，不长属性）。requires.kidAge：孩子几岁到几岁做得了，没孩子做不了。
   # 同一个点同一件事两个人一起做 = 搭伴，孩子那份也按搭伴倍率长（两家各带各的，两个孩子都长）；两口子带同一个孩子，两份都长在这一个身上。

@@ -329,6 +329,33 @@ function sleep(s, r) {
     const goal = G("lifeGoal")(s, C, "qing");
     assert.equal(goal.id, "m_kinder");
     assert.ok(goal.lines.length >= 3);
+    // hx：带一位小数（往下取整），整数部分就是 have；小时候一回只长零点几分，界面靠它让纸带的数挪一挪
+    s.persons.qing.stats.charm = 3.04;
+    const art = G("lifeGoal")(s, C, "qing").lines.find((l) => l.by === "魅力"); // 看魅力的那条（上小学的文艺委员，或者 #54 以后四岁六一的领唱）
+    assert.deepEqual([art.have, art.hx], [30, 30.4]);
+    s.persons.qing.stats.charm = 2.98;
+    const art2 = G("lifeGoal")(s, C, "qing").lines.find((l) => l.by === "魅力");
+    assert.deepEqual([art2.have, art2.hx], [29, 29.8], "往下取整");
+    // 边界：整数部分恒等于 lifePoints（ε 差十倍，评审 #49 指出整分下面 1e-7~1e-6 那一小段原来会差 1）
+    const LP = G("lifePoints"), LF = G("lifeFinePoints");
+    for (let n = 0; n <= 1000; n++) for (const d of [0, -1e-9, -3e-7, -9e-7, -2e-6, 1e-9, 4e-3, 9.99e-3]) {
+      const v = n / 100 + d;
+      assert.equal(Math.floor(LF(v) + 1e-9), LP(v), "v=" + v);
+    }
+  }
+  // 一世的头一个早上不弹随机的事：人刚落地，先走两步、按一回（主线照常）。第二天的早上照旧
+  {
+    const s = lifeAt(3, 3);
+    assert.equal(s.turn, 0);
+    const calm = (turn) => {
+      s.turn = turn;
+      s.world.slot = 0; s.world.minute = 400; s.world.event = null; s.world.done = [];
+      s.world.fate = { mirror: null, qing: "c_rainy_day", mei: null };
+      for (const r of ROLES) { const a = s.world.actors[r]; a.asleep = false; G("worldClearAction")(a); }
+      return G("worldAdvance")(s, C, 0.1, ON).started;
+    };
+    assert.equal(calm(0), null, "头一天早上不弹「下雨天」");
+    assert.equal(calm(1)?.eventId, "c_rainy_day", "第二天早上照常");
   }
   // 走了不看分的那条路，长卷上不记「0 分」
   {
@@ -340,7 +367,7 @@ function sleep(s, r) {
     assert.deepEqual([res.qing.score, res.qing.scored], [0, false], "分数照旧是数字（旧安装包拿它当数字用），画不画看 scored");
     assert.deepEqual([res.mei.score, res.mei.scored, res.mei.unit], [90, true, "分"]);
   }
-  console.log("✓ 关口接得上日子：小干部还是同班 / 小组只给进了的人、只在放学后、毕业就散 / 位子多五成工钱 / 搭伙看亲近、对门空了就没有 / 走过的路折成寿数 / 三岁起眼前就有一道关 / 不看分的路不记 0 分");
+  console.log("✓ 关口接得上日子：小干部还是同班 / 小组只给进了的人、只在放学后、毕业就散 / 位子多五成工钱 / 搭伙看亲近、对门空了就没有 / 走过的路折成寿数 / 三岁起眼前就有一道关、纸带带一位小数 / 头一个早上不弹随机的事 / 不看分的路不记 0 分");
 }
 
 // ---------- 7. 默契替考场托底 ----------

@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "aeb3881c96a1",
+ "version": "4a0b6740c880",
  "events": [
   {
    "id": "ch_runner",
@@ -4683,7 +4683,8 @@ var CONTENT: Content = {
      "id": "take",
      "text": "拿起扳手",
      "tags": [
-      "responsible"
+      "responsible",
+      "patient"
      ],
      "effects": {
       "self": {

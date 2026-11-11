@@ -34,3 +34,18 @@ static func _first(d: Dictionary) -> Dictionary:
 
 static func _unit(p: Dictionary) -> String:
 	return str(p.get("unit", "分"))
+
+
+
+## 目标条上（考前）：我差的这条，到时候对门拉得动（纸带窄，一句里带上差多少）。p 是 goal.lines[i].pull
+static func goal_mine(p: Dictionary, their_name: String) -> String:
+	if _unit(p) == "块":
+		return "%s能垫你 %d 块" % [their_name, int(p.get("gap", 0))]
+	return "%s能拉你 %d 分" % [their_name, int(p.get("gap", 0))]
+
+
+## 目标条上对门那一头：TA 差的这条，到时候你拉得动
+static func goal_theirs(p: Dictionary, their_name: String) -> String:
+	if _unit(p) == "块":
+		return "你能垫%s %d 块" % [their_name, int(p.get("gap", 0))]
+	return "你能拉%s %d 分" % [their_name, int(p.get("gap", 0))]

@@ -368,7 +368,8 @@ function lifeTurnsUntilAge(turn: number, age: number): number {
 
 /** have / need：给人看的数。属性类的线按「分」算（属性 × 10，满分 100），钱类的按块 */
 // hx：分数线的「攒着的」那一截，百分制带一位小数往下取整（have 是它的整数部分）。小时候一回只长零点几分，界面拿它让尺上的点和分数后面的小数挪一挪
-interface GoalLine { id: string; text: string; by: string; unit: string; have: number; need: number; ok: boolean; hx?: number }
+// pull：这条我还差，到时候对门拉得动（pull.ts → pullGoalHint），界面写「TA 能拉你 3 分」
+interface GoalLine { id: string; text: string; by: string; unit: string; have: number; need: number; ok: boolean; hx?: number; pull?: PullOffer }
 interface GoalView { id: string; title: string; age: number; turns: number; lines: GoalLine[] }
 
 /**
@@ -422,6 +423,7 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
     var raw = lifeScoreRaw(w);
     var gl: GoalLine = { id: o.id, text: o.text, by: lifeWeightsLabel(w), unit: w.money ? "块" : "分", have: raw ? Math.floor(have) : lifePoints(have), need: raw ? o.min : lifePoints(o.min), ok: have >= o.min };
     if (!raw) gl.hx = lifeFinePoints(have);
+    if (!gl.ok) { var ph = pullGoalHint(s, c, role, best, o); if (ph) gl.pull = ph; }
     lines.push(gl);
   }
   // 比最高那条路还高的名次（grades）也摆上来：起点高的人不会开局就无事可冲，每道关都还有一条够一够的线

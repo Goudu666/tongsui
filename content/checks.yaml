@@ -128,3 +128,61 @@
   dc: 6
   pass: 一步不让，赢了半个子儿。
   fail: { text: 一步不让，让人将死在角上。, self: { mood: -3 } }
+
+# ---------- 人生岔路（content/events/lives.yaml）：半路上的岔口看手气，殷实人家家里兜底的那一项不挂检定 ----------
+- event: lv_labor_wage
+  option: go
+  stat: charm
+  dc: 5.5
+  pass: 工头骂了两句，钱数给你了。
+  fail: { text: 没要着。回来的路上，老乡请你吃了碗面。, self: { mood: -5 } }
+
+- event: lv_craft_sweep
+  option: quit
+  stat: mind
+  dc: 5.5
+  pass: 你自己琢磨出一个法子，师傅看了，没说话，点了下头。
+  fail: { text: 琢磨了一礼拜，又回来拿起了扫帚。, self: { mood: -4 } }
+
+- event: lv_sea
+  option: go
+  stat: luck
+  dc: 5.5
+  pass: 头一年就见了回头钱。
+  fail: { text: 头一年赔进去一半本钱。他说，明年就好了。, flags: [own_shop, quit_job, shop_shaky] }
+
+- event: lv_shop_month
+  option: hold
+  stat: luck
+  dc: 5
+  pass: 第二年开春，街口修了路，人多了起来。
+  fail: { text: 又撑了一年，还是把门关了。, self: { mood: -8 }, flags: [shop_closed, no_job] }
+
+- event: lv_shop_second
+  option: take
+  stat: charm
+  dc: 6
+  pass: 两家铺子隔着一条马路，你一天来回跑八趟。
+  fail: { text: 第二家开了半年，盘给了别人。, self: { mood: -6 }, flags: [] }
+
+- event: lv_reform
+  option: stay
+  stat: luck
+  dc: 5
+  pass: 厂子缓过来了，车间又开了两班。
+  fail: { text: 熬了半年，厂子还是停了。, self: { mood: -8 }, flags: [laid_off, no_job] }
+
+# ---------- 奇遇（content/events/chance.yaml）：接不接得住 ----------
+- event: ch_runner
+  option: follow
+  stat: body
+  dc: 5
+  pass: 跑到铁桥底下，他回头看了你一眼：明天还这个点儿。
+  fail: { text: 跑了半里地就岔了气。他没停，也没回头。, flags: [] }
+
+- event: ch_scholar
+  option: guess
+  stat: mind
+  dc: 5.5
+  pass: 猜对了。他把书合上：以后放了学上来坐坐。
+  fail: { text: 猜错了。他笑了笑，说这个字他小时候也念错过。, flags: [ch_scholar] }

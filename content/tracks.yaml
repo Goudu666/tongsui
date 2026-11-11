@@ -89,6 +89,22 @@
   label: 在外地工作
   requires: { minAge: 22, maxAge: 59, flags: [left_city], notFlags: [came_back] }
   duty: { label: 上班, spot: away_work, arrive: [390, 480], until: 1170, needs: { hunger: 25, energy: -28, mood: -3 }, money: 16 }
+# ---- 半路上换了的活法（content/events/lives.yaml）：下海、下岗、再就业。排在原来那份工前头，换了就按新的过 ----
+# 自己开的铺子：钱比坐办公室少一点、比摆摊多，看铺子从早到晚；铺子关了（shop_closed）就落回打零工
+- id: job_own
+  label: 自己开了个铺子
+  requires: { minAge: 22, maxAge: 59, flags: [own_shop], notFlags: [shop_closed] }
+  duty: { label: 看铺子, spot: breakfast_stall, arrive: [420, 510], until: 1110, needs: { hunger: 25, energy: -24, mood: -2 }, stats: { charm: 0.1 }, money: 22 }
+# 下岗以后在楼下支的摊：起得早、收得早，钱不多
+- id: job_stall
+  label: 在楼下支摊
+  requires: { minAge: 30, maxAge: 59, flags: [own_stall] }
+  duty: { label: 出摊, spot: breakfast_stall, arrive: [360, 420], until: 780, needs: { energy: -22, clean: -10 }, stats: { charm: 0.08 }, money: 12 }
+# 下了岗、铺子关了，又没找着别的：跟打零工一样，只是从前有过一份正经事由
+- id: job_lost
+  label: 没了正经事由，打零工
+  requires: { minAge: 30, maxAge: 59, flags: [no_job] }
+  duty: { label: 打零工, spot: bike_bench, arrive: [450, 600], until: 900, needs: { energy: -20, clean: -15 }, stats: { body: 0.07 }, money: 7 }
 - id: job_desk
   label: 坐办公室
   requires: { minAge: 22, maxAge: 59, flags: [job_desk] }

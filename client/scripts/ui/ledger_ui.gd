@@ -1,6 +1,7 @@
 extends Control
-## 住户本：这条人生线上走完的每一世、街坊记住的事、河畔里留着的老物件。盖在当前页面上的一整页，合上就回去。
-## 只是翻看：这里没有任何能点出数值的东西，没记住的事不占位置，也不写「还差几件」。设计见 docs/LEGACY.md。
+## 住户本：这条人生线上走完的每一世、结局图鉴、街坊记住的事、河畔里留着的老物件。盖在当前页面上的一整页，合上就回去。
+## 只是翻看：这里没有任何能点出数值的东西。设计见 docs/LEGACY.md（第十三节起，图鉴和没记住的事也摆出来了：
+## 没走到的结局留一句谜面，藏着的只有一个空框；没记住的事灰着；会变的老物件底下写一句怎么变）。
 ##
 ## 数据两处来：
 ##   快照里的 life.legacy（最近几世的小传、记住的事、老物件）→ 打开就能画
@@ -17,9 +18,10 @@ const JOB_NAME := {"job_desk": "坐办公室", "job_teach": "教书", "job_trade
 const MAX_WIDTH := 2000.0  ## 横屏时整本最宽这么多
 const TAB_REMEMBERED := "remembered"
 const TAB_KEPT := "kept"
+const TAB_ATLAS := "atlas"
 
 var m: Node  ## main.gd
-var tab := ""  ## "life:3" / TAB_REMEMBERED / TAB_KEPT
+var tab := ""  ## "life:3" / TAB_ATLAS / TAB_REMEMBERED / TAB_KEPT
 ## 服务器给的那一页：第几世 → Dictionary；取过但没有的记 false
 var pages: Dictionary = {}
 var _wide := false
@@ -275,6 +277,7 @@ func _nav_column(split: Container) -> void:
 	for n in life_numbers():
 		_nav_item(list, "life:%d" % n, "第 %d 世" % n, _life_line(n))
 	Kit.gap(list, 10)
+	_nav_item(list, TAB_ATLAS, "结局图鉴", atlas_count())
 	_nav_item(list, TAB_REMEMBERED, "街坊记住的事", "")
 	_nav_item(list, TAB_KEPT, "留着的老物件", "")
 	var back := Kit.button(col, "合上", close)
@@ -308,6 +311,7 @@ func _nav_row(split: Container) -> void:
 	scroll.add_child(row)
 	for n in life_numbers():
 		_nav_item(row, "life:%d" % n, "第 %d 世" % n, "")
+	_nav_item(row, TAB_ATLAS, "图鉴 " + atlas_count(), "")
 	_nav_item(row, TAB_REMEMBERED, "记住的事", "")
 	_nav_item(row, TAB_KEPT, "老物件", "")
 
@@ -372,7 +376,9 @@ func _fill_page() -> void:
 	for c in _page.get_children():
 		_page.remove_child(c)
 		c.queue_free()
-	if tab == TAB_REMEMBERED:
+	if tab == TAB_ATLAS:
+		_page_atlas()
+	elif tab == TAB_REMEMBERED:
 		_page_remembered()
 	elif tab == TAB_KEPT:
 		_page_kept()
@@ -524,13 +530,20 @@ func _memory(flow: Container, mem: Variant) -> void:
 
 
 func _page_remembered() -> void:
-	_head("街坊记住的事", "这两扇门里出过的事。")
 	var list := remembered_list()
-	if list.is_empty():
-		Kit.label(_page, "街坊还没有记住什么。", 36, P.INK_SOFT)
-		return
+	var all: Array = m.content.get("remembered", [])
+	_head("街坊记住的事", "这两扇门里出过的事。记住了 %d 件，还有 %d 件没人做到过。" % [list.size(), maxi(0, all.size() - list.size())])
 	for it in list:
 		seal_row(_page, it[0], "第 %d 世" % it[1])
+	# 还没记住的：灰着，写着是什么事；隔着一世的那几件只有一个问号
+	var got: Variant = legacy().get("remembered")
+	for a in all:
+		if got is Dictionary and got.has(a.id):
+			continue
+		if hidden(a.id):
+			seal_row(_page, {"id": a.id, "title": "？", "desc": "还没有人知道是什么事。"}, "", true)
+		else:
+			seal_row(_page, a, "", true)
 
 
 func _page_kept() -> void:
@@ -544,6 +557,7 @@ func _page_kept() -> void:
 	grid.add_theme_constant_override("h_separation", 64)
 	grid.add_theme_constant_override("v_separation", 30)
 	_page.add_child(grid)
+	var kept: Array = legacy().get("heirlooms") if legacy().get("heirlooms") is Array else []
 	for h in list:
 		var col := VBoxContainer.new()
 		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -551,21 +565,150 @@ func _page_kept() -> void:
 		grid.add_child(col)
 		Kit.label(col, str(h.get("name", "")), 42, P.INK)
 		Kit.label(col, str(h.get("desc", "")), 30, P.INK_SOFT)
+		# 老物件会变：还没变过去的写一句怎么变，变过的写变成了什么
+		var nx := next_form(h.id)
+		if not nx.is_empty():
+			if kept.has(nx.id):
+				Kit.label(col, "变成过「%s」" % str(nx.name), 28, P.OVERLAP).name = "Changed_%s" % str(h.id)
+			else:
+				Kit.label(col, "这件东西还会变：" + str(nx.get("hint", "")), 28, P.MEI).name = "Next_%s" % str(h.id)
 
 
-## 一枚章和旁边的一句话。结局页（legacy_ui.gd）也用它
-static func seal_row(box: Container, a: Dictionary, tail: String) -> void:
+# ----------------------------------------------------------------------
+# 结局图鉴
+# ----------------------------------------------------------------------
+
+func _atlas() -> Dictionary:
+	var a: Variant = m.content.get("atlas")
+	return a if a is Dictionary else {}
+
+
+func hidden(id: Variant) -> bool:
+	var h: Variant = _atlas().get("hidden")
+	return h is Array and h.has(str(id))
+
+
+## 这条人生线见过的结局：{pair: {id: 第几世}, lives: {...}}。服务器没有图鉴（旧服务器）就从小传里凑
+func seen() -> Dictionary:
+	var sn: Variant = legacy().get("seen")
+	if sn is Dictionary:
+		return {"pair": sn.get("pair") if sn.get("pair") is Dictionary else {}, "lives": sn.get("lives") if sn.get("lives") is Dictionary else {}}
+	var out := {"pair": {}, "lives": {}}
+	var past: Variant = legacy().get("past")
+	if past is Array:
+		for p in past:
+			if not p is Dictionary:
+				continue
+			if not out.pair.has(str(p.get("pair", ""))):
+				out.pair[str(p.get("pair", ""))] = int(p.get("life", 0))
+			for r in ["qing", "mei"]:
+				var pp: Variant = p.get("persons", {}).get(r)
+				if pp is Dictionary and pp.get("ending") != null and not out.lives.has(str(pp.ending)):
+					out.lives[str(pp.ending)] = int(p.get("life", 0))
+	return out
+
+
+## 目录里图鉴那一项的小字：见过几个结局
+func atlas_count() -> String:
+	var endings: Variant = m.content.get("endings")
+	if not endings is Dictionary:
+		return ""
+	var sn := seen()
+	var have := 0
+	for e in endings.get("pair", []):
+		if sn.pair.has(e.id):
+			have += 1
+	return "%d / %d" % [have, endings.get("pair", []).size()]
+
+
+## 这一件老物件会变成什么（heirlooms.yaml 里 from.carried 指着它的那件）。不会变的返回空
+func next_form(id: Variant) -> Dictionary:
+	for h in m.content.get("heirlooms", []):
+		var fr: Variant = h.get("from")
+		if fr is Dictionary and str(fr.get("carried", "")) == str(id):
+			return h
+	return {}
+
+
+func _page_atlas() -> void:
+	var endings: Variant = m.content.get("endings")
+	if not endings is Dictionary:
+		_head("结局图鉴")
+		return
+	var sn := seen()
+	var pair: Array = endings.get("pair", [])
+	var lives: Array = endings.get("lives", [])
+	var hp := pair.filter(func(e): return sn.pair.has(e.id)).size()
+	var hl := lives.filter(func(e): return sn.lives.has(e.id)).size()
+	_head("结局图鉴", "两个人走到过 %d / %d 个结局，各自的一生 %d / %d 种。没走到的只留一句，藏着的连一句也没有。" % [hp, pair.size(), hl, lives.size()])
+	Kit.chip(_page, "两个人", P.OVERLAP, 28)
+	_atlas_grid(pair, sn.pair, "pair")
+	Kit.gap(_page, 12)
+	Kit.chip(_page, "一个人的一生", P.OVERLAP, 28)
+	_atlas_grid(lives, sn.lives, "lives")
+
+
+func _atlas_grid(list: Array, got: Dictionary, part: String) -> void:
+	var grid := GridContainer.new()
+	grid.name = "Atlas_%s" % part
+	grid.columns = 3 if _wide else 1
+	grid.add_theme_constant_override("h_separation", 36)
+	grid.add_theme_constant_override("v_separation", 30)
+	_page.add_child(grid)
+	var riddles: Variant = _atlas().get("riddles")
+	for e in list:
+		var at: Variant = got.get(e.id)
+		var riddle := str(riddles.get(e.id, "")) if riddles is Dictionary else ""
+		_atlas_cell(grid, e, int(at) if at != null else 0, hidden(e.id), riddle)
+
+
+## 图鉴里的一格。走到过的：名字、那一段话、第几世；没走到的：一句谜面；藏着的：一个「藏」字
+func _atlas_cell(grid: Container, e: Dictionary, life_no: int, is_hidden: bool, riddle: String) -> void:
+	var on := life_no > 0
+	var panel := PanelContainer.new()
+	panel.name = ("Got_%s" if on else ("Hidden_%s" if is_hidden else "Riddle_%s")) % str(e.id)
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var sb := RisoBox.make(P.OVERLAP if on else Color(P.OVERLAP, 0.0), 7.0, 28.0)
+	sb.line = 3.0 if on else 1.5
+	sb.ink = P.INK if on else Color(P.INK_SOFT, 0.7)
+	sb.fill = P.PAPER if on else P.PAPER_DARK
+	panel.add_theme_stylebox_override("panel", sb)
+	grid.add_child(panel)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 8)
+	panel.add_child(col)
+	if on:
+		var head := HBoxContainer.new()
+		head.add_theme_constant_override("separation", 14)
+		col.add_child(head)
+		var t := Kit.label(head, str(e.title), 40, P.INK)
+		t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var when := Kit.label(head, "第 %d 世" % life_no, 24, P.INK_SOFT)
+		when.autowrap_mode = TextServer.AUTOWRAP_OFF
+		when.size_flags_horizontal = Control.SIZE_SHRINK_END
+		when.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		Kit.label(col, str(e.get("text", "")).replace("{name}", "TA"), 26, P.INK_SOFT)
+	elif is_hidden:
+		Kit.label(col, "藏", 56, Color(P.INK_SOFT, 0.6), HORIZONTAL_ALIGNMENT_CENTER)
+		Kit.label(col, "还没有人走到过。", 26, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
+	else:
+		Kit.label(col, "？", 40, Color(P.INK_SOFT, 0.7))
+		Kit.label(col, riddle, 28, P.INK_SOFT)
+
+
+## 一枚章和旁边的一句话。结局页（legacy_ui.gd）也用它。dim：还没记住的，章没蘸印泥，字是灰的
+static func seal_row(box: Container, a: Dictionary, tail: String, dim := false) -> void:
 	var row := HBoxContainer.new()
-	row.name = "Seal_%s" % str(a.get("id", ""))
+	row.name = ("Dim_%s" if dim else "Seal_%s") % str(a.get("id", ""))
 	row.add_theme_constant_override("separation", 30)
 	box.add_child(row)
-	row.add_child(Seal.new(str(a.get("title", ""))))
+	row.add_child(Seal.new(str(a.get("title", "")), dim))
 	var col := VBoxContainer.new()
 	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	col.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	col.add_theme_constant_override("separation", 2)
 	row.add_child(col)
-	Kit.label(col, str(a.get("desc", "")), 34, P.INK)
+	Kit.label(col, str(a.get("desc", "")), 34, P.INK_SOFT if dim else P.INK)
 	if tail != "":
 		Kit.label(col, tail, 26, P.INK_SOFT)
 
@@ -575,9 +718,11 @@ class Seal extends Control:
 	const P := preload("res://scripts/ui/palette.gd")
 	const SIZE := 40
 	var text := ""
+	var dim := false
 
-	func _init(p_text: String) -> void:
+	func _init(p_text: String, p_dim := false) -> void:
 		text = p_text
+		dim = p_dim
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var w := P.font().get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE).x
 		custom_minimum_size = Vector2(maxf(w + 56.0, 216.0), 92.0)  # 四个字以内的一样宽，旁边的话才对得齐
@@ -589,12 +734,14 @@ class Seal extends Control:
 		draw_set_transform(size / 2.0, tilt, Vector2.ONE)
 		var half := size / 2.0 - Vector2(8, 10)
 		var box := Rect2(-half, half * 2.0)
-		# 印泥没蘸匀：先印一层错开的淡色，再印框和字
-		draw_rect(Rect2(box.position + Vector2(4, 4), box.size), Color(P.MEI, 0.16), true)
-		draw_rect(box, P.MEI, false, 4.0, true)
-		draw_rect(box.grow(-7.0), Color(P.MEI, 0.7), false, 1.5, true)
+		# 印泥没蘸匀：先印一层错开的淡色，再印框和字。还没记住的只压出一个灰印子
+		var ink := Color(P.INK_SOFT, 0.55) if dim else P.MEI
+		if not dim:
+			draw_rect(Rect2(box.position + Vector2(4, 4), box.size), Color(P.MEI, 0.16), true)
+		draw_rect(box, ink, false, 2.0 if dim else 4.0, true)
+		draw_rect(box.grow(-7.0), Color(ink, 0.7), false, 1.5, true)
 		var w := f.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE).x
-		draw_string(f, Vector2(-w / 2.0, SIZE * 0.36), text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE, P.MEI)
+		draw_string(f, Vector2(-w / 2.0, SIZE * 0.36), text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE, ink)
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 

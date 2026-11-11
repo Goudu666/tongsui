@@ -26,6 +26,8 @@ type LegacyPersonReq = LifeEnding["requires"] & {
   anyStat?: number;
   /** 走的时候兜里的钱 */
   minMoney?: number;
+  /** 带着这件老物件出生的（老物件会变：带着它、又做了那件事，留下的是它的下一种样子，见 atlas.ts） */
+  carried?: string;
 };
 
 /** 街坊记住的事的条件：两个人一起看的，写法同结局（endings.yaml 的 pair.requires），多几样 */
@@ -56,6 +58,8 @@ interface Heirloom {
   money: number;
   close: number;
   flags: string[];
+  /** 老物件会变：这一件是从哪件变来的时候，怎么变的那一句（住户本里写在上一件底下） */
+  hint?: string;
 }
 
 interface PastPerson {
@@ -276,6 +280,7 @@ function legacyBirth(s: LifeState, c: Content) {
 function legacyPersonOk(p: Person, rq: LegacyPersonReq): boolean {
   if (!lifeLifeEndingOk(p, { id: "", title: "", text: "", requires: rq })) return false;
   if (rq.anyStat !== undefined && Math.max(p.stats.body, p.stats.mind, p.stats.charm, p.stats.luck) < rq.anyStat) return false;
+  if (rq.carried !== undefined && p.heirloomId !== rq.carried) return false;
   return rq.minMoney === undefined || p.money >= rq.minMoney;
 }
 
@@ -579,4 +584,5 @@ function legacyRepair(s: LifeState, c: Content, notes: string[]) {
     }
     if (s.left && s.left[role] && !legacyFindHeirloom(c, s.left[role])) s.left[role] = null;
   }
+  atlasRepair(s, c, notes); // 图鉴和差一点
 }

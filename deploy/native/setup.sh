@@ -7,7 +7,7 @@
 #   - Nakama 全部端口只绑 127.0.0.1，公网只经 nginx 8080
 #   - 可以放心重复运行：密钥只在第一次生成，以后只换模块 / 二进制，再重启检查
 #
-# 上传目录里要有：setup.sh tongsui.service nginx-tongsui.conf backup.sh tongsui-backup.{service,timer}
+# 上传目录里要有：setup.sh tongsui.service nginx-tongsui.conf backup.sh restore.sh tongsui-backup.{service,timer}
 #                 index.js（服务端模块）nakama-<版本>-linux-amd64.tar.gz
 set -euo pipefail
 
@@ -129,6 +129,7 @@ install -m 644 -o root -g root "$SRC/index.js" "$ROOT/modules/index.js"
 step "systemd：tongsui.service + 每日备份"
 install -m 644 "$SRC/tongsui.service" /etc/systemd/system/tongsui.service
 install -m 755 "$SRC/backup.sh" "$ROOT/backup.sh"
+install -m 755 "$SRC/restore.sh" "$ROOT/restore.sh"
 install -m 644 "$SRC/tongsui-backup.service" /etc/systemd/system/tongsui-backup.service
 install -m 644 "$SRC/tongsui-backup.timer" /etc/systemd/system/tongsui-backup.timer
 systemctl daemon-reload

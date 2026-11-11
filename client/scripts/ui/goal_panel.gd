@@ -172,7 +172,11 @@ func _draw() -> void:
 		Kit.text(self, Vector2(band + 26, top), "  ·  ".join(parts), P.FS_LABEL + 2, P.INK)
 		Kit.text(self, Vector2(band + 26, low), "往后没有非过不可的关了。" + _eff_text(), P.FS_CAPTION, P.INK_MID, false, size.x - band - 60)
 		return
-	Kit.text(self, Vector2(20, top), str(goal.title), P.FS_H - 6, P.PAPER_HI, false, band - 32)
+	# 孩子的关口标题长一点（「孩子小升初」）：放不下就小一号，最小到 FS_LABEL，别截掉
+	var tfs := P.FS_H - 6
+	while tfs > P.FS_LABEL and P.font().get_string_size(str(goal.title), HORIZONTAL_ALIGNMENT_LEFT, -1, tfs).x > band - 32:
+		tfs -= 2
+	Kit.text(self, Vector2(20, top), str(goal.title), tfs, P.PAPER_HI, false, band - 32)
 	Kit.text(self, Vector2(20, low), turns_text(int(goal.turns)), P.FS_CAPTION, Color(P.PAPER_HI, 0.88), false, band - 32)
 	var unit := str(line.get("unit", "分"))
 	var side := SIDE

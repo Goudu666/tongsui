@@ -1,67 +1,47 @@
 extends Control
 ## 标题页的画面（横屏；按钮由 main.gd 摆在 buttons_rect() 里）：
-##   左边是标志：青、梅两个圆从两边滑进来、叠住，"同""岁"反白在圆里；下面一句话，再下面是按钮
-##   右边是一扇"窗"：楼下那条老街（侧视横版的底图）在里面慢慢横移，天会黑、灯会亮
-##   窗的四角有裁切线，下面一排色标：这是一张还没裁的印刷打样
+##   整屏铺一张主视觉 res://art/keyart/title.jpg：傍晚的河边，两个半大孩子背着书包往铁桥走
+##   （tools/shots/keyart.gd 在游戏里摆拍，tools/art/keyart.py 出图，和商店图是同一张底片）
+##   左边一层纸色慢慢盖上来，标志、一句话、按钮印在纸上；画从右边透出来
+##   画面慢慢推拉，夕阳那边飘着光里的尘；四角裁切线、一排色标：这是一张还没裁的印刷打样
+## 没有这张图时退回纯纸色。
 
 const P := preload("res://scripts/ui/palette.gd")
 const Kit := preload("res://scripts/ui/kit.gd")
-const SceneArt := preload("res://scripts/world/scene_art.gd")
-const ContentStore := preload("res://scripts/net/content_store.gd")
-const PrintLight := preload("res://scripts/world/print_light.gd")
 
+const ART := "res://art/keyart/title.jpg"
 const LEFT := 96.0       ## 左栏离屏幕左边
 const COL_W := 620.0     ## 左栏（标志、按钮）的宽
 const LOGO_Y := 292.0
 const LOGO_R := 150.0
-const WIN_TOP := 190.0
-const WIN_H := 640.0
-const VIEW_SCALE := 0.62
-const VIEW_TOP := 0.0  ## 窗里从这张图的哪一行看起（图自己的坐标）
-const SCENE := "street"
-const DAY := 70.0  ## 窗里的一整天（秒）
+const FADE_SOLID := 0.62  ## 纸色从左往右：这一段几乎盖满（相对左栏右边）
+const DRIFT := 46.0      ## 一来一回推拉一次（秒）
+const MOTES := 34
 
 var _t := 0.0
 var _inset := Vector2.ZERO
-var _window: Control
-var _frame: Control
-var _holder: Node2D
-var _art: SceneArt
-var _width := 2400.0
-var _light: PrintLight
+var _tex: Texture2D
+var _fade: GradientTexture2D
+var _motes: Array = []
 
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_inset = Kit.safe_sides(self)
-	_window = Control.new()
-	_window.clip_contents = true
-	_window.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_window)
-	_holder = Node2D.new()
-	_holder.scale = Vector2.ONE * VIEW_SCALE
-	_window.add_child(_holder)
-	_art = SceneArt.new()
-	_holder.add_child(_art)
-	var map: Dictionary = ContentStore.load_bundled().get("map", {})
-	for sc in map.get("scenes", []):
-		if str(sc.id) == SCENE:
-			_art.show_scene(sc, map.get("zones", []), map.get("exits", []))
-			_width = float(sc.width)
-	_art.position = Vector2.ZERO  # 窗里只放这一张，不按世界坐标摆
-	if _art.has_art:
-		_light = PrintLight.new()
-		_holder.add_child(_light)
-		_light.setup(Vector2(_width, SceneArt.BOTTOM - SceneArt.TOP), SceneArt.anchors_for(SCENE))
-		_light.position = Vector2(0, SceneArt.TOP)
-	else:
-		_window.visible = false
-	_frame = _Frame.new()
-	_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_frame.visible = _window.visible
-	add_child(_frame)
-	_place()
+	if ResourceLoader.exists(ART):
+		_tex = load(ART)
+	var g := Gradient.new()
+	g.offsets = PackedFloat32Array([0.0, FADE_SOLID, 1.0])
+	g.colors = PackedColorArray([Color(P.PAPER, 0.95), Color(P.PAPER, 0.86), Color(P.PAPER, 0.0)])
+	_fade = GradientTexture2D.new()
+	_fade.gradient = g
+	_fade.width = 256
+	_fade.height = 1
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 11
+	for i in MOTES:
+		_motes.append(Vector4(rng.randf(), rng.randf(), rng.randf_range(1.6, 4.2), rng.randf() * TAU))
 
 
 ## 屏幕比 16:9 高（平板）时，整个版面往下挪，上下居中
@@ -73,44 +53,41 @@ func _left() -> float:
 	return LEFT + _inset.x
 
 
-## 那扇窗：左栏右边剩下的地方都给它，手机越长窗越宽
-func window_rect() -> Rect2:
-	var x := _left() + COL_W + 110.0
-	return Rect2(x, WIN_TOP + _drop(), maxf(480.0, size.x - x - 110.0 - _inset.y), WIN_H)
-
-
 ## 按钮列放哪儿（main.gd 用）
 func buttons_rect() -> Rect2:
 	return Rect2(_left(), 600.0 + _drop(), COL_W, 0.0)
 
 
-func _place() -> void:
-	var win := window_rect()
-	_window.position = win.position
-	_window.size = win.size
-	_frame.position = win.position
-	_frame.size = win.size
+## 画铺在哪儿：盖满屏幕，右边对齐（两个人在画的右三分之二处），慢慢推拉
+func art_rect() -> Rect2:
+	if _tex == null:
+		return Rect2(Vector2.ZERO, size)
+	var ts := Vector2(_tex.get_size())
+	var k := 0.5 - 0.5 * cos(_t / DRIFT * TAU)
+	var s := maxf(size.x / ts.x, size.y / ts.y) * lerpf(1.0, 1.045, k)
+	var sz := ts * s
+	# 宽出来的部分大多裁左边（左边反正盖着纸）
+	var x := (size.x - sz.x) * lerpf(0.86, 0.94, k)
+	var y := (size.y - sz.y) * 0.62
+	return Rect2(Vector2(x, y), sz)
 
 
 func _process(delta: float) -> void:
 	_t += delta
-	_place()
-	if _window.visible:
-		# 镜头：沿着老街来回走一趟
-		var span := maxf(0.0, _width - _window.size.x / VIEW_SCALE)
-		var k := 0.5 - 0.5 * cos(_t / 95.0 * TAU)
-		_holder.position = Vector2(-span * k * VIEW_SCALE, -VIEW_TOP * VIEW_SCALE)
-		# 时钟：清早 → 夜里 → 再倒回清早（倒着看的晚霞就是朝霞）
-		var d := fmod(_t + 8.0, DAY * 2.0) / DAY
-		var day := d if d < 1.0 else 2.0 - d
-		var m := lerpf(420.0, 1300.0, smoothstep(0.08, 0.92, day))
-		if _light != null:
-			_light.set_minute(m)
 	queue_redraw()
 
 
 func _draw() -> void:
 	var f := P.font()
+	var a := clampf(_t / 0.9, 0.0, 1.0)
+	if _tex != null:
+		var r := art_rect()
+		draw_texture_rect(_tex, r, false, Color(1, 1, 1, a))
+		_draw_motes(r, a)
+		# 左边铺纸：标志和按钮印在纸上
+		var fw := _left() + COL_W + 420.0
+		draw_texture_rect(_fade, Rect2(0, 0, fw, size.y), false)
+		_draw_marks()
 	var cx := _left() + COL_W / 2.0
 	# 两个圆：开场时从两边滑进来（没套准），慢慢对上，之后轻轻呼吸
 	var settle := 1.0 - pow(1.0 - clampf(_t / 1.4, 0.0, 1.0), 3.0)
@@ -128,28 +105,33 @@ func _draw() -> void:
 	draw_string(f, Vector2(cx - lw / 2.0, LOGO_Y + LOGO_R + 86.0 + _drop()), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 38, Color(P.INK, clampf(_t - 0.9, 0.0, 1.0)))
 
 
-## 窗框：墨线、裁切线、套准十字、色标、图注
-class _Frame extends Control:
-	const P := preload("res://scripts/ui/palette.gd")
+## 光里的尘：夕阳那边（画的右上）慢慢往上飘，一闪一闪
+func _draw_motes(r: Rect2, a: float) -> void:
+	for m in _motes:
+		var u := fmod(m.x + _t * 0.006 * m.z, 1.0)
+		var v := 1.0 - fmod(m.y + _t * 0.011 * m.z, 1.0)
+		var p := r.position + r.size * Vector2(0.42 + u * 0.56, 0.08 + v * 0.62)
+		p.x += sin(_t * 0.7 + m.w) * 10.0
+		var tw := 0.5 + 0.5 * sin(_t * 1.3 + m.w * 3.0)
+		draw_circle(p, m.z, Color(1.0, 0.93, 0.78, 0.5 * tw * a))
 
-	func _draw() -> void:
-		var f := P.font()
-		var r := Rect2(Vector2.ZERO, size)
-		draw_rect(r, P.INK, false, 4.0)
-		# 四角裁切线
-		for corner in [r.position, Vector2(r.end.x, 0), Vector2(0, r.end.y), r.end]:
-			var sx := -1.0 if corner.x < 1.0 else 1.0
-			var sy := -1.0 if corner.y < 1.0 else 1.0
-			draw_line(corner + Vector2(sx * 14, 0), corner + Vector2(sx * 40, 0), P.INK, 2.0)
-			draw_line(corner + Vector2(0, sy * 14), corner + Vector2(0, sy * 40), P.INK, 2.0)
-		# 套准十字
-		var reg := Vector2(size.x / 2.0, -26)
-		draw_arc(reg, 9.0, 0, TAU, 20, P.INK, 1.6, true)
-		draw_line(reg + Vector2(-16, 0), reg + Vector2(16, 0), P.INK, 1.6)
-		draw_line(reg + Vector2(0, -16), reg + Vector2(0, 16), P.INK, 1.6)
-		# 图注 + 色标（墨、青、梅、叠印）
-		draw_string(f, Vector2(22, size.y + 62), "天津 · 河畔里", HORIZONTAL_ALIGNMENT_LEFT, -1, 30, P.INK_SOFT)
-		var x := size.x - 4 * 44.0 - 14.0
-		for col in [P.INK, P.QING, P.MEI, P.OVERLAP]:
-			draw_rect(Rect2(x, size.y + 34, 36, 30), col)
-			x += 44.0
+
+## 四角裁切线、右下的色标和图注：一张还没裁的打样
+func _draw_marks() -> void:
+	var f := P.font()
+	var m := 34.0
+	var r := Rect2(Vector2(m + _inset.x, m), size - Vector2(m * 2.0 + _inset.x + _inset.y, m * 2.0))
+	for corner in [r.position, Vector2(r.end.x, r.position.y), Vector2(r.position.x, r.end.y), r.end]:
+		var sx := -1.0 if corner.x < size.x / 2.0 else 1.0
+		var sy := -1.0 if corner.y < size.y / 2.0 else 1.0
+		draw_line(corner + Vector2(-sx * 6, 0), corner + Vector2(-sx * 30, 0), Color(P.INK, 0.7), 2.0)
+		draw_line(corner + Vector2(0, -sy * 6), corner + Vector2(0, -sy * 30), Color(P.INK, 0.7), 2.0)
+	var x := r.end.x - 4 * 34.0 - 10.0
+	var y := r.end.y - 44.0
+	var cap := "天津 · 河畔里"
+	var cw := f.get_string_size(cap, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x
+	draw_rect(Rect2(x - cw - 34.0, y - 4.0, cw + 20.0, 34.0), Color(P.PAPER, 0.9))
+	draw_string(f, Vector2(x - cw - 24.0, y + 22.0), cap, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, P.INK_SOFT)
+	for col in [P.INK, P.QING, P.MEI, P.OVERLAP]:
+		draw_rect(Rect2(x, y, 26, 26), col)
+		x += 34.0

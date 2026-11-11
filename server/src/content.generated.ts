@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "758fe86cf7fc",
+ "version": "a82f658ee6bb",
  "events": [
   {
    "id": "m_rise",
@@ -590,8 +590,7 @@ var CONTENT: Content = {
      "text": "那年两个人都往上走了一步。晚上在楼道里碰见，谁也没提，各自多买了一瓶汽水。",
      "memory": "多买的汽水",
      "bond": {
-      "sync": 2,
-      "close": 1
+      "sync": 2
      },
      "flags": []
     },
@@ -599,8 +598,7 @@ var CONTENT: Content = {
      "text": "同一个礼拜，两个人都换了东家。新单位离得不远，中午能在一个面馆碰上。",
      "memory": "一个面馆",
      "bond": {
-      "sync": 2,
-      "close": 1
+      "sync": 2
      },
      "flags": []
     },
@@ -608,8 +606,7 @@ var CONTENT: Content = {
      "text": "两个人都没动。下了班还是一前一后进楼门，日子跟去年一样，也挺好。",
      "memory": "一前一后",
      "bond": {
-      "sync": 2,
-      "close": 1
+      "sync": 2
      },
      "flags": []
     }
@@ -1160,8 +1157,7 @@ var CONTENT: Content = {
      "text": "两个人都挑上了大梁。回家越来越晚，楼道的灯是后回来的那个关的。",
      "memory": "后回来的关灯",
      "bond": {
-      "sync": 2,
-      "close": 1
+      "sync": 2
      },
      "flags": []
     },
@@ -1169,8 +1165,7 @@ var CONTENT: Content = {
      "text": "熬了十年，同一年升的。谁也没请客，两家凑了一桌饺子。",
      "memory": "一桌饺子",
      "bond": {
-      "sync": 3,
-      "close": 1
+      "sync": 3
      },
      "flags": []
     },
@@ -1178,8 +1173,7 @@ var CONTENT: Content = {
      "text": "两个人都没往上挤。礼拜天还能一块儿去河边，这个比什么都值。",
      "memory": "礼拜天的河边",
      "bond": {
-      "sync": 2,
-      "close": 1
+      "sync": 2
      },
      "flags": []
     }
@@ -16010,7 +16004,7 @@ var CONTENT: Content = {
      "score": {
       "close": 1
      },
-     "min": 60,
+     "min": 62,
      "tags": [
       "gentle"
      ],

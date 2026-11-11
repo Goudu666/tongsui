@@ -1195,10 +1195,14 @@ function worldMilestone(s: LifeState, c: Content, out: WorldTick): boolean {
       swing = Math.round((hand + steady + (luck - 5) * SWING_LUCK) * 100) / 100;
     }
     pe.swing![r] = swing;
-    var open = ms.options.filter(function (o) { return !lifeOptionLock(ms, o, s.persons![r], swing, lifePairBond(s, r)); });
+  }
+  // 两个人的发挥都定了再数路：差几分、对门拉得动的那条也算一条能走的路（pull.ts）
+  for (var oi = 0; oi < due.length; oi++) {
+    var ro = due[oi];
+    var open = ms.options.filter(function (o) { return pullOpen(s, c, ms, pe, ro, o); });
     // 一条都走不通（内容写漏了兜底的路）：走线最低的那条，不让这条人生卡在这里
-    if (open.length === 0) pe.choices[r] = lifeMilestoneFallback(ms).id;
-    else if (open.length === 1) pe.choices[r] = open[0].id;
+    if (open.length === 0) pe.choices[ro] = lifeMilestoneFallback(ms).id;
+    else if (open.length === 1) pe.choices[ro] = open[0].id;
     else forced = false;
   }
   if (forced) {
@@ -1426,7 +1430,8 @@ function worldChoose(s: LifeState, c: Content, role: Role, optionId: string, fro
   if (!opt) return { error: "没有这个选项", entry: null };
   if (lifeGated(ev)) {
     var lock = lifeOptionLock(ev, opt, s.persons![role], (w.event.swing && w.event.swing[role]) || 0, lifePairBond(s, role));
-    if (lock) return { error: "这条路现在走不了（" + lock + "）", entry: null };
+    // 差几分、对门拉得动的路可以选：对门也走这条就拉过去，不走就按自己够得着的走（pull.ts）
+    if (lock && !pullOffer(s, c, ev, w.event, role, opt)) return { error: "这条路现在走不了（" + lock + "）", entry: null };
   }
   w.event.choices[role] = optionId; // 结算前可以改主意
   if (fromShadow && w.event.shadow.indexOf(role) < 0) w.event.shadow.push(role);

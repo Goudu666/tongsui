@@ -66,6 +66,7 @@ const FLASH_SECS := 1.6
 ## 两个人一起做事挨着站：一般错开半步；面对面的几样（聊天、下棋、吃饭）错开一大步，再各自转过脸来
 const PAIR_GAP := 24.0
 const FACE_GAP := 46.0
+const PASS_GAP := 84.0  ## 一起踢球：面对面隔开几步，中间滚一个球
 var _apart := true  ## 两个人上一次离得远（碰面招手用）
 
 
@@ -323,7 +324,7 @@ func apply_world(view: Dictionary) -> void:
 		# 不在我这张图上的人（楼上、外地）：这儿看不见
 		a.visible = a.is_local or str(scene_at(server_pos.y).get("id", "")) == str(scene.get("id", ""))
 		if side_by_side:
-			var gap := FACE_GAP if _act_loop(str(qs.get("act")), str(qs.get("spot", ""))) in Actor.FACE_LOOPS else PAIR_GAP
+			var gap := pair_gap(_act_loop(str(qs.get("act")), str(qs.get("spot", ""))))
 			server_pos.x += -gap if r == "qing" else gap
 		var act: Variant = s.get("act")
 		if act != null:
@@ -359,8 +360,14 @@ func _pair_faces(side_by_side: bool) -> void:
 	var m: Actor = actors.get("mei")
 	if q == null or m == null:
 		return
+	# 一起踢球：配成对，面对面对着踢一个球
+	var passing := side_by_side and q.base_loop() == "kick" and m.base_loop() == "kick"
+	q.pass_with = m if passing else null
+	m.pass_with = q if passing else null
+	q.pass_lead = passing
+	m.pass_lead = false
 	var lp := q.loop_name()
-	var facing := side_by_side and lp in Actor.FACE_LOOPS and lp == m.loop_name()
+	var facing := side_by_side and (passing or (lp in Actor.FACE_LOOPS and lp == m.loop_name()))
 	if facing:
 		q.face_to = 2 if q.position.x <= m.position.x else 3
 		m.face_to = 3 if q.position.x <= m.position.x else 2
@@ -370,7 +377,7 @@ func _pair_faces(side_by_side: bool) -> void:
 	var both := q.visible and m.visible and str(scene_at(q.position.y).get("id", "")) == str(scene_at(m.position.y).get("id", ""))
 	var d := q.position.distance_to(m.position) if both else INF
 	# 挨得近：「一起……中」只写一份（写在两人中间），名字牌往两边让开
-	var near := d < 130.0
+	var near := d < 130.0 or (passing and d < PASS_GAP * 2.0 + 30.0)
 	var left: Actor = q if q.position.x <= m.position.x else m
 	var right: Actor = m if left == q else q
 	left.quiet_label = false
@@ -455,6 +462,13 @@ func _apply_flash(role: String, a: Actor, idle: bool) -> void:
 
 
 ## 这件事在这个点上演哪一套动作（和 actor.loop_name 一样的对法，给还没设上 doing 的时候用）
+## 两个人在同一个点做同一件事，左右各让开多远
+func pair_gap(loop: String) -> float:
+	if loop == "kick":
+		return PASS_GAP
+	return FACE_GAP if loop in Actor.FACE_LOOPS else PAIR_GAP
+
+
 func _act_loop(act: String, spot: String) -> String:
 	if act == "duty":
 		return str(Actor.DUTY_LOOP.get(spot, "wave"))

@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "a46e66222304",
+ "version": "0c55697ae49a",
  "events": [
   {
    "id": "ch_runner",
@@ -38799,6 +38799,14 @@ var CONTENT: Content = {
    "syncSteady": 1,
    "syncSteadyFrom": 5,
    "syncSteadyFull": 35,
+   "pullFrom": 0.1,
+   "pullFull": 0.4,
+   "pullMoney": 20,
+   "pullMoneyClose": 60,
+   "reunion": {
+    "close": 2,
+    "sync": 2
+   },
    "drift": {
     "childhood": 0.4,
     "teen": 0.9,
@@ -39200,6 +39208,15 @@ var CONTENT: Content = {
      "text": "这二位，各说各的说了一辈子，倒也没耽误当对门。"
     }
    ]
+  },
+  "gate": {
+   "pull": "{b}差 {x} 分。{a}把自己那份往这边推了推，两个人一块儿过去了。",
+   "money": "{b}差 {x} 块。{a}没吭声，把钱塞进了{b}的兜里。",
+   "miss": "{a}走了别的路。{b}一个人够不着那条，走了「{o}」。",
+   "reunion": "各走各的{x}年，到这儿又走到一条路上了。",
+   "pullMemory": "拉了一把",
+   "moneyMemory": "塞过来的钱",
+   "reunionMemory": "又走到一块儿"
   }
  },
  "letters": {

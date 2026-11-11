@@ -461,7 +461,7 @@ const rules = load("rules.yaml");
     daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "needsUse", "wageFlags"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],
     lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max", "flags"],
-    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "syncSteadyFrom", "syncSteadyFull", "slotTogether", "drift", "driftDistance", "driftFloor"],
+    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "syncSteadyFrom", "syncSteadyFull", "slotTogether", "closeWeight", "drift", "driftDistance", "driftFloor"],
     legacy: ["pastKept", "heirloomOffer", "houseMax", "houseMoney", "lateEarly", "lateAfter", "lateRoom", "linkedDrift", "linkedMood", "oldSoul", "oldSoulCharm"],
   };
   checkKeys("rules", rules, Object.keys(need));
@@ -495,6 +495,7 @@ const rules = load("rules.yaml");
   for (const st of STAGES) {
     for (const k of STAT_KEYS) if (typeof rules?.growth?.plasticity?.[st]?.[k] !== "number") errors.push(`rules.yaml: growth.plasticity.${st}.${k} 必须是数字`);
     if (typeof rules?.bond?.drift?.[st] !== "number") errors.push(`rules.yaml: bond.drift.${st} 必须是数字`);
+    if (rules?.bond?.closeWeight !== undefined && !(rules.bond.closeWeight[st] > 0)) errors.push(`rules.yaml: bond.closeWeight.${st} 必须是正数`);
   }
   if (rules?.roll && rules.roll.wealthAdjust?.length !== 3) errors.push("rules.yaml: roll.wealthAdjust 需要三个数（清贫 / 小康 / 殷实）");
   // 投胎的点数要分得下去：每种人家 × 天赋，按单项算。

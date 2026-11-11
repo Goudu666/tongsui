@@ -510,7 +510,8 @@ function worldTogetherBonus(s: LifeState, c: Content, act: Action): LogEntry | n
   lifeApplySelf(s.persons!.mei, needs);
   var tb: any = {};
   var tk = act.quick ? 1 : c.rules.bond.slotTogether || 1;
-  for (var bk in act.together.bond) tb[bk] = bk === "close" || bk === "sync" ? (act.together.bond as any)[bk] * tk : (act.together.bond as any)[bk];
+  var cw = c.rules.bond.closeWeight ? c.rules.bond.closeWeight[lifeTimeAt(s.turn).stage] : 1; // 老了，凑一块儿的一段顶好几年
+  for (var bk in act.together.bond) tb[bk] = bk === "close" || bk === "sync" ? (act.together.bond as any)[bk] * tk * (bk === "close" ? cw : 1) : (act.together.bond as any)[bk];
   lifeApplyBond(s, c, tb);
   var entry = lifeEntry(s, "together", act.together.text || "你们一起" + act.label + "。");
   s.log.push(entry);

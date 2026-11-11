@@ -85,7 +85,21 @@ const index = (list, id) => list.findIndex((e) => e.id === id);
   assert.equal(near.option, "far");
   assert.equal(near.need - near.have, 1);
   assert.equal(G("atlasMilestoneNear")(ev, "near", { ...p, stats: { ...p.stats, mind: 5 } }, 0, { close: 40 }), null, "差二十多分的不叫差一点");
-  console.log(`✓ 关口：差一点和锁上那句是同一个数（${checked} 组对照）/ 钱按块 / 家里没那个条件、对门不在了的不算 / 差太远的不算`);
+  // 名次也算（#43 目标条上的 grade:<n>）：只认目标条上摆着的那几档，分数是这一关真拿去评名次的那个
+  const top = { flags: [], stats: { body: 5, mind: 9.4, charm: 5, luck: 5 }, money: 0 };
+  const gw = ev.score || {};
+  const gs = G("lifeScore")(top, gw, { close: 40 }) - 0.05;
+  const tape = J(G("lifeTapeGrades")(ev, top));
+  assert.ok(tape.includes(0), "比重点高中还高的那档名次在目标条上");
+  const gn = G("atlasMilestoneNear")(ev, "far", top, 0, { close: 40 }, Math.min(gs, ev.grades[0].min - 0.03));
+  assert.equal(gn && gn.option, "grade:0", "走了最高那条路、名次差一点：" + JSON.stringify(gn));
+  assert.deepEqual([gn.need, gn.unit], [G("lifePoints")(ev.grades[0].min), "分"]);
+  assert.equal(G("atlasNearWhat")(ev, "grade:0"), ev.grades[0].label);
+  assert.equal(G("atlasNearWhat")(ev, "grade:1"), null, "兜底那档没有字，不说");
+  assert.equal(G("atlasMilestoneNear")(ev, "far", top, 0, { close: 40 }, ev.grades[0].min + 0.1), null, "名次拿到了就不算差");
+  const low = { ...top, stats: { ...top.stats, mind: 7.5 } };
+  assert.equal(G("atlasMilestoneNear")(ev, "near", low, 0, { close: 40 }, ev.grades[0].min - 0.03).option, "far", "差一分的路比差得多的名次近");
+  console.log(`✓ 关口：差一点和锁上那句是同一个数（${checked} 组对照）/ 钱按块 / 家里没那个条件、对门不在了的不算 / 差太远的不算 / 名次线也算`);
 }
 
 // ---------- 3. 一世走完的差一点 ----------

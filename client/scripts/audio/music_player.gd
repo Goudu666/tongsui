@@ -138,6 +138,9 @@ func set_mode(m: String) -> void:
 		_rest = 3.0  # 先让环境音站住，音乐后进
 	else:
 		_stop_piece()
+		# 天气只在河畔里有：下着雨走完一生，结局、大厅、标题不该还是闷的
+		_cut_target = 20000.0
+		_wet_target = 0.0
 
 
 ## 人生阶段变了：这一段放完（或淡掉）之后换编曲

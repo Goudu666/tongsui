@@ -1355,7 +1355,9 @@ function worldStoryForce(s: LifeState, c: Content, out: WorldTick): boolean {
 function worldFate(s: LifeState, c: Content, online: { [R in Role]: boolean }, out: WorldTick, storyOnly: boolean): boolean {
   var w = s.world!;
   var roles = worldAliveRoles(s);
-  if (w.fate.mirror && w.done.indexOf(w.fate.mirror) < 0 && (!storyOnly || storyFindEvent(c, w.fate.mirror))) {
+  // 一世的头一个早上：人刚落地，先让他看看屋里、走两步、按一回，随机的事从上午起再来（主线照常）
+  var calm = s.turn === 0 && w.slot === 0;
+  if (w.fate.mirror && w.done.indexOf(w.fate.mirror) < 0 && (!(storyOnly || calm) || storyFindEvent(c, w.fate.mirror))) {
     var mev = lifeFindEvent(c, w.fate.mirror);
     // 在线的人要自己走到那里；离线的影子只要没睡着，就会被「叫过来」
     var anyOnline = roles.some(function (r) { return online[r]; });
@@ -1388,7 +1390,7 @@ function worldFate(s: LifeState, c: Content, online: { [R in Role]: boolean }, o
     if (!id || w.done.indexOf(id) >= 0) continue;
     var sev = lifeFindEvent(c, id);
     var st = storyIs(sev);
-    if (storyOnly && !st) continue;
+    if ((storyOnly || calm) && !st) continue;
     var ok = st || sev.where ? storyHere(c, sev, w.actors[role]) : true;
     // 影子刚替他定了这一段（主线那张图上的事）：撤下来去过主线
     var idle = worldIdle(w.actors[role]) || (storyOnly && !online[role] && !w.actors[role]!.asleep && w.actors[role]!.from === w.slot);

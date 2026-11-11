@@ -88,6 +88,8 @@ interface EventRequires {
   maxDistance?: number;
   /** true：只在对方已经离开以后；false：只在两人都在世时 */
   alone?: boolean;
+  /** 孩子岁数在 [lo, hi] 这段才发生；没孩子不发生（docs/FAMILY.md 第二节，判定由引擎那路实现） */
+  kidAge?: [number, number];
 }
 
 /** 抽事件时除了年龄和标记以外还要看的东西 */

@@ -29,8 +29,9 @@ const REQ_KEYS = ["minAge", "maxAge", "flags", "notFlags", "minClose", "maxClose
 const PAIR_REQ_KEYS = ["flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "minMemories", "maxMemories", "minRate", "maxRate", "minTogether"];
 const LIFE_REQ_KEYS = ["flags", "notFlags", "stats", "minDiedAge", "maxDiedAge"];
 // 老物件的条件比一生小结多两样（server/src/legacy.ts → legacyPersonOk）
-const HEIRLOOM_REQ_KEYS = [...LIFE_REQ_KEYS, "anyStat", "minMoney"];
-const HEIRLOOM_KEYS = ["id", "name", "desc", "from", "bonus", "money", "close", "flags"];
+// carried：带着那一件出生的（老物件会变，见 server/src/atlas.ts）
+const HEIRLOOM_REQ_KEYS = [...LIFE_REQ_KEYS, "anyStat", "minMoney", "carried"];
+const HEIRLOOM_KEYS = ["id", "name", "desc", "from", "bonus", "money", "close", "flags", "hint"];
 // 老物件不占投胎的点数，所以要小（见 content/heirlooms.yaml 文件头）
 const HEIRLOOM_MAX_BONUS = 0.5;
 // 开局从上一世带来的钱，老物件和家业加起来的上限。买房那条线很陡（十块钱在线附近差十来个点），钱得是这辈子挣的
@@ -115,7 +116,9 @@ function checkRequires(where, rq, allowed) {
     } else if (k === "alone") {
       if (typeof v !== "boolean") errors.push(`${where}.requires.alone: 必须是 true / false`);
     } else if (k === "stats") checkDeltas(`${where}.requires.stats`, v, STAT_KEYS);
-    else if (typeof v !== "number") errors.push(`${where}.requires.${k}: 必须是数字`);
+    else if (k === "carried") {
+      if (typeof v !== "string") errors.push(`${where}.requires.carried: 必须是老物件的 id`);
+    } else if (typeof v !== "number") errors.push(`${where}.requires.${k}: 必须是数字`);
   }
 }
 
@@ -530,8 +533,19 @@ const heirlooms = (load("heirlooms.yaml") ?? []).map((h) => {
   if (sum > HEIRLOOM_MAX_BONUS || Object.values(h.bonus ?? {}).some((v) => v < 0)) errors.push(`${at}: bonus 合计不能超过 ${HEIRLOOM_MAX_BONUS}，也不能是负的`);
   if ((h.money ?? 0) < 0 || (h.money ?? 0) > LEGACY_MAX_MONEY) errors.push(`${at}: money 要在 0~${LEGACY_MAX_MONEY} 之间`);
   for (const f of h.flags ?? []) produced.add(f);
-  return { id: h.id, name: h.name, desc: h.desc, from: h.from ?? {}, bonus: h.bonus ?? {}, money: h.money ?? 0, close: h.close ?? 0, flags: h.flags ?? [] };
+  return { id: h.id, name: h.name, desc: h.desc, from: h.from ?? {}, bonus: h.bonus ?? {}, money: h.money ?? 0, close: h.close ?? 0, flags: h.flags ?? [], hint: h.hint };
 });
+// 老物件会变：carried 要指着一件真有的；变来的那件要写 hint（住户本里写在上一件底下），不是变来的不写
+for (const h of heirlooms) {
+  const at = `heirlooms#${h.id}`;
+  const from = h.from.carried;
+  if (from !== undefined && !heirlooms.some((x) => x.id === from)) errors.push(`${at}.from.carried: 没有老物件 "${from}"`);
+  if (from === h.id) errors.push(`${at}.from.carried: 不能是它自己`);
+  if ((from !== undefined) !== (h.hint !== undefined)) errors.push(`${at}: from.carried 和 hint 要一起写（变来的那件才有那一句）`);
+  if (h.hint !== undefined && [...String(h.hint)].length > 20) errors.push(`${at}.hint: 超过 20 字`);
+  if (h.hint !== undefined) h.hint = String(h.hint);
+  else delete h.hint;
+}
 if (heirlooms.length === 0 || Object.keys(heirlooms.at(-1).from).length > 0) errors.push("heirlooms.yaml: 最后一件是兜底，不能有 from 条件（每个人都得留下点什么）");
 if (new Set(heirlooms.map((h) => h.id)).size !== heirlooms.length) errors.push("heirlooms.yaml: id 重复");
 {
@@ -840,6 +854,46 @@ for (const [where, f] of consumed) {
 legacyTraces.sort();
 const legacyMarks = [...new Set(talents.filter((t) => t.unlock).map((t) => t.unlock))].sort();
 
+// ---------- 图鉴和差一点（server/src/atlas.ts）----------
+const atlas = { hidden: [], sad: [], riddles: {}, says: {} };
+{
+  const raw = load("atlas.yaml") ?? {};
+  checkKeys("atlas", raw, ["hidden", "sad", "riddles", "says"]);
+  const endingIds = new Set([...endings.pair, ...endings.lives].map((e) => e.id));
+  const rememberedIds = new Set(remembered.map((a) => a.id));
+  for (const id of raw.hidden ?? []) {
+    if (!endingIds.has(id) && !rememberedIds.has(id)) errors.push(`atlas.hidden: 没有结局或街坊记住的事 "${id}"`);
+    else atlas.hidden.push(id);
+  }
+  for (const id of raw.sad ?? []) {
+    if (!endingIds.has(id)) errors.push(`atlas.sad: 没有结局 "${id}"`);
+    else atlas.sad.push(id);
+  }
+  for (const [id, t] of Object.entries(raw.riddles ?? {})) {
+    if (!endingIds.has(id)) errors.push(`atlas.riddles: 没有结局 "${id}"`);
+    else if (atlas.hidden.includes(id)) errors.push(`atlas.riddles.${id}: 藏着的结局不写谜面（图鉴里只有一个空框）`);
+    else if ([...String(t)].length > 16) errors.push(`atlas.riddles.${id}: 超过 16 字`);
+    else atlas.riddles[id] = String(t);
+  }
+  // 接下家里营生的那些一生：按人家自动写
+  for (const e of endings.lives) {
+    if (atlas.riddles[e.id] || atlas.hidden.includes(e.id)) continue;
+    const fl = e.requires.flags ?? [];
+    const fam = families.find((f) => fl.length === 2 && fl.includes("took_over") && f.traits.includes(fl.find((x) => x !== "took_over")));
+    if (fam) atlas.riddles[e.id] = `生在${String(fam.name).split(" · ")[0]}，接下了家里的营生。`;
+  }
+  for (const part of ["pair", "lives"]) {
+    for (const e of endings[part]) {
+      if (!atlas.hidden.includes(e.id) && !atlas.riddles[e.id]) errors.push(`atlas.riddles: 结局 "${e.id}" 没有谜面（没见过的时候，图鉴里那一格写什么）`);
+    }
+  }
+  for (const [f, t] of Object.entries(raw.says ?? {})) {
+    if (!produced.has(f)) errors.push(`atlas.says.${f}: 没有任何人家、天赋、选项或规则会打上这个标记`);
+    else if ([...String(t)].length > 14) errors.push(`atlas.says.${f}: 超过 14 字`);
+    else atlas.says[f] = String(t);
+  }
+}
+
 const orphan = consumed.filter(([, f]) => !produced.has(f));
 for (const [where, f] of orphan) errors.push(`${where}: 要求标记 "${f}"，但没有任何人家、天赋、选项或共鸣会打上它（多半是拼错了）`);
 
@@ -886,7 +940,7 @@ if (errors.length) {
 
 // 内容版本 = 内容本身的指纹。服务器在 lifeline_open 里报出它的版本，客户端发现和自己带的不一样，
 // 就用 content_get 把服务器这份下载下来用（改剧情只需要更新服务器，不用两台手机重装 APK）。
-const body = { events, families, talents, map, tracks, endings, rules, checks, duet, letters, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks }, story };
+const body = { events, families, talents, map, tracks, endings, rules, checks, duet, letters, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks }, atlas, story };
 const version = createHash("sha256").update(JSON.stringify(body)).digest("hex").slice(0, 12);
 const content = { version, ...body };
 const json = JSON.stringify(content, null, 1);

@@ -14,7 +14,7 @@ from functools import lru_cache
 import numpy as np
 
 from .dsp import (SR, TAU, adsr, bp, cents, colored, fade, hp, lfo_noise, lp, midi, modal, peak, reson, rng_for,
-                  sec, softclip, times, white)
+                  sec, shelf, softclip, times, white)
 
 
 # ============================================================ 拨：加法 ====
@@ -76,12 +76,12 @@ def kalimba(m: float, dur: float, vel: float = 0.8) -> np.ndarray:
 def guitar(m: float, dur: float, vel: float = 0.8, nylon: bool = False) -> np.ndarray:
     """木吉他。nylon=True 更闷更圆，用来做分解和弦的伴奏。"""
     f = midi(m)
-    y = _string(f, dur, vel, pluck_pos=0.22 if nylon else 0.14, tau0=2.6 if nylon else 3.2,
-                tau_slope=1500 if nylon else 2600, n_harm=18 if nylon else 28, bright=0.35 if nylon else 0.7,
+    y = _string(f, dur, vel, pluck_pos=0.22 if nylon else 0.15, tau0=2.6 if nylon else 3.2,
+                tau_slope=1500 if nylon else 2200, n_harm=18 if nylon else 26, bright=0.35 if nylon else 0.6,
                 inharm=0.00008, release=0.35, seed=int(m * 10))
     rng = np.random.default_rng(int(m * 100) + 2)
     k = sec(0.008)
-    y[:k] += bp(white(k, rng), 800, 5000) * np.linspace(1, 0, k) * 0.25 * vel  # 指甲碰弦
+    y[:k] += bp(white(k, rng), 800, 4000) * np.linspace(1, 0, k) * 0.16 * vel  # 指甲碰弦（轻一点，不扎）
     y = y + reson(y, 105, 6, 0.5) + reson(y, 215, 5, 0.35) + reson(y, 410, 4, 0.2)  # 琴箱
     return fade(y * vel * 0.6, 0.001, 0.05)
 
@@ -122,7 +122,7 @@ def piano(m: float, dur: float, vel: float = 0.7) -> np.ndarray:
     rng = np.random.default_rng(int(m * 100) + 3)
     kn = sec(0.03)
     y[:kn] += lp(white(kn, rng), 500) * np.linspace(1, 0, kn) ** 2 * 0.35 * vel
-    y = lp(y, 1500 + 3000 * vel)
+    y = lp(y, 1800 + 3200 * vel)  # 毛毡软，但别闷在被子里
     return fade(y * vel * 0.28, 0.002, 0.08)
 
 
@@ -163,8 +163,9 @@ def sanxian(m: float, dur: float, vel: float = 0.8, slide: float = 0.0) -> np.nd
             break
         y += a * np.exp(-tt / tau) * np.sin(kk * ph + rng.uniform(0, TAU))
     kn = sec(0.006)
-    y[:kn] += bp(white(kn, rng), 1200, 6000) * np.linspace(1, 0, kn) * 0.6 * vel  # 指甲
-    y = y + reson(y, 760, 3.5, 0.9) + reson(y, 1850, 4.0, 0.55) + reson(y, 290, 5.0, 0.4)  # 皮面
+    y[:kn] += bp(white(kn, rng), 1000, 4500) * np.linspace(1, 0, kn) * 0.4 * vel  # 指甲
+    y = y + reson(y, 760, 3.5, 0.9) + reson(y, 1850, 4.0, 0.4) + reson(y, 290, 5.0, 0.4)  # 皮面
+    y = shelf(y, 2800, -4.0)  # 2~6 kHz 那一截太冲，按下去一点
     hold = sec(dur)
     if hold < n:
         y[hold:] *= np.exp(-np.arange(n - hold) / (SR * 0.05))
@@ -196,22 +197,40 @@ def _spectral_env(formants, tilt_db_oct: float, cutoff: float):
 
 MODELS = {
     # name: 共鸣峰 (Hz, 宽度/倍频程, dB)，频谱倾斜，高切，泛音数，奇偶比，气息噪声，起音，收音，揉弦(Hz, 音分, 延迟)，滑音秒
-    "recorder": dict(formants=[(900, 1.2, 3)], tilt=-13.0, cutoff=5000, harm=8, even=0.35, breath=0.045,
-                     attack=0.035, release=0.07, vib=(4.6, 5.0, 0.35), glide=0.012, drift=5.0),
-    "harmonica": dict(formants=[(1500, 0.7, 8), (2800, 0.5, 6), (600, 0.8, 3)], tilt=-5.0, cutoff=6500, harm=26,
-                      even=0.9, breath=0.02, attack=0.045, release=0.09, vib=(5.2, 6.0, 0.3), glide=0.02, drift=3.0),
-    "lead": dict(formants=[(1100, 1.0, 4)], tilt=-10.0, cutoff=4200, harm=10, even=0.25, breath=0.006,
+    # 可选：air 气声的频带（默认 1200~7000），chiff 吐音那一下气声多冒多少（默认 0，不冒）
+    "recorder": dict(formants=[(900, 1.2, 3)], tilt=-13.0, cutoff=5000, harm=8, even=0.35, breath=0.026,
+                     air=(900, 5000), chiff=1.6, attack=0.035, release=0.07, vib=(4.6, 5.0, 0.35), glide=0.012,
+                     drift=5.0),
+    "harmonica": dict(formants=[(1400, 0.7, 7), (2700, 0.5, 2.5), (600, 0.8, 4)], tilt=-6.5, cutoff=5200, harm=24,
+                      even=0.9, breath=0.012, air=(900, 4500), chiff=0.8, attack=0.045, release=0.09,
+                      vib=(5.2, 6.0, 0.3), glide=0.02, drift=3.0),
+    "lead": dict(formants=[(1100, 1.0, 4)], tilt=-10.5, cutoff=3800, harm=10, even=0.25, breath=0.006,
                  attack=0.03, release=0.12, vib=(5.4, 14.0, 0.28), glide=0.05, drift=1.5),
-    "cello": dict(formants=[(250, 0.6, 6), (480, 0.5, 5), (1500, 0.6, 5), (2600, 0.5, 2)], tilt=-7.5, cutoff=4500,
+    "cello": dict(formants=[(250, 0.6, 4), (480, 0.5, 4), (1500, 0.6, 5.5), (2600, 0.5, 2)], tilt=-7.5, cutoff=4500,
                   harm=30, even=0.95, breath=0.012, attack=0.11, release=0.16, vib=(5.0, 16.0, 0.3), glide=0.06,
                   drift=2.0),
-    "erhu": dict(formants=[(520, 0.5, 4), (1150, 0.45, 10), (2100, 0.4, 5), (3100, 0.45, 7)], tilt=-6.0, cutoff=7000,
-                 harm=32, even=0.9, breath=0.02, attack=0.07, release=0.12, vib=(5.8, 26.0, 0.22), glide=0.085,
-                 drift=3.0),
+    "erhu": dict(formants=[(520, 0.5, 4), (1150, 0.45, 10), (2100, 0.4, 4), (3100, 0.45, 3.0)], tilt=-7.5,
+                 cutoff=6000, harm=32, even=0.9, breath=0.016, air=(800, 4500), attack=0.07, release=0.12,
+                 vib=(5.8, 26.0, 0.22), glide=0.085, drift=3.0),
     "pad": dict(formants=[(500, 1.2, 3)], tilt=-12.0, cutoff=2600, harm=12, even=0.7, breath=0.0,
                 attack=0.5, release=0.9, vib=(4.2, 4.0, 0.6), glide=0.03, drift=4.0),
     "organ": dict(formants=[(700, 1.0, 4), (1800, 0.8, 2)], tilt=-8.0, cutoff=3200, harm=14, even=0.5, breath=0.01,
                   attack=0.3, release=0.6, vib=(0.0, 0.0, 1.0), glide=0.01, drift=6.0),
+    # ---- 傍晚那一层（eve）用的：暖、低、长 ----
+    "ocarina": dict(formants=[(700, 1.0, 2)], tilt=-20.0, cutoff=3000, harm=5, even=0.15, breath=0.008,
+                    air=(600, 3000), chiff=0.8, attack=0.07, release=0.18, vib=(4.8, 7.0, 0.4), glide=0.03, drift=3.0),
+    "xiao": dict(formants=[(800, 0.9, 3), (1600, 0.7, 1)], tilt=-15.0, cutoff=3500, harm=8, even=0.3, breath=0.022,
+                 air=(500, 3200), chiff=0.6, attack=0.13, release=0.28, vib=(4.5, 10.0, 0.45), glide=0.08, drift=4.0),
+    "xun": dict(formants=[(450, 0.8, 3)], tilt=-17.0, cutoff=2400, harm=7, even=0.12, breath=0.022,
+                air=(400, 2500), chiff=0.5, attack=0.16, release=0.32, vib=(4.0, 8.0, 0.5), glide=0.06, drift=5.0),
+    "viola": dict(formants=[(380, 0.6, 5), (800, 0.5, 3), (1700, 0.6, 2.5)], tilt=-9.0, cutoff=3800, harm=24,
+                  even=0.95, breath=0.006, attack=0.2, release=0.32, vib=(5.0, 13.0, 0.35), glide=0.07, drift=2.0),
+    "strings": dict(formants=[(300, 0.8, 3), (1000, 0.8, 2)], tilt=-11.0, cutoff=2200, harm=20, even=0.9,
+                    breath=0.0, attack=0.8, release=1.3, vib=(5.0, 7.0, 0.6), glide=0.1, drift=3.0),
+    "warm": dict(formants=[(420, 1.0, 2)], tilt=-10.0, cutoff=1600, harm=18, even=0.8, breath=0.0,
+                 attack=0.9, release=1.4, vib=(0.0, 0.0, 1.0), glide=0.05, drift=5.0),
+    "glass": dict(formants=[(1500, 1.5, 0)], tilt=-24.0, cutoff=4000, harm=3, even=0.4, breath=0.0,
+                  attack=1.2, release=1.6, vib=(0.0, 0.0, 1.0), glide=0.05, drift=2.0),
 }
 
 
@@ -276,8 +295,17 @@ def sustained_line(notes, total: float, model: str, seed: int = 1, level: float 
         out += a_k * np.sin(k * phase + rng.uniform(0, TAU))
     out /= max(1e-9, np.sqrt(np.mean(out[amp > 0.05] ** 2)) if (amp > 0.05).any() else 1.0)
     if p["breath"] > 0:
-        air = bp(white(n, rng), 1200, 7000) * p["breath"] * 1.6
+        lo, hi = p.get("air", (1200, 7000))
+        air = bp(white(n, rng), lo, hi) * p["breath"] * 1.6
         air *= 0.6 + 0.4 * np.abs(lfo_noise(n, 9.0, rng))
+        if p.get("chiff", 0) > 0:  # 气声主要在吐音那一下，拉长了就淡下去（真吹的时候也是这样）
+            on = np.zeros(n)
+            for st, du, m, vel in notes:
+                a = sec(st)
+                if 0 <= a < n:
+                    k = min(n - a, sec(0.18))
+                    on[a:a + k] = np.maximum(on[a:a + k], np.exp(-np.arange(k) / (SR * 0.045)))
+            air *= 0.55 + p["chiff"] * on
         out += air
     return out * amp * level * 0.25
 
@@ -335,6 +363,78 @@ def woodblock(vel: float = 0.6, pitch: float = 1.0, seed: int = 0) -> np.ndarray
 
 def triangle(vel: float = 0.4) -> np.ndarray:
     return modal(sec(1.6), [4180, 5630, 7910, 10240], [0.7, 0.5, 0.35, 0.2], [1.0, 0.7, 0.5, 0.3]) * vel * 0.12
+
+
+# ============================================================ 早上那一层（morn）：亮、稀、高 ====
+# 都是一下一下的高音点。2~6 kHz 是耳朵最敏感的地方，所以高的泛音都压得很低，亮靠基音的音区，不靠刺。
+
+@lru_cache(maxsize=1024)
+def glock(m: float, vel: float = 0.6) -> np.ndarray:
+    """玩具钟琴：软槌敲小钢条。钢条的泛音是 2.76、5.4 倍，不和谐，所以压得很轻。"""
+    f = midi(m)
+    n = sec(2.0)
+    tau = 1.1 * (1000.0 / f) ** 0.3
+    y = modal(n, [f, 2.76 * f, 5.40 * f], [tau, 0.22, 0.06], [1.0, 0.08 * vel, 0.02 * vel])
+    rng = np.random.default_rng(int(m * 100) + 11)
+    k = sec(0.006)
+    y[:k] += lp(white(k, rng), 2500) * np.linspace(1, 0, k) * 0.1 * vel  # 槌头是软的
+    return fade(lp(y, 6000) * vel * 0.5, 0.0008, 0.06)
+
+
+@lru_cache(maxsize=1024)
+def harmonic(m: float, vel: float = 0.6) -> np.ndarray:
+    """吉他的泛音：手指轻点十二品，几乎是一个纯音，挂得很久。"""
+    f = midi(m)
+    n = sec(3.0)
+    y = modal(n, [f, 2.0 * f, 3.0 * f], [1.7 * (660.0 / f) ** 0.3, 0.5, 0.15], [1.0, 0.07, 0.015])
+    rng = np.random.default_rng(int(m * 100) + 12)
+    k = sec(0.01)
+    y[:k] += lp(white(k, rng), 1800) * np.linspace(1, 0, k) ** 2 * 0.06 * vel
+    return fade(y * vel * 0.5, 0.004, 0.08)
+
+
+@lru_cache(maxsize=1024)
+def fm_bell(m: float, vel: float = 0.6) -> np.ndarray:
+    """电子铃（青年）：两算子调频，调制比 3.5 有一点钟的味道，亮的那一下很快收掉。"""
+    f = midi(m)
+    n = sec(2.4)
+    tt = times(n)
+    idx = (0.9 * vel + 0.1) * np.exp(-tt / 0.18) + 0.08
+    y = np.sin(TAU * f * tt + idx * np.sin(TAU * 3.5 * f * tt)) * np.exp(-tt / (1.3 * (880.0 / f) ** 0.3))
+    return fade(lp(y, 2800, 4) * vel * 0.32, 0.002, 0.08)
+
+
+@lru_cache(maxsize=1024)
+def celesta(m: float, vel: float = 0.6) -> np.ndarray:
+    """钢片琴（中年）：毛毡槌敲钢片，底下有木头共鸣箱，比钟琴圆。"""
+    f = midi(m)
+    n = sec(2.2)
+    tau = 1.0 * (700.0 / f) ** 0.4
+    y = modal(n, [f, 2.0 * f, 4.1 * f], [tau, tau * 0.3, 0.06], [1.0, 0.07, 0.025 * vel])
+    rng = np.random.default_rng(int(m * 100) + 13)
+    k = sec(0.012)
+    y[:k] += lp(white(k, rng), 900) * np.linspace(1, 0, k) ** 2 * 0.25 * vel  # 毡槌和琴键的那一下闷响
+    y = y + reson(y, 600, 2.5, 0.2)
+    return fade(lp(y, 5000) * vel * 0.45, 0.001, 0.06)
+
+
+@lru_cache(maxsize=1024)
+def bowl(m: float, vel: float = 0.5) -> np.ndarray:
+    """小铜碗（老年）：轻轻碰一下。每个泛音是一对差一点的频率，余音里有慢慢的「嗡——嗡——」。"""
+    f = midi(m)
+    n = sec(4.0)
+    pairs = [(1.0, 1.0, 2.6), (2.71, 0.06, 1.0), (5.15, 0.012, 0.35)]
+    fr, de, am = [], [], []
+    for ratio, a, tau in pairs:
+        for d in (-1, 1):
+            fr.append(f * ratio * (1 + d * 0.0012 * ratio))
+            de.append(tau)
+            am.append(a * 0.5)
+    y = modal(n, fr, de, am)
+    rng = np.random.default_rng(int(m * 100) + 14)
+    k = sec(0.008)
+    y[:k] += lp(white(k, rng), 1500) * np.linspace(1, 0, k) * 0.05 * vel
+    return fade(lp(y, 5000) * vel * 0.5, 0.002, 0.2)
 
 
 def clapper(big: bool, vel: float = 0.8, seed: int = 0) -> np.ndarray:

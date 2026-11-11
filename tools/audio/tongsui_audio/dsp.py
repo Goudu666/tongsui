@@ -251,12 +251,15 @@ def impulse(rt60: float, bright: float = 5000.0, seed: int = 7, predelay: float 
 
 
 def reverb(x: np.ndarray, rt60: float = 1.6, wet: float = 0.25, bright: float = 5000.0, seed: int = 7,
-           predelay: float = 0.012, dry: float = 1.0, early: float = 0.5) -> np.ndarray:
-    """返回立体声，长度 = 原长 + 尾巴。"""
+           predelay: float = 0.012, dry: float = 1.0, early: float = 0.5, low_cut: float = 0.0) -> np.ndarray:
+    """返回立体声，长度 = 原长 + 尾巴。low_cut>0 时把混响尾巴里这个频率以下的去掉：
+    低频的混响又长又糊，配乐的「浑」多半是它攒出来的（干声不动）。"""
     s = to_stereo(x)
     ir = impulse(rt60, bright, seed, predelay, early)
     mono_in = s.mean(axis=1)
     tail = np.stack([signal.fftconvolve(mono_in, ir[:, c]) for c in range(2)], axis=1)
+    if low_cut > 0:
+        tail = hp(tail, low_cut)
     out = tail * wet
     out[:len(s)] += s * dry
     return out
@@ -356,6 +359,21 @@ def _k_weight(x: np.ndarray) -> np.ndarray:
     b1, a1 = biquad("hs", 1500.0, 1 / np.sqrt(2), 4.0)
     b2, a2 = biquad("hp", 38.0, 0.5)
     return signal.lfilter(b2, a2, signal.lfilter(b1, a1, x, axis=0), axis=0)
+
+
+def true_peak(x: np.ndarray) -> float:
+    """真峰值（dBTP）：4 倍过采样后的最大值，比采样峰值更接近解码、重采样后真正会冒到多高。"""
+    up = signal.resample_poly(to_stereo(np.asarray(x, dtype=np.float64)), 4, 1, axis=0)
+    return float(20 * np.log10(np.max(np.abs(up)) + 1e-12))
+
+
+def band_share(x: np.ndarray, lo: float, hi: float, weighted: bool = True) -> float:
+    """lo~hi 这一段占全频带能量的多少（dB）。weighted=True 先过 K 加权，更接近耳朵听到的比例。
+    检查用：2~6 kHz 太多就扎耳朵，120~400 Hz 太多就浑。"""
+    s = to_stereo(np.asarray(x, dtype=np.float64))
+    s = (_k_weight(s) if weighted else s).mean(axis=1)
+    f, p = signal.welch(s, SR, nperseg=8192)
+    return float(10 * np.log10(p[(f >= lo) & (f < hi)].sum() / (p[f > 30].sum() + 1e-20) + 1e-20))
 
 
 def lufs(x: np.ndarray) -> float:

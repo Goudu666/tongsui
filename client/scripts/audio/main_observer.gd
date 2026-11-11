@@ -2,7 +2,7 @@ extends Node
 ## 观察者：看着主场景（scripts/main.gd）和联机信号，把「发生了什么」翻译成声音导演的接口。
 ##
 ## 所有对主场景内部结构的依赖都关在这一个文件里，而且全部是「看」，不改任何东西：
-##   - 读 main 的属性（READS）
+##   - 读 main 的属性（READS），main.world 的人和天气（WORLD_READS、WEATHER_READS）
 ##   - 监听 net 的信号（SIGNALS）
 ##   - 场景树里新出现的按钮和输入框，自动接上按键音
 ## 主场景以后要是拆了，这个文件跟着改（或者删掉，由新代码直接调导演的接口）。
@@ -16,6 +16,10 @@ const P := preload("res://scripts/ui/palette.gd")
 ## 从主场景（scripts/main.gd）读的属性
 const READS := ["world", "net", "life", "last_world", "my_role", "content", "events_by_id", "ui", "screen",
 	"modal", "modal_body", "toast", "offline_preview", "_preview_minute", "_page_id"]
+## 从 main.world（scripts/world/world_view.gd）读的属性
+const WORLD_READS := ["actors", "weather"]
+## 从 main.world.weather（scripts/world/weather.gd）读的属性：现在下的是什么
+const WEATHER_READS := ["kind"]
 ## 监听的联机信号（scripts/net/lifeline_client.gd）
 const SIGNALS := ["snapshot", "world_state", "event_started", "log_entries", "presence", "failed"]
 ## 页面名（main._page_id）→ 配乐的场景。没列出来的页面都算 title
@@ -23,6 +27,10 @@ const PAGE_SCENE := {"roll": "roll", "scroll": "ending", "ending": "ending"}
 ## 按钮的音效种类。优先读按钮的 meta "sfx"（tap / back / shake / birth / option / none）；
 ## 没有 meta 的按下面这几个字认，认不出来就是普通的 tap
 const TEXT_KINDS := [["重新投胎", "shake"], ["出生吧", "birth"], ["返回", "back"], ["回大厅", "back"]]
+## 日志里的关口揭晓来了，等这么久看尺子有没有数起来（reveal.gd 的 delay 是 0.45）
+const MILESTONE_WAIT := 2.6  ## 尺子 0.45 秒后开始数，最多数 1.7 秒，结果音在那之后才来
+## 人生阶段的先后：只有往后走才算长大（离线逛逛拨回合、重新投胎都不算）
+const STAGE_ORDER := ["childhood", "teen", "young", "middle", "old"]
 
 var main: Node
 var audio: Node
@@ -41,6 +49,9 @@ var _paired := false  ## 这会儿两人正搭伴做同一件事（world_state �
 var _partner_live := true
 var _last_pos := {}
 var _page_cool := 0.0
+var _life_stage := ""     ## 河畔里看到的人生阶段（LifeTime 的名字）。变了就是长大了
+var _milestone_wait := -1.0  ## 日志里来了关口揭晓：等一会儿看揭晓的尺子接没接管
+var _milestone_sting := ""
 
 
 func attach(p_main: Node, p_audio: Node) -> void:
@@ -206,7 +217,10 @@ func _on_log_entries(data: Dictionary) -> void:
 			"mirror":
 				audio.sting("resonance" if bool(e.get("resonance", false)) else "mismatch", 0.0)
 			"milestone":  # 关口揭晓：同路是合上的那一句；分开走，只剩我这半句，没人接
-				audio.sting("resonance" if bool(e.get("resonance", false)) else "call_" + _role())
+				# 我这把尺子要是数起来了，揭晓的高光（rise / pass / miss）就接管了，这句不再叠。
+				# 尺子在弹窗出来 0.45 秒后才开始数，所以先等一等再定（_watch_milestone）
+				_milestone_sting = "resonance" if bool(e.get("resonance", false)) else "call_" + _role()
+				_milestone_wait = MILESTONE_WAIT
 			"day":
 				audio.hush(7.0)
 				audio.cue("day_end")
@@ -246,6 +260,8 @@ func _process(delta: float) -> void:
 		_scene = scene
 		audio.set_scene(scene)
 		_last_pos.clear()
+		_life_stage = ""  # 刚进河畔里不算长大
+	_watch_milestone(delta)
 
 	_watch_pages(delta, page, in_world)
 	_watch_toast()
@@ -273,9 +289,11 @@ func _process(delta: float) -> void:
 		sync = 30.0
 	elif _paired:
 		sync = 100.0  # 搭伴的时候「合」一直浮着，不用等默契攒起来
+	var stage := str(LifeTime.at(turn).stage)
+	_watch_grow(stage)
 	audio.set_life(_dict("content").get("map", {}), me, a.position, other_pos, _partner_live or preview, turn,
-		str(LifeTime.at(turn).stage), LifeTime.SEASONS[turn % 4], minute, school_day,
-		sync, modal != null and modal.visible)
+		stage, LifeTime.season_of(turn), minute, school_day,
+		sync, modal != null and modal.visible, _weather(world))
 
 	# 脚步
 	for r in actors:
@@ -286,6 +304,40 @@ func _process(delta: float) -> void:
 		if moved > 0.0 and moved < 80.0 and bool(actor.get("walking")) and actor.visible:
 			var gain := 1.0 if r == me else 1.0 - smoothstep(150.0, 900.0, pos.distance_to(a.position))
 			audio.step(str(r), pos, moved, r == me, gain)
+
+
+## 现在下的是什么：rain / snow / catkin / leaf / ""（屋里的图、读不到都是 ""）
+func _weather(world: Object) -> String:
+	var w: Variant = world.get("weather")
+	if not (w is Object and is_instance_valid(w)):
+		return ""
+	# 今天下不下（不看图）：屋里的图画面上不下，但人在家也该听见窗外的雨，屋里屋外交给声景表的 in / out 分量
+	if w.has_method("today"):
+		return str(w.today())
+	var k: Variant = w.get("kind")
+	return str(k) if k != null else ""
+
+
+## 在河畔里人生阶段往后走了一步（不是刚进来）：长大的那段音乐，配合 fx.stage_card 那张墨卡
+func _watch_grow(stage: String) -> void:
+	if _life_stage != "" and stage != _life_stage and STAGE_ORDER.find(stage) > STAGE_ORDER.find(_life_stage):
+		audio.grow(stage)
+	_life_stage = stage
+
+
+## 日志里的关口揭晓：尺子数起来、揭晓的高光真响了（导演的 reveal_active）就不出这一句；
+## 没有尺子（一个人的关、没有线）、老素材没有高光文件，照旧
+func _watch_milestone(delta: float) -> void:
+	if _milestone_wait < 0.0:
+		return
+	_milestone_wait -= delta
+	if _milestone_wait >= 0.0:
+		return
+	_milestone_wait = -1.0
+	if not (audio.has_method("reveal_active") and audio.reveal_active()):
+		if audio.has_method("end_reveal"):
+			audio.end_reveal()
+		audio.sting(_milestone_sting)
 
 
 ## 整页换了（标题 → 大厅 → 投胎……）：抽一张纸的声音。进出河畔里有自己的转场，不抽

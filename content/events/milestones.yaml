@@ -665,8 +665,9 @@
     - id: pair
       text: 两家并一家，搭伙过
       # 关口冲刺 11-11：老了搭伴一段顶好几年（rules.yaml bond.closeWeight），线从 55 抬到 60
+      # 职业路线（docs/CAREER.md）加了 26、36 两道关以后，搭伴的连心七十岁并一家 61%（legacy.test 钉 ≤ 六成），抬到 62
       score: { close: 1 }
-      min: 60
+      min: 62
       tags: [gentle]
       effects: { bond: { close: 3 } }
     - id: walk

@@ -4,6 +4,12 @@ extends Node
 ##   beds   铺底的循环：空气、河水、鏊子、蝉、话匣子……人往哪儿走，哪儿的声音就近
 ##   shots  隔一阵响一下的：车铃、鸽哨、锅铲、船笛、快板……
 ## 声景表里每个声音都有五个人生阶段的密度：童年的声音密，老年的声音稀。
+## 天气（weather.gd 的 kind：rain / snow / catkin / leaf，屋里的图是 ""）：
+##   "weather": [...]      只在这些天气响（雨声、雪天的风）
+##   "not_weather": [...]  这些天气不响（下雨没有蝉、没有鸽哨）
+##   "weather_gain": {天气: 倍数}  这个天气少一点（单发既更少也更轻）
+##   表顶上的 "weather_db": {天气: dB}  这个天气整体多响（下雪 -3.5：世界静了），天气自己的声音不算在内
+##   "sway": [秒, 最低]  一阵大一阵小（雨）：音量在「最低」和 1 之间慢慢起落，一个来回大约这么多秒
 
 const DIR := "res://audio/amb/"
 const TABLE := "res://audio/soundscape.json"
@@ -26,6 +32,8 @@ var _cache: Dictionary = {}
 var _minute := -1.0
 var _clock := 0.0
 var _zw: Dictionary = {}        ## 这一帧里按 reach 缓存的地点分量（听的人这一帧只在一个地方）
+var _weather := ""
+var _weather_db: Dictionary = {}
 
 
 func setup(map: Dictionary) -> void:
@@ -34,6 +42,7 @@ func setup(map: Dictionary) -> void:
 	table = parsed if parsed is Dictionary else {}
 	_indoor = table.get("indoor", [])
 	_reach = float(table.get("reach", 420.0))
+	_weather_db = table.get("weather_db", {})
 	_zones.clear()
 	for z in map.get("zones", []):
 		_zones.append({"id": str(z.id), "rect": Rect2(z.rect[0], z.rect[1], z.rect[2], z.rect[3])})
@@ -43,7 +52,7 @@ func setup(map: Dictionary) -> void:
 			p.bus = BUS
 			p.volume_db = SILENT
 			add_child(p)
-			_beds.append({"cfg": cfg, "player": p, "db": SILENT})
+			_beds.append({"cfg": cfg, "player": p, "db": SILENT, "phase": randf() * TAU})
 		for cfg in table.get("shots", []):
 			var every: Array = cfg.get("every", [20, 40])
 			_shots.append({"cfg": cfg, "wait": randf_range(0.3, 1.0) * float(every[1]), "last": -99.0})
@@ -101,11 +110,26 @@ static func _hours(cfg: Dictionary, minute: float) -> float:
 	return best
 
 
+## 天气对这个声音的倍数：0 是不响
+func _weather_gain(cfg: Dictionary) -> float:
+	if cfg.has("weather") and not _weather in cfg.weather:
+		return 0.0
+	if cfg.has("not_weather") and _weather in cfg.not_weather:
+		return 0.0
+	var g: Variant = cfg.get("weather_gain", {})
+	return float(g.get(_weather, 1.0)) if g is Dictionary else 1.0
+
+
+## 这个天气整体压多少 dB。天气自己的声音（写了 weather 的）不压
+func _hush(cfg: Dictionary) -> float:
+	return 0.0 if cfg.has("weather") else float(_weather_db.get(_weather, 0.0))
+
+
 func _weight(cfg: Dictionary, pos: Vector2, minute: float, stage_i: int, season: String) -> float:
 	if cfg.has("seasons") and not season in cfg.seasons:
 		return 0.0
 	var stages: Array = cfg.get("stages", [1, 1, 1, 1, 1])
-	var f := float(stages[clampi(stage_i, 0, stages.size() - 1)]) * _hours(cfg, minute)
+	var f := float(stages[clampi(stage_i, 0, stages.size() - 1)]) * _hours(cfg, minute) * _weather_gain(cfg)
 	if f <= 0.0:
 		return 0.0
 	var reach := float(cfg.get("reach", _reach))
@@ -118,16 +142,20 @@ func _weight(cfg: Dictionary, pos: Vector2, minute: float, stage_i: int, season:
 	return f * best
 
 
-## 每帧调用。pos：听的人在哪儿；minute：游戏时间；stage：人生阶段；season：spring/summer/autumn/winter
-func update(delta: float, pos: Vector2, minute: float, stage: String, season: String, school_day: bool) -> void:
+## 每帧调用。pos：听的人在哪儿；minute：游戏时间；stage：人生阶段；season：spring/summer/autumn/winter；
+## weather：rain / snow / catkin / leaf / ""（屋里的图没有天气）
+func update(delta: float, pos: Vector2, minute: float, stage: String, season: String, school_day: bool, weather := "") -> void:
 	var stage_i := maxi(0, STAGES.find(stage))
+	_weather = weather
 	var prev := _minute
 	_minute = minute
 	_clock += delta
 	_zw.clear()
 	for b in _beds:
 		var w := _weight(b.cfg, pos, minute, stage_i, season) if active else 0.0
-		var want := float(b.cfg.get("db", 0.0)) + linear_to_db(w) if w > 0.003 else SILENT
+		if w > 0.0 and b.cfg.has("sway"):
+			w *= _sway(b.cfg.sway, b.phase)
+		var want := float(b.cfg.get("db", 0.0)) + _hush(b.cfg) + linear_to_db(w) if w > 0.003 else SILENT
 		b.db = move_toward(b.db, want, 22.0 * delta)
 		var p: AudioStreamPlayer = b.player
 		if b.db <= SILENT + 0.5:
@@ -161,6 +189,14 @@ func update(delta: float, pos: Vector2, minute: float, stage: String, season: St
 			_fire(s, w)
 
 
+## 一阵大一阵小：两个不成整数比的慢正弦叠起来，听不出周期
+func _sway(spec: Array, phase: float) -> float:
+	var period := maxf(float(spec[0]), 1.0)
+	var low := clampf(float(spec[1]) if spec.size() > 1 else 0.3, 0.0, 1.0)
+	var u := 0.5 + 0.3 * sin(TAU * _clock / period + phase) + 0.2 * sin(TAU * _clock / (period * 0.37) + phase * 2.3)
+	return lerpf(low, 1.0, clampf(u, 0.0, 1.0))
+
+
 func _fire(s: Dictionary, w: float) -> void:
 	if w <= 0.02:
 		return
@@ -176,7 +212,7 @@ func _fire(s: Dictionary, w: float) -> void:
 			break
 	_pool_i = (_pool_i + 1) % _pool.size()
 	p.stream = stream
-	p.volume_db = float(s.cfg.get("db", -12.0)) + linear_to_db(clampf(w, 0.05, 1.0))
+	p.volume_db = float(s.cfg.get("db", -12.0)) + _hush(s.cfg) + linear_to_db(clampf(w, 0.05, 1.0))
 	p.pitch_scale = randf_range(0.97, 1.03)
 	p.play()
 	s.last = _clock

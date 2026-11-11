@@ -370,3 +370,38 @@ function sleep(s, r) {
   assert.ok(alone.every((x) => x.steady === 0), "对门不在了，没有人在外头等");
   console.log(`✓ 默契托底：60 场高考里 ${helped} 场手气差，默契 100 最多托回 ${Math.round(Math.max(...full.map((x) => x.steady)) * 10)} 分 / 手气好不多给 / 一个人没有`);
 }
+
+// ---------- 8. 揭晓演出要的几样（client/scripts/ui/reveal.gd） ----------
+{
+  // 小学当小干部：心智 5.0（50 分）够不着学习委员 55 的线，走了兜底；最近的那条差一点的线要报出来（results.near，和结局页同一个数）
+  // （一条路都够不着，不弹窗，直接记进长卷）
+  const s = lifeAt(11, 6, C, 5);
+  untilMilestone(s);
+  assert.equal(s.world.event, null);
+  const res = s.log.findLast((e) => e.kind === "milestone").results.qing;
+  assert.equal(res.line, undefined, "不看分的路没有线");
+  assert.equal(res.miss, undefined, "差一点不另算，读 near（atlasMilestoneNear）");
+  assert.ok(res.near && res.near.need > res.near.have, "差一点的那条：线比分高");
+  assert.ok(["study", "sport", "art"].includes(res.near.option));
+  // 够着了：选的那条路的线按百分制给，比分低；够着了的路不算「差一点」
+  const t = lifeAt(12, 6, C, 9);
+  untilMilestone(t);
+  assert.equal(G("worldChoose")(t, C, "qing", "study", false).error, null);
+  assert.equal(G("worldChoose")(t, C, "mei", "go", false).error, null);
+  const ok = t.log.at(-1).results.qing;
+  assert.equal(ok.line, 55);
+  assert.ok(ok.score >= ok.line);
+  assert.equal(ok.near, undefined, "三项都 90 分，哪条线都够得着");
+  // 发挥：高考有手气，报出来的数和这一场的 swing 对得上；托住的那截不超过发挥的绝对值
+  const g = lifeAt(9, 18, C, 7);
+  g.bond.sync = 100;
+  untilMilestone(g);
+  const pe = J(g.world.event);
+  for (const r of ROLES) assert.equal(G("worldChoose")(g, C, r, G("lifeShadowChoose")(g, C, r, "m_gaokao"), false).error, null);
+  const gr = g.log.at(-1).results;
+  for (const r of ROLES) {
+    assert.equal(gr[r].luck || 0, Math.round((pe.swing[r] || 0) * 10) || 0, "发挥按百分制报");
+    assert.equal(gr[r].steady || 0, Math.round((pe.steady[r] || 0) * 10) || 0);
+  }
+  console.log("✓ 揭晓演出：选的路报线 / 走了兜底报差一点的那条 / 发挥和托底按百分制报");
+}

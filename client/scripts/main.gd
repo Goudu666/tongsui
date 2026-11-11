@@ -27,6 +27,9 @@ const LetterCard := preload("res://scripts/ui/letter_card.gd")
 const LegacyUI := preload("res://scripts/ui/legacy_ui.gd")
 const Guide := preload("res://scripts/ui/guide.gd")
 const DayCard := preload("res://scripts/ui/day_card.gd")
+const Juice := preload("res://scripts/ui/juice.gd")
+const StatStrip := preload("res://scripts/ui/stat_strip.gd")
+const Reveal := preload("res://scripts/ui/reveal.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -81,6 +84,8 @@ var offline_preview := false
 var duet: DuetUI  ## 「接话」的界面：搭上了 / 回话（见 docs/DUET.md）
 var legacy: LegacyUI  ## 传承的界面：投胎页的老物件、结局页的再来一世（见 docs/LEGACY.md）
 var guide: Guide  ## 开局引导：章首卡、主线路标、头几天的小纸条（ui/guide.gd）
+var juice: Juice  ## 爽感层：做完一件事的飘字、搭伴的印、成长账（ui/juice.gd）
+var stat_strip: StatStrip  ## HUD 左边四个圆表底下的成长账：体魄 / 心智 / 魅力（点开看成长曲线）
 var _preview_minute := 390.0
 const PAGE_WIDTH := 1560.0    ## 菜单页内容最宽这么多，再宽就居中（两栏）
 const COLUMN_WIDTH := 1040.0  ## 只有一栏的页面
@@ -163,6 +168,11 @@ func _build_layers() -> void:
 	guide.main = self
 	add_child(guide)
 	fx.card_hook = guide.card_lines
+	juice = Juice.new()
+	juice.main = self
+	add_child(juice)
+	fx.report_hook = juice.stage_report
+	fx.report_shown.connect(func(): juice.cue("settle", -2.0))
 
 	# 全屏菜单（透明，透出底下带颗粒的纸）
 	screen = Control.new()
@@ -177,6 +187,10 @@ func _build_layers() -> void:
 	goal_panel.visible = false
 	goal_panel.pressed.connect(_show_goal_detail)
 	hud.add_child(goal_panel)
+	stat_strip = StatStrip.new()
+	stat_strip.visible = false
+	stat_strip.pressed.connect(_show_growth)
+	hud.add_child(stat_strip)
 	# 行动按钮：右下角，右手拇指够得着。两行字自己摆（按钮本身不带字）
 	action_btn = Button.new()
 	action_btn.anchor_left = 1.0
@@ -387,6 +401,7 @@ func _layout_hud() -> void:
 	var strip := hud.strip_rect()
 	goal_panel.position = strip.position
 	goal_panel.size = strip.size
+	stat_strip.position = Vector2(hud.left(), hud.stats_top())
 	action_btn.offset_right = -40 - inset.y
 	action_btn.offset_left = action_btn.offset_right - ACTION_SIZE.x
 	action_btn.offset_bottom = -44
@@ -1208,6 +1223,7 @@ func _on_presence(data: Dictionary) -> void:
 func _on_snapshot(data: Dictionary) -> void:
 	names = data.names
 	_set_role(str(data.you))
+	juice.on_snapshot(data)
 	life = data.life
 	_partner_online = bool(data.online[_other()])
 	legacy.on_protocols(data.get("protocols"))
@@ -1443,6 +1459,7 @@ func _refresh_hud() -> void:
 		hud.note = ""
 		hud.story = {}
 		goal_panel.visible = false
+		stat_strip.visible = false
 		return
 	hud.minute = _shown_minute()
 	if world != null and not offline_preview:
@@ -1460,6 +1477,10 @@ func _refresh_hud() -> void:
 		needs = life.persons[my_role].needs
 	hud.needs = needs
 	hud.money = int(last_world.get("money", {}).get(my_role, 0))
+	var my_stats: Dictionary = _dict(_dict(last_world.get("stats")).get(my_role))
+	stat_strip.stats = my_stats
+	stat_strip.color = P.role_color(my_role)
+	stat_strip.visible = not my_stats.is_empty() and hud.visible
 	hud.bond = last_world.get("bond", life.get("bond", {}))
 	var st: Dictionary = _dict(last_world.get("story"))
 	hud.story = {} if st.is_empty() else {"chapter": st.get("chapter", 0), "title": st.get("title", ""), "next": _dict(st.get("next")).get(my_role), "force": st.get("force", false)}
@@ -1497,7 +1518,8 @@ func _refresh_partner() -> void:
 	if view.grow(-20.0).has_point(at) or modal.visible:
 		hud.pointer = {}
 		return
-	var box := Rect2(70.0 + hud.inset.x, 300.0, ui.size.x - 140.0 - hud.inset.x - hud.inset.y, ui.size.y - 370.0)
+	var box_top := hud.stats_top() + StatStrip.SIZE.y + 24.0  # 让开左上的成长账
+	var box := Rect2(70.0 + hud.inset.x, box_top, ui.size.x - 140.0 - hud.inset.x - hud.inset.y, ui.size.y - 70.0 - box_top)
 	var c := view.get_center()
 	var d := at - c
 	var k := 1.0
@@ -1584,6 +1606,7 @@ func _show_goal_detail() -> void:
 
 func _on_world_state(data: Dictionary) -> void:
 	last_world = data
+	juice.on_world(data)
 	if world != null:
 		world.apply_world(data)
 		_check_did(data)
@@ -1779,6 +1802,7 @@ func _option_text(event_id: Variant, option_id: Variant) -> String:
 
 
 func _on_log_entries(data: Dictionary) -> void:
+	juice.on_log(data.entries)
 	for e in data.entries:
 		var kind := str(e.kind)
 		if kind == "together":
@@ -1845,7 +1869,7 @@ func _show_milestone_result(e: Dictionary) -> void:
 		return
 	var ev: Dictionary = events_by_id.get(e.events[my_role], {})
 	var both := results.size() == 2
-	var same := bool(e.get("resonance", false))
+	var same: bool = e.get("resonance") == true  # 一个人过的关是 null
 	var has_line := false
 	for o in ev.get("options", []):
 		if o.has("min"):
@@ -1873,35 +1897,119 @@ func _show_milestone_result(e: Dictionary) -> void:
 	Kit.chip(head, ("同路" if same else "各走各的") if both else "人生关口", P.OVERLAP if same else P.INK)
 	var when := _label(head, "%s · %s" % [str(e.label), str(ev.get("title", ""))], 30, P.INK_SOFT)
 	when.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	for r in ["qing", "mei"]:
+	# 揭晓：两个人的分同时往上数（ui/reveal.gd），数完了才露出各自走了哪条路、这一关的那句话
+	var late: Array = []
+	var reveals: Array = []
+	var audio := get_node_or_null("Audio")
+	var width := 740.0 if both else MODAL_WIDTH - 110.0
+	for r in [my_role, _other()]:
 		if not results.has(r):
 			continue
 		var res: Dictionary = results[r]
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 18)
-		box.add_child(row)
-		Kit.chip(row, str(names.get(r, P.ROLE_NAME[r])), P.role_color(r), 30)
 		var mark := "（影子）" if e.get("shadow", []).has(r) else ""
-		var pick := _label(row, _option_text(e.events[r], res.get("option")) + mark, 38, P.INK)
-		pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		var name := str(names.get(r, P.ROLE_NAME[r]))
+		var pick_text := _option_text(e.events[r], res.get("option")) + mark
 		if has_line and bool(res.get("scored", true)):
-			var score := "%d %s" % [int(res.get("score", 0)), str(res.get("unit", "分"))]
-			if res.get("grade") != null:
-				score += " · " + str(res.grade)
-			var sl := _label(row, score, 30, P.INK_SOFT, HORIZONTAL_ALIGNMENT_RIGHT)
-			sl.autowrap_mode = TextServer.AUTOWRAP_OFF
-			sl.size_flags_horizontal = Control.SIZE_SHRINK_END
-			sl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			var rv := Reveal.new()
+			rv.who = name
+			rv.color = P.role_color(r)
+			rv.score = int(res.get("score", 0))
+			rv.unit = str(res.get("unit", "分"))
+			rv.line = int(res.get("line", -1)) if res.get("line") != null else -1
+			rv.luck = int(res.get("luck", 0))
+			rv.steady = int(res.get("steady", 0))
+			rv.grade = str(res.grade) if res.get("grade") != null else ""
+			rv.rank = Juice.rank_of(events_by_id.get(e.events[r], ev), rv.grade)
+			if rv.rank != "":
+				rv.grade = ""  # 名次另砸横章，方印只写「过线」
+			var miss: Dictionary = _dict(res.get("near"))  # 差一点：和结局页「差一点」、锁上那句同一个数（atlas.ts → atlasMilestoneNear）
+			if not miss.is_empty():
+				miss = miss.duplicate()
+				miss["text"] = _option_text(e.events[r], miss.get("option"))
+				rv.miss = miss
+			rv.delay = 0.45
+			rv.custom_minimum_size.x = width
+			if audio != null:
+				rv.sound = audio.cue
+			box.add_child(rv)
+			reveals.append(rv)
+			var pick := _label(box, "→ " + pick_text, 34, P.INK)
+			pick.modulate.a = 0.0
+			late.append(pick)
+		else:
+			var row := HBoxContainer.new()
+			row.add_theme_constant_override("separation", 18)
+			box.add_child(row)
+			Kit.chip(row, name, P.role_color(r), 30)
+			var pick := _label(row, pick_text, 38, P.INK)
+			pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var track_label := ""
 	for tr in content.get("tracks", []):
 		if tr.id == results[my_role].get("track"):
 			track_label = str(tr.label)
 	if str(e.get("text", "")) != "":
-		Kit.rule(box, Color(P.INK, 0.25))
-		_label(box, str(e.text), 44, P.OVERLAP if same else P.INK)
+		var rule := Kit.rule(box, Color(P.INK, 0.25))
+		var said := _label(box, str(e.text), 44, P.OVERLAP if same else P.INK)
+		if not reveals.is_empty():
+			for c in [rule, said]:
+				if c is CanvasItem:
+					c.modulate.a = 0.0
+					late.append(c)
 	if track_label != "":
-		_label(box, "从今天起：%s。" % track_label, 30, P.INK_SOFT)
+		var from := _label(box, "从今天起：%s。" % track_label, 30, P.INK_SOFT)
+		if not reveals.is_empty():
+			from.modulate.a = 0.0
+			late.append(from)
 	_primary(box, "往下过", _close_modal)
+	_gap(modal_body, 4)
+	if reveals.is_empty():
+		return
+	var left := [reveals.size()]
+	var any_pass := [false]
+	for rv in reveals:
+		rv.finished.connect(func(ok: bool):
+			any_pass[0] = any_pass[0] or ok
+			left[0] -= 1
+			if left[0] > 0:
+				return
+			# 都数完了：卡片震一下（盖了印的话），露出走的路和那句话
+			if any_pass[0]:
+				_shake_card()
+			var tw := create_tween()
+			tw.tween_interval(0.35)
+			for i in late.size():
+				var c: CanvasItem = late[i]
+				if is_instance_valid(c):
+					tw.tween_property(c, "modulate:a", 1.0, 0.22)
+		)
+
+
+## 盖印的那一下：弹窗卡片跟着震一下
+func _shake_card() -> void:
+	var base := modal_card.position
+	var tw := create_tween()
+	for i in 5:
+		var k := 1.0 - i / 5.0
+		tw.tween_property(modal_card, "position", base + Vector2(randf_range(-1, 1), randf_range(-1, 1)) * 9.0 * k, 0.03)
+	tw.tween_property(modal_card, "position", base, 0.04)
+
+
+## 成长账：点开 HUD 左边那一条。这一阶段三项从多少到多少，一路过来的长势
+func _show_growth() -> void:
+	if modal.visible or offline_preview:
+		return
+	var report := juice.growth_report(MODAL_WIDE - 220.0)
+	if report == null:
+		return
+	_open_modal(MODAL_WIDE - 100.0)
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 16)
+	modal_body.add_child(head)
+	Kit.chip(head, "成长账", P.role_color(my_role))
+	var sub := _label(head, "实线是你，细线是 %s。三项平均，百分制" % str(names.get(_other(), "TA")), 28, P.INK_SOFT)
+	sub.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	modal_body.add_child(report)
+	_primary(modal_body, "接着过", _close_modal)
 	_gap(modal_body, 4)
 
 

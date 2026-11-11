@@ -72,17 +72,20 @@ const grow = (key) => (act) => act.stats[key] || 0;
 const kidGrow = (key) => (act) => (act.kid && act.kid[key]) || 0;
 /** 顾自己：「混着来」那样过（心智、体魄、魅力、玩轮着），三十以后盯四十五（看心智和魅力）。不押孩子的那份时间全在这儿 */
 const mine = (s) => (G("lifeTimeAt")(s.turn).age < 30 ? [grow("mind"), grow("body"), grow("charm"), fun][s.turn % 4] : s.turn % 2 ? grow("charm") : grow("mind"));
+/** 年轻时一半玩着过来的（三十岁四十五那条线还没够着）：押不押孩子的取舍在这种人身上看得出来 */
+const loose = (s) => (G("lifeTimeAt")(s.turn).age < 30 ? (s.turn % 2 ? grow("mind") : fun) : s.turn % 2 ? grow("charm") : grow("mind"));
 /** 认真押孩子：孩子那道关是最近的时候，空闲时段一半给孩子（隔一段一回），另一半念书 */
-const forKid = (s, role) => {
+const forKidWith = (base) => (s, role) => {
   const g = G("lifeGoal")(s, C, role);
   const kg = g && (g.kid ? g : g.also && g.also.kid ? g.also : null);
-  if (!kg || (s.turn + s.world.slot) % 2) return mine(s);
+  if (!kg || (s.turn + s.world.slot) % 2) return base(s);
   // 这道关看的那几项里权重最大的那项
   const ev = C.events.find((e) => e.id === kg.id);
   const w = ev.score || {};
   const key = ["kid_mind", "kid_body", "kid_charm"].sort((a, b) => (w[b] || 0) - (w[a] || 0))[0];
   return kidGrow(key.slice(4));
 };
+const forKid = forKidWith(mine);
 const fun = (act) => (act.money >= 0 && !Object.keys(act.stats).length ? (act.needs.mood || 0) : 0);
 
 /**
@@ -109,8 +112,10 @@ export const WAYS = {
   "不押孩子": { each: (s) => mine(s), kids: true },
   "搭伴押孩子": { each: forKid, kids: true, together: true },
   "两口子押孩子": { each: forKid, kids: "married", together: true },
+  "松着长大，押孩子": { each: forKidWith(loose), kids: true },
+  "松着长大，不押孩子": { each: (s) => loose(s), kids: true },
 };
-export const KID_WAYS = ["押孩子", "不押孩子", "搭伴押孩子", "两口子押孩子"];
+export const KID_WAYS = ["押孩子", "不押孩子", "搭伴押孩子", "两口子押孩子", "松着长大，押孩子", "松着长大，不押孩子"];
 
 /**
  * 把一条人生过到 untilAge 岁。pickOption(s, role, ev, open) 决定关口和事件怎么选。

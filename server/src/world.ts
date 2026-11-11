@@ -1002,16 +1002,15 @@ function worldShadowNeed(s: LifeState, c: Content, role: Role): StatKey | null {
   if (!goal) return null;
   var ev = lifeFindEvent(c, goal.id);
   var p = s.persons![role];
-  // 盯着还没够着的线里最低的那条；都够着了就盯最高的那条
-  var target: EventOption | null = null;
+  // 盯着还没够着的线里差得最少的那条（差几成，和纸带 goal_panel.target_line 一个算法）；都够着了就盯最高的那条
+  var target: EventOption | null = null, tGap = Infinity;
   for (var i = 0; i < ev.options.length; i++) {
     var o = ev.options[i];
     if (!o.min) continue;
-    var short = lifeScore(p, lifeOptionWeights(ev, o), s.bond) < o.min;
-    if (!target) { target = o; continue; }
-    var tShort = lifeScore(p, lifeOptionWeights(ev, target), s.bond) < target.min!;
-    if (short && (!tShort || o.min < target.min!)) target = o;
-    else if (!short && !tShort && o.min > target.min!) target = o;
+    var gap = (o.min - lifeScore(p, lifeOptionWeights(ev, o), s.bond)) / Math.max(o.min, 1e-9);
+    if (!target) { target = o; tGap = gap; continue; }
+    if (gap > 0 && (tGap <= 0 || gap < tGap)) { target = o; tGap = gap; }
+    else if (gap <= 0 && tGap <= 0 && o.min > target.min!) { target = o; tGap = gap; }
   }
   if (!target) return null;
   var w = lifeOptionWeights(ev, target);

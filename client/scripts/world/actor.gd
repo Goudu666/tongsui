@@ -115,9 +115,9 @@ var _dir := 2       ## 2 朝右 3 朝左（侧视只有左右，竖着挪的时�
 var _phase := 0.0   ## 走路走到一步里的哪儿（0~8 帧）
 var _idle := 0.0    ## 站着、坐着、在忙的小动作
 var _sprite: Sprite2D
-var _over: Node2D
+var _over: Node2D  ## 字和气泡那层（overlay.gd，z 71）
 var _ball: Node2D  ## 对着踢的那个球（领头的那个人画）
-var _ball_on := false  ## 上一帧画没画球  ## 字和气泡那层（overlay.gd，z 71）
+var _ball_on := false  ## 上一帧画没画球
 var _last_pos := Vector2.ZERO
 var _base_tex: Texture2D
 var _act_tex: Texture2D

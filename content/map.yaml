@@ -536,14 +536,6 @@ actions:
     needs: { mood: 8, energy: -2 }
     stats: { charm: 0.15, mind: 0.08 }
     together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 一个拉，一个哼，哼的那个跑了调，拉的那个跟着跑。 }
-  - id: square_dance
-    label: 跳广场舞
-    menu: true
-    minutes: 60
-    requires: { minAge: 45, hours: [1110, 1260] }
-    needs: { mood: 8, energy: -8 }
-    stats: { body: 0.18, charm: 0.1 }
-    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 你们站在最后一排，动作总慢半拍，慢得一模一样。 }
   # 家境：殷实人家的孩子在茶社能包个座，听的是整本
   - id: tea_box
     label: 在茶社包个座
@@ -555,3 +547,64 @@ actions:
     needs: { mood: 16, energy: 2 }
     stats: { charm: 0.2 }
     together: { needs: { mood: 8 }, bond: { close: 1, sync: 1 }, text: 茶社伙计给你们端来一碟瓜子，说是老先生送的。台上正讲到要紧处，你们都忘了嗑。 }
+  # ---- 后半生押时间（docs/MEANS.md 第七节）----
+  # 六十岁退了休，一天五段都是自己的，七十岁那道关三条线一起摆着：并一家看亲近、自己下楼看体魄、请人照应看积蓄。
+  # 原来退了休就没有进项，积蓄那条线六十岁那天定了就再也挪不动。这几样让每一段都得押：去挣那几块，还是去找对门，还是去走一圈。
+  # 退了休的营生：一回三块，两个钟头，累。六十到七十只有两个日子，全押上也就挣二十来块，够得着「差一口气」，顶不了一辈子的积蓄
+  - id: old_breakfast
+    label: 去早点铺帮着包包子
+    minutes: 120
+    money: 3
+    requires: { minAge: 60, maxAge: 79, hours: [360, 570] }
+    needs: { energy: -12, hunger: 20 }
+    stats: { body: 0.05 }
+  - id: old_bikes
+    label: 在车棚门口看车
+    minutes: 120
+    money: 3
+    requires: { minAge: 60, maxAge: 79, hours: [480, 1080] }
+    needs: { energy: -8, mood: -3 }
+    stats: { charm: 0.05 }
+  # 替上班的街坊看孩子：谁都能去，钱少一点，凑上对门两个人一人看一个
+  - id: mind_kids
+    label: 替街坊看会儿孩子
+    minutes: 120
+    money: 2
+    requires: { minAge: 60, maxAge: 79, hours: [780, 1080] }
+    needs: { energy: -10, mood: 3 }
+    stats: { charm: 0.1 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 两个孩子在楼道里追着跑，两个老的一人守着一头楼梯。 }
+  # 带孙辈去公园：有孙辈的人才有，能带上没孙辈的对门。走得动、凑得上，什么都沾一点，什么都不多
+  - id: grandkid_park
+    label: 带孙辈去湖边
+    minutes: 90
+    bring: true
+    requires: { minAge: 55, maxAge: 79, flags: [has_kid], hours: [900, 1080] }
+    needs: { mood: 8, energy: -10 }
+    stats: { body: 0.2 }
+    together: { needs: { mood: 6 }, bond: { close: 2 }, text: 孩子在前头追鸽子，你们俩在后头喊慢点，喊着喊着自己也跑了两步。 }
+  # 下面三样由后半生的事开出来（content/events/later.yaml）。一锅饭、接孙辈能带上对门：一个人说了凑一锅，对门端着碗过来就算
+  - id: square_dance
+    label: 去空地上跳舞
+    minutes: 90
+    requires: { minAge: 50, maxAge: 79, flags: [dance_team], hours: [1110, 1260] }
+    needs: { mood: 8, energy: -8 }
+    stats: { body: 0.35 }
+    together: { needs: { mood: 5 }, bond: { close: 1, sync: 1 }, text: 领舞的喊转身，你们俩转反了，脸对着脸。 }
+  - id: pair_cook
+    label: 两家凑一锅做饭
+    minutes: 90
+    money: 1
+    bring: true
+    requires: { minAge: 60, flags: [pair_meal], hours: [1020, 1200] }
+    needs: { hunger: 50, mood: 6 }
+    stats: {}
+    together: { needs: { mood: 4 }, bond: { close: 2 }, text: 一个择菜一个掌勺，盐放没放，两个人都说放过了。 }
+  - id: gk_pickup
+    label: 去校门口接孙辈
+    minutes: 90
+    bring: true
+    requires: { minAge: 60, maxAge: 79, flags: [gk_pickup], hours: [930, 1050] }
+    needs: { mood: 6, energy: -6 }
+    stats: { body: 0.1 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 两个人站在校门口等，跟三十年前等自己的孩子站的是一个地方。 }

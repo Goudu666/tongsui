@@ -843,7 +843,8 @@
 - id: y_kid
   kind: solo
   stage: young
-  weight: 2
+  # 2 → 4（后半生押时间 11-11）：青年的事越写越多，这一件被冲淡到不到一成的人当了爹妈，老了带孙辈、接送补习班的事就没几个人碰得上
+  weight: 4
   requires: { minAge: 26, notFlags: [has_kid] }
   title: 虎头鞋
   text: 你妈把你小时候那双虎头鞋翻了出来，洗得干干净净，搁在你床头。什么也没说。

@@ -46,7 +46,10 @@ const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "pla
 	# 点位菜单上后添的（content/map.yaml 末尾）
 	"pancake": "eat_out", "tea_runner": "listen", "mall_clerk": "eat_out", "river_run": "play_river", "laps": "play_alley", "hopscotch": "play_alley",
 	"sketch": "study", "coal": "work", "cards": "listen", "teach_chess": "study", "flowers": "play_roof", "boat": "play_river", "huqin": "perform",
-	"square_dance": "perform", "tea_box": "listen"}
+	"tea_box": "listen",
+	# 后半生押时间（content/events/later.yaml）
+	"old_breakfast": "work", "old_bikes": "work", "mind_kids": "play_alley", "grandkid_park": "play_river",
+	"square_dance": "perform", "pair_cook": "eat", "gk_pickup": "play_alley"}
 ## 设置按钮的三档：全开 → 只关音乐 → 静音
 const LEVELS := ["乐", "响", "静"]
 ## 横屏：菜单页在右上角；河畔里排在右上「对门的牌」下面（ui/hud.gd：横带 y 40~196，再空 16）

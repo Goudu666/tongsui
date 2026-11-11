@@ -488,7 +488,7 @@
     us:
       text: 一个说「要不就咱俩」，另一个说「我也这么想」。两家的妈在门口听着，谁也没出声。
       memory: 就咱俩
-      bond: { sync: 3, close: 4 }
+      bond: { sync: 3, close: 2 }
       flags: [p_lovers, p_married]
     other:
       text: 两个人是同一年办的事。喜糖互相送了一包，一样的牌子，谁也没拆。
@@ -497,7 +497,7 @@
     friend:
       text: 话说开了，一个人笑，另一个也笑。下楼买了两瓶汽水，在楼道里喝完的。
       memory: 两瓶汽水
-      bond: { sync: 3, close: 3 }
+      bond: { sync: 3, close: 1 }
       flags: [p_confidant]
     alone:
       text: 两个人都说一个人挺好。两家的妈对着叹气，你俩在屋里各吃各的，吃得都挺香。
@@ -505,6 +505,7 @@
       bond: { sync: 2, close: 1 }
   dissonance:
     text: 一个想了很久要怎么开口，另一个先把自己的打算说了。那句话就没再说出来。
+    # 共鸣只给一点亲近：legacy.test 钉着搭伴的连心七十岁并一家不过六成（给 4 的时候 61%）
     bond: { close: -2 }
 
 - id: m_settle

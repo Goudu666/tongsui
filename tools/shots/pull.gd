@@ -29,6 +29,30 @@ func _pe() -> Dictionary:
 	return {"eventId": "m_senior", "kind": "milestone", "roles": ["qing", "mei"], "choices": {}, "shadow": [], "swing": {"qing": 0, "mei": 0.1}, "steady": {}}
 
 
+var _tick := 0
+
+
+func _world() -> void:
+	_tick += 2
+	var actors := {}
+	for r in ["qing", "mei"]:
+		var a: Node2D = main.world.actors[r]
+		actors[r] = {"x": a.position.x, "y": a.position.y, "act": null, "spot": null, "sleep": false, "seq": 0, "tg": false, "fr": 1, "rd": 0}
+	var pull := {"by": "mei", "gap": 3, "unit": "分", "reach": 4}
+	var goals := {
+		"qing": {"id": "m_senior", "title": "中考", "age": 15, "turns": 6, "lines": [
+			{"id": "far", "text": "过桥去念重点高中", "by": "心智", "unit": "分", "have": 73, "need": 76, "ok": false, "hx": 73.4, "pull": pull},
+			{"id": "near", "text": "念家门口的高中", "by": "心智", "unit": "分", "have": 73, "need": 58, "ok": true, "hx": 73.4}]},
+		"mei": {"id": "m_senior", "title": "中考", "age": 15, "turns": 6, "lines": [
+			{"id": "far", "text": "过桥去念重点高中", "by": "心智", "unit": "分", "have": 82, "need": 76, "ok": true, "hx": 82.1},
+			{"id": "near", "text": "念家门口的高中", "by": "心智", "unit": "分", "have": 82, "need": 58, "ok": true, "hx": 82.1}]}}
+	main._on_world_state({"tick": _tick, "minute": 600, "slot": 1, "ready": {}, "playing": false, "wait": 0, "rest": true,
+		"actors": actors, "needs": {"qing": {"hunger": 70, "energy": 64, "mood": 80, "clean": 70}, "mei": {"hunger": 60, "energy": 70, "mood": 75, "clean": 66}},
+		"money": {"qing": 12, "mei": 9}, "event": null, "bond": {"close": 46, "sync": 35}, "hints": [],
+		"stats": {"qing": {"body": 4.6, "mind": 7.34, "charm": 4.1, "luck": 5.0}, "mei": {"body": 5.0, "mind": 8.21, "charm": 5.6, "luck": 4.0}},
+		"eff": {"qing": 1.0, "mei": 1.0}, "goals": goals, "tracks": {}})
+
+
 func _run() -> void:
 	change_scene_to_file("res://scenes/main.tscn")
 	await _wait(0.6)
@@ -45,6 +69,23 @@ func _run() -> void:
 	await _wait(0.4)
 	var locks := {"qing": {"far": "心智 73 分，线是 76 分"}, "mei": {}}
 	var pulls := {"qing": {"far": {"by": "mei", "gap": 3, "unit": "分", "reach": 4}}}
+
+	# 0. 考前：纸带上就写着「阿蘅能拉你」（服务器 lifeGoal 的 lines[i].pull），点开详情是整句
+	main.my_role = "qing"
+	_world()
+	await _wait(1.2)
+	await _snap("p00_goal_strip")
+	main._show_goal_detail()
+	await _wait(0.9)
+	await _snap("p00b_goal_detail")
+	main._close_modal()
+	await _wait(0.4)
+	main.my_role = "mei"
+	main.goal_panel._have = -1.0  # 纸带记着上一个人的分在滚，换人看先清掉
+	main.goal_panel._line_id = ""
+	_world()
+	await _wait(1.2)
+	await _snap("p00c_goal_strip_puller")
 
 	# 1. 差 3 分的那个（小满）：外地那条不灰了，写着要和阿蘅一起走
 	main.my_role = "qing"

@@ -29,7 +29,7 @@
     - id: yield
       text: 让家里托人进学校
       tags: [responsible]
-      effects: { self: { mood: -5 }, drop: [job_trade, job_craft, job_labor, job_odd, rank1, rank2], flags: [job_teach, switched] }
+      effects: { self: { mood: -5 }, drop: [job_desk, job_pull, job_teach, job_trade, job_craft, job_labor, job_succeed, job_odd, rank1, rank2], flags: [job_teach, switched] }
     - id: firm
       text: 说这活儿是自己挑的
       tags: [competitive]
@@ -66,7 +66,7 @@
     - id: yield
       text: 去厂办报到
       tags: [responsible]
-      effects: { self: { mood: -5 }, drop: [job_teach, job_trade, job_craft, job_labor, job_odd, rank1, rank2], flags: [job_pull, switched] }
+      effects: { self: { mood: -5 }, drop: [job_desk, job_pull, job_teach, job_trade, job_craft, job_labor, job_succeed, job_odd, rank1, rank2], flags: [job_pull, switched] }
     - id: firm
       text: 跟他说不去了
       tags: [competitive]
@@ -103,7 +103,7 @@
     - id: yield
       text: 托他的朋友进外贸公司
       tags: [responsible]
-      effects: { self: { mood: -5 }, drop: [job_teach, job_trade, job_craft, job_labor, job_odd, rank1, rank2], flags: [job_pull, switched] }
+      effects: { self: { mood: -5 }, drop: [job_desk, job_pull, job_teach, job_trade, job_craft, job_labor, job_succeed, job_odd, rank1, rank2], flags: [job_pull, switched] }
     - id: firm
       text: 跟他说就干这个了
       tags: [competitive]
@@ -140,7 +140,7 @@
     - id: yield
       text: 去少年宫教琴
       tags: [responsible]
-      effects: { self: { mood: -5 }, drop: [job_trade, job_craft, job_labor, job_odd, rank1, rank2], flags: [job_teach, switched] }
+      effects: { self: { mood: -5 }, drop: [job_desk, job_pull, job_teach, job_trade, job_craft, job_labor, job_succeed, job_odd, rank1, rank2], flags: [job_teach, switched] }
     - id: firm
       text: 说不去了
       tags: [competitive]

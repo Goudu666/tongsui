@@ -367,7 +367,7 @@ function worldStartDay(s: LifeState, c: Content) {
       var pp = persons[ROLES[pi]];
       if (!rest && !off[ROLES[pi]]) continue;
       var pd = pp.alive ? lifeTrack(c, pp, t.age).duty : null;
-      if (pd && pd.money > 0) pp.money += worldWage(c, pp, pd);
+      if (pd && pd.money > 0) pp.money += worldWage(c, pp, pd, t.age);
     }
   }
 
@@ -502,11 +502,12 @@ function worldDuty(s: LifeState, c: Content, role: Role): Duty | null {
   return tr.duty;
 }
 
-/** 这一天的工钱：路上写的数，乘上关口挣来的那一级（rules.yaml → daily.wageFlags） */
-function worldWage(c: Content, p: Person, duty: Duty): number {
+/** 这一天的工钱：路上写的数，乘上关口挣来的那一级、家境的那一截（rules.yaml → daily.wageFlags，wageFlagsFrom 岁起才乘） */
+function worldWage(c: Content, p: Person, duty: Duty, age: number): number {
   var m = duty.money;
   var wf = c.rules.daily.wageFlags;
-  if (m > 0 && wf) for (var f in wf) if (lifeHasFlag(p, f)) m *= wf[f];
+  var from = c.rules.daily.wageFlagsFrom || 0;
+  if (m > 0 && wf && age >= from) for (var f in wf) if (lifeHasFlag(p, f)) m *= wf[f];
   if (m > 0) m *= eraWageFactor(c, p); // 年代大事：下海那几年做买卖的、下岗那几年厂里的（era.ts）
   return Math.round(m * 10) / 10;
 }
@@ -990,7 +991,7 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   var times = duty || act.duty ? 1 : a.scale === undefined ? 1 : a.scale;
   var gains: Partial<Stats> = duty ? duty.stats : act.duty ? {} : act.stats;
   var needs: Partial<Needs> = duty ? duty.needs : act.duty ? {} : act.needs;
-  var money = duty ? worldWage(c, p, duty) : act.duty ? 0 : Math.max(0, act.money) * times;
+  var money = duty ? worldWage(c, p, duty, lifeTimeAt(s.turn).age) : act.duty ? 0 : Math.max(0, act.money) * times;
   var eff = a.eff === undefined ? 1 : a.eff;
   var stats: SelfDelta = {};
   for (var k in gains) {

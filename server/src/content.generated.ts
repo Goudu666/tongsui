@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "b25e6b272cc2",
+ "version": "0194aaf2c704",
  "events": [
   {
    "id": "m_rise",
@@ -9154,9 +9154,13 @@ var CONTENT: Content = {
        "switched"
       ],
       "drop": [
+       "job_desk",
+       "job_pull",
+       "job_teach",
        "job_trade",
        "job_craft",
        "job_labor",
+       "job_succeed",
        "job_odd",
        "rank1",
        "rank2"
@@ -9320,10 +9324,13 @@ var CONTENT: Content = {
        "switched"
       ],
       "drop": [
+       "job_desk",
+       "job_pull",
        "job_teach",
        "job_trade",
        "job_craft",
        "job_labor",
+       "job_succeed",
        "job_odd",
        "rank1",
        "rank2"
@@ -9487,10 +9494,13 @@ var CONTENT: Content = {
        "switched"
       ],
       "drop": [
+       "job_desk",
+       "job_pull",
        "job_teach",
        "job_trade",
        "job_craft",
        "job_labor",
+       "job_succeed",
        "job_odd",
        "rank1",
        "rank2"
@@ -9655,9 +9665,13 @@ var CONTENT: Content = {
        "switched"
       ],
       "drop": [
+       "job_desk",
+       "job_pull",
+       "job_teach",
        "job_trade",
        "job_craft",
        "job_labor",
+       "job_succeed",
        "job_odd",
        "rank1",
        "rank2"
@@ -53902,6 +53916,7 @@ var CONTENT: Content = {
    "luckFate": 0.02,
    "slotUse": 1,
    "needsUse": 0.3,
+   "wageFlagsFrom": 22,
    "wageFlags": {
     "mid_post": 1.5,
     "send_home": 0.7,

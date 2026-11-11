@@ -86,7 +86,6 @@ const UNLOCK_ANY_KEYS = ["minAge", "maxAge", "flags", "notFlags"];
 // 加进来以前从点位上摘掉，不报错；加进来以后从这里删掉
 const PENDING_ACTIONS = [];
 // 地图和地点支线先读着、等别的线程发的标记：资源差异（fam_factory、uni_abroad、school_paid、job_pull、job_succeed、home_unit）。发标记的合进来以后从这里删掉
-// loan：十八岁背的助学贷款（21 岁以前那一段的线程发），这边的工钱折扣和「还清了」先读着
 const PENDING_FLAGS = [];
 // 每张图在世界坐标里占一条：第 i 张图的 y 从 i × SCENE_STRIDE 起。服务器的距离、地点判定都还是二维的，
 // 不同的图隔得远，自然够不着。顺序钉死在这张表里（存档里的坐标靠它），新图往后加，不要插队
@@ -533,7 +532,7 @@ const rules = load("rules.yaml");
     roll: ["budget", "wealthAdjust", "statMin", "statMax", "rerolls"],
     growth: ["eventScale", "actionScale", "room", "floor", "bornWeight", "plasticity", "plainBonus", "turnWeight"],
     aging: ["body", "mind", "activeFactor"],
-    daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "needsUse", "wageFlags"],
+    daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "needsUse", "wageFlags", "wageFlagsFrom"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],
     lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max", "flags"],
     bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "syncSteadyFrom", "syncSteadyFull", "slotTogether", "closeWeight", "drift", "driftDistance", "driftFloor", "pullFrom", "pullFull", "pullMoney", "pullMoneyClose", "reunion"],
@@ -571,6 +570,8 @@ const rules = load("rules.yaml");
     consumed.push(["rules.daily.wageFlags", f]);
     if (typeof mul !== "number" || mul < 0.5 || mul > 2) errors.push(`rules.yaml: daily.wageFlags.${f} 是工钱的倍数，要在 0.5 到 2 之间`);
   }
+  const wff = rules?.daily?.wageFlagsFrom;
+  if (wff !== undefined && !(Number.isInteger(wff) && wff >= 0 && wff <= 45)) errors.push("rules.yaml: daily.wageFlagsFrom 是几岁起工钱才乘 wageFlags（0~45 的整数）");
   for (const [f, t] of Object.entries(rules?.locks ?? {})) {
     consumed.push(["rules.locks", f]);
     if (typeof t !== "string" || !t || [...t].length > 12) errors.push(`rules.yaml: locks.${f} 是锁上的那句话，不超过 12 个字`);

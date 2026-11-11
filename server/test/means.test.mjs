@@ -241,7 +241,7 @@ const shown = (o, why) => !(o.hide && why === (o.lock || "这条路不是给你�
 // ---------- 4. 考场外不公平：工钱的倍数、塞钱的上限（rules.yaml 的 wageFlags、bond.pullMoneyBy） ----------
 {
   const duty = C.tracks.find((t) => t.id === "job_desk").duty;
-  const wage = (flags) => G("worldWage")(C, { flags }, duty);
+  const wage = (flags, age = 25) => G("worldWage")(C, { flags }, duty, age);
   const base = wage([]);
   assert.equal(base, duty.money, "小康人家拿的就是路上写的数");
   assert.ok(wage(["fam_poor", "send_home"]) < base, "清贫人家工钱寄一截回家");
@@ -250,6 +250,11 @@ const shown = (o, why) => !(o.hide && why === (o.lock || "这条路不是给你�
   assert.ok(wage(["fam_rich"]) > base, "殷实人家家里每个月贴补一截");
   assert.ok(Math.abs(wage(["fam_rich", "fam_cut"]) - base) < 0.15, "家里不管了：贴补没了");
   assert.equal(wage(["fam_fallen"]), base, "家道中落（摘了 fam_rich）：按小康");
+  // 家境那一截是二十二岁以后的事：二十二岁以前帮家里干活、打零工、头一份活挣的都照数拿（第八节那一段的钱不动）
+  for (const f of [["fam_poor", "send_home", "loan"], ["fam_rich"]]) {
+    assert.equal(wage(f, 21), base, `${f.join("+")}：二十一岁照数拿`);
+    assert.notEqual(wage(f, 22), base, `${f.join("+")}：二十二岁起才乘`);
+  }
   // 往家里寄到什么时候：四十五岁把钱和工夫花在家里（清贫人家多一条线低的「把爸妈接过来」），或者爸妈走了
   assert.ok(opt("m_midlife", "home").effects.drop.includes("send_home"));
   const take = opt("m_midlife", "take");
@@ -328,6 +333,16 @@ const shown = (o, why) => !(o.hide && why === (o.lock || "这条路不是给你�
     assert.ok(free.length >= 2 && free.every((o) => !o.effects.flags.includes("strain1") && !o.effects.flags.includes("fam_cut")), `${id}：听家里的、问问对门谁都能选，不记脸色`);
     const yieldTo = e.options.find((o) => o.id === "yield").effects.flags;
     assert.ok(yieldTo.some((f) => MET[exp].includes(f)) && yieldTo.includes("switched"), `${id}：听家里的就换成爸妈那条路`);
+    // 换路要真换过去：原来那一行（托关系进的单位也算没够上）全摘掉，不然 tracks.yaml 排在前头的那条路还管着他
+    const yieldDrop = e.options.find((o) => o.id === "yield").effects.drop;
+    for (const job of ["job_desk", "job_pull", "job_teach", "job_trade", "job_craft", "job_labor", "job_succeed", "job_odd"]) assert.ok(yieldDrop.includes(job), `${id}：听家里的要摘掉 ${job}`);
+    const went = yieldTo.find((f) => f.startsWith("job_"));
+    for (const before of ["job_pull", "job_trade", "job_craft", "job_labor", "job_odd"]) {
+      if (!can(id, ["fam_rich", exp, before])) continue;
+      const flags = ["fam_rich", exp, before].filter((f) => !yieldDrop.includes(f)).concat(yieldTo);
+      const tr = G("lifeTrack")(C, { flags }, 24);
+      assert.ok(tr.id === went || tr.group === went, `${id}：${before} 听家里的以后走的是 ${went}（实际 ${tr.id}）`);
+    }
   }
   // 二十二岁：董家（exp_pull）的「爸妈安排好的单位」不掏钱；郑家（exp_book）看不见这一条，托关系照旧自己掏
   const s = lifeAt(23, 22, "dong", "zheng", 9.5);

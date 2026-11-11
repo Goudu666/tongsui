@@ -225,11 +225,12 @@ for (let seed = 1; seed <= LIVES; seed++) {
   const waits = (id) => replaced.has(id) || held(byId.get(id).requires?.flags) || sceneHeld(byId.get(id).where);
   const never = [...hit].filter(([id, n]) => n === 0 && !waits(id)).map(([id]) => id);
   assert.deepEqual(never, [], `${never.length} 个事件在 ${LIVES} 条人生里一次也没出现：${never.join(", ")}`);
-  // 藏着的、要上一世留下痕迹（leg_）的结局千里挑一（「又是对门」改之前 1500 世里 2 回），碰没碰上看随机数顺序：
-  // 只要它要的每个标记都有人带着走完过一世，就不算走不到（三扇门那次加的事挪了随机数，它落到 0 回）
+  // 「又是对门」（藏着的，要上一世拉过钩 leg_p_promise）千里挑一，改之前 1500 世里 2 回，碰没碰上看随机数顺序：
+  // 三扇门那次加的事挪了随机数，它落到 0 回。只放过这一个，而且它要的每个标记都得有人带着走完过一世
   const legRare = (id) => {
+    if (id !== "e_again") return false;
     const e = C.endings.pair.find((x) => x.id === id), fl = e.requires.flags ?? [];
-    return C.atlas.hidden.includes(id) && fl.some((f) => f.startsWith("leg_")) && fl.every((f) => (flagsSeen.get(f) ?? 0) > 0);
+    return C.atlas.hidden.includes(id) && fl.every((f) => (flagsSeen.get(f) ?? 0) > 0);
   };
   const deadPair = [...pairEnd].filter(([id, n]) => n === 0 && !legRare(id)).map(([id]) => id);
   assert.deepEqual(deadPair, [], `走不到的结局：${deadPair.join(", ")}`);

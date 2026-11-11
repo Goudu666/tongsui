@@ -59,7 +59,7 @@ function meet(s, r, id, c = C) {
 }
 /** 客户端 main.gd → milestone_options 的同一条规矩：写了 hide、锁着的理由正是它的 lock 那句，就不摆 */
 const shown = (e, locks) => [...e.options].filter((o) => !(o.hide && locks[o.id] === (o.lock || "这条路不是给你留的")));
-const wageOf = (p, age) => G("worldWage")(C, p, G("lifeTrack")(C, p, age).duty);
+const wageOf = (p, age) => G("worldWage")(C, p, G("lifeTrack")(C, p, age).duty, age);
 
 // ---------- 0. 内容的骨架：每个行当两级、路排在原来那份工前头 ----------
 {

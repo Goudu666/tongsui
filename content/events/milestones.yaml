@@ -720,7 +720,7 @@
       joins: buy
       tags: [patient]
       effects: { self: { mood: 12 }, flags: [home_own, home_unit] }
-    # 小康人家（fam_nest，爸妈攒的那一笔，一辈子动一回）：和殷实人家的 help 一样的线，用了就摘掉 fam_nest。
+    # 小康人家（fam_nest，爸妈攒的那一笔，一辈子动一回）：线比殷实人家的 help 高、比自己买低（那一笔不够全款，自己还得攒），用了就摘掉 fam_nest。
     # 十五、十八岁用过了（念书那头）、二十几岁拿去开了铺子的，这里就没有了。别的人家看不见这一条
     - id: nest
       text: 爸妈拿出那笔钱，出首付

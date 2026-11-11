@@ -1,0 +1,283 @@
+# 年代大事：出生年代、日历年、一件件大事（规则在 server/src/era.ts；接口见 SPEC.md；配套改动见 gating_draft.md）
+#
+# 两个人「同岁」：同一年生。开局抽一个出生年代，日历年 = 出生年 + 岁数。
+# 年份只给引擎算，从不给人看；给人看的是 decades 的年代名。
+#
+# 校准口径：现有数值按「九十年代初生」那一世校的（3 岁 = 九十年代中，18 岁高考在一〇年代头上，30 岁安家在二〇年代头上）。
+#   c92 在 m_gaokao / m_job / m_settle / m_retire / m_evening 每一条线上吃到的挪动都是 0（一张表在 gating_draft.md 第一节）。
+#   别的年代拉开：六十年代生高考难、包分配、分房便宜、三十多岁碰下岗；八十年代生赶上扩招、三十岁房价最高；
+#   〇〇后高考宽、找工作卷、房价回落。
+#
+# 单位：lines 的分数线按百分制分（-5 = 线低 5 分，build-content 换算成 min 的 -0.5），积蓄线按块。
+#   看积蓄的线挪了，要掏的钱跟着挪（era.ts lifeOptionCost）：买房线 -60，买房也只掏 140。
+# 一个 era_ 标记只由一件事发（build-content 查）；until 到那一年标记摘掉，这件事的线和工钱也就不算了。
+# 早于 1968 的三件（考大学、分配、分房）对所有年代都是「生之前」，只打标记，不弹卡。
+# 敏感的十年不写：分配、分房、考大学三件的年份落在那之前，正文只写过日子看得见的事，不写那十年。
+#
+# 文风守 docs/tianjin_style.md：不写年份、不点品牌和真人、不写政策文件名；大事写成楼里看得见的变化，不评价。
+# 字数：title ≤ 7，text ≤ 45，hits.text ≤ 30，cohort.note ≤ 30，decade.name ≤ 6。
+
+decades:
+  - { from: 1960, name: 六十年代, look: childhood }
+  - { from: 1970, name: 七十年代, look: childhood }
+  - { from: 1980, name: 八十年代, look: childhood }
+  - { from: 1990, name: 九十年代, look: childhood }
+  - { from: 2000, name: 千禧年头上, look: teen }
+  - { from: 2010, name: 一〇年代, look: young }
+  - { from: 2020, name: 二〇年代, look: middle }
+  - { from: 2030, name: 三〇年代, look: middle }
+  - { from: 2035, name: 三〇年代, look: old }      # 同一个年代名，三〇年代中往后换老年那套街景
+  - { from: 2040, name: 很多年以后, look: old }   # 越往后越虚（手册 §7）：不再按十年起名，也免得「八〇年代」读成八十年代
+
+cohorts:
+  - id: c65
+    name: 六十年代中生
+    born: 1965
+    weight: 2
+    note: 粮本和户口本夹在一块儿，全楼就一台电视。
+  - id: c75
+    name: 七十年代中生
+    born: 1975
+    weight: 2
+    note: 小人书摊一分钱看一本，楼道里码着蜂窝煤。
+  - id: c85
+    name: 八十年代中生
+    born: 1985
+    weight: 2
+    note: 铁皮铅笔盒。谁家先有了彩电，晚上挤一屋子人。
+  - id: c92
+    name: 九十年代初生
+    born: 1992
+    weight: 3
+    note: 画片和玻璃球，下班的车铃响成一片。
+    default: true
+  - id: c02
+    name: 〇〇后
+    born: 2002
+    weight: 2
+    note: 楼下停满了电动车，墙上的小广告一层压一层。
+
+events:
+  # ---------------- 早年的规矩（所有年代都在生之前，只打标记） ----------------
+
+  # 扩招以前：大学收的人少，外地和本市的线都高一截。扩招那件摘掉它
+  - id: era_pre_kuozhao
+    year: 1963
+    title: 考大学
+    text: 大学一年收的人不多。楼里谁家孩子考上了，通知书能在楼道里传一圈。
+    flags: [era_pre_kuozhao]
+    lines:
+      m_gaokao.away: 7
+      m_gaokao.local: 8
+
+  # 包分配：念完书学校给分到单位，坐办公室、回去教书都容易进。到九十年代末没了
+  - id: era_fenpei
+    year: 1963
+    until: 1997
+    title: 分配
+    text: 念完书，学校给分到单位。谁家孩子分到了哪儿，饭桌上能说一个礼拜。
+    flags: [era_fenpei]
+    lines:
+      m_job.desk: -6
+      m_job.teach: -5
+
+  # 单位分房：m_settle.unit（等厂里分的房）只在这几年有（gating_draft.md）；买的、租的都便宜。房改那件摘掉它
+  - id: era_fenfang
+    year: 1963
+    title: 等分房
+    text: 房子是单位分的，按工龄排队。谁家分着了，全楼帮着搬，搬完在新屋里吃顿饺子。
+    flags: [era_fenfang]
+    lines:
+      m_settle.buy: -40
+      m_settle.help: -40
+      m_settle.rent: -30
+
+  # ---------------- 八十年代 ----------------
+
+  - id: era_qianggou
+    year: 1988
+    until: 1990
+    title: 抢购
+    text: 一夜之间满街排队。有人扛回来一箱火柴，有人扛回来两袋盐。
+    flags: [era_qianggou]
+    hits:
+      - requires: { minAge: 16 }
+        text: 存折上的数没动，能买的东西少了一截。
+        savings: 0.85
+
+  # ---------------- 九十年代 ----------------
+
+  # 下海：做买卖的线低、工钱高；自己开铺子的也多挣一点。c92 这几年还小，碰不上
+  - id: era_xiahai
+    year: 1992
+    until: 2001
+    title: 下海
+    text: 楼里有人停薪留职去了南边，过年回来穿着新皮鞋。街口一下多了好几个摊子。
+    flags: [era_xiahai]
+    lines:
+      m_job.trade: -5
+    wages:
+      job_trade: 1.25
+      own_shop: 1.15
+
+  # 下岗：在厂里的工钱打八折。六十年代生的这时候三十出头，七十年代生的刚进厂
+  - id: era_xiagang
+    year: 1996
+    until: 2006
+    title: 名单
+    text: 厂门口贴了名单。早点铺早上多了几个不着急走的人。
+    flags: [era_xiagang]
+    wages:
+      job_succeed: 0.8
+    hits:
+      - requires: { flags: [job_succeed], notFlags: [laid_off], minAge: 22 }
+        text: 厂里活少了，工钱只开八成。
+      - requires: { flags: [fam_factory], maxAge: 21 }
+        text: 爸妈下班早了，饭桌上没人提厂里。
+
+  # 房改：不再分房（摘掉 era_fenfang，m_settle.unit 跟着没了）；房子还不算贵
+  - id: era_fanggai
+    year: 1998
+    until: 2010
+    title: 房本
+    text: 楼长抱着一摞房本挨家发。住了半辈子的公房，交一笔钱就成了自己的。
+    flags: [era_fanggai]
+    clears: [era_fenfang]
+    lines:
+      m_settle.buy: -40
+      m_settle.help: -35
+      m_settle.rent: -25
+    hits:
+      - requires: { flags: [home_unit] }
+        text: 厂里分的那套，房本上是你的名字。
+        money: -10
+
+  # 扩招：外地、本市的线摘掉那一截；毕业的人多了，坐办公室的线高一点（八十年代生吃这一口）
+  - id: era_kuozhao
+    year: 1999
+    until: 2012
+    title: 多招了
+    text: 大学一下多招了好些人。楼里同一年走了三个大学生，毕业那年找活的也多了。
+    flags: [era_kuozhao]
+    clears: [era_pre_kuozhao]
+    lines:
+      m_job.desk: 4
+
+  # ---------------- 千禧年头上 ----------------
+
+  # 电脑和网吧：teen.yaml 的 t_netcafe_door 只在这几年有（gating_draft.md）。手机那件摘掉它
+  - id: era_wangba
+    year: 2000
+    title: 电脑
+    text: 街口多了两块网吧的招牌。谁家买了电脑，楼里的孩子放学先往谁家跑。
+    flags: [era_wangba]
+
+  # 房价头一波
+  - id: era_fangjia1
+    year: 2004
+    title: 售楼处
+    text: 对岸起了一片新楼，售楼处门口排着队。楼下下棋的几位，话头从棋换成了房子。
+    flags: [era_fangjia1]
+    lines:
+      m_settle.buy: 15
+      m_settle.help: 12
+      m_settle.rent: 8
+
+  # 拆迁：还住老屋的（m_settle.stay → home_old）拿一笔补的钱。c92 三十岁时这一波已经过去了
+  - id: era_chaiqian
+    year: 2008
+    until: 2016
+    title: 红线
+    text: 河这边好几片老房子划进了红线。墙上画了圈，拆迁办的人挨家敲门。
+    flags: [era_chaiqian]
+    hits:
+      - requires: { flags: [home_old], minAge: 30 }
+        text: 老屋在红线里，按平米补了一笔钱。
+        money: 50
+
+  # ---------------- 一〇年代 ----------------
+
+  # 房价第二波：八十年代生三十岁正赶上（摘掉房改那一截便宜）。+25 时八十年代生专心念书的三十岁只有 6% 买得起，降到 +15
+  - id: era_fangjia2
+    year: 2010
+    title: 价牌
+    text: 中介的门脸开到了早点铺隔壁。玻璃上贴的价一个月换一回，越换越长。
+    flags: [era_fangjia2]
+    clears: [era_fanggai]
+    lines:
+      m_settle.buy: 15
+      m_settle.help: 12
+      m_settle.rent: 8
+
+  # 手机、外卖、扫码：楼下的摊子多了外卖的单，开门脸的铺子冷清一点。网吧摘掉。
+  # 只动三十岁以后才有的两条路（支摊、自己的铺子），c92 三十岁安家时的积蓄不受影响
+  - id: era_shouji
+    year: 2014
+    title: 低着头
+    text: 早点铺排队的人都低着头看手机。楼下停了几辆送外卖的电动车，网吧关了门。
+    flags: [era_shouji]
+    clears: [era_wangba]
+    wages:
+      own_stall: 1.1
+      own_shop: 0.92
+
+  # 学校多了、位子少了：高考宽了，考研考公卷起来。〇〇后两头都吃
+  - id: era_juan
+    year: 2016
+    title: 再考
+    text: 楼里的孩子差不多都能上个大学。毕了业又回去考，一年考不上考两年。
+    flags: [era_juan]
+    lines:
+      m_gaokao.away: -3
+      m_gaokao.local: -4
+      m_job.desk: 6
+      m_job.teach: 4
+
+  # 房价回落，城边上盖了保障房：摘掉第二波；m_settle 新加的 quota（排上保障房）读它（gating_draft.md）
+  - id: era_huiluo
+    year: 2019
+    title: 往下改
+    text: 中介门口的价牌往下改了一回。租房的年轻人多了，城边上盖了几片保障房。
+    flags: [era_huiluo]
+    clears: [era_fangjia2]
+    lines:
+      m_settle.buy: -15
+      m_settle.help: -12
+      m_settle.rent: -8
+
+  # ---------------- 二〇年代往后（越往后越虚） ----------------
+
+  # 延迟退休：单位留人，带徒弟的线低一点；养老的钱晚几年到手，出去走走的线高一截（要掏的跟着多 20）。
+  # 六十、七十、八十年代生的退休时都在里头；c92 六十岁时已经摘了
+  - id: era_yanchi
+    year: 2025
+    until: 2048
+    title: 晚几年
+    text: 早上过桥上班的人里，头发白的多了。楼下的棋摊，要到傍晚才凑得齐人。
+    flags: [era_yanchi]
+    lines:
+      m_retire.mentor: -5
+      m_retire.trip: 20
+
+  # 楼里空了、人老了：房子不紧了（〇〇后三十岁吃这一口）；请人照应难请、价高（六十~八十年代生七十岁吃这一口）
+  - id: era_laolou
+    year: 2030
+    until: 2061
+    title: 空了几户
+    text: 楼里空了好几户，晚上亮灯的窗户少了。楼道里找保姆的条子，一张压一张。
+    flags: [era_laolou]
+    lines:
+      m_settle.buy: -25
+      m_settle.help: -20
+      m_settle.rent: -12
+      m_evening.care: 20
+
+  # 电梯和上门照应：公示贴了半辈子（street.yaml 中年那条），到〇〇后老了才装上。c92 七十岁那年还没有
+  - id: era_dianti
+    year: 2063
+    title: 装了电梯
+    text: 公示贴了好几回，楼外头搭起了电梯井。社区的人隔两天上门量一回血压。
+    flags: [era_dianti]
+    lines:
+      m_evening.walk: -6
+      m_evening.care: -35

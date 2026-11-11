@@ -29,6 +29,8 @@ func _draw() -> void:
 	var right := ("%d / %d %s" % [int(line.have), need, unit]) if need > 0 else ("%d" % int(line.have))
 	var rw := f.get_string_size(right, HORIZONTAL_ALIGNMENT_LEFT, -1, fr).x
 	var by := ("看" + str(line.by) + ("  够着了" if ok else "")) if str(line.get("by", "")) != "" and need > 0 else ""
+	if str(line.get("era", "")) != "" and need > 0:
+		by += ("  · " if by != "" else "") + str(line.era)  # 年代挪了这条线（服务器 GoalLine.era：「考大学 +7」）
 	var bw := f.get_string_size(by, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x if by != "" else 0.0
 	var tw := (size.x - rw - bw - 40.0) if compact else (size.x - 300.0)
 	draw_string(f, Vector2(0, ty), str(line.text), HORIZONTAL_ALIGNMENT_LEFT, maxf(60.0, tw), ft, P.INK)

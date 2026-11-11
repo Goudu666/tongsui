@@ -291,15 +291,15 @@ function pass(s) {
   console.log("✓ 事件 kidAge：孩子在段里才发生，没孩子不发生");
 }
 
-// ---------- 11. 存档：v8 升到 v9 补 kids，往返不丢孩子 ----------
+// ---------- 11. 存档：v9 升到 v10 补 kids，往返不丢孩子 ----------
 {
   const s = grown(36);
   giveKid(s, "qing", 8);
   const old = J(s);
   delete old.kids;
-  old.version = 8;
+  old.version = 9;
   const notes = G("lifeUpgrade")(old);
-  assert.ok(notes.includes("v8→v9"));
+  assert.ok(notes.includes("v9→v10"));
   assert.equal(old.version, G("LIFE_VERSION"));
   assert.deepEqual(J(old.kids), []);
   const back = J(s);
@@ -314,7 +314,7 @@ function pass(s) {
   assert.equal(v.actors.mei.kid, undefined, "没孩子不发 kid");
   assert.deepEqual(Object.keys(v.actors.qing.kid).sort(), ["age", "name", "shared", "stats"]);
   assert.equal(v.actors.qing.kid.age, 8);
-  console.log("✓ 存档 v8→v9 补 kids，往返不丢；WORLD 里 kid { name, age, stats, shared }，没孩子不发");
+  console.log("✓ 存档 v9→v10 补 kids，往返不丢；WORLD 里 kid { name, age, stats, shared }，没孩子不发");
 }
 
 // ---------- 12. 先有孩子、后成两口子：对门算进这个孩子，不补过前面的关 ----------

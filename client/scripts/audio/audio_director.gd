@@ -72,6 +72,7 @@ var _step_i := 0
 var _cache: Dictionary = {}
 var _walked := {}
 var _stage := "child"
+var _look := "child"  ## 声景按哪个年代（STAGE_FILE 的值）：era.look，没有就是 _stage
 var _button: Button
 var _boxes: Array[StyleBox] = []
 var _map: Dictionary = {}
@@ -227,7 +228,7 @@ func set_scene(scene: String) -> void:
 ## 河畔里每帧的状态。weather：rain / snow / catkin / leaf / ""（world.weather.kind，屋里的图没有天气）
 func set_life(map: Dictionary, my_role: String, me_pos: Vector2, other_pos: Variant, partner_live: bool,
 		turn: int, stage: String, season: String, minute: float, school_day: bool, sync: float, focus: bool,
-		weather := "") -> void:
+		weather := "", look := "") -> void:
 	if not scape.is_setup or not is_same(map, _map):  # 内容热更新后地图会换一份（比如多了茶馆）
 		_map = map
 		scape.setup(map)
@@ -237,7 +238,9 @@ func set_life(map: Dictionary, my_role: String, me_pos: Vector2, other_pos: Vari
 	if other_pos is Vector2:
 		near = 1.0 - smoothstep(260.0, 1300.0, me_pos.distance_to(other_pos))
 	music.set_mix(my_role, near, partner_live, sync, minute, weather)
-	scape.update(get_process_delta_time(), me_pos, minute, _stage, season, school_day, weather)
+	# 声景（街上的叫卖、车、广播）跟着年代走：服务器给了 era.look 用它，不然跟着人生阶段（音乐、脚步还是跟着岁数）
+	_look = STAGE_FILE.get(look, _stage) if look != "" else _stage
+	scape.update(get_process_delta_time(), me_pos, minute, _look, season, school_day, weather)
 	# 弹窗（事件、一天结束）出来的时候，把环境音让一让
 	_focus = move_toward(_focus, 1.0 if focus else 0.0, get_process_delta_time() * 2.0)
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambience"), Mix.BUS_DB.Ambience - 6.0 * _focus)
@@ -247,7 +250,7 @@ func set_life(map: Dictionary, my_role: String, me_pos: Vector2, other_pos: Vari
 ## 没进河畔里的时候（菜单页）也要每帧调一次，让环境音淡出去
 func idle() -> void:
 	if scape.is_setup:
-		scape.update(get_process_delta_time(), Vector2.ZERO, 720.0, _stage, "spring", false)
+		scape.update(get_process_delta_time(), Vector2.ZERO, 720.0, _look, "spring", false)
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambience"), Mix.BUS_DB.Ambience)
 
 

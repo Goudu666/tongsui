@@ -56,6 +56,6 @@ milestone 加一个字段 `kidAge: n`：孩子快到这个岁数（提前两岁�
 
 ## 五、协议和存档
 
-- `LifeState.kids?: Kid[]`，`LIFE_VERSION` +1，`lifeUpgrade` 补空数组；`lifeRepair` 不用管（不指向内容 id）。
+- `LifeState.kids?: Kid[]`，`LIFE_VERSION` +1（9→10，年代大事先占了 9），`lifeUpgrade` 补空数组；`lifeRepair` 不用管（不指向内容 id）。
 - WORLD 每个人加 `kid`（没有就不发）：`{ name, age, stats: { body, mind, charm }, shared }`，客户端显示孩子卡片。
 - 内容构建白名单加 `kid`（行动）、`requires.kidAge`（行动）、`kidAge`（milestone），以及 ScoreWeights 的 `kid_mind` / `kid_body` / `kid_charm`。

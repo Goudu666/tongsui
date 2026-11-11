@@ -240,10 +240,10 @@ func _me(f: Font, r: Rect2) -> void:
 	var i := 0
 	var pitch := (r.size.x - 32.0) / NEED_KEYS.size()
 	for k in NEED_KEYS:
-		var c := Vector2(at.x + 16.0 + pitch * i + 40.0, y + NEEDS_H / 2.0)
+		var c := Vector2(at.x + 16.0 + pitch * i + 34.0, y + NEEDS_H / 2.0)
 		_gauge(f, c, k)
 		var low := float(needs.get(k, 100.0)) < LOW
-		Kit.text(self, c + Vector2(38.0, 10.0), str(int(round(float(_shown.get(k, 0.0))))), P.FS_LABEL, P.MEI if low else P.INK_MID)
+		Kit.text(self, c + Vector2(36.0, 10.0), str(int(round(float(_shown.get(k, 0.0))))), P.FS_LABEL, P.MEI if low else P.INK_MID)
 		i += 1
 	y += NEEDS_H
 	Kit.hair(self, Vector2(at.x + 14, y), Vector2(r.end.x - 14, y))
@@ -252,7 +252,7 @@ func _me(f: Font, r: Rect2) -> void:
 func _gauge(f: Font, c: Vector2, key: String) -> void:
 	var v := clampf(float(_shown.get(key, 0.0)) / 100.0, 0.0, 1.0)
 	var low := float(needs.get(key, 100.0)) < LOW
-	var r := 29.0
+	var r := 27.0
 	if low:
 		c += Vector2(sin(_t * 22.0) * 1.6 * maxf(0.0, sin(_t * 2.2)), 0.0)
 		draw_circle(c + Vector2(3, 3), r, P.MEI, true, -1.0, true)

@@ -132,6 +132,8 @@ function lifeOptionMin(o: EventOption, p: Person): number {
 /** 看积蓄的线挪了，要花的钱跟着挪（买房线 200、花 200：房价涨了，线和要掏的钱一起涨） */
 function lifeOptionCost(ev: LifeEvent, o: EventOption, p: Person): number {
   var cost = o.cost || 0;
+  // 走的是爸妈的意思：钱家里出（docs/MEANS.md 第八节）。家里已经不管了的（fam_cut）自己出
+  if (cost && o.homePays && !lifeHasFlag(p, "fam_cut")) for (var hp = 0; hp < o.homePays.length; hp++) if (lifeHasFlag(p, o.homePays[hp])) return 0;
   if (!cost || !o.min || !o.eraLines || !lifeOptionWeights(ev, o).money) return cost;
   return Math.max(0, Math.round((cost + lifeOptionMin(o, p) - o.min) * 10) / 10);
 }

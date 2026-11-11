@@ -494,10 +494,12 @@ function worldExit(s: LifeState, c: Content, role: Role, exitId: string): string
 
 // ---------- 行动 ----------
 
-/** 这个人今天的日程。没有（还没上学、退休了、今天歇着）返回 null */
+/** 这个人今天的日程。没有（还没上学、退休了、今天歇着）返回 null。歇着的日子只有写了 restDuty 的路才有（清贫人家的孩子看一上午摊） */
 function worldDuty(s: LifeState, c: Content, role: Role): Duty | null {
-  if (s.world!.rest || (s.world!.off && s.world!.off[role])) return null;
-  return lifeTrack(c, s.persons![role], lifeTimeAt(s.turn).age).duty;
+  if (s.world!.off && s.world!.off[role]) return null;
+  var tr = lifeTrack(c, s.persons![role], lifeTimeAt(s.turn).age);
+  if (s.world!.rest) return tr.restDuty || null;
+  return tr.duty;
 }
 
 /** 这一天的工钱：路上写的数，乘上关口挣来的那一级（rules.yaml → daily.wageFlags） */
@@ -984,7 +986,7 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   var p = s.persons![role];
   var other = s.persons![lifeOther(role)];
   // 日程的结果写在路上（tracks.yaml），别的行动写在行动自己身上，按这一段里做了几遍放大
-  var duty = act.duty ? lifeTrack(c, p, lifeTimeAt(s.turn).age).duty : null;
+  var duty = act.duty ? worldDuty(s, c, role) || lifeTrack(c, p, lifeTimeAt(s.turn).age).duty : null; // 歇着的日子是 restDuty
   var times = duty || act.duty ? 1 : a.scale === undefined ? 1 : a.scale;
   var gains: Partial<Stats> = duty ? duty.stats : act.duty ? {} : act.stats;
   var needs: Partial<Needs> = duty ? duty.needs : act.duty ? {} : act.needs;

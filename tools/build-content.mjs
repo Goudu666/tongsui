@@ -55,20 +55,20 @@ const REMEMBERED_MAX = 19;
 // 事件就变成「没有条件」「没有效果」；现在直接报错。加新字段时先加到这里，再去 types.ts 和 sim.ts 里用它。
 const EVENT_KEYS = ["id", "kind", "stage", "where", "when", "hint", "seasons", "weight", "requires", "title", "text", "options", "resonance", "dissonance"];
 // 关口（kind: milestone）多出来的字段，见 content/events/milestones.yaml 文件头
-const MILESTONE_KEYS = [...EVENT_KEYS, "age", "score", "swing", "grades", "kidAge", "withStory"];
-const MILESTONE_OPTION_KEYS = ["id", "text", "tags", "effects", "min", "score", "cost", "requires", "lock", "joins", "hide"];
+const MILESTONE_KEYS = [...EVENT_KEYS, "age", "score", "swing", "grades", "kidAge", "withStory", "expect"];
+const MILESTONE_OPTION_KEYS = ["id", "text", "tags", "effects", "min", "score", "cost", "requires", "lock", "joins", "hide", "lockBy", "homePays"];
 const SCORE_KEYS = ["body", "mind", "charm", "luck", "money", "close", "kid_mind", "kid_body", "kid_charm"];
 // 孩子（docs/FAMILY.md）：带孩子的行动只长这三项；关口按 kid_* 读孩子的属性
 const KID_STAT_KEYS = ["body", "mind", "charm"];
 const KID_SCORE_KEYS = ["kid_mind", "kid_body", "kid_charm"];
 const GRADE_KEYS = ["min", "label", "flags"];
-const TRACK_KEYS = ["id", "label", "requires", "group", "duty"];
+const TRACK_KEYS = ["id", "label", "requires", "group", "duty", "restDuty"];
 const TRACK_REQ_KEYS = ["minAge", "maxAge", "flags", "notFlags"];
 const DUTY_KEYS = ["label", "spot", "arrive", "until", "needs", "stats", "money"];
 // 普通事件的选项也可以挂门槛（docs/MEANS.md 第三节）：requires 只看选的人自己的标记（家境、走过的路），cost 是花掉的积蓄。
 // 标记不对的人看不见这一项；钱不够的看得见、灰着。挂了门槛的事件至少留两个谁都能选的
 const OPTION_KEYS = ["id", "text", "tags", "effects", "requires", "cost"];
-const EFFECT_KEYS = ["self", "other", "bond", "flags", "drop", "money"];
+const EFFECT_KEYS = ["self", "other", "bond", "flags", "drop", "money", "flagsIf"];
 const RESONANCE_KEYS = ["text", "memory", "bond", "flags"];
 const DISSONANCE_KEYS = ["text", "bond", "flags"];
 const FAMILY_KEYS = ["id", "name", "wealth", "weight", "money", "desc", "bonus", "traits"];
@@ -192,6 +192,21 @@ for (const file of eventFiles) {
       }
       if (ev.grades?.length && ev.grades.at(-1).min > 0) errors.push(`${at}.grades: 最后一档是兜底，min 必须是 0`);
       if (ev.withStory !== undefined && ev.withStory !== true) errors.push(`${at}.withStory: 只能写 true（这道关那天主线照排）`);
+      // expect：爸妈心里那条线（殷实人家的 exp_*）。走的路不在单子上，记一回脸色：打 strain1，有了的打 fam_cut（server/src/sim.ts → lifeFace）
+      if (ev.expect !== undefined) {
+        if (typeof ev.expect !== "object" || Array.isArray(ev.expect)) errors.push(`${at}.expect: 是 { exp_*: [路的 id] }`);
+        else {
+          const ids = new Set((ev.options ?? []).filter((o) => !o.joins).map((o) => o.id));
+          for (const [f, roads] of Object.entries(ev.expect)) {
+            if (!String(f).startsWith("exp_")) errors.push(`${at}.expect.${f}: 只看殷实人家的 exp_* 标记`);
+            consumed.push([`${at}.expect`, f]);
+            if (!Array.isArray(roads) || !roads.length) errors.push(`${at}.expect.${f}: 要写爸妈认的几条路`);
+            else for (const r of roads) if (!ids.has(r)) errors.push(`${at}.expect.${f}: ${r} 不是这道关上一条不带 joins 的路`);
+          }
+          produced.add("strain1");
+          produced.add("fam_cut");
+        }
+      }
       const open = (ev.options ?? []).filter((o) => !o.min && !o.requires && !o.cost);
       if (open.length === 0) errors.push(`${at}: 关口至少要有一条谁都能走的路（没有 min / cost / requires 的选项）`);
     }
@@ -218,6 +233,18 @@ for (const file of eventFiles) {
         if (o.lock && [...o.lock].length > 12) errors.push(`${oat}.lock: 不超过 12 个字`);
         // hide：标记不对的人看不见这一项（升迁关上别的行当的路，docs/CAREER.md）。没有标记条件的路藏不起来
         if (o.hide !== undefined && (o.hide !== true || !(o.requires?.flags?.length || o.requires?.notFlags?.length))) errors.push(`${oat}.hide: 只能写 true，而且只能写在带 requires 的选项上`);
+        // lockBy：带着某个标记的人看到另一句锁（断了供的：「家里已经不管你了」）。homePays：带着某个标记的人走这条路，钱家里出（docs/MEANS.md 第八节）
+        if (o.lockBy !== undefined) {
+          if (!(o.requires?.flags?.length || o.requires?.notFlags?.length) || typeof o.lockBy !== "object" || Array.isArray(o.lockBy)) errors.push(`${oat}.lockBy: 是 { 标记: 一句话 }，只能写在带 requires 的选项上`);
+          else for (const [f, t] of Object.entries(o.lockBy)) {
+            consumed.push([`${oat}.lockBy`, f]);
+            if (typeof t !== "string" || !t || [...t].length > 12) errors.push(`${oat}.lockBy.${f}: 一句话，不超过 12 个字`);
+          }
+        }
+        if (o.homePays !== undefined) {
+          if (!o.cost || !Array.isArray(o.homePays) || !o.homePays.length || o.homePays.some((f) => typeof f !== "string")) errors.push(`${oat}.homePays: 是标记列表，只能写在要花钱（cost）的路上`);
+          else for (const f of o.homePays) consumed.push([`${oat}.homePays`, f]);
+        }
       }
       checkKeys(`${oat}.effects`, o.effects, EFFECT_KEYS);
       if (optionIds.has(o.id)) errors.push(`${oat}: 选项 id 重复`);
@@ -232,6 +259,20 @@ for (const file of eventFiles) {
       if (e.drop !== undefined && (!Array.isArray(e.drop) || !e.drop.length || e.drop.some((f) => typeof f !== "string"))) errors.push(`${oat}.effects.drop: 是要摘掉的标记列表（先摘再打 flags，两边都写的标记留着）`);
       o.effects = { self: e.self ?? {}, other: e.other ?? {}, bond: e.bond ?? {}, flags: e.flags ?? [] };
       if (e.drop?.length) o.effects.drop = e.drop;
+      // flagsIf：看人打的标记（带着 flags、不带 notFlags 的人再打 add），条件按选之前的标记算
+      if (e.flagsIf !== undefined) {
+        if (!Array.isArray(e.flagsIf) || !e.flagsIf.length) errors.push(`${oat}.effects.flagsIf: 是 [{ flags, notFlags, add }] 的列表`);
+        else {
+          for (const [wi, w] of e.flagsIf.entries()) {
+            checkKeys(`${oat}.effects.flagsIf[${wi}]`, w, ["flags", "notFlags", "add"]);
+            checkRequires(`${oat}.effects.flagsIf[${wi}]`, { flags: w.flags, notFlags: w.notFlags }, ["flags", "notFlags"]);
+            if (!(w.flags?.length || w.notFlags?.length)) errors.push(`${oat}.effects.flagsIf[${wi}]: 要写 flags 或 notFlags（不看人的标记直接写进 flags）`);
+            if (!Array.isArray(w.add) || !w.add.length) errors.push(`${oat}.effects.flagsIf[${wi}].add: 要打上的标记列表`);
+            else for (const f of w.add) produced.add(f);
+          }
+          o.effects.flagsIf = e.flagsIf.map((w) => ({ flags: w.flags ?? [], notFlags: w.notFlags ?? [], add: w.add ?? [] }));
+        }
+      }
       if (e.money !== undefined) {
         if (typeof e.money !== "number" || e.money <= 0 || e.money > 60) errors.push(`${oat}.effects.money: 拿到的钱写 1~60 的正数（花钱写 cost）`);
         else o.effects.money = e.money;
@@ -271,7 +312,7 @@ for (const file of eventFiles) {
       where: ev.where ?? null, when: ev.when ?? null, hint: ev.hint ?? null,
       requires: ev.requires ?? {}, title: ev.title, text: ev.text, options: ev.options,
       resonance: ev.resonance ?? null, dissonance: ev.dissonance ?? null,
-      ...(ms ? { ...(ev.kidAge !== undefined ? { kidAge: ev.kidAge } : { age: ev.age }), score: ev.score ?? {}, swing: !!ev.swing, grades: ev.grades ?? [], ...(ev.withStory ? { withStory: true } : {}) } : {}),
+      ...(ms ? { ...(ev.kidAge !== undefined ? { kidAge: ev.kidAge } : { age: ev.age }), score: ev.score ?? {}, swing: !!ev.swing, grades: ev.grades ?? [], ...(ev.withStory ? { withStory: true } : {}), ...(ev.expect ? { expect: ev.expect } : {}) } : {}),
     });
   }
 }
@@ -896,20 +937,24 @@ const tracks = (load("tracks.yaml") ?? []).map((t) => {
   checkKeys(at, t, TRACK_KEYS);
   if (!t.id || !t.label) errors.push(`${at}: 需要 id 和 label`);
   checkRequires(at, t.requires, TRACK_REQ_KEYS);
-  const d = t.duty;
-  if (d) {
-    checkKeys(`${at}.duty`, d, DUTY_KEYS);
+  const checkDuty = (key, d) => {
+    checkKeys(`${at}.${key}`, d, DUTY_KEYS);
     const sp = spotById.get(d.spot);
-    if (!sp) errors.push(`${at}.duty: 未知点位 ${d.spot}`);
-    else if (!sp.actions.some((a) => map.actions.find((x) => x.id === a)?.duty)) errors.push(`${at}.duty: 点位 ${d.spot} 上没有日程行动（actions 里要有 duty）`);
-    if (!(Array.isArray(d.arrive) && d.arrive.length === 2 && d.arrive[0] < d.arrive[1] && d.arrive[1] < d.until)) errors.push(`${at}.duty: 需要 arrive: [从, 到] 且早于 until`);
-    if (!d.label) errors.push(`${at}.duty: 需要 label`);
-    checkDeltas(`${at}.duty.needs`, d.needs, NEED_KEYS);
-    checkDeltas(`${at}.duty.stats`, d.stats, STAT_KEYS);
-  }
+    if (!sp) errors.push(`${at}.${key}: 未知点位 ${d.spot}`);
+    else if (!sp.actions.some((a) => map.actions.find((x) => x.id === a)?.duty)) errors.push(`${at}.${key}: 点位 ${d.spot} 上没有日程行动（actions 里要有 duty）`);
+    if (!(Array.isArray(d.arrive) && d.arrive.length === 2 && d.arrive[0] < d.arrive[1] && d.arrive[1] < d.until)) errors.push(`${at}.${key}: 需要 arrive: [从, 到] 且早于 until`);
+    if (!d.label) errors.push(`${at}.${key}: 需要 label`);
+    checkDeltas(`${at}.${key}.needs`, d.needs, NEED_KEYS);
+    checkDeltas(`${at}.${key}.stats`, d.stats, STAT_KEYS);
+    return { label: d.label, spot: d.spot, arrive: d.arrive, until: d.until, needs: d.needs ?? {}, stats: d.stats ?? {}, money: d.money ?? 0 };
+  };
+  const d = t.duty;
+  // restDuty：歇着的日子也有的那一段（清贫人家的孩子看一上午摊，docs/MEANS.md 第八节）。只能写在有 duty 的路上
+  if (t.restDuty && !d) errors.push(`${at}.restDuty: 只能写在有 duty 的路上`);
   return {
     id: t.id, label: t.label, requires: t.requires ?? {}, group: t.group ?? null,
-    duty: d ? { label: d.label, spot: d.spot, arrive: d.arrive, until: d.until, needs: d.needs ?? {}, stats: d.stats ?? {}, money: d.money ?? 0 } : null,
+    duty: d ? checkDuty("duty", d) : null,
+    ...(t.restDuty ? { restDuty: checkDuty("restDuty", t.restDuty) } : {}),
   };
 });
 if (tracks.length === 0 || Object.keys(tracks.at(-1).requires).length > 0) errors.push("tracks.yaml: 最后一条是兜底的路，不能有 requires");

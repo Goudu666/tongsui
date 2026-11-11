@@ -24,6 +24,9 @@ interface OptionEffects {
   drop?: string[];
   /** 拿到的一笔钱（助学金、家里出的钱，docs/MEANS.md 第八节）。在 cost 之后进积蓄；普通事件检定没成就没有 */
   money?: number;
+  /** 看人打的标记（docs/MEANS.md 第八节）：这个人带着 flags、不带 notFlags，才再打上 add。条件都按选之前的标记算。
+   *  同一条路，清贫人家没拿助学金的上大学要背助学贷款（loan），别人不用 */
+  flagsIf?: { flags?: string[]; notFlags?: string[]; add: string[] }[];
 }
 
 interface EventOption {
@@ -42,6 +45,11 @@ interface EventOption {
   joins?: string;
   /** 只有关口用：标记不对的人看不见这一项（升迁关上别的行当的路，docs/CAREER.md）。旧安装包照旧灰着显示 lock */
   hide?: boolean;
+  /** 只有关口用：标记不对时，带着这里某个标记的人看到的是这一句，不是 lock（殷实人家断了供的：「家里已经不管你了」）。
+   *  和 hide 一起用：理由不是 lock 那句的人照旧灰着看得见 */
+  lockBy?: { [flag: string]: string };
+  /** 只有关口用：带着这里某个标记的人走这条路，cost 家里出（不从自己的积蓄扣）。走到了 fam_cut 的不算（docs/MEANS.md 第八节） */
+  homePays?: string[];
 }
 
 /** 关口怎么算分：各项属性乘权重相加；money 表示积蓄 */
@@ -92,6 +100,9 @@ interface LifeEvent {
   kidAge?: number;
   /** 关口那天主线照排（docs/CAREER.md：36 岁挑大梁占着第五章的一个空日子，不让的话第五章天天强制） */
   withStory?: boolean;
+  /** 爸妈心里那条线（殷实人家的 exp_*，docs/MEANS.md 第八节）：带着这个标记、走的路（按 joins 算）不在单子上，记一回脸色
+   *  （没有 strain1 的打 strain1，有了的打 fam_cut）。已经 fam_cut 的不再记 */
+  expect?: { [flag: string]: string[] };
 }
 
 interface EventRequires {
@@ -373,6 +384,8 @@ interface Track {
   /** 同一所学校、同一个行当里的不同位置（学习委员和体育委员还是同班）：group 一样就算同路，日程照样搭伴 */
   group: string | null;
   duty: Duty | null;
+  /** 歇着的日子（不上学不上班）也有的那一段：清贫人家的孩子歇着的日子帮家里看一上午摊（docs/MEANS.md 第八节）。不写就是整天都是自己的 */
+  restDuty?: Duty | null;
 }
 
 interface Content {

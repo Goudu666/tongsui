@@ -119,7 +119,8 @@ function lifeRollOnce(s: { rng: number }, c: Content, exceptFamily: string | nul
 }
 
 /** legacy：这条人生线之前几世留下的东西（legacy.ts）。头一世不传 */
-function lifeCreate(seed: number, c: Content, legacy?: Legacy): LifeState {
+/** cohort：出生年代（content/eras.yaml 的 id）。不写 = 默认年代（九十年代初生，数值按它校的）；真开局由 main.ts / 再来一世用 eraPickCohort 抽 */
+function lifeCreate(seed: number, c: Content, legacy?: Legacy, cohort?: string): LifeState {
   var s: LifeState = {
     version: LIFE_VERSION,
     contentVersion: c.version,
@@ -142,6 +143,9 @@ function lifeCreate(seed: number, c: Content, legacy?: Legacy): LifeState {
     mei: { familyId: m.familyId, talentId: m.talentId, stats: m.stats, rerollsLeft: c.rules.roll.rerolls, confirmed: false },
   };
   legacyRoll(s, c); // 第几世、家业、摆在面前的老物件
+  var dc = eraDefaultCohort(c);
+  s.cohort = cohort || (dc ? dc.id : undefined); // 两个人同一年生（era.ts）
+  s.eras = [];
   return s;
 }
 
@@ -167,6 +171,7 @@ function lifeConfirm(s: LifeState, c: Content, role: Role, names: { [R in Role]:
   if (!s.rolls.qing.confirmed || !s.rolls.mei.confirmed) return false;
   s.persons = { qing: lifeNewPerson(s, c, s.rolls.qing, names.qing), mei: lifeNewPerson(s, c, s.rolls.mei, names.mei) };
   legacyBirth(s, c); // 家业、带着的老物件、上一世留在河畔里的痕迹
+  eraStart(s, c); // 生之前的年代大事悄悄生效（era.ts）
   s.phase = "life";
   worldStartDay(s, c);
   return true;
@@ -266,19 +271,21 @@ function lifeMilestoneFor(ev: LifeEvent, p: Person): boolean {
 function lifeOptionLock(ev: LifeEvent, o: EventOption, p: Person, swing: number, bond?: Bond): string | null {
   var rq = o.requires || {};
   if (!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) return o.lock || "这条路不是给你留的"; // 家里拿不出这笔钱（docs/MEANS.md）
-  if (o.min) {
+  var line = lifeOptionMin(o, p); // 年代挪过的线（era.ts）
+  if (line) {
     var w = lifeOptionWeights(ev, o);
     if (w.close && !bond) return "对门已经空了";
     var have = lifeScore(p, w, bond) + (lifeScoreRaw(w) ? 0 : swing);
-    if (have < o.min) {
+    if (have < line) {
       return w.money
-        ? "积蓄 " + Math.floor(have) + " 块，要 " + o.min + " 块"
+        ? "积蓄 " + Math.floor(have) + " 块，要 " + line + " 块"
         : w.close
-          ? "亲近 " + Math.floor(have) + " 分，线是 " + o.min + " 分"
-          : lifeWeightsLabel(w) + " " + lifePoints(have) + " 分，线是 " + lifePoints(o.min) + " 分";
+          ? "亲近 " + Math.floor(have) + " 分，线是 " + line + " 分"
+          : lifeWeightsLabel(w) + " " + lifePoints(have) + " 分，线是 " + lifePoints(line) + " 分";
     }
   }
-  if (o.cost && p.money < o.cost) return "积蓄 " + Math.floor(p.money) + " 块，要 " + o.cost + " 块";
+  var cost = lifeOptionCost(ev, o, p);
+  if (cost && p.money < cost) return "积蓄 " + Math.floor(p.money) + " 块，要 " + cost + " 块";
   return null;
 }
 
@@ -289,10 +296,11 @@ function lifeOptionLock(ev: LifeEvent, o: EventOption, p: Person, swing: number,
  *   luck   这一场的发挥（含默契托住的 steady）；看原数的线（积蓄、亲近）不算发挥，没有这两项
  *   差几分没够上的那条不在这儿：用 atlasMilestoneNear 给的 results.near（和锁上那句、结局页的「差一点」同一个数）
  */
-function lifeReveal(ev: LifeEvent, o: EventOption, swing: number, steady: number) {
+function lifeReveal(ev: LifeEvent, o: EventOption, swing: number, steady: number, p?: Person) {
   var out: { line?: number; luck?: number; steady?: number } = {};
   var ow = lifeOptionWeights(ev, o);
-  if (o.min) out.line = lifeScoreRaw(ow) ? o.min : lifePoints(o.min);
+  var line = p ? lifeOptionMin(o, p) : o.min || 0;
+  if (line) out.line = lifeScoreRaw(ow) ? line : lifePoints(line);
   if (!lifeScoreRaw(o.min ? ow : ev.score || {})) {
     var sl = Math.round(swing * 10) || 0;
     if (sl !== 0) out.luck = sl;
@@ -380,7 +388,8 @@ function lifeTapeGrades(ev: LifeEvent, p: Person): number[] {
     if (!lifeHasAll(p.flags, orq.flags) || !lifeHasNone(p.flags, orq.notFlags)) continue;
     var w = lifeOptionWeights(ev, o);
     if (w.money) continue;
-    top = Math.max(top, lifeScoreRaw(w) ? o.min : lifePoints(o.min));
+    var line = lifeOptionMin(o, p);
+    top = Math.max(top, lifeScoreRaw(w) ? line : lifePoints(line));
   }
   var out: number[] = [];
   for (var gi = ev.grades.length - 1; gi >= 0; gi--) if (lifePoints(ev.grades[gi].min) > top) out.push(gi);
@@ -414,7 +423,8 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
     var w = lifeOptionWeights(best, o);
     var have = lifeScore(p, w, lifePairBond(s, role));
     var raw = lifeScoreRaw(w);
-    lines.push({ id: o.id, text: o.text, by: lifeWeightsLabel(w), unit: w.money ? "块" : "分", have: raw ? Math.floor(have) : lifePoints(have), need: raw ? o.min : lifePoints(o.min), ok: have >= o.min });
+    var need = lifeOptionMin(o, p);
+    lines.push({ id: o.id, text: o.text, by: lifeWeightsLabel(w), unit: w.money ? "块" : "分", have: raw ? Math.floor(have) : lifePoints(have), need: raw ? need : lifePoints(need), ok: have >= need });
   }
   // 比最高那条路还高的名次（grades）也摆上来：起点高的人不会开局就无事可冲，每道关都还有一条够一够的线
   var gw = best.score || {};
@@ -583,9 +593,10 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       var near = atlasMilestoneNear(ev, o.id, me, swing, lifePairBond(s, role), gscore);
       var shown = lifeScoreRaw(sw) ? Math.floor(lifeScore(me, sw, s.bond)) : lifePoints(lifeScore(me, sw, s.bond) + swing);
       // 揭晓演出要的几样（线、发挥），也是走进考场那一刻的。差一点的那条就是上面的 near，不另算
-      var reveal = lifeReveal(ev, o, swing, (pe.steady && pe.steady[role]) || 0);
+      var reveal = lifeReveal(ev, o, swing, (pe.steady && pe.steady[role]) || 0, me);
       if (grade) lifeAddFlags(me, grade.flags);
-      if (o.cost) me.money = Math.max(0, me.money - o.cost);
+      var cost = lifeOptionCost(ev, o, me);
+      if (cost) me.money = Math.max(0, me.money - cost);
       lifeApplySelf(me, o.effects.self, grow);
       if (other.alive) lifeApplySelf(other, o.effects.other, grow);
       lifeApplyBond(s, c, o.effects.bond);
@@ -731,6 +742,7 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
     out.push(end);
     s.log.push(end);
   } else {
+    eraTick(s, c, out); // 到了年份的年代大事（era.ts），赶在新一天开张之前：今天的行动和关口按新的规矩
     worldStartDay(s, c);
   }
   return out;

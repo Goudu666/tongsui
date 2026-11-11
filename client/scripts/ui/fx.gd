@@ -3,6 +3,7 @@ extends CanvasLayer
 ##   print_in()   新画面像印刷一样从网点里显出来（每次换页、进出河畔里）
 ##   stage_card() 长大了：一整版墨盖下来，写上年纪，再揭开（这一天也进了新的一章，卡上再多章名和章首那一句）
 ##   chapter_card() 进了新的一章（没赶上长大的那几章：6 岁、45 岁，还有头一天）
+##   era_cards()    年代大事：一整版墨，上面年代名、大字标题、一段话、落到我头上的那一句；点一下揭开（ui/era.gd 排字）
 
 const P := preload("res://scripts/ui/palette.gd")
 const Kit := preload("res://scripts/ui/kit.gd")
@@ -20,6 +21,12 @@ var report_hook: Callable
 var _hold_tween: Tween
 var _report_up := false
 signal report_shown  ## 成绩单露出来了（声音跟着响）
+## 年代卡：还没弹的几张（每张是 Era.specs 排好的字），正盖着的那一张，从什么时候起点得掉
+var _era_pages: Array = []
+var _era_now: Array = []
+var _era_up := false
+var _era_tap_at := 0.0
+const ERA_WIDTH := 1180.0  ## 年代卡上的字最宽这么多（再宽一行太长，读着累）
 
 
 func is_busy() -> bool:
@@ -49,6 +56,9 @@ func _ready() -> void:
 ## 成绩单那张卡：点一下就揭开（剩下的动画快放）
 func _on_sheet_input(event: InputEvent) -> void:
 	var tap: bool = (event is InputEventMouseButton and event.pressed) or (event is InputEventScreenTouch and event.pressed)
+	if tap and _era_up:
+		_close_era()
+		return
 	if tap and _report_up and _tween != null and _tween.is_valid():
 		_tween.set_speed_scale(6.0)
 
@@ -116,6 +126,10 @@ func chapter_card(num: String, title: String, intro: String, dots: String, small
 
 
 func _show_card(specs: Array, color: Color, swap: Callable, hold: float, report: Control = null) -> void:
+	# 年代卡正盖着，长大 / 新一章的卡插进来：年代卡退回去排第一个，这张揭开以后再弹
+	if _era_up:
+		_era_pages.push_front(_era_now)
+		_era_up = false
 	for c in _card.get_children():
 		c.queue_free()
 	var f := P.font()
@@ -184,7 +198,103 @@ func _show_card(specs: Array, color: Color, swap: Callable, hold: float, report:
 		_sheet.visible = false
 		_sheet.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_report_up = false
-		_busy_card = false)
+		_busy_card = false
+		_next_era())
+
+
+# ---------------------------------------------------------------- 年代卡 ----
+
+func era_up() -> bool:
+	return _era_up
+
+
+## 弹几张年代卡（pages：每张一组 Era.specs 排好的字），一张一张来，点一下下一张。
+## 别的卡正盖着就排在它后面；弹窗（关口揭晓、收工小结）由 main.gd 等它关了才调这里
+func era_cards(pages: Array) -> void:
+	for pg in pages:
+		if pg is Array and not pg.is_empty():
+			_era_pages.append(pg)
+	if not _busy_card:
+		_next_era()
+
+
+func _next_era() -> void:
+	if _era_pages.is_empty():
+		return
+	_era_now = _era_pages.pop_front()
+	_era_up = true
+	_busy_card = true
+	_report_up = false
+	for c in _card.get_children():
+		c.queue_free()
+	var width := minf(ERA_WIDTH, get_viewport().get_visible_rect().size.x - 160.0)
+	var col := era_column(_era_now, width, _era_pages.size())
+	_card.add_child(col)
+	_card.modulate.a = 0.0
+	_start(P.INK, 1.0)
+	_sheet.mouse_filter = Control.MOUSE_FILTER_STOP
+	_era_tap_at = Time.get_ticks_msec() / 1000.0 + 0.6  # 刚盖下来那一下的点击不算（多半是关上一张卡的手还没抬）
+	_tween.tween_method(_set_progress, 1.0, 0.0, 0.5).set_trans(Tween.TRANS_SINE)
+	_tween.tween_property(_card, "modulate:a", 1.0, 0.35)
+
+
+func _close_era() -> void:
+	if Time.get_ticks_msec() / 1000.0 < _era_tap_at:
+		return
+	_era_up = false
+	_start(P.INK, 0.0)
+	_tween.tween_property(_card, "modulate:a", 0.0, 0.25)
+	_tween.tween_method(_set_progress, 0.0, 1.0, 0.6).set_trans(Tween.TRANS_SINE)
+	_tween.tween_callback(func():
+		_sheet.visible = false
+		_sheet.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_busy_card = false
+		_next_era())
+
+
+## 年代卡上的一栏字（Era.specs 排好的 [[字, 字号, 颜色], …]，"@rule" 是两件大事中间的一道细线）。
+## more：后面还有几张，底下的小字说一声
+static func era_column(specs: Array, width: float, more := 0) -> VBoxContainer:
+	var f := P.font()
+	var col := VBoxContainer.new()
+	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_theme_constant_override("separation", 18)
+	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	col.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	col.custom_minimum_size.x = width
+	for spec in specs:
+		if str(spec[0]) == "@rule":
+			var holder := CenterContainer.new()
+			holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			var bar := ColorRect.new()
+			bar.color = spec[2]
+			bar.custom_minimum_size = Vector2(minf(420.0, width * 0.5), 3)
+			bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			holder.add_child(bar)
+			col.add_child(holder)
+			continue
+		var l := Label.new()
+		l.text = spec[0]
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		l.custom_minimum_size.x = width
+		l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		l.add_theme_font_override("font", f)
+		l.add_theme_font_size_override("font_size", spec[1])
+		l.add_theme_color_override("font_color", spec[2])
+		l.add_theme_constant_override("line_spacing", int(int(spec[1]) * 0.3))
+		col.add_child(l)
+	var cap := Label.new()
+	cap.text = "点一下，还有 %d 张" % more if more > 0 else "点一下接着过"
+	cap.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cap.add_theme_font_override("font", f)
+	cap.add_theme_font_size_override("font_size", 24)
+	cap.add_theme_color_override("font_color", Color(P.PAPER, 0.45))
+	col.add_child(Control.new())  # 和正文隔开一点
+	col.get_child(-1).custom_minimum_size.y = 24
+	col.add_child(cap)
+	return col
 
 
 ## 章首卡上的两个圆：这一章两个人隔多远

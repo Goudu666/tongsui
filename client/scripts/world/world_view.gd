@@ -11,6 +11,7 @@ const SceneArt := preload("res://scripts/world/scene_art.gd")
 const PrintLight := preload("res://scripts/world/print_light.gd")
 const Weather := preload("res://scripts/world/weather.gd")
 const Atmos := preload("res://scripts/world/atmos.gd")
+const Era := preload("res://scripts/ui/era.gd")
 const SPOT_RADIUS := 100.0  ## 比服务器的 110 小一点，避免边缘抖动
 const MOVE_SEND_INTERVAL := 0.1
 const SnapshotBuffer := preload("res://scripts/net/snapshot_buffer.gd")
@@ -56,6 +57,8 @@ var buffers: Dictionary = {}    ## role -> SnapshotBuffer（只用于对方）
 var _correction := Vector2.ZERO ## 本地角色还没消化掉的服务器校正量
 var _corrected_upto := 0        ## 这个序号及以前的 MOVE 是在校正之前发的，不再拿来校正（避免重复校正）
 var _stage_set := false
+var _stage_now := "childhood"  ## 人的岁数那一段（人物外观、纸的旧）
+var look := ""                ## 年代的样子（era.look）；空就照 _stage_now
 var _flash: Dictionary = {}  ## role -> {act, label, tg, until}：刚当场做完的一回，人在那个点上把它做一会儿给人看
 const FLASH_SECS := 1.1
 
@@ -155,15 +158,34 @@ func me() -> Actor:
 
 ## 人生阶段变了（长大了），换外观
 func set_stage(stage: String) -> void:
+	_stage_now = stage
 	for a in actors.values():
 		a.set_stage(stage)
-	if street != null:
-		street.set_stage(stage)
 	if light != null:
 		light.set_stage(stage, not _stage_set)
 	_stage_set = true
+	_apply_scene_look()
+
+
+## 年代（服务器 era.look，取值是五个阶段键）：街景、远景用它，不跟着人的岁数走（ui/era.gd）。空 = 照人生阶段
+func set_look(p_look: String) -> void:
+	if p_look == look:
+		return
+	look = p_look
+	_apply_scene_look()
+
+
+## 街上、远处现在按哪一套画
+func scene_look() -> String:
+	return look if look in Era.LOOKS else _stage_now
+
+
+func _apply_scene_look() -> void:
+	var key := scene_look()
+	if street != null:
+		street.set_stage(key)
 	if art != null:
-		art.set_stage(stage)
+		art.set_stage(key)
 		art.queue_redraw()
 
 

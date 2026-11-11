@@ -45,8 +45,11 @@ static func set_accent(c: Color) -> void:
 		b.emit_changed()
 
 
-static func _box(margin_h := 40.0, margin_v := 26.0, offset := 7.0, follow_accent := true) -> StyleBox:
+static func _box(margin_h := 40.0, margin_v := 26.0, offset := 6.0, follow_accent := true) -> StyleBox:
 	var b := RisoBox.make(accent, offset)
+	b.fill = P.PAPER_HI
+	b.line = P.LINE
+	b.overshoot = 5.0
 	b.content_margin_left = margin_h
 	b.content_margin_right = margin_h
 	b.content_margin_top = margin_v
@@ -64,11 +67,13 @@ static func theme() -> Theme:
 	# 按钮：纸 + 墨框 + 错开的色块；按下去整个压到色块上
 	var normal := _box()
 	var hover := _box()
-	hover.fill = P.PAPER.lerp(Color.WHITE, 0.35)
+	hover.fill = Color.WHITE.lerp(P.PAPER_HI, 0.4)
+	hover.block_offset = Vector2(8, 8)  # 手指悬在上面：纸片抬起来一点，色块露得多
 	var pressed := _box()
 	pressed.shift = Vector2(5, 5)
+	pressed.block_offset = Vector2(5, 5)
 	pressed.fill = P.PAPER_DARK
-	var disabled := _box(40.0, 26.0, 7.0, false)
+	var disabled := _box(40.0, 26.0, 6.0, false)
 	disabled.ink = P.INK_SOFT
 	disabled.block = Color(P.INK_SOFT, 0.25)
 	disabled.hatch = true
@@ -80,6 +85,7 @@ static func theme() -> Theme:
 	for c in ["font_color", "font_hover_color", "font_focus_color", "font_pressed_color"]:
 		th.set_color(c, "Button", P.INK)
 	th.set_color("font_disabled_color", "Button", P.INK_SOFT)
+	th.set_font_size("font_size", "Button", P.FS_H - 4)
 	# 输入框：只有一条底线，像表格里等着填的那一栏
 	var edit := StyleBoxFlat.new()
 	edit.bg_color = Color(P.PAPER, 0.0)
@@ -101,13 +107,15 @@ static func theme() -> Theme:
 ## 主要按钮：整块墨底，纸色的字
 ## 这里的框不登记进 _accent_boxes：页面每次都重建，登记了只会越攒越多
 static func make_primary(b: Button) -> void:
-	var normal := _box(40.0, 26.0, 7.0, false)
+	var normal := _box(40.0, 26.0, 6.0, false)
 	normal.fill = P.INK
-	var hover := _box(40.0, 26.0, 7.0, false)
+	var hover := _box(40.0, 26.0, 6.0, false)
 	hover.fill = P.INK.lerp(P.OVERLAP, 0.6)
-	var pressed := _box(40.0, 26.0, 7.0, false)
+	hover.block_offset = Vector2(8, 8)
+	var pressed := _box(40.0, 26.0, 6.0, false)
 	pressed.fill = P.OVERLAP
 	pressed.shift = Vector2(5, 5)
+	pressed.block_offset = Vector2(5, 5)
 	b.add_theme_stylebox_override("normal", normal)
 	b.add_theme_stylebox_override("hover", hover)
 	b.add_theme_stylebox_override("pressed", pressed)
@@ -144,8 +152,9 @@ static func card(block: Color, margin := 48.0, hatch := true, offset := 12.0) ->
 	var p := PanelContainer.new()
 	var sb := RisoBox.make(block, offset, margin)
 	sb.hatch = hatch
-	sb.line = 4.0
-	sb.overshoot = 10.0
+	sb.fill = P.PAPER_HI
+	sb.line = 3.0
+	sb.overshoot = 8.0
 	p.add_theme_stylebox_override("panel", sb)
 	return p
 
@@ -155,7 +164,7 @@ static func label(parent: Node, text: String, font_size := 40, color := P.INK, a
 	l.text = text
 	l.add_theme_font_size_override("font_size", font_size)
 	l.add_theme_color_override("font_color", color)
-	l.add_theme_constant_override("line_spacing", int(font_size * 0.28))
+	l.add_theme_constant_override("line_spacing", int(font_size * (0.36 if font_size <= P.FS_BODY else 0.22)))
 	l.horizontal_alignment = align
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -291,3 +300,104 @@ class StatDots extends Control:
 					draw_arc(at, r, 0, TAU, 24, Color(P.INK_SOFT, 0.7), 1.5, true)
 			draw_string(f, Vector2(x0 + 10 * pitch + 14, mid + fs * 0.36), str(int(v)), HORIZONTAL_ALIGNMENT_LEFT, -1, fs, P.INK_SOFT)
 			y += _row()
+
+
+# ----------------------------------------------------------------------
+# 自绘控件（HUD、纸带、成长账、日结卡）用的纸片：和 riso_box 同一个画法，
+# 这样自己画的和 StyleBox 画的放在一块儿看不出两样。
+# ----------------------------------------------------------------------
+
+## 一张纸片：错开的色块（透明就垫一层淡影子）+ 亮纸 + 四边出头的墨线
+static func draw_sheet(c: CanvasItem, r: Rect2, block := Color(0, 0, 0, 0), offset := 6.0, fill := P.PAPER_HI, line := P.LINE) -> void:
+	c.draw_rect(Rect2(r.position + Vector2(offset, offset), r.size), block if block.a > 0.0 else P.SHADE)
+	c.draw_rect(r, fill)
+	ink_frame(c, r, line)
+
+
+## 四条边各自出头一点、不完全平行：手拿尺子画的框
+static func ink_frame(c: CanvasItem, r: Rect2, line := P.LINE, ink := P.INK, e := 5.0) -> void:
+	var k := fmod(r.size.x * 0.37 + r.size.y * 0.11, 1.0) - 0.5
+	var a := r.position
+	var b := r.end
+	c.draw_line(Vector2(a.x - e, a.y + k), Vector2(b.x + e * 0.6, a.y - k * 0.5), ink, line, true)
+	c.draw_line(Vector2(a.x - e * 0.5, b.y - k * 0.5), Vector2(b.x + e, b.y + k), ink, line, true)
+	c.draw_line(Vector2(a.x + k * 0.5, a.y - e), Vector2(a.x - k * 0.5, b.y + e * 0.6), ink, line, true)
+	c.draw_line(Vector2(b.x - k, a.y - e * 0.6), Vector2(b.x + k * 0.5, b.y + e), ink, line, true)
+
+
+## 纸片里分区的细线
+static func hair(c: CanvasItem, from: Vector2, to: Vector2) -> void:
+	c.draw_line(from, to, P.HAIR, P.LINE_HAIR, true)
+
+
+## 纸片顶上的色条（日历牌、对门的牌、日结卡）：一条专色，底下一道墨线
+static func draw_band(c: CanvasItem, r: Rect2, color: Color, h := 48.0) -> void:
+	c.draw_rect(Rect2(r.position, Vector2(r.size.x, h)), color)
+	c.draw_line(r.position + Vector2(0, h), r.position + Vector2(r.size.x, h), P.INK, P.LINE, true)
+
+
+## 画一行字，返回字宽。右对齐时 at.x 是右边沿
+static func text(c: CanvasItem, at: Vector2, s: String, fs: int, color := P.INK, right := false, max_w := -1.0) -> float:
+	var f := P.font()
+	var w := f.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+	if max_w > 0.0:
+		w = minf(w, max_w)
+	c.draw_string(f, Vector2(at.x - w if right else at.x, at.y), s, HORIZONTAL_ALIGNMENT_LEFT, max_w, fs, color)
+	return w
+
+
+## 选项那张票：亮纸、细墨线、专色错开；比普通按钮矮一点、字小一档，几张并排不挤
+static func make_option(b: Button) -> void:
+	var boxes: Array = []
+	for st in ["normal", "hover", "pressed", "disabled"]:
+		var sb := _box(32.0, 22.0, 6.0, false)
+		match st:
+			"hover":
+				sb.fill = Color.WHITE.lerp(P.PAPER_HI, 0.4)
+				sb.block_offset = Vector2(9, 9)
+			"pressed":
+				sb.fill = P.PAPER_DARK
+				sb.shift = Vector2(5, 5)
+				sb.block_offset = Vector2(5, 5)
+			"disabled":
+				sb.fill = P.PAPER
+				sb.ink = Color(P.INK, 0.45)
+				sb.block = Color(P.INK_SOFT, 0.3)
+				sb.hatch = true
+		b.add_theme_stylebox_override(st, sb)
+		boxes.append(sb)
+	b.add_theme_font_size_override("font_size", P.FS_BODY)
+	b.add_theme_constant_override("line_spacing", 6)
+	b.add_theme_color_override("font_disabled_color", P.INK_MID)
+
+
+const SEALS := ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬"]
+
+
+## 选项票左头那枚小印：墨底纸字的一个方块。字往右让开
+static func option_seal(b: Button, i: int) -> void:
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	for st in ["normal", "hover", "pressed", "disabled"]:
+		var sb: StyleBox = b.get_theme_stylebox(st)
+		if sb != null:
+			sb.content_margin_left = 96.0
+	var seal := Label.new()
+	seal.text = SEALS[clampi(i, 0, SEALS.size() - 1)]
+	seal.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	seal.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	seal.add_theme_font_size_override("font_size", P.FS_LABEL)
+	seal.add_theme_color_override("font_color", P.PAPER_HI)
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = P.INK
+	seal.add_theme_stylebox_override("normal", bg)
+	seal.anchor_top = 0.5
+	seal.anchor_bottom = 0.5
+	seal.offset_left = 30
+	seal.offset_right = 78
+	seal.offset_top = -24
+	seal.offset_bottom = 24
+	seal.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(seal)
+	b.draw.connect(func():
+		var dim := b.disabled
+		bg.bg_color = P.INK_SOFT if dim else (accent.darkened(0.15) if b.is_hovered() else P.INK))

@@ -1,7 +1,1212 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "b1fce8e1289d",
+ "version": "d9c419a22b38",
  "events": [
+  {
+   "id": "m_rise",
+   "kind": "milestone",
+   "stage": "young",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "notFlags": [
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "站住脚",
+   "text": "干了四年，手上的活儿熟了。往上走一步，换个地方，还是就这么干下去？",
+   "options": [
+    {
+     "id": "up_desk",
+     "text": "评上组长，管一摊事",
+     "score": {
+      "mind": 0.7,
+      "charm": 0.3
+     },
+     "min": 9.3,
+     "requires": {
+      "flags": [
+       "job_desk"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank1"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank1"
+      ]
+     }
+    },
+    {
+     "id": "up_pull",
+     "text": "调进了吃香的科室",
+     "score": {
+      "charm": 0.6,
+      "mind": 0.4
+     },
+     "min": 9.4,
+     "requires": {
+      "flags": [
+       "job_pull"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank1"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "up_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank1"
+      ]
+     }
+    },
+    {
+     "id": "up_teach",
+     "text": "当上班主任",
+     "score": {
+      "mind": 0.5,
+      "charm": 0.5
+     },
+     "min": 8.8,
+     "requires": {
+      "flags": [
+       "job_teach"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank1"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "up_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank1"
+      ]
+     }
+    },
+    {
+     "id": "up_trade",
+     "text": "盘下一间门脸",
+     "score": {
+      "charm": 0.7,
+      "luck": 0.3
+     },
+     "min": 7.2,
+     "cost": 20,
+     "requires": {
+      "flags": [
+       "job_trade"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank1"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "up_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank1"
+      ]
+     }
+    },
+    {
+     "id": "up_craft",
+     "text": "出师，自己接活",
+     "score": {
+      "body": 0.5,
+      "mind": 0.5
+     },
+     "min": 7.8,
+     "requires": {
+      "flags": [
+       "job_craft"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank1"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "up_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank1"
+      ]
+     }
+    },
+    {
+     "id": "up_labor",
+     "text": "当上大工",
+     "score": {
+      "body": 1
+     },
+     "min": 7.7,
+     "requires": {
+      "flags": [
+       "job_labor"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank1"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "up_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank1"
+      ]
+     }
+    },
+    {
+     "id": "up_factory",
+     "text": "评上技术员",
+     "score": {
+      "mind": 0.6,
+      "body": 0.4
+     },
+     "min": 6.9,
+     "requires": {
+      "flags": [
+       "job_succeed"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank1"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "up_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank1"
+      ]
+     }
+    },
+    {
+     "id": "up_odd",
+     "text": "找着一份长活",
+     "score": {
+      "body": 0.5,
+      "charm": 0.5
+     },
+     "min": 7,
+     "requires": {
+      "flags": [
+       "job_odd"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank1"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "up_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank1"
+      ]
+     }
+    },
+    {
+     "id": "up_away",
+     "text": "在外地站住了脚",
+     "score": {
+      "mind": 0.6,
+      "charm": 0.4
+     },
+     "min": 9,
+     "requires": {
+      "flags": [
+       "left_city"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "came_back",
+       "rank1"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "up_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank1"
+      ]
+     }
+    },
+    {
+     "id": "jump",
+     "text": "跟着老同事跳到别家",
+     "score": {
+      "charm": 0.6,
+      "luck": 0.4
+     },
+     "min": 6.4,
+     "requires": {
+      "notFlags": [
+       "job_odd",
+       "job_succeed",
+       "job_trade",
+       "job_craft",
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank1"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank1",
+       "jumped"
+      ]
+     }
+    },
+    {
+     "id": "to_desk",
+     "text": "上夜大，考进机关",
+     "score": {
+      "mind": 1
+     },
+     "min": 9.5,
+     "cost": 20,
+     "requires": {
+      "notFlags": [
+       "job_desk",
+       "job_pull",
+       "left_city",
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off"
+      ]
+     },
+     "lock": "这一步你用不着",
+     "hide": true,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_desk",
+       "switched"
+      ],
+      "drop": [
+       "job_desk",
+       "job_pull",
+       "job_teach",
+       "job_trade",
+       "job_craft",
+       "job_labor",
+       "job_succeed",
+       "job_odd",
+       "rank1",
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "to_trade",
+     "text": "辞了，出来做买卖",
+     "score": {
+      "charm": 0.7,
+      "luck": 0.3
+     },
+     "min": 7.4,
+     "cost": 20,
+     "requires": {
+      "notFlags": [
+       "job_trade",
+       "left_city",
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off"
+      ]
+     },
+     "lock": "这一步你用不着",
+     "hide": true,
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_trade",
+       "switched"
+      ],
+      "drop": [
+       "job_desk",
+       "job_pull",
+       "job_teach",
+       "job_trade",
+       "job_craft",
+       "job_labor",
+       "job_succeed",
+       "job_odd",
+       "rank1",
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "to_craft",
+     "text": "拜个师傅学手艺",
+     "score": {
+      "body": 0.5,
+      "mind": 0.5
+     },
+     "min": 8.7,
+     "requires": {
+      "notFlags": [
+       "job_craft",
+       "job_desk",
+       "job_pull",
+       "job_teach",
+       "job_trade",
+       "left_city",
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off"
+      ]
+     },
+     "lock": "这一步你用不着",
+     "hide": true,
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_craft",
+       "switched"
+      ],
+      "drop": [
+       "job_desk",
+       "job_pull",
+       "job_teach",
+       "job_trade",
+       "job_craft",
+       "job_labor",
+       "job_succeed",
+       "job_odd",
+       "rank1",
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "seat",
+     "text": "家里托人，调个好位置",
+     "score": {
+      "mind": 0.5,
+      "charm": 0.5
+     },
+     "min": 8.6,
+     "cost": 25,
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank1"
+      ]
+     },
+     "lock": "家里没这层关系",
+     "joins": "up_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank1",
+       "seat_pull"
+      ]
+     }
+    },
+    {
+     "id": "steady",
+     "text": "不争不抢，把手上的干好",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "up_desk": {
+     "text": "那年两个人都往上走了一步。晚上在楼道里碰见，谁也没提，各自多买了一瓶汽水。",
+     "memory": "多买的汽水",
+     "bond": {
+      "sync": 2
+     },
+     "flags": []
+    },
+    "jump": {
+     "text": "同一个礼拜，两个人都换了东家。新单位离得不远，中午能在一个面馆碰上。",
+     "memory": "一个面馆",
+     "bond": {
+      "sync": 2
+     },
+     "flags": []
+    },
+    "steady": {
+     "text": "两个人都没动。下了班还是一前一后进楼门，日子跟去年一样。",
+     "memory": "一前一后",
+     "bond": {
+      "sync": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "两个人各走各的那一步。见了面先问对方忙不忙，问完了，就没话了。",
+    "bond": {
+     "close": -2
+    },
+    "flags": []
+   },
+   "age": 26,
+   "score": {},
+   "swing": false,
+   "grades": [],
+   "catches": []
+  },
+  {
+   "id": "m_rise2",
+   "kind": "milestone",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "notFlags": [
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "挑大梁",
+   "text": "三十六了。上头的人要退，底下的人等着，你正好卡在中间。",
+   "options": [
+    {
+     "id": "top_desk",
+     "text": "当上科长",
+     "score": {
+      "mind": 0.5,
+      "charm": 0.5
+     },
+     "min": 9.6,
+     "requires": {
+      "flags": [
+       "job_desk",
+       "rank1"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank2"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "top_pull",
+     "text": "坐上副手的位子",
+     "score": {
+      "charm": 0.6,
+      "mind": 0.4
+     },
+     "min": 9.6,
+     "requires": {
+      "flags": [
+       "job_pull",
+       "rank1"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank2"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "top_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "top_teach",
+     "text": "当上教研组长",
+     "score": {
+      "mind": 0.7,
+      "charm": 0.3
+     },
+     "min": 8.6,
+     "requires": {
+      "flags": [
+       "job_teach",
+       "rank1"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank2"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "top_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "top_trade",
+     "text": "做起了批发",
+     "score": {
+      "money": 1
+     },
+     "min": 90,
+     "cost": 40,
+     "requires": {
+      "flags": [
+       "job_trade",
+       "rank1"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank2"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "top_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "top_craft",
+     "text": "收徒弟，开铺子",
+     "score": {
+      "money": 1
+     },
+     "min": 70,
+     "cost": 30,
+     "requires": {
+      "flags": [
+       "job_craft",
+       "rank1"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank2"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "top_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "top_labor",
+     "text": "自己拉一班人",
+     "score": {
+      "money": 1
+     },
+     "min": 60,
+     "cost": 20,
+     "requires": {
+      "flags": [
+       "job_labor",
+       "rank1"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank2"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "top_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "top_factory",
+     "text": "当上车间主任",
+     "score": {
+      "mind": 0.5,
+      "charm": 0.5
+     },
+     "min": 7.4,
+     "requires": {
+      "flags": [
+       "job_succeed",
+       "rank1"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank2"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "top_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "top_odd",
+     "text": "带着几个人干",
+     "score": {
+      "money": 1
+     },
+     "min": 45,
+     "cost": 15,
+     "requires": {
+      "flags": [
+       "job_odd",
+       "rank1"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "rank2"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "top_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "top_away",
+     "text": "在外地带一摊事",
+     "score": {
+      "mind": 0.5,
+      "charm": 0.5
+     },
+     "min": 9.4,
+     "requires": {
+      "flags": [
+       "left_city",
+       "rank1"
+      ],
+      "notFlags": [
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off",
+       "came_back",
+       "rank2"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "top_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank2"
+      ]
+     }
+    },
+    {
+     "id": "study",
+     "text": "进修两年，评了上去",
+     "score": {
+      "money": 1
+     },
+     "min": 80,
+     "cost": 40,
+     "requires": {
+      "flags": [
+       "rank1"
+      ],
+      "notFlags": [
+       "rank2",
+       "job_trade",
+       "job_craft",
+       "job_labor",
+       "job_odd",
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "top_desk",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank2",
+       "studied"
+      ]
+     }
+    },
+    {
+     "id": "late",
+     "text": "熬了这些年，升了一级",
+     "score": {
+      "mind": 0.4,
+      "charm": 0.3,
+      "body": 0.3
+     },
+     "min": 8.8,
+     "requires": {
+      "notFlags": [
+       "rank1",
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off"
+      ]
+     },
+     "lock": "这一步你用不着",
+     "hide": true,
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank1"
+      ]
+     }
+    },
+    {
+     "id": "poach",
+     "text": "被人挖去别家当个头",
+     "score": {
+      "charm": 0.7,
+      "luck": 0.3
+     },
+     "min": 8.9,
+     "requires": {
+      "flags": [
+       "rank1"
+      ],
+      "notFlags": [
+       "rank2",
+       "job_odd",
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {
+       "close": -2
+      },
+      "flags": [
+       "rank2",
+       "jumped"
+      ]
+     }
+    },
+    {
+     "id": "push",
+     "text": "家里再使使劲",
+     "score": {
+      "mind": 0.5,
+      "charm": 0.5
+     },
+     "min": 9.2,
+     "cost": 40,
+     "requires": {
+      "flags": [
+       "fam_rich",
+       "rank1"
+      ],
+      "notFlags": [
+       "rank2",
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off"
+      ]
+     },
+     "lock": "家里使不上劲",
+     "hide": true,
+     "joins": "top_desk",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank2",
+       "seat_pull"
+      ]
+     }
+    },
+    {
+     "id": "hold",
+     "text": "就这样，挺好",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "top_desk": {
+     "text": "两个人都挑上了大梁。饭桌上的话越来越少，电话铃一响，两家一起抬头。",
+     "memory": "一起抬头",
+     "bond": {
+      "sync": 2
+     },
+     "flags": []
+    },
+    "late": {
+     "text": "熬了十年，同一年升的。谁也没请客，两家凑了一桌饺子。",
+     "memory": "一桌饺子",
+     "bond": {
+      "sync": 3
+     },
+     "flags": []
+    },
+    "hold": {
+     "text": "两个人都没往上挤。礼拜天还能一块儿去河边。",
+     "memory": "礼拜天的河边",
+     "bond": {
+      "sync": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个周末也在单位，一个按点回家。按点回家的那个，把对门的报纸顺手收进来。",
+    "bond": {
+     "close": -2
+    },
+    "flags": []
+   },
+   "age": 36,
+   "score": {},
+   "swing": false,
+   "grades": [],
+   "catches": []
+  },
   {
    "id": "ch_runner",
    "kind": "solo",
@@ -15418,7 +16623,7 @@ var CONTENT: Content = {
      "score": {
       "close": 1
      },
-     "min": 60,
+     "min": 62,
      "tags": [
       "gentle"
      ],
@@ -24915,6 +26120,2353 @@ var CONTENT: Content = {
      "effects": {
       "self": {
        "mood": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_desk_minutes",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 25,
+    "flags": [
+     "job_desk"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "会议记录",
+   "text": "处里开了一下午会，你记了满满六页。处长说明早要看整理稿。对门约的电影七点开场。",
+   "options": [
+    {
+     "id": "skip",
+     "text": "退了票，回去整理",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3
+      },
+      "other": {
+       "mood": -3
+      },
+      "bond": {
+       "close": -1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "both",
+     "text": "看完电影再熬夜",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2,
+       "energy": -12
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "rough",
+     "text": "明早交个大概",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_desk_form",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 35,
+    "flags": [
+     "job_desk",
+     "rank1"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "新表格",
+   "text": "组里分来个大学生，头一个礼拜就把你用了好几年的表格改了样式。比原来的好用。",
+   "options": [
+    {
+     "id": "share",
+     "text": "让他给全组讲一回",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "credit",
+     "text": "跟处长说是他改的",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mind": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "learn",
+     "text": "晚上自己琢磨透",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_pull_papers",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 25,
+    "flags": [
+     "job_pull"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "一摞报纸",
+   "text": "科里分活，难啃的都分给了别人，你手上只有一摞报纸要剪。对桌的孙姐一下午没抬头。",
+   "options": [
+    {
+     "id": "ask",
+     "text": "去要一件难的",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "help",
+     "text": "帮孙姐分一点",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "cut",
+     "text": "把报纸剪整齐",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_pull_gift",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 35,
+    "flags": [
+     "job_pull",
+     "rank1"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "两盒点心",
+   "text": "有人提着两盒点心找到家里，托你给他孩子安排个工作。你当年也是这么进的门。",
+   "options": [
+    {
+     "id": "help",
+     "text": "收下，帮着问问",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back",
+     "text": "点心原样退回去",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "exam",
+     "text": "让孩子先去考一回",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2,
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_teach_open",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 25,
+    "flags": [
+     "job_teach"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "公开课",
+   "text": "你被定了上公开课，全区的老师都来听。试讲了三遍，前排的孩子把答案背得比你还熟。",
+   "options": [
+    {
+     "id": "change",
+     "text": "换一道题再讲",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "same",
+     "text": "照着排练的上",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "friend",
+     "text": "拉对门来当学生",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {
+       "energy": -5
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_teach_grandson",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 35,
+    "flags": [
+     "job_teach",
+     "rank1"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "校长的孙子",
+   "text": "校长的孙子分到你班上。开学第三天，他把同桌的铅笔盒从窗户扔了出去。",
+   "options": [
+    {
+     "id": "same",
+     "text": "跟别人一样罚站",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "visit",
+     "text": "晚上去他家家访",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "talk",
+     "text": "放学留他单独谈",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_trade_rain",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 25,
+    "flags": [
+     "job_trade"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "连阴天",
+   "text": "连下了三天雨，街口只有你一个摊还出着。对面楼的大妈撑着伞下来，买了一样她用不着的东西。",
+   "options": [
+    {
+     "id": "give",
+     "text": "多塞给她一样",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "收摊回家歇着",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": 10,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stay",
+     "text": "守到天黑再收",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "luck": 0.1,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_trade_price",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 35,
+    "flags": [
+     "job_trade",
+     "rank1"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "一个价",
+   "text": "隔壁门脸卖一样东西的郑老板过来商量：两家别再压价了，定一个数。",
+   "options": [
+    {
+     "id": "agree",
+     "text": "跟他一起定价",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "cheap",
+     "text": "偏要便宜一毛",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "join",
+     "text": "两家合着进货",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "luck": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_craft_under",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 25,
+    "flags": [
+     "job_craft"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "底下呢",
+   "text": "你自己做完的头一件活，师傅拿起来翻过去看了一眼，又放下了：「底下呢？」",
+   "options": [
+    {
+     "id": "redo",
+     "text": "拆了重做",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.2,
+       "mind": 0.2,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "问师傅哪儿不对",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "先回家吃饭",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_craft_brother",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 35,
+    "flags": [
+     "job_craft",
+     "rank1"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "师兄的活",
+   "text": "老主顾拿来一件修坏了的东西，问你还能不能救。底下的手法你认得，是师兄的。",
+   "options": [
+    {
+     "id": "fix",
+     "text": "修好，不提是谁",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "叫上师兄一块儿修",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "tell",
+     "text": "跟主顾照直说",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_labor_count",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 25,
+    "flags": [
+     "job_labor"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "一百四",
+   "text": "码头扛包按件算钱。老冯一天扛两百件，你扛一百四。他说腰是练出来的，也是废出来的。",
+   "options": [
+    {
+     "id": "more",
+     "text": "跟着老冯多扛",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.4,
+       "energy": -12
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "own",
+     "text": "照自己的数扛",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.2,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "river",
+     "text": "下了工找对门去河边",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_labor_nephew",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 35,
+    "flags": [
+     "job_labor",
+     "rank1"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "歪了三层",
+   "text": "包工头把外甥塞给你带。外甥戴着耳机砌墙，砌歪了三层，自己没发觉。",
+   "options": [
+    {
+     "id": "redo",
+     "text": "拆了让他重砌",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "body": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "self",
+     "text": "夜里自己给他重砌",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.3,
+       "energy": -12
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "boss",
+     "text": "去找包工头说",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_labor_yearend",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 37,
+    "maxAge": 44,
+    "flags": [
+     "job_labor",
+     "rank1"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "年根底下",
+   "text": "年根底下，上头的钱还没结下来。跟着你干的七八个人蹲在工棚门口，等你说话。",
+   "options": [
+    {
+     "id": "own",
+     "text": "先拿自己的钱垫上",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 30,
+     "effects": {
+      "self": {
+       "charm": 0.4,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "go",
+     "text": "带着他们去要",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "说再等一个月",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_factory_contest",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 25,
+    "flags": [
+     "job_succeed"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "技术比武",
+   "text": "厂里搞技术比武，车间要出一个人。班长在工具箱边上看了一圈，最后看你。",
+   "options": [
+    {
+     "id": "practice",
+     "text": "下了班留下练",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "timer",
+     "text": "拉对门来帮你掐表",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.2,
+       "mind": 0.1
+      },
+      "other": {
+       "energy": -5
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "pass",
+     "text": "推说手还生",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_factory_night",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 35,
+    "flags": [
+     "job_succeed",
+     "rank1"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "半夜的电话",
+   "text": "半夜车间来电话，三号机又停了。值班的在那头说：就你听得出是哪儿的毛病。",
+   "options": [
+    {
+     "id": "go",
+     "text": "披上衣服就走",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "energy": -12
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "phone",
+     "text": "在电话里听声音",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2,
+       "charm": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "morning",
+     "text": "让他们明早再弄",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": 8,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_factory_model",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 37,
+    "maxAge": 44,
+    "flags": [
+     "job_succeed",
+     "rank2"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "一个名额",
+   "text": "车间分到一个先进名额。你够格，干了快三十年的曹师傅也够格，下个月他就退了。",
+   "options": [
+    {
+     "id": "self",
+     "text": "报自己",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "cao",
+     "text": "报曹师傅",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "vote",
+     "text": "让大伙投票",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mind": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_odd_again",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 25,
+    "flags": [
+     "job_odd"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "还来吗",
+   "text": "搬家公司的韩老板叫了你三回。第三回结账的时候，他多问了一句：明天还来吗？",
+   "options": [
+    {
+     "id": "daily",
+     "text": "天天去",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.3,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "pair",
+     "text": "叫上对门一块儿去",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {
+       "energy": -6
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "free",
+     "text": "有活再说",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_odd_shifu",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 35,
+    "flags": [
+     "job_odd",
+     "rank1"
+    ],
+    "notFlags": [
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "头一回被叫师傅",
+   "text": "仓库新来了几个比你小十岁的，管事的让你带。他们张口叫你师傅，你愣了一下才应。",
+   "options": [
+    {
+     "id": "teach",
+     "text": "教他们码货的窍门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "show",
+     "text": "自己先干给他们看",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.3,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "let",
+     "text": "让他们自己琢磨",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_away_noodle",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 25,
+    "flags": [
+     "left_city"
+    ],
+    "notFlags": [
+     "came_back",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "两包面",
+   "text": "礼拜天你去公司加班，部门经理也在。他从抽屉里摸出两包方便面，分了你一包。",
+   "options": [
+    {
+     "id": "chat",
+     "text": "陪他吃完聊聊",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "work",
+     "text": "吃完接着干",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "出去给对门打电话",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_away_ticket",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 35,
+    "flags": [
+     "left_city",
+     "rank1"
+    ],
+    "notFlags": [
+     "came_back",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "一张票",
+   "text": "组里刚毕业的孩子过年没抢到票，蹲在楼道里给家里打电话。你兜里有一张。",
+   "options": [
+    {
+     "id": "give",
+     "text": "把票让给他",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.4
+      },
+      "other": {},
+      "bond": {
+       "close": -1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "grab",
+     "text": "陪他守着抢退票",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2,
+       "charm": 0.1,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "go",
+     "text": "拍拍他，自己回家",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "fly",
+     "text": "给他买张机票",
+     "tags": [
+      "gentle"
+     ],
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ]
+     },
+     "cost": 20,
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_away_note",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 37,
+    "maxAge": 44,
+    "flags": [
+     "left_city",
+     "rank2"
+    ],
+    "notFlags": [
+     "came_back",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "你妈的条子",
+   "text": "老家来了个年轻人，拿着你妈写的条子找到公司，想在你这儿找份活。",
+   "options": [
+    {
+     "id": "bottom",
+     "text": "让他从最底下干",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2,
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "easy",
+     "text": "给他安排个轻省的",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back",
+     "text": "请顿饭，劝他回去",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_boss_move",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 25,
+    "notFlags": [
+     "job_trade",
+     "job_odd",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "搬家",
+   "text": "礼拜天领导搬家，叫了几个年轻的去搭把手。对门前天就约好了跟你去河边。",
+   "options": [
+    {
+     "id": "boss",
+     "text": "去给领导搬家",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3
+      },
+      "other": {
+       "mood": -2
+      },
+      "bond": {
+       "close": -1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "river",
+     "text": "跟对门去河边",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "both",
+     "text": "搬完了赶去河边",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "energy": -12
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_yearend",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 27,
+    "maxAge": 29,
+    "notFlags": [
+     "job_trade",
+     "job_odd",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "年终那顿饭",
+   "text": "年终聚餐，领导端着杯子挨桌敬过来。一桌人都站起来了，你手里攥着一瓶汽水。",
+   "options": [
+    {
+     "id": "liquor",
+     "text": "换上白酒敬回去",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "soda",
+     "text": "就拿汽水碰一下",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "slip",
+     "text": "早点溜去找对门",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "treat",
+     "text": "过两天回请全组",
+     "tags": [
+      "gentle"
+     ],
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ]
+     },
+     "cost": 20,
+     "effects": {
+      "self": {
+       "charm": 0.4,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_blame",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 35,
+    "notFlags": [
+     "job_trade",
+     "job_odd",
+     "job_labor",
+     "job_craft",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "签字的是你",
+   "text": "一张单子出了错。字是你签的，事是隔壁桌小宋办的。领导问到底是谁。",
+   "options": [
+    {
+     "id": "own",
+     "text": "认下来",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "say",
+     "text": "说是小宋",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "both",
+     "text": "拉上小宋一块儿去说",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mind": 0.1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_jumped_invite",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 27,
+    "maxAge": 29,
+    "flags": [
+     "jumped"
+    ],
+    "notFlags": [
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "老东家的请帖",
+   "text": "老东家的一个同事结婚，请帖也给你送来了。原来的领导坐主桌，你走的时候没跟他打招呼。",
+   "options": [
+    {
+     "id": "toast",
+     "text": "去，先敬他一杯",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "money",
+     "text": "随了份子，人不去",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "corner",
+     "text": "去了坐在角落",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_switched_bell",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 27,
+    "maxAge": 29,
+    "flags": [
+     "switched"
+    ],
+    "notFlags": [
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "两下车铃",
+   "text": "转了行从头学，你是这一拨里岁数最大的。下班路上，原来那行的老同事骑车过去，按了两下铃。",
+   "options": [
+    {
+     "id": "wave",
+     "text": "冲他招招手",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "practice",
+     "text": "回去接着练",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "chase",
+     "text": "追上去请他吃饭",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_seat_door",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 27,
+    "maxAge": 29,
+    "flags": [
+     "seat_pull"
+    ],
+    "notFlags": [
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "门外",
+   "text": "你在门外听见里头有人说：「人家是家里给调的。」说话的人端着杯子出来，跟你撞了个对脸。",
+   "options": [
+    {
+     "id": "nod",
+     "text": "冲他点个头",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "work",
+     "text": "把活干得比谁都好",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "deaf",
+     "text": "装作没听见",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_no_rise",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 27,
+    "maxAge": 29,
+    "notFlags": [
+     "rank1",
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "多夹一块",
+   "text": "跟你同一年干上这一行的，都往上走了一步。饭桌上你妈什么也没问，往你碗里多夹了一块鱼。",
+   "options": [
+    {
+     "id": "eat",
+     "text": "闷头把鱼吃了",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "again",
+     "text": "吃完回屋琢磨",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2,
+       "body": 0.2,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "roof",
+     "text": "叫上对门去楼顶",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "cr_lao",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 37,
+    "maxAge": 44,
+    "notFlags": [
+     "own_stall",
+     "no_job",
+     "laid_off"
+    ]
+   },
+   "title": "前头加个老",
+   "text": "新来的年轻人在背后喊了一声「老」加你的姓。你回头看了一圈，才知道是叫你。",
+   "options": [
+    {
+     "id": "answer",
+     "text": "应一声",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "tell",
+     "text": "回家学给对门听",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {
+       "mood": 2
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "noodle",
+     "text": "中午请他吃碗面",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3
       },
       "other": {},
       "bond": {},
@@ -39591,6 +43143,75 @@ var CONTENT: Content = {
    }
   },
   {
+   "id": "job_away_r2",
+   "label": "在外地 · 带一摊事",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "left_city",
+     "rank2"
+    ],
+    "notFlags": [
+     "came_back",
+     "laid_off"
+    ]
+   },
+   "group": "job_away",
+   "duty": {
+    "label": "上班",
+    "spot": "away_work",
+    "arrive": [
+     390,
+     480
+    ],
+    "until": 1170,
+    "needs": {
+     "hunger": 25,
+     "energy": -28,
+     "mood": -3
+    },
+    "stats": {
+     "mind": 0.07,
+     "charm": 0.07
+    },
+    "money": 27
+   }
+  },
+  {
+   "id": "job_away_r1",
+   "label": "在外地 · 站住了脚",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "left_city",
+     "rank1"
+    ],
+    "notFlags": [
+     "came_back",
+     "laid_off"
+    ]
+   },
+   "group": "job_away",
+   "duty": {
+    "label": "上班",
+    "spot": "away_work",
+    "arrive": [
+     390,
+     480
+    ],
+    "until": 1170,
+    "needs": {
+     "hunger": 25,
+     "energy": -28,
+     "mood": -3
+    },
+    "stats": {},
+    "money": 21
+   }
+  },
+  {
    "id": "job_away",
    "label": "在外地工作",
    "requires": {
@@ -39711,6 +43332,70 @@ var CONTENT: Content = {
    }
   },
   {
+   "id": "job_desk_r2",
+   "label": "坐办公室 · 科长",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_desk",
+     "rank2"
+    ]
+   },
+   "group": "job_desk",
+   "duty": {
+    "label": "过桥上班",
+    "spot": "office_desk",
+    "arrive": [
+     420,
+     510
+    ],
+    "until": 1080,
+    "needs": {
+     "hunger": 25,
+     "energy": -22,
+     "mood": -2
+    },
+    "stats": {
+     "mind": 0.07,
+     "charm": 0.1
+    },
+    "money": 34
+   }
+  },
+  {
+   "id": "job_desk_r1",
+   "label": "坐办公室 · 组长",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_desk",
+     "rank1"
+    ]
+   },
+   "group": "job_desk",
+   "duty": {
+    "label": "过桥上班",
+    "spot": "office_desk",
+    "arrive": [
+     420,
+     510
+    ],
+    "until": 1080,
+    "needs": {
+     "hunger": 25,
+     "energy": -22,
+     "mood": -2
+    },
+    "stats": {
+     "mind": 0.1,
+     "charm": 0.05
+    },
+    "money": 28
+   }
+  },
+  {
    "id": "job_desk",
    "label": "坐办公室",
    "requires": {
@@ -39741,6 +43426,66 @@ var CONTENT: Content = {
    }
   },
   {
+   "id": "job_pull_r2",
+   "label": "托关系进的单位 · 副手",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_pull",
+     "rank2"
+    ]
+   },
+   "group": "job_pull",
+   "duty": {
+    "label": "过桥上班",
+    "spot": "office_desk",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 1050,
+    "needs": {
+     "hunger": 25,
+     "energy": -18,
+     "mood": -2
+    },
+    "stats": {
+     "charm": 0.07
+    },
+    "money": 27
+   }
+  },
+  {
+   "id": "job_pull_r1",
+   "label": "托关系进的单位 · 吃香的科室",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_pull",
+     "rank1"
+    ]
+   },
+   "group": "job_pull",
+   "duty": {
+    "label": "过桥上班",
+    "spot": "office_desk",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 1050,
+    "needs": {
+     "hunger": 25,
+     "energy": -18,
+     "mood": -2
+    },
+    "stats": {},
+    "money": 22
+   }
+  },
+  {
    "id": "job_pull",
    "label": "托关系进的单位",
    "requires": {
@@ -39765,6 +43510,68 @@ var CONTENT: Content = {
      "mood": -2
     },
     "stats": {},
+    "money": 18
+   }
+  },
+  {
+   "id": "job_teach_r2",
+   "label": "教书 · 教研组长",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_teach",
+     "rank2"
+    ]
+   },
+   "group": "job_teach",
+   "duty": {
+    "label": "去上课",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     510
+    ],
+    "until": 990,
+    "needs": {
+     "hunger": 25,
+     "energy": -20
+    },
+    "stats": {
+     "mind": 0.1,
+     "charm": 0.1
+    },
+    "money": 22
+   }
+  },
+  {
+   "id": "job_teach_r1",
+   "label": "教书 · 班主任",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_teach",
+     "rank1"
+    ]
+   },
+   "group": "job_teach",
+   "duty": {
+    "label": "去上课",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     510
+    ],
+    "until": 990,
+    "needs": {
+     "hunger": 25,
+     "energy": -20
+    },
+    "stats": {
+     "mind": 0.07,
+     "charm": 0.1
+    },
     "money": 18
    }
   },
@@ -39799,6 +43606,65 @@ var CONTENT: Content = {
    }
   },
   {
+   "id": "job_trade_r2",
+   "label": "做买卖 · 批发",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_trade",
+     "rank2"
+    ]
+   },
+   "group": "job_trade",
+   "duty": {
+    "label": "出摊",
+    "spot": "breakfast_stall",
+    "arrive": [
+     390,
+     450
+    ],
+    "until": 840,
+    "needs": {
+     "energy": -25
+    },
+    "stats": {
+     "charm": 0.12,
+     "mind": 0.05
+    },
+    "money": 32
+   }
+  },
+  {
+   "id": "job_trade_r1",
+   "label": "做买卖 · 有了门脸",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_trade",
+     "rank1"
+    ]
+   },
+   "group": "job_trade",
+   "duty": {
+    "label": "出摊",
+    "spot": "breakfast_stall",
+    "arrive": [
+     390,
+     450
+    ],
+    "until": 840,
+    "needs": {
+     "energy": -25
+    },
+    "stats": {
+     "charm": 0.12
+    },
+    "money": 25
+   }
+  },
+  {
    "id": "job_trade",
    "label": "做买卖",
    "requires": {
@@ -39824,6 +43690,66 @@ var CONTENT: Content = {
      "charm": 0.12
     },
     "money": 19
+   }
+  },
+  {
+   "id": "job_craft_r2",
+   "label": "靠手艺吃饭 · 开铺子带徒弟",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_craft",
+     "rank2"
+    ]
+   },
+   "group": "job_craft",
+   "duty": {
+    "label": "上工",
+    "spot": "bike_bench",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 1020,
+    "needs": {
+     "energy": -22
+    },
+    "stats": {
+     "mind": 0.07,
+     "charm": 0.07
+    },
+    "money": 25
+   }
+  },
+  {
+   "id": "job_craft_r1",
+   "label": "靠手艺吃饭 · 出了师",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_craft",
+     "rank1"
+    ]
+   },
+   "group": "job_craft",
+   "duty": {
+    "label": "上工",
+    "spot": "bike_bench",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 1020,
+    "needs": {
+     "energy": -22
+    },
+    "stats": {
+     "body": 0.07,
+     "mind": 0.05
+    },
+    "money": 18
    }
   },
   {
@@ -39856,6 +43782,67 @@ var CONTENT: Content = {
    }
   },
   {
+   "id": "job_labor_r2",
+   "label": "卖力气 · 拉一班人",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_labor",
+     "rank2"
+    ]
+   },
+   "group": "job_labor",
+   "duty": {
+    "label": "过桥上工",
+    "spot": "river_bridge",
+    "arrive": [
+     390,
+     450
+    ],
+    "until": 1050,
+    "needs": {
+     "hunger": 15,
+     "energy": -32
+    },
+    "stats": {
+     "body": 0.07,
+     "charm": 0.1
+    },
+    "money": 24
+   }
+  },
+  {
+   "id": "job_labor_r1",
+   "label": "卖力气 · 大工",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_labor",
+     "rank1"
+    ]
+   },
+   "group": "job_labor",
+   "duty": {
+    "label": "过桥上工",
+    "spot": "river_bridge",
+    "arrive": [
+     390,
+     450
+    ],
+    "until": 1050,
+    "needs": {
+     "hunger": 15,
+     "energy": -32
+    },
+    "stats": {
+     "body": 0.14
+    },
+    "money": 19
+   }
+  },
+  {
    "id": "job_labor",
    "label": "卖力气",
    "requires": {
@@ -39885,6 +43872,68 @@ var CONTENT: Content = {
    }
   },
   {
+   "id": "job_succeed_r2",
+   "label": "在厂里上班 · 车间主任",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_succeed",
+     "rank2"
+    ]
+   },
+   "group": "job_succeed",
+   "duty": {
+    "label": "过桥上班",
+    "spot": "river_bridge",
+    "arrive": [
+     420,
+     480
+    ],
+    "until": 1020,
+    "needs": {
+     "hunger": 25,
+     "energy": -24
+    },
+    "stats": {
+     "mind": 0.07,
+     "charm": 0.07
+    },
+    "money": 21
+   }
+  },
+  {
+   "id": "job_succeed_r1",
+   "label": "在厂里上班 · 技术员",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_succeed",
+     "rank1"
+    ]
+   },
+   "group": "job_succeed",
+   "duty": {
+    "label": "过桥上班",
+    "spot": "river_bridge",
+    "arrive": [
+     420,
+     480
+    ],
+    "until": 1020,
+    "needs": {
+     "hunger": 25,
+     "energy": -24
+    },
+    "stats": {
+     "body": 0.05,
+     "mind": 0.07
+    },
+    "money": 17
+   }
+  },
+  {
    "id": "job_succeed",
    "label": "在厂里上班",
    "requires": {
@@ -39911,6 +43960,65 @@ var CONTENT: Content = {
      "body": 0.07
     },
     "money": 14
+   }
+  },
+  {
+   "id": "job_odd_r2",
+   "label": "打零工 · 带几个人干",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_odd",
+     "rank2"
+    ]
+   },
+   "group": "job_odd",
+   "duty": {
+    "label": "打零工",
+    "spot": "bike_bench",
+    "arrive": [
+     450,
+     600
+    ],
+    "until": 900,
+    "needs": {
+     "energy": -20
+    },
+    "stats": {
+     "body": 0.05,
+     "charm": 0.07
+    },
+    "money": 15
+   }
+  },
+  {
+   "id": "job_odd_r1",
+   "label": "打零工 · 有了长活",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "job_odd",
+     "rank1"
+    ]
+   },
+   "group": "job_odd",
+   "duty": {
+    "label": "打零工",
+    "spot": "bike_bench",
+    "arrive": [
+     450,
+     600
+    ],
+    "until": 900,
+    "needs": {
+     "energy": -20
+    },
+    "stats": {
+     "body": 0.07
+    },
+    "money": 11
    }
   },
   {

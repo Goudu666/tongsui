@@ -126,7 +126,7 @@ func card_lines() -> Array:
 	_seen_chapter = ch
 	_card_chapter = ch
 	var c: Dictionary = chapters()[ch - 1]
-	var out: Array = [["第%s章 · %s" % [CHAPTER_NUM[ch] if ch < CHAPTER_NUM.size() else str(ch), str(c.get("title", ""))], 56, P.PAPER], [str(c.get("intro", "")), 34, Color(P.PAPER, 0.8)]]
+	var out: Array = [["@art", ch, 760.0], ["第%s章 · %s" % [CHAPTER_NUM[ch] if ch < CHAPTER_NUM.size() else str(ch), str(c.get("title", ""))], 56, P.PAPER], [str(c.get("intro", "")), 34, Color(P.PAPER, 0.8)]]
 	var less := chapter_more(ch)
 	if less != "":
 		out.append([less, 26, Color(P.PAPER, 0.6)])
@@ -166,7 +166,7 @@ func _dots(ch: int) -> String:
 func _chapter_card(ch: int, small: String) -> void:
 	var c: Dictionary = chapters()[ch - 1]
 	var num := "第%s章" % (CHAPTER_NUM[ch] if ch < CHAPTER_NUM.size() else str(ch))
-	main.fx.chapter_card(num, str(c.get("title", "")), str(c.get("intro", "")), _dots(ch), small, CHAPTER_PAIR[ch - 1] if ch <= CHAPTER_PAIR.size() else -1.0, chapter_more(ch))
+	main.fx.chapter_card(num, str(c.get("title", "")), str(c.get("intro", "")), _dots(ch), small, CHAPTER_PAIR[ch - 1] if ch <= CHAPTER_PAIR.size() else -1.0, chapter_more(ch), ch)
 
 
 # ---------- 每帧 ----------

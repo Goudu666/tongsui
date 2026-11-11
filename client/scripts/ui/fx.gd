@@ -109,11 +109,14 @@ func stage_card(big: String, small: String, color: Color, swap := Callable()) ->
 
 ## 进了新的一章：上面一行小字（几岁），然后「第几章」、章名、章首那一句，最底下七个点
 ## pair：两个圆隔多远（按半径算，0.5 叠得多、2.5 分得最开），这一章两个人大概的远近；less 是底下一行小字（新去处、这一章到哪道关）
-func chapter_card(num: String, title: String, intro: String, dots: String, small := "", pair := -1.0, less := "") -> void:
+## art：第几章（1~7），卡上放这一章的画（res://art/keyart/ch{N}.jpg，tools/art/keyart.py 出的横条）
+func chapter_card(num: String, title: String, intro: String, dots: String, small := "", pair := -1.0, less := "", art := 0) -> void:
 	_busy_card = true
 	var specs: Array = []
 	if small != "":
 		specs.append([small, 36, Color(P.PAPER, 0.7)])
+	if art > 0:
+		specs.append(["@art", art, 800.0])
 	if pair >= 0.0:
 		specs.append(["@pair", pair])
 	specs.append([num, 44, Color(P.PAPER, 0.8)])
@@ -170,6 +173,17 @@ func _show_card(specs: Array, color: Color, swap: Callable, hold: float, report:
 			var pd := _Pair.new()
 			pd.gap = float(spec[1])
 			into.add_child(pd)
+			continue
+		if str(spec[0]) == "@art":
+			var tex := chapter_art(int(spec[1]))
+			if tex != null:
+				var ad := _Art.new()
+				ad.tex = tex
+				# 有成绩单时字那一栏窄，画也跟着小
+				var w := minf(float(spec[2]), 600.0) if report != null else float(spec[2])
+				ad.custom_minimum_size = Vector2(w, w * 0.3)
+				ad.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+				into.add_child(ad)
 			continue
 		var l := Label.new()
 		l.text = spec[0]
@@ -295,6 +309,44 @@ static func era_column(specs: Array, width: float, more := 0) -> VBoxContainer:
 	col.get_child(-1).custom_minimum_size.y = 24
 	col.add_child(cap)
 	return col
+
+
+## 第几章的画（没有就是 null）
+static func chapter_art(ch: int) -> Texture2D:
+	var path := "res://art/keyart/ch%d.jpg" % ch
+	return load(path) if ch > 0 and ResourceLoader.exists(path) else null
+
+
+## 章首卡上那一章的画：墨底上一张没裁的打样（纸色细框、四角裁切线），画面慢慢横移
+class _Art extends Control:
+	var tex: Texture2D
+	var _t := 0.0
+
+	func _init() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func _process(delta: float) -> void:
+		_t += delta
+		queue_redraw()
+
+	func _draw() -> void:
+		if tex == null:
+			return
+		var ts := Vector2(tex.get_size())
+		# 取 94% 宽的一截，从右往左慢慢挪（人在中间，挪不出画）
+		var src_w := ts.x * 0.94
+		var src_h := src_w * size.y / size.x
+		var k := clampf(_t / 4.0, 0.0, 1.0)
+		var src := Rect2((ts.x - src_w) * lerpf(0.8, 0.2, k), (ts.y - src_h) * 0.5, src_w, src_h)
+		var r := Rect2(Vector2.ZERO, size)
+		draw_rect(Rect2(r.position + Vector2(8, 8), r.size), Color(P.QING, 0.85))
+		draw_texture_rect_region(tex, r, src)
+		draw_rect(r, P.PAPER, false, 2.0)
+		for corner in [r.position, Vector2(r.end.x, 0), Vector2(0, r.end.y), r.end]:
+			var sx := -1.0 if corner.x < 1.0 else 1.0
+			var sy := -1.0 if corner.y < 1.0 else 1.0
+			draw_line(corner + Vector2(sx * 10, 0), corner + Vector2(sx * 30, 0), Color(P.PAPER, 0.7), 2.0)
+			draw_line(corner + Vector2(0, sy * 10), corner + Vector2(0, sy * 30), Color(P.PAPER, 0.7), 2.0)
 
 
 ## 章首卡上的两个圆：这一章两个人隔多远

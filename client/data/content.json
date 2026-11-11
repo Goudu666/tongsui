@@ -1,5 +1,5 @@
 {
- "version": "fdada3625e69",
+ "version": "0ad9ecbc7727",
  "events": [
   {
    "id": "ch_runner",
@@ -7347,6 +7347,608 @@
     },
     "flags": []
    },
+   "catches": []
+  },
+  {
+   "id": "lt_dance",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": "lake_path",
+   "when": [
+    390,
+    600
+   ],
+   "hint": "湖边有人放着录音机。",
+   "requires": {
+    "minAge": 49,
+    "maxAge": 57,
+    "notFlags": [
+     "dance_team"
+    ]
+   },
+   "title": "缺个人",
+   "text": "湖边晨练的舞队缺一个人。领舞的朝你招手：晚上在空地上跳，会不会都行，站最后一排。",
+   "options": [
+    {
+     "id": "join",
+     "text": "站到最后一排",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "dance_team"
+      ]
+     }
+    },
+    {
+     "id": "watch",
+     "text": "在边上看一会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "leave",
+     "text": "摆摆手走了",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lt_sea",
+   "kind": "mirror",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": "hallway",
+   "when": [
+    1080,
+    1320
+   ],
+   "hint": "对门在楼道里站着。",
+   "requires": {
+    "minAge": 51,
+    "maxAge": 57
+   },
+   "title": "看海",
+   "text": "楼道里，对门说退了休想去看一回海。说完自己先笑了：说说而已。",
+   "options": [
+    {
+     "id": "save",
+     "text": "那从现在攒着",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "sea_save"
+      ]
+     }
+    },
+    {
+     "id": "go",
+     "text": "想去就去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "no",
+     "text": "海有什么好看的",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "save": {
+     "text": "两个人各找了个铁盒子。谁也没说存了多少，路过楼道都拍一下对方的门。",
+     "memory": "两个铁盒子",
+     "bond": {
+      "close": 3,
+      "sync": 2
+     },
+     "flags": []
+    },
+    "go": {
+     "text": "你们俩都说想去就去。说完又都说，等退了休。",
+     "bond": {
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个说攒着，一个说算了。那天晚上两扇门都关得比平时晚。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
+   "id": "lt_tour",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": "hallway",
+   "when": [
+    480,
+    1080
+   ],
+   "hint": "楼道里贴了张新单子。",
+   "requires": {
+    "minAge": 61,
+    "maxAge": 74,
+    "alone": false
+   },
+   "title": "老年团",
+   "text": "居委会在楼道里贴了老年团的单子，五天四夜，管吃管住。",
+   "options": [
+    {
+     "id": "go",
+     "text": "叫上对门一块儿报",
+     "tags": [
+      "adventure"
+     ],
+     "cost": 25,
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {},
+      "bond": {
+       "close": 5,
+       "sync": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "bus",
+     "text": "坐公交到终点站",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "stay",
+     "text": "钱留着",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lt_meal",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": "hallway",
+   "when": [
+    1020,
+    1200
+   ],
+   "hint": "楼道里飘着两家的饭味。",
+   "requires": {
+    "minAge": 60,
+    "notFlags": [
+     "pair_meal"
+    ],
+    "alone": false
+   },
+   "title": "一锅饭",
+   "text": "两家的锅都太大了。对门端着半碗饺子站在门口。",
+   "options": [
+    {
+     "id": "share",
+     "text": "往后凑一锅吃",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {
+       "close": 2
+      },
+      "flags": [
+       "pair_meal"
+      ]
+     }
+    },
+    {
+     "id": "once",
+     "text": "今天先凑一顿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "hunger": 30
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "own",
+     "text": "各吃各的，清净",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lt_gk_class",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 61,
+    "maxAge": 72,
+    "flags": [
+     "has_kid"
+    ]
+   },
+   "title": "补习班",
+   "text": "儿女来商量：孙辈想上补习班，一学期不少钱。",
+   "options": [
+    {
+     "id": "pay",
+     "text": "这钱我出",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 30,
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "pick",
+     "text": "钱不多，我天天接送",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "gk_pickup"
+      ]
+     }
+    },
+    {
+     "id": "no",
+     "text": "让他们自己想办法",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lt_borrow",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 61,
+    "maxAge": 74
+   },
+   "title": "开口",
+   "text": "老街坊的儿子赔了买卖。他在楼下转了三圈才上来。",
+   "options": [
+    {
+     "id": "lend",
+     "text": "借给他",
+     "tags": [
+      "gentle"
+     ],
+     "cost": 20,
+     "effects": {
+      "self": {
+       "mood": 6,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sit",
+     "text": "钱不借，陪他坐会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "no",
+     "text": "实在拿不出",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lt_fall",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 61,
+    "maxAge": 74,
+    "alone": false
+   },
+   "title": "楼梯",
+   "text": "对门在楼梯上摔了一跤，没伤着骨头，就是不敢下楼了。",
+   "options": [
+    {
+     "id": "walk",
+     "text": "天天陪着下楼",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "energy": -10
+      },
+      "other": {
+       "body": 1,
+       "mood": 6
+      },
+      "bond": {
+       "close": 3
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "carer",
+     "text": "请个人来照应",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 20,
+     "effects": {
+      "self": {},
+      "other": {
+       "body": 1
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "给TA孩子打电话",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lt_ward",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 61,
+    "maxAge": 78,
+    "alone": false
+   },
+   "title": "陪床",
+   "text": "楼里老刘住院了，儿女在外地，床边一下午没人。",
+   "options": [
+    {
+     "id": "both",
+     "text": "叫上对门一块儿去",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "self",
+     "text": "自己去坐一下午",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "phone",
+     "text": "打个电话问问",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
    "catches": []
   },
   {
@@ -26690,7 +27292,7 @@
    "kind": "solo",
    "stage": "young",
    "seasons": [],
-   "weight": 2,
+   "weight": 4,
    "where": null,
    "when": null,
    "hint": null,
@@ -32657,6 +33259,240 @@
      "text": "老先生一人给一杯茶，茶凉了，他才说今天就到这儿。"
     },
     "bring": true
+   },
+   {
+    "id": "old_breakfast",
+    "label": "去早点铺帮着包包子",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 60,
+     "maxAge": 79,
+     "hours": [
+      360,
+      570
+     ]
+    },
+    "needs": {
+     "energy": -12,
+     "hunger": 20,
+     "clean": -6
+    },
+    "stats": {
+     "body": 0.05
+    },
+    "money": 3,
+    "together": null,
+    "bring": false
+   },
+   {
+    "id": "old_bikes",
+    "label": "在车棚门口看车",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 60,
+     "maxAge": 79,
+     "hours": [
+      480,
+      1080
+     ]
+    },
+    "needs": {
+     "energy": -8,
+     "mood": -3
+    },
+    "stats": {
+     "charm": 0.05
+    },
+    "money": 3,
+    "together": null,
+    "bring": false
+   },
+   {
+    "id": "mind_kids",
+    "label": "替街坊看会儿孩子",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 60,
+     "maxAge": 79,
+     "hours": [
+      780,
+      1080
+     ]
+    },
+    "needs": {
+     "energy": -10,
+     "mood": 3
+    },
+    "stats": {
+     "charm": 0.1
+    },
+    "money": 2,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两个孩子在楼道里追着跑，两个老的一人守着一头楼梯。"
+    },
+    "bring": false
+   },
+   {
+    "id": "grandkid_park",
+    "label": "带孙辈去湖边",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 55,
+     "maxAge": 79,
+     "flags": [
+      "has_kid"
+     ],
+     "hours": [
+      900,
+      1080
+     ]
+    },
+    "needs": {
+     "mood": 8,
+     "energy": -10
+    },
+    "stats": {
+     "body": 0.2
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 2
+     },
+     "text": "孩子在前头追鸽子，你们俩在后头喊慢点，喊着喊着自己也跑了两步。"
+    },
+    "bring": true
+   },
+   {
+    "id": "square_dance",
+    "label": "去空地上跳舞",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 50,
+     "maxAge": 79,
+     "flags": [
+      "dance_team"
+     ],
+     "hours": [
+      1110,
+      1260
+     ]
+    },
+    "needs": {
+     "mood": 8,
+     "energy": -8
+    },
+    "stats": {
+     "body": 0.35
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "领舞的喊转身，你们俩转反了，脸对着脸。"
+    },
+    "bring": false
+   },
+   {
+    "id": "pair_cook",
+    "label": "两家凑一锅做饭",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 60,
+     "flags": [
+      "pair_meal"
+     ],
+     "hours": [
+      1020,
+      1200
+     ]
+    },
+    "needs": {
+     "hunger": 50,
+     "mood": 6,
+     "clean": -4
+    },
+    "stats": {},
+    "money": 1,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 2
+     },
+     "text": "一个择菜一个掌勺，盐放没放，两个人都说放过了。"
+    },
+    "bring": true
+   },
+   {
+    "id": "gk_pickup",
+    "label": "去校门口接孙辈",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 60,
+     "maxAge": 79,
+     "flags": [
+      "gk_pickup"
+     ],
+     "hours": [
+      930,
+      1050
+     ]
+    },
+    "needs": {
+     "mood": 6,
+     "energy": -6
+    },
+    "stats": {
+     "body": 0.1
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两个人站在校门口等，跟三十年前等自己的孩子站的是一个地方。"
+    },
+    "bring": true
    }
   ],
   "scenes": [
@@ -33969,7 +34805,9 @@
      720
     ],
     "actions": [
-     "old_lessons"
+     "old_lessons",
+     "pair_cook",
+     "mind_kids"
     ],
     "action": "old_lessons"
    },
@@ -34210,6 +35048,19 @@
     "action": "morning_walk"
    },
    {
+    "id": "lake_bench",
+    "zone": "lake_path",
+    "scene": "park",
+    "at": [
+     1450,
+     18760
+    ],
+    "actions": [
+     "grandkid_park"
+    ],
+    "action": "grandkid_park"
+   },
+   {
     "id": "pavilion_choir",
     "zone": "pavilion",
     "scene": "park",
@@ -34236,6 +35087,19 @@
     "action": "ground_write"
    },
    {
+    "id": "square_dance",
+    "zone": "square",
+    "scene": "park",
+    "at": [
+     3050,
+     18760
+    ],
+    "actions": [
+     "square_dance"
+    ],
+    "action": "square_dance"
+   },
+   {
     "id": "school_gate",
     "zone": "school",
     "scene": "primary",
@@ -34248,6 +35112,19 @@
      "club_math"
     ],
     "action": "duty"
+   },
+   {
+    "id": "gate_wait",
+    "zone": "school",
+    "scene": "primary",
+    "at": [
+     620,
+     6760
+    ],
+    "actions": [
+     "gk_pickup"
+    ],
+    "action": "gk_pickup"
    },
    {
     "id": "class_board",
@@ -34451,6 +35328,19 @@
     "action": "duty"
    },
    {
+    "id": "breakfast_back",
+    "zone": "breakfast",
+    "scene": "street",
+    "at": [
+     760,
+     2760
+    ],
+    "actions": [
+     "old_breakfast"
+    ],
+    "action": "old_breakfast"
+   },
+   {
     "id": "shop_counter",
     "zone": "shop",
     "scene": "street",
@@ -34530,6 +35420,19 @@
      "side_fix"
     ],
     "action": "duty"
+   },
+   {
+    "id": "bike_shed",
+    "zone": "bikeshop",
+    "scene": "street",
+    "at": [
+     2930,
+     2760
+    ],
+    "actions": [
+     "old_bikes"
+    ],
+    "action": "old_bikes"
    },
    {
     "id": "tea_stage",

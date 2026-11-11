@@ -18,7 +18,7 @@
     - id: climb
       text: 爬上去够
       tags: [adventure]
-      effects: { self: { body: 1, clean: -10 } }
+      effects: { self: { body: 1 } }
     - id: hold
       text: 在树底下张手接着
       tags: [gentle]

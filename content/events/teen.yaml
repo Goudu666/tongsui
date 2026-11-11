@@ -776,7 +776,7 @@
     - id: hands
       text: 撒开把骑
       tags: [adventure]
-      effects: { self: { mood: 10, clean: -10 } }
+      effects: { self: { mood: 10 } }
   resonance:
     count:
       text: 你们数出来的层数不一样，在桥头争了半天。后来才知道，那楼还没盖完。

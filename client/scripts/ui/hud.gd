@@ -2,7 +2,7 @@ extends Control
 ## 河畔里的 HUD（横屏）。全部自己画，垫着纸片，压在地图上也看得清。
 ## 构图是「对门」：我的东西靠左，对门的靠右，中间留给河畔里。
 ##   左上：日历牌（节气 / 年纪 / 钟点，白天一个太阳，夜里一弯月亮），下面一排四个圆表
-##         （饱腹、精力、心情、清洁），低了变梅红并且抖一下；旁边是零花钱
+##         （饱腹、精力、心情），低了变梅红并且抖一下；旁边是零花钱
 ##   中上：下一个关口的纸带（goal_panel.gd，main.gd 按 strip_rect() 摆）；
 ##         纸带底下，零花钱旁边是主线的一张小签：第几章，今天的「下一件事」在哪张图、哪一段
 ##   右上：两个圆，越亲近叠得越多；再往右是对门的牌：TA 在哪、在做什么
@@ -131,7 +131,7 @@ func _draw() -> void:
 	_calendar(f, Vector2(left(), TOP))
 	if not needs.is_empty():
 		var i := 0
-		for k in ["hunger", "energy", "mood", "clean"]:
+		for k in ["hunger", "energy", "mood"]:  # 清洁 11-11 砍了（旧服务器还会发，不画）
 			_gauge(f, Vector2(left() + 36.0 + i * 82.0, TOP + CARD.y + GAP + 34.0), k)
 			i += 1
 		_bond(f, Vector2(right() - CARD.x - GAP - BOND_W, TOP))

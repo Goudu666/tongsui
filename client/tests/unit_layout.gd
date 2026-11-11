@@ -48,18 +48,22 @@ func _hud() -> void:
 			hud.size = size
 			hud.inset = Vector2(notch, notch)
 			var tag := "%s 刘海 %d" % [size, int(notch)]
-			var cal := Rect2(Vector2(hud.left(), Hud.TOP), Hud.CARD)
+			hud.needs = {"hunger": 50}
+			hud.partner = {"name": "TA"}
+			var cal := hud.me_rect()
 			var strip := hud.strip_rect()
-			var bond := Rect2(hud.right() - Hud.CARD.x - Hud.GAP - Hud.BOND_W, Hud.TOP, Hud.BOND_W, Hud.CARD.y)
-			var partner := Rect2(Vector2(hud.right() - Hud.CARD.x, Hud.TOP), Hud.CARD)
+			var partner := hud.them_rect()
+			var bond := hud.bond_rect()
 			_check(cal.position.x >= notch and partner.end.x <= size.x - notch, "%s：左右的牌要让开刘海" % tag)
-			_check(strip.position.x >= cal.end.x, "%s：关口纸带压住了日历牌" % tag)
-			_check(strip.end.x <= bond.position.x, "%s：关口纸带压住了两个圆" % tag)
-			_check(bond.end.x <= partner.position.x, "%s：两个圆压住了对门的牌" % tag)
-			# 色条 232 + 两头各 196 + 中间至少 170：两个人的数都写得下
-			_check(strip.size.x >= 232.0 + 196.0 * 2.0 + 170.0, "%s：关口纸带只有 %d 宽，放不下两个人的数" % [tag, int(strip.size.x)])
+			_check(strip.position.x >= cal.end.x + 8.0, "%s：关口纸带压住了我的牌" % tag)
+			_check(strip.end.x <= partner.position.x - 8.0, "%s：关口纸带压住了对门的牌" % tag)
+			_check(partner.encloses(bond), "%s：两个圆跑出了对门的牌" % tag)
+			_check(cal.position.y == partner.position.y and cal.position.y == strip.position.y, "%s：三块的上沿要对齐" % tag)
+			# 色条 200 + 两头各 196 + 中间至少 170：两个人的数都写得下
+			_check(strip.size.x >= 200.0 + 196.0 * 2.0 + 170.0, "%s：关口纸带只有 %d 宽，放不下两个人的数" % [tag, int(strip.size.x)])
 			_check(strip.size.x <= Hud.STRIP_MAX, "%s：关口纸带超过了最宽" % tag)
 			_check(hud.right_slot_top() >= partner.end.y, "%s：音量按钮的位置压住了对门的牌" % tag)
+			_check(is_equal_approx(hud.stats_top() + Hud.STATS_H, cal.end.y), "%s：成长账要正好落在我的牌最下面一截" % tag)
 			hud.free()
 
 

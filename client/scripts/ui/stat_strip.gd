@@ -9,7 +9,7 @@ signal pressed
 
 const P := preload("res://scripts/ui/palette.gd")
 const KEYS := ["body", "mind", "charm"]
-const SIZE := Vector2(320, 52)
+const SIZE := Vector2(352, 60)  ## 和 hud.gd 的 ME_W × STATS_H 一样：框是 HUD 那张「我」的牌画的，这里只画字
 
 var stats: Dictionary = {}      ## 服务器给的属性（0~10），空的不画
 var color := P.QING             ## 我的颜色
@@ -98,30 +98,27 @@ func _draw() -> void:
 	if stats.is_empty():
 		return
 	var f := P.font()
-	var r := Rect2(Vector2.ZERO, size)
-	draw_rect(Rect2(r.position + Vector2(5, 5), r.size), Color(P.INK, 0.22))
-	draw_rect(r, P.PAPER)
 	var w := size.x / KEYS.size()
 	for i in KEYS.size():
 		var k: String = KEYS[i]
 		var cell := Rect2(Vector2(w * i, 0), Vector2(w, size.y))
 		var fl := clampf((float(_flash.get(k, 0.0)) - _t) / 0.55, 0.0, 1.0)
 		if fl > 0.0:
-			draw_rect(cell.grow(-3.0), Color(color, 0.85 * fl))
+			draw_rect(cell.grow(-5.0), Color(color, 0.85 * fl))
 		if i > 0:
-			draw_line(Vector2(w * i, 10), Vector2(w * i, size.y - 10), Color(P.INK, 0.3), 1.5)
+			draw_line(Vector2(w * i, 14), Vector2(w * i, size.y - 14), P.HAIR, P.LINE_HAIR, true)
 		var name: String = P.STAT_NAME[k]
 		var num := str(int(round(float(_shown.get(k, 0.0)))))
-		var ink := P.PAPER if fl > 0.45 else P.INK
+		var ink := P.PAPER_HI if fl > 0.45 else P.INK
 		# 刚长的那一截：顶替名字挂一会儿（「+4  61」），再换回「心智 61」
 		var d: Variant = _delta.get(k)
 		var fresh: bool = d is Array and _t < float(d[1])
+		var mid := size.y / 2.0
 		if fresh:
 			var txt := ("+%d" % int(d[0])) if int(d[0]) >= 0 else ("−%d" % -int(d[0]))
 			var a := clampf((float(d[1]) - _t) / 0.4, 0.0, 1.0)
-			draw_string(f, cell.position + Vector2(12, 36), txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Color(P.PAPER if fl > 0.45 else color, a))
+			draw_string(f, cell.position + Vector2(14, mid + 9), txt, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_LABEL, Color(P.PAPER_HI if fl > 0.45 else color, a))
 		else:
-			draw_string(f, cell.position + Vector2(12, 34), name, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, P.INK_SOFT)
-		var nw := f.get_string_size(num, HORIZONTAL_ALIGNMENT_LEFT, -1, 30).x
-		draw_string(f, cell.position + Vector2(w - nw - 12, 37), num, HORIZONTAL_ALIGNMENT_LEFT, -1, 30, ink)
-	draw_rect(r, P.INK, false, 2.5)
+			draw_string(f, cell.position + Vector2(14, mid + 8), name, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION, P.INK_MID if fl <= 0.45 else P.PAPER_HI)
+		var nw := f.get_string_size(num, HORIZONTAL_ALIGNMENT_LEFT, -1, 32).x
+		draw_string(f, cell.position + Vector2(w - nw - 12, mid + 11), num, HORIZONTAL_ALIGNMENT_LEFT, -1, 32, ink)

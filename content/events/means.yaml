@@ -222,7 +222,7 @@
     - id: share
       text: 分对门一张
       tags: [gentle]
-      effects: { self: { mood: 5 }, other: { mood: 5, clean: 20 } }
+      effects: { self: { mood: 5 }, other: { mood: 5 } }
     - id: keep
       text: 留着过年用
       tags: [patient]

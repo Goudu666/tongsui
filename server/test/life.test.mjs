@@ -265,6 +265,10 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   assert.equal(wv.actors.qing.seq, 3);
   assert.ok(typeof wv.tick === "number" && wv.tick > 0);
   assert.ok(wv.minute >= 390 && wv.needs.mei.hunger <= 80);
+  // fine：三项百分制带一位小数（往下取整），和 stats 一起发
+  const pq = R.life().persons.qing.stats;
+  assert.deepEqual(Object.keys(wv.fine.qing), ["body", "mind", "charm"]);
+  assert.equal(wv.fine.qing.mind, Math.floor(pq.mind * 100 + 1e-5) / 10);
   // 站了很久再走：限速按 1 秒算，不能一步跨半张地图
   for (let i = 0; i < 50; i++) R.loop();
   R.loop([R.msg(pa, 4, { x: 2000, y: 600, seq: 4 })]);
@@ -343,9 +347,9 @@ import { G, C, J, fakeNakama, room } from "./harness.mjs";
   assert.ok(!JSON.stringify(R.to(pb3, 1).at(-1).data).includes('"hide"'), "快照里不能出现 TA 选的选项");
   assert.equal(R.to(pb3, 1).at(-1).data.life.world.fate, undefined, "快照不剧透今天的命运");
 
-  // 梅掉线，30 秒后影子替梅选
+  // 梅掉线，12 秒后影子替梅选（main.ts SHADOW_WAIT_SECONDS）
   R.leave([pb3]);
-  for (let i = 0; i < 29 * 10; i++) R.loop();
+  for (let i = 0; i < 11 * 10; i++) R.loop();
   assert.ok(R.life().world.event, "还没到影子时间");
   for (let i = 0; i < 15; i++) R.loop();
   assert.equal(R.life().world.event, null, "影子应代选");

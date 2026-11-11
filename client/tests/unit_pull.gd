@@ -25,6 +25,14 @@ func _initialize() -> void:
 	check(Pull.headline({}, {"buy": money}, "小满").contains("亲近够，最多垫得了 40 块"), "拉人的那个看到为什么垫得了（亲近）")
 	check(Pull.headline({}, {"x": "坏数据", "far": score}, "小满").contains("6 分"), "pulls 里混了别的形状也不出错")
 
+	check(Pull.goal_mine(score, "阿蘅") == "阿蘅能拉你 3 分", "目标条：我差的那条写谁能拉、差多少")
+	check(Pull.goal_mine(money, "阿蘅") == "阿蘅能垫你 28 块", "目标条：钱是垫")
+	check(Pull.goal_theirs(score, "小满") == "你能拉小满 3 分", "目标条：对门那头")
+	var GP := preload("res://scripts/ui/goal_panel.gd")
+	var g := {"id": "m_senior", "lines": [{"id": "far", "have": 73, "need": 76, "pull": score}]}
+	check(GP.their_line(g, "far").get("pull") is Dictionary, "their_line 找得到那条线")
+	check(GP.their_line(null, "far").is_empty() and GP.their_line(g, "near").is_empty(), "找不到给空的")
+
 	var r := Reveal.new()
 	r.score = 73
 	r.line = 76

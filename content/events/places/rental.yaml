@@ -68,3 +68,56 @@
       text: 开始看房子
       tags: [adventure]
       effects: { self: { mind: 1, mood: -2 } }
+
+# ---------- 补空档（11-11）：中年（去了外地没回来的人，三十到五十九住这儿） ----------
+# 住外地的人跟对门的亲近最容易淡（七十那道看亲近的关，外地的只有五到二十五）。这两件各留一条往家里够的路。
+
+- id: pl_rt_heir
+  kind: solo
+  stage: middle
+  where: rent_room
+  when: [930, 1200]
+  hint: 有人敲门，是个生面孔。
+  weight: 2
+  requires: { minAge: 34 }
+  title: 房东的儿子
+  text: 房东换成了房东的儿子。他翻着本子说，你在这屋住的年头，比他在家住的还长。
+  options:
+    - id: renew
+      text: 一签就签三年
+      tags: [patient]
+      cost: 6
+      effects: { self: { mood: 5 } }
+    - id: bargain
+      text: 拿出水电账讲讲价
+      tags: [competitive]
+      effects: { self: { mind: 1, charm: 1, energy: -4 } }
+    - id: as_is
+      text: 照旧，一年一签
+      tags: [solitude]
+      effects: { self: { mood: 1 } }
+
+- id: pl_rt_salt
+  kind: solo
+  stage: middle
+  where: rent_hall
+  when: [1080, 1320]
+  hint: 走廊里有人在找盐。
+  weight: 2
+  requires: { minAge: 32 }
+  title: 盐在哪儿
+  text: 合用的厨房里，只剩你是老住户。新搬来的小伙子端着锅，问你盐在哪儿。
+  options:
+    - id: cook
+      text: 顺手给他炒一个
+      tags: [gentle]
+      cost: 1
+      effects: { self: { charm: 1, mood: 4 } }
+    - id: point
+      text: 指给他，回屋
+      tags: [solitude]
+      effects: { self: { energy: 3 } }
+    - id: call
+      text: 回屋给对门打个电话
+      tags: [patient]
+      effects: { self: { mood: 4 }, other: { mood: 3 }, bond: { close: 2 } }

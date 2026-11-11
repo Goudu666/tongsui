@@ -187,4 +187,23 @@ const senior = (sync, q = 7.3, m = 8.2) => {
   assert.ok(!e2.gate || !e2.gate.reunion, "一直同路不算重逢");
 }
 
-console.log("✓ pull.test：拉一把（分、钱）、没拉上、拉不动、影子跟着、重逢");
+// ---------- 9. 考前的目标条上就看得见「TA 能拉你几分」 ----------
+{
+  const s = lifeAt(31, 15, { qing: { mind: 7.3 }, mei: { mind: 8.2 } }, { sync: 35, close: 40 });
+  const g = J(G("lifeGoal")(s, C, "qing"));
+  assert.equal(g.id, "m_senior");
+  const far = g.lines.find((l) => l.id === "far");
+  assert.ok(far && !far.ok && far.pull, "青差的那条，目标条上写着有人拉");
+  assert.deepEqual({ by: far.pull.by, gap: far.pull.gap }, { by: "mei", gap: 3 });
+  const mg = J(G("lifeGoal")(s, C, "mei"));
+  assert.ok(mg.lines.every((l) => !l.pull), "梅自己够得着，没有");
+  // 默契低：拉不动，目标条上也不写
+  const low = lifeAt(31, 15, { qing: { mind: 7.3 }, mei: { mind: 8.2 } }, { sync: 0, close: 40 });
+  assert.ok(J(G("lifeGoal")(low, C, "qing")).lines.every((l) => !l.pull));
+  // 对门不在这一关（死了）：不写
+  const gone = lifeAt(31, 15, { qing: { mind: 7.3 }, mei: { mind: 8.2 } }, { sync: 35, close: 40 });
+  gone.persons.mei.alive = false;
+  assert.ok(J(G("lifeGoal")(gone, C, "qing")).lines.every((l) => !l.pull));
+}
+
+console.log("✓ pull.test：拉一把（分、钱）、没拉上、拉不动、影子跟着、重逢、考前看得见");

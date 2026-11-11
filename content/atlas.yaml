@@ -1,0 +1,80 @@
+# 图鉴和「差一点」（server/src/atlas.ts，设计见 docs/LEGACY.md 第十三节）。
+#
+# 一世走完，住户本里多记一笔这条人生线走到过的结局；没走到的，图鉴里只留一句谜面。
+# 结局页「再来一世」正上方写「差一点」：关口上差几分没够上的那条路，差一样就能走到的结局和一生。
+# 只拿来看，不给东西：见过多少个结局，投胎出来的孩子一模一样。
+#
+#   hidden   藏着的结局、一生、街坊记住的事：没走到之前，图鉴里只有一个印着「藏」的空框，没有谜面
+#   sad      不拿来说「差一点」的结局（没人想差一点就走散）
+#   riddles  没见过的结局那一句。十二个字上下，说的是「怎么过」，不说「差几分」。
+#            接家里营生的那些一生不用写：构建按人家自动写成「生在周家，接下了家里的营生」
+#   says     差一点的时候，缺的那个标记怎么说，接在「就差」后面（not 的那种接在「坏在」后面）。
+#            结局条件里的标记没写在这儿的，那个结局就不拿来说差一点（比如出身定的 fam_，这辈子改不了）
+
+hidden:
+  - e_album
+  - e_four_names
+  - e_nested
+  - e_again
+  - e_same_death
+  - e_duo
+  - l_margin
+  - l_just_right
+  - r_again
+  - r_four_names
+
+sad: [e_drifted, e_nod, l_early]
+
+riddles:
+  # 两个人
+  e_same_year: 拉过的钩，到老也没松开。
+  e_white_hair: 成了一家，到老还亲。
+  e_dinner_table: 成了一家，吵也吵不散。
+  e_reunited: 走散了，又在河边碰上。
+  e_partners: 两个人合开一间铺子。
+  e_neighbors: 拉过钩，后来也没搬远。
+  e_unsaid: 有句话，只有一个人说出了口。
+  e_letter: 离得远，有封信没回。
+  e_kindred: 不常见面，心里有数。
+  e_lifelong: 从小到老，一直走动。
+  e_far: 一个走远了，还惦记着。
+  e_drifted: 吵翻了，再没见过。
+  e_nod: 慢慢地，就生分了。
+  e_doors: 住过对门。
+  # 一个人
+  l_two_shops: 半路辞了事由，开了第二家铺子。
+  l_restart: 丢了饭碗，又在楼下支起摊。
+  l_early: 走得早了些。
+  l_long: 活过九十五。
+  l_swimmer: 身子骨硬朗，活过八十五。
+  l_scholar: 考得好，书念到了头。
+  l_erhu: 家里挂着琴，拉了一辈子。
+  l_koi: 运气好得出奇。
+  l_wanderer: 去了外地，就没再回来。
+  l_parent: 有了自己的孩子。
+  l_charmer: 走到哪儿，哪儿热闹。
+  l_stayer: 一辈子没离开过天津。
+  l_ordinary: 过了普通的一生。
+
+says:
+  p_married: 跟对门成一家
+  p_promise: 在楼顶拉个钩
+  p_four_names: 在旧名字旁边刻上自己的
+  p_reunited: 走散以后再碰上
+  p_partners: 一起开个铺子
+  p_missed: 有句话说出口
+  p_unanswered: 一封没回的信
+  p_capsule: 去河边埋个盒子
+  p_estranged: 吵翻过那一回
+  x_same_year: 同一年走
+  x_many_mirrors: 多遇上几回想到一块儿的事
+  leg_p_promise: 上一世也拉过钩
+  heir_photo_two: 带着「两张合影」出生
+  heir_nested: 带着「套着的盒子」出生
+  heir_noted: 带着「批注过的书」出生
+  took_over: 接下家里的营生
+  gaokao_good: 高考考好
+  erhu_life: 把二胡拉一辈子
+  has_kid: 有个自己的孩子
+  left_city: 去外地闯一闯
+  shop_two: 再开一家铺子

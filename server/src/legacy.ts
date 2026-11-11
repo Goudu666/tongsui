@@ -478,7 +478,8 @@ function legacyAgainReady(s: LifeState): boolean {
  * 纯函数：新一世的种子接着存档里的随机数走，同一份存档换出来的下一世是同一个。
  */
 function legacyRebirth(s: LifeState, c: Content): LifeState {
-  return lifeCreate(Math.floor(lifeRand(s) * 0x7fffffff), c, legacyOf(s));
+  var seed = Math.floor(lifeRand(s) * 0x7fffffff);
+  return lifeCreate(seed, c, legacyOf(s), eraRebirthCohort(c, seed, s.cohort)); // 下一世换一个年代生（era.ts）
 }
 
 // ---------- 三种藏着的天赋（growth.ts 里各一两行）----------

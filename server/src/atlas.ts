@@ -119,10 +119,11 @@ function atlasOptionShort(ev: LifeEvent, o: EventOption, p: Person, swing: numbe
   var w = lifeOptionWeights(ev, o);
   if (w.close && !bond) return null;
   var have = lifeScore(p, w, bond) + (lifeScoreRaw(w) ? 0 : swing);
-  if (have >= o.min) return null;
-  if (w.money) return { option: o.id, have: Math.floor(have), need: o.min, unit: "块", label: "积蓄" };
-  if (w.close) return { option: o.id, have: Math.floor(have), need: o.min, unit: "分", label: "亲近" };
-  return { option: o.id, have: lifePoints(have), need: lifePoints(o.min), unit: "分", label: lifeWeightsLabel(w) };
+  var line = lifeOptionMin(o, p);
+  if (have >= line) return null;
+  if (w.money) return { option: o.id, have: Math.floor(have), need: line, unit: "块", label: "积蓄" };
+  if (w.close) return { option: o.id, have: Math.floor(have), need: line, unit: "分", label: "亲近" };
+  return { option: o.id, have: lifePoints(have), need: lifePoints(line), unit: "分", label: lifeWeightsLabel(w) };
 }
 
 /** 差得多远（0~1，超过 1 就不算差一点） */

@@ -234,6 +234,7 @@ function worldSlotReset(w: WorldState) {
 // ---------- 新的一天 ----------
 
 function worldStartDay(s: LifeState, c: Content) {
+  eraSync(s, c); // 年代标记跟上今天的年份（正常过日子 eraTick 已经做了；跳着过的、修过的存档在这儿补上）
   var t = lifeTimeAt(s.turn);
   var persons = s.persons!;
   var actors: { [R in Role]: Actor | null } = { qing: null, mei: null };
@@ -487,6 +488,7 @@ function worldWage(c: Content, p: Person, duty: Duty): number {
   var m = duty.money;
   var wf = c.rules.daily.wageFlags;
   if (m > 0 && wf) for (var f in wf) if (lifeHasFlag(p, f)) m *= wf[f];
+  if (m > 0) m *= eraWageFactor(c, p); // 年代大事：下海那几年做买卖的、下岗那几年厂里的（era.ts）
   return Math.round(m * 10) / 10;
 }
 
@@ -1015,10 +1017,11 @@ function worldShadowNeed(s: LifeState, c: Content, role: Role): StatKey | null {
   for (var i = 0; i < ev.options.length; i++) {
     var o = ev.options[i];
     if (!o.min) continue;
-    var gap = (o.min - lifeScore(p, lifeOptionWeights(ev, o), s.bond)) / Math.max(o.min, 1e-9);
+    var line = lifeOptionMin(o, p);
+    var gap = (line - lifeScore(p, lifeOptionWeights(ev, o), s.bond)) / Math.max(line, 1e-9);
     if (!target) { target = o; tGap = gap; continue; }
     if (gap > 0 && (tGap <= 0 || gap < tGap)) { target = o; tGap = gap; }
-    else if (gap <= 0 && tGap <= 0 && o.min > target.min!) { target = o; tGap = gap; }
+    else if (gap <= 0 && tGap <= 0 && line > lifeOptionMin(target, p)) { target = o; tGap = gap; }
   }
   if (!target) return null;
   var w = lifeOptionWeights(ev, target);

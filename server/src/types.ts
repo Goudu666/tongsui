@@ -527,7 +527,7 @@ interface LogEntry {
   turn: number;
   age: number;
   label: string;
-  kind: "mirror" | "solo" | "milestone" | "together" | "day" | "death" | "end";
+  kind: "mirror" | "solo" | "milestone" | "together" | "day" | "death" | "end" | "era";
   minute: number | null;
   events: { [R in Role]: string | null };
   choices: { [R in Role]: string | null };

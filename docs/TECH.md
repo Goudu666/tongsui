@@ -246,6 +246,12 @@ Nakama 全部自带，开源，Docker 一条命令起；服务端逻辑可以用
 分数线调完要跑 `node tools/paths.mjs`：十二种活法的机器人把人生过完（最后一道关在七十岁），打印每条线有多少人够得着。
 `server/test/paths.test.mjs` 把四件事钉成断言：不上心的够不着高线、活法比出身重要、搭伴比一个人强、一个人够不着所有的线。
 
+### 年代大事
+
+两个人同一年生，开局按种子抽一个出生年代（`content/eras.yaml` 的 cohorts，五个），日历年 = 出生年 + 岁数；到了年份的大事打 `era_*` 标记、挪关口线、乘工钱。
+规则在 `server/src/era.ts`；判线一律走 `lifeOptionMin` / `lifeOptionCost`，不直接读 `o.min` / `o.cost`。现有数值按九十年代初生（默认年代）校，这一世线上挪动为 0。
+改了年代内容跑 `node tools/eras.mjs --check`（五个年代的对比表 + c92 和 `paths.mjs` 逐条一致）。写法、单位、校准口径、文风和客户端显示见 [ERAS.md](ERAS.md)。
+
 结局格式见 `content/endings.yaml` 文件头。服务器在两人都离开后调用 `lifeEnding` 算出结局，存进 `LifeState.ending`（`{ pair, lives: { qing, mei } }`），
 并把结局文字写进最后一条 `end` 日志，客户端的长卷直接显示。
 

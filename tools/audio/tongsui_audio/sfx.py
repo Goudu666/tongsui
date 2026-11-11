@@ -300,7 +300,74 @@ def offline():
     return door_close()
 
 
+# ---------------------------------------------------------- 爽感层 ----
+# 做完一件事、过一道关、长大一截时的声音（client/scripts/ui/juice.gd）。还是纸、木头、印泥，
+# 加一样算盘：分数往上数的时候是算盘珠子一颗一颗拨上去的声音。
+
+
+def gain():
+    """长了一点：木琴软软的一下，底下垫一颗八音盒的音。引擎里按五声音阶调 pitch，连着几下就往上走。"""
+    rng = rng_for("gain")
+    mx = Mix(1.3)
+    mx.add(inst.kalimba(P(1, 1), 0.18, 0.75), 0.0, 0.8)
+    mx.add(inst.music_box(P(1, 2), 0.25, 0.35), 0.012, 0.32, pan=0.15)
+    paper = bp(white(sec(0.03), rng), 2500, 7000) * np.linspace(1, 0, sec(0.03)) ** 2 * 0.08
+    mx.add(paper, 0.0, 1.0)
+    return reverb(mx.buf, 0.7, 0.14, 5200, 41)
+
+
+def bead():
+    """算盘珠子：拨上去「嗒」一下。分数往上数的时候一颗一颗地响。"""
+    rng = rng_for("bead")
+    y = modal(sec(0.07), [2380, 3920, 1180], [0.012, 0.007, 0.018], [1.0, 0.5, 0.45], rng, 0.0008)
+    y += modal(sec(0.07), [610], [0.02], [0.35])  # 珠子碰到梁
+    return y * 0.8
+
+
+def seal():
+    """盖大印：比做选择的章重，印泥压实了，木头桌子跟着闷响一下。过线、搭伴的印章都是它。"""
+    rng = rng_for("seal")
+    mx = Mix(0.9)
+    thud = modal(sec(0.35), [96, 182, 395, 760], [0.08, 0.05, 0.025, 0.012], [1.0, 0.7, 0.4, 0.2], rng, 0.004)
+    mx.add(thud, 0.0, 1.0)
+    squish = bp(white(sec(0.09), rng), 600, 2600) * np.linspace(1, 0, sec(0.09)) ** 1.5 * 0.25
+    mx.add(squish, 0.006, 1.0)
+    lift = bp(white(sec(0.05), rng), 1800, 6000) * np.sin(np.linspace(0, np.pi, sec(0.05))) * 0.06
+    mx.add(lift, 0.22, 1.0)  # 抬起来，纸被印泥粘了一下
+    return reverb(softclip(mx.buf * 1.2, 1.1), 0.5, 0.12, 3800, 43)
+
+
+def passed():
+    """够着线了：印章落下，八音盒往上一串 5 6 1 3。"""
+    mx = Mix(3.2)
+    mx.add(to_stereo(seal().mean(axis=1)), 0.0, 0.8)
+    for i, (deg, o) in enumerate([(5, 1), (6, 1), (1, 2), (3, 2)]):
+        mx.add(inst.music_box(P(deg, o), 0.5 if i < 3 else 1.4, 0.75), 0.16 + i * 0.085, 0.42, pan=-0.2 + 0.13 * i)
+    return reverb(mx.buf, 1.4, 0.24, 5000, 45)
+
+
+def missed():
+    """差一点：两声软木头往下走，最后一下没敲实。不是「错了」，是「差一口气」。"""
+    rng = rng_for("missed")
+    mx = Mix(1.6)
+    for i, (deg, o, v) in enumerate([(3, 0, 0.8), (2, 0, 0.6), (6, -1, 0.45)]):
+        mx.add(inst.kalimba(P(deg, o), 0.3, v), i * 0.2, 0.7)
+    mx.add(lp(white(sec(0.2), rng), 500) * np.linspace(1, 0, sec(0.2)) ** 3 * 0.05, 0.42, 1.0)
+    return reverb(mx.buf, 1.1, 0.2, 2800, 47)
+
+
+def settle():
+    """一个阶段过完：翻过一页，八音盒慢慢地 1 2 3 5 6，最后一颗高八度停住。"""
+    mx = Mix(4.2)
+    mx.add(page(), 0.0, 0.7)
+    for i, (deg, o) in enumerate([(1, 1), (2, 1), (3, 1), (5, 1), (6, 1), (1, 2)]):
+        mx.add(inst.music_box(P(deg, o), 0.4 if i < 5 else 1.8, 0.62 + 0.04 * i), 0.3 + i * 0.16, 0.42, pan=-0.25 + 0.1 * i)
+    mx.add(inst.kalimba(P(1, 0), 1.2, 0.5), 0.3 + 5 * 0.16, 0.35)
+    return reverb(mx.buf, 1.8, 0.28, 4800, 49)
+
+
 UI = {
+    "gain": gain, "bead": bead, "seal": seal, "pass": passed, "miss": missed, "settle": settle,
     "tap": tap, "page": page, "toast": toast, "error": error, "type": key_tick, "shake": shake, "xingmu": xingmu,
     "stamp": stamp, "cord": cord, "coin": coin, "birth": birth, "day_end": day_end, "death": death,
     "door_open": door_open, "door_close": door_close, "bell_duet": amb.bell_duet,

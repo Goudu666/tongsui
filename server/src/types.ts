@@ -469,7 +469,17 @@ interface LogEntry {
   resonance: boolean | null;
   text: string;
   /** 关口：每个人的得分（属性类按百分制，钱类按块）、成绩和走上的路 */
-  results?: { [R in Role]?: { score: number; scored?: boolean; unit: string; grade: string | null; option: string; track: string } };
+  results?: { [R in Role]?: {
+    score: number; scored?: boolean; unit: string; grade: string | null; option: string; track: string;
+    /** 以下几项只给揭晓演出用（client/scripts/ui/reveal.gd），旧安装包不认也不碍事。都按 score 的口径（百分制或原数） */
+    /** 走的这条路的线（这条路不看分就没有） */
+    line?: number;
+    /** 这一场的临场发挥（已经算在 score 里），和默契替他托住的那一截（也算在 luck 里了） */
+    luck?: number;
+    steady?: number;
+    /** 差一点没够着的那条线：标记对得上、只是分不够的路里，离得最近的那条 */
+    miss?: { option: string; need: number; have: number };
+  } };
   /** 一天的小结：每个人今天涨了多少 */
   gains?: { [R in Role]?: Partial<Stats> };
   /** 这件事里做过的检定 */

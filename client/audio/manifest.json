@@ -665,6 +665,12 @@
    "peak": -4.0,
    "bytes": 22186
   },
+  "sfx/bead.ogg": {
+   "seconds": 0.07,
+   "lufs": -14.8,
+   "peak": -4.0,
+   "bytes": 4656
+  },
   "sfx/bell_duet.ogg": {
    "seconds": 2.725,
    "lufs": -13.9,
@@ -719,11 +725,41 @@
    "peak": -8.0,
    "bytes": 6094
   },
+  "sfx/gain.ogg": {
+   "seconds": 2.143,
+   "lufs": -15.4,
+   "peak": -4.0,
+   "bytes": 19488
+  },
+  "sfx/miss.ogg": {
+   "seconds": 2.319,
+   "lufs": -13.7,
+   "peak": -4.0,
+   "bytes": 23083
+  },
   "sfx/page.ogg": {
    "seconds": 0.24,
    "lufs": -23.1,
    "peak": -12.0,
    "bytes": 6452
+  },
+  "sfx/pass.ogg": {
+   "seconds": 3.884,
+   "lufs": -15.1,
+   "peak": -4.0,
+   "bytes": 40469
+  },
+  "sfx/seal.ogg": {
+   "seconds": 0.736,
+   "lufs": -17.4,
+   "peak": -4.0,
+   "bytes": 12588
+  },
+  "sfx/settle.ogg": {
+   "seconds": 4.951,
+   "lufs": -16.0,
+   "peak": -4.0,
+   "bytes": 54607
   },
   "sfx/shake.ogg": {
    "seconds": 1.422,

@@ -101,6 +101,41 @@ func _initialize() -> void:
 	var n0: int = a._bubbles.size()
 	a.bubble("pair")
 	check(a._bubbles.size() == n0, "挨着的两个人只让一个冒两个圆")
+	# 6. 一起踢球：配成对就换成对着踢，球只由领头的画，两人出脚错开半圈
+	var b: Node2D = Actor.new()
+	root.add_child(b)
+	b.setup("mei", "阿蘅", false, Vector2(260, 760))
+	b.set_stage("teen")
+	for x in [a, b]:
+		x.quiet_label = false
+		x.doing = "ball"
+		x.action_label = "操场踢球"
+	check(a.loop_name() == "kick", "一个人踢球是颠球")
+	a.pass_with = b
+	b.pass_with = a
+	a.pass_lead = true
+	check(a.loop_name() == "pass" and b.loop_name() == "pass", "配成对的两人应该对着踢")
+	check(absf(fmod(a._pass_phase() - b._pass_phase() + 1.0, 1.0) - 0.5) < 0.01, "两人出脚应该错开半圈")
+	a._process(0.1)
+	b._process(0.1)
+	check(a._on_act and int(a._sprite.frame) / Actor.COLS == Actor.ACT_LOOP.find("pass") / 2, "对着踢用动作表上 pass 那一行")
+	check(a._ball_on, "对着踢时领头的那个人画球")
+	# 解对：world_view._pair_faces 看到一个人换了事，两边都松开，回到各自的那一套；球那层再画一次擦干净
+	const WV := preload("res://scripts/world/world_view.gd")
+	var w = WV.new()
+	w.actors = {"qing": a, "mei": b}
+	w._pair_faces(true)
+	check(a.pass_with == b and b.pass_with == a and a.pass_lead and not b.pass_lead, "同点同事都在踢球：配成对、青领头")
+	check(a.face_to == 2 and b.face_to == 3, "对着踢要面对面")
+	b.doing = "broadcast"
+	b.action_label = "念稿"
+	w._pair_faces(true)
+	check(a.pass_with == null and b.pass_with == null and not a.pass_lead, "一个人换了事，两边的 pass_with 都要清掉")
+	check(a.loop_name() == "kick", "解对以后回到一个人颠球")
+	a._process(0.1)
+	check(not a._ball_on, "解对以后不再画球")
+	w.free()
+	b.queue_free()
 	a.queue_free()
 	if fails == 0:
 		print("✓ unit_life：%d 个行动都有动作，%d 位街坊都画了" % [map.get("actions", []).size(), index.get("folks", {}).size()])

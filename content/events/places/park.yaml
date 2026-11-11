@@ -81,3 +81,70 @@
       text: 接着走第四圈
       tags: [patient]
       effects: { self: { body: 1 } }
+
+# ---------- 补空档（11-11）：中年（四十五岁开） ----------
+# 四十五到六十：退休那道关看心智魅力或积蓄，七十那道看体魄、亲近。两件都是拿精力换体魄、或者换一点人缘。
+
+- id: pl_pk_round
+  kind: solo
+  stage: middle
+  where: lake_path
+  when: [390, 480]
+  hint: 湖边有人在喊口号。
+  weight: 2
+  requires: { minAge: 45 }
+  title: 两千步
+  text: 上班前绕湖一圈，正好两千步。今天有人从后面追上来，喊你的名字，是中学同学。
+  options:
+    - id: run
+      text: 跟他再跑一圈
+      tags: [competitive]
+      effects: { self: { body: 1, energy: -10 } }
+    - id: talk
+      text: 放慢了，边走边聊
+      tags: [gentle]
+      effects: { self: { charm: 1, mood: 3 } }
+    - id: sit
+      text: 坐亭子里歇会儿
+      tags: [patient]
+      effects: { self: { energy: 5 } }
+
+- id: pl_pk_pressure
+  kind: mirror
+  stage: middle
+  where: square
+  when: [930, 1110]
+  hint: 空地上支了张小桌子。
+  weight: 2
+  requires: { minAge: 46 }
+  title: 量血压
+  text: 傍晚，空地上有人支了张桌子，免费量血压。排队的大都比你们大一轮。
+  options:
+    - id: measure
+      text: 伸胳膊量一个
+      tags: [responsible]
+      effects: { self: { body: 1 } }
+    - id: ask
+      text: 替爸妈问问吃什么药
+      tags: [gentle]
+      effects: { self: { mind: 1 } }
+    - id: pass
+      text: 摆摆手，接着走
+      tags: [solitude]
+      effects: { self: { mood: 2 } }
+  resonance:
+    measure:
+      text: 两个人的数一个高一个低。量血压的说，你俩匀一匀就正好了。
+      memory: 匀一匀
+      bond: { sync: 3, close: 2 }
+    ask:
+      text: 你们问的是同一种药。量血压的写了张条，一人抄了一份。
+      memory: 抄了一份
+      bond: { sync: 3, close: 2 }
+    pass:
+      text: 走出去十几步，两个人又都回头看了一眼那条队。
+      memory: 那条队
+      bond: { sync: 2, close: 1 }
+  dissonance:
+    text: 一个坐下伸了胳膊，一个站在队尾等。量完一看，等的那个手里拿着两瓶水。
+    bond: { close: 0 }

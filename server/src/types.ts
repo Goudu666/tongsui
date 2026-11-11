@@ -231,6 +231,8 @@ interface Rules {
   bond: {
     closeSoft: number; closeFloor: number; closeScale: number; syncSoft: number; syncFloor: number; syncSteady: number; syncSteadyFrom?: number; syncSteadyFull?: number; slotTogether?: number; closeWeight?: { [S in Stage]: number };
     drift: { [S in Stage]: number }; driftDistance: number; driftFloor: number;
+    /** 关口上拉一把、重逢（server/src/pull.ts）。老内容没写就不拉 */
+    pullFrom?: number; pullFull?: number; pullMoney?: number; pullMoneyClose?: number; reunion?: Partial<Bond>;
   };
 }
 

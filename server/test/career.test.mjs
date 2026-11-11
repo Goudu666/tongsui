@@ -403,7 +403,7 @@ const wageOf = (p, age) => G("worldWage")(C, p, G("lifeTrack")(C, p, age).duty);
 // ---------- 7. 老存档：没有 rank 标记的人照旧走原来的路 ----------
 {
   for (const j of JOBS) {
-    const s = lifeAt(61, 40, { flags: [j] });
+    const s = lifeAt(61, 39, { flags: [j] }); // 中年三年一回合：39 岁是真有的一回合（40 岁找不到，会落到 turn −1 那年）
     const p = s.persons.qing;
     assert.equal(G("lifeTrack")(C, p, 40).id, BASE[j], `老存档的 ${j}：没有 rank 还是原来那条路`);
     assert.equal(wageOf(p, 40), track(BASE[j]).duty.money, `${j}：工钱是原来的`);

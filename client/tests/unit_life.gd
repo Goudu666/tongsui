@@ -119,6 +119,22 @@ func _initialize() -> void:
 	a._process(0.1)
 	b._process(0.1)
 	check(a._on_act and int(a._sprite.frame) / Actor.COLS == Actor.ACT_LOOP.find("pass") / 2, "对着踢用动作表上 pass 那一行")
+	check(a._ball_on, "对着踢时领头的那个人画球")
+	# 解对：world_view._pair_faces 看到一个人换了事，两边都松开，回到各自的那一套；球那层再画一次擦干净
+	const WV := preload("res://scripts/world/world_view.gd")
+	var w = WV.new()
+	w.actors = {"qing": a, "mei": b}
+	w._pair_faces(true)
+	check(a.pass_with == b and b.pass_with == a and a.pass_lead and not b.pass_lead, "同点同事都在踢球：配成对、青领头")
+	check(a.face_to == 2 and b.face_to == 3, "对着踢要面对面")
+	b.doing = "broadcast"
+	b.action_label = "念稿"
+	w._pair_faces(true)
+	check(a.pass_with == null and b.pass_with == null and not a.pass_lead, "一个人换了事，两边的 pass_with 都要清掉")
+	check(a.loop_name() == "kick", "解对以后回到一个人颠球")
+	a._process(0.1)
+	check(not a._ball_on, "解对以后不再画球")
+	w.free()
 	b.queue_free()
 	a.queue_free()
 	if fails == 0:

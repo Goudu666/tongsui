@@ -53,16 +53,20 @@ const ACTION_LOOP := {
 	"wash": "wash", "factory_bath": "wash",
 	"morning_walk": "exercise", "run_dawn": "exercise", "swim_class": "exercise",
 	"blackboard": "chalk", "ground_write": "brush",
-	# #50 加的老年去处（#53 的动作表合进来时还没有它们）
-	"old_breakfast": "cook", "pair_cook": "cook", "old_bikes": "gaze", "grandkid_park": "gaze",
-	"mind_kids": "talk", "gk_pickup": "talk", "square_dance": "exercise",
+	# 点位菜单上后添的（PR #57）
+	"pancake": "cook", "tea_runner": "carry", "mall_clerk": "talk", "river_run": "exercise", "laps": "exercise",
+	"hopscotch": "hop", "sketch": "brush", "coal": "carry", "cards": "chess", "teach_chess": "chess",
+	"flowers": "gaze", "boat": "gaze", "huqin": "sing",
+	# 后半生押时间（content/events/later.yaml）
+	"old_breakfast": "cook", "old_bikes": "fix", "mind_kids": "talk", "grandkid_park": "kite",
+	"square_dance": "exercise", "pair_cook": "cook", "gk_pickup": "talk",
 }
 ## 上学 / 上班（duty）按在哪个点上：坐办公桌敲电脑、修车铺修车、早点铺出摊…（没写的就招手进门）
 const DUTY_LOOP := {
 	"office_desk": "type", "bike_bench": "fix", "breakfast_stall": "cook", "class_desk": "write",
 	"middle_desk": "write", "away_work": "carry", "river_bridge": "carry", "uni_gate": "read",
 }
-const SIT_ACTIONS := ["listen", "accompany"]
+const SIT_ACTIONS := ["listen", "accompany", "tea_box"]
 const WAVE_ACTIONS := ["knock"]
 ## 两个人一起做这几样时面对面（world_view 把两人错开得远一点）
 const FACE_LOOPS := ["talk", "chess", "eat", "gaze"]

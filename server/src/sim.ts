@@ -547,6 +547,12 @@ function lifeAddFlags(p: Person, flags: string[] | undefined) {
   for (var i = 0; i < flags.length; i++) if (!lifeHasFlag(p, flags[i])) p.flags.push(flags[i]);
 }
 
+/** 摘标记：跳槽、转行的时候原来那一行和升到的那一级不跟着走（effects.drop） */
+function lifeDropFlags(p: Person, flags: string[] | undefined) {
+  if (!flags || !flags.length) return;
+  p.flags = p.flags.filter(function (f) { return flags.indexOf(f) < 0; });
+}
+
 /** 随机池、关口，再找主线（content/story.yaml） */
 function lifeFindEvent(c: Content, id: string): LifeEvent {
   for (var i = 0; i < c.events.length; i++) if (c.events[i].id === id) return c.events[i];
@@ -643,6 +649,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       lifeApplySelf(me, o.effects.self, grow);
       if (other.alive) lifeApplySelf(other, o.effects.other, grow);
       lifeApplyBond(s, c, o.effects.bond);
+      lifeDropFlags(me, o.effects.drop);
       lifeAddFlags(me, o.effects.flags);
       if (!entry.results) entry.results = {};
       var scored = false;
@@ -665,6 +672,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       lifeApplySelf(me, out.self, grow);
       if (other.alive) lifeApplySelf(other, o.effects.other, grow);
       lifeApplyBond(s, c, o.effects.bond);
+      if (out.flags === o.effects.flags) lifeDropFlags(me, o.effects.drop); // 检定没成（换了 fail 的标记）就不摘
       lifeAddFlags(me, out.flags);
     }
     if (pe.shadow.indexOf(role) < 0) {

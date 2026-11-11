@@ -20,7 +20,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
 const N = Number(args.find((a) => /^\d+$/.test(a)) || 7);
 const SEED0 = Number((args.find((a) => a.startsWith("--seed=")) || "--seed=3").slice(7));
-const ORDER = ["六一", "上小学", "三年级", "小升初", "中考", "高考", "找个正经事由", "安家", "四十五", "退休", "七十"];
+const ORDER = ["六一", "上小学", "三年级", "小升初", "中考", "高考", "找个正经事由", "站住脚", "安家", "挑大梁", "四十五", "退休", "七十"];
 const dir = mkdtempSync(join(tmpdir(), "sprint-"));
 
 const runs = [];

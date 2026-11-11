@@ -1,0 +1,420 @@
+# 职业路线和升迁（docs/CAREER.md）。二十二岁「找个正经事由」定了哪一行，往后有两道升迁的关：
+#   26 岁「站住脚」：本行升一级（rank1），或者跳槽、转行、家里托人
+#   36 岁「挑大梁」：升了一级的再往上走（rank2）；没升上的还有一回「熬出来」
+#   45 岁「四十五」的争位子（mid_post，工钱再乘 1.5）是第三级，在 milestones.yaml
+# 升到哪一级只打标记（rank1 / rank2），每天去哪、挣多少由 content/tracks.yaml 里排在原来那份工前头的几条决定，
+# 所以「升了」是看得见的：路的名字换了（坐办公室 · 科长），工钱涨了一截，三十岁安家、四十五岁那几道要钱的关跟着松。
+#
+# 每一行的路都写 hide: true，只给这一行的人看（别的行当的路摆出来全是灰的，没意思）。旧安装包照旧灰着显示「不是你这一行」。
+# 跳槽转行用 effects.drop 摘掉原来那一行的标记和升到的那一级：换了行，从头干。
+# 家境：殷实人家多一条「家里托人」（花钱、线低一截），清贫人家没有；守 docs/MEANS.md 殷实比同活法小康多不超过 15 个点。
+# 线按 tools/sprint.mjs 14 世量的「走这条路的人二十二岁那天的中位 + 3~4 分」摆（玩法总把关 11-11）；家境用 tools/career-means.mjs 复量。
+
+- id: m_rise
+  kind: milestone
+  stage: young
+  age: 26
+  title: 站住脚
+  requires: { notFlags: [own_shop, own_stall, no_job, laid_off] }
+  text: 干了四年，手上的活儿熟了。往上走一步，换个地方，还是就这么干下去？
+  options:
+    - id: up_desk
+      text: 评上组长，管一摊事
+      score: {mind: 0.7, charm: 0.3}
+      min: 9.3
+      requires:
+        flags: [job_desk]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
+      lock: 不是你这一行
+      hide: true
+      tags: [competitive]
+      effects:
+        self: {mood: 5}
+        flags: [rank1]
+    - id: up_pull
+      text: 调进了吃香的科室
+      score: {charm: 0.6, mind: 0.4}
+      min: 9.4
+      requires:
+        flags: [job_pull]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
+      lock: 不是你这一行
+      hide: true
+      joins: up_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 5}
+        flags: [rank1]
+    - id: up_teach
+      text: 当上班主任
+      score: {mind: 0.5, charm: 0.5}
+      min: 8.8
+      requires:
+        flags: [job_teach]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
+      lock: 不是你这一行
+      hide: true
+      joins: up_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 5}
+        flags: [rank1]
+    - id: up_trade
+      text: 盘下一间门脸
+      score: {charm: 0.7, luck: 0.3}
+      min: 7.2
+      cost: 20
+      requires:
+        flags: [job_trade]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
+      lock: 不是你这一行
+      hide: true
+      joins: up_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 5}
+        flags: [rank1]
+    - id: up_craft
+      text: 出师，自己接活
+      score: {body: 0.5, mind: 0.5}
+      min: 7.8
+      requires:
+        flags: [job_craft]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
+      lock: 不是你这一行
+      hide: true
+      joins: up_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 5}
+        flags: [rank1]
+    - id: up_labor
+      text: 当上大工
+      score: {body: 1}
+      min: 7.7
+      requires:
+        flags: [job_labor]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
+      lock: 不是你这一行
+      hide: true
+      joins: up_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 5}
+        flags: [rank1]
+    - id: up_factory
+      text: 评上技术员
+      score: {mind: 0.6, body: 0.4}
+      min: 6.9
+      requires:
+        flags: [job_succeed]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
+      lock: 不是你这一行
+      hide: true
+      joins: up_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 5}
+        flags: [rank1]
+    - id: up_odd
+      text: 找着一份长活
+      score: {body: 0.5, charm: 0.5}
+      min: 7.0
+      requires:
+        flags: [job_odd]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
+      lock: 不是你这一行
+      hide: true
+      joins: up_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 5}
+        flags: [rank1]
+    - id: up_away
+      text: 在外地站住了脚
+      score: {mind: 0.6, charm: 0.4}
+      min: 9.0
+      requires:
+        flags: [left_city]
+        notFlags: [own_shop, own_stall, no_job, laid_off, came_back, rank1]
+      lock: 不是你这一行
+      hide: true
+      joins: up_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 5}
+        flags: [rank1]
+    # 跳槽：同一行换个东家。看人缘和手气，不看本行的本事；升一级，可老同事那头就断了
+    - id: jump
+      text: 跟着老同事跳到别家
+      score: { charm: 0.6, luck: 0.4 }
+      min: 6.4
+      requires: { notFlags: [job_odd, job_succeed, job_trade, job_craft, own_shop, own_stall, no_job, laid_off, rank1] }
+      lock: 不是你这一行
+      hide: true
+      tags: [adventure]
+      effects: { self: { mood: -3 }, flags: [rank1, jumped] }
+    # 转行：换一行从头干（摘掉原来那一行和升到的级），线比二十二岁那天高一截，还要掏学费、本钱
+    - id: to_desk
+      text: 上夜大，考进机关
+      score: { mind: 1 }
+      min: 9.5
+      cost: 20
+      requires: { notFlags: [job_desk, job_pull, left_city, own_shop, own_stall, no_job, laid_off] }
+      lock: 这一步你用不着
+      hide: true
+      tags: [competitive]
+      effects: { self: { mood: 3 }, drop: [job_desk, job_pull, job_teach, job_trade, job_craft, job_labor, job_succeed, job_odd, rank1, rank2], flags: [job_desk, switched] }
+    - id: to_trade
+      text: 辞了，出来做买卖
+      score: { charm: 0.7, luck: 0.3 }
+      min: 7.4
+      cost: 20
+      requires: { notFlags: [job_trade, left_city, own_shop, own_stall, no_job, laid_off] }
+      lock: 这一步你用不着
+      hide: true
+      tags: [adventure]
+      effects: { self: { mood: 2 }, drop: [job_desk, job_pull, job_teach, job_trade, job_craft, job_labor, job_succeed, job_odd, rank1, rank2], flags: [job_trade, switched] }
+    - id: to_craft
+      text: 拜个师傅学手艺
+      score: { body: 0.5, mind: 0.5 }
+      min: 8.7
+      requires: { notFlags: [job_craft, job_desk, job_pull, job_teach, job_trade, left_city, own_shop, own_stall, no_job, laid_off] }
+      lock: 这一步你用不着
+      hide: true
+      tags: [patient]
+      effects: { self: { mood: 2 }, drop: [job_desk, job_pull, job_teach, job_trade, job_craft, job_labor, job_succeed, job_odd, rank1, rank2], flags: [job_craft, switched] }
+    # 殷实：家里托人调个好位置。线比本行升一级低一截，要花钱，钱从三十岁安家那头出
+    - id: seat
+      text: 家里托人，调个好位置
+      score: { mind: 0.5, charm: 0.5 }
+      min: 8.6
+      cost: 25
+      requires: { flags: [fam_rich], notFlags: [own_shop, own_stall, no_job, laid_off, rank1] }
+      lock: 家里没这层关系
+      joins: up_desk
+      tags: [competitive]
+      effects: { self: { mood: -2 }, flags: [rank1, seat_pull] }
+    - id: steady
+      text: 不争不抢，把手上的干好
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+  resonance:
+    up_desk:
+      text: 那年两个人都往上走了一步。晚上在楼道里碰见，谁也没提，各自多买了一瓶汽水。
+      memory: 多买的汽水
+      bond: { sync: 2 }
+    jump:
+      text: 同一个礼拜，两个人都换了东家。新单位离得不远，中午能在一个面馆碰上。
+      memory: 一个面馆
+      bond: { sync: 2 }
+    steady:
+      text: 两个人都没动。下了班还是一前一后进楼门，日子跟去年一样。
+      memory: 一前一后
+      bond: { sync: 2 }
+  dissonance:
+    text: 两个人各走各的那一步。见了面先问对方忙不忙，问完了，就没话了。
+    bond: { close: -2 }
+
+- id: m_rise2
+  kind: milestone
+  stage: middle
+  age: 36
+  title: 挑大梁
+  requires: { notFlags: [own_shop, own_stall, no_job, laid_off] }
+  text: 三十六了。上头的人要退，底下的人等着，你正好卡在中间。
+  options:
+    - id: top_desk
+      text: 当上科长
+      score: {mind: 0.5, charm: 0.5}
+      min: 9.6
+      requires:
+        flags: [job_desk, rank1]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank2]
+      lock: 不是你这一行
+      hide: true
+      tags: [competitive]
+      effects:
+        self: {mood: 6}
+        flags: [rank2]
+    - id: top_pull
+      text: 坐上副手的位子
+      score: {charm: 0.6, mind: 0.4}
+      min: 9.6
+      requires:
+        flags: [job_pull, rank1]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank2]
+      lock: 不是你这一行
+      hide: true
+      joins: top_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 6}
+        flags: [rank2]
+    - id: top_teach
+      text: 当上教研组长
+      score: {mind: 0.7, charm: 0.3}
+      min: 8.6
+      requires:
+        flags: [job_teach, rank1]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank2]
+      lock: 不是你这一行
+      hide: true
+      joins: top_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 6}
+        flags: [rank2]
+    - id: top_trade
+      text: 做起了批发
+      score: {money: 1}
+      min: 90
+      cost: 40
+      requires:
+        flags: [job_trade, rank1]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank2]
+      lock: 不是你这一行
+      hide: true
+      joins: top_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 6}
+        flags: [rank2]
+    - id: top_craft
+      text: 收徒弟，开铺子
+      score: {money: 1}
+      min: 70
+      cost: 30
+      requires:
+        flags: [job_craft, rank1]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank2]
+      lock: 不是你这一行
+      hide: true
+      joins: top_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 6}
+        flags: [rank2]
+    - id: top_labor
+      text: 自己拉一班人
+      score: {money: 1}
+      min: 60
+      cost: 20
+      requires:
+        flags: [job_labor, rank1]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank2]
+      lock: 不是你这一行
+      hide: true
+      joins: top_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 6}
+        flags: [rank2]
+    - id: top_factory
+      text: 当上车间主任
+      score: {mind: 0.5, charm: 0.5}
+      min: 7.4
+      requires:
+        flags: [job_succeed, rank1]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank2]
+      lock: 不是你这一行
+      hide: true
+      joins: top_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 6}
+        flags: [rank2]
+    - id: top_odd
+      text: 带着几个人干
+      score: {money: 1}
+      min: 45
+      cost: 15
+      requires:
+        flags: [job_odd, rank1]
+        notFlags: [own_shop, own_stall, no_job, laid_off, rank2]
+      lock: 不是你这一行
+      hide: true
+      joins: top_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 6}
+        flags: [rank2]
+    - id: top_away
+      text: 在外地带一摊事
+      score: {mind: 0.5, charm: 0.5}
+      min: 9.4
+      requires:
+        flags: [left_city, rank1]
+        notFlags: [own_shop, own_stall, no_job, laid_off, came_back, rank2]
+      lock: 不是你这一行
+      hide: true
+      joins: top_desk
+      tags: [competitive]
+      effects:
+        self: {mood: 6}
+        flags: [rank2]
+    # 看本事的几行（坐办公室、托关系、教书、厂里、外地）另有一条花钱的路：读个在职、进修。中年属性长不太动了，
+    # 三十到三十六这两个日子里挪得动的是积蓄：买了房的人从零攒起，下了班多揽活的人攒得快（清贫人家拿时间换钱）
+    - id: study
+      text: 进修两年，评了上去
+      score: { money: 1 }
+      min: 80
+      cost: 40
+      requires: { flags: [rank1], notFlags: [rank2, job_trade, job_craft, job_labor, job_odd, own_shop, own_stall, no_job, laid_off] }
+      lock: 不是你这一行
+      hide: true
+      joins: top_desk
+      tags: [patient]
+      effects: { self: { mind: 0.3, mood: 2 }, flags: [rank2, studied] }
+    # 二十六没升上的：熬了这些年，总算升了一级（线不低，人到这会儿本事也长了）
+    - id: late
+      text: 熬了这些年，升了一级
+      score: { mind: 0.4, charm: 0.3, body: 0.3 }
+      min: 8.8
+      requires: { notFlags: [rank1, own_shop, own_stall, no_job, laid_off] }
+      lock: 这一步你用不着
+      hide: true
+      tags: [patient]
+      effects: { self: { mood: 4 }, flags: [rank1] }
+    # 被人挖走：升了一级的人才有人来挖。看人缘和手气，直接当个头；老东家那头的人情就没了
+    - id: poach
+      text: 被人挖去别家当个头
+      score: { charm: 0.7, luck: 0.3 }
+      min: 8.9
+      requires: { flags: [rank1], notFlags: [rank2, job_odd, own_shop, own_stall, no_job, laid_off] }
+      lock: 不是你这一行
+      hide: true
+      tags: [adventure]
+      effects: { self: { mood: 3 }, bond: { close: -2 }, flags: [rank2, jumped] }
+    # 殷实：家里再使使劲。只给已经升了一级的殷实人家看
+    - id: push
+      text: 家里再使使劲
+      score: { mind: 0.5, charm: 0.5 }
+      min: 9.2
+      cost: 40
+      requires: { flags: [fam_rich, rank1], notFlags: [rank2, own_shop, own_stall, no_job, laid_off] }
+      lock: 家里使不上劲
+      hide: true
+      joins: top_desk
+      tags: [competitive]
+      effects: { self: { mood: -2 }, flags: [rank2, seat_pull] }
+    - id: hold
+      text: 就这样，挺好
+      tags: [gentle]
+      effects: { self: { mood: 4 } }
+  resonance:
+    top_desk:
+      text: 两个人都挑上了大梁。饭桌上的话越来越少，电话铃一响，两家一起抬头。
+      memory: 一起抬头
+      bond: { sync: 2 }
+    late:
+      text: 熬了十年，同一年升的。谁也没请客，两家凑了一桌饺子。
+      memory: 一桌饺子
+      bond: { sync: 3 }
+    hold:
+      text: 两个人都没往上挤。礼拜天还能一块儿去河边。
+      memory: 礼拜天的河边
+      bond: { sync: 2 }
+  dissonance:
+    text: 一个周末也在单位，一个按点回家。按点回家的那个，把对门的报纸顺手收进来。
+    bond: { close: -2 }

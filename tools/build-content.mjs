@@ -56,7 +56,7 @@ const REMEMBERED_MAX = 19;
 const EVENT_KEYS = ["id", "kind", "stage", "where", "when", "hint", "seasons", "weight", "requires", "title", "text", "options", "resonance", "dissonance"];
 // 关口（kind: milestone）多出来的字段，见 content/events/milestones.yaml 文件头
 const MILESTONE_KEYS = [...EVENT_KEYS, "age", "score", "swing", "grades", "kidAge"];
-const MILESTONE_OPTION_KEYS = ["id", "text", "tags", "effects", "min", "score", "cost", "requires", "lock", "joins"];
+const MILESTONE_OPTION_KEYS = ["id", "text", "tags", "effects", "min", "score", "cost", "requires", "lock", "joins", "hide"];
 const SCORE_KEYS = ["body", "mind", "charm", "luck", "money", "close", "kid_mind", "kid_body", "kid_charm"];
 // 孩子（docs/FAMILY.md）：带孩子的行动只长这三项；关口按 kid_* 读孩子的属性
 const KID_STAT_KEYS = ["body", "mind", "charm"];
@@ -68,7 +68,7 @@ const DUTY_KEYS = ["label", "spot", "arrive", "until", "needs", "stats", "money"
 // 普通事件的选项也可以挂门槛（docs/MEANS.md 第三节）：requires 只看选的人自己的标记（家境、走过的路），cost 是花掉的积蓄。
 // 标记不对的人看不见这一项；钱不够的看得见、灰着。挂了门槛的事件至少留两个谁都能选的
 const OPTION_KEYS = ["id", "text", "tags", "effects", "requires", "cost"];
-const EFFECT_KEYS = ["self", "other", "bond", "flags"];
+const EFFECT_KEYS = ["self", "other", "bond", "flags", "drop"];
 const RESONANCE_KEYS = ["text", "memory", "bond", "flags"];
 const DISSONANCE_KEYS = ["text", "bond", "flags"];
 const FAMILY_KEYS = ["id", "name", "wealth", "weight", "money", "desc", "bonus", "traits"];
@@ -215,6 +215,8 @@ for (const file of eventFiles) {
         // lock：标记不对的人看到的那句（「家里拿不出这笔钱」）。只有挂了标记条件的路才用得上
         if (o.lock !== undefined && (typeof o.lock !== "string" || !(o.requires?.flags?.length || o.requires?.notFlags?.length))) errors.push(`${oat}.lock: 是一句话，只能写在带 requires 的选项上`);
         if (o.lock && [...o.lock].length > 12) errors.push(`${oat}.lock: 不超过 12 个字`);
+        // hide：标记不对的人看不见这一项（升迁关上别的行当的路，docs/CAREER.md）。没有标记条件的路藏不起来
+        if (o.hide !== undefined && (o.hide !== true || !(o.requires?.flags?.length || o.requires?.notFlags?.length))) errors.push(`${oat}.hide: 只能写 true，而且只能写在带 requires 的选项上`);
       }
       checkKeys(`${oat}.effects`, o.effects, EFFECT_KEYS);
       if (optionIds.has(o.id)) errors.push(`${oat}: 选项 id 重复`);
@@ -226,7 +228,9 @@ for (const file of eventFiles) {
       checkDeltas(`${oat}.other`, e.other, SELF_KEYS);
       checkDeltas(`${oat}.bond`, e.bond, BOND_KEYS);
       o.tags = o.tags ?? [];
+      if (e.drop !== undefined && (!Array.isArray(e.drop) || !e.drop.length || e.drop.some((f) => typeof f !== "string"))) errors.push(`${oat}.effects.drop: 是要摘掉的标记列表（先摘再打 flags，两边都写的标记留着）`);
       o.effects = { self: e.self ?? {}, other: e.other ?? {}, bond: e.bond ?? {}, flags: e.flags ?? [] };
+      if (e.drop?.length) o.effects.drop = e.drop;
     }
     if (!ms) {
       const gated = (o) => !!o.cost || !!(o.requires?.flags?.length || o.requires?.notFlags?.length);
@@ -360,6 +364,7 @@ const story = { chapters: [], events: [] };
       checkKeys(`${oat}.effects`, o.effects, EFFECT_KEYS);
       const e = o.effects ?? {};
       if (e.flags?.length) errors.push(`${oat}: 主线选项不发标记（路线标记由关口发，共同标记写在共鸣里）`);
+      if (e.drop !== undefined) errors.push(`${oat}: 主线选项不摘标记（effects.drop 只给关口和日常小事用）`);
       checkDeltas(`${oat}.self`, e.self, SELF_KEYS);
       checkDeltas(`${oat}.other`, e.other, SELF_KEYS);
       checkDeltas(`${oat}.bond`, e.bond, BOND_KEYS);

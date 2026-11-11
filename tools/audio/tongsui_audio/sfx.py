@@ -8,7 +8,7 @@ from __future__ import annotations
 import numpy as np
 
 from . import amb, inst
-from .dsp import (SR, TAU, Mix, bp, bursts, db, fade, far, hp, level, lfo_noise, lp, modal, moving_band, reson, reverb,
+from .dsp import (SR, TAU, Mix, bp, bursts, db, fade, far, hp, level, lfo_noise, lp, midi, modal, moving_band, reson, reverb,
                   rng_for, sec, softclip, swell, times, to_stereo, trim, white)
 from .music import P
 
@@ -301,69 +301,108 @@ def offline():
 
 
 # ---------------------------------------------------------- 爽感层 ----
-# 做完一件事、过一道关、长大一截时的声音（client/scripts/ui/juice.gd）。还是纸、木头、印泥，
-# 加一样算盘：分数往上数的时候是算盘珠子一颗一颗拨上去的声音。
+# 做完一件事、过一道关、长大一截时的声音（client/scripts/ui/juice.gd、ui/reveal.gd）。还是纸、木头、印泥，
+# 加两样：算盘珠（分数往上数，一颗一颗拨上去）和小铃。
+# 有音高的都落在 D 宫五声上（D E F# A B），引擎再按五声调 pitch，和配乐不打架。
+# 木头和铃是这里自己的（_bar、_bell），不借 inst 里配乐的乐器：配乐改了音色，这几个声音的响度不跟着变，
+# mix_table.gd 里按响度量出来的数才一直算数。
+
+
+def _bar(m: float, dur: float, vel: float = 0.8) -> np.ndarray:
+    """软木头：木琴的一根键，毡头槌。泛音按木琴的调法 1 : 4 : 10（两个八度、再上一个大三度），都在五声里。"""
+    f = midi(m)
+    n = sec(max(dur, 0.15) + 0.6)
+    tau = 0.42 * (330.0 / f) ** 0.4
+    y = modal(n, [f, 4.0 * f, 10.0 * f], [tau, 0.05, 0.012], [1.0, 0.16 * vel, 0.04 * vel])
+    rng = np.random.default_rng(int(m * 100) + 7)
+    k = sec(0.01)
+    y[:k] += lp(white(k, rng), 1100) * np.linspace(1, 0, k) ** 2 * 0.45 * vel  # 槌头落下那一下，闷的
+    return fade(y * vel, 0.001, 0.04)
+
+
+def _bell(m: float, dur: float, vel: float = 0.6) -> np.ndarray:
+    """小铃：铜的，个头小，轻轻碰一下。泛音接近整数倍（音高清楚），每个泛音配一个差几赫兹的影子，
+    两个拍出慢慢的「嗡」——金属的味儿从这儿来，不是纯正弦那种电子味。高的泛音短，不扎耳朵。"""
+    f = midi(m)
+    n = sec(max(dur, 0.2) + 1.2)
+    tau = 0.9 * (880.0 / f) ** 0.5
+    fr, de, am = [], [], []
+    for r, d, a in [(1.0, tau, 1.0), (2.004, tau * 0.45, 0.22), (2.993, tau * 0.22, 0.07 * vel), (4.21, 0.05, 0.03 * vel)]:
+        for det, g in ((1.0, 1.0), (1.0 + 2.4 / (f * r), 0.45)):  # 影子：差 2.4 Hz
+            fr.append(f * r * det)
+            de.append(d)
+            am.append(a * g)
+    y = modal(n, fr, de, am)
+    rng = np.random.default_rng(int(m * 100) + 9)
+    k = sec(0.003)
+    y[:k] += bp(white(k, rng), 2000, 6000) * np.linspace(1, 0, k) * 0.05 * vel  # 碰上那一下
+    return fade(y * vel * 0.7, 0.0005, 0.05)
 
 
 def gain():
-    """长了一点：木琴软软的一下，底下垫一颗八音盒的音。引擎里按五声音阶调 pitch，连着几下就往上走。"""
+    """长了一点：木琴软软的一下，上面一颗小铃。引擎里按五声音阶调 pitch（juice.gd 的 SCALE），连着几下就往上走。"""
     rng = rng_for("gain")
-    mx = Mix(1.3)
-    mx.add(inst.kalimba(P(1, 1), 0.18, 0.75), 0.0, 0.8)
-    mx.add(inst.music_box(P(1, 2), 0.25, 0.35), 0.012, 0.32, pan=0.15)
-    paper = bp(white(sec(0.03), rng), 2500, 7000) * np.linspace(1, 0, sec(0.03)) ** 2 * 0.08
+    mx = Mix(1.0)
+    mx.add(_bar(P(1, 1), 0.18, 0.75), 0.0, 0.85)
+    mx.add(_bell(P(1, 2), 0.25, 0.4), 0.012, 0.3, pan=0.15)
+    paper = bp(white(sec(0.03), rng), 2500, 6000) * np.linspace(1, 0, sec(0.03)) ** 2 * 0.05
     mx.add(paper, 0.0, 1.0)
-    return reverb(mx.buf, 0.7, 0.14, 5200, 41)
+    return reverb(mx.buf, 0.7, 0.14, 4500, 41)
 
 
 def bead():
-    """算盘珠子：拨上去「嗒」一下。分数往上数的时候一颗一颗地响。"""
+    """算盘珠子：拨上去「嗒」一下。木珠子有音高，调在 D6；reveal.gd 按五声给 pitch，一串数上去是 B D E F# A。
+    原来的「嗒」在 2.4 kHz 上最响、几个分音不成音阶，现在基音在 1.2 kHz，上面只留八度和五度，碰的那一下也收窄了。"""
     rng = rng_for("bead")
-    y = modal(sec(0.07), [2380, 3920, 1180], [0.012, 0.007, 0.018], [1.0, 0.5, 0.45], rng, 0.0008)
-    y += modal(sec(0.07), [610], [0.02], [0.35])  # 珠子碰到梁
-    return y * 0.8
+    f = midi(P(1, 2))
+    y = modal(sec(0.09), [f, 2.0 * f, 2.98 * f], [0.02, 0.007, 0.0035], [1.0, 0.4, 0.14], rng, 0.0)
+    k = sec(0.0025)
+    y[:k] += bp(white(k, rng), 1500, 4500) * np.linspace(1, 0, k) ** 1.5 * 1.1  # 「嗒」：木头碰木头
+    y += modal(sec(0.09), [f / 2], [0.016], [0.35])  # 珠子碰到梁：低八度的一声闷响
+    return fade(y, 0.0003, 0.02)
 
 
 def seal():
-    """盖大印：比做选择的章重，印泥压实了，木头桌子跟着闷响一下。过线、搭伴的印章都是它。"""
+    """盖大印：比做选择的章重，印泥压实了，木头桌子跟着闷响一下。过线、搭伴的印章都是它。
+    桌子那几个共鸣调在 A2 E3 A4 F#5：揭晓时名次章按 pitch 1.12 放，落在 B2，也还在五声里。"""
     rng = rng_for("seal")
     mx = Mix(0.9)
-    thud = modal(sec(0.35), [96, 182, 395, 760], [0.08, 0.05, 0.025, 0.012], [1.0, 0.7, 0.4, 0.2], rng, 0.004)
+    thud = modal(sec(0.35), [110.0, 164.8, 440.0, 740.0], [0.08, 0.05, 0.025, 0.012], [1.0, 0.6, 0.35, 0.18], rng, 0.004)
     mx.add(thud, 0.0, 1.0)
     squish = bp(white(sec(0.09), rng), 600, 2600) * np.linspace(1, 0, sec(0.09)) ** 1.5 * 0.25
     mx.add(squish, 0.006, 1.0)
-    lift = bp(white(sec(0.05), rng), 1800, 6000) * np.sin(np.linspace(0, np.pi, sec(0.05))) * 0.06
+    lift = bp(white(sec(0.05), rng), 1800, 5000) * np.sin(np.linspace(0, np.pi, sec(0.05))) * 0.05
     mx.add(lift, 0.22, 1.0)  # 抬起来，纸被印泥粘了一下
     return reverb(softclip(mx.buf * 1.2, 1.1), 0.5, 0.12, 3800, 43)
 
 
 def passed():
-    """够着线了：印章落下，八音盒往上一串 5 6 1 3。"""
-    mx = Mix(3.2)
-    mx.add(to_stereo(seal().mean(axis=1)), 0.0, 0.8)
+    """够着线了：印章落下，小铃往上一串 5 6 1 3。配乐那边同时起 <阶段>_pass，这里只是盖章和一串亮的。"""
+    mx = Mix(2.6)
+    mx.add(to_stereo(seal().mean(axis=1)), 0.0, 0.85)
     for i, (deg, o) in enumerate([(5, 1), (6, 1), (1, 2), (3, 2)]):
-        mx.add(inst.music_box(P(deg, o), 0.5 if i < 3 else 1.4, 0.75), 0.16 + i * 0.085, 0.42, pan=-0.2 + 0.13 * i)
-    return reverb(mx.buf, 1.4, 0.24, 5000, 45)
+        mx.add(_bell(P(deg, o), 0.5 if i < 3 else 1.2, 0.55), 0.16 + i * 0.085, 0.4, pan=-0.2 + 0.13 * i)
+    return reverb(mx.buf, 1.4, 0.22, 4500, 45)
 
 
 def missed():
-    """差一点：两声软木头往下走，最后一下没敲实。不是「错了」，是「差一口气」。"""
+    """差一点：三声软木头往下走（3 2 6,），最后一下没敲实。不是「错了」，是「差一口气」。"""
     rng = rng_for("missed")
     mx = Mix(1.6)
-    for i, (deg, o, v) in enumerate([(3, 0, 0.8), (2, 0, 0.6), (6, -1, 0.45)]):
-        mx.add(inst.kalimba(P(deg, o), 0.3, v), i * 0.2, 0.7)
+    for i, (deg, o, v) in enumerate([(3, 0, 0.8), (2, 0, 0.6), (6, -1, 0.42)]):
+        mx.add(_bar(P(deg, o), 0.3, v), i * 0.2, 0.7)
     mx.add(lp(white(sec(0.2), rng), 500) * np.linspace(1, 0, sec(0.2)) ** 3 * 0.05, 0.42, 1.0)
     return reverb(mx.buf, 1.1, 0.2, 2800, 47)
 
 
 def settle():
-    """一个阶段过完：翻过一页，八音盒慢慢地 1 2 3 5 6，最后一颗高八度停住。"""
-    mx = Mix(4.2)
-    mx.add(page(), 0.0, 0.7)
+    """一个阶段过完：翻过一页，小铃慢慢地 1 2 3 5 6，最后一颗高八度停住，底下一声木头托着。"""
+    mx = Mix(4.0)
+    mx.add(lp(page(), 4500), 0.0, 0.45)  # 纸声收一点高头，不然它比铃还扎
     for i, (deg, o) in enumerate([(1, 1), (2, 1), (3, 1), (5, 1), (6, 1), (1, 2)]):
-        mx.add(inst.music_box(P(deg, o), 0.4 if i < 5 else 1.8, 0.62 + 0.04 * i), 0.3 + i * 0.16, 0.42, pan=-0.25 + 0.1 * i)
-    mx.add(inst.kalimba(P(1, 0), 1.2, 0.5), 0.3 + 5 * 0.16, 0.35)
-    return reverb(mx.buf, 1.8, 0.28, 4800, 49)
+        mx.add(_bell(P(deg, o), 0.4 if i < 5 else 1.6, 0.5 + 0.04 * i), 0.3 + i * 0.16, 0.42, pan=-0.25 + 0.1 * i)
+    mx.add(_bar(P(1, 0), 1.2, 0.55), 0.3 + 5 * 0.16, 0.4)
+    return reverb(mx.buf, 1.8, 0.26, 4500, 49)
 
 
 UI = {
@@ -380,13 +419,18 @@ ACTIONS = {
 STEPS = {"step_%s_%d" % (s, i): (lambda s=s, i=i: step(s, i)) for s in ("indoor", "outdoor") for i in range(4)}
 
 PEAKS = {"tap": -8, "page": -12, "toast": -10, "type": -16, "error": -8, "stamp": -6, "coin": -10}
+# 脚步按响度对齐（八个之间原来差 3 dB，走起来一步轻一步重），峰值不过 -6。
+# 土路的沙沙声 2~6 kHz 占一大半，比水泥地再轻 2 dB（和 analyze.py 的 HARSH_LU 同一个口径）
+STEP_LUFS = {"indoor": -21.5, "outdoor": -23.5}
 
 
 def render(name: str) -> np.ndarray:
+    """文件都按峰值放到 -4 dBFS 左右（上面 PEAKS 的几个例外），谁该多响由 client/scripts/audio/mix_table.gd 的 CUE_DB 管。"""
     table = {**UI, **{"act_" + k: v for k, v in ACTIONS.items()}, **STEPS}
     y = trim(to_stereo(table[name]()), -58, 0.12)
-    base = name if name in PEAKS else ("step" if name.startswith("step") else "")
-    return level(y, None, PEAKS.get(base, -9.0 if base == "step" else -4.0))
+    if name.startswith("step"):
+        return level(y, STEP_LUFS[name.split("_")[1]], -6.0)
+    return level(y, None, PEAKS.get(name, -4.0))
 
 
 def names():

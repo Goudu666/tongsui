@@ -204,7 +204,7 @@ MODELS = {
     "harmonica": dict(formants=[(1400, 0.7, 7), (2700, 0.5, 2.5), (600, 0.8, 4)], tilt=-6.5, cutoff=5200, harm=24,
                       even=0.9, breath=0.012, air=(900, 4500), chiff=0.8, attack=0.045, release=0.09,
                       vib=(5.2, 6.0, 0.3), glide=0.02, drift=3.0),
-    "lead": dict(formants=[(1250, 1.0, 5)], tilt=-9.0, cutoff=4200, harm=10, even=0.25, breath=0.006,
+    "lead": dict(formants=[(1100, 1.0, 4)], tilt=-10.5, cutoff=3800, harm=10, even=0.25, breath=0.006,
                  attack=0.03, release=0.12, vib=(5.4, 14.0, 0.28), glide=0.05, drift=1.5),
     "cello": dict(formants=[(250, 0.6, 4), (480, 0.5, 4), (1500, 0.6, 5.5), (2600, 0.5, 2)], tilt=-7.5, cutoff=4500,
                   harm=30, even=0.95, breath=0.012, attack=0.11, release=0.16, vib=(5.0, 16.0, 0.3), glide=0.06,

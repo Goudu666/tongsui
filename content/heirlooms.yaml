@@ -161,6 +161,21 @@
   close: 6
   flags: [heir_candy]
 
+# 成家和下一代（docs/FAMILY.md 第三节）：两家孩子一块儿长大的、做了一辈子知己的
+- id: h_drawing
+  name: 一张蜡笔画
+  desc: 两个孩子趴在一张纸上画的。一个画楼，一个画河，挤在中间那块谁也没让。
+  from: { flags: [p_kids_tongsui] }
+  bonus: { charm: 0.5 }
+  flags: [heir_drawing]
+
+- id: h_chessboard
+  name: 一块棋盘
+  desc: 背面拿圆珠笔记着输赢。正字写满了，又在边上接着写。
+  from: { flags: [p_confidant] }
+  close: 4
+  flags: [heir_chessboard]
+
 - id: h_whistle
   name: 鸽哨
   desc: 绑过那只灰鸽子尾巴的。拿嘴一吹，楼顶就有东西扑棱。
@@ -176,6 +191,13 @@
   flags: [heir_tin_box]
 
 # ---- 日子里留下的 ----
+- id: h_certificate
+  name: 一张奖状
+  desc: 孩子念小学时得的。在墙上贴了十几年，揭下来没撕破，背面粘着一层旧报纸。
+  from: { flags: [has_kid, kid_uni_top] }
+  bonus: { mind: 0.5 }
+  flags: [heir_certificate]
+
 - id: h_letters
   name: 一沓信
   desc: 外地寄回来的，一年一封。信封都拿刀裁的，一个毛边没有。

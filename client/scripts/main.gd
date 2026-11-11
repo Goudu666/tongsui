@@ -1648,6 +1648,7 @@ func _enter_world() -> void:
 	world.set_stage(_stage_shown)
 	world.set_look(_era_look())
 	world.age = int(t.age)
+	world.set_home_look(_home_wealth(), Era.decade(_era_now()))
 	world.net = null if offline_preview else net
 	world.move_report.connect(_on_move_report)
 	_layout_hud()
@@ -1677,6 +1678,23 @@ func _grow_up(t: Dictionary) -> void:
 		if world != null:
 			world.set_stage(stage)
 			world.set_look(_era_look()))
+
+
+## 两家的家境（屋里怎么摆）：0 清贫 1 小康 2 殷实，看投的那户人家（WEALTH_NAME 一样的读法）。
+## 家道中落（fam_fallen）以后按小康算，和服务器 home.ts 一致
+func _home_wealth() -> Dictionary:
+	var out := {}
+	for r in ["qing", "mei"]:
+		var p := _dict(_dict(life.get("persons")).get(r))
+		var fid: Variant = p.get("familyId")
+		if fid == null:
+			fid = _dict(_dict(life.get("rolls")).get(r)).get("familyId")
+		var w := int(_dict(families.get(str(fid), {})).get("wealth", 1))
+		var flags: Variant = p.get("flags")
+		if w == 2 and flags is Array and (flags as Array).has("fam_fallen"):
+			w = 1
+		out[r] = clampi(w, 0, 2)
+	return out
 
 
 ## 现在的年代（WORLD 的 era 新一点，没有就看 life view 的；老服务器两边都没有）
@@ -1732,6 +1750,7 @@ func _refresh_hud() -> void:
 				world.set_look(_era_look())
 				fx.print_in(0.8)
 		world.set_season(LifeTime.season_of(int(life.get("turn", 0))), int(life.get("turn", 0)))
+		world.set_home_look(_home_wealth(), Era.decade(_era_now()))
 	if offline_preview:
 		hud.tag = "预览"
 		hud.needs = {}
@@ -2275,6 +2294,17 @@ func _on_log_entries(data: Dictionary) -> void:
 				_era_wait = maxf(_era_wait, 0.5)
 			else:
 				_toast(Era.log_line(e))
+		elif kind == "home":
+			# 家里添了样东西（content/home.yaml）：一行字带过，不弹窗。屋里那样东西当天就摆出来了（home_life.gd）
+			var h := _dict(e.get("home"))
+			var thing := str(h.get("name", ""))
+			if thing == "":
+				continue
+			if str(h.get("role", "")) == my_role:
+				var line := str(e.get("text", ""))
+				_toast("家里添了 · %s" % thing + ("　" + line if line != "" else ""))
+			else:
+				_toast("对门家添了%s" % thing)
 		elif kind == "death":
 			_open_modal()
 			_label(modal_body, str(e.text), 52, P.OVERLAP)

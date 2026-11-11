@@ -43,7 +43,7 @@ static func _dict(v: Variant) -> Dictionary:
 
 
 ## 把 life 整理成长卷要画的东西（纯数据，单测用）。
-## 返回 { last, close, stations, stitches, memories, deaths, pair, lives, counts, eras }
+## 返回 { last, close, stations, stitches, memories, deaths, pair, lives, counts, eras, homes }
 static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 	var events := {}
 	for ev in _list(content.get("events")):
@@ -60,6 +60,7 @@ static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 	var stitches: Array = []
 	var deaths := {}
 	var eras: Array = []
+	var homes: Array = []  # 家里添了样东西（kind "home"，content/home.yaml）：纸的下沿掐一道小记号
 	var counts := {"days": 0, "together": 0, "same": 0, "apart": 0, "memories": _list(life.get("memories")).size()}
 	var last := 0
 	for e in _list(life.get("log")):
@@ -67,6 +68,10 @@ static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 		match str(e.get("kind", "")):
 			"era":
 				eras.append({"turn": turn, "line": Era.log_line(e)})
+			"home":
+				var h := _dict(e.get("home"))
+				if str(h.get("role", "")) in ROLES:
+					homes.append({"turn": turn, "role": str(h.role), "name": str(h.get("name", ""))})
 			"day":
 				counts.days += 1
 				last = maxi(last, turn)
@@ -129,7 +134,7 @@ static func build(life: Dictionary, content: Dictionary) -> Dictionary:
 				var nm := str(_dict(_dict(life.get("persons")).get(r)).get("name", P.ROLE_NAME[r]))
 				lives[r] = {"title": str(it.title), "text": str(it.text).replace("{name}", nm)}
 	var close := float(life.get("bond", {}).get("close", 0.0)) if life.get("bond") is Dictionary else 0.0
-	return {"last": last, "close": close, "stations": stations, "stitches": stitches, "memories": memories, "deaths": deaths, "pair": pair, "lives": lives, "counts": counts, "eras": eras}
+	return {"last": last, "close": close, "stations": stations, "stitches": stitches, "memories": memories, "deaths": deaths, "pair": pair, "lives": lives, "counts": counts, "eras": eras, "homes": homes}
 
 
 static func _road(ev: Dictionary, option: String) -> String:
@@ -316,6 +321,7 @@ func _draw() -> void:
 	_draw_lines()
 	_draw_memories(f)
 	_draw_eras(f)
+	_draw_homes()
 	for i in model.stations.size():
 		_draw_station(f, i)
 	_draw_ends(f)
@@ -455,6 +461,13 @@ func _draw_eras(f: Font) -> void:
 		var at := maxf(x + 6.0, right + 16.0)
 		draw_string(f, Vector2(at, y), str(it.line), HORIZONTAL_ALIGNMENT_LEFT, -1, 20, P.INK_MID)
 		right = at + tw
+
+
+## 家里添的东西：纸的下沿各家颜色掐一道短线（青在左半格、梅在右半格），不写字，看得出哪家早、哪家晚
+func _draw_homes() -> void:
+	for it in model.get("homes", []):
+		var x := x_of(float(it.turn) + 0.5) + (-4.0 if str(it.role) == "qing" else 4.0)
+		draw_line(Vector2(x, HEIGHT - 30.0), Vector2(x, HEIGHT - 16.0), Color(P.role_color(str(it.role)), 0.8), 3.0, true)
 
 
 func _score_text(road: Dictionary) -> String:

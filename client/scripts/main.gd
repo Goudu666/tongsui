@@ -48,6 +48,7 @@ var slot_sub: Label
 var fill_btn: Button       ## 行动按钮左边的「做到 12:00」：这件事一直做到这一段完（不按它就是做一回、当场看结果）
 var fill_title: Label
 var fill_sub: Label
+var day_card: Control = null  ## 一天收工的小结卡正开着（爽感层 juice.gd 看它：开着的时候不飘字）
 var _did_seen := {}        ## 每个人看过的最后一条 did（服务器当场结算的那一件）的序号
 var _clock_from := -1.0    ## 钟正在从几点拨到几点（做完一回，钟在眼前走过去）
 var _clock_to := -1.0
@@ -1725,6 +1726,7 @@ func _pick_shown(_option_id: String, option_text: String, mirror: bool) -> void:
 
 ## width：卡片多宽。普通的 MODAL_WIDTH；选项并排或左右分栏的用 MODAL_WIDE / _options_width()
 func _open_modal(width := MODAL_WIDTH) -> void:
+	day_card = null
 	_clear(modal_body)
 	modal_card.custom_minimum_size.x = minf(width, ui.size.x - 96.0)
 	modal_card.size = Vector2.ZERO  # 上一张卡要是更宽更高，别把这张撑着
@@ -1755,6 +1757,7 @@ func _open_modal(width := MODAL_WIDTH) -> void:
 
 func _close_modal() -> void:
 	modal.visible = false
+	day_card = null
 	if modal.has_meta("waiting_event"):
 		modal.remove_meta("waiting_event")
 	duet.check_owed()  # 还有欠着的话就接着问
@@ -1806,6 +1809,7 @@ func _on_log_entries(data: Dictionary) -> void:
 			Kit.rule(page, Color(P.INK, 0.25))
 			# 今天的时间花在哪、长了多少、朝下一道关挪了几分、照这样还要几个日子（day_card.gd）
 			DayCard.build(page, e, my_role, _other(), names)
+			day_card = page
 			if desk != null:
 				_label(page, "早上，信到了。", 32, P.role_color(_other()))
 				for l in letters:

@@ -20,19 +20,31 @@ const ROLES = ["qing", "mei"];
 const spotOf = new Map(C.map.spots.map((sp) => [sp.id, sp]));
 
 /** 机器人去一个点位做事（不走路，直接到）。做不了返回 false */
-function go(s, role, spotId) {
+function go(s, role, spotId, want) {
   const a = s.world.actors[role], sp = spotOf.get(spotId);
-  if (!sp || G("worldCanAct")(s, C, role, spotId, true)) return false;
+  if (!sp || G("worldCanAct")(s, C, role, spotId, true, want)) return false;
   a.x = sp.at[0]; a.y = sp.at[1];
-  return !G("worldAct")(s, C, role, spotId).error;
+  return !G("worldAct")(s, C, role, spotId, false, want).error;
 }
 
-/** 现在能做的事：[{ spot, act }]。visit：也算上对门家里的书桌（去 TA 家写作业） */
-function options(s, role, visit) {
+/**
+ * 现在能做的事：[{ spot, act, want? }]。visit：也算上对门家里的书桌（去 TA 家写作业）。
+ * menu：也看家里的东西（content/home.yaml 的 hm_ 行动，菜单上点的，docs/HOME.md）；menu === "visit" 还去对门家用对门家的
+ */
+function options(s, role, visit, menu) {
   const out = [];
   for (const sp of C.map.spots) {
     const owner = C.map.zones.find((z) => z.id === sp.zone).owner;
-    if (owner && owner !== role && !visit) continue;
+    const theirs = owner && owner !== role;
+    if (menu) {
+      for (const id of sp.actions) {
+        const a2 = C.map.actions.find((x) => x.id === id);
+        if (!a2.menu || !a2.requires.home || (theirs && menu !== "visit")) continue;
+        const act = G("worldPickAction")(s, C, role, sp, id).act;
+        if (act && act.id === id && !G("worldCanAct")(s, C, role, sp.id, true, id)) out.push({ spot: sp.id, act, want: id });
+      }
+    }
+    if (theirs && !visit) continue;
     const act = G("worldPickAction")(s, C, role, sp).act;
     if (act && !G("worldCanAct")(s, C, role, sp.id, true)) out.push({ spot: sp.id, act });
   }
@@ -54,17 +66,17 @@ function upkeep(s, role) {
 }
 
 /** 空闲时间怎么花。want(act) 给行动打分，取最高的；心情太差先去玩 */
-function free(s, role, want, visit) {
+function free(s, role, want, visit, menu) {
   const p = s.persons[role];
   // 不搭伴的活法里，两个人不往同一个点凑（不然「一个人练」其实也是搭伴）
   const taken = visit ? null : s.world.actors[role === "qing" ? "mei" : "qing"]?.spot;
-  let list = options(s, role, visit).filter((o) => !o.act.duty && !o.act.sleep && o.act.id !== "eat" && o.act.id !== "wash" && o.spot !== taken);
+  let list = options(s, role, visit, menu).filter((o) => !o.act.duty && !o.act.sleep && o.act.id !== "eat" && o.act.id !== "wash" && o.spot !== taken);
   if (p.needs.mood < 35) {
     const fun = list.filter((o) => (o.act.needs.mood || 0) >= 8 && o.act.money >= 0);
-    if (fun.length) return go(s, role, fun[0].spot);
+    if (fun.length) return go(s, role, fun[0].spot, fun[0].want);
   }
   list = list.map((o) => ({ ...o, v: want(o.act) })).filter((o) => o.v > 0).sort((x, y) => y.v - x.v);
-  return list.length ? go(s, role, list[0].spot) : false;
+  return list.length ? go(s, role, list[0].spot, list[0].want) : false;
 }
 
 const grow = (key) => (act) => act.stats[key] || 0;
@@ -96,6 +108,11 @@ export const WAYS = {
   "不上心": { each: () => fun },
   "一个人念书": { each: () => grow("mind") },
   "搭伴念书": { each: () => grow("mind"), together: true },
+  // 家里的东西（docs/HOME.md）：真人点菜单，家里有书柜、复读机、电脑就用；「去对门借」的家里没有就去对门家用
+  // 按每分钟长多少挑（家里的书一回一个钟头，写作业一回一个半钟头）
+  "念书，不碰家里的": { each: () => (act) => (act.stats.mind || 0) / (act.minutes || 1) },
+  "念书，用家里的": { each: () => (act) => (act.stats.mind || 0) / (act.minutes || 1), menu: true },
+  "念书，去对门借": { each: () => (act) => (act.stats.mind || 0) / (act.minutes || 1), menu: "visit" },
   "一个人练身体": { each: () => grow("body") },
   "搭伴练身体": { each: () => grow("body"), together: true },
   "嘴甜人缘好": { each: () => grow("charm") },
@@ -183,7 +200,7 @@ export function live(seed, way, untilAge, pickOption, setup) {
         if (q && s.persons.qing.alive && !G("worldReady")(s, "qing")) continue;
       }
       // 没有想做的事：这一段歇着
-      if (!free(s, r, want, way.together)) G("worldPass")(s, C, r);
+      if (!free(s, r, want, way.together, way.menu)) G("worldPass")(s, C, r);
     }
     G("worldAdvance")(s, C, 0.5, online);
   }

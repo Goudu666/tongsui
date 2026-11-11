@@ -1,5 +1,5 @@
 {
- "version": "0194aaf2c704",
+ "version": "bf041bfe5e48",
  "events": [
   {
    "id": "m_rise",
@@ -48370,6 +48370,361 @@
     "kid": {
      "mind": 3.6
     }
+   },
+   {
+    "id": "hm_tv",
+    "label": "看电视",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "home": [
+      "tv"
+     ],
+     "hours": [
+      720,
+      1320
+     ]
+    },
+    "needs": {
+     "mood": 12,
+     "energy": -2
+    },
+    "stats": {
+     "charm": 0.04
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两只小板凳挨着，广告也看得一眼不眨。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "hm_radio",
+    "label": "听广播",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "home": [
+      "radio"
+     ]
+    },
+    "needs": {
+     "mood": 6,
+     "energy": -2
+    },
+    "stats": {
+     "mind": 0.12
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "收音机里说到「且听下回分解」，两个人一起叹了口气。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "hm_console",
+    "label": "打游戏机",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 6,
+     "maxAge": 17,
+     "home": [
+      "console"
+     ],
+     "hours": [
+      720,
+      1320
+     ]
+    },
+    "needs": {
+     "mood": 16,
+     "energy": -5
+    },
+    "stats": {},
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 8
+     },
+     "bond": {
+      "close": 2,
+      "sync": 1
+     },
+     "text": "两个手柄一根线，谁死了谁把手柄递过去。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "hm_books",
+    "label": "翻家里的书",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 6,
+     "maxAge": 29,
+     "home": [
+      "books"
+     ]
+    },
+    "needs": {
+     "energy": -5,
+     "mood": 1
+    },
+    "stats": {
+     "mind": 0.34
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个人抽一本，靠着书柜坐在地上，谁也不说话。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "hm_tape",
+    "label": "跟着磁带念英语",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 10,
+     "maxAge": 21,
+     "home": [
+      "tape"
+     ]
+    },
+    "needs": {
+     "energy": -5,
+     "mood": -2
+    },
+    "stats": {
+     "mind": 0.22,
+     "charm": 0.12
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "复读机念一句，你们俩跟一句，念到后来一起笑场。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "hm_pc",
+    "label": "用电脑查东西",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 10,
+     "home": [
+      "pc"
+     ]
+    },
+    "needs": {
+     "energy": -6
+    },
+    "stats": {
+     "mind": 0.3,
+     "charm": 0.05
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一把椅子坐一个，另一个站在后头指着屏幕。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "hm_pc_game",
+    "label": "打电脑游戏",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 10,
+     "maxAge": 35,
+     "home": [
+      "pc"
+     ],
+     "hours": [
+      720,
+      1320
+     ]
+    },
+    "needs": {
+     "mood": 18,
+     "energy": -8
+    },
+    "stats": {},
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 8
+     },
+     "bond": {
+      "close": 2,
+      "sync": 1
+     },
+     "text": "一个管键盘一个管鼠标，喊得楼道里都听得见。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "hm_milk",
+    "label": "喝门口的牛奶",
+    "minutes": 10,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "maxAge": 15,
+     "home": [
+      "milk"
+     ],
+     "hours": [
+      390,
+      600
+     ]
+    },
+    "needs": {
+     "hunger": 10,
+     "mood": 2
+    },
+    "stats": {
+     "body": 0.03
+    },
+    "money": 0,
+    "together": null,
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "hm_piece",
+    "label": "帮家里糊纸盒",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 12,
+     "maxAge": 17,
+     "flags": [
+      "fam_poor"
+     ],
+     "hours": [
+      930,
+      1320
+     ]
+    },
+    "needs": {
+     "energy": -6,
+     "mood": -4
+    },
+    "stats": {},
+    "money": 1,
+    "together": null,
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "buy_console",
+    "label": "攒钱买游戏机",
+    "minutes": 10,
+    "quick": true,
+    "sleep": false,
+    "duty": false,
+    "requires": {},
+    "needs": {
+     "mood": 10
+    },
+    "stats": {},
+    "money": -12,
+    "together": null,
+    "bring": false,
+    "menu": true,
+    "buys": "console"
+   },
+   {
+    "id": "buy_tape",
+    "label": "攒钱买复读机",
+    "minutes": 10,
+    "quick": true,
+    "sleep": false,
+    "duty": false,
+    "requires": {},
+    "needs": {
+     "mood": 6
+    },
+    "stats": {},
+    "money": -15,
+    "together": null,
+    "bring": false,
+    "menu": true,
+    "buys": "tape"
+   },
+   {
+    "id": "buy_pc",
+    "label": "攒钱买电脑",
+    "minutes": 10,
+    "quick": true,
+    "sleep": false,
+    "duty": false,
+    "requires": {},
+    "needs": {
+     "mood": 8
+    },
+    "stats": {},
+    "money": -60,
+    "together": null,
+    "bring": false,
+    "menu": true,
+    "buys": "pc"
    }
   ],
   "scenes": [
@@ -49615,7 +49970,10 @@
      720
     ],
     "actions": [
-     "piano"
+     "piano",
+     "hm_pc",
+     "hm_pc_game",
+     "buy_pc"
     ],
     "action": "piano"
    },
@@ -49630,7 +49988,10 @@
     "actions": [
      "picture_book",
      "study",
-     "read"
+     "read",
+     "hm_books",
+     "hm_tape",
+     "buy_tape"
     ],
     "action": "picture_book"
    },
@@ -49656,7 +50017,13 @@
      720
     ],
     "actions": [
-     "eat"
+     "eat",
+     "hm_milk",
+     "hm_tv",
+     "hm_radio",
+     "hm_console",
+     "hm_piece",
+     "buy_console"
     ],
     "action": "eat"
    },
@@ -49751,7 +50118,13 @@
      720
     ],
     "actions": [
-     "eat"
+     "eat",
+     "hm_milk",
+     "hm_tv",
+     "hm_radio",
+     "hm_console",
+     "hm_piece",
+     "buy_console"
     ],
     "action": "eat"
    },
@@ -49766,7 +50139,10 @@
     "actions": [
      "picture_book",
      "study",
-     "read"
+     "read",
+     "hm_books",
+     "hm_tape",
+     "buy_tape"
     ],
     "action": "picture_book"
    },
@@ -49792,7 +50168,10 @@
      720
     ],
     "actions": [
-     "piano"
+     "piano",
+     "hm_pc",
+     "hm_pc_game",
+     "buy_pc"
     ],
     "action": "piano"
    },
@@ -60726,6 +61105,128 @@
     },
     "wages": {},
     "hits": []
+   }
+  ]
+ },
+ "home": {
+  "items": [
+   {
+    "id": "radio",
+    "name": "收音机",
+    "arrive": {
+     "rich": 1958,
+     "mid": 1962,
+     "poor": 1970,
+     "gu": 1952
+    },
+    "gone": 1998,
+    "text": "收音机摆在柜子顶上，盖着一块钩花的白布。"
+   },
+   {
+    "id": "tv",
+    "name": "电视",
+    "arrive": {
+     "rich": 1979,
+     "mid": 1984,
+     "poor": 1990
+    },
+    "gone": null,
+    "text": "家里有电视了。头一天晚上，椅子摆了两排。"
+   },
+   {
+    "id": "fridge",
+    "name": "冰箱",
+    "arrive": {
+     "rich": 1985,
+     "mid": 1991,
+     "poor": 1999,
+     "liu": 1986
+    },
+    "gone": null,
+    "text": "冰箱进门那天，你妈拿抹布擦了三遍。"
+   },
+   {
+    "id": "books",
+    "name": "一柜子书",
+    "arrive": {
+     "rich": 1960,
+     "mid": 1993,
+     "lin": 1972,
+     "jin": 1950,
+     "zheng": 1955
+    },
+    "gone": null,
+    "text": "墙边立起一个书柜，玻璃门，一层一层码满了。"
+   },
+   {
+    "id": "milk",
+    "name": "订的牛奶",
+    "arrive": {
+     "rich": 1980,
+     "mid": 1994
+    },
+    "gone": null,
+    "text": "门口钉了个木头箱子，天不亮就有人往里放一瓶奶。"
+   },
+   {
+    "id": "phone",
+    "name": "电话",
+    "arrive": {
+     "rich": 1990,
+     "mid": 1996,
+     "poor": 2002,
+     "liu": 1989
+    },
+    "gone": 2016,
+    "text": "装电话了。你妈把号码抄在本上，挨家告诉了一遍。"
+   },
+   {
+    "id": "console",
+    "name": "游戏机",
+    "arrive": {
+     "rich": 1991,
+     "mid": 1996,
+     "xu": 1989
+    },
+    "gone": 2007,
+    "text": "一台插卡的游戏机，接在电视后头，线绕了两圈。",
+    "buy": {
+     "price": 12,
+     "from": 1992,
+     "minAge": 8
+    }
+   },
+   {
+    "id": "tape",
+    "name": "复读机",
+    "arrive": {
+     "rich": 1994,
+     "mid": 1999,
+     "xu": 1990
+    },
+    "gone": 2012,
+    "text": "一台复读机，说是学英语用的，按键一按咔哒一声。",
+    "buy": {
+     "price": 15,
+     "from": 1995,
+     "minAge": 10
+    }
+   },
+   {
+    "id": "pc",
+    "name": "电脑",
+    "arrive": {
+     "rich": 1998,
+     "mid": 2004,
+     "poor": 2012
+    },
+    "gone": null,
+    "text": "电脑搬进屋角，罩着一块布，开机要等好一阵。",
+    "buy": {
+     "price": 60,
+     "from": 2000,
+     "minAge": 16
+    }
    }
   ]
  }

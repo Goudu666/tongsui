@@ -704,7 +704,6 @@ actions:
     together: { needs: { mood: 8 }, bond: { close: 2, sync: 1 }, text: 一个管键盘一个管鼠标，喊得楼道里都听得见。 }
   - id: hm_milk
     label: 喝门口的牛奶
-    quick: true
     minutes: 10
     menu: true
     requires: { maxAge: 15, home: [milk], hours: [390, 600] }

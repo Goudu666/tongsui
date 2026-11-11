@@ -335,6 +335,12 @@ function sleep(s, r) {
     s.persons.qing.stats.charm = 2.98;
     const art2 = G("lifeGoal")(s, C, "qing").lines.find((l) => l.id === "art");
     assert.deepEqual([art2.have, art2.hx], [29, 29.8], "往下取整");
+    // 边界：整数部分恒等于 lifePoints（ε 差十倍，评审 #49 指出整分下面 1e-7~1e-6 那一小段原来会差 1）
+    const LP = G("lifePoints"), LF = G("lifeFinePoints");
+    for (let n = 0; n <= 1000; n++) for (const d of [0, -1e-9, -3e-7, -9e-7, -2e-6, 1e-9, 4e-3, 9.99e-3]) {
+      const v = n / 100 + d;
+      assert.equal(Math.floor(LF(v) + 1e-9), LP(v), "v=" + v);
+    }
   }
   // 一世的头一个早上不弹随机的事：人刚落地，先走两步、按一回（主线照常）。第二天的早上照旧
   {

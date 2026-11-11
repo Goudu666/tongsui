@@ -847,7 +847,7 @@
 - id: f_bai_takeover
   kind: solo
   stage: middle
-  weight: 3
+  weight: 6 # 白家、少年帮过忙、三十六岁以后才碰得上；3 的时候 1500 世里随手选的只碰上九回，「我去」一回没抽到，「送行的」那个小结就成了走不到
   requires: { minAge: 36, flags: [fam_dale, bai_help] }
   title: 出山
   text: 你爸站不了一整天了。来请的人搓着手：「你们家不出人，老礼儿就没人懂了。」你爸看你。

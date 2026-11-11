@@ -519,6 +519,10 @@
       score: { mind: 1 }
       # 少年以后每个日子算得更重（rules.yaml growth.turnWeight / room 按阶段，玩法总把关 11-11）：8.2 时专心念书的人开局就过，抬到 8.5
       min: 8.5
+      # 考的是同一条线，可头一年见习、过桥租房、置办一身行头得自己先垫一笔（docs/MEANS.md 第十节）。殷实人家家里出（断了供的自己出）。
+      # 一个人念书的二十二岁积蓄：清贫中位 20、小康 28、殷实 49。21 卡掉一半多的清贫人家、两成小康（tools/origin.mjs）
+      cost: 21
+      homePays: [fam_rich]
       tags: [competitive]
       effects: { flags: [job_desk] }
     # 董家（exp_pull，爸妈心里那条路就是进单位，docs/MEANS.md 第九节）：同一条路，钱家里出，自己不掏。别的人家、别的殷实人家看不见这一条。
@@ -724,8 +728,8 @@
     # 十五、十八岁用过了（念书那头）、二十几岁拿去开了铺子的，这里就没有了。别的人家看不见这一条
     - id: nest
       text: 爸妈拿出那笔钱，出首付
-      min: 215
-      cost: 215
+      min: 195
+      cost: 195
       requires: { flags: [fam_nest] }
       lock: 家里没攒下这笔钱
       hide: true
@@ -746,9 +750,9 @@
     # 翻修：还住老屋，算和「还住老屋」同一条路（还是对门）；也拿 home_old，拆迁那几年照样补钱
     - id: fixed
       text: 把老屋翻修一下
-      # 原来 70：清贫人家一个人念书的积蓄中位 136，人人翻得起，这道关没得冲。130 落在中位附近（tools/origin.mjs）
-      min: 130
-      cost: 110
+      # 原来 70：清贫人家一个人念书的积蓄中位 136，人人翻得起，这道关没得冲。坐办公室要先垫一笔以后中位一百出头，110 落在中位附近（tools/origin.mjs）
+      min: 110
+      cost: 90
       requires: { flags: [fam_poor] }
       lock: 不是你家的老屋
       hide: true

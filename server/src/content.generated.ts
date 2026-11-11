@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "0194aaf2c704",
+ "version": "6b3f48da2089",
  "events": [
   {
    "id": "m_rise",
@@ -23140,6 +23140,10 @@ var CONTENT: Content = {
       "mind": 1
      },
      "min": 8.5,
+     "cost": 21,
+     "homePays": [
+      "fam_rich"
+     ],
      "tags": [
       "competitive"
      ],
@@ -23819,8 +23823,8 @@ var CONTENT: Content = {
     {
      "id": "nest",
      "text": "爸妈拿出那笔钱，出首付",
-     "min": 215,
-     "cost": 215,
+     "min": 195,
+     "cost": 195,
      "requires": {
       "flags": [
        "fam_nest"
@@ -23916,8 +23920,8 @@ var CONTENT: Content = {
     {
      "id": "fixed",
      "text": "把老屋翻修一下",
-     "min": 130,
-     "cost": 110,
+     "min": 110,
+     "cost": 90,
      "requires": {
       "flags": [
        "fam_poor"
@@ -26816,7 +26820,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,

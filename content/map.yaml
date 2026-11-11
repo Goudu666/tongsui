@@ -329,6 +329,8 @@ actions:
   # ---- 同一道关，不同的冲法（docs/MEANS.md 第六节）----
   # 殷实人家拿钱换分：每一道看本事的关前面，都有一样花钱、长得快、能带上对门的（钱由带的人出）。
   #   9 岁三年级（体校少年班看体魄）→ 游泳班；22 岁找事由（坐办公室看心智、托关系看心智魅力）→ 外语班；45 岁争位子（心智魅力各半）→ 应酬
+  #   11-11 按 #43 的成长曲线重校：花钱的那样要比同一段不要钱里最快的快两三成（游泳 0.55 对打球 0.45、外语班心智 0.5 对书店 0.4、
+  #   应酬折成心智魅力各半 0.3 对聊天 0.2），原来的数比不要钱的还慢，钱白花。殷实比同活法小康多够得着的仍不超过 15 个点（means.test）
   - id: swim_class
     label: 去少年宫学游泳
     minutes: 90
@@ -336,7 +338,7 @@ actions:
     bring: true
     requires: { minAge: 6, maxAge: 11, flags: [fam_rich], hours: [930, 1200] }
     needs: { energy: -12, hunger: -8 }
-    stats: { body: 0.4 }
+    stats: { body: 0.55 }
     together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 一块浮板两个人扒着，你踢左腿，TA 踢右腿，在池子里转了个圈。 }
   - id: lang_class
     label: 过桥上外语班
@@ -345,7 +347,7 @@ actions:
     bring: true
     requires: { minAge: 18, maxAge: 21, flags: [fam_rich], hours: [1080, 1290] }
     needs: { energy: -12, mood: -4 }
-    stats: { mind: 0.35, charm: 0.25 }
+    stats: { mind: 0.5, charm: 0.2 }
     together: { needs: { mood: 5 }, bond: { close: 1 }, text: 老师让同桌对话。你们俩用外语问对方吃了吗，说完都笑了。 }
   - id: banquet
     label: 去饭局上应酬
@@ -353,8 +355,8 @@ actions:
     money: -5
     requires: { minAge: 30, maxAge: 59, flags: [fam_rich], hours: [1080, 1290] }
     needs: { hunger: 40, energy: -12, mood: -3 }
-    stats: { charm: 0.4, mind: 0.05 }
-  # 没念大学、早早干活的人：下了班去夜校，冲 22 岁那道坐办公室的线。一回一块钱学费，比殷实人家的外语班慢，可谁都去得了
+    stats: { charm: 0.45, mind: 0.15 }
+  # 没念大学、早早干活的人：下了班去夜校，冲 22 岁那道坐办公室的线。一回一块钱学费，比殷实人家的外语班慢一点，可谁都去得了
   - id: night_class
     label: 下了班去夜校
     minutes: 120
@@ -410,7 +412,7 @@ actions:
     bring: true
     requires: { minAge: 8, maxAge: 21, flags: [ch_runner], hours: [390, 480] }
     needs: { energy: -10, hunger: -10 }
-    stats: { body: 0.4 }
+    stats: { body: 0.5 }
     together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 老头在前头倒着跑，你们俩在后头追。他说，喘气要一块儿喘。 }
   - id: old_lessons
     label: 去楼上老先生家念书

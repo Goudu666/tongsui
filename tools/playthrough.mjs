@@ -380,6 +380,8 @@ function playLife(seed) {
   }
   rep.misses = rep.days.filter((d) => d.storyMiss && d.storyMiss.length).map((d) => ({ turn: d.turn, age: G("lifeTimeAt")(d.turn).label, miss: d.storyMiss.map((id) => id + "@" + storyOf(id).slot + "/" + storyOf(id).scene + "/" + storyOf(id).kind), slots: d.slots.map((x) => SLOT_ZH[x.slot] + ":" + x.did.qing + "|" + x.did.mei).join("  ") }));
   rep.faults = logger.lines.filter((l) => l[0] === "error").map((l) => l[1]).slice(0, 10);
+  // 每道关两个人的分（比较按法、调数时看成长总量有没有跑偏）
+  rep.gates = (s.log || []).filter((e) => e.kind === "milestone" && e.results).map((e) => ({ age: e.age, qing: e.results.qing ? e.results.qing.score : null, mei: e.results.mei ? e.results.mei.score : null }));
   // 「再来一世」：两个人都点，换成新的一世的投胎
   if (s.phase === "ended") {
     step([R.msg(qa, OP.AGAIN, { yes: true }), R.msg(ma, OP.AGAIN, { yes: true })]);

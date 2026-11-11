@@ -90,7 +90,8 @@ function sleep(s, r) {
   const c2 = J(C);
   const ms = c2.events.find((e) => e.id === "m_junior");
   ms.options.forEach((o, i) => { o.min = 50 + i; });
-  const lowest = ms.options[0].id;
+  // 兜底只看谁都走得了的路：第一条是挂了家境标记的 key_aid，取第一条不挂标记的（docs/MEANS.md 第八节）
+  const lowest = ms.options.find((o) => !o.requires).id;
   assert.equal(G("lifeMilestoneFallback")(ms).id, lowest);
   // 线一样低：取写在后面的那条（兜底的路习惯写在最后）
   assert.equal(G("lifeMilestoneFallback")({ options: [{ id: "a", min: 3 }, { id: "b" }, { id: "c" }] }).id, "c");
@@ -113,7 +114,7 @@ function sleep(s, r) {
   const s3 = lifeAt(23, 12, c3);
   for (const k of ["body", "mind", "charm"]) { s3.persons.qing.stats[k] = 9.5; s3.persons.mei.stats[k] = 1; }
   const o3 = untilMilestone(s3, c3);
-  assert.ok(o3.started && o3.started.choices.mei === ms3.options[0].id && !o3.started.choices.qing);
+  assert.ok(o3.started && o3.started.choices.mei === ms3.options.find((o) => !o.requires).id && !o3.started.choices.qing); // 兜底不看挂了家境标记的 key_aid
 
   // 现在的内容：每个关口都有一条谁都走得了的路（build-content 也拦着）
   const none = (x) => !x || Object.values(x).every((v) => v == null || (Array.isArray(v) && v.length === 0));
@@ -221,6 +222,8 @@ function sleep(s, r) {
       for (const r of ROLES) s.persons[r].flags.push(...(flags[r] || []));
       s.turn = turnAtAge(age);
       G("worldStartDay")(s, C);
+      // 当小康人家过：清贫、殷实人家的孩子放了学帮家里、上爸妈报的班，走的是另一条变体（docs/MEANS.md 第八节，hardship_time.test 测）
+      for (const r of ROLES) s.persons[r].flags = s.persons[r].flags.filter((f) => f !== "fam_poor" && f !== "fam_rich");
       if (!s.world.fate.milestone && !s.world.rest) return s;
     }
     assert.fail("没抽到要的日子");

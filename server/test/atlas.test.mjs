@@ -59,7 +59,8 @@ const index = (list, id) => list.findIndex((e) => e.id === id);
   const ev = C.events.find((e) => e.id === "m_senior");
   const far = ev.options.find((o) => o.id === "far");
   let checked = 0;
-  for (const mind of [7.0, 7.21, 7.35, 7.59, 7.6, 6.5]) {
+  // far 线从 7.6 抬到 8.7（docs/MEANS.md 第八节），这里的分数跟着抬 1.1
+  for (const mind of [8.1, 8.31, 8.45, 8.69, 8.7, 7.6]) {
     for (const swing of [0, -0.12, 0.2]) {
       const p = { flags: [], stats: { body: 5, mind, charm: 5, luck: 5 }, money: 0 };
       const lock = G("lifeOptionLock")(ev, far, p, swing, { close: 40 });
@@ -80,7 +81,7 @@ const index = (list, id) => list.findIndex((e) => e.id === id);
   const evening = C.events.find((e) => e.id === "m_evening");
   assert.equal(G("atlasOptionShort")(evening, evening.options.find((o) => o.id === "pair"), poor, 0, undefined), null, "对门不在了，两家并一家不是差几分的事");
   // 结算时挑最近的那条：差得太远的不算
-  const p = { flags: [], stats: { body: 5, mind: 7.5, charm: 5, luck: 5 }, money: 0 };
+  const p = { flags: [], stats: { body: 5, mind: 8.6, charm: 5, luck: 5 }, money: 0 };
   const near = G("atlasMilestoneNear")(ev, "near", p, 0, { close: 40 });
   assert.equal(near.option, "far");
   assert.equal(near.need - near.have, 1);
@@ -97,7 +98,7 @@ const index = (list, id) => list.findIndex((e) => e.id === id);
   assert.equal(G("atlasNearWhat")(ev, "grade:0"), ev.grades[0].label);
   assert.equal(G("atlasNearWhat")(ev, "grade:1"), null, "兜底那档没有字，不说");
   assert.equal(G("atlasMilestoneNear")(ev, "far", top, 0, { close: 40 }, ev.grades[0].min + 0.1), null, "名次拿到了就不算差");
-  const low = { ...top, stats: { ...top.stats, mind: 7.5 } };
+  const low = { ...top, stats: { ...top.stats, mind: 8.6 } };
   assert.equal(G("atlasMilestoneNear")(ev, "near", low, 0, { close: 40 }, ev.grades[0].min - 0.03).option, "far", "差一分的路比差得多的名次近");
   console.log(`✓ 关口：差一点和锁上那句是同一个数（${checked} 组对照）/ 钱按块 / 家里没那个条件、对门不在了的不算 / 差太远的不算 / 名次线也算`);
 }

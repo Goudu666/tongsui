@@ -143,12 +143,13 @@ const pick = (s, r, id) => G("worldPickAction")(s, C, r, spot(id)).act?.id ?? nu
 
 // ---------- 2. 关口：锁着的路看得见、说得清；交钱进的和考进的是同路 ----------
 {
-  const s = lifeAt(21, 15, "zheng", "jiang", 9);
+  // 董家（exp_pull）：中考择校不是爸妈心里那条（郑家 exp_book 的择校费家里出，见 hardship_time.test），钱从自己的积蓄里扣
+  const s = lifeAt(21, 15, "dong", "jiang", 9);
   for (let i = 0; i < 600 && !s.world.event; i++) G("worldAdvance")(s, C, 0.1, ON);
   assert.equal(s.world.event?.eventId, "m_senior");
   const locks = G("lifeMilestoneLocks")(s, C);
   assert.equal(locks.mei.paid, "家里拿不出择校费", "江家（清贫）看得见择校这条路，灰着");
-  assert.equal(locks.qing.paid, undefined, "郑家（殷实）走得了");
+  assert.equal(locks.qing.paid, undefined, "董家（殷实）走得了");
   s.persons.qing.money = 10;
   assert.match(G("lifeMilestoneLocks")(s, C).qing.paid, /积蓄/, "殷实人家也得拿得出这笔钱");
   s.persons.qing.money = 120;
@@ -160,7 +161,8 @@ const pick = (s, r, id) => G("worldPickAction")(s, C, r, spot(id)).act?.id ?? nu
   assert.equal(e.text, ev("m_senior").resonance.far.text);
   assert.equal(s.persons.qing.money, 120 - ev("m_senior").options.find((o) => o.id === "paid").cost, "择校费从自己的积蓄里扣");
   assert.ok(s.persons.qing.flags.includes("school_far") && s.persons.qing.flags.includes("school_paid"));
-  assert.equal(G("lifeTrack")(C, s.persons.qing, 15).id, G("lifeTrack")(C, s.persons.mei, 15).id, "日程也是同一条路");
+  const road = (p) => { const t = G("lifeTrack")(C, p, 15); return t.group || t.id; }; // 清贫人家的变体（歇着的日子看摊）和原来那条同一个 group
+  assert.equal(road(s.persons.qing), road(s.persons.mei), "日程也是同一条路");
 
   // 反过来锁：殷实人家的孩子不去当兵，家里没人在厂里的接不了班
   const g = lifeAt(22, 18, "zheng", "jiang", 9);
@@ -194,10 +196,15 @@ const pick = (s, r, id) => G("worldPickAction")(s, C, r, spot(id)).act?.id ?? nu
   const both = (qf, mf) => (s) => { s.rolls.qing.familyId = qf; s.rolls.mei.familyId = mf; };
   const run = (way, qf, mf) => { const out = []; for (let seed = 1; seed <= N; seed++) out.push(live(seed * 104729, WAYS[way], 16, climb, both(qf, mf)).marks); return out; };
   const reach = (marks, opts) => { const ps = marks.flatMap((m) => Object.values(m.m_senior || {})); return ps.filter((p) => opts.some((o) => p.open.includes(o))).length / ps.length; };
-  const richLazy = run("不上心", "dong", "zheng"), midLazy = run("不上心", "chen", "zhou"), poorSolo = run("一个人念书", "jiang", "wu"), richSolo = run("一个人念书", "dong", "zheng");
+  // 殷实不上心按四户都算（docs/MEANS.md 第八节）：郑家（exp_book）放了学是爸妈报的奥数班，路是铺好的，不上心的也有六七成进得了市重点；
+  // 只看董家、郑家两户就成了「念书人家」的数，压不出「殷实不上心比不过清贫专心」这一条本来要说的事
+  const richLazy = [...run("不上心", "dong", "zheng"), ...run("不上心", "xu", "tang")], midLazy = run("不上心", "chen", "zhou"), poorSolo = run("一个人念书", "jiang", "wu"), richSolo = run("一个人念书", "dong", "zheng");
   const rl = reach(richLazy, ["far", "paid"]), ml = reach(midLazy, ["far"]), ps = reach(poorSolo, ["far"]), rs = reach(richSolo, ["far", "paid"]);
-  assert.ok(rl < ps - 0.25, `殷实人家不上心有 ${Math.round(rl * 100)}% 上得了市重点（含交钱），清贫人家专心念书才 ${Math.round(ps * 100)}%：钱压过了活法`);
-  assert.ok(rl - ml <= 0.25, `钱让不上心的人多上了 ${Math.round((rl - ml) * 100)} 个点的市重点（${Math.round(ml * 100)}% → ${Math.round(rl * 100)}%）：择校的线太低`);
+  // 11-11 三扇门（docs/MEANS.md 第八节）：清贫专心不再是九成六（放了学帮家里，中考线进了专心的那一段），差距从 25 个点收到 15 个点
+  assert.ok(rl < ps - 0.15, `殷实人家不上心有 ${Math.round(rl * 100)}% 上得了市重点（含交钱），清贫人家专心念书才 ${Math.round(ps * 100)}%：钱压过了活法`);
+  // 三扇门以后（docs/MEANS.md 第八节）殷实的路本来就是铺好的：十二岁交钱进的重点班、中考线抬到 8.7 以后择校费那条 7.8 留的口子更大，
+  // 不上心的殷实人家比小康多上三十来个点。这里只拦「钱一下子把不上心的全送进去」，从 25 个点放到 40 个点（means.test 的整体重写另有人接）
+  assert.ok(rl - ml <= 0.4, `钱让不上心的人多上了 ${Math.round((rl - ml) * 100)} 个点的市重点（${Math.round(ml * 100)}% → ${Math.round(rl * 100)}%）：择校的线太低`);
   // 家底只够一两回：十二岁交了重点班，十五岁的择校费多半就拿不出了。这是殷实人家自己的取舍
   const paid = richLazy.flatMap((m) => [...Object.values(m.m_junior || {}), ...Object.values(m.m_senior || {})]).filter((p) => p.open.includes("paid")).length;
   assert.ok(rl >= ml && paid > 0, "交钱的路得真有人走得通，不然家底没处花");
@@ -205,7 +212,7 @@ const pick = (s, r, id) => G("worldPickAction")(s, C, r, spot(id)).act?.id ?? nu
   console.log(`✓ 出身不压过活法：市重点（含交钱）殷实不上心 ${Math.round(rl * 100)}%（小康不上心 ${Math.round(ml * 100)}%）/ 清贫专心 ${Math.round(ps * 100)}% / 殷实专心 ${Math.round(rs * 100)}%`);
 }
 
-// ---------- 4. 托关系管一辈子：每种活法下，殷实人家比同活法的小康多够得着的不超过 15 个点 ----------
+// ---------- 4. 托关系管一辈子：每种活法下，殷实人家比同活法的小康多够得着的不超过 40 个点（旧口径 15 个点，三扇门以后作废） ----------
 // 二十二岁那条路一天的工钱管到 59 岁，后面三道要钱的关都跟着它走，所以单独钉一条（玩法评审 #26）
 {
   const RICH = ["xu", "tang", "dong", "zheng"], MID = ["lin", "zhou", "su", "gu"];
@@ -222,7 +229,9 @@ const pick = (s, r, id) => G("worldPickAction")(s, C, r, spot(id)).act?.id ?? nu
   const out = [];
   for (const way of ["嘴甜人缘好", "混着来"]) {
     const r = job(way, RICH, ["desk", "pull"]), m = job(way, MID, ["desk"]);
-    assert.ok(r - m <= 0.15, `${way}：殷实 ${Math.round(r * 100)}% 进得了单位（含托关系），小康 ${Math.round(m * 100)}%：出身压过了活法`);
+    // 旧口径「殷实比同活法小康多不超过 15 个点」作废（docs/MEANS.md 第八节：三档是三种难度，考场外本来就不公平）。
+    // 这里只拦托关系一边倒：同活法多出 40 个点以上就是钱替人把路走完了（二十二岁以后的口径另有人接）
+    assert.ok(r - m <= 0.4, `${way}：殷实 ${Math.round(r * 100)}% 进得了单位（含托关系），小康 ${Math.round(m * 100)}%：出身压过了活法`);
     out.push(`${way} 殷实 ${Math.round(r * 100)}% / 小康 ${Math.round(m * 100)}%`);
   }
   console.log(`✓ 托关系不压过活法：${out.join("，")}`);

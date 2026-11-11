@@ -6,6 +6,7 @@ extends SceneTree
 var main: Node
 var out := "/tmp/life"
 var movie := false
+var only := ""   ## --only=ball：只拍名字里带这几个字的段（不拍收尾碰面）
 var zoom := 1.0   ## 镜头再推近几倍（--zoom=1.7 看细节；1 = 游戏里的取景）
 
 ## [图, 阶段, 几点, 季节, 青 [x, 行动, 点位], 梅 [x, 行动, 点位], 一起, 秒, 名字]
@@ -15,6 +16,7 @@ const CUTS := [
 	["building", "childhood", 1150, "autumn", [520, "study", "desk_qing"], [600, "picture_book", "desk_qing"], false, 3.4, "c03_homework"],
 	["river", "teen", 1000, "summer", [2700, "fish", "river_fish"], [2860, "play_river", "river_bank"], false, 3.6, "c04_fish_kite"],
 	["middle", "teen", 800, "autumn", [1300, "ball", "middle_yard"], [1500, "broadcast", "radio_mic"], false, 3.4, "c05_ball"],
+	["primary", "childhood", 960, "summer", [2260, "ball", "school_yard"], [2260, "ball", "school_yard"], true, 3.4, "c05b_ball_together"],
 	["street", "young", 1200, "winter", [2240, "night_market", "alley_night"], [2330, "chat", "alley_night"], false, 3.4, "c06_night_market"],
 	["street", "young", 700, "spring", [2680, "work", "bike_bench"], [2010, "chess", "chess_table"], false, 3.4, "c07_fix_chess"],
 	["across", "middle", 1250, "autumn", [4000, "overtime", "office_desk"], [4100, "overtime", "office_desk"], true, 3.4, "c08_overtime"],
@@ -31,6 +33,8 @@ func _initialize() -> void:
 			movie = true
 		elif a.begins_with("--zoom="):
 			zoom = float(a.substr(7))
+		elif a.begins_with("--only="):
+			only = a.substr(7)
 	DirAccess.make_dir_recursive_absolute(out)
 	_run()
 
@@ -67,6 +71,8 @@ func _run() -> void:
 		if main.guide is CanvasItem:
 			main.guide.visible = false
 	for c in CUTS:
+		if only != "" and not str(c[8]).contains(only):
+			continue
 		var sc: Dictionary = w.scenes.get(str(c[0]), {})
 		var y := float(sc.floors[-1])
 		w.set_stage(str(c[1]))
@@ -82,7 +88,7 @@ func _run() -> void:
 			a.visible = true
 			var x := float(row[0])
 			if bool(c[6]):
-				var gap: float = w.FACE_GAP if w._act_loop(str(row[1]), str(row[2])) in a.FACE_LOOPS else w.PAIR_GAP
+				var gap: float = w.pair_gap(w._act_loop(str(row[1]), str(row[2])))
 				x = float(c[4][0]) + (-gap if r == "qing" else gap)
 			a.position = Vector2(x, yy)
 			a.walk_target = a.position
@@ -109,7 +115,8 @@ func _run() -> void:
 		await _wait(0.5)
 		await _shot(str(c[8]) + "_after")
 		await _wait(0.9)
-	await _meet(w)
+	if only == "":
+		await _meet(w)
 	quit()
 
 
@@ -122,7 +129,7 @@ func _frame(w: Node, at: Vector2, span := 0.0) -> void:
 	await process_frame
 	var cam: Camera2D = w.camera
 	var base: float = get_root().get_visible_rect().size.y / float(cam.limit_bottom - cam.limit_top)
-	cam.zoom = Vector2.ONE * minf(base * zoom, get_root().get_visible_rect().size.x / (span + 560.0))
+	cam.zoom = Vector2.ONE * minf(base * zoom, get_root().get_visible_rect().size.x / (span + 380.0))
 	cam.position = Vector2(at.x, at.y - 120.0)
 	cam.reset_smoothing()
 	w.set_process(false)  # 别让 world_view 把镜头拽回自己身上

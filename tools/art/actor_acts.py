@@ -222,26 +222,84 @@ def act_type(b, k):
                 expr="focus" if k != 0.5 else "think", hook=hook)
 
 
-def act_kick(b, k):
-    """踢球：颠球。近腿一抬把球颠起来，眼睛跟着球上下。"""
-    near = {0.0: (8, 6), 0.25: (52, 22), 0.5: (6, 4), 0.75: (-12, 40)}[k]
-    ball = {0.0: (34, -46), 0.25: (36, -30), 0.5: (30, -118), 0.75: (32, -82)}[k]
-    tilt = {0.0: 6, 0.25: 14, 0.5: -14, 0.75: -4}[k]
-    nr, fr = (0.42, 0.4), {"shoulder": -26, "elbow": 16}
+KICK_CONTACT = (64, 66, 0)  # 踢到球那一拍的近腿：大腿抬平一半、小腿竖着、脚面平着托住球
 
-    def hook(p, layer, J):
-        if layer != "front":
-            return
+
+def act_kick(b, k):
+    """踢球：脚背颠球，一圈四拍。
+
+    0  脚背迎上去，球压在脚面上扁一下（低头盯着脚）
+    ¼  球往上走，脚顺势落下，眼睛跟着往上
+    ½  球到胸口那么高停一下，人微微踮起来，抬头笑
+    ¾  球往下掉，膝盖先提起来、支撑腿往下沉，准备下一脚
+    两只胳膊张开找平衡（近手在前、远手在后），踢的时候往外一甩。
+    球直上直下（x 不动）；地上有个影子跟着球的高低变大变小，看得出多高。
+    """
+    from actors import leg_points  # 道具要知道脚面在哪：和 draw_person 用同一套算法
+
+    old = b["stage"] == "old"
+    near_leg = {0.0: KICK_CONTACT, 0.25: (34, 26, 8), 0.5: (6, 8, 0), 0.75: (22, 62, -10)}[k]
+    stand_k = {0.0: 12, 0.25: 6, 0.5: 3, 0.75: 16}[k]
+    kb = b.get("knee_bend", 0.0)
+    legs = [dict(side="near", thigh=near_leg[0], knee=near_leg[1], pitch=near_leg[2]),
+            dict(side="far", thigh=-5 + kb * 0.5, knee=stand_k + kb, pitch=0)]
+    nr, fr = {
+        0.0: ({"shoulder": -14, "elbow": 58}, {"shoulder": -70, "elbow": 26}),
+        0.25: ({"shoulder": -4, "elbow": 48}, {"shoulder": -46, "elbow": 22}),
+        0.5: ({"shoulder": 6, "elbow": 36}, {"shoulder": -24, "elbow": 16}),
+        0.75: ({"shoulder": -10, "elbow": 54}, {"shoulder": -56, "elbow": 24}),
+    }[k]
+    lean = {0.0: -3, 0.25: -1, 0.5: 1, 0.75: 4}[k]
+    tilt = {0.0: 20, 0.25: -2, 0.5: -12, 0.75: 12}[k]
+    bob = {0.0: -1.5, 0.25: 0.5, 0.5: 2.0, 0.75: -2.0}[k]
+    lift = {0.0: 0.0, 0.25: 0.6, 0.5: 1.0, 0.75: 0.55}[k]  # 球离脚面多高（0 脚面 ~ 1 胸口）
+
+    def ball_at(J):
         s = sz(J)
         r = 8.5 * s + 1.5
-        cx, cy = ball[0] * (0.7 + 0.3 * s), ball[1] * s
-        p.shape([(cx + r * math.cos(a * TAU / 16), cy + r * math.sin(a * TAU / 16)) for a in range(16)], ("paper",), line=1.6)
-        p.shape([(cx + r * 0.35 * math.cos(a * TAU / 5 + k), cy + r * 0.35 * math.sin(a * TAU / 5 + k)) for a in range(5)], ("ink", None), line=0.8)
-        if k == 0.25:
-            for i in range(3):
-                a = math.radians(200 + i * 30)
-                p.line([(cx + r * 1.4 * math.cos(a), cy + r * 1.4 * math.sin(a)), (cx + r * 2.0 * math.cos(a), cy + r * 2.0 * math.sin(a))], 1.2)
-    return dict(pose=pose(b, stand_legs(b, near, (-4, 8)), arms(nr, fr), lean=3, tilt=tilt), expr="joy" if k == 0.5 else "happy", hook=hook)
+        hip = J["hip"]
+        _kn, ankle, _h, toe = leg_points(hip, *KICK_CONTACT, J["b"])
+        foot_y = toe[1] - J["b"]["ankle"] * 1.9 - 1.0  # 踢那一拍的脚面（鞋面顶上）
+        cx = ankle[0] + (toe[0] - ankle[0]) * 0.55
+        top = J["shoulder"][1] + r * 0.6               # 最高到胸口
+        cy = (foot_y - r) + (top - (foot_y - r)) * lift
+        return cx, cy, r
+
+    def hook(p, layer, J):
+        cx, cy, r = ball_at(J)
+        if layer == "back":
+            # 地上的影子：球越高越小越淡
+            w = r * (1.25 - 0.55 * lift)
+            p.blot([(cx + w * math.cos(a * TAU / 16), 0.5 + w * 0.26 * math.sin(a * TAU / 16)) for a in range(16)], "ink", 0.34 - 0.14 * lift, flat=True)
+            return
+        if layer != "front":
+            return
+        sx, sy = (1.14, 0.86) if k == 0.0 else (1.0, 1.0)   # 碰上脚面那一下扁一点
+        cy2 = cy + (r * (1 - sy)) if k == 0.0 else cy
+        p.shape([(cx + r * sx * math.cos(a * TAU / 18), cy2 + r * sy * math.sin(a * TAU / 18)) for a in range(18)], ("paper",), line=1.6)
+        # 球面：中间一块五边形，转着（看得出在旋），外圈三道缝
+        spin = k * TAU * 0.8
+        p.shape([(cx + r * 0.38 * math.cos(spin + a * TAU / 5), cy2 + r * 0.38 * sy * math.sin(spin + a * TAU / 5)) for a in range(5)], ("ink", None), line=0.8)
+        for a in range(3):
+            ang = spin + a * TAU / 3 + 0.5
+            p.line([(cx + r * 0.42 * math.cos(ang), cy2 + r * 0.42 * sy * math.sin(ang)),
+                    (cx + r * 0.92 * math.cos(ang), cy2 + r * 0.92 * sy * math.sin(ang))], 0.9)
+        if k == 0.0:
+            # 脚背一磕：两边各崩出两道
+            for sgn in (-1, 1):
+                for i in range(2):
+                    a = math.radians(90 + sgn * (62 + i * 22))
+                    p.line([(cx + r * 1.35 * math.cos(a), cy2 + r * 0.9 + r * 0.3 * math.sin(a) - i * 3),
+                            (cx + r * 1.95 * math.cos(a), cy2 + r * 0.9 + r * 0.6 * math.sin(a) - i * 5)], 1.3)
+        elif k in (0.25, 0.75):
+            # 速度线：往上走拖在下面，往下掉拖在上面
+            d = 1 if k == 0.25 else -1
+            for i, dx in enumerate((-0.45, 0.0, 0.45)):
+                y0 = cy + d * r * (1.35 + 0.15 * (i % 2))
+                p.line([(cx + dx * r, y0), (cx + dx * r, y0 + d * r * (0.9 + 0.35 * (i == 1)))], 1.1)
+
+    return dict(pose=pose(b, legs, arms(nr, fr), lean=lean, tilt=tilt, bob=bob, no_cane=old),
+                expr={0.0: "focus", 0.25: "happy", 0.5: "joy", 0.75: "focus"}[k], hook=hook)
 
 
 def act_hop(b, k):
@@ -539,6 +597,31 @@ def act_brush(b, k):
                 expr="bliss" if k != 0.5 else None, hook=hook)
 
 
+def act_pass(b, k):
+    """两个人对着踢（"两个人，一个球"）：不画球，球是客户端在两人中间画的那一个（actor.gd 的 _draw_pass）。
+
+    0  站好等球：两膝微屈、胳膊张开
+    ¼  引腿：踢球的腿往后一摆，身子往前探
+    ½  脚内侧推出去：腿贴着地往前扫，近手往后甩着平衡
+    ¾  送出去：腿顺势往前抬一点，笑
+    客户端按球走到哪挑帧（球到脚边才踢），不是按固定节拍轮播。
+    """
+    kb = b.get("knee_bend", 0.0)
+    near = {0.0: (8, 18, 0), 0.25: (-18, 62, -10), 0.5: (30, 6, 12), 0.75: (44, 20, 8)}[k]
+    legs = [dict(side="near", thigh=near[0] + kb * 0.4, knee=near[1] + kb * 0.6, pitch=near[2]),
+            dict(side="far", thigh=-6 + kb * 0.5, knee={0.0: 16, 0.25: 18, 0.5: 12, 0.75: 8}[k] + kb, pitch=0)]
+    nr, fr = {
+        0.0: ({"shoulder": 18, "elbow": 40}, {"shoulder": -30, "elbow": 24}),
+        0.25: ({"shoulder": 36, "elbow": 34}, {"shoulder": -52, "elbow": 22}),
+        0.5: ({"shoulder": -40, "elbow": 30}, {"shoulder": 34, "elbow": 40}),
+        0.75: ({"shoulder": -24, "elbow": 36}, {"shoulder": 20, "elbow": 36}),
+    }[k]
+    return dict(pose=pose(b, legs, arms(nr, fr), lean={0.0: 4, 0.25: 3, 0.5: 0, 0.75: -3}[k],
+                          tilt={0.0: 12, 0.25: 16, 0.5: 14, 0.75: 2}[k], bob={0.0: -2.0, 0.25: -2.5, 0.5: -1.0, 0.75: 0.5}[k],
+                          no_cane=b["stage"] == "old"),
+                expr={0.0: "focus", 0.25: "focus", 0.5: "effort", 0.75: "joy"}[k])
+
+
 ACTS = [
     ("write", act_write), ("read", act_read),
     ("eat", act_eat), ("type", act_type),
@@ -550,6 +633,7 @@ ACTS = [
     ("kite", act_kite), ("gaze", act_gaze),
     ("wash", act_wash), ("exercise", act_exercise),
     ("chalk", act_chalk), ("brush", act_brush),
+    ("pass", act_pass),
 ]
 
 

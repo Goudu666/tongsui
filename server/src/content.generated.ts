@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "7d36e56b5816",
+ "version": "244a4d1b7c08",
  "events": [
   {
    "id": "ch_runner",
@@ -10188,6 +10188,85 @@ var CONTENT: Content = {
    "catches": []
   },
   {
+   "id": "mw_unsaid",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 8,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 30,
+    "maxAge": 36,
+    "flags": [
+     "wed_ask"
+    ],
+    "notFlags": [
+     "p_married",
+     "p_missed"
+    ]
+   },
+   "title": "烟盒纸",
+   "text": "抽屉里压着一张烟盒纸，上头是那年想好要跟对门说的几句话。一直没说出口。",
+   "options": [
+    {
+     "id": "fold",
+     "text": "折好，收回去",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "p_missed"
+      ]
+     }
+    },
+    {
+     "id": "photo",
+     "text": "拍下来，没发出去",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "p_missed"
+      ]
+     }
+    },
+    {
+     "id": "burn",
+     "text": "揉了扔掉",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "p_missed"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
    "id": "mw_banns",
    "kind": "solo",
    "stage": "middle",
@@ -11194,7 +11273,7 @@ var CONTENT: Content = {
    "kind": "mirror",
    "stage": "middle",
    "seasons": [],
-   "weight": 4,
+   "weight": 8,
    "where": "hallway",
    "when": [
     1020,
@@ -11203,7 +11282,7 @@ var CONTENT: Content = {
    "hint": "楼道里停着一辆婴儿车。",
    "requires": {
     "minAge": 30,
-    "maxAge": 39,
+    "maxAge": 42,
     "flags": [
      "p_married"
     ],
@@ -11307,13 +11386,13 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 4,
+   "weight": 8,
    "where": null,
    "when": null,
    "hint": null,
    "requires": {
     "minAge": 30,
-    "maxAge": 42,
+    "maxAge": 45,
     "flags": [
      "married_other"
     ],
@@ -11383,7 +11462,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 4,
    "where": null,
    "when": null,
    "hint": null,
@@ -15694,7 +15773,9 @@ var CONTENT: Content = {
       },
       "other": {},
       "bond": {},
-      "flags": []
+      "flags": [
+       "wed_ask"
+      ]
      }
     },
     {
@@ -15796,9 +15877,7 @@ var CONTENT: Content = {
     "bond": {
      "close": -2
     },
-    "flags": [
-     "p_missed"
-    ]
+    "flags": []
    },
    "age": 28,
    "score": {
@@ -28232,7 +28311,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "young",
    "seasons": [],
-   "weight": 2,
+   "weight": 4,
    "where": null,
    "when": null,
    "hint": null,

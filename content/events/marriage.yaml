@@ -6,6 +6,30 @@
 # 要孩子的事也在这儿：两口子一件 mirror，和别人成家的、一个人过的各一件 solo。has_kid 一打上，服务器就给这个人生一个孩子。
 # 中年一个日子是三年（30、33…57），老年是 60/65/70/75；60~70 岁的 mirror 被主线第七章占着，老年的事写 solo。
 
+# ---------- 错过 ----------
+
+# 二十八岁选了跟对门过、对门没选的那个人（m_wed 的 wed_ask）：错过记在这儿，不记在关口的错位上
+- id: mw_unsaid
+  kind: solo
+  stage: middle
+  weight: 8
+  requires: { minAge: 30, maxAge: 36, flags: [wed_ask], notFlags: [p_married, p_missed] }
+  title: 烟盒纸
+  text: 抽屉里压着一张烟盒纸，上头是那年想好要跟对门说的几句话。一直没说出口。
+  options:
+    - id: fold
+      text: 折好，收回去
+      tags: [patient]
+      effects: { self: { mood: -3 }, flags: [p_missed] }
+    - id: photo
+      text: 拍下来，没发出去
+      tags: [gentle]
+      effects: { self: { mood: -2 }, flags: [p_missed] }
+    - id: burn
+      text: 揉了扔掉
+      tags: [solitude]
+      effects: { self: { mood: -5 }, flags: [p_missed] }
+
 # ---------- 知己 ----------
 
 - id: mw_banns
@@ -346,8 +370,8 @@
   where: hallway
   when: [1020, 1260]
   hint: 楼道里停着一辆婴儿车。
-  weight: 4
-  requires: { minAge: 30, maxAge: 39, flags: [p_married], notFlags: [has_kid] }
+  weight: 8
+  requires: { minAge: 30, maxAge: 42, flags: [p_married], notFlags: [has_kid] }
   title: 婴儿车
   text: 楼道里不知谁家的婴儿车，挡了半边路。你俩侧着身子挤过去，到了门口，谁都没急着掏钥匙。
   options:
@@ -383,8 +407,8 @@
 - id: mw_circle
   kind: solo
   stage: middle
-  weight: 4
-  requires: { minAge: 30, maxAge: 42, flags: [married_other], notFlags: [has_kid] }
+  weight: 8
+  requires: { minAge: 30, maxAge: 45, flags: [married_other], notFlags: [has_kid] }
   title: 画了个圈
   text: 吃晚饭的时候，爱人把一张日历推过来。下个月的一天，用红笔画了个圈。
   options:
@@ -404,7 +428,7 @@
 - id: mw_notice
   kind: solo
   stage: middle
-  weight: 3
+  weight: 4
   requires: { minAge: 33, maxAge: 45, flags: [single_life], notFlags: [has_kid] }
   title: 一张纸
   text: 福利院门口的告示栏贴了张纸，说想给几个孩子找人家。你在那张纸前头站了一会儿。

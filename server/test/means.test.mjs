@@ -358,20 +358,34 @@ const shown = (o, why) => !(o.hide && why === (o.lock || "这条路不是给你�
     assert.equal(lock(["fam_poor"], desk.cost), null);
     assert.equal(lock(["fam_rich"], 0), null, "殷实人家一分钱没有也坐得了");
     // 差的是那一笔钱、分够了：对门塞过来（上限按对门的家境），殷实的对门塞得动，清贫的对门塞不动
-    const gate = (mf, myMoney, theirMoney) => {
+    const atGate = (mf, myMoney, theirMoney) => {
       const g = lifeAt(29, 22, "wu", mf, 9.5);
       g.persons.qing.money = myMoney; g.persons.mei.money = theirMoney; g.bond.close = 80;
       for (let i = 0; i < 800 && !g.world.event; i++) G("worldAdvance")(g, C, 0.1, ON);
       assert.equal(g.world.event?.eventId, "m_job");
       return g;
     };
-    const rich = gate("dong", desk.cost - 8, 60);
+    const rich = atGate("dong", desk.cost - 8, 60);
     const offer = G("lifeMilestonePulls")(rich, C)?.qing?.desk;
     assert.ok(offer && offer.unit === "块" && offer.gap === 8 && offer.by === "mei", "殷实的对门把差的八块塞过来");
     assert.equal(G("worldChoose")(rich, C, "qing", "desk", false).error, null);
     assert.equal(G("worldChoose")(rich, C, "mei", "desk", false).error, null);
     assert.ok(rich.persons.qing.flags.includes("job_desk"), "塞了钱，坐上了办公室");
-    const poor = gate("ma", desk.cost - 15, 60);
+    const gate = rich.log.findLast((e) => e.kind === "milestone").gate;
+    assert.equal(gate.pay?.qing?.gap, 8, "塞的是交的钱：记在 gate.pay");
+    assert.equal(gate.pull?.qing, undefined, "不记进 gate.pull（揭晓卡照 pull 画分的尺子）");
+    // 目标条：二十一岁线已经够了、钱还差，写还差几块；对门殷实，写 TA 能垫多少
+    const tape = (mf, myMoney) => {
+      const g = lifeAt(31, 21, "wu", mf, 9.5);
+      g.persons.qing.money = myMoney; g.persons.mei.money = 60; g.bond.close = 80;
+      return G("lifeGoal")(g, C, "qing")?.lines?.find((l) => l.id === "desk");
+    };
+    const short = tape("ma", 5);
+    assert.ok(short && short.ok && short.short === desk.cost - 5 && !short.pull, `目标条：线够了，还差 ${short?.short} 块`);
+    const helped = tape("dong", desk.cost - 8);
+    assert.ok(helped.short === 8 && helped.pull?.gap === 8 && helped.pull.unit === "块", "对门殷实：目标条上写 TA 能垫你八块");
+    assert.equal(tape("ma", 50).short, undefined, "钱够就不写");
+    const poor = atGate("ma", desk.cost - 15, 60);
     assert.equal(G("lifeMilestonePulls")(poor, C)?.qing?.desk, undefined, "清贫的对门最多塞十块，差十五块塞不动");
   }
   // 二十二岁：董家（exp_pull）的「爸妈安排好的单位」不掏钱；郑家（exp_book）看不见这一条，托关系照旧自己掏

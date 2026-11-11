@@ -18,6 +18,8 @@ interface PullOffer {
   unit: string;
   /** 这一回最多拉得动多少（同 gap 的口径） */
   reach: number;
+  /** 看分的线上分够了、塞的是要交的钱（坐办公室头一年垫的那一笔）：揭晓时不画在分的尺子上，记进 gate.pay */
+  pay?: boolean;
 }
 
 interface GateLine { text: string; role?: Role }
@@ -31,6 +33,8 @@ interface LogEntry {
   /** 关口上两个人之间的事：拉一把（pull[role]）、没拉上（miss[role] 是他原来想走的路）、重逢（reunion 隔了几年），lines 是给人看的几句 */
   gate?: {
     pull?: { [R in Role]?: { by: Role; gap: number; unit: string } };
+    /** 看分的线上对门替他交了钱（PullOffer.pay）：和 pull 分开放，旧客户端照 pull 画分的尺子会画错 */
+    pay?: { [R in Role]?: { by: Role; gap: number } };
     miss?: { [R in Role]?: string };
     reunion?: number;
     lines: GateLine[];
@@ -123,7 +127,7 @@ function pullOffer(s: LifeState, c: Content, ev: LifeEvent, pe: PendingEvent, ro
       var cspare = Math.floor(them.money - lifeOptionCost(ev, o, them) + 1e-6);
       var creach = pullReachMoney(c, s.bond.close, them);
       if (cgap > creach || cspare < cgap) return null;
-      return { by: other, gap: cgap, unit: "块", reach: creach };
+      return { by: other, gap: cgap, unit: "块", reach: creach, pay: true };
     }
     if (gap <= 0 || myCost > me.money) return null; // 分和钱都差的，一把拉不过来
     var reach = pullReachPoints(c, s.bond.sync);
@@ -195,15 +199,23 @@ function pullResolve(s: LifeState, c: Content, ev: LifeEvent, pe: PendingEvent):
     if (!off) continue;
     var by = off.by;
     var names = { a: s.persons![by].name, b: s.persons![role].name };
-    if (pe.choices[by] && lifeRoad(ev, pe.choices[by]!) === lifeRoad(ev, chosen)) {
+    var theirs = pe.choices[by] ? lifeFindOption(ev, pe.choices[by]!) : null;
+    // 塞钱的那个人塞完还得交得起自己选的那条（同一条路上可能是线更高、更贵的那一条，比如四十岁争位子的「坐那把椅子」）
+    var canGive = off.unit !== "块" || !theirs || s.persons![by].money - off.gap >= pullMoneyNeed(ev, theirs, s.persons![by]) - 1e-6;
+    if (theirs && lifeRoad(ev, theirs.id) === lifeRoad(ev, chosen) && canGive) {
       if (off.unit === "块") {
         s.persons![by].money = Math.round((s.persons![by].money - off.gap) * 10) / 10;
         s.persons![role].money = Math.round((s.persons![role].money + off.gap) * 10) / 10;
       }
       if (!pe.pull) pe.pull = {};
       pe.pull[role] = { option: chosen, by: by, gap: off.gap, unit: off.unit };
-      if (!gate.pull) gate.pull = {};
-      gate.pull[role] = { by: by, gap: off.gap, unit: off.unit };
+      if (off.pay) {
+        if (!gate.pay) gate.pay = {};
+        gate.pay[role] = { by: by, gap: off.gap };
+      } else {
+        if (!gate.pull) gate.pull = {};
+        gate.pull[role] = { by: by, gap: off.gap, unit: off.unit };
+      }
       if (G) {
         gate.lines.push({ text: duetFill(off.unit === "块" ? G.money : G.pull, { a: names.a, b: names.b, x: off.gap }), role: by });
         var mem = off.unit === "块" ? G.moneyMemory : G.pullMemory;
@@ -217,7 +229,7 @@ function pullResolve(s: LifeState, c: Content, ev: LifeEvent, pe: PendingEvent):
       if (G) gate.lines.push({ text: duetFill(G.miss, { a: names.a, b: names.b, o: own.text }), role: role });
     }
   }
-  return gate.lines.length || gate.pull || gate.miss ? gate : null;
+  return gate.lines.length || gate.pull || gate.pay || gate.miss ? gate : null;
 }
 
 /**

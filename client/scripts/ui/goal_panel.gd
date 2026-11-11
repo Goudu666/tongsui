@@ -221,7 +221,10 @@ func _draw() -> void:
 	var reached := have >= float(line.need) - 0.001
 	var sub := "够着了" if reached else "还差 %d %s" % [int(ceil(float(line.need) - have)), unit]
 	var pull: Variant = line.get("pull")
-	if not reached and pull is Dictionary:
+	var short := int(line.get("short", 0))  # 线够了、要交的钱还差（服务器 GoalLine.short：坐办公室头一年垫的那一笔）
+	if reached and short > 0:
+		sub = "线够了，还差 %d 块" % short
+	if (not reached or short > 0) and pull is Dictionary:
 		sub = Pull.goal_mine(pull, their_name)  # 到时候对门拉得动：押时间时就知道，不是揭晓时才知道
 	var eff_text := _eff_text(" · ")
 	if lead + f.get_string_size(sub + eff_text, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x > side - 6.0:

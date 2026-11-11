@@ -125,7 +125,7 @@ export function live(seed, way, untilAge, pickOption, setup) {
         if (pe.choices[r]) continue;
         if (!online[r]) { G("worldChoose")(s, C, r, G("lifeShadowChoose")(s, C, r, ev.id), true); if (!s.world || s.world.event !== pe) break; continue; }
         const swing = (pe.swing && pe.swing[r]) || 0;
-        const open = ev.options.filter((o) => (ev.kind !== "milestone" && ev.chapter === undefined) || !G("lifeOptionLock")(ev, o, s.persons[r], swing, G("lifePairBond")(s, r)));
+        const open = ev.options.filter((o) => !G("lifeGated")(ev) || !G("lifeOptionLock")(ev, o, s.persons[r], swing, G("lifePairBond")(s, r)));
         const id = pickOption ? pickOption(s, r, ev, open) : open[Math.floor(G("lifeRand")(s) * open.length)].id;
         G("worldChoose")(s, C, r, id, false);
         if (!s.world || s.world.event !== pe) break;

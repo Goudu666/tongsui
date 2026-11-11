@@ -1,6 +1,218 @@
 {
- "version": "a5131dacdc32",
+ "version": "acfad057e50b",
  "events": [
+  {
+   "id": "ch_runner",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 0.3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 8,
+    "maxAge": 11
+   },
+   "title": "倒着跑的人",
+   "text": "天刚亮，海河边有个老头光着膀子跑步。他从你身边跑过去，又倒着跑回来：小孩儿，跟不跟？",
+   "options": [
+    {
+     "id": "follow",
+     "text": "跟着跑一圈",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.2,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "ch_runner"
+      ]
+     }
+    },
+    {
+     "id": "watch",
+     "text": "站着看他跑远",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "回去接着睡",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ch_scholar",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 0.3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 9,
+    "maxAge": 11
+   },
+   "title": "一箱书",
+   "text": "楼上搬来个退休的老先生。你帮他把一箱书抬上楼，他翻开一本，指着一个字问你认不认得。",
+   "options": [
+    {
+     "id": "guess",
+     "text": "猜一个",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "ch_scholar"
+      ]
+     }
+    },
+    {
+     "id": "honest",
+     "text": "说不认得",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "ch_scholar"
+      ]
+     }
+    },
+    {
+     "id": "leave",
+     "text": "放下箱子就跑",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "ch_radio",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 0.5,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 19,
+    "maxAge": 29,
+    "notFlags": [
+     "p_estranged"
+    ]
+   },
+   "title": "打通了",
+   "text": "你往电台打点歌的电话，打了一年没打通过，今天通了。主持人问：点给谁？",
+   "options": [
+    {
+     "id": "door",
+     "text": "点给对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {
+       "mood": 10
+      },
+      "bond": {
+       "close": 2
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "点给爸妈",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "hang",
+     "text": "一紧张挂了",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
   {
    "id": "c_roof_summer",
    "kind": "mirror",
@@ -7876,6 +8088,2115 @@
    "catches": []
   },
   {
+   "id": "lv_desk_report",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 22,
+    "maxAge": 27,
+    "flags": [
+     "job_desk"
+    ]
+   },
+   "title": "对不上的数",
+   "text": "头一个月，科长让你把一摞报表誊三遍。誊到第二遍，你发现第三页的合计对不上。",
+   "options": [
+    {
+     "id": "speak",
+     "text": "拿去跟科长说",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "desk_straight"
+      ]
+     }
+    },
+    {
+     "id": "copy",
+     "text": "照着誊，不吭声",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "fix",
+     "text": "改对了再交上去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "desk_straight"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_pull_canteen",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 22,
+    "maxAge": 27,
+    "flags": [
+     "job_pull"
+    ]
+   },
+   "title": "多一勺",
+   "text": "进单位头一天，食堂师傅多给你打了一勺菜。排你后头的人小声念了一句你爸的名字。",
+   "options": [
+    {
+     "id": "eat",
+     "text": "端着就走",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back",
+     "text": "把那一勺拨回去",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "pull_proud"
+      ]
+     }
+    },
+    {
+     "id": "other",
+     "text": "第二天换个窗口",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_teach_plane",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 22,
+    "maxAge": 27,
+    "flags": [
+     "job_teach"
+    ]
+   },
+   "title": "纸飞机",
+   "text": "头一堂课，最后一排的男孩一直在桌底下叠纸飞机。下课铃一响，飞机落在讲台上。",
+   "options": [
+    {
+     "id": "keep",
+     "text": "收了，放学还他",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "teach",
+     "text": "教他叠得更远",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "teach_plane"
+      ]
+     }
+    },
+    {
+     "id": "blind",
+     "text": "装作没看见",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_trade_fake",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 22,
+    "maxAge": 27,
+    "flags": [
+     "job_trade"
+    ]
+   },
+   "title": "一张假钞",
+   "text": "出摊头一个月，晚上数钱数出一张假的。你想了半天，想不起是谁给的。",
+   "options": [
+    {
+     "id": "tear",
+     "text": "撕了，长个记性",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "pin",
+     "text": "钉在钱匣盖上",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "第二天挨个问熟客",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_craft_sweep",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 22,
+    "maxAge": 27,
+    "flags": [
+     "job_craft"
+    ]
+   },
+   "title": "扫三个月地",
+   "text": "师傅收徒，先让你扫三个月地。他说手艺在眼睛里，不在手上。",
+   "options": [
+    {
+     "id": "watch",
+     "text": "一边扫一边偷看",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sweep",
+     "text": "只管扫",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "craft_patient"
+      ]
+     }
+    },
+    {
+     "id": "quit",
+     "text": "不扫了，自己琢磨",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_labor_wage",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 22,
+    "maxAge": 27,
+    "flags": [
+     "job_labor"
+    ]
+   },
+   "title": "下个月一起结",
+   "text": "工头说这个月的工钱下个月一起结。一块儿干活的老乡说，去年他也是这么说的。",
+   "options": [
+    {
+     "id": "go",
+     "text": "跟老乡去要",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "再等一个月",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "switch",
+     "text": "换个工地",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_factory_master",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 22,
+    "maxAge": 27,
+    "flags": [
+     "job_succeed"
+    ]
+   },
+   "title": "你爸的徒弟",
+   "text": "进厂分了个师傅，是你爸当年带过的徒弟。他喊你的名字，跟喊你爸一个调。",
+   "options": [
+    {
+     "id": "learn",
+     "text": "跟他学真本事",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.2,
+       "mind": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "drink",
+     "text": "下了班陪他喝两盅",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "mood": 3,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "say",
+     "text": "跟他说别照顾我",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_odd_five",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 22,
+    "maxAge": 29,
+    "flags": [
+     "job_odd"
+    ]
+   },
+   "title": "五个地方",
+   "text": "这个月你送过煤气、看过仓库、替人排过队。晚上算了算，换了五个地方。",
+   "options": [
+    {
+     "id": "one",
+     "text": "挑一样干到底",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "all",
+     "text": "接着什么都干",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "school",
+     "text": "去夜校报个名",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_army_blister",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 18,
+    "maxAge": 21,
+    "flags": [
+     "army"
+    ]
+   },
+   "title": "三个泡",
+   "text": "拉练走了四十里，你脚上磨了三个泡。班长让你把鞋脱了，蹲下来拿针给你挑。",
+   "options": [
+    {
+     "id": "grit",
+     "text": "咬着牙不出声",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "army_blister"
+      ]
+     }
+    },
+    {
+     "id": "thanks",
+     "text": "说声谢谢班长",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "army_blister"
+      ]
+     }
+    },
+    {
+     "id": "self",
+     "text": "接过针自己来",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_abroad_dishes",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 18,
+    "maxAge": 21,
+    "flags": [
+     "uni_abroad"
+    ]
+   },
+   "title": "后厨",
+   "text": "在国外头一个冬天，你去中餐馆后厨刷碗。家里寄的钱够用，你没跟家里说。",
+   "options": [
+    {
+     "id": "keep",
+     "text": "接着刷",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.2,
+       "charm": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "quit",
+     "text": "辞了，专心念书",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "打电话告诉家里",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_sea",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 33,
+    "maxAge": 45,
+    "notFlags": [
+     "job_trade",
+     "job_craft",
+     "job_labor",
+     "job_odd",
+     "job_succeed",
+     "left_city",
+     "own_shop",
+     "own_stall",
+     "laid_off",
+     "no_job"
+    ]
+   },
+   "title": "来不来",
+   "text": "一块儿念书的同学辞了职自己干，回来请客，手腕上一块新表。散席时他问你：来不来？",
+   "options": [
+    {
+     "id": "go",
+     "text": "辞了，跟他合伙",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "own_shop",
+       "quit_job"
+      ]
+     }
+    },
+    {
+     "id": "family",
+     "text": "家里出本钱，自己开",
+     "tags": [
+      "competitive"
+     ],
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ]
+     },
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "own_shop",
+       "quit_job"
+      ]
+     }
+    },
+    {
+     "id": "stay",
+     "text": "不去，接着上班",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "回去问问对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_shop_month",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 5,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 36,
+    "maxAge": 57,
+    "flags": [
+     "own_shop",
+     "shop_shaky"
+    ],
+    "notFlags": [
+     "shop_closed"
+    ]
+   },
+   "title": "月底",
+   "text": "铺子连着三个月没见回头钱。月底对账，你把计算器按了三遍。",
+   "options": [
+    {
+     "id": "close",
+     "text": "关门，找个班上",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "shop_closed",
+       "no_job"
+      ]
+     }
+    },
+    {
+     "id": "hold",
+     "text": "咬牙再撑一年",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "回家跟爸妈开口",
+     "tags": [
+      "gentle"
+     ],
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_shop_second",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 42,
+    "maxAge": 57,
+    "flags": [
+     "own_shop"
+    ],
+    "notFlags": [
+     "shop_closed",
+     "shop_shaky"
+    ]
+   },
+   "title": "对面的门脸",
+   "text": "铺子开到第五年，对面的门脸也空出来了。房东过来问你要不要。",
+   "options": [
+    {
+     "id": "take",
+     "text": "盘下来开第二家",
+     "tags": [
+      "adventure"
+     ],
+     "cost": 30,
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "shop_two"
+      ]
+     }
+    },
+    {
+     "id": "keep",
+     "text": "守着这一家",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "hand",
+     "text": "交给伙计，歇歇",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5,
+       "energy": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_reform",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 36,
+    "maxAge": 48,
+    "flags": [
+     "job_succeed"
+    ],
+    "notFlags": [
+     "laid_off"
+    ]
+   },
+   "title": "改制",
+   "text": "厂里开大会，说要改制。愿意买断的，按工龄一年算一份钱。",
+   "options": [
+    {
+     "id": "buy",
+     "text": "买断，自己干点什么",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "laid_off",
+       "own_stall"
+      ]
+     }
+    },
+    {
+     "id": "stay",
+     "text": "留下，跟厂子熬",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back",
+     "text": "托老师傅调去后勤",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_after_layoff",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 5,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 39,
+    "maxAge": 57,
+    "flags": [
+     "laid_off",
+     "no_job"
+    ],
+    "notFlags": [
+     "own_stall",
+     "own_shop"
+    ]
+   },
+   "title": "再就业",
+   "text": "街道贴了张单子：再就业培训，学面点、学开车、学修家电，管一顿午饭。",
+   "options": [
+    {
+     "id": "dough",
+     "text": "学面点，早上出摊",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "own_stall"
+      ]
+     }
+    },
+    {
+     "id": "drive",
+     "text": "学开车，跑活儿",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2,
+       "body": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "不去，接着打零工",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "family",
+     "text": "跟家里借钱开个铺子",
+     "tags": [
+      "competitive"
+     ],
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "own_shop"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_desk_seat",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 36,
+    "maxAge": 44,
+    "flags": [
+     "job_desk"
+    ],
+    "notFlags": [
+     "quit_job",
+     "laid_off"
+    ]
+   },
+   "title": "一个位子",
+   "text": "科里空出一个位子，你和同屋的老周都够格。他家孩子刚上学，他天天来得最早。",
+   "options": [
+    {
+     "id": "fight",
+     "text": "争一争",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "give",
+     "text": "让给老周",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "old",
+     "text": "去找当年那位科长",
+     "tags": [
+      "responsible"
+     ],
+     "requires": {
+      "flags": [
+       "desk_straight"
+      ]
+     },
+     "effects": {
+      "self": {
+       "charm": 0.4,
+       "mind": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_pull_cold",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 39,
+    "maxAge": 54,
+    "flags": [
+     "job_pull"
+    ],
+    "notFlags": [
+     "quit_job",
+     "laid_off"
+    ]
+   },
+   "title": "人走茶凉",
+   "text": "你爸退下来了。单位里原来见了你先笑的人，现在等你先笑。",
+   "options": [
+    {
+     "id": "smile",
+     "text": "先笑",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stiff",
+     "text": "也不笑",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "quiet",
+     "text": "调去清闲的科室",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "proud",
+     "text": "照旧，本来也没靠谁",
+     "tags": [
+      "solitude"
+     ],
+     "requires": {
+      "flags": [
+       "pull_proud"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": 4,
+       "charm": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_teach_title",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 36,
+    "maxAge": 50,
+    "flags": [
+     "job_teach"
+    ]
+   },
+   "title": "评职称",
+   "text": "评职称要一篇文章。教研组长说他那儿有现成的，挂上你的名字就行。",
+   "options": [
+    {
+     "id": "write",
+     "text": "自己写，熬几个晚上",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.4,
+       "energy": -15
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sign",
+     "text": "挂个名",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "skip",
+     "text": "今年不评了",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_craft_kid",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 39,
+    "maxAge": 57,
+    "flags": [
+     "job_craft"
+    ]
+   },
+   "title": "门口的孩子",
+   "text": "有个半大孩子天天蹲在铺子门口看你干活。今天他问：缺不缺扫地的？",
+   "options": [
+    {
+     "id": "sweep",
+     "text": "让他先扫三个月",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3,
+       "charm": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "craft_heir"
+      ]
+     }
+    },
+    {
+     "id": "teach",
+     "text": "手把手直接教",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "craft_heir"
+      ]
+     }
+    },
+    {
+     "id": "school",
+     "text": "让他回去念书",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_labor_pipe",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 30,
+    "maxAge": 48,
+    "flags": [
+     "job_labor"
+    ]
+   },
+   "title": "半步远",
+   "text": "脚手架上掉下来一根钢管，砸在你身边半步远。工头递过来一根烟，说没事。",
+   "options": [
+    {
+     "id": "on",
+     "text": "接着干",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.2,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "helmet",
+     "text": "跟工头要安全帽",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "回家歇三天",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "energy": 30,
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_trade_credit",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 33,
+    "maxAge": 50,
+    "flags": [
+     "job_trade"
+    ]
+   },
+   "title": "一张条",
+   "text": "赊了半年账的熟客搬走了。门上贴着一张条：账我记着。",
+   "options": [
+    {
+     "id": "wait",
+     "text": "把条收好",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "trade_note"
+      ]
+     }
+    },
+    {
+     "id": "chase",
+     "text": "打听着去他新家要",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "tear",
+     "text": "撕了",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_old_plane",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "teach_plane"
+    ]
+   },
+   "title": "够远了吗",
+   "text": "门口站着个中年人，手里一架纸飞机。他说：老师，现在够远了吧？",
+   "options": [
+    {
+     "id": "throw",
+     "text": "接过来往楼道里扔",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sit",
+     "text": "让他进屋坐",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_old_tower",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "job_labor"
+    ]
+   },
+   "title": "那栋楼",
+   "text": "河对岸最高的那栋楼，有一层是你砌的。你没跟人说过。",
+   "options": [
+    {
+     "id": "tell",
+     "text": "跟楼下孩子说一回",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "keep",
+     "text": "还是不说",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_old_note",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "trade_note"
+    ]
+   },
+   "title": "信封",
+   "text": "有人敲门，是当年赊账的熟客。头发全白了，手里攥着个信封。",
+   "options": [
+    {
+     "id": "take",
+     "text": "收下",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back",
+     "text": "推回去，留他吃饭",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_old_shop",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "own_shop"
+    ],
+    "notFlags": [
+     "shop_closed"
+    ]
+   },
+   "title": "铺子的钥匙",
+   "text": "铺子的钥匙在你手里攥了二十多年。该交给谁了。",
+   "options": [
+    {
+     "id": "kid",
+     "text": "交给孩子",
+     "tags": [
+      "responsible"
+     ],
+     "requires": {
+      "flags": [
+       "has_kid"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "clerk",
+     "text": "交给跟了多年的伙计",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "shut",
+     "text": "关了门，自己歇着",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_old_factory",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "job_succeed"
+    ]
+   },
+   "title": "一桌",
+   "text": "老工友聚了一桌，比上回少了四个。散的时候谁也没先起身。",
+   "options": [
+    {
+     "id": "toast",
+     "text": "挨个敬一圈",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stay",
+     "text": "坐到最后",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_old_army",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "army_blister"
+    ]
+   },
+   "title": "还磨吗",
+   "text": "战友聚会，班长拄着拐来了。他低头看你的鞋：脚还磨吗？",
+   "options": [
+    {
+     "id": "laugh",
+     "text": "跺两下脚给他看",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "help",
+     "text": "扶他坐下",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_old_abroad",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "uni_abroad"
+    ]
+   },
+   "title": "忘了",
+   "text": "楼下孩子拿一道外语题来问你。你看了很久，说：忘了。",
+   "options": [
+    {
+     "id": "look",
+     "text": "陪他一起查",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.1,
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "other",
+     "text": "教他一句别的",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_old_stall",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "own_stall"
+    ]
+   },
+   "title": "最后一锅",
+   "text": "摊子交出去那天，你在灶前站到火灭了。",
+   "options": [
+    {
+     "id": "watch",
+     "text": "看着火灭",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "last",
+     "text": "给楼里每家送一份",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "lv_old_desk",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "job_desk"
+    ],
+    "notFlags": [
+     "quit_job",
+     "laid_off"
+    ]
+   },
+   "title": "那张桌子",
+   "text": "单位叫退休的回去看看。你那张桌子还在，抽屉里是别人的饭盒。",
+   "options": [
+    {
+     "id": "sit",
+     "text": "坐一下再走",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "go",
+     "text": "看一眼就走",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
    "id": "f_dong_phone",
    "kind": "mirror",
    "stage": "childhood",
@@ -8582,6 +10903,394 @@
     },
     "flags": []
    },
+   "catches": []
+  },
+  {
+   "id": "mn_rich_tutor",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 14,
+    "flags": [
+     "fam_rich"
+    ]
+   },
+   "title": "家教",
+   "text": "中考前，家里托人请了个大学生，一礼拜来两回。你妈问：对门那孩子要不要一块儿听？",
+   "options": [
+    {
+     "id": "both",
+     "text": "叫上对门一块儿听",
+     "tags": [
+      "gentle"
+     ],
+     "cost": 10,
+     "effects": {
+      "self": {
+       "mind": 0.4
+      },
+      "other": {
+       "mind": 0.4
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "alone",
+     "text": "自己听",
+     "tags": [
+      "competitive"
+     ],
+     "cost": 6,
+     "effects": {
+      "self": {
+       "mind": 0.5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "no",
+     "text": "不用，我自己能行",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "once",
+     "text": "先听一回试试",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mn_poor_wage",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 19,
+    "maxAge": 22,
+    "flags": [
+     "fam_poor"
+    ],
+    "notFlags": [
+     "uni_away",
+     "uni_near",
+     "uni_abroad",
+     "army"
+    ]
+   },
+   "title": "工资袋",
+   "text": "头一个月的工资袋，你原封不动交给家里。你妈数了两遍，抽出两张塞回你兜里。",
+   "options": [
+    {
+     "id": "school",
+     "text": "拿去交夜校的学费",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "save",
+     "text": "压在褥子底下",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "treat",
+     "text": "请对门吃顿好的",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {
+       "mood": 6
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mn_rich_startup",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 28,
+    "flags": [
+     "fam_rich"
+    ],
+    "notFlags": [
+     "own_shop",
+     "left_city"
+    ]
+   },
+   "title": "本钱",
+   "text": "爸妈把你叫回家，说你要是想自己干点什么，家里出本钱。存折搁在饭桌上。",
+   "options": [
+    {
+     "id": "shop",
+     "text": "辞了，开个铺子",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "own_shop",
+       "quit_job"
+      ]
+     }
+    },
+    {
+     "id": "keep",
+     "text": "留着，以后买房",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "no",
+     "text": "不要，自己挣",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3,
+       "mind": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mn_rich_fall",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 39,
+    "maxAge": 54,
+    "flags": [
+     "fam_rich"
+    ]
+   },
+   "title": "家底",
+   "text": "你爸那边的买卖出了事。你妈打电话来，话说得很慢，说家里那套房怕是保不住。",
+   "options": [
+    {
+     "id": "all",
+     "text": "把积蓄都拿出来",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 40,
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rich_saved"
+      ]
+     }
+    },
+    {
+     "id": "half",
+     "text": "拿出一半",
+     "tags": [
+      "patient"
+     ],
+     "cost": 20,
+     "effects": {
+      "self": {
+       "mood": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stay",
+     "text": "回去陪他们住一阵",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "让他们先别急",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mn_rich_saved_old",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "rich_saved"
+    ]
+   },
+   "title": "那套房",
+   "text": "那套差点没保住的房子，现在挂着你爸妈的相片。",
+   "options": [
+    {
+     "id": "dust",
+     "text": "擦一擦相框",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sit",
+     "text": "在老位置坐一会儿",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
    "catches": []
   },
   {
@@ -9655,6 +12364,7 @@
      "tags": [
       "competitive"
      ],
+     "cost": 10,
      "effects": {
       "self": {
        "mood": -10
@@ -9682,6 +12392,28 @@
       "bond": {
        "close": 2
       },
+      "flags": [
+       "parent_sick"
+      ]
+     }
+    },
+    {
+     "id": "ward",
+     "text": "托人换个单间病房",
+     "tags": [
+      "responsible"
+     ],
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
       "flags": [
        "parent_sick"
       ]
@@ -9917,7 +12649,18 @@
    "hint": null,
    "requires": {
     "minAge": 39,
-    "maxAge": 51
+    "maxAge": 51,
+    "notFlags": [
+     "job_teach",
+     "job_trade",
+     "job_craft",
+     "job_odd",
+     "own_shop",
+     "own_stall",
+     "laid_off",
+     "no_job",
+     "left_city"
+    ]
    },
    "title": "名单上",
    "text": "单位一纸通知，名单上有你的名字。回家路上，你在早点铺门口站了很久，没进去，也没走。",
@@ -9936,7 +12679,10 @@
       },
       "other": {},
       "bond": {},
-      "flags": []
+      "flags": [
+       "laid_off",
+       "own_stall"
+      ]
      }
     },
     {
@@ -9954,7 +12700,10 @@
       "bond": {
        "distance": 1
       },
-      "flags": []
+      "flags": [
+       "laid_off",
+       "left_city"
+      ]
      }
     },
     {
@@ -9967,6 +12716,29 @@
       "self": {
        "mood": 5,
        "energy": 20
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "laid_off",
+       "no_job"
+      ]
+     }
+    },
+    {
+     "id": "family",
+     "text": "家里托人另找了地方",
+     "tags": [
+      "responsible"
+     ],
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": -3
       },
       "other": {},
       "bond": {},
@@ -10041,6 +12813,23 @@
       "bond": {
        "close": 1
       },
+      "flags": []
+     }
+    },
+    {
+     "id": "recheck",
+     "text": "去大医院从头查一遍",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 8,
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
       "flags": []
      }
     }
@@ -19320,6 +22109,26 @@
      "effects": {
       "self": {
        "mood": -5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "new",
+     "text": "让家里再买一盘",
+     "tags": [
+      "adventure"
+     ],
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ]
+     },
+     "effects": {
+      "self": {
+       "mood": 4
       },
       "other": {},
       "bond": {},
@@ -29405,6 +32214,383 @@
      "text": "社团里没人知道你们是一条街上长大的。你们也没说。"
     },
     "bring": false
+   },
+   {
+    "id": "swim_class",
+    "label": "去少年宫学游泳",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 6,
+     "maxAge": 11,
+     "flags": [
+      "fam_rich"
+     ],
+     "hours": [
+      930,
+      1200
+     ]
+    },
+    "needs": {
+     "energy": -12,
+     "hunger": -8,
+     "clean": 10
+    },
+    "stats": {
+     "body": 0.4
+    },
+    "money": -2,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "一块浮板两个人扒着，你踢左腿，TA 踢右腿，在池子里转了个圈。"
+    },
+    "bring": true
+   },
+   {
+    "id": "lang_class",
+    "label": "过桥上外语班",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 18,
+     "maxAge": 21,
+     "flags": [
+      "fam_rich"
+     ],
+     "hours": [
+      1080,
+      1290
+     ]
+    },
+    "needs": {
+     "energy": -12,
+     "mood": -4
+    },
+    "stats": {
+     "mind": 0.35,
+     "charm": 0.25
+    },
+    "money": -4,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "老师让同桌对话。你们俩用外语问对方吃了吗，说完都笑了。"
+    },
+    "bring": true
+   },
+   {
+    "id": "banquet",
+    "label": "去饭局上应酬",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 30,
+     "maxAge": 59,
+     "flags": [
+      "fam_rich"
+     ],
+     "hours": [
+      1080,
+      1290
+     ]
+    },
+    "needs": {
+     "hunger": 40,
+     "energy": -12,
+     "mood": -3
+    },
+    "stats": {
+     "charm": 0.4,
+     "mind": 0.05
+    },
+    "money": -5,
+    "together": null,
+    "bring": false
+   },
+   {
+    "id": "night_class",
+    "label": "下了班去夜校",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 18,
+     "maxAge": 29,
+     "notFlags": [
+      "uni_away",
+      "uni_near",
+      "uni_abroad",
+      "army"
+     ],
+     "hours": [
+      1110,
+      1290
+     ]
+    },
+    "needs": {
+     "energy": -14,
+     "mood": -4
+    },
+    "stats": {
+     "mind": 0.45
+    },
+    "money": -1,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "教室里坐的都是下了班的人。你们俩挨着，一个记笔记，一个替另一个盯着别睡着。"
+    },
+    "bring": false
+   },
+   {
+    "id": "side_tutor",
+    "label": "给街坊孩子补课",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 22,
+     "maxAge": 59,
+     "flags": [
+      "job_teach"
+     ],
+     "hours": [
+      1080,
+      1290
+     ]
+    },
+    "needs": {
+     "energy": -12,
+     "mood": -3
+    },
+    "stats": {
+     "charm": 0.05
+    },
+    "money": 2,
+    "together": null,
+    "bring": false
+   },
+   {
+    "id": "side_fix",
+    "label": "下了班接私活",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 22,
+     "maxAge": 59,
+     "flags": [
+      "job_craft"
+     ],
+     "hours": [
+      1020,
+      1290
+     ]
+    },
+    "needs": {
+     "energy": -12,
+     "clean": -10
+    },
+    "stats": {
+     "mind": 0.05
+    },
+    "money": 2,
+    "together": null,
+    "bring": false
+   },
+   {
+    "id": "night_market",
+    "label": "去夜市出摊",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 22,
+     "maxAge": 59,
+     "flags": [
+      "job_trade"
+     ],
+     "hours": [
+      1110,
+      1320
+     ]
+    },
+    "needs": {
+     "energy": -12,
+     "mood": -2
+    },
+    "stats": {
+     "charm": 0.05
+    },
+    "money": 2,
+    "together": null,
+    "bring": false
+   },
+   {
+    "id": "overtime",
+    "label": "留下来加班",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 22,
+     "maxAge": 59,
+     "flags": [
+      "job_desk"
+     ],
+     "notFlags": [
+      "quit_job",
+      "laid_off"
+     ],
+     "hours": [
+      1080,
+      1320
+     ]
+    },
+    "needs": {
+     "energy": -14,
+     "mood": -5
+    },
+    "stats": {
+     "mind": 0.05
+    },
+    "money": 2,
+    "together": null,
+    "bring": false
+   },
+   {
+    "id": "night_shift",
+    "label": "去码头扛夜活",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 22,
+     "maxAge": 59,
+     "notFlags": [
+      "job_desk",
+      "job_pull",
+      "job_teach",
+      "job_trade",
+      "job_craft",
+      "own_shop"
+     ],
+     "hours": [
+      1110,
+      1320
+     ]
+    },
+    "needs": {
+     "energy": -18,
+     "clean": -15
+    },
+    "stats": {
+     "body": 0.05
+    },
+    "money": 2,
+    "together": null,
+    "bring": false
+   },
+   {
+    "id": "run_dawn",
+    "label": "跟老头去晨跑",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 8,
+     "maxAge": 21,
+     "flags": [
+      "ch_runner"
+     ],
+     "hours": [
+      390,
+      480
+     ]
+    },
+    "needs": {
+     "energy": -10,
+     "hunger": -10
+    },
+    "stats": {
+     "body": 0.4
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "老头在前头倒着跑，你们俩在后头追。他说，喘气要一块儿喘。"
+    },
+    "bring": true
+   },
+   {
+    "id": "old_lessons",
+    "label": "去楼上老先生家念书",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 9,
+     "maxAge": 17,
+     "flags": [
+      "ch_scholar"
+     ],
+     "hours": [
+      960,
+      1260
+     ]
+    },
+    "needs": {
+     "energy": -8,
+     "mood": -2
+    },
+    "stats": {
+     "mind": 0.45
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "老先生一人给一杯茶，茶凉了，他才说今天就到这儿。"
+    },
+    "bring": true
    }
   ],
   "scenes": [
@@ -30391,6 +33577,19 @@
     "action": "piano"
    },
    {
+    "id": "palace_pool",
+    "zone": "youth_palace",
+    "scene": "across",
+    "at": [
+     1880,
+     10760
+    ],
+    "actions": [
+     "swim_class"
+    ],
+    "action": "swim_class"
+   },
+   {
     "id": "key_gate",
     "zone": "key_school",
     "scene": "across",
@@ -30430,6 +33629,19 @@
     "action": "dine_west"
    },
    {
+    "id": "mall_room",
+    "zone": "mall",
+    "scene": "across",
+    "at": [
+     3570,
+     10760
+    ],
+    "actions": [
+     "banquet"
+    ],
+    "action": "banquet"
+   },
+   {
     "id": "book_shelf",
     "zone": "bookstore",
     "scene": "across",
@@ -30456,6 +33668,20 @@
     "action": "duty"
    },
    {
+    "id": "uni_night",
+    "zone": "uni",
+    "scene": "across",
+    "at": [
+     4700,
+     10760
+    ],
+    "actions": [
+     "lang_class",
+     "night_class"
+    ],
+    "action": "lang_class"
+   },
+   {
     "id": "office_desk",
     "zone": "office",
     "scene": "across",
@@ -30465,7 +33691,8 @@
     ],
     "actions": [
      "duty",
-     "tutor"
+     "tutor",
+     "overtime"
     ],
     "action": "duty"
    },
@@ -30666,6 +33893,19 @@
      "read"
     ],
     "action": "study"
+   },
+   {
+    "id": "hall_upstairs",
+    "zone": "hallway",
+    "scene": "building",
+    "at": [
+     1620,
+     720
+    ],
+    "actions": [
+     "old_lessons"
+    ],
+    "action": "old_lessons"
    },
    {
     "id": "door_mei",
@@ -30970,6 +34210,19 @@
     "action": "study"
    },
    {
+    "id": "class_back",
+    "zone": "classroom",
+    "scene": "primary",
+    "at": [
+     1720,
+     6760
+    ],
+    "actions": [
+     "side_tutor"
+    ],
+    "action": "side_tutor"
+   },
+   {
     "id": "school_yard",
     "zone": "yard",
     "scene": "primary",
@@ -31049,6 +34302,19 @@
     "action": "cook"
    },
    {
+    "id": "river_dawn",
+    "zone": "river",
+    "scene": "river",
+    "at": [
+     300,
+     4760
+    ],
+    "actions": [
+     "run_dawn"
+    ],
+    "action": "run_dawn"
+   },
+   {
     "id": "river_bank",
     "zone": "river",
     "scene": "river",
@@ -31097,7 +34363,8 @@
      4760
     ],
     "actions": [
-     "duty"
+     "duty",
+     "night_shift"
     ],
     "action": "duty"
    },
@@ -31171,6 +34438,19 @@
     "action": "chess"
    },
    {
+    "id": "alley_night",
+    "zone": "alley",
+    "scene": "street",
+    "at": [
+     2260,
+     2760
+    ],
+    "actions": [
+     "night_market"
+    ],
+    "action": "night_market"
+   },
+   {
     "id": "bike_bench",
     "zone": "bikeshop",
     "scene": "street",
@@ -31180,7 +34460,8 @@
     ],
     "actions": [
      "duty",
-     "work"
+     "work",
+     "side_fix"
     ],
     "action": "duty"
    },
@@ -32045,6 +35326,97 @@
    }
   },
   {
+   "id": "job_own",
+   "label": "自己开了个铺子",
+   "requires": {
+    "minAge": 22,
+    "maxAge": 59,
+    "flags": [
+     "own_shop"
+    ],
+    "notFlags": [
+     "shop_closed"
+    ]
+   },
+   "group": null,
+   "duty": {
+    "label": "看铺子",
+    "spot": "breakfast_stall",
+    "arrive": [
+     420,
+     510
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 25,
+     "energy": -24,
+     "mood": -2
+    },
+    "stats": {
+     "charm": 0.1
+    },
+    "money": 22
+   }
+  },
+  {
+   "id": "job_stall",
+   "label": "在楼下支摊",
+   "requires": {
+    "minAge": 30,
+    "maxAge": 59,
+    "flags": [
+     "own_stall"
+    ]
+   },
+   "group": null,
+   "duty": {
+    "label": "出摊",
+    "spot": "breakfast_stall",
+    "arrive": [
+     360,
+     420
+    ],
+    "until": 780,
+    "needs": {
+     "energy": -22,
+     "clean": -10
+    },
+    "stats": {
+     "charm": 0.08
+    },
+    "money": 12
+   }
+  },
+  {
+   "id": "job_lost",
+   "label": "没了正经事由，打零工",
+   "requires": {
+    "minAge": 30,
+    "maxAge": 59,
+    "flags": [
+     "no_job"
+    ]
+   },
+   "group": null,
+   "duty": {
+    "label": "打零工",
+    "spot": "bike_bench",
+    "arrive": [
+     450,
+     600
+    ],
+    "until": 900,
+    "needs": {
+     "energy": -20,
+     "clean": -15
+    },
+    "stats": {
+     "body": 0.07
+    },
+    "money": 7
+   }
+  },
+  {
    "id": "job_desk",
    "label": "坐办公室",
    "requires": {
@@ -32683,6 +36055,31 @@
     }
    },
    {
+    "id": "l_two_shops",
+    "title": "两家铺子",
+    "text": "{name} 半路辞了事由，开了自己的铺子，后来开到第二家。两家隔着一条马路，{name} 一天来回跑八趟。",
+    "requires": {
+     "flags": [
+      "own_shop",
+      "shop_two"
+     ],
+     "notFlags": [
+      "shop_closed"
+     ]
+    }
+   },
+   {
+    "id": "l_restart",
+    "title": "又支起来了",
+    "text": "{name} 四十多岁丢了饭碗，在楼下支了个摊。天不亮就起，起了十几年，摊子上的灯总是楼里第一盏亮的。",
+    "requires": {
+     "flags": [
+      "laid_off",
+      "own_stall"
+     ]
+    }
+   },
+   {
     "id": "l_early",
     "title": "早走的人",
     "text": "{name} 走得早了一些。楼里的人后来说起 {name}，还是那个跑得最快的孩子。",
@@ -33181,6 +36578,124 @@
      "mood": -3
     },
     "flags": null
+   }
+  },
+  {
+   "event": "lv_labor_wage",
+   "option": "go",
+   "stat": "charm",
+   "dc": 5.5,
+   "pass": "工头骂了两句，钱数给你了。",
+   "fail": {
+    "text": "没要着。回来的路上，老乡请你吃了碗面。",
+    "self": {
+     "mood": -5
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "lv_craft_sweep",
+   "option": "quit",
+   "stat": "mind",
+   "dc": 5.5,
+   "pass": "你自己琢磨出一个法子，师傅看了，没说话，点了下头。",
+   "fail": {
+    "text": "琢磨了一礼拜，又回来拿起了扫帚。",
+    "self": {
+     "mood": -4
+    },
+    "flags": null
+   }
+  },
+  {
+   "event": "lv_sea",
+   "option": "go",
+   "stat": "luck",
+   "dc": 5.5,
+   "pass": "头一年就见了回头钱。",
+   "fail": {
+    "text": "头一年赔进去一半本钱。他说，明年就好了。",
+    "self": null,
+    "flags": [
+     "own_shop",
+     "quit_job",
+     "shop_shaky"
+    ]
+   }
+  },
+  {
+   "event": "lv_shop_month",
+   "option": "hold",
+   "stat": "luck",
+   "dc": 5,
+   "pass": "第二年开春，街口修了路，人多了起来。",
+   "fail": {
+    "text": "又撑了一年，还是把门关了。",
+    "self": {
+     "mood": -8
+    },
+    "flags": [
+     "shop_closed",
+     "no_job"
+    ]
+   }
+  },
+  {
+   "event": "lv_shop_second",
+   "option": "take",
+   "stat": "charm",
+   "dc": 6,
+   "pass": "两家铺子隔着一条马路，你一天来回跑八趟。",
+   "fail": {
+    "text": "第二家开了半年，盘给了别人。",
+    "self": {
+     "mood": -6
+    },
+    "flags": []
+   }
+  },
+  {
+   "event": "lv_reform",
+   "option": "stay",
+   "stat": "luck",
+   "dc": 5,
+   "pass": "厂子缓过来了，车间又开了两班。",
+   "fail": {
+    "text": "熬了半年，厂子还是停了。",
+    "self": {
+     "mood": -8
+    },
+    "flags": [
+     "laid_off",
+     "no_job"
+    ]
+   }
+  },
+  {
+   "event": "ch_runner",
+   "option": "follow",
+   "stat": "body",
+   "dc": 5,
+   "pass": "跑到铁桥底下，他回头看了你一眼：明天还这个点儿。",
+   "fail": {
+    "text": "跑了半里地就岔了气。他没停，也没回头。",
+    "self": null,
+    "flags": []
+   }
+  },
+  {
+   "event": "ch_scholar",
+   "option": "guess",
+   "stat": "mind",
+   "dc": 5.5,
+   "pass": "猜对了。他把书合上：以后放了学上来坐坐。",
+   "fail": {
+    "text": "猜错了。他笑了笑，说这个字他小时候也念错过。",
+    "self": null,
+    "flags": [
+     "ch_scholar"
+    ]
    }
   }
  ],

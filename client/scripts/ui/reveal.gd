@@ -89,12 +89,12 @@ func _process(delta: float) -> void:
 		return
 	if scored and _t <= _dur + delta:
 		var v := _value()
-		# 算盘珠：每两分响一颗，越往上音越高
+		# 算盘珠：每两分响一颗，越往上音越高。珠子调在 D6，pitch 按 D 宫五声一级一级上：B D E F# A（停在 5 上，不解决）
 		var step := int(floor(v / (2.0 if unit == "分" else maxf(1.0, (_hi - _lo) / 40.0))))
 		if step != _last_bead and _t - _bead_at > 0.035 and not _skip:
 			_last_bead = step
 			_bead_at = _t
-			_cue("bead", -2.0, 0.85 + 0.5 * _k())
+			_cue("bead", -2.0, [0.8409, 1.0, 1.1225, 1.2599, 1.4983][mini(int(_k() * 5.0), 4)])
 		if line >= 0 and not _crossed and v >= float(line):
 			_crossed = true
 			_cue("gain", -2.0, 1.5)

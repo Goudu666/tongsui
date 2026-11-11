@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" font-family="system-ui, -apple-system, 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif">
+<title>一路升上去：每个行当一个日子挣多少块</title>
+<rect width="900" height="500" rx="12" fill="#F4EEE1"/>
+<text x="64" y="38" font-size="19" font-weight="700" fill="#2B2A33">一路升上去：每个行当一个日子挣多少块</text>
+<text x="64" y="62" font-size="13" fill="#2B2A33" fill-opacity="0.62">26 岁站住脚升一级，36 岁挑大梁再升一级，45 岁争到位子工钱再乘 1.5，60 岁退休</text>
+<text x="97.0" y="82" font-size="12" text-anchor="middle" fill="#2B2A33" fill-opacity="0.55">入行</text>
+<rect x="129.9" y="92" width="164.7" height="308" fill="#2B2A33" fill-opacity="0.035"/>
+<text x="212.3" y="82" font-size="12" text-anchor="middle" fill="#2B2A33" fill-opacity="0.55">站住了脚</text>
+<text x="368.8" y="82" font-size="12" text-anchor="middle" fill="#2B2A33" fill-opacity="0.55">挑了大梁</text>
+<rect x="442.9" y="92" width="247.1" height="308" fill="#2B2A33" fill-opacity="0.035"/>
+<text x="566.5" y="82" font-size="12" text-anchor="middle" fill="#2B2A33" fill-opacity="0.55">争到了位子</text>
+<line x1="64" x2="690" y1="400" y2="400" stroke="#2B2A33" stroke-opacity="0.35" stroke-width="1"/>
+<text x="54" y="404" font-size="12" text-anchor="end" fill="#2B2A33" fill-opacity="0.55">0</text>
+<line x1="64" x2="690" y1="344" y2="344" stroke="#2B2A33" stroke-opacity="0.1" stroke-width="1"/>
+<text x="54" y="348" font-size="12" text-anchor="end" fill="#2B2A33" fill-opacity="0.55">10</text>
+<line x1="64" x2="690" y1="288" y2="288" stroke="#2B2A33" stroke-opacity="0.1" stroke-width="1"/>
+<text x="54" y="292" font-size="12" text-anchor="end" fill="#2B2A33" fill-opacity="0.55">20</text>
+<line x1="64" x2="690" y1="232" y2="232" stroke="#2B2A33" stroke-opacity="0.1" stroke-width="1"/>
+<text x="54" y="236" font-size="12" text-anchor="end" fill="#2B2A33" fill-opacity="0.55">30</text>
+<line x1="64" x2="690" y1="176" y2="176" stroke="#2B2A33" stroke-opacity="0.1" stroke-width="1"/>
+<text x="54" y="180" font-size="12" text-anchor="end" fill="#2B2A33" fill-opacity="0.55">40</text>
+<line x1="64" x2="690" y1="120" y2="120" stroke="#2B2A33" stroke-opacity="0.1" stroke-width="1"/>
+<text x="54" y="124" font-size="12" text-anchor="end" fill="#2B2A33" fill-opacity="0.55">50</text>
+<text x="54" y="82" font-size="12" text-anchor="end" fill="#2B2A33" fill-opacity="0.55">块</text>
+<line x1="64" x2="64" y1="92" y2="400" stroke="#2B2A33" stroke-opacity="0.28" stroke-dasharray="2 4"/>
+<text x="64" y="420" font-size="12.5" font-weight="600" text-anchor="middle" fill="#2B2A33">22 岁</text>
+<text x="64" y="437" font-size="12" text-anchor="middle" fill="#2B2A33" fill-opacity="0.6">入行</text>
+<line x1="129.9" x2="129.9" y1="92" y2="400" stroke="#2B2A33" stroke-opacity="0.28" stroke-dasharray="2 4"/>
+<text x="129.9" y="420" font-size="12.5" font-weight="600" text-anchor="middle" fill="#2B2A33">26 岁</text>
+<text x="129.9" y="437" font-size="12" text-anchor="middle" fill="#2B2A33" fill-opacity="0.6">站住脚</text>
+<line x1="294.6" x2="294.6" y1="92" y2="400" stroke="#2B2A33" stroke-opacity="0.28" stroke-dasharray="2 4"/>
+<text x="294.6" y="420" font-size="12.5" font-weight="600" text-anchor="middle" fill="#2B2A33">36 岁</text>
+<text x="294.6" y="437" font-size="12" text-anchor="middle" fill="#2B2A33" fill-opacity="0.6">挑大梁</text>
+<line x1="442.9" x2="442.9" y1="92" y2="400" stroke="#2B2A33" stroke-opacity="0.28" stroke-dasharray="2 4"/>
+<text x="442.9" y="420" font-size="12.5" font-weight="600" text-anchor="middle" fill="#2B2A33">45 岁</text>
+<text x="442.9" y="437" font-size="12" text-anchor="middle" fill="#2B2A33" fill-opacity="0.6">争位子</text>
+<line x1="690" x2="690" y1="92" y2="400" stroke="#2B2A33" stroke-opacity="0.28" stroke-dasharray="2 4"/>
+<text x="690" y="420" font-size="12.5" font-weight="600" text-anchor="middle" fill="#2B2A33">60 岁</text>
+<text x="690" y="437" font-size="12" text-anchor="middle" fill="#2B2A33" fill-opacity="0.6">退休</text>
+<text x="195.8" y="420" font-size="12" text-anchor="middle" fill="#2B2A33" fill-opacity="0.45">30</text>
+<text x="360.5" y="420" font-size="12" text-anchor="middle" fill="#2B2A33" fill-opacity="0.45">40</text>
+<text x="525.3" y="420" font-size="12" text-anchor="middle" fill="#2B2A33" fill-opacity="0.45">50</text>
+<path d="M64 366.4H129.9V338.4H294.6V316H442.9V274H690" fill="none" stroke="#F4EEE1" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M64 366.4H129.9V338.4H294.6V316H442.9V274H690" fill="none" stroke="#A7A39C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M64 321.6H129.9V304.8H294.6V282.4H442.9V223.6H690" fill="none" stroke="#F4EEE1" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M64 321.6H129.9V304.8H294.6V282.4H442.9V223.6H690" fill="none" stroke="#93918F" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 4"/>
+<path d="M64 316H129.9V299.2H294.6V276.8H442.9V215.2H690" fill="none" stroke="#F4EEE1" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M64 316H129.9V299.2H294.6V276.8H442.9V215.2H690" fill="none" stroke="#7F7D85" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M64 310.4H129.9V293.6H294.6V265.6H442.9V198.4H690" fill="none" stroke="#F4EEE1" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M64 310.4H129.9V293.6H294.6V265.6H442.9V198.4H690" fill="none" stroke="#6A6972" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 4"/>
+<path d="M64 321.6H129.9V299.2H294.6V260H442.9V190H690" fill="none" stroke="#F4EEE1" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M64 321.6H129.9V299.2H294.6V260H442.9V190H690" fill="none" stroke="#55545D" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M64 310.4H129.9V282.4H294.6V248.8H442.9V173.2H690" fill="none" stroke="#F4EEE1" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M64 310.4H129.9V282.4H294.6V248.8H442.9V173.2H690" fill="none" stroke="#3F3E48" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 4"/>
+<path d="M64 299.2H129.9V276.8H294.6V248.8H442.9V173.2H690" fill="none" stroke="#F4EEE1" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M64 299.2H129.9V276.8H294.6V248.8H442.9V173.2H690" fill="none" stroke="#2B2A33" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M64 293.6H129.9V260H294.6V220.8H442.9V131.2H690" fill="none" stroke="#F4EEE1" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M64 293.6H129.9V260H294.6V220.8H442.9V131.2H690" fill="none" stroke="#D9485F" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M64 265.6H129.9V243.2H294.6V209.6H442.9V114.4H690" fill="none" stroke="#F4EEE1" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M64 265.6H129.9V243.2H294.6V209.6H442.9V114.4H690" fill="none" stroke="#2E8B7A" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="64" cy="265.6" r="3" fill="#2E8B7A" stroke="#F4EEE1" stroke-width="1.5"/>
+<circle cx="64" cy="293.6" r="3" fill="#D9485F" stroke="#F4EEE1" stroke-width="1.5"/>
+<circle cx="64" cy="299.2" r="3" fill="#2B2A33" stroke="#F4EEE1" stroke-width="1.5"/>
+<circle cx="64" cy="310.4" r="3" fill="#3F3E48" stroke="#F4EEE1" stroke-width="1.5"/>
+<circle cx="64" cy="321.6" r="3" fill="#55545D" stroke="#F4EEE1" stroke-width="1.5"/>
+<circle cx="64" cy="310.4" r="3" fill="#6A6972" stroke="#F4EEE1" stroke-width="1.5"/>
+<circle cx="64" cy="316" r="3" fill="#7F7D85" stroke="#F4EEE1" stroke-width="1.5"/>
+<circle cx="64" cy="321.6" r="3" fill="#93918F" stroke="#F4EEE1" stroke-width="1.5"/>
+<circle cx="64" cy="366.4" r="3" fill="#A7A39C" stroke="#F4EEE1" stroke-width="1.5"/>
+<path d="M694 114.4C704 114.4 704 114.3 712 114.3" fill="none" stroke="#2E8B7A" stroke-opacity="0.7" stroke-width="1"/>
+<rect x="716" y="112.8" width="14" height="3" rx="1.5" fill="#2E8B7A"/>
+<text x="736" y="118.8" font-size="13" fill="#2B2A33" font-weight="700">坐办公室 <tspan fill-opacity="0.6">24→51</tspan></text>
+<path d="M694 131.2C704 131.2 704 131.3 712 131.3" fill="none" stroke="#D9485F" stroke-opacity="0.7" stroke-width="1"/>
+<rect x="716" y="129.8" width="14" height="3" rx="1.5" fill="#D9485F"/>
+<text x="736" y="135.8" font-size="13" fill="#2B2A33" font-weight="700">做买卖 <tspan fill-opacity="0.6">19→48</tspan></text>
+<path d="M694 173.2C704 173.2 704 153.1 712 153.1" fill="none" stroke="#2B2A33" stroke-opacity="0.7" stroke-width="1"/>
+<rect x="716" y="151.6" width="14" height="3" rx="1.5" fill="#2B2A33"/>
+<text x="736" y="157.6" font-size="13" fill="#2B2A33">托关系进的单位 <tspan fill-opacity="0.6">18→40.5</tspan></text>
+<path d="M694 173.2C704 173.2 704 170.1 712 170.1" fill="none" stroke="#3F3E48" stroke-opacity="0.7" stroke-width="1"/>
+<rect x="716" y="168.6" width="14" height="3" rx="1.5" fill="#3F3E48"/>
+<text x="736" y="174.6" font-size="13" fill="#2B2A33">在外地 <tspan fill-opacity="0.6">16→40.5</tspan></text>
+<path d="M694 190C704 190 704 187.1 712 187.1" fill="none" stroke="#55545D" stroke-opacity="0.7" stroke-width="1"/>
+<rect x="716" y="185.6" width="14" height="3" rx="1.5" fill="#55545D"/>
+<text x="736" y="191.6" font-size="13" fill="#2B2A33">靠手艺吃饭 <tspan fill-opacity="0.6">14→37.5</tspan></text>
+<path d="M694 198.4C704 198.4 704 204.1 712 204.1" fill="none" stroke="#6A6972" stroke-opacity="0.7" stroke-width="1"/>
+<rect x="716" y="202.6" width="14" height="3" rx="1.5" fill="#6A6972"/>
+<text x="736" y="208.6" font-size="13" fill="#2B2A33">卖力气 <tspan fill-opacity="0.6">16→36</tspan></text>
+<path d="M694 215.2C704 215.2 704 221.1 712 221.1" fill="none" stroke="#7F7D85" stroke-opacity="0.7" stroke-width="1"/>
+<rect x="716" y="219.6" width="14" height="3" rx="1.5" fill="#7F7D85"/>
+<text x="736" y="225.6" font-size="13" fill="#2B2A33">教书 <tspan fill-opacity="0.6">15→33</tspan></text>
+<path d="M694 223.6C704 223.6 704 238.1 712 238.1" fill="none" stroke="#93918F" stroke-opacity="0.7" stroke-width="1"/>
+<rect x="716" y="236.6" width="14" height="3" rx="1.5" fill="#93918F"/>
+<text x="736" y="242.6" font-size="13" fill="#2B2A33">在厂里上班 <tspan fill-opacity="0.6">14→31.5</tspan></text>
+<path d="M694 274C704 274 704 274 712 274" fill="none" stroke="#A7A39C" stroke-opacity="0.7" stroke-width="1"/>
+<rect x="716" y="272.5" width="14" height="3" rx="1.5" fill="#A7A39C"/>
+<text x="736" y="278.5" font-size="13" fill="#2B2A33">打零工 <tspan fill-opacity="0.6">6→22.5</tspan></text>
+<text x="64" y="482" font-size="11.5" fill="#2B2A33" fill-opacity="0.55">一个日子的工钱（青年一年一个日子，中年三年一个），歇班照发。数取自 content/tracks.yaml，会跟着校线改，以它为准；跳槽、转行、没升上的不在图上</text>
+</svg>

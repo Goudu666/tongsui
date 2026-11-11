@@ -843,8 +843,9 @@
 - id: y_kid
   kind: solo
   stage: young
-  weight: 2
-  requires: { minAge: 26, notFlags: [has_kid] }
+  # 2 → 4：当了爹妈的从一成抬到五六成（docs/FAMILY.md 第四节），另一半在 marriage.yaml 的 mw_pram / mw_circle / mw_notice
+  weight: 4
+  requires: { minAge: 26, notFlags: [has_kid, single_life] }
   title: 虎头鞋
   text: 你妈把你小时候那双虎头鞋翻了出来，洗得干干净净，搁在你床头。什么也没说。
   options:

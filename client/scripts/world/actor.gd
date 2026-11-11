@@ -116,7 +116,8 @@ var _phase := 0.0   ## 走路走到一步里的哪儿（0~8 帧）
 var _idle := 0.0    ## 站着、坐着、在忙的小动作
 var _sprite: Sprite2D
 var _over: Node2D
-var _ball: Node2D  ## 对着踢的那个球（领头的那个人画）  ## 字和气泡那层（overlay.gd，z 71）
+var _ball: Node2D  ## 对着踢的那个球（领头的那个人画）
+var _ball_on := false  ## 上一帧画没画球  ## 字和气泡那层（overlay.gd，z 71）
 var _last_pos := Vector2.ZERO
 var _base_tex: Texture2D
 var _act_tex: Texture2D
@@ -228,8 +229,11 @@ func _process(delta: float) -> void:
 	queue_redraw()
 	if _over != null:
 		_over.queue_redraw()
-	if _ball != null and pass_lead:
+	# 球那层：对着踢时每帧重画；刚解对那一帧也再画一次，把上一帧留下的球擦掉
+	var ball_on := pass_lead and _loop == "pass"
+	if _ball != null and (ball_on or _ball_on):
 		_ball.queue_redraw()
+	_ball_on = ball_on
 
 
 ## 贴哪张表：基础表（走、站、坐、睡、招手、情绪）还是专属动作表

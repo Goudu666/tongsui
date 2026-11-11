@@ -408,7 +408,7 @@
   stage: middle
   where: alley
   hint: 楼下有孩子在哭。
-  weight: 3
+  weight: 6
   requires: { flags: [has_kid, kids_same_age], kidAge: [6, 12] }
   title: 一身土
   text: 两家孩子在楼下打起来了，滚了一身土。你俩从两头跑过来，一人拽住一个。

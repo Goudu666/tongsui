@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "3015acd3db03",
+ "version": "cd17abb48d25",
  "events": [
   {
    "id": "ch_runner",
@@ -9078,7 +9078,7 @@ var CONTENT: Content = {
    "kind": "mirror",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": "alley",
    "when": null,
    "hint": "楼下有孩子在哭。",

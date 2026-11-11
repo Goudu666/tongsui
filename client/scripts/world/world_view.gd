@@ -28,6 +28,7 @@ var map: Dictionary = {}
 var actions: Dictionary = {}
 var my_role := "qing"
 var age := 3                 ## 现在几岁（main 喂）：一个点位上挂着几件事，按年纪取第一件合适的
+var goal_keys: Array = []    ## 纸带上正盯着的那条线看哪几项（main 喂）：能长这几项的点位，标签上写「长魅力」、用自己的颜色
 var duties: Dictionary = {}  ## role -> 今天该去的地方 { label, spot, arrive, until, done, open }，没有是 null（服务器 WORLD 里的 tracks）
 var unlocks: Dictionary = {} ## role -> 关口上挣来的去处（带 requires.flags 的行动 id，服务器 WORLD 里的 tracks[role].unlocks）
 var minute := 0.0            ## 现在几点（一天里的第几分钟）：有的去处只在一段钟点里开
@@ -90,6 +91,8 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 		var actor := Actor.new()
 		actor.setup(r, str(names.get(r, P.ROLE_NAME[r])), r == role, Vector2(sp[0], sp[1]))
 		actor.scale = Vector2.ONE * ACTOR_SCALE
+		if r == role:
+			actor.z_index = 1  # 两个人站在同一个点上：自己画在上面，别让对门把自己整个挡住（只剩 TA 的名牌）
 		add_child(actor)
 		actors[r] = actor
 		buffers[r] = SnapshotBuffer.new()
@@ -544,9 +547,12 @@ func draw_marks(c: CanvasItem) -> void:
 		if is_near:
 			continue  # 走近了由底部按钮显示，不重复
 		var label := str(act.get("label", ""))
+		var aim := goal_stat(act)  ## 这儿能长关口要看的那一项
 		if is_duty:
 			var from: int = int((duty.get("slots", [slot]) as Array)[0])
 			label += " · %s" % ("现在" if from <= slot else str(SLOTS[from][2]))
+		elif aim != "":
+			label += " · 长" + aim
 		var dup := false
 		for l in labeled:
 			if l[0] == label and (l[1] as Vector2).distance_to(at) < 120.0:
@@ -555,6 +561,13 @@ func draw_marks(c: CanvasItem) -> void:
 			continue
 		labeled.append([label, at])
 		var w := f.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x
+		if aim != "" and not is_duty:
+			# 冲关口用得上的地方：标签垫自己的颜色、字反白，远远一眼能挑出来
+			var mc := P.role_color(my_role)
+			c.draw_rect(Rect2(at + Vector2(-w / 2.0 - 4, 18), Vector2(w + 12, 26)), Color(P.INK, 0.5))
+			c.draw_rect(Rect2(at + Vector2(-w / 2.0 - 6, 16), Vector2(w + 12, 26)), mc)
+			c.draw_string(f, at + Vector2(-w / 2.0, 36), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, P.PAPER)
+			continue
 		c.draw_rect(Rect2(at + Vector2(-w / 2.0 - 6, 16), Vector2(w + 12, 26)), Color(P.PAPER, 0.8))
 		c.draw_string(f, at + Vector2(-w / 2.0, 36), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(P.INK, 0.75))
 	# 命运的提示：一行很淡的字，飘在那个地方
@@ -565,6 +578,17 @@ func draw_marks(c: CanvasItem) -> void:
 				var tw := f.get_string_size(str(h.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x
 				c.draw_rect(Rect2(top + Vector2(-tw / 2.0 - 10, -26), Vector2(tw + 20, 38)), Color(P.PAPER, 0.85))
 				c.draw_string(f, top - Vector2(tw / 2.0, 0), str(h.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 26, P.OVERLAP)
+
+
+## 这件事能长纸带上正盯着的那一项吗：能就回那一项的名字（「魅力」），不能回空串。一回长得太少（< 0.2）的不算
+func goal_stat(act: Dictionary) -> String:
+	if goal_keys.is_empty() or bool(act.get("sleep", false)) or bool(act.get("duty", false)):
+		return ""
+	var st: Dictionary = act.get("stats", {}) if act.get("stats") is Dictionary else {}
+	for k in goal_keys:
+		if float(st.get(k, 0.0)) >= 0.2:
+			return str(P.STAT_NAME[k])
+	return ""
 
 
 ## 出口：门框上头挂一块小牌子，写往哪儿去。今天要去的地方在那边，牌子上一圈自己颜色的波纹
@@ -593,6 +617,29 @@ func _draw_exits(c: CanvasItem, f: Font, here: String, duty_scene: String) -> vo
 		c.draw_line(sign + Vector2(0, 18), at + Vector2(0, -6), Color(P.INK, 0.25), 2.0)
 		if not to.is_empty() and to.get("far", false):
 			c.draw_string(f, box.position + Vector2(0, -8), "外地", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, P.INK_SOFT)
+		# 那边有能长关口那一项的地方：牌子底下挂一小条自己颜色的「长魅力」
+		var aim := _aim_in(str(ex.to)) if str(ex.to) != here else ""
+		if aim != "":
+			var aw := f.get_string_size("那边长" + aim, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
+			var ab := Rect2(Vector2(box.get_center().x - aw / 2.0 - 8, box.end.y + 4), Vector2(aw + 16, 26))
+			c.draw_rect(ab, P.role_color(my_role))
+			c.draw_string(f, ab.position + Vector2(8, 20), "那边长" + aim, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, P.PAPER)
+
+
+## 那张图上有没有能长关口那一项的点位（有就回那一项的名字）
+func _aim_in(scene_id: String) -> String:
+	if goal_keys.is_empty():
+		return ""
+	for sp in map.spots:
+		if str(sp.get("scene", "")) != scene_id:
+			continue
+		var act := action_of(sp)
+		if act.is_empty():
+			continue
+		var aim := goal_stat(act)
+		if aim != "":
+			return aim
+	return ""
 
 
 class _Marks extends Node2D:

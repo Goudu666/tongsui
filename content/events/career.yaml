@@ -8,7 +8,7 @@
 # 每一行的路都写 hide: true，只给这一行的人看（别的行当的路摆出来全是灰的，没意思）。旧安装包照旧灰着显示「不是你这一行」。
 # 跳槽转行用 effects.drop 摘掉原来那一行的标记和升到的那一级：换了行，从头干。
 # 家境：殷实人家多一条「家里托人」（花钱、线低一截），清贫人家没有；守 docs/MEANS.md 殷实比同活法小康多不超过 15 个点。
-# 线都是 tools/career.mjs 校的：每道关开局已过 ≤ 三成五、这一阶段跨过 ≥ 三成五。
+# 线按 tools/sprint.mjs 14 世量的「走这条路的人二十二岁那天的中位 + 3~4 分」摆（玩法总把关 11-11）；家境用 tools/career-means.mjs 复量。
 
 - id: m_rise
   kind: milestone
@@ -20,7 +20,7 @@
     - id: up_desk
       text: 评上组长，管一摊事
       score: {mind: 0.7, charm: 0.3}
-      min: 9.2
+      min: 9.3
       requires:
         flags: [job_desk]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
@@ -47,7 +47,7 @@
     - id: up_teach
       text: 当上班主任
       score: {mind: 0.5, charm: 0.5}
-      min: 8.1
+      min: 8.8
       requires:
         flags: [job_teach]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
@@ -61,7 +61,7 @@
     - id: up_trade
       text: 盘下一间门脸
       score: {charm: 0.7, luck: 0.3}
-      min: 8.1
+      min: 7.5
       cost: 30
       requires:
         flags: [job_trade]
@@ -76,7 +76,7 @@
     - id: up_craft
       text: 出师，自己接活
       score: {body: 0.5, mind: 0.5}
-      min: 8.3
+      min: 8.1
       requires:
         flags: [job_craft]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
@@ -90,7 +90,7 @@
     - id: up_labor
       text: 当上大工
       score: {body: 1}
-      min: 7.6
+      min: 7.7
       requires:
         flags: [job_labor]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
@@ -118,7 +118,7 @@
     - id: up_odd
       text: 找着一份长活
       score: {body: 0.5, charm: 0.5}
-      min: 6.5
+      min: 7.0
       requires:
         flags: [job_odd]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
@@ -147,17 +147,17 @@
     - id: jump
       text: 跟着老同事跳到别家
       score: { charm: 0.6, luck: 0.4 }
-      min: 8.0
+      min: 6.4
       requires: { notFlags: [job_odd, job_succeed, own_shop, own_stall, no_job, laid_off, rank1] }
       lock: 不是你这一行
       hide: true
       tags: [adventure]
-      effects: { self: { mood: 2 }, flags: [rank1, jumped] }
+      effects: { self: { mood: -3 }, flags: [rank1, jumped] }
     # 转行：换一行从头干（摘掉原来那一行和升到的级），线比二十二岁那天高一截，还要掏学费、本钱
     - id: to_desk
       text: 上夜大，考进机关
       score: { mind: 1 }
-      min: 9.3
+      min: 9.5
       cost: 20
       requires: { notFlags: [job_desk, job_pull, left_city, own_shop, own_stall, no_job, laid_off] }
       lock: 不是你这一行
@@ -167,7 +167,7 @@
     - id: to_trade
       text: 辞了，出来做买卖
       score: { charm: 0.7, luck: 0.3 }
-      min: 8.1
+      min: 7.4
       cost: 20
       requires: { notFlags: [job_trade, left_city, own_shop, own_stall, no_job, laid_off] }
       lock: 不是你这一行
@@ -177,7 +177,7 @@
     - id: to_craft
       text: 拜个师傅学手艺
       score: { body: 0.5, mind: 0.5 }
-      min: 7.6
+      min: 8.7
       requires: { notFlags: [job_craft, job_desk, job_pull, job_teach, job_trade, left_city, own_shop, own_stall, no_job, laid_off] }
       lock: 不是你这一行
       hide: true
@@ -187,7 +187,7 @@
     - id: seat
       text: 家里托人，调个好位置
       score: { mind: 0.5, charm: 0.5 }
-      min: 8.8
+      min: 8.6
       cost: 25
       requires: { flags: [fam_rich], notFlags: [own_shop, own_stall, no_job, laid_off, rank1] }
       lock: 家里没这层关系

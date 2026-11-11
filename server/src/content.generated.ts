@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "a5131dacdc32",
+ "version": "0e654abc946e",
  "events": [
   {
    "id": "c_roof_summer",
@@ -32302,6 +32302,18 @@ var CONTENT: Content = {
     }
    },
    {
+    "id": "e_album",
+    "title": "又一张",
+    "text": "相册翻到最后一页，还空着。两个人在楼道里又照了一张，贴进去，正好。",
+    "requires": {
+     "flags": [
+      "heir_photo_two",
+      "p_married"
+     ],
+     "minClose": 50
+    }
+   },
+   {
     "id": "e_white_hair",
     "title": "白头",
     "text": "楼道里的灯坏了又修，修了又坏。两个人的头发白了，一个还是喊另一个「对门的」。",
@@ -32331,6 +32343,18 @@ var CONTENT: Content = {
       "p_four_names"
      ],
      "minClose": 40
+    }
+   },
+   {
+    "id": "e_nested",
+    "title": "一层套一层",
+    "text": "海河边那块地方，往下挖一层是一个盒子。最底下那个锈死了，两个人也没打算打开。",
+    "requires": {
+     "flags": [
+      "heir_nested",
+      "p_capsule"
+     ],
+     "minClose": 50
     }
    },
    {
@@ -32485,6 +32509,17 @@ var CONTENT: Content = {
    }
   ],
   "lives": [
+   {
+    "id": "l_margin",
+    "title": "页边",
+    "text": "{name} 在页边上接着写。写到后来，分不清哪一行是自己的。",
+    "requires": {
+     "flags": [
+      "heir_noted",
+      "has_kid"
+     ]
+    }
+   },
    {
     "id": "l_heir_breakfast",
     "title": "早点铺的手艺",
@@ -33303,6 +33338,107 @@ var CONTENT: Content = {
  },
  "heirlooms": [
   {
+   "id": "h_album",
+   "name": "一本相册",
+   "desc": "前头几页的人不认识。往后翻，脸越来越熟。",
+   "from": {
+    "carried": "h_photo_two",
+    "flags": [
+     "p_married"
+    ]
+   },
+   "bonus": {},
+   "money": 0,
+   "close": 3,
+   "flags": [
+    "heir_photo",
+    "heir_album"
+   ],
+   "hint": "带着它出生，跟对门成一家。"
+  },
+  {
+   "id": "h_photo_two",
+   "name": "两张合影",
+   "desc": "一张在三楼楼道里。另一张换了地方，两个人还是那么站。",
+   "from": {
+    "carried": "h_photo",
+    "flags": [
+     "p_promise"
+    ]
+   },
+   "bonus": {},
+   "money": 0,
+   "close": 3,
+   "flags": [
+    "heir_photo",
+    "heir_photo_two"
+   ],
+   "hint": "带着它出生，再在楼顶拉一回钩。"
+  },
+  {
+   "id": "h_margin_books",
+   "name": "三代人的批注",
+   "desc": "一本书，页边上三种笔迹。最新的那种，字还歪。",
+   "from": {
+    "carried": "h_noted_books",
+    "flags": [
+     "has_kid"
+    ]
+   },
+   "bonus": {
+    "mind": 0.5
+   },
+   "money": 0,
+   "close": 0,
+   "flags": [
+    "heir_books",
+    "heir_margin"
+   ],
+   "hint": "带着它出生，有个自己的孩子。"
+  },
+  {
+   "id": "h_noted_books",
+   "name": "批注过的书",
+   "desc": "还是那一箱。页边上多了一行一行的小字，跟原来的字吵架。",
+   "from": {
+    "carried": "h_books",
+    "stats": {
+     "mind": 8
+    }
+   },
+   "bonus": {
+    "mind": 0.5
+   },
+   "money": 0,
+   "close": 0,
+   "flags": [
+    "heir_books",
+    "heir_noted"
+   ],
+   "hint": "带着它出生，书念到心智八十分。"
+  },
+  {
+   "id": "h_nested_box",
+   "name": "套着的盒子",
+   "desc": "大铁皮盒子里套着个小的。小的那个，没人记得是谁埋的。",
+   "from": {
+    "carried": "h_tin_box",
+    "flags": [
+     "p_capsule"
+    ]
+   },
+   "bonus": {
+    "luck": 0.5
+   },
+   "money": 0,
+   "close": 0,
+   "flags": [
+    "heir_tin_box",
+    "heir_nested"
+   ],
+   "hint": "带着它出生，再去河边埋一回。"
+  },
+  {
    "id": "h_scraper",
    "name": "竹刮板",
    "desc": "摊了几十年煎饼的那把，把儿上磨出了手印。",
@@ -33834,6 +33970,92 @@ var CONTENT: Content = {
    "p_reunited",
    "retake"
   ]
+ },
+ "atlas": {
+  "hidden": [
+   "e_album",
+   "e_four_names",
+   "e_nested",
+   "e_again",
+   "e_same_death",
+   "e_duo",
+   "l_margin",
+   "l_just_right",
+   "r_again",
+   "r_four_names"
+  ],
+  "sad": [
+   "e_drifted",
+   "e_nod",
+   "l_early"
+  ],
+  "riddles": {
+   "e_same_year": "拉过的钩，到老也没松开。",
+   "e_white_hair": "成了一家，到老还亲。",
+   "e_dinner_table": "成了一家，吵也吵不散。",
+   "e_reunited": "走散了，又在河边碰上。",
+   "e_partners": "两个人合开一间铺子。",
+   "e_neighbors": "拉过钩，后来也没搬远。",
+   "e_unsaid": "有句话，只有一个人说出了口。",
+   "e_letter": "离得远，有封信没回。",
+   "e_kindred": "不常见面，心里有数。",
+   "e_lifelong": "从小到老，一直走动。",
+   "e_far": "一个走远了，还惦记着。",
+   "e_drifted": "吵翻了，再没见过。",
+   "e_nod": "慢慢地，就生分了。",
+   "e_doors": "住过对门。",
+   "l_early": "走得早了些。",
+   "l_long": "活过九十五。",
+   "l_swimmer": "身子骨硬朗，活过八十五。",
+   "l_scholar": "考得好，书念到了头。",
+   "l_erhu": "家里挂着琴，拉了一辈子。",
+   "l_koi": "运气好得出奇。",
+   "l_wanderer": "去了外地，就没再回来。",
+   "l_parent": "有了自己的孩子。",
+   "l_charmer": "走到哪儿，哪儿热闹。",
+   "l_stayer": "一辈子没离开过天津。",
+   "l_ordinary": "过了普通的一生。",
+   "l_heir_breakfast": "生在周家，接下了家里的营生。",
+   "l_heir_crosstalk": "生在顾家，接下了家里的营生。",
+   "l_heir_bike": "生在陈家，接下了家里的营生。",
+   "l_heir_teacher": "生在林家，接下了家里的营生。",
+   "l_heir_tailor": "生在苏家，接下了家里的营生。",
+   "l_heir_sea": "生在许家，接下了家里的营生。",
+   "l_heir_grandma": "生在何家，接下了家里的营生。",
+   "l_heir_outsider": "生在唐家，接下了家里的营生。",
+   "l_heir_steel": "生在吴家，接下了家里的营生。",
+   "l_heir_siblings": "生在江家，接下了家里的营生。",
+   "l_heir_head": "生在赵家，接下了家里的营生。",
+   "l_heir_pigeon": "生在马家，接下了家里的营生。",
+   "l_heir_taxi": "生在孟家，接下了家里的营生。",
+   "l_heir_shop": "生在刘家，接下了家里的营生。",
+   "l_heir_dale": "生在白家，接下了家里的营生。",
+   "l_heir_oldmoney": "生在金家，接下了家里的营生。",
+   "l_heir_wrestle": "生在佟家，接下了家里的营生。",
+   "l_heir_kite": "生在傅家，接下了家里的营生。"
+  },
+  "says": {
+   "p_married": "跟对门成一家",
+   "p_promise": "在楼顶拉个钩",
+   "p_four_names": "在旧名字旁边刻上自己的",
+   "p_reunited": "走散以后再碰上",
+   "p_partners": "一起开个铺子",
+   "p_missed": "有句话说出口",
+   "p_unanswered": "一封没回的信",
+   "p_capsule": "去河边埋个盒子",
+   "p_estranged": "吵翻过那一回",
+   "x_same_year": "同一年走",
+   "x_many_mirrors": "多遇上几回想到一块儿的事",
+   "leg_p_promise": "上一世也拉过钩",
+   "heir_photo_two": "带着「两张合影」出生",
+   "heir_nested": "带着「套着的盒子」出生",
+   "heir_noted": "带着「批注过的书」出生",
+   "took_over": "接下家里的营生",
+   "gaokao_good": "高考考好",
+   "erhu_life": "把二胡拉一辈子",
+   "has_kid": "有个自己的孩子",
+   "left_city": "去外地闯一闯"
+  }
  },
  "story": {
   "chapters": [

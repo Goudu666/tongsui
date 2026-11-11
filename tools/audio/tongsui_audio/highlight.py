@@ -100,24 +100,34 @@ def _limit(x: np.ndarray, ceil_db: float) -> np.ndarray:
     return x * g[:, None]
 
 
-def _finish(y: np.ndarray, length: float, tail: float, target: float = TARGET) -> np.ndarray:
+def _finish(y: np.ndarray, length: float, tail: float, target: float = TARGET, like: dict | None = None,
+            info: dict | None = None) -> np.ndarray:
     """切掉开头的空白；到 length 秒收住，最后 tail 秒慢慢淡下去（越到后面掉得越快，像余音自己散了），
-    再把听不见的尾巴切掉。调到目标响度，真峰值压在 TRUE_PEAK 下。"""
+    再把听不见的尾巴切掉。调到目标响度，真峰值压在 TRUE_PEAK 下。
+    like：照另一段的起点和增益来（top 从 pass 放到的地方接上，两段共有的开头要一模一样）；info 记下自己的。"""
     mag = np.abs(y).max(axis=1)
-    start = int(np.argmax(mag > mag.max() * db(-50)))
+    start = int(np.argmax(mag > mag.max() * db(-50))) if like is None else like["start"]
     y = np.array(y[max(0, start - sec(0.002)):][:sec(length)], copy=True)
     k = min(len(y), sec(tail))
     y[-k:] *= ((1.0 - np.linspace(0, 1, k)) ** 2.2)[:, None]
     y = trim(y, -54.0, 0.05)
-    y = y * db(target - lufs(y))
+    g = db(target - lufs(y)) if like is None else like["gain"]
+    y = y * g
     for _ in range(4):  # 峰超了先轻轻限一下，不行再整体降
         tp = true_peak(y)
         if tp <= TRUE_PEAK:
             break
-        y = _limit(y, TRUE_PEAK - 0.4) if tp - TRUE_PEAK < 3.0 else y * db(TRUE_PEAK - tp)
+        if tp - TRUE_PEAK < 3.0 or like is not None:  # 跟着别人增益走的只限峰，不整体降（不然接缝处音量跳）
+            y = _limit(y, TRUE_PEAK - 0.4)
+        else:
+            y = y * db(TRUE_PEAK - tp)
+            g *= db(TRUE_PEAK - tp)
     tp = true_peak(y)
     if tp > TRUE_PEAK:
         y = y * db(TRUE_PEAK - tp)
+        g *= db(TRUE_PEAK - tp)
+    if info is not None:
+        info.update(start=start, gain=g)
     return y
 
 
@@ -291,15 +301,16 @@ LAND = 6.0
 TOP_Q = [(7, .5, 3, 1), (7.5, .5, 5, 1), (8, .5, 6, 1), (8.5, 2.5, 1, 2)]
 
 
-def reveal(stage: str, top: bool) -> np.ndarray:
-    rng = rng_for(stage + ("_top" if top else "_pass"))
+def reveal(stage: str, top: bool, info: dict | None = None) -> np.ndarray:
+    # top 是 pass 再加一层，播放器从 pass 放到的地方交叉到 top：共有的那段用同一个种子、同一个起点和增益
+    rng = rng_for(stage + "_pass")
     bpm = BPM_PASS[stage]
     hold = 5.0 if top else 3.0
     ck = Clock(bpm, (0, 4))
     spb = ck.spb
     ring = (4.8 if top else 2.8) * spb + 0.6
     q_line = PASS_Q + [(LAND, hold, 1, 1)]
-    m_line = PASS_M + [(LAND, hold + (1.5 if top else 0.0), 1, 1)]
+    m_line = PASS_M + [(LAND, 3.0, 1, 1)]  # 梅的落音两段一样长：吟的乐器整条线一起合成，改了尾巴开头也会变
     mx = Mix(ck.length + 3.0)
     mx.add(_q(stage, ck, q_line), 0.0, 1.0, PAN_Q)
     mx.add(_m(stage, ck, m_line), 0.0, 0.95, PAN_M)
@@ -311,9 +322,13 @@ def reveal(stage: str, top: bool) -> np.ndarray:
         t_b = ck.t(8.5)
         for j, (m, v) in enumerate([(86, 0.55), (93, 0.4), (90, 0.3)]):  # D6 A6 F#6：铃的余晖
             mx.add(bell(m, v, 2.8 - 0.4 * j), t_b + j * 0.32 * spb * 2, 0.5, pan=0.35 - 0.35 * j)
-    y = _space(mx.buf, stage, 23, 0.06 if top else 0.04)
+    y = _space(mx.buf, stage, 23, 0.05)
     end = ck.t(8.5) + 2.4 if top else ck.t(LAND) + 1.8
-    return _finish(y, end, 1.6 if top else 1.1)
+    if top:
+        like: dict = {}
+        reveal(stage, False, like)
+        return _finish(y, end, 1.6, like=like)
+    return _finish(y, end, 1.1, info=info)
 
 
 # 差一点：青「小皮球」，梅「架脚——」停在 2 上；下属 G 接住，最后悬在 A7sus4

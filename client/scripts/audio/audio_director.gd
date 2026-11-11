@@ -306,8 +306,15 @@ func reveal_cue(cue_name: String, db := 0.0, pitch := 1.0) -> void:
 		"seal":
 			if absf(pitch - TOP_PITCH) < 0.02:
 				hl = _stage + "_top"
-	if hl != "" and music.highlight(hl):
+	# 只有结果（够线 / 差一点 / 名次）真响起来才算接管：走的路没有线时尺子只数珠子、不出结果，
+	# 那就还让观察者补上日志里那句乐句，rise 由 end_reveal 收掉
+	if hl != "" and music.highlight(hl) and cue_name != "bead":
 		_took_over_at = now
+
+
+## 这一回揭晓没有结果音（走的路没有线）：悬着的 rise 收掉，别断在半空
+func end_reveal() -> void:
+	music.fade_highlights(["rise"], 0.4)
 
 
 ## 刚才几秒里揭晓的高光有没有真响起来（观察者用：接管了，日志里「关口」那句乐句就不再叠一遍；

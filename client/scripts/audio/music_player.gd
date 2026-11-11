@@ -58,6 +58,7 @@ var _duck_db := 0.0        ## 实际压了多少（平滑过的）
 var _single_want := ""
 var _single_now := ""
 var _pending_stage := ""
+var _hush_rest := 0.0      ## 最近一次 hush 要歇多久（段落收完时用；起了新的一段就清零）
 var _hold := 0.0           ## 长大的那段还要放多久：放完之前不起新的一段
 
 # 高光
@@ -138,6 +139,7 @@ func set_mode(m: String) -> void:
 		_rest = 3.0  # 先让环境音站住，音乐后进
 	else:
 		_stop_piece()
+		fade_highlights([], 0.3)  # 高光是河畔里的事，别拖着尾巴叠在标题曲、结局曲上
 		# 天气只在河畔里有：下着雨走完一生，结局、大厅、标题不该还是闷的
 		_cut_target = 20000.0
 		_wet_target = 0.0
@@ -223,7 +225,11 @@ func highlight(hl_name: String, db := 0.0) -> bool:
 		return false
 	var kind := "grow" if hl_name.begins_with("grow_") else hl_name.get_slice("_", hl_name.get_slice_count("_") - 1)
 	var from := -1.0
-	if kind != "grow":
+	if kind == "grow":
+		for h in _hl:
+			if h.busy() and h.kind == "grow":
+				_fade(h, SILENT, RISE_FADE)  # 几秒里长大了两回（回合倒退又往前）：旧的让开
+	else:
 		for h in _hl:
 			if h.busy() and h.kind == "rise":
 				_fade(h, SILENT, RISE_FADE)
@@ -260,9 +266,9 @@ func grow(s: String) -> void:
 			_pending_stage = s  # 这一段正在收（highlight 收的），收完了再换
 		else:
 			_apply_stage(s)
-	if mode == "life" and _state != PLAY:
+	if mode == "life" and _state != PLAY and _hush_rest <= 0.0:
 		_state = REST
-		_rest = minf(_rest, 0.3)  # 别等「关口」那三十秒的静了：翻过一页，接着就是新的一章
+		_rest = minf(_rest, 0.3)  # 翻过一页，接着就是新的一章（关口刚收住的静除外）
 
 
 ## 一天结束、有人走了：音乐收住，歇得久一点
@@ -270,6 +276,7 @@ func hush(rest_seconds := 6.0) -> void:
 	_stop_piece()
 	if mode == "life":
 		_rest = rest_seconds
+		_hush_rest = rest_seconds  # 这一段正在收的话，收完了还认这个数（长大那段也不能把它吃掉）
 
 
 func is_playing_piece() -> bool:
@@ -279,6 +286,13 @@ func is_playing_piece() -> bool:
 ## 这一段放的是哪支：a / b / bed（只有伴奏）
 func variant() -> String:
 	return _variant
+
+
+## 把正在放的高光淡掉。kinds 为空就是全部（rise / pass / top / miss / grow）
+func fade_highlights(kinds: Array, seconds := 0.3) -> void:
+	for h in _hl:
+		if h.busy() and (kinds.is_empty() or kinds.has(h.kind)):
+			_fade(h, SILENT, seconds)
 
 
 ## 揭晓的高光是不是正在响（观察者拿它判断：日志里那句「关口」乐句还要不要响）
@@ -338,6 +352,7 @@ func _stem_db(k: String) -> float:
 
 
 func _start_piece() -> void:
+	_hush_rest = 0.0
 	if stage == "" or _sync == null:
 		return
 	_variant = ROTATION[_piece_n % ROTATION.size()]
@@ -499,7 +514,9 @@ func _process(delta: float) -> void:
 			if _piece_db <= SILENT + 0.5 or _t >= _len:
 				_stems.stop()
 				_state = REST if mode == "life" else OFF
-				if _hold > 0.0:
+				if _hush_rest > 0.0:
+					_rest = maxf(_hold, _hush_rest)  # 长大的时候正赶上关口：静要留着，越静越重
+				elif _hold > 0.0:
 					_rest = 0.0  # 长大那段放完就接
 				elif _pending_stage != "":
 					_rest = 2.0

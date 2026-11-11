@@ -446,7 +446,7 @@
    "seconds": 4.083,
    "lufs": -18.0,
    "peak": -7.0,
-   "bytes": 33991
+   "bytes": 34008
   },
   "music/child_qing.ogg": {
    "seconds": 40.0,
@@ -476,9 +476,9 @@
   },
   "music/child_top.ogg": {
    "seconds": 5.493,
-   "lufs": -18.0,
-   "peak": -5.4,
-   "bytes": 45203
+   "lufs": -17.8,
+   "peak": -5.8,
+   "bytes": 44252
   },
   "music/ending.ogg": {
    "seconds": 61.377,
@@ -581,7 +581,7 @@
    "seconds": 4.259,
    "lufs": -18.0,
    "peak": -2.4,
-   "bytes": 34400
+   "bytes": 34450
   },
   "music/middle_qing.ogg": {
    "seconds": 53.333,
@@ -610,10 +610,10 @@
    "bytes": 15609
   },
   "music/middle_top.ogg": {
-   "seconds": 5.772,
-   "lufs": -18.0,
-   "peak": -3.9,
-   "bytes": 46895
+   "seconds": 5.736,
+   "lufs": -17.5,
+   "peak": -2.4,
+   "bytes": 44906
   },
   "music/old_bed.ogg": {
    "seconds": 60.952,
@@ -685,7 +685,7 @@
    "seconds": 4.455,
    "lufs": -18.0,
    "peak": -4.8,
-   "bytes": 38899
+   "bytes": 38912
   },
   "music/old_qing.ogg": {
    "seconds": 60.952,
@@ -714,10 +714,10 @@
    "bytes": 16120
   },
   "music/old_top.ogg": {
-   "seconds": 6.097,
-   "lufs": -18.0,
-   "peak": -6.6,
-   "bytes": 52317
+   "seconds": 6.075,
+   "lufs": -17.5,
+   "peak": -4.8,
+   "bytes": 52402
   },
   "music/roll.ogg": {
    "seconds": 20.87,
@@ -796,7 +796,7 @@
    "seconds": 4.25,
    "lufs": -18.0,
    "peak": -6.1,
-   "bytes": 35686
+   "bytes": 35724
   },
   "music/teen_qing.ogg": {
    "seconds": 45.714,
@@ -826,9 +826,9 @@
   },
   "music/teen_top.ogg": {
    "seconds": 5.618,
-   "lufs": -18.0,
-   "peak": -5.2,
-   "bytes": 47161
+   "lufs": -17.1,
+   "peak": -5.1,
+   "bytes": 46527
   },
   "music/title.ogg": {
    "seconds": 50.526,
@@ -907,7 +907,7 @@
    "seconds": 4.052,
    "lufs": -18.0,
    "peak": -6.0,
-   "bytes": 33718
+   "bytes": 33782
   },
   "music/young_qing.ogg": {
    "seconds": 38.4,
@@ -936,10 +936,10 @@
    "bytes": 22530
   },
   "music/young_top.ogg": {
-   "seconds": 5.493,
-   "lufs": -18.0,
-   "peak": -7.1,
-   "bytes": 45448
+   "seconds": 5.477,
+   "lufs": -16.9,
+   "peak": -5.1,
+   "bytes": 45054
   },
   "sfx/act_eat.ogg": {
    "seconds": 1.265,

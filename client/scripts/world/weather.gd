@@ -8,6 +8,7 @@ const P := preload("res://scripts/ui/palette.gd")
 const INDOOR := ["building", "rental", "hospital"]
 
 var art = null            ## scene_art：阴天要告诉它
+var light = null          ## print_light：雨雪天灯晕大一点、地面湿（atmos 读 light.wet 画倒影）
 var season := "spring"
 var day := 0              ## 第几个回合：同一个季节，有的日子下、有的不下
 var kind := ""            ## 现在下的是什么：catkin / rain / leaf / snow / ""
@@ -66,6 +67,8 @@ func _apply() -> void:
 	var k := "" if _scene in INDOOR else _pick()
 	if art != null:
 		art.set_overcast(1.0 if k in ["rain", "snow"] else 0.0)
+	if light != null:
+		light.wet = 1.0 if k == "rain" else (0.5 if k == "snow" else 0.0)
 	# 下的东西没变（比如冬天两天都下雪），接着下，不重撒
 	if k == kind and (k == "" or _p.emitting):
 		return

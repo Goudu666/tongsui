@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "29048ccf291a",
+ "version": "4db180c597e5",
  "events": [
   {
    "id": "ch_runner",
@@ -13801,6 +13801,149 @@ var CONTENT: Content = {
    "catches": []
   },
   {
+   "id": "m_kinder",
+   "kind": "milestone",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {},
+   "title": "六一",
+   "text": "幼儿园要过六一。阿姨拿着花名册挨个看：领唱的、翻跟头的、背诗的，台上各要一个。",
+   "options": [
+    {
+     "id": "sing",
+     "text": "站在最前头领唱",
+     "score": {
+      "charm": 1
+     },
+     "min": 6.3,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "k_sing"
+      ]
+     }
+    },
+    {
+     "id": "tumble",
+     "text": "在台上翻跟头",
+     "score": {
+      "body": 1
+     },
+     "min": 6.5,
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "k_tumble"
+      ]
+     }
+    },
+    {
+     "id": "poem",
+     "text": "一口气背完一首长诗",
+     "score": {
+      "mind": 1
+     },
+     "min": 6.5,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "k_poem"
+      ]
+     }
+    },
+    {
+     "id": "clap",
+     "text": "坐在台下拍巴掌",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "sing": {
+     "text": "阿姨挑不出来，让两个人一块儿领。唱到一半忘了词，两个人对着看了一眼，接着往下哼。",
+     "memory": "一块儿哼过去",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "tumble": {
+     "text": "一个翻过去，一个翻过来，在台中间差点撞上。底下的家长以为是排好的，鼓掌鼓得最响。",
+     "memory": "差点撞上",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "poem": {
+     "text": "两个人背的是同一首，一人一句轮着背。轮到最后一句，两个人一块儿张的嘴。",
+     "memory": "一人一句",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "clap": {
+     "text": "两个小板凳挨着。台上唱什么你们都没听，光顾着比谁拍得响。",
+     "memory": "比谁拍得响",
+     "bond": {
+      "sync": 1,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在台上，一个在台下。下了台，台下的那个把攥热了的糖塞过去一块。",
+    "bond": {
+     "close": 1
+    },
+    "flags": []
+   },
+   "age": 4,
+   "score": {},
+   "swing": false,
+   "grades": [],
+   "catches": []
+  },
+  {
    "id": "m_school",
    "kind": "milestone",
    "stage": "childhood",
@@ -15293,7 +15436,7 @@ var CONTENT: Content = {
      "score": {
       "body": 1
      },
-     "min": 5,
+     "min": 7.5,
      "tags": [
       "patient"
      ],

@@ -2221,14 +2221,68 @@ def solid(g, pts):
     ctx.restore()
 
 
+# 立体感（relief）：孔版是平的，但纸上的东西要「立」起来——招牌、雨棚、檐口、窗台往右下投一道软影子，
+# 墙越往下越沉、墙脚贴地那一截再压一道（环境光遮蔽）。只算在实的地方（天是透明的，不印）。
+# 改这几个数，十一张图一起变。光从左上来；时段的冷暖交给引擎里的 grade.gdshader。
+RELIEF = {
+    "cast": (8.0, 11.0),      # 影子往右下偏多少（世界像素）
+    "soft": 4.0,             # 影子多软（高斯半径，世界像素）
+    "min_size": 5.0,         # 比这细的线不投影（不然每根墨线都多一道，像套印没对准）
+    "cast_amt": 0.42,        # 影子多深
+    "wall": 0.10,            # 墙从上到下沉多少
+    "ao": 0.26,              # 墙脚贴地那一截压多深
+    "ao_h": 70.0,            # 压多高（世界像素）
+    "tint": (0.62, 0.64, 0.80),  # 影子的颜色（冷一点的墨，不是黑）
+}
+
+
+def relief(g, rgb, alpha, sc, x0, y0, scale):
+    """给合成好的 RGB 加立体感。x0, y0：这张纸左上角的世界坐标。"""
+    from PIL import ImageFilter
+
+    R = RELIEF
+    H, W = alpha.shape
+    solid = np.zeros((H, W), np.float32)
+    for c in ("ink", "qing", "mei"):
+        solid = np.maximum(solid, g.density(c, "solid"))
+    # 开运算去掉细线：只剩成块的东西（招牌、雨棚、檐口、门、家具）
+    k = int(R["min_size"] * scale) | 1
+    blk = Image.fromarray((solid * 255).astype(np.uint8), "L").filter(ImageFilter.MinFilter(k)).filter(ImageFilter.MaxFilter(k))
+    dx, dy = int(R["cast"][0] * scale), int(R["cast"][1] * scale)
+    sh = Image.new("L", blk.size, 0)
+    sh.paste(blk, (dx, dy))
+    sh = sh.filter(ImageFilter.GaussianBlur(R["soft"] * scale))
+    cast = np.asarray(sh, np.float32) / 255.0 * (1.0 - solid) * R["cast_amt"]
+    # 墙越往下越沉；每一层地面往上一截压暗（AO）
+    ys = (np.arange(H, dtype=np.float32) / scale + y0)[:, None]
+    shade = np.zeros((H, 1), np.float32)
+    floors = sc.get("floors", [GROUND])
+    prev = TOP
+    for fy in floors:
+        t = np.clip((ys - prev) / max(fy - prev, 1.0), 0.0, 1.0)
+        inside = (ys >= prev) & (ys < fy)
+        shade = np.where(inside, R["wall"] * t ** 1.6, shade)
+        ao = np.clip(1.0 - (fy - ys) / R["ao_h"], 0.0, 1.0) * inside
+        shade = shade + R["ao"] * ao ** 2.2
+        # 地面线往下也有一小截被墙挡着的阴
+        below = np.clip(1.0 - (ys - fy) / (R["ao_h"] * 0.4), 0.0, 1.0) * (ys >= fy)
+        shade = shade + R["ao"] * 0.5 * below ** 2
+        prev = fy
+    amt = np.clip(cast + shade, 0.0, 0.7) * alpha
+    tint = np.array(R["tint"], np.float32)
+    out = rgb.astype(np.float32) * (1.0 - amt[..., None] * (1.0 - tint))
+    return np.clip(out + 0.5, 0, 255).astype(np.uint8)
+
+
 def render(sc, x, w, scale, rgba=True):
     g = OSheet(w + 2 * MARGIN, (BOTTOM - TOP) + 2 * MARGIN, scale, origin=(x - MARGIN, TOP - MARGIN), seed=7)
     DRAW[sc["id"]](g, sc)
     m = int(MARGIN * scale)
-    rgb = g.composite(True)[m:-m, m:-m]
+    al = g.alpha()
+    rgb = relief(g, g.composite(True), al, sc, x - MARGIN, TOP - MARGIN, scale)[m:-m, m:-m]
     if not rgba:
         return rgb
-    a = np.clip(g.alpha()[m:-m, m:-m] * 255.0 + 0.5, 0, 255).astype(np.uint8)
+    a = np.clip(al[m:-m, m:-m] * 255.0 + 0.5, 0, 255).astype(np.uint8)
     return np.dstack([rgb, a])
 
 
@@ -2270,12 +2324,14 @@ def build(ids, scale=ART_SCALE):
         json.dump({"slice": SLICE, "top": TOP, "bottom": BOTTOM, "scale": ART_SCALE, "scenes": allanch}, f, ensure_ascii=False, separators=(",", ":"))
     for sid in ids:
         sc = scenes[sid]
-        for f in os.listdir(OUT):
-            if f.startswith(sid + "_") and (f.endswith(".png") or f.endswith(".png.import")):
-                if f.endswith(".import") and os.path.exists(os.path.join(OUT, f[: -len(".import")])):
-                    continue
-                os.remove(os.path.join(OUT, f))
+        # 重印前删旧切片；这回还会印出来的切片和 mask 的 .import 留着（删了 UID 会变），
+        # 图变窄、切片变少，多出来的 .import 一起删。（原来边删边查「png 还在不在」，
+        # listdir 先删了 png 就会把它的 .import 当成孤儿一起删掉）
         n = math.ceil(sc["width"] / SLICE)
+        keep = {f"{sid}_{k}.png.import" for k in range(n)} | {f"{sid}_mask.png.import"}
+        for f in sorted(os.listdir(OUT)):
+            if f.startswith(sid + "_") and (f.endswith(".png") or f.endswith(".png.import")) and f not in keep:
+                os.remove(os.path.join(OUT, f))
         masks = []
         for k in range(n):
             arr = render(sc, k * SLICE, SLICE, scale)

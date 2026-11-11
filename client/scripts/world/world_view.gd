@@ -11,6 +11,7 @@ const SceneArt := preload("res://scripts/world/scene_art.gd")
 const PrintLight := preload("res://scripts/world/print_light.gd")
 const Weather := preload("res://scripts/world/weather.gd")
 const Folks := preload("res://scripts/world/folks.gd")
+const Atmos := preload("res://scripts/world/atmos.gd")
 const SPOT_RADIUS := 100.0  ## 比服务器的 110 小一点，避免边缘抖动
 const MOVE_SEND_INTERVAL := 0.1
 const SnapshotBuffer := preload("res://scripts/net/snapshot_buffer.gd")
@@ -44,6 +45,7 @@ var scenes: Dictionary = {}  ## id -> 图
 var _exiting := 0.0          ## 刚按了出口：等服务器把人挪过去，这期间不报位置（报的是上一张图的横坐标）
 var light: PrintLight  ## 昼夜和旧纸感（夜版套印）
 var weather: Weather   ## 雨、雪、柳絮、落叶（只是画面）
+var atmos: Atmos       ## 光与空气：调色、晕、光柱、地气、压角（只是画面）
 var _marks: Node2D  ## 互动点和命运提示：画在叠印层上面
 var _tap_fx := Vector2.INF
 var _tap_t := 0.0
@@ -79,6 +81,11 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 	weather = Weather.new()
 	add_child(weather)
 	weather.art = art
+	weather.light = light
+	atmos = Atmos.new()
+	atmos.art = art
+	atmos.light = light
+	add_child(atmos)
 	light.setup(Vector2(float(map.size[0]), SceneArt.BOTTOM - SceneArt.TOP), {})
 	street = Folks.new()
 	street.world = self
@@ -95,6 +102,7 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 		actors[r] = actor
 		buffers[r] = SnapshotBuffer.new()
 		light.actors.append(actor)
+	atmos.subject = me()
 	camera = Camera2D.new()
 	camera.position_smoothing_enabled = true
 	camera.position_smoothing_speed = 6.0
@@ -138,6 +146,8 @@ func _enter_scene(sc: Dictionary) -> void:
 		weather.set_scene(str(sc.id))
 	if street != null:
 		street.show_scene(sc)
+	if atmos != null:
+		atmos.set_scene(sc)
 	_refresh_visible()
 
 

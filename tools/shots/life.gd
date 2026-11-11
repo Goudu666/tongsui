@@ -94,7 +94,7 @@ func _run() -> void:
 			a.together = bool(c[6])
 			a.face_to = 0
 		w._pair_faces(bool(c[6]))
-		_frame(w, (w.actors.qing.position + w.actors.mei.position) / 2.0)
+		_frame(w, (w.actors.qing.position + w.actors.mei.position) / 2.0, absf(w.actors.qing.position.x - w.actors.mei.position.x))
 		await _wait(float(c[7]) * 0.55)
 		await _shot(str(c[8]))
 		await _wait(float(c[7]) * 0.45)
@@ -114,14 +114,15 @@ func _run() -> void:
 
 
 ## 镜头：推近、对准两个人中间（游戏里镜头跟着自己横着走；这里只为看清楚）
-func _frame(w: Node, at: Vector2) -> void:
+## span：两个人隔多远；离得远就少推一点，两个人都进画
+func _frame(w: Node, at: Vector2, span := 0.0) -> void:
 	if zoom <= 1.0:
 		return
 	w._enter_scene(w.scene_at(at.y))
 	await process_frame
 	var cam: Camera2D = w.camera
 	var base: float = get_root().get_visible_rect().size.y / float(cam.limit_bottom - cam.limit_top)
-	cam.zoom = Vector2.ONE * base * zoom
+	cam.zoom = Vector2.ONE * minf(base * zoom, get_root().get_visible_rect().size.x / (span + 560.0))
 	cam.position = Vector2(at.x, at.y - 120.0)
 	cam.reset_smoothing()
 	w.set_process(false)  # 别让 world_view 把镜头拽回自己身上

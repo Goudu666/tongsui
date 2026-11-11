@@ -1,0 +1,841 @@
+{
+ "across": [
+  {
+   "id": "piano_teacher",
+   "name": "少年宫的钢琴老师",
+   "at": 1680,
+   "floor": 0,
+   "eras": [
+    "childhood",
+    "teen"
+   ],
+   "slots": [
+    "am",
+    "pm"
+   ],
+   "lines": {
+    "childhood": [
+     "手腕放平，像捧着个鸡蛋。",
+     "回去每天练半个钟头，下礼拜我听得出来。",
+     "门口那个是谁？让他进来听吧，坐后头别出声。"
+    ],
+    "teen": [
+     "考级不是目的。你自己爱弹才是。"
+    ]
+   }
+  },
+  {
+   "id": "bath_uncle",
+   "name": "澡堂烧锅炉的",
+   "at": 730,
+   "floor": 0,
+   "eras": [
+    "childhood",
+    "teen"
+   ],
+   "slots": [
+    "pm",
+    "evening"
+   ],
+   "lines": {
+    "default": [
+     "下了班的先洗，小孩儿往后排。",
+     "水烫，先拿脚试。"
+    ]
+   }
+  },
+  {
+   "id": "site_worker",
+   "name": "工地上的",
+   "at": 880,
+   "floor": 0,
+   "eras": [
+    "young"
+   ],
+   "slots": [],
+   "lines": {
+    "default": [
+     "这儿原来是个厂。我爸在这儿干过。",
+     "戴安全帽，别往里走。"
+    ]
+   }
+  },
+  {
+   "id": "greeter",
+   "name": "商场门口发传单的",
+   "at": 2770,
+   "floor": 0,
+   "eras": [
+    "teen",
+    "young",
+    "middle"
+   ],
+   "slots": [],
+   "lines": {
+    "teen": [
+     "新店开张，三楼，凭传单打九折。"
+    ],
+    "young": [
+     "扫个码，送个气球。"
+    ],
+    "middle": [
+     "这层要改成别的了，最后几天。"
+    ]
+   }
+  },
+  {
+   "id": "clerk",
+   "name": "书店的店员",
+   "at": 3940,
+   "floor": 0,
+   "eras": [
+    "teen",
+    "young",
+    "middle",
+    "old"
+   ],
+   "slots": [],
+   "lines": {
+    "teen": [
+     "别坐地上——算了，坐吧，别折书角。"
+    ],
+    "young": [
+     "那套书你看了三年了，还没买。"
+    ],
+    "middle": [
+     "现在来看书的少了，坐吧，地方大。"
+    ],
+    "old": [
+     "我们也老了。椅子给您搬过来。"
+    ]
+   }
+  },
+  {
+   "id": "guard_office",
+   "name": "写字楼的保安",
+   "at": 5250,
+   "floor": 0,
+   "eras": [
+    "young",
+    "middle"
+   ],
+   "slots": [
+    "evening",
+    "night"
+   ],
+   "lines": {
+    "default": [
+     "又是最后一个？灯记得关。",
+     "十九层还亮着，是你们那层吧。"
+    ]
+   }
+  }
+ ],
+ "away": [
+  {
+   "id": "dorm_ayi",
+   "name": "宿管阿姨",
+   "at": 760,
+   "floor": 0,
+   "eras": [
+    "young"
+   ],
+   "slots": [
+    "night"
+   ],
+   "lines": {
+    "default": [
+     "十一点锁门，过了点儿我可不给开。",
+     "你家里寄的包裹，在我这儿放两天了。",
+     "你说话这个口音，北边来的吧？"
+    ]
+   }
+  },
+  {
+   "id": "stall_owner",
+   "name": "夜市摆摊的",
+   "at": 2220,
+   "floor": 0,
+   "eras": [
+    "young",
+    "middle"
+   ],
+   "slots": [
+    "evening",
+    "night"
+   ],
+   "lines": {
+    "default": [
+     "辣不辣？微辣就是不辣。",
+     "又是一个人？坐这边，这边有风。",
+     "下回带朋友来，给你多加个蛋。"
+    ]
+   }
+  },
+  {
+   "id": "coworker",
+   "name": "一起上班的",
+   "at": 3060,
+   "floor": 0,
+   "eras": [
+    "young",
+    "middle"
+   ],
+   "slots": [],
+   "lines": {
+    "default": [
+     "过年回不回？票抢着了吗？",
+     "你那边冬天有暖气？真好。"
+    ]
+   }
+  },
+  {
+   "id": "postal",
+   "name": "邮局柜台的",
+   "at": 3680,
+   "floor": 0,
+   "eras": [
+    "young",
+    "middle"
+   ],
+   "slots": [],
+   "lines": {
+    "young": [
+     "平信还是挂号？挂号的慢不了。",
+     "现在还寄信的人不多了。"
+    ],
+    "middle": [
+     "又是寄那个地址？我都背下来了。"
+    ]
+   }
+  }
+ ],
+ "building": [
+  {
+   "id": "er_nainai",
+   "name": "二楼的奶奶",
+   "at": 1630,
+   "floor": 1,
+   "eras": [
+    "childhood",
+    "teen",
+    "young"
+   ],
+   "slots": [
+    "am",
+    "pm"
+   ],
+   "lines": {
+    "childhood": [
+     "慢点儿跑，楼梯是水泥的。",
+     "上来帮奶奶穿个针。",
+     "你俩又一块儿下去？早点回来吃饭。"
+    ],
+    "teen": [
+     "个子比我高了，还叫我奶奶呢。",
+     "楼道灯又坏了，跟楼长说一声。"
+    ],
+    "young": [
+     "我孙子在南边，一年回来一趟。你俩还在，挺好。"
+    ]
+   }
+  },
+  {
+   "id": "coal",
+   "name": "送煤的",
+   "at": 1580,
+   "floor": 1,
+   "eras": [
+    "childhood"
+   ],
+   "slots": [
+    "am"
+   ],
+   "lines": {
+    "default": [
+     "让一让，让一让，煤来了。",
+     "别碰，一碰一手黑。"
+    ]
+   }
+  },
+  {
+   "id": "junk",
+   "name": "收废品的",
+   "at": 1670,
+   "floor": 1,
+   "eras": [],
+   "slots": [
+    "am"
+   ],
+   "lines": {
+    "childhood": [
+     "收——旧报纸、酒瓶子——"
+    ],
+    "teen": [
+     "收——旧书本、旧电扇——"
+    ],
+    "young": [
+     "收——旧家电、旧手机——"
+    ],
+    "middle": [
+     "纸箱子攒着呢？我下礼拜再来。"
+    ],
+    "old": [
+     "楼里没几户了。我也是来看看。"
+    ]
+   }
+  },
+  {
+   "id": "silou",
+   "name": "四楼租房的",
+   "at": 1570,
+   "floor": 1,
+   "eras": [
+    "young",
+    "middle"
+   ],
+   "slots": [
+    "morning",
+    "night"
+   ],
+   "lines": {
+    "young": [
+     "您早。我住四楼，刚搬来的。",
+     "这楼隔音不行，昨晚你家看的什么我都听见了。"
+    ],
+    "middle": [
+     "租了八年了，房东都换了一个。"
+    ]
+   }
+  }
+ ],
+ "hospital": [
+  {
+   "id": "nurse",
+   "name": "护士",
+   "at": 1460,
+   "floor": 0,
+   "eras": [],
+   "slots": [],
+   "lines": {
+    "middle": [
+     "家属在外头等，一次进一个。",
+     "打水去尽头，开水房十点关。"
+    ],
+    "old": [
+     "今天气色不错。量个血压。"
+    ]
+   }
+  },
+  {
+   "id": "porter",
+   "name": "推车的师傅",
+   "at": 1090,
+   "floor": 0,
+   "eras": [],
+   "slots": [],
+   "lines": {
+    "default": [
+     "借过借过，车来了。"
+    ]
+   }
+  },
+  {
+   "id": "queue_old",
+   "name": "排队的老人",
+   "at": 360,
+   "floor": 0,
+   "eras": [],
+   "slots": [
+    "morning"
+   ],
+   "lines": {
+    "default": [
+     "五点来的，还排在后头。",
+     "你替谁排？我替我老伴儿。"
+    ]
+   }
+  }
+ ],
+ "middle": [
+  {
+   "id": "shed_ayi",
+   "name": "看车棚的阿姨",
+   "at": 2550,
+   "floor": 0,
+   "eras": [
+    "teen"
+   ],
+   "slots": [],
+   "lines": {
+    "default": [
+     "车锁好了没有？丢了别找我。",
+     "打气筒在这儿，自己打，别弄坏了。",
+     "天天最后走的就你们俩。"
+    ]
+   }
+  },
+  {
+   "id": "stationery",
+   "name": "文具店的老板",
+   "at": 510,
+   "floor": 0,
+   "eras": [
+    "teen"
+   ],
+   "slots": [
+    "morning",
+    "evening"
+   ],
+   "lines": {
+    "default": [
+     "修正带两块，涂卡笔三块。",
+     "考试用的就这种，别买错了。"
+    ]
+   }
+  },
+  {
+   "id": "dean",
+   "name": "教导主任",
+   "at": 880,
+   "floor": 0,
+   "eras": [
+    "teen"
+   ],
+   "slots": [
+    "morning",
+    "am"
+   ],
+   "lines": {
+    "default": [
+     "校服拉链拉上。",
+     "你们两个，几班的？"
+    ]
+   }
+  }
+ ],
+ "newhome": [
+  {
+   "id": "property",
+   "name": "物业的小伙子",
+   "at": 1460,
+   "floor": 0,
+   "eras": [
+    "middle",
+    "old"
+   ],
+   "slots": [],
+   "lines": {
+    "middle": [
+     "快递我给您放门口了。",
+     "下周三停水，通知贴电梯里了。"
+    ],
+    "old": [
+     "大爷，电梯修好了，慢点儿。"
+    ]
+   }
+  },
+  {
+   "id": "next_door",
+   "name": "隔壁的邻居",
+   "at": 1390,
+   "floor": 0,
+   "eras": [
+    "middle",
+    "old"
+   ],
+   "slots": [
+    "morning",
+    "night"
+   ],
+   "lines": {
+    "middle": [
+     "您好。",
+     "上班去？"
+    ],
+    "old": [
+     "您住隔壁吧？这么多年，头一回说上话。"
+    ]
+   }
+  },
+  {
+   "id": "dog_walker",
+   "name": "遛狗的",
+   "at": 2330,
+   "floor": 0,
+   "eras": [
+    "middle",
+    "old"
+   ],
+   "slots": [
+    "morning",
+    "night"
+   ],
+   "lines": {
+    "default": [
+     "它不咬人，就是爱闻。",
+     "天天这个点儿，它比我还准。"
+    ]
+   }
+  }
+ ],
+ "park": [
+  {
+   "id": "conductor",
+   "name": "合唱队的指挥",
+   "at": 1960,
+   "floor": 0,
+   "eras": [
+    "middle",
+    "old"
+   ],
+   "slots": [
+    "am"
+   ],
+   "lines": {
+    "default": [
+     "女声高一点，男声别抢。",
+     "缺人，会唱不会唱的都来。"
+    ]
+   }
+  },
+  {
+   "id": "writer",
+   "name": "拿水写字的",
+   "at": 2830,
+   "floor": 0,
+   "eras": [
+    "middle",
+    "old"
+   ],
+   "slots": [
+    "morning",
+    "am"
+   ],
+   "lines": {
+    "default": [
+     "写完就干，不怕写错。",
+     "一桶水，写一早上。"
+    ]
+   }
+  },
+  {
+   "id": "stroller",
+   "name": "推婴儿车的",
+   "at": 920,
+   "floor": 0,
+   "eras": [
+    "old"
+   ],
+   "slots": [
+    "am",
+    "evening"
+   ],
+   "lines": {
+    "default": [
+     "刚一岁，不认生。",
+     "跟爷爷奶奶摆摆手。"
+    ]
+   }
+  },
+  {
+   "id": "kite_old",
+   "name": "放风筝的",
+   "at": 2580,
+   "floor": 0,
+   "eras": [
+    "old"
+   ],
+   "slots": [
+    "pm",
+    "evening"
+   ],
+   "lines": {
+    "default": [
+     "线放到头了，它还想往上走。",
+     "小时候在河边放过，后来就没工夫了。"
+    ]
+   }
+  }
+ ],
+ "primary": [
+  {
+   "id": "guard",
+   "name": "传达室的大爷",
+   "at": 220,
+   "floor": 0,
+   "eras": [
+    "childhood",
+    "teen",
+    "young",
+    "middle"
+   ],
+   "slots": [],
+   "lines": {
+    "childhood": [
+     "跑什么，又没人追你。",
+     "你是三楼那家的吧？我认得你。"
+    ],
+    "teen": [
+     "上中学了？个头都蹿过我了。"
+    ],
+    "young": [
+     "回来看老师？进去吧，不用登记。"
+    ],
+    "middle": [
+     "送孩子？下午四点一刻放，别来早了。"
+    ]
+   }
+  },
+  {
+   "id": "teacher",
+   "name": "教数学的老师",
+   "at": 1240,
+   "floor": 0,
+   "eras": [
+    "childhood"
+   ],
+   "slots": [
+    "am",
+    "pm"
+   ],
+   "lines": {
+    "default": [
+     "作业本交上来，名字写清楚。",
+     "你们俩一个错法，商量好的？"
+    ]
+   }
+  },
+  {
+   "id": "grandparents",
+   "name": "接孩子的老人",
+   "at": 510,
+   "floor": 0,
+   "eras": [
+    "middle",
+    "old"
+   ],
+   "slots": [
+    "evening"
+   ],
+   "lines": {
+    "default": [
+     "出来了出来了，戴黄帽子那个。",
+     "我们那会儿，都是自己走回去的。"
+    ]
+   }
+  }
+ ],
+ "rental": [
+  {
+   "id": "landlord",
+   "name": "房东",
+   "at": 1700,
+   "floor": 0,
+   "eras": [
+    "young",
+    "middle"
+   ],
+   "slots": [
+    "evening"
+   ],
+   "lines": {
+    "young": [
+     "押一付三，水电另算。",
+     "热水器别开太久，费电。"
+    ],
+    "middle": [
+     "楼下那户退了，你要换大一间的不？"
+    ]
+   }
+  },
+  {
+   "id": "neighbor_rent",
+   "name": "隔壁屋的",
+   "at": 1400,
+   "floor": 0,
+   "eras": [
+    "young",
+    "middle"
+   ],
+   "slots": [
+    "evening",
+    "night"
+   ],
+   "lines": {
+    "default": [
+     "你锅里炖的什么？闻着像我家那边的。",
+     "灶你先用，我等会儿。",
+     "下个月我搬了，那盆花留给你。"
+    ]
+   }
+  }
+ ],
+ "river": [
+  {
+   "id": "yam",
+   "name": "烤山芋的",
+   "at": 940,
+   "floor": 0,
+   "eras": [
+    "childhood",
+    "teen"
+   ],
+   "slots": [
+    "evening",
+    "night"
+   ],
+   "lines": {
+    "childhood": [
+     "刚出炉的，烫手，揣兜里焐着。",
+     "小的五毛，大的八毛。两个人买一个大的，划算。"
+    ],
+    "teen": [
+     "涨了，一块。炭贵了。"
+    ]
+   }
+  },
+  {
+   "id": "photog",
+   "name": "拍照的",
+   "at": 1500,
+   "floor": 0,
+   "eras": [
+    "young",
+    "middle"
+   ],
+   "slots": [
+    "am",
+    "pm"
+   ],
+   "lines": {
+    "young": [
+     "让一让啊，借这块栏杆拍两张。",
+     "这河边光好，下午四点最好。"
+    ],
+    "middle": [
+     "现在拍照的都自己拿手机，我来得少了。"
+    ]
+   }
+  },
+  {
+   "id": "runner",
+   "name": "夜跑的",
+   "at": 2250,
+   "floor": 0,
+   "eras": [
+    "middle",
+    "old"
+   ],
+   "slots": [
+    "night"
+   ],
+   "lines": {
+    "default": [
+     "借过——",
+     "到桥头一个来回，五公里。"
+    ]
+   }
+  }
+ ],
+ "street": [
+  {
+   "id": "shop_ayi",
+   "name": "小卖部的阿姨",
+   "at": 1080,
+   "floor": 0,
+   "eras": [
+    "childhood",
+    "teen",
+    "young"
+   ],
+   "slots": [],
+   "lines": {
+    "childhood": [
+     "一毛钱两块，挑吧。",
+     "钱不够？先拿着，回头让你妈给。"
+    ],
+    "teen": [
+     "汽水瓶子记得还回来，押着两毛呢。",
+     "你俩一个要橘子味儿一个要草莓的，我都记着。"
+    ],
+    "young": [
+     "对过开了超市，我这儿还是开着。"
+    ]
+   }
+  },
+  {
+   "id": "shop_clerk",
+   "name": "便利店的小伙子",
+   "at": 1080,
+   "floor": 0,
+   "eras": [
+    "middle",
+    "old"
+   ],
+   "slots": [],
+   "lines": {
+    "middle": [
+     "原来这儿是个小卖部？我听说过。",
+     "门口那条长凳是老板让留的。"
+    ],
+    "old": [
+     "您二位又来坐了。汽水还是那两样？"
+    ]
+   }
+  },
+  {
+   "id": "grinder",
+   "name": "磨剪子的",
+   "at": 1810,
+   "floor": 0,
+   "eras": [
+    "childhood",
+    "teen"
+   ],
+   "slots": [
+    "am",
+    "pm"
+   ],
+   "lines": {
+    "default": [
+     "磨剪子嘞——戗菜刀——",
+     "刀口薄了，再磨就该换了。"
+    ]
+   }
+  },
+  {
+   "id": "barber",
+   "name": "剃头的",
+   "at": 1420,
+   "floor": 0,
+   "eras": [
+    "childhood",
+    "teen",
+    "young",
+    "middle",
+    "old"
+   ],
+   "slots": [
+    "am"
+   ],
+   "lines": {
+    "childhood": [
+     "坐稳了，别乱动，动了我可不管。"
+    ],
+    "teen": [
+     "想剪个什么样的？说吧，我照着剪。"
+    ],
+    "young": [
+     "一块钱涨到十块，手艺还是这个手艺。"
+    ],
+    "middle": [
+     "我就在这儿剃到剃不动为止。"
+    ],
+    "old": [
+     "来了？老样子，推短点儿。"
+    ]
+   }
+  }
+ ]
+}

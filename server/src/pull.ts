@@ -241,3 +241,15 @@ function pullShadowFollow(s: LifeState, c: Content, ev: LifeEvent, pe: PendingEv
   if (!off || off.by !== role) return null;
   return o.id;
 }
+
+/**
+ * 考前的目标条上：这条线我还差、到时候对门拉不拉得动（照现在两个人的数、不算手气）。
+ * 只看两个人下一道是同一关的；拉不动返回 null。拉一把因此是押时间时的一个决定，不只是揭晓时的惊喜
+ */
+function pullGoalHint(s: LifeState, c: Content, role: Role, ev: LifeEvent, o: EventOption): PullOffer | null {
+  var other = lifeOther(role);
+  var them = s.persons![other];
+  if (!them || !them.alive || lifeSeenIds(s, other)[ev.id] || !lifeMilestoneFor(ev, them)) return null;
+  var pe: PendingEvent = { eventId: ev.id, kind: "milestone", roles: ["qing", "mei"], choices: {}, shadow: [] };
+  return pullOffer(s, c, ev, pe, role, o);
+}

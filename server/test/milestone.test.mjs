@@ -330,10 +330,10 @@ function sleep(s, r) {
     assert.ok(goal.lines.length >= 3);
     // hx：带一位小数（往下取整），整数部分就是 have；小时候一回只长零点几分，界面靠它让纸带的数挪一挪
     s.persons.qing.stats.charm = 3.04;
-    const art = G("lifeGoal")(s, C, "qing").lines.find((l) => l.id === "art");
+    const art = G("lifeGoal")(s, C, "qing").lines.find((l) => l.by === "魅力"); // 看魅力的那条（上小学的文艺委员，或者 #54 以后四岁六一的领唱）
     assert.deepEqual([art.have, art.hx], [30, 30.4]);
     s.persons.qing.stats.charm = 2.98;
-    const art2 = G("lifeGoal")(s, C, "qing").lines.find((l) => l.id === "art");
+    const art2 = G("lifeGoal")(s, C, "qing").lines.find((l) => l.by === "魅力");
     assert.deepEqual([art2.have, art2.hx], [29, 29.8], "往下取整");
     // 边界：整数部分恒等于 lifePoints（ε 差十倍，评审 #49 指出整分下面 1e-7~1e-6 那一小段原来会差 1）
     const LP = G("lifePoints"), LF = G("lifeFinePoints");

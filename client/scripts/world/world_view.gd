@@ -10,6 +10,7 @@ const Actor := preload("res://scripts/world/actor.gd")
 const SceneArt := preload("res://scripts/world/scene_art.gd")
 const PrintLight := preload("res://scripts/world/print_light.gd")
 const Weather := preload("res://scripts/world/weather.gd")
+const Folks := preload("res://scripts/world/folks.gd")
 const Atmos := preload("res://scripts/world/atmos.gd")
 const SPOT_RADIUS := 100.0  ## 比服务器的 110 小一点，避免边缘抖动
 const MOVE_SEND_INTERVAL := 0.1
@@ -28,6 +29,7 @@ var map: Dictionary = {}
 var actions: Dictionary = {}
 var my_role := "qing"
 var age := 3                 ## 现在几岁（main 喂）：一个点位上挂着几件事，按年纪取第一件合适的
+var goal_keys: Array = []    ## 纸带上正盯着的那条线看哪几项（main 喂）：能长这几项的点位，标签上写「长魅力」、用自己的颜色
 var duties: Dictionary = {}  ## role -> 今天该去的地方 { label, spot, arrive, until, done, open }，没有是 null（服务器 WORLD 里的 tracks）
 var unlocks: Dictionary = {} ## role -> 关口上挣来的去处（带 requires.flags 的行动 id，服务器 WORLD 里的 tracks[role].unlocks）
 var minute := 0.0            ## 现在几点（一天里的第几分钟）：有的去处只在一段钟点里开
@@ -38,7 +40,7 @@ var hints: Array = []
 var controllable := true
 var camera: Camera2D
 var art: SceneArt
-var street = null  ## 街坊、车流、年代道具：横版的那一层还没做，先空着（street_life.gd 是俯视大地图的）
+var street = null  ## 横版的街坊和路人（folks.gd）：各干各的营生，走近了搭一句；只是画面
 var scene: Dictionary = {}   ## 我现在在哪张图上
 var scenes: Dictionary = {}  ## id -> 图
 var _exiting := 0.0          ## 刚按了出口：等服务器把人挪过去，这期间不报位置（报的是上一张图的横坐标）
@@ -56,8 +58,12 @@ var buffers: Dictionary = {}    ## role -> SnapshotBuffer（只用于对方）
 var _correction := Vector2.ZERO ## 本地角色还没消化掉的服务器校正量
 var _corrected_upto := 0        ## 这个序号及以前的 MOVE 是在校正之前发的，不再拿来校正（避免重复校正）
 var _stage_set := false
-var _flash: Dictionary = {}  ## role -> {act, label, tg, until}：刚当场做完的一回，人在那个点上把它做一会儿给人看
-const FLASH_SECS := 1.1
+var _flash: Dictionary = {}  ## role -> {act, label, tg, until, did}：刚当场做完的一回，人在那个点上把它做一会儿给人看
+const FLASH_SECS := 1.6
+## 两个人一起做事挨着站：一般错开半步；面对面的几样（聊天、下棋、吃饭）错开一大步，再各自转过脸来
+const PAIR_GAP := 24.0
+const FACE_GAP := 46.0
+var _apart := true  ## 两个人上一次离得远（碰面招手用）
 
 
 func setup(content: Dictionary, role: String, names: Dictionary) -> void:
@@ -82,6 +88,9 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 	atmos.light = light
 	add_child(atmos)
 	light.setup(Vector2(float(map.size[0]), SceneArt.BOTTOM - SceneArt.TOP), {})
+	street = Folks.new()
+	street.world = self
+	add_child(street)
 	_marks = _Marks.new(self)
 	_marks.z_index = 70
 	add_child(_marks)
@@ -90,6 +99,8 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 		var actor := Actor.new()
 		actor.setup(r, str(names.get(r, P.ROLE_NAME[r])), r == role, Vector2(sp[0], sp[1]))
 		actor.scale = Vector2.ONE * ACTOR_SCALE
+		if r == role:
+			actor.z_index = 1  # 两个人站在同一个点上：自己画在上面，别让对门把自己整个挡住（只剩 TA 的名牌）
 		add_child(actor)
 		actors[r] = actor
 		buffers[r] = SnapshotBuffer.new()
@@ -136,6 +147,8 @@ func _enter_scene(sc: Dictionary) -> void:
 	light.relight(Vector2(float(sc.width), SceneArt.BOTTOM - SceneArt.TOP), SceneArt.anchors_for(str(sc.id)), SceneArt.scene_mask(str(sc.id)))
 	if weather != null:
 		weather.set_scene(str(sc.id))
+	if street != null:
+		street.show_scene(sc)
 	if atmos != null:
 		atmos.set_scene(sc)
 	_refresh_visible()
@@ -288,7 +301,8 @@ func apply_world(view: Dictionary) -> void:
 		# 不在我这张图上的人（楼上、外地）：这儿看不见
 		a.visible = a.is_local or str(scene_at(server_pos.y).get("id", "")) == str(scene.get("id", ""))
 		if side_by_side:
-			server_pos.x += -24.0 if r == "qing" else 24.0
+			var gap := FACE_GAP if _act_loop(str(qs.get("act")), str(qs.get("spot", ""))) in Actor.FACE_LOOPS else PAIR_GAP
+			server_pos.x += -gap if r == "qing" else gap
 		var act: Variant = s.get("act")
 		if act != null:
 			busy.append(str(act))
@@ -308,7 +322,56 @@ func apply_world(view: Dictionary) -> void:
 				buf.push(t, server_pos)
 	if street != null:
 		street.set_busy(busy)
+	var needs: Variant = view.get("needs")
+	if needs is Dictionary:
+		for r in actors:
+			if needs.get(r) is Dictionary:
+				actors[r].needs = needs[r]
+	_pair_faces(side_by_side)
 	queue_redraw()
+
+
+## 搭伴：面对面的几样转过脸来；两人从远处走到一块儿时招个手
+func _pair_faces(side_by_side: bool) -> void:
+	var q: Actor = actors.get("qing")
+	var m: Actor = actors.get("mei")
+	if q == null or m == null:
+		return
+	var lp := q.loop_name()
+	var facing := side_by_side and lp in Actor.FACE_LOOPS and lp == m.loop_name()
+	if facing:
+		q.face_to = 2 if q.position.x <= m.position.x else 3
+		m.face_to = 3 if q.position.x <= m.position.x else 2
+	elif q._emote == "" and m._emote == "":
+		q.face_to = 0
+		m.face_to = 0
+	var both := q.visible and m.visible and str(scene_at(q.position.y).get("id", "")) == str(scene_at(m.position.y).get("id", ""))
+	var d := q.position.distance_to(m.position) if both else INF
+	# 挨得近：「一起……中」只写一份（写在两人中间），名字牌往两边让开
+	var near := d < 130.0
+	var left: Actor = q if q.position.x <= m.position.x else m
+	var right: Actor = m if left == q else q
+	left.quiet_label = false
+	right.quiet_label = near and q.together and m.together and q.doing == m.doing
+	var push := maxf(0.0, (130.0 - d) / 2.0) / maxf(q.scale.x, 0.01) if near else 0.0
+	left.tag_dx = -push
+	right.tag_dx = push
+	left.label_dx = (absf(right.position.x - left.position.x) / 2.0) / maxf(q.scale.x, 0.01) if right.quiet_label else 0.0
+	right.label_dx = 0.0
+	left.label_dy = 0.0
+	# 挨着各做各的事（两行字会叠）：右边那个人的字抬高一行
+	right.label_dy = -32.0 if absf(right.position.x - left.position.x) < 420.0 and not right.quiet_label \
+		and left.action_label != "" and right.action_label != "" else 0.0
+	if d > 700.0:
+		_apart = true
+	elif _apart and d < 320.0 and not q.walking and not m.walking:
+		_apart = false
+		for pair in [[q, m], [m, q]]:
+			var a: Actor = pair[0]
+			if a.loop_name() == "" and not a.asleep:
+				a.face_to = 2 if a.position.x <= pair[1].position.x else 3
+				a.play_emote("wave", 1.3)
+				a.bubble("bang", 1.4)
 
 
 ## 本地预测 + 服务器校正：
@@ -345,8 +408,8 @@ func _reconcile(a: Actor, server_pos: Vector2, busy: bool, seq: int) -> void:
 
 ## 头顶上写的「正在做什么」。日程（duty）的名字跟着这个人走的路：上学 / 出摊 / 过桥上班
 ## 服务器刚当场结算了一回（main 看到 did 变了）：这个人在那个点上做一会儿这件事
-func flash_doing(role: String, act: String, label: String, together: bool) -> void:
-	_flash[role] = {"act": act, "label": label, "tg": together, "until": Time.get_ticks_msec() + int(FLASH_SECS * 1000.0)}
+func flash_doing(role: String, act: String, label: String, together: bool, did: Dictionary = {}) -> void:
+	_flash[role] = {"act": act, "label": label, "tg": together, "until": Time.get_ticks_msec() + int(FLASH_SECS * 1000.0), "did": did}
 	var a: Actor = actors.get(role)
 	if a != null:
 		_apply_flash(role, a, a.doing == "" and not a.asleep)
@@ -362,10 +425,36 @@ func _apply_flash(role: String, a: Actor, idle: bool) -> void:
 			a.doing = ""
 			a.action_label = ""
 			a.together = false
+			_react(role, a, f)
 		return
 	a.doing = str(f.act)
 	a.action_label = str(f.label)
 	a.together = bool(f.tg)
+
+
+## 这件事在这个点上演哪一套动作（和 actor.loop_name 一样的对法，给还没设上 doing 的时候用）
+func _act_loop(act: String, spot: String) -> String:
+	if act == "duty":
+		return str(Actor.DUTY_LOOP.get(spot, "wave"))
+	return str(Actor.ACTION_LOOP.get(act, ""))
+
+
+## 演完一回：按 did 的变化给个反应；两个人刚一起做完一回、又挨着，就转过来击个掌
+func _react(role: String, a: Actor, f: Dictionary) -> void:
+	var did: Dictionary = f.get("did", {}) if f.get("did") is Dictionary else {}
+	a.react(did)
+	if not bool(f.get("tg", false)):
+		return
+	var other: Actor = actors.get("mei" if role == "qing" else "qing")
+	if other == null or not other.visible or other.asleep or other.loop_name() != "":
+		return
+	if absf(other.position.x - a.position.x) > 160.0 or absf(other.position.y - a.position.y) > 40.0:
+		return
+	a.face_to = 2 if a.position.x <= other.position.x else 3
+	a.play_emote("five", 1.2)
+	if other._emote != "five":
+		other.face_to = 3 if a.position.x <= other.position.x else 2
+		other.play_emote("five", 1.2)
 
 
 func _doing_label(role: String, act: String) -> String:
@@ -544,9 +633,12 @@ func draw_marks(c: CanvasItem) -> void:
 		if is_near:
 			continue  # 走近了由底部按钮显示，不重复
 		var label := str(act.get("label", ""))
+		var aim := goal_stat(act)  ## 这儿能长关口要看的那一项
 		if is_duty:
 			var from: int = int((duty.get("slots", [slot]) as Array)[0])
 			label += " · %s" % ("现在" if from <= slot else str(SLOTS[from][2]))
+		elif aim != "":
+			label += " · 长" + aim
 		var dup := false
 		for l in labeled:
 			if l[0] == label and (l[1] as Vector2).distance_to(at) < 120.0:
@@ -555,6 +647,13 @@ func draw_marks(c: CanvasItem) -> void:
 			continue
 		labeled.append([label, at])
 		var w := f.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x
+		if aim != "" and not is_duty:
+			# 冲关口用得上的地方：标签垫自己的颜色、字反白，远远一眼能挑出来
+			var mc := P.role_color(my_role)
+			c.draw_rect(Rect2(at + Vector2(-w / 2.0 - 4, 18), Vector2(w + 12, 26)), Color(P.INK, 0.5))
+			c.draw_rect(Rect2(at + Vector2(-w / 2.0 - 6, 16), Vector2(w + 12, 26)), mc)
+			c.draw_string(f, at + Vector2(-w / 2.0, 36), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, P.PAPER)
+			continue
 		c.draw_rect(Rect2(at + Vector2(-w / 2.0 - 6, 16), Vector2(w + 12, 26)), Color(P.PAPER, 0.8))
 		c.draw_string(f, at + Vector2(-w / 2.0, 36), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(P.INK, 0.75))
 	# 命运的提示：一行很淡的字，飘在那个地方
@@ -565,6 +664,17 @@ func draw_marks(c: CanvasItem) -> void:
 				var tw := f.get_string_size(str(h.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x
 				c.draw_rect(Rect2(top + Vector2(-tw / 2.0 - 10, -26), Vector2(tw + 20, 38)), Color(P.PAPER, 0.85))
 				c.draw_string(f, top - Vector2(tw / 2.0, 0), str(h.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 26, P.OVERLAP)
+
+
+## 这件事能长纸带上正盯着的那一项吗：能就回那一项的名字（「魅力」），不能回空串。一回长得太少（< 0.2）的不算
+func goal_stat(act: Dictionary) -> String:
+	if goal_keys.is_empty() or bool(act.get("sleep", false)) or bool(act.get("duty", false)):
+		return ""
+	var st: Dictionary = act.get("stats", {}) if act.get("stats") is Dictionary else {}
+	for k in goal_keys:
+		if float(st.get(k, 0.0)) >= 0.2:
+			return str(P.STAT_NAME[k])
+	return ""
 
 
 ## 出口：门框上头挂一块小牌子，写往哪儿去。今天要去的地方在那边，牌子上一圈自己颜色的波纹
@@ -593,6 +703,29 @@ func _draw_exits(c: CanvasItem, f: Font, here: String, duty_scene: String) -> vo
 		c.draw_line(sign + Vector2(0, 18), at + Vector2(0, -6), Color(P.INK, 0.25), 2.0)
 		if not to.is_empty() and to.get("far", false):
 			c.draw_string(f, box.position + Vector2(0, -8), "外地", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, P.INK_SOFT)
+		# 那边有能长关口那一项的地方：牌子底下挂一小条自己颜色的「长魅力」
+		var aim := _aim_in(str(ex.to)) if str(ex.to) != here else ""
+		if aim != "":
+			var aw := f.get_string_size("那边长" + aim, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
+			var ab := Rect2(Vector2(box.get_center().x - aw / 2.0 - 8, box.end.y + 4), Vector2(aw + 16, 26))
+			c.draw_rect(ab, P.role_color(my_role))
+			c.draw_string(f, ab.position + Vector2(8, 20), "那边长" + aim, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, P.PAPER)
+
+
+## 那张图上有没有能长关口那一项的点位（有就回那一项的名字）
+func _aim_in(scene_id: String) -> String:
+	if goal_keys.is_empty():
+		return ""
+	for sp in map.spots:
+		if str(sp.get("scene", "")) != scene_id:
+			continue
+		var act := action_of(sp)
+		if act.is_empty():
+			continue
+		var aim := goal_stat(act)
+		if aim != "":
+			return aim
+	return ""
 
 
 class _Marks extends Node2D:

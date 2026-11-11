@@ -237,7 +237,7 @@ function playLife(seed) {
   const players = { qing: makePlayer("qing", qa), mei: makePlayer("mei", ma) };
 
   const rep = {
-    seed, persona: PERSONA, ticks: 0, days: [], story: [], errors: {}, stalls: [], events: { story: 0, milestone: 0, mirror: 0, solo: 0, check: 0 },
+    seed, persona: PERSONA, ticks: 0, pull: { offered: 0 }, pullSeen: [], days: [], story: [], errors: {}, stalls: [], events: { story: 0, milestone: 0, mirror: 0, solo: 0, check: 0 },
     firstHour: null, gapMax: { sec: 0 }, gaps: [], hintMismatch: [], chapters: {}, together: 0, forced: 0, end: null, families: {},
   };
   const seconds = () => rep.ticks / TICK;
@@ -341,8 +341,16 @@ function playLife(seed) {
           if (o.cost && my.money < o.cost) return false;
           return true;
         });
+        // 关口上拉一把（server/src/pull.ts）：认真的两个人商量着选——差几分的那个走要人拉的路，拉得动的那个陪着走
+        const pulls = pe.kind === "milestone" ? G("lifeMilestonePulls")(s, C) : null;
+        const mine = pulls && pulls[r] ? Object.keys(pulls[r]) : [];
+        const theirs = pulls && pulls[r === "qing" ? "mei" : "qing"] ? Object.keys(pulls[r === "qing" ? "mei" : "qing"]) : [];
+        if (pulls && !rep.pullSeen.includes(s.turn)) { rep.pullSeen.push(s.turn); rep.pull.offered++; }
+        let o = null;
+        if (PERSONA === "careful" && mine.length) o = ev.options.find((x) => x.id === mine[0]);
+        else if (PERSONA === "careful" && theirs.length) o = ev.options.find((x) => x.id === theirs[0]);
         // 默契事件：认真的两个人六成选到一块儿（先选第一个能选的）
-        const o = PERSONA === "careful" && rand() < 0.6 ? ok[0] : pick(ok.length ? ok : ev.options);
+        if (!o) o = PERSONA === "careful" && rand() < 0.6 ? ok[0] : pick(ok.length ? ok : ev.options);
         msgs.push(R.msg(P.presence, OP.CHOOSE, { optionId: o.id }));
         P.wait = 2 * TICK; // 看结算
       }
@@ -414,7 +422,12 @@ function playLife(seed) {
   rep.misses = rep.days.filter((d) => d.storyMiss && d.storyMiss.length).map((d) => ({ turn: d.turn, age: G("lifeTimeAt")(d.turn).label, miss: d.storyMiss.map((id) => id + "@" + storyOf(id).slot + "/" + storyOf(id).scene + "/" + storyOf(id).kind), slots: d.slots.map((x) => SLOT_ZH[x.slot] + ":" + x.did.qing + "|" + x.did.mei).join("  ") }));
   rep.faults = logger.lines.filter((l) => l[0] === "error").map((l) => l[1]).slice(0, 10);
   // 每道关两个人的分（比较按法、调数时看成长总量有没有跑偏）
-  rep.gates = (s.log || []).filter((e) => e.kind === "milestone" && e.results).map((e) => ({ age: e.age, qing: e.results.qing ? e.results.qing.score : null, mei: e.results.mei ? e.results.mei.score : null }));
+  rep.gates = (s.log || []).filter((e) => e.kind === "milestone" && e.results).map((e) => ({ age: e.age, qing: e.results.qing ? e.results.qing.score : null, mei: e.results.mei ? e.results.mei.score : null, gate: e.gate || null }));
+  rep.pull.pulled = rep.gates.filter((g) => g.gate && g.gate.pull).length;
+  rep.pull.missed = rep.gates.filter((g) => g.gate && g.gate.miss).length;
+  rep.pull.reunion = rep.gates.filter((g) => g.gate && g.gate.reunion).length;
+  rep.pull.pairGates = (s.log || []).filter((e) => e.kind === "milestone" && e.results && e.results.qing && e.results.mei).length;
+  delete rep.pullSeen;
   // 「再来一世」：两个人都点，换成新的一世的投胎
   if (s.phase === "ended") {
     step([R.msg(qa, OP.AGAIN, { yes: true }), R.msg(ma, OP.AGAIN, { yes: true })]);

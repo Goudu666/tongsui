@@ -133,3 +133,80 @@
   dissonance:
     text: 一个碰了一下，一个掏出手绢去擦。指印擦花了，还看得出是两个。
     bond: { close: 0 }
+
+# ---------- 补空档（11-11）：中年 ----------
+# 夜跑那件给体魄（七十岁「自己下楼」那条看体魄），拿精力换；样片那件拿钱换一段回忆。
+
+- id: pl_rv_runner
+  kind: solo
+  stage: middle
+  where: river
+  when: [1110, 1320]
+  hint: 有人跑过去，又跑回来。
+  weight: 2
+  requires: { minAge: 40 }
+  title: 跟一段
+  text: 夜跑的人每晚从你身边过三回。今晚第三回，他放慢了，冲你一扬下巴。
+  options:
+    - id: run
+      text: 跟着跑到桥头
+      tags: [competitive]
+      effects: { self: { body: 1, energy: -10 } }
+    - id: walk
+      text: 照自己的步子走
+      tags: [patient]
+      effects: { self: { body: 1, mood: -2, energy: -4 } }
+    - id: call
+      text: 靠着栏杆给家里打电话
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+
+- id: pl_rv_proof
+  kind: mirror
+  stage: middle
+  where: river
+  when: [690, 1020]
+  hint: 拍照的在翻一本旧册子。
+  weight: 2
+  requires: { minAge: 33 }
+  title: 旧样片
+  text: 河边拍照的翻他的旧样册给人看。翻到一张：两个小孩扒着栏杆，是你俩。
+  options:
+    - id: buy
+      text: 把这张买下来
+      tags: [gentle]
+      cost: 5
+      effects: { self: { mood: 6 } }
+    - id: again
+      text: 照原样再拍一张
+      tags: [adventure]
+      cost: 5
+      effects: { self: { mood: 4, charm: 1 } }
+    - id: look
+      text: 看一会儿，还给他
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+    - id: ask
+      text: 问他是哪年拍的
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+  resonance:
+    buy:
+      text: 两个人都掏了钱。拍照的只有一张，他想了想，把底片也找了出来。
+      memory: 一张底片
+      bond: { sync: 3, close: 2 }
+    again:
+      text: 还是那段栏杆，扒不上去了，就靠着。拍照的说比上回站得近。
+      memory: 靠着栏杆
+      bond: { sync: 3, close: 2 }
+    look:
+      text: 两个人看了很久，谁也没说要。拍照的合上册子，说他一直留着。
+      memory: 他一直留着
+      bond: { sync: 2, close: 1 }
+    ask:
+      text: 他记不得了，只记得那天风大，你俩谁也不肯先松手。
+      memory: 那天风大
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个伸手要买，一个已经把册子合上了。拍照的把那一页折了个角。
+    bond: { close: 0 }

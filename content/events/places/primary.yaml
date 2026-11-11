@@ -163,3 +163,184 @@
       text: 坐在花坛边上等
       tags: [patient]
       effects: { self: { energy: 3 } }
+
+# ---------- 补空档（11-11）：少年、青年、中年 ----------
+# 少年两件挂在中考（15）前：旧习题集拿精力换心智，也能让给对门；操场那件给体魄。
+# 青年：当了老师的人头一年（挂在四十五岁那道看心智魅力的关上），和人人都碰得上的旧课桌。
+# 中年：补课的副业（job_teach 晚上在教室后排）拿精力换心智、或者换人缘；家长会给有孩子的人。
+
+- id: pl_pr_workbook
+  kind: solo
+  stage: teen
+  where: school
+  when: [930, 1110]
+  hint: 有人在校门口喊你。
+  weight: 2
+  requires: { minAge: 13, maxAge: 15 }
+  title: 旧习题集
+  text: 路过小学，当年教数学的老师在门口叫住你，从包里掏出一本旧习题集：「中考考这个。」
+  options:
+    - id: do
+      text: 拿回去一页页做完
+      tags: [competitive]
+      effects: { self: { mind: 1, energy: -8 } }
+    - id: share
+      text: 撕开一半给对门
+      tags: [gentle]
+      effects: { self: { mood: 2 }, other: { mind: 1 }, bond: { close: 1 } }
+    - id: shelf
+      text: 道声谢，先搁着
+      tags: [solitude]
+      effects: { self: { mood: 3 } }
+
+- id: pl_pr_hoop
+  kind: mirror
+  stage: teen
+  where: yard
+  when: [930, 1110]
+  hint: 小学操场上没人。
+  weight: 2
+  requires: { minAge: 13 }
+  title: 矮了的篮筐
+  text: 放学绕回小学操场。当年够不着的篮筐，现在一伸手就摸到了网。
+  options:
+    - id: shoot
+      text: 投到天黑
+      tags: [competitive]
+      effects: { self: { body: 1, energy: -8 } }
+    - id: step
+      text: 坐在当年那级台阶上
+      tags: [patient]
+      effects: { self: { mood: 4 } }
+    - id: kids
+      text: 教小孩子运球
+      tags: [gentle]
+      effects: { self: { charm: 1, energy: -4 } }
+  resonance:
+    shoot:
+      text: 天黑透了，最后一个球在框上转了三圈。你们俩谁也没去捡。
+      memory: 转了三圈
+      bond: { sync: 3, close: 2 }
+    step:
+      text: 那级台阶现在只坐得下两个人，你们挤着坐上去，正好。
+      memory: 那级台阶
+      bond: { sync: 3, close: 2 }
+    kids:
+      text: 你们一人带一拨小孩比了一场。比分拿粉笔写在地上，天黑前是平的。
+      memory: 地上的比分
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个在篮下投个不停，一个坐在台阶上看。球滚过去，坐着的那个伸脚挡住了。
+    bond: { close: 0 }
+
+- id: pl_pr_desks
+  kind: mirror
+  stage: young
+  where: yard
+  when: [720, 1110]
+  hint: 操场上堆着旧桌椅。
+  weight: 2
+  requires: { minAge: 20 }
+  title: 旧课桌
+  text: 小学换了新课桌，旧的堆在操场上，谁要谁搬走。你们在那一堆里找当年那一张。
+  options:
+    - id: find
+      text: 一张张翻着找
+      tags: [patient]
+      effects: { self: { mood: 5, energy: -4 } }
+    - id: carry
+      text: 扛一张回家
+      tags: [responsible]
+      effects: { self: { body: 1, energy: -8 } }
+    - id: sit
+      text: 坐上去比比个子
+      tags: [adventure]
+      effects: { self: { mood: 3 } }
+  resonance:
+    find:
+      text: 你们在同一张前面停下。桌面当中一道刻痕，一边宽一边窄。
+      memory: 一边宽一边窄
+      bond: { sync: 3, close: 2 }
+    carry:
+      text: 两个人扛着一张桌子回去，一人一头，进楼道时都喊「低头」。
+      memory: 一人一头
+      bond: { sync: 3, close: 2 }
+    sit:
+      text: 两个人挤在一张桌子后头，胳膊肘又碰在了一块儿。
+      memory: 碰着的胳膊肘
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个在桌子堆里翻，一个已经扛起一张走了。翻的那个找着时，扛走的那张就是。
+    bond: { close: 0 }
+
+- id: pl_pr_firstyear
+  kind: solo
+  stage: young
+  where: school
+  when: [420, 1020]
+  hint: 预备铃响了。
+  weight: 2
+  requires: { minAge: 22, maxAge: 25, flags: [job_teach] }
+  title: 头一年
+  text: 头一年上讲台。最后一排那个男孩在桌肚里弹玻璃球，跟你当年一个样。
+  options:
+    - id: take
+      text: 收了，下课还他
+      tags: [patient]
+      effects: { self: { charm: 1 } }
+    - id: ask
+      text: 叫他上来做这道题
+      tags: [competitive]
+      effects: { self: { mind: 1, energy: -4 } }
+    - id: let
+      text: 装没看见，接着讲
+      tags: [gentle]
+      effects: { self: { mood: 3 } }
+
+- id: pl_pr_window
+  kind: solo
+  stage: middle
+  where: classroom
+  when: [1080, 1290]
+  hint: 窗户外头站着个人。
+  weight: 2
+  requires: { minAge: 30, flags: [job_teach] }
+  title: 窗外那个
+  text: 晚上教室后排补课，来了七个。还有一个交不起钱，天天站在窗户外头听。
+  options:
+    - id: in
+      text: 叫他进来坐
+      tags: [gentle]
+      effects: { self: { charm: 1, mood: 4 } }
+    - id: after
+      text: 散了单给他讲一遍
+      tags: [responsible]
+      effects: { self: { mind: 1, energy: -10 } }
+    - id: shut
+      text: 把窗关上
+      tags: [competitive]
+      effects: { self: { energy: 3, mood: -2 } }
+
+- id: pl_pr_parents
+  kind: solo
+  stage: middle
+  where: classroom
+  when: [1080, 1260]
+  hint: 教室里点着灯，人坐满了。
+  weight: 2
+  requires: { minAge: 32, maxAge: 42, flags: [has_kid] }
+  title: 家长会
+  text: 家长会。你坐在孩子的座位上，膝盖顶着桌板。还是你当年那间教室。
+  options:
+    - id: note
+      text: 记满一页纸
+      tags: [responsible]
+      effects: { self: { mind: 1 } }
+    - id: hand
+      text: 举手说一句
+      tags: [competitive]
+      effects: { self: { charm: 1 } }
+    - id: desk
+      text: 伸手摸摸桌肚
+      tags: [patient]
+      effects: { self: { mood: 5 } }

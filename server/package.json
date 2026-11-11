@@ -4,7 +4,7 @@
   "description": "同岁 Nakama TypeScript 服务端模块",
   "scripts": {
     "build": "tsc",
-    "test": "tsc && node test/life.test.mjs && node test/growth.test.mjs && node test/paths.test.mjs && node test/means.test.mjs && node test/once.test.mjs && node test/menu.test.mjs && node test/lives.test.mjs && node test/later.test.mjs && node test/story.test.mjs && node test/mainline.test.mjs && node test/milestone.test.mjs && node test/arch.test.mjs && node test/duet.test.mjs && node test/away.test.mjs && node test/legacy.test.mjs && node test/atlas.test.mjs && node ../tools/playthrough.mjs 1 --quiet --check",
+    "test": "tsc && node test/life.test.mjs && node test/growth.test.mjs && node test/paths.test.mjs && node test/means.test.mjs && node test/once.test.mjs && node test/menu.test.mjs && node test/lives.test.mjs && node test/later.test.mjs && node test/story.test.mjs && node test/mainline.test.mjs && node test/milestone.test.mjs && node test/arch.test.mjs && node test/duet.test.mjs && node test/away.test.mjs && node test/legacy.test.mjs && node test/atlas.test.mjs && node test/pull.test.mjs && node ../tools/playthrough.mjs 1 --quiet --check",
     "e2e": "node test/e2e.mjs"
   },
   "devDependencies": {

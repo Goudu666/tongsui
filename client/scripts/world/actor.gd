@@ -53,6 +53,9 @@ const ACTION_LOOP := {
 	"wash": "wash", "factory_bath": "wash",
 	"morning_walk": "exercise", "run_dawn": "exercise", "swim_class": "exercise",
 	"blackboard": "chalk", "ground_write": "brush",
+	# 后半生（#50）的营生和带孙辈
+	"old_breakfast": "cook", "old_bikes": "fix", "mind_kids": "talk", "grandkid_park": "kite",
+	"square_dance": "exercise", "pair_cook": "cook", "gk_pickup": "talk",
 }
 ## 上学 / 上班（duty）按在哪个点上：坐办公桌敲电脑、修车铺修车、早点铺出摊…（没写的就招手进门）
 const DUTY_LOOP := {

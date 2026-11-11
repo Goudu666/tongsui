@@ -12,7 +12,7 @@
 - id: kd_stairs
   kind: solo
   stage: middle
-  weight: 2
+  weight: 1
   requires: { flags: [has_kid], kidAge: [2, 4] }
   title: 一级一级
   text: 孩子下楼非要自己走，两只手扶着栏杆，一级一级往下挪。你上班要迟到了。
@@ -33,7 +33,7 @@
 - id: kd_fever
   kind: solo
   stage: middle
-  weight: 2
+  weight: 1
   requires: { flags: [has_kid], kidAge: [2, 8] }
   title: 三十九度
   text: 半夜，孩子额头烫手，三十九度。外头下着雨，楼下一个人也没有。
@@ -59,7 +59,7 @@
 - id: kd_first_day
   kind: solo
   stage: middle
-  weight: 2
+  weight: 1
   requires: { flags: [has_kid], kidAge: [5, 7] }
   title: 校门口
   text: 头一天上学。到了校门口，孩子把手抽回去，跟着人往里走，一回头也没回。
@@ -80,7 +80,7 @@
 - id: kd_meeting
   kind: solo
   stage: middle
-  weight: 2
+  weight: 1
   requires: { flags: [has_kid], kidAge: [7, 11] }
   title: 家长会
   text: 家长会，你坐在孩子的小椅子上，膝盖顶着桌板。老师念了一串名字，没有你家的。
@@ -101,7 +101,7 @@
 - id: kd_slam
   kind: solo
   stage: middle
-  weight: 2
+  weight: 1
   requires: { flags: [has_kid], kidAge: [13, 16] }
   title: 摔门
   text: 孩子把门摔上了，隔着门板说：「你们懂什么。」桌上的饭热过一回，又凉了。
@@ -127,7 +127,7 @@
 - id: kd_far_talk
   kind: solo
   stage: middle
-  weight: 2
+  weight: 1
   requires: { flags: [has_kid], kidAge: [15, 18] }
   title: 外地
   text: 吃着饭，孩子说想考到外地去。说完就低头扒饭，没看你。
@@ -651,7 +651,7 @@
 - id: kd_old_gate
   kind: solo
   stage: old
-  weight: 2
+  weight: 1
   requires: { minAge: 65, maxAge: 75, flags: [has_kid] }
   title: 接孙辈
   text: 校门口接孙辈，你站在一堆老人当中。这道门，你接过两回了。
@@ -672,7 +672,7 @@
 - id: kd_old_room
   kind: solo
   stage: old
-  weight: 2
+  weight: 1
   requires: { minAge: 65, flags: [has_kid] }
   title: 那屋
   text: 孩子那屋空了好些年，台灯还插着电。

@@ -1,5 +1,5 @@
 {
- "version": "f81ee9b6964e",
+ "version": "3015acd3db03",
  "events": [
   {
    "id": "ch_runner",
@@ -7412,8 +7412,9 @@
    },
    "kidAge": 6,
    "score": {
-    "kid_mind": 0.6,
-    "kid_charm": 0.4
+    "kid_mind": 0.4,
+    "kid_charm": 0.3,
+    "kid_body": 0.3
    },
    "swing": false,
    "grades": [],
@@ -8232,8 +8233,8 @@
      "kid_prim_key"
     ],
     "kidAge": [
-     6,
-     9
+     5,
+     11
     ]
    },
    "title": "过桥上学",
@@ -8307,8 +8308,8 @@
      "kid_prim_near"
     ],
     "kidAge": [
-     6,
-     9
+     5,
+     11
     ]
    },
    "title": "拐角的小学",
@@ -8381,8 +8382,8 @@
      "kid_mid_near"
     ],
     "kidAge": [
-     12,
-     14
+     11,
+     16
     ]
    },
    "title": "蓝校服",
@@ -8456,8 +8457,8 @@
      "kid_mid_key"
     ],
     "kidAge": [
-     12,
-     14
+     11,
+     16
     ]
    },
    "title": "趴着睡了",
@@ -8530,8 +8531,8 @@
      "kid_high_key"
     ],
     "kidAge": [
-     15,
-     17
+     14,
+     20
     ]
    },
    "title": "一罐咸菜",
@@ -8604,8 +8605,8 @@
      "kid_trade"
     ],
     "kidAge": [
-     15,
-     19
+     14,
+     20
     ]
    },
    "title": "手稳",
@@ -8677,8 +8678,8 @@
      "kid_uni_top"
     ],
     "kidAge": [
-     18,
-     20
+     17,
+     24
     ]
    },
    "title": "通知书",
@@ -8751,8 +8752,8 @@
      "kid_uni"
     ],
     "kidAge": [
-     18,
-     20
+     17,
+     24
     ]
    },
    "title": "分数条",
@@ -8898,8 +8899,8 @@
      "kid_work"
     ],
     "kidAge": [
-     18,
-     22
+     17,
+     24
     ]
    },
    "title": "一兜水果",
@@ -9086,8 +9087,8 @@
      "kids_same_age"
     ],
     "kidAge": [
-     7,
-     11
+     6,
+     12
     ]
    },
    "title": "一身土",
@@ -9532,7 +9533,7 @@
     ],
     "kidAge": [
      17,
-     20
+     24
     ]
    },
    "title": "两个箱子",

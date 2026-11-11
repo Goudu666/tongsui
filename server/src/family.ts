@@ -153,6 +153,12 @@ function kidScoreStat(p: Person, k: string): number {
   return ks ? ks[KID_SCORE[k]] : 0;
 }
 
+/**
+ * 孩子的关口提前多少岁就排：中年一个日子是三年，按「到了岁数才排」的话，十五岁的中考常常落在孩子十七八岁，
+ * 后面读关口结果的事也赶不上趟。提前两岁排，落在孩子 kidAge−2 ~ kidAge 之间的那一天（「孩子明年中考」）。
+ */
+var KID_GATE_LEAD = 2;
+
 /** 这是孩子的关口 */
 function kidIsGate(ev: LifeEvent): boolean {
   return ev.kind === "milestone" && typeof ev.kidAge === "number";
@@ -164,7 +170,7 @@ function lifeMilestoneForRole(s: LifeState, ev: LifeEvent, role: Role): boolean 
   if (!lifeMilestoneFor(ev, p)) return false;
   if (!kidIsGate(ev)) return true;
   var ka = kidAgeFor(s, role);
-  return ka !== null && ka >= ev.kidAge!;
+  return ka !== null && ka >= ev.kidAge! - KID_GATE_LEAD;
 }
 
 /** 今天轮得到的孩子的关口（自己今天有关口就没有）：孩子岁数最小的那道先过，每道只一次 */
@@ -184,7 +190,7 @@ function kidGateToday(s: LifeState, c: Content): LifeEvent | null {
 
 /** 孩子的这道关从现在起还要几个日子（落在自己有关口的那天就往后挪一天） */
 function kidGateTurns(s: LifeState, c: Content, kid: Kid, ev: LifeEvent): number {
-  var k = lifeTurnsUntilAge(s.turn, kid.bornAge + ev.kidAge!);
+  var k = lifeTurnsUntilAge(s.turn, kid.bornAge + ev.kidAge! - KID_GATE_LEAD);
   for (var n = 0; n < 6; n++) {
     var own = lifeMilestoneAt(c, lifeTimeAt(s.turn + k).age);
     if (!own) break;

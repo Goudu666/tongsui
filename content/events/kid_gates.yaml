@@ -1,15 +1,16 @@
 # 孩子的关口（成家和下一代，docs/FAMILY.md；server/src/family.ts）。
-# 和人生关口是同一套 milestone，多一个 kidAge：孩子到了这个岁数以后，爹妈第一个「没有自己关口」的日子早上发生，每道只一次。
+# 和人生关口是同一套 milestone，多一个 kidAge：孩子快到这个岁数（提前两岁以内，family.ts 的 KID_GATE_LEAD）以后，爹妈第一个「没有自己关口」的日子早上发生，每道只一次。
 # 只有有孩子的人过（requires.flags: [has_kid]）；两口子两个人一起过，可以共鸣。score 里的 kid_* 读孩子的属性，显示照百分制。
 # 选项打的标记落在爹妈身上，统一 kid_ 开头；两口子共鸣的共同标记 p_kid_*。正文是爹妈的视角，孩子不起名。
-# 中年一个日子是三年：孩子六岁那道多半落在爹妈三十六、三十九岁那天，十八岁那道落在四十八、五十一。
+# 中年一个日子是三年：二十八岁生的孩子，上学落在爹妈三十三、小升初三十九、中考四十二、高考四十八（四十五有自己的关）。
 # 线是 tools/sprint.mjs --kids 校的：认真押孩子的过半够得着高考那条高线，不押的两成以下。
 
 - id: mk_school
   kind: milestone
   stage: middle
   kidAge: 6
-  score: { kid_mind: 0.6, kid_charm: 0.4 }
+  # 六岁以前写不了作业：这道关体魄、魅力也算，带去跑、带去茶社的工夫不白花
+  score: { kid_mind: 0.4, kid_charm: 0.3, kid_body: 0.3 }
   requires: { flags: [has_kid] }
   title: 孩子上学
   text: 报名那天，校门口排到了路口。前头的人手里一沓表，你手里就一个户口本。

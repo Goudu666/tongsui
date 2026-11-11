@@ -7,6 +7,8 @@
 // 包含：events/*.yaml 剧情事件、families.yaml 家庭、talents.yaml 天赋、map.yaml 地图与行动、endings.yaml 结局
 // 传承（server/src/legacy.ts）：heirlooms.yaml 老物件、remembered.yaml 街坊记住的事、events/legacy.yaml 隔世的事
 //   client/data/street.json          街景（street.yaml：街坊、车，随年代更替；只给客户端，不进结算也不进内容版本）
+//   client/data/folks.json           横版每张图上的街坊（maps/*.yaml 的 npcs：在哪、哪个年纪在、几段在、搭腔说什么；
+//                                    只给客户端，长相和营生动作在 tools/art/folks.py，不进结算也不进内容版本）
 // 同时做基础校验，写剧情时出错能第一时间看到。
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { createHash } from "node:crypto";
@@ -90,7 +92,7 @@ const PENDING_FLAGS = [];
 const SCENE_ORDER = ["building", "street", "river", "primary", "middle", "across", "away", "rental", "newhome", "park", "hospital"];
 const SCENE_STRIDE = 2000;
 const AREA_HEIGHT = 400; // 地点在世界坐标里的框：地面往上这么高（判定「人在不在这儿」用，美术不看它）
-const ACTION_KEYS = ["id", "label", "minutes", "quick", "sleep", "duty", "requires", "needs", "stats", "money", "together", "bring", "kid"];
+const ACTION_KEYS = ["id", "label", "minutes", "quick", "sleep", "duty", "requires", "needs", "stats", "money", "together", "bring", "menu", "kid"];
 const ACTION_REQ_KEYS = ["minAge", "maxAge", "owner", "hours", "flags", "notFlags", "kidAge"];
 const TOGETHER_KEYS = ["needs", "bond", "text"];
 // 规则代码（server/src/sim.ts、world.ts）里按名字写死的行动和标记：影子靠这些行动过日子，天赋效果靠这些标记生效。
@@ -703,6 +705,8 @@ for (const sc of rawScenes) {
       errors.push(`${w}: 需要 action 或 actions`);
     }
     for (const a of acts) if (!actionIds.has(a)) errors.push(`${w}: 未知 action ${a}`);
+    // menu 的事只在菜单上点到才做：不能当点位的头一件（旧安装包、影子、机器人不点菜单，做的是头一件）
+    if (acts.length && map.actions.find((x) => x.id === acts[0])?.menu) errors.push(`${w}: 头一件 ${acts[0]} 是 menu 的事，换一件当头`);
     spots.push({ id: sp.id, zone: sp.area, scene: sc.id, at: [sp.at, fy(ar.floor, w)], actions: acts, action: acts[0] });
   }
 }
@@ -778,11 +782,13 @@ map.actions = map.actions.map((a) => {
   // 顺手的事当场做完、不占一段：不能是睡觉和日程，也不长属性（长属性的事要花一段时间）
   if (a.quick && (a.sleep || a.duty)) errors.push(`map.actions#${a.id}: 睡觉和日程不能是顺手的事`);
   if (a.quick && Object.keys(a.stats ?? {}).length > 0) errors.push(`map.actions#${a.id}: 顺手的事不长属性，要长属性就去掉 quick`);
+  // menu：只在菜单上点到才做（协议 8）。不点菜单的（旧安装包、影子、机器人）永远轮不到它，校准过的活法数不动
+  if (a.menu !== undefined && (a.menu !== true || a.sleep || a.duty)) errors.push(`map.actions#${a.id}.menu: 只能写 true，睡觉和日程不能是`);
   return {
     id: a.id, label: a.label, minutes: a.minutes ?? 0, quick: !!a.quick, sleep: !!a.sleep, duty: !!a.duty,
     requires: a.requires ?? {}, needs: a.needs ?? {}, stats: a.stats ?? {}, money: a.money ?? 0,
     together: a.together ? { needs: a.together.needs ?? {}, bond: a.together.bond ?? {}, text: a.together.text ?? "" } : null,
-    bring: !!a.bring,
+    bring: !!a.bring, menu: !!a.menu,
     ...(a.kid ? { kid: a.kid } : {}),
   };
 });
@@ -1014,6 +1020,26 @@ writeFileSync(
     `var CONTENT: Content = ${json};\n`,
 );
 writeFileSync(join(root, "client", "data", "street.json"), JSON.stringify(street, null, 1) + "\n");
+{
+  // 横版街坊：按图分好，横坐标照写（图自己的坐标），落在第几层地面按所在 area 的 floor，没有就是最底下一层
+  const folks = {};
+  const SLOT_IDS = ["morning", "am", "pm", "evening", "night"];
+  for (const sc of rawScenes) {
+    const list = [];
+    for (const n of sc.npcs ?? []) {
+      const at = `maps/${sc.file}.npcs.${n.id}`;
+      if (!n.id || !isNum(n.at)) { errors.push(`${at}: 要有 id 和横坐标 at`); continue; }
+      for (const e of n.eras ?? []) if (!STAGES.includes(e)) errors.push(`${at}.eras: 不认识的年纪 "${e}"`);
+      for (const k of n.slots ?? []) if (!SLOT_IDS.includes(k)) errors.push(`${at}.slots: 不认识的时段 "${k}"（${SLOT_IDS.join(" / ")}）`);
+      const area = (sc.areas ?? []).find((a) => Array.isArray(a.span) && n.at >= a.span[0] && n.at <= a.span[1]);
+      const floor = n.floor ?? area?.floor ?? (sc.floors ?? [760]).length - 1;
+      list.push({ id: n.id, name: n.name ?? n.id, at: n.at, floor, eras: n.eras ?? [], slots: n.slots ?? [], lines: n.lines ?? {} });
+    }
+    if (list.length) folks[sc.id] = list;
+  }
+  if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
+  writeFileSync(join(root, "client", "data", "folks.json"), JSON.stringify(folks, null, 1) + "\n");
+}
 const by = (k) => events.filter((e) => e.stage === k).length;
 console.log(`✓ ${events.length} 个事件  ` + STAGES.map((s) => `${s}:${by(s)}`).join("  ") +
   `  |  ${families.length} 户人家  ${talents.length} 种天赋  ${map.zones.length} 个地点  ${map.actions.length} 种行动  ${tracks.length} 条路  ${milestones.length} 个关口` +

@@ -28,6 +28,8 @@ const KIDS = process.env.KIDS || "";
 const AWAY = (process.env.AWAY || "").split(":").map(Number);
 // ONCE=1：正经事一回一回地按（新安装包的默认按法，world.ts 的 worldActOnce），做完一回再按，偶尔换一件；不设就是「做到点」，整段押上
 const ONCE = !!process.env.ONCE;
+// MENU=1：点位菜单上的每一件都看（协议 8，ACT 带 action）；不设就是只看菜单头一件，和影子、旧安装包一样
+const MENU = !!process.env.MENU;
 // SNAP=1：每个日子收工时记下两个人纸带上的线（lifeGoal），tools/sprint.mjs 拿它量关口冲刺有没有得拼
 const SNAP = !!process.env.SNAP;
 function snapGoals(s) {
@@ -118,6 +120,15 @@ function spotsFor(s, role, test) {
     const z = zoneOf.get(sp.zone);
     if (z.owner && z.owner !== role) continue;
     if (G("worldSceneLock")(s, C, sceneOf.get(sp.scene), role)) continue;
+    if (MENU) {
+      // 点位菜单：每一件都看一眼（真人看得见那排小牌子）
+      for (const id of sp.actions) {
+        const act = G("worldPickAction")(s, C, role, sp, id).act;
+        if (!act || act.id !== id || G("worldCanAct")(s, C, role, sp.id, true, id)) continue;
+        if (test(act, sp)) out.push({ spot: sp, act });
+      }
+      continue;
+    }
     const act = G("worldPickAction")(s, C, role, sp).act;
     if (!act || G("worldCanAct")(s, C, role, sp.id, true)) continue;
     if (test(act, sp)) out.push({ spot: sp, act });
@@ -390,13 +401,15 @@ function playLife(seed) {
         if (plan.walkTo && plan.linger) { P.plan = null; P.wait = 3 * TICK; continue; } // 站一会儿，没事就接着干别的
         if (plan.walkTo) { P.plan = { pass: true, why: plan.why + "-arrived" }; P.wait = 5; continue; }
         // 客户端在按钮上写着做不了的原因（比如过了两趟桥，「路上把这一段花掉了」），真人不会再按：这一段歇着
-        if (!plan.sent && G("worldCanAct")(s, C, r, plan.spot.id)) { P.plan = { pass: true, why: plan.why + "-greyed" }; P.did = P.plan.why; continue; }
+        if (!plan.sent && G("worldCanAct")(s, C, r, plan.spot.id, false, MENU && plan.act ? plan.act.id : undefined)) { P.plan = { pass: true, why: plan.why + "-greyed" }; P.did = P.plan.why; continue; }
         if (ONCE && plan.sent && !plan.quick) {
           // 一回做完了（did 的序号变了）：看一眼结果、钟拨过去，再按一回；三成的时候换一件事
           if (((a.did && a.did.n) || 0) > plan.didN) { P.plan = rand() < 0.3 ? null : { ...plan, sent: false }; P.wait = Math.round(THINK.once * TICK); continue; }
           P.plan = { pass: true, why: plan.why + "-failed" }; P.did = P.plan.why; continue;
         }
-        msgs.push(R.msg(P.presence, OP.ACT, ONCE ? { spot: plan.spot.id, once: true } : { spot: plan.spot.id }));
+        const body = ONCE ? { spot: plan.spot.id, once: true } : { spot: plan.spot.id };
+        if (MENU && plan.act) body.action = plan.act.id;
+        msgs.push(R.msg(P.presence, OP.ACT, body));
         if (plan.quick) { P.plan = null; P.wait = THINK.quick * TICK; } else { P.wait = 5; P.plan = { ...plan, sent: true, didN: (a.did && a.did.n) || 0 }; }
         if (plan.sent && !ONCE) { P.plan = { pass: true, why: plan.why + "-failed" }; } // 做不了：歇着
         continue;

@@ -25,16 +25,19 @@ exits:
   - { id: to_river, at: 3940, to: river, arrive: 60, label: 去海河边 }
 
 spots:
-  - { id: breakfast_stall, at: 530, area: breakfast, actions: [ duty, eat_out, dine, help_out ] }
+  - { id: breakfast_stall, at: 530, area: breakfast, actions: [ duty, eat_out, dine, help_out, pancake ] }
+  # 早点铺后厨、车棚门口：退了休的人挣几块零花（后半生押时间）
+  - { id: breakfast_back, at: 760, area: breakfast, actions: [ old_breakfast ] }
   - { id: shop_counter, at: 1080, area: shop, actions: [ help_out ] }
   # 小卖部门口的邮筒：留在河畔里的人给外地写信
   - { id: mailbox, at: 1250, area: shop, actions: [ letter ] }
-  - { id: alley_rope, at: 1530, area: alley, actions: [ play_alley, chat ] }
-  - { id: chess_table, at: 2010, area: alley, actions: [ chess ] }
+  - { id: alley_rope, at: 1530, area: alley, actions: [ play_alley, chat, cards ] }
+  - { id: chess_table, at: 2010, area: alley, actions: [ chess, teach_chess ] }
   - { id: alley_night, at: 2260, area: alley, actions: [ night_market ] }
   - { id: bike_bench, at: 2710, area: bikeshop, actions: [ duty, work, side_fix ] }
+  - { id: bike_shed, at: 2930, area: bikeshop, actions: [ old_bikes ] }
   - { id: tea_stage, at: 3310, area: teahouse, actions: [ club_art, perform ] }
-  - { id: tea_seat, at: 3580, area: teahouse, actions: [ listen ] }
+  - { id: tea_seat, at: 3580, area: teahouse, actions: [ listen, tea_box, tea_runner ] }
   - { id: kid_tea, at: 3760, area: teahouse, actions: [ kid_listen ] }
 
 npcs:

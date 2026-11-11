@@ -23,7 +23,7 @@ spots:
   - { id: rent_bed, at: 260, area: rent_room, actions: [ sleep ] }
   - { id: rent_table, at: 480, area: rent_room, actions: [ eat ] }
   - { id: rent_desk, at: 700, area: rent_room, actions: [ read ] }
-  - { id: rent_basin, at: 1150, area: rent_hall, actions: [ wash ] }
+  - { id: rent_basin, at: 1150, area: rent_hall, actions: [ wash, chat ] }
   - { id: rent_stove, at: 1500, area: rent_hall, actions: [ cook ] }
 
 npcs:

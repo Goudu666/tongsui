@@ -30,7 +30,7 @@ var _line_id := ""
 var _have := -1.0        ## 正在显示的我的分
 var _from := 0.0         ## 这一回从多少开始拨
 var _roll_at := 0.0      ## 什么时候开始拨
-var _gain := 0           ## 这一回涨了几分
+var _gain := 0.0         ## 这一回涨了几分（小时候一回只有零点几分）
 var _t := 0.0
 
 
@@ -55,26 +55,33 @@ func _process(delta: float) -> void:
 	if line.is_empty():
 		_line_id = ""
 	else:
-		var real := float(line.have)
+		var real := line_have(line)
 		if str(line.id) != _line_id or real < _have - 0.01 or _have < 0.0:
 			_line_id = str(line.id)
 			_have = real  # 换了一条线、掉了分：直接到位
-			_gain = 0
-		elif real > _have + 0.01 and (_gain == 0 or _t > _roll_at + 2.0):
+			_gain = 0.0
+		elif real > _have + 0.01 and (_gain == 0.0 or _t > _roll_at + 2.0):
 			_from = _have
-			_gain = int(round(real - _have))
+			_gain = snappedf(real - _have, 0.1)
 			_roll_at = _t + land_in
 			land_in = LAND
-		if _gain != 0 and _t >= _roll_at and _have < real:
+		if _gain != 0.0 and _t >= _roll_at and _have < real:
 			_have = minf(real, _from + (real - _from) * clampf((_t - _roll_at) / 0.5, 0.0, 1.0))
-		animating = _gain != 0 and _t < _roll_at + 1.8
-		if not animating and _gain != 0:
-			_gain = 0
+		animating = _gain != 0.0 and _t < _roll_at + 1.8
+		if not animating and _gain != 0.0:
+			_gain = 0.0
 			_have = real
 	var sig := [str(goal), str(their_goal), my_color, eff, track, str(stats), their_name, size]
 	if animating or sig != _sig:
 		_sig = sig
 		queue_redraw()
+
+
+## 这条线上我有多少：服务器给了带一位小数的 hx 就用它（攒着的零点几分也让尺上的点挪一挪），没有就是整数 have
+static func line_have(line: Dictionary) -> float:
+	if line.get("hx") != null:
+		return float(line.hx)
+	return float(line.get("have", 0))
 
 
 ## 现在最该盯的那条线：还没够着的里面差得最少的；都够着了就是最高的那条
@@ -189,16 +196,19 @@ func _draw() -> void:
 	var dot_y := top - 14.0
 	draw_circle(Vector2(x0 + 10, dot_y) + Vector2(2, 2), 9.0, my_color, true, -1.0, true)
 	draw_arc(Vector2(x0 + 10, dot_y), 9.0, 0, TAU, 20, P.INK, 2.5, true)
-	var have := _have if _line_id == str(line.id) and _have >= 0.0 else float(line.have)
-	var k := clampf((_t - _roll_at) / 1.8, 0.0, 1.0) if _gain != 0 and _t >= _roll_at else (0.0 if _gain != 0 else 1.0)
-	if _gain != 0 and _t >= _roll_at and k < 1.0:
+	var have := _have if _line_id == str(line.id) and _have >= 0.0 else line_have(line)
+	var k := clampf((_t - _roll_at) / 1.8, 0.0, 1.0) if _gain != 0.0 and _t >= _roll_at else (0.0 if _gain != 0.0 else 1.0)
+	if _gain != 0.0 and _t >= _roll_at and k < 1.0:
 		# 涨分的那一下：分数底下垫一块自己的颜色，慢慢淡掉
 		draw_rect(Rect2(x0 - 8, 10, side - 4.0, size.y - 20.0), Color(my_color, 0.28 * (1.0 - k)))
-	_score(f, x0 + 28.0, top, str(int(have)), " / %d %s" % [int(line.need), unit])
+	# 分数后面跟着攒着的那一位小数（「40.5 / 53 分」，小数小一号）：一回只长零点几分的时候，数也在动
+	var tenth := ".%d" % (int(floor(have * 10.0 + 0.001)) % 10) if line.get("hx") != null else ""
+	_score(f, x0 + 28.0, top, str(int(floor(have + 0.001))), "%s / %d %s" % [tenth, int(line.need), unit])
 	var lead := 0.0
-	if _gain != 0 and _t >= _roll_at and k < 1.0:
+	if _gain != 0.0 and _t >= _roll_at and k < 1.0:
 		# 涨的那一截挂在第二行最前头（第一行右边紧挨着线的名字，放不下）
-		lead = Kit.text(self, Vector2(x0, low - k * 6.0), "+%d" % _gain, P.FS_LABEL, Color(my_color.darkened(0.2), 1.0 - k * k)) + 10.0
+		var gain_text := ("+%.1f" % _gain) if _gain < 0.95 else ("+%d" % int(round(_gain)))
+		lead = Kit.text(self, Vector2(x0, low - k * 6.0), gain_text, P.FS_LABEL, Color(my_color.darkened(0.2), 1.0 - k * k)) + 10.0
 	var reached := have >= float(line.need) - 0.001
 	var sub := "够着了" if reached else "还差 %d %s" % [int(ceil(float(line.need) - have)), unit]
 	var eff_text := _eff_text(" · ")

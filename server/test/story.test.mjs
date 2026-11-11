@@ -177,8 +177,9 @@ for (let seed = 1; seed <= LIVES; seed++) {
   const nth = (seed - 1) % CHAIN;
   if (nth === 0) legacy = undefined;
   if (nth === 1 && Math.floor(seed / CHAIN) % 2 === 0) legacy.marks = [...C.legacy.marks];
-  // 老物件链要连着三世才走到头，三世一串撞不够：每隔几串当作链已经变过一回（面前摆着变过的那几件）
-  if (nth === 2 && Math.floor(seed / CHAIN) % 3 === 0) for (const id of ["h_photo_two", "h_nested_box", "h_noted_books"]) if (!legacy.heirlooms.includes(id)) legacy.heirlooms.unshift(id);
+  // 老物件链要连着三世才走到头，三世一串撞不够：每隔一串当作链已经变过一回（面前摆着变过的那几件）。
+  // 原来是每隔两串：「又一张」那个结局 1500 条里只走到 1 回，内容一动（多几件行动、几件小事）就抽成 0
+  if (nth === 2 && Math.floor(seed / CHAIN) % 2 === 0) for (const id of ["h_photo_two", "h_nested_box", "h_noted_books"]) if (!legacy.heirlooms.includes(id)) legacy.heirlooms.unshift(id);
   const { s, seen } = story(seed * 2654435761, seed % 2 ? randomChoice : steadyChoice, seed % 4, NEAR[Math.floor(seed / 4) % NEAR.length], legacy);
   legacy = JSON.parse(JSON.stringify(s.legacy));
   assert.equal(s.life, nth + 1);

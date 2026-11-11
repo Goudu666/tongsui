@@ -65,6 +65,7 @@ var content_version := ""    ## 界面现在用的是哪一版内容（main.gd �
 
 var _want_online := false
 var _reconnecting := false
+var _opening := false  ## 正在等 socket.connect_async：这时候来的切回前台不另起炉灶
 var _last_rx := 0.0
 var _ping_timer := 0.0
 var _wait_timer := 0.0
@@ -297,8 +298,18 @@ func _open_socket() -> bool:
 	socket.received_match_state.connect(_on_match_state)
 	socket.received_notification.connect(_on_notification)
 	socket.closed.connect(_on_socket_closed)
+	var mine = socket
+	_opening = true
 	var conn = await socket.connect_async(session)
-	if conn.is_exception():
+	_opening = false
+	if socket != mine:
+		return connected  # 等的这会儿已经换了一条新连接（切后台回来、重连），以那条为准
+	if not conn is Object or conn.is_exception():
+		# 连到一半被打断时插件回的不是结果对象而是错误码（原来直接 conn.is_exception() 报错，大厅卡在「正在连接」）
+		if not conn is Object:
+			failed.emit("连接失败，再试一次")
+			_drop_socket()
+			return false
 		failed.emit("连接失败：%s" % _err_text(conn.get_exception()))
 		_drop_socket()
 		return false
@@ -392,8 +403,8 @@ func _process(delta: float) -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_RESUMED or what == NOTIFICATION_APPLICATION_FOCUS_IN:
-		if not _want_online or _reconnecting or socket == null:
-			return
+		if not _want_online or _reconnecting or _opening or socket == null:
+			return  # 刚开窗口 / 刚装好那一下常会连着来一个 FOCUS_IN，正在连就别把它掐了重来
 		var stale := match_id != "" and ServerClock.local_now() - _last_rx > RESUME_STALE_SECONDS
 		if stale or not socket.is_connected_to_host():
 			_drop_socket()
@@ -618,10 +629,12 @@ func sent_position(seq: int) -> Variant:
 
 
 ## once：做一回、当场结算（协议 7）；false 是「做到点」，把这一段剩下的时间整段押上
-func act(spot_id: String, once := false) -> void:
+func act(spot_id: String, once := false, action := "") -> void:
 	var body := {"spot": spot_id}
 	if once:
 		body["once"] = true
+	if action != "":
+		body["action"] = action
 	_send(Op.ACT, body)
 
 
@@ -679,6 +692,11 @@ func fetch_past(life_no: int) -> void:
 ## 服务器懂不懂传承（老物件、再来一世）。连着旧服务器时界面不给按钮，而不是点了报错
 func server_has_legacy() -> bool:
 	return server_protocol >= Op.LEGACY_SINCE
+
+
+## 服务器认不认点位菜单（ACT 带 action）。旧服务器只做菜单头一件，界面就不摆别的选项
+func server_has_menu() -> bool:
+	return server_protocol >= Op.MENU_SINCE
 
 
 func _on_match_state(state) -> void:

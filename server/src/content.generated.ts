@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "cf9c564bd35a",
+ "version": "65a5f254cedf",
  "events": [
   {
    "id": "ch_runner",
@@ -14597,9 +14597,41 @@ var CONTENT: Content = {
        "retired"
       ]
      }
+    },
+    {
+     "id": "trip",
+     "text": "和对门搭个伴，出去走走",
+     "score": {
+      "money": 1
+     },
+     "min": 180,
+     "cost": 60,
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "retired",
+       "retire_trip"
+      ]
+     }
     }
    ],
    "resonance": {
+    "trip": {
+     "text": "绿皮车，两个下铺。到了海边，鞋里灌满了沙子，回来的一路谁也没倒。",
+     "memory": "鞋里的沙子",
+     "bond": {
+      "sync": 2,
+      "close": 3
+     },
+     "flags": []
+    },
     "mentor": {
      "text": "你们各带了一个徒弟。两个年轻人在楼下碰见了，互相打听：你师父也这么爱说「我们那时候」吗？",
      "memory": "两个徒弟",
@@ -14651,7 +14683,7 @@ var CONTENT: Content = {
      "score": {
       "close": 1
      },
-     "min": 55,
+     "min": 60,
      "tags": [
       "gentle"
      ],
@@ -36406,6 +36438,13 @@ var CONTENT: Content = {
    "syncSoft": 110,
    "syncFloor": 0.15,
    "slotTogether": 1.5,
+   "closeWeight": {
+    "childhood": 1,
+    "teen": 1,
+    "young": 1,
+    "middle": 1,
+    "old": 3.5
+   },
    "syncSteady": 1,
    "syncSteadyFrom": 5,
    "syncSteadyFull": 35,

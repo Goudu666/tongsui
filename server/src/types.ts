@@ -39,7 +39,16 @@ interface EventOption {
 }
 
 /** 关口怎么算分：各项属性乘权重相加；money 表示积蓄 */
-type ScoreWeights = Partial<Stats> & { money?: number; close?: number };
+type ScoreWeights = Partial<Stats> & { money?: number; close?: number; kid_mind?: number; kid_body?: number; kid_charm?: number };
+
+/** 孩子（docs/FAMILY.md）：拿到 has_kid 那一刻生的。of 是爹妈（两口子两个人都在里头），bornAge 是生的时候爹妈的岁数 */
+interface Kid {
+  id: string;
+  name: string;
+  of: Role[];
+  bornAge: number;
+  stats: Stats;
+}
 
 /** 关口的成绩档：从高到低，取第一个够得着的。和「选了哪条路」分开记：成绩是事实，路是选择 */
 interface Grade {
@@ -73,6 +82,8 @@ interface LifeEvent {
   /** 考试有发挥：得分会随手气和运气上下浮动一点 */
   swing?: boolean;
   grades?: Grade[];
+  /** 孩子的关口：孩子到了这个岁数之后，爹妈第一个没有自己关口的日子早上发生（没有 age） */
+  kidAge?: number;
 }
 
 interface EventRequires {
@@ -88,12 +99,17 @@ interface EventRequires {
   maxDistance?: number;
   /** true：只在对方已经离开以后；false：只在两人都在世时 */
   alone?: boolean;
+  /** 孩子在这个岁数段才发生（没孩子不发生） */
+  kidAge?: [number, number];
 }
 
 /** 抽事件时除了年龄和标记以外还要看的东西 */
 interface EligibleCtx {
   bond: Bond;
   alone: boolean;
+  /** 这个人的孩子几岁（没有孩子不写；mirror 抽事件时是两家里任一个孩子在段里就行，见 world.ts） */
+  kidAge?: number;
+  kidAges?: number[];
 }
 
 // ---------- 结局（content/endings.yaml） ----------
@@ -168,7 +184,24 @@ interface Talent {
 
 // ---------- 数值规则（content/rules.yaml，说明见 docs/GROWTH.md） ----------
 
+/** 成家和下一代的数（rules.yaml → family，docs/FAMILY.md） */
+interface FamilyRules {
+  /** 孩子的名字（小名），生的时候按种子挑一个 */
+  names: string[];
+  /** 出生的底：每项 = start + 爹妈这项的平均 × inherit + (随机 − 0.5) × noise */
+  start: { body: number; mind: number; charm: number };
+  inherit: number;
+  noise: number;
+  /** 孩子的空间：比 start 高出 room 以后长得越来越慢（软上限） */
+  room: number;
+  /** 不押也自己长：每过一年长这么多 */
+  selfGrow: { body: number; mind: number; charm: number };
+  /** 两家孩子差不到几岁算同岁（kids_same_age） */
+  sameAge: number;
+}
+
 interface Rules {
+  family?: FamilyRules;
   roll: { budget: number; wealthAdjust: number[]; statMin: number; statMax: number; rerolls: number };
   growth: {
     eventScale: number;
@@ -281,9 +314,11 @@ interface Action {
   sleep: boolean;
   /** 日程：上学、上班。做多久、涨什么、挣多少由这个人走的路（Track.duty）决定 */
   duty: boolean;
-  requires: { minAge?: number; maxAge?: number; owner?: boolean; hours?: [number, number]; flags?: string[]; notFlags?: string[] };
+  requires: { minAge?: number; maxAge?: number; owner?: boolean; hours?: [number, number]; flags?: string[]; notFlags?: string[]; kidAge?: [number, number] };
   needs: Partial<Needs>;
   stats: Partial<Stats>;
+  /** 带孩子：长的是孩子不是自己（docs/FAMILY.md）。只有 body / mind / charm */
+  kid?: Partial<Stats>;
   money: number;
   together: { needs: Partial<Needs>; bond: Partial<Bond>; text: string } | null;
   /** 带上对门：标记够的人正在做，对门走过去也能跟着做，两份钱都由带的人出（means.ts） */
@@ -445,6 +480,8 @@ interface Did {
   j?: boolean;
   /** 只做了一部分（这一段剩的时间不够一整回） */
   part?: number;
+  /** 带孩子：孩子长了多少 */
+  k?: Partial<Stats>;
 }
 
 /** 这一段里一件一件做掉的事（认搭伴用：同一个点、同一件事、两个人各自钟上的时间对得上一半以上） */
@@ -456,6 +493,8 @@ interface Run {
   /** 成长规则折算前的涨幅（状态、天赋已经乘了，搭伴没乘），后到的对门给这个人补搭伴时按它算 */
   raw: SelfDelta;
   tg: boolean;
+  /** 带孩子：孩子那份折算前的涨幅（同 raw） */
+  kr?: Partial<Stats>;
 }
 
 interface PendingEvent {
@@ -585,6 +624,8 @@ interface LifeState {
   world: WorldState | null;
   /** 人生结束时算出的结局 */
   ending?: EndingResult;
+  /** 孩子（docs/FAMILY.md）。LIFE_VERSION 9 起有 */
+  kids?: Kid[];
 }
 
 interface TimeInfo {

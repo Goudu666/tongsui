@@ -20,7 +20,7 @@
     - id: up_desk
       text: 评上组长，管一摊事
       score: {mind: 0.7, charm: 0.3}
-      min: 8.8
+      min: 9.2
       requires:
         flags: [job_desk]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
@@ -33,7 +33,7 @@
     - id: up_pull
       text: 调进要紧的科室
       score: {charm: 0.6, mind: 0.4}
-      min: 8.6
+      min: 9.4
       requires:
         flags: [job_pull]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
@@ -47,7 +47,7 @@
     - id: up_teach
       text: 当上班主任
       score: {mind: 0.5, charm: 0.5}
-      min: 7.8
+      min: 8.1
       requires:
         flags: [job_teach]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
@@ -61,7 +61,7 @@
     - id: up_trade
       text: 盘下一间门脸
       score: {charm: 0.7, luck: 0.3}
-      min: 7.6
+      min: 8.1
       cost: 30
       requires:
         flags: [job_trade]
@@ -76,7 +76,7 @@
     - id: up_craft
       text: 出师，自己接活
       score: {body: 0.5, mind: 0.5}
-      min: 7.3
+      min: 8.3
       requires:
         flags: [job_craft]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
@@ -90,7 +90,7 @@
     - id: up_labor
       text: 当上大工
       score: {body: 1}
-      min: 7.5
+      min: 7.6
       requires:
         flags: [job_labor]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
@@ -104,7 +104,7 @@
     - id: up_factory
       text: 评上技术员
       score: {mind: 0.6, body: 0.4}
-      min: 7.2
+      min: 6.9
       requires:
         flags: [job_succeed]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
@@ -118,7 +118,7 @@
     - id: up_odd
       text: 找着一份长活
       score: {body: 0.5, charm: 0.5}
-      min: 6.6
+      min: 6.5
       requires:
         flags: [job_odd]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank1]
@@ -132,7 +132,7 @@
     - id: up_away
       text: 在外地站住了脚
       score: {mind: 0.6, charm: 0.4}
-      min: 8.4
+      min: 9.0
       requires:
         flags: [left_city]
         notFlags: [own_shop, own_stall, no_job, laid_off, came_back, rank1]
@@ -147,7 +147,7 @@
     - id: jump
       text: 跟着老同事跳到别家
       score: { charm: 0.6, luck: 0.4 }
-      min: 7.9
+      min: 8.0
       requires: { notFlags: [job_odd, job_succeed, own_shop, own_stall, no_job, laid_off, rank1] }
       lock: 不是你这一行
       hide: true
@@ -157,7 +157,7 @@
     - id: to_desk
       text: 上夜大，考进机关
       score: { mind: 1 }
-      min: 9.0
+      min: 9.3
       cost: 20
       requires: { notFlags: [job_desk, job_pull, left_city, own_shop, own_stall, no_job, laid_off] }
       lock: 不是你这一行
@@ -167,7 +167,7 @@
     - id: to_trade
       text: 辞了，出来做买卖
       score: { charm: 0.7, luck: 0.3 }
-      min: 7.9
+      min: 8.1
       cost: 20
       requires: { notFlags: [job_trade, left_city, own_shop, own_stall, no_job, laid_off] }
       lock: 不是你这一行
@@ -177,7 +177,7 @@
     - id: to_craft
       text: 拜个师傅学手艺
       score: { body: 0.5, mind: 0.5 }
-      min: 7.0
+      min: 7.6
       requires: { notFlags: [job_craft, job_desk, job_pull, job_teach, job_trade, left_city, own_shop, own_stall, no_job, laid_off] }
       lock: 不是你这一行
       hide: true
@@ -187,7 +187,7 @@
     - id: seat
       text: 家里托人，调个好位置
       score: { mind: 0.5, charm: 0.5 }
-      min: 8.0
+      min: 8.8
       cost: 25
       requires: { flags: [fam_rich], notFlags: [own_shop, own_stall, no_job, laid_off, rank1] }
       lock: 家里没这层关系
@@ -202,15 +202,15 @@
     up_desk:
       text: 那年两个人都往上走了一步。晚上在楼道里碰见，谁也没提，各自多买了一瓶汽水。
       memory: 多买的汽水
-      bond: { sync: 2, close: 2 }
+      bond: { sync: 2, close: 1 }
     jump:
       text: 同一个礼拜，两个人都换了东家。新单位离得不远，中午能在一个面馆碰上。
       memory: 一个面馆
-      bond: { sync: 2, close: 2 }
+      bond: { sync: 2, close: 1 }
     steady:
       text: 两个人都没动。下了班还是一前一后进楼门，日子跟去年一样，也挺好。
       memory: 一前一后
-      bond: { sync: 2, close: 2 }
+      bond: { sync: 2, close: 1 }
   dissonance:
     text: 一个往上走了一步，一个还在原地。见了面先问对方忙不忙，问完就没话了。
     bond: { close: -2 }
@@ -225,7 +225,7 @@
     - id: top_desk
       text: 当上科长
       score: {mind: 0.5, charm: 0.5}
-      min: 8.9
+      min: 9.6
       requires:
         flags: [job_desk, rank1]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank2]
@@ -238,7 +238,7 @@
     - id: top_pull
       text: 坐上副手的位子
       score: {charm: 0.6, mind: 0.4}
-      min: 8.8
+      min: 9.6
       requires:
         flags: [job_pull, rank1]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank2]
@@ -265,8 +265,8 @@
         flags: [rank2]
     - id: top_trade
       text: 做起了批发
-      score: {charm: 0.6, luck: 0.4}
-      min: 8.4
+      score: {money: 1}
+      min: 90
       cost: 50
       requires:
         flags: [job_trade, rank1]
@@ -280,9 +280,9 @@
         flags: [rank2]
     - id: top_craft
       text: 收徒弟，开铺子
-      score: {mind: 0.6, charm: 0.4}
-      min: 8.2
-      cost: 30
+      score: {money: 1}
+      min: 70
+      cost: 40
       requires:
         flags: [job_craft, rank1]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank2]
@@ -295,8 +295,9 @@
         flags: [rank2]
     - id: top_labor
       text: 自己拉一班人
-      score: {body: 0.5, charm: 0.5}
-      min: 8.2
+      score: {money: 1}
+      min: 60
+      cost: 30
       requires:
         flags: [job_labor, rank1]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank2]
@@ -310,7 +311,7 @@
     - id: top_factory
       text: 当上车间主任
       score: {mind: 0.5, charm: 0.5}
-      min: 8.2
+      min: 7.4
       requires:
         flags: [job_succeed, rank1]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank2]
@@ -323,8 +324,9 @@
         flags: [rank2]
     - id: top_odd
       text: 带着几个人干
-      score: {charm: 0.6, body: 0.4}
-      min: 7.6
+      score: {money: 1}
+      min: 45
+      cost: 20
       requires:
         flags: [job_odd, rank1]
         notFlags: [own_shop, own_stall, no_job, laid_off, rank2]
@@ -338,7 +340,7 @@
     - id: top_away
       text: 在外地带一摊事
       score: {mind: 0.5, charm: 0.5}
-      min: 8.8
+      min: 9.4
       requires:
         flags: [left_city, rank1]
         notFlags: [own_shop, own_stall, no_job, laid_off, came_back, rank2]
@@ -349,11 +351,24 @@
       effects:
         self: {mood: 6}
         flags: [rank2]
+    # 看本事的几行（坐办公室、托关系、教书、厂里、外地）另有一条花钱的路：读个在职、进修。中年属性长不太动了，
+    # 三十到三十六这两个日子里挪得动的是积蓄：买了房的人从零攒起，下了班多揽活的人攒得快（清贫人家拿时间换钱）
+    - id: study
+      text: 读个在职，评了上去
+      score: { money: 1 }
+      min: 80
+      cost: 50
+      requires: { flags: [rank1], notFlags: [rank2, job_trade, job_craft, job_labor, job_odd, own_shop, own_stall, no_job, laid_off] }
+      lock: 不是你这一行
+      hide: true
+      joins: top_desk
+      tags: [patient]
+      effects: { self: { mind: 0.3, mood: 2 }, flags: [rank2, studied] }
     # 二十六没升上的：熬了这些年，总算升了一级（线不低，人到这会儿本事也长了）
     - id: late
       text: 熬了这些年，升了一级
       score: { mind: 0.4, charm: 0.3, body: 0.3 }
-      min: 7.8
+      min: 8.8
       requires: { notFlags: [rank1, own_shop, own_stall, no_job, laid_off] }
       lock: 不是你这一行
       hide: true
@@ -373,7 +388,7 @@
     - id: push
       text: 家里再使使劲
       score: { mind: 0.5, charm: 0.5 }
-      min: 8.3
+      min: 9.2
       cost: 40
       requires: { flags: [fam_rich, rank1], notFlags: [rank2, own_shop, own_stall, no_job, laid_off] }
       lock: 家里使不上劲
@@ -393,11 +408,11 @@
     late:
       text: 熬了十年，同一年升的。谁也没请客，两家凑了一桌饺子。
       memory: 一桌饺子
-      bond: { sync: 3, close: 2 }
+      bond: { sync: 3, close: 1 }
     hold:
       text: 两个人都没往上挤。礼拜天还能一块儿去河边，这个比什么都值。
       memory: 礼拜天的河边
-      bond: { sync: 2, close: 3 }
+      bond: { sync: 2, close: 1 }
   dissonance:
     text: 一个忙得脚不沾地，一个按点下班。忙的那个有时候在楼下抽根烟，看对门的灯。
     bond: { close: -2 }

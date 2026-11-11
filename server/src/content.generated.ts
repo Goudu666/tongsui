@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "62736f26148f",
+ "version": "758fe86cf7fc",
  "events": [
   {
    "id": "m_rise",
@@ -22,7 +22,7 @@ var CONTENT: Content = {
       "mind": 0.7,
       "charm": 0.3
      },
-     "min": 8.8,
+     "min": 9.2,
      "requires": {
       "flags": [
        "job_desk"
@@ -58,7 +58,7 @@ var CONTENT: Content = {
       "charm": 0.6,
       "mind": 0.4
      },
-     "min": 8.6,
+     "min": 9.4,
      "requires": {
       "flags": [
        "job_pull"
@@ -95,7 +95,7 @@ var CONTENT: Content = {
       "mind": 0.5,
       "charm": 0.5
      },
-     "min": 7.8,
+     "min": 8.1,
      "requires": {
       "flags": [
        "job_teach"
@@ -132,7 +132,7 @@ var CONTENT: Content = {
       "charm": 0.7,
       "luck": 0.3
      },
-     "min": 7.6,
+     "min": 8.1,
      "cost": 30,
      "requires": {
       "flags": [
@@ -170,7 +170,7 @@ var CONTENT: Content = {
       "body": 0.5,
       "mind": 0.5
      },
-     "min": 7.3,
+     "min": 8.3,
      "requires": {
       "flags": [
        "job_craft"
@@ -206,7 +206,7 @@ var CONTENT: Content = {
      "score": {
       "body": 1
      },
-     "min": 7.5,
+     "min": 7.6,
      "requires": {
       "flags": [
        "job_labor"
@@ -243,7 +243,7 @@ var CONTENT: Content = {
       "mind": 0.6,
       "body": 0.4
      },
-     "min": 7.2,
+     "min": 6.9,
      "requires": {
       "flags": [
        "job_succeed"
@@ -280,7 +280,7 @@ var CONTENT: Content = {
       "body": 0.5,
       "charm": 0.5
      },
-     "min": 6.6,
+     "min": 6.5,
      "requires": {
       "flags": [
        "job_odd"
@@ -317,7 +317,7 @@ var CONTENT: Content = {
       "mind": 0.6,
       "charm": 0.4
      },
-     "min": 8.4,
+     "min": 9,
      "requires": {
       "flags": [
        "left_city"
@@ -355,7 +355,7 @@ var CONTENT: Content = {
       "charm": 0.6,
       "luck": 0.4
      },
-     "min": 7.9,
+     "min": 8,
      "requires": {
       "notFlags": [
        "job_odd",
@@ -390,7 +390,7 @@ var CONTENT: Content = {
      "score": {
       "mind": 1
      },
-     "min": 9,
+     "min": 9.3,
      "cost": 20,
      "requires": {
       "notFlags": [
@@ -439,7 +439,7 @@ var CONTENT: Content = {
       "charm": 0.7,
       "luck": 0.3
      },
-     "min": 7.9,
+     "min": 8.1,
      "cost": 20,
      "requires": {
       "notFlags": [
@@ -487,7 +487,7 @@ var CONTENT: Content = {
       "body": 0.5,
       "mind": 0.5
      },
-     "min": 7,
+     "min": 7.6,
      "requires": {
       "notFlags": [
        "job_craft",
@@ -538,7 +538,7 @@ var CONTENT: Content = {
       "mind": 0.5,
       "charm": 0.5
      },
-     "min": 8,
+     "min": 8.8,
      "cost": 25,
      "requires": {
       "flags": [
@@ -591,7 +591,7 @@ var CONTENT: Content = {
      "memory": "多买的汽水",
      "bond": {
       "sync": 2,
-      "close": 2
+      "close": 1
      },
      "flags": []
     },
@@ -600,7 +600,7 @@ var CONTENT: Content = {
      "memory": "一个面馆",
      "bond": {
       "sync": 2,
-      "close": 2
+      "close": 1
      },
      "flags": []
     },
@@ -609,7 +609,7 @@ var CONTENT: Content = {
      "memory": "一前一后",
      "bond": {
       "sync": 2,
-      "close": 2
+      "close": 1
      },
      "flags": []
     }
@@ -647,7 +647,7 @@ var CONTENT: Content = {
       "mind": 0.5,
       "charm": 0.5
      },
-     "min": 8.9,
+     "min": 9.6,
      "requires": {
       "flags": [
        "job_desk",
@@ -684,7 +684,7 @@ var CONTENT: Content = {
       "charm": 0.6,
       "mind": 0.4
      },
-     "min": 8.8,
+     "min": 9.6,
      "requires": {
       "flags": [
        "job_pull",
@@ -757,10 +757,9 @@ var CONTENT: Content = {
      "id": "top_trade",
      "text": "做起了批发",
      "score": {
-      "charm": 0.6,
-      "luck": 0.4
+      "money": 1
      },
-     "min": 8.4,
+     "min": 90,
      "cost": 50,
      "requires": {
       "flags": [
@@ -796,11 +795,10 @@ var CONTENT: Content = {
      "id": "top_craft",
      "text": "收徒弟，开铺子",
      "score": {
-      "mind": 0.6,
-      "charm": 0.4
+      "money": 1
      },
-     "min": 8.2,
-     "cost": 30,
+     "min": 70,
+     "cost": 40,
      "requires": {
       "flags": [
        "job_craft",
@@ -835,10 +833,10 @@ var CONTENT: Content = {
      "id": "top_labor",
      "text": "自己拉一班人",
      "score": {
-      "body": 0.5,
-      "charm": 0.5
+      "money": 1
      },
-     "min": 8.2,
+     "min": 60,
+     "cost": 30,
      "requires": {
       "flags": [
        "job_labor",
@@ -876,7 +874,7 @@ var CONTENT: Content = {
       "mind": 0.5,
       "charm": 0.5
      },
-     "min": 8.2,
+     "min": 7.4,
      "requires": {
       "flags": [
        "job_succeed",
@@ -911,10 +909,10 @@ var CONTENT: Content = {
      "id": "top_odd",
      "text": "带着几个人干",
      "score": {
-      "charm": 0.6,
-      "body": 0.4
+      "money": 1
      },
-     "min": 7.6,
+     "min": 45,
+     "cost": 20,
      "requires": {
       "flags": [
        "job_odd",
@@ -952,7 +950,7 @@ var CONTENT: Content = {
       "mind": 0.5,
       "charm": 0.5
      },
-     "min": 8.8,
+     "min": 9.4,
      "requires": {
       "flags": [
        "left_city",
@@ -985,6 +983,49 @@ var CONTENT: Content = {
      }
     },
     {
+     "id": "study",
+     "text": "读个在职，评了上去",
+     "score": {
+      "money": 1
+     },
+     "min": 80,
+     "cost": 50,
+     "requires": {
+      "flags": [
+       "rank1"
+      ],
+      "notFlags": [
+       "rank2",
+       "job_trade",
+       "job_craft",
+       "job_labor",
+       "job_odd",
+       "own_shop",
+       "own_stall",
+       "no_job",
+       "laid_off"
+      ]
+     },
+     "lock": "不是你这一行",
+     "hide": true,
+     "joins": "top_desk",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.3,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "rank2",
+       "studied"
+      ]
+     }
+    },
+    {
      "id": "late",
      "text": "熬了这些年，升了一级",
      "score": {
@@ -992,7 +1033,7 @@ var CONTENT: Content = {
       "charm": 0.3,
       "body": 0.3
      },
-     "min": 7.8,
+     "min": 8.8,
      "requires": {
       "notFlags": [
        "rank1",
@@ -1065,7 +1106,7 @@ var CONTENT: Content = {
       "mind": 0.5,
       "charm": 0.5
      },
-     "min": 8.3,
+     "min": 9.2,
      "cost": 40,
      "requires": {
       "flags": [
@@ -1129,7 +1170,7 @@ var CONTENT: Content = {
      "memory": "一桌饺子",
      "bond": {
       "sync": 3,
-      "close": 2
+      "close": 1
      },
      "flags": []
     },
@@ -1138,7 +1179,7 @@ var CONTENT: Content = {
      "memory": "礼拜天的河边",
      "bond": {
       "sync": 2,
-      "close": 3
+      "close": 1
      },
      "flags": []
     }

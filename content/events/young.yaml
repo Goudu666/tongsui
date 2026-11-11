@@ -108,12 +108,14 @@
   kind: solo
   stage: young
   weight: 2
-  requires: { maxAge: 20, flags: [gaokao_bad], notFlags: [uni_near, uni_away] }
+  # 高考那道关自己就有「复读一年」了（m_gaokao 的 retake）：已经在复读的不再碰上；清贫人家没有复读（家里等着你挣钱，docs/MEANS.md 第八节）
+  requires: { maxAge: 20, flags: [gaokao_bad], notFlags: [uni_near, uni_away, retake] }
   title: 暖气片上的纸
   text: 分数出来那天，你爸在阳台上抽了半包烟。复读班的报名表和一所大专的通知书，一起压在暖气片上，烘得发脆。
   options:
     - id: retake
       text: 再念一年
+      requires: { notFlags: [fam_poor] }
       tags: [patient, competitive]
       effects: { self: { mind: 1, mood: -10 }, flags: [retake] }
     - id: college

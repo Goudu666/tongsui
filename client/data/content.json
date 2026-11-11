@@ -1,5 +1,5 @@
 {
- "version": "675bce029c0f",
+ "version": "c104334d68b2",
  "events": [
   {
    "id": "m_rise",
@@ -9093,6 +9093,688 @@
     },
     "flags": []
    },
+   "catches": []
+  },
+  {
+   "id": "h_class_quit_kid",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 10,
+    "maxAge": 11,
+    "flags": [
+     "fam_rich"
+    ],
+    "notFlags": [
+     "class_quit",
+     "fam_cut"
+    ]
+   },
+   "title": "又是星期四",
+   "text": "放学铃一响，别人往家跑，你往班上走。老师又多留了一页，你妈说这礼拜再加一节。",
+   "options": [
+    {
+     "id": "quit",
+     "text": "跟爸妈说，不去了",
+     "requires": {
+      "notFlags": [
+       "strain1"
+      ]
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "class_quit",
+       "strain1"
+      ]
+     }
+    },
+    {
+     "id": "quit_cut",
+     "text": "跟爸妈说，不去了",
+     "requires": {
+      "flags": [
+       "strain1"
+      ]
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "class_quit",
+       "fam_cut"
+      ]
+     }
+    },
+    {
+     "id": "go",
+     "text": "背上书包接着去",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back_row",
+     "text": "去了，坐最后一排",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "h_class_quit_teen",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 14,
+    "flags": [
+     "fam_rich"
+    ],
+    "notFlags": [
+     "class_quit",
+     "fam_cut",
+     "junior_key"
+    ]
+   },
+   "title": "最后一节",
+   "text": "班上的老师念名次，念到你停了一下。回家的路上，你在桥头站了好一会儿才走。",
+   "options": [
+    {
+     "id": "quit",
+     "text": "回家说往后不去了",
+     "requires": {
+      "notFlags": [
+       "strain1"
+      ]
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "class_quit",
+       "strain1"
+      ]
+     }
+    },
+    {
+     "id": "quit_cut",
+     "text": "回家说往后不去了",
+     "requires": {
+      "flags": [
+       "strain1"
+      ]
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "class_quit",
+       "fam_cut"
+      ]
+     }
+    },
+    {
+     "id": "stay",
+     "text": "下礼拜照样去",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "friend",
+     "text": "拉对门去桥头站会儿",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {
+       "mood": 3
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "h_face_teen",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 17,
+    "flags": [
+     "strain1"
+    ],
+    "notFlags": [
+     "fam_cut",
+     "face_told"
+    ]
+   },
+   "title": "饭桌上",
+   "text": "饭桌上谁也不提那件事。你爸给你夹了一筷子菜，说：「自己的事，自己掂量。」",
+   "options": [
+    {
+     "id": "eat",
+     "text": "低头把饭吃完",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "face_told"
+      ]
+     }
+    },
+    {
+     "id": "promise",
+     "text": "说下回不会了",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2,
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "face_told"
+      ]
+     }
+    },
+    {
+     "id": "out",
+     "text": "放下碗出门转转",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "face_told"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "h_face_young",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 19,
+    "maxAge": 21,
+    "flags": [
+     "strain1"
+    ],
+    "notFlags": [
+     "fam_cut",
+     "face_told"
+    ]
+   },
+   "title": "多做的一个菜",
+   "text": "你回家那天，你妈多做了一个菜，没问学校的事。你爸看了一晚上电视。",
+   "options": [
+    {
+     "id": "eat",
+     "text": "把那盘菜吃干净",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "face_told"
+      ]
+     }
+    },
+    {
+     "id": "talk",
+     "text": "主动说说往后的打算",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "face_told"
+      ]
+     }
+    },
+    {
+     "id": "out",
+     "text": "吃完去找对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": [
+       "face_told"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "h_cut_teen",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 17,
+    "flags": [
+     "fam_cut"
+    ],
+    "notFlags": [
+     "cut_told"
+    ]
+   },
+   "title": "推过来的存折",
+   "text": "你爸把你那本存折推过来：「往后的路你自己挑，家里不往里搭了。」那顿饭谁也没吃几口。",
+   "options": [
+    {
+     "id": "keep",
+     "text": "把存折收进抽屉",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "cut_told"
+      ]
+     }
+    },
+    {
+     "id": "fine",
+     "text": "说那就自己挑",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "cut_told"
+      ]
+     }
+    },
+    {
+     "id": "door",
+     "text": "去对门坐一会儿",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {
+       "mood": 2
+      },
+      "bond": {
+       "close": 2
+      },
+      "flags": [
+       "cut_told"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "h_cut_young",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 19,
+    "maxAge": 21,
+    "flags": [
+     "fam_cut"
+    ],
+    "notFlags": [
+     "cut_told"
+    ]
+   },
+   "title": "一张纸的信",
+   "text": "家里来信，只有一张纸：「路给你铺了你不走，往后自己走吧。」信封里没夹钱。",
+   "options": [
+    {
+     "id": "keep",
+     "text": "把信叠好收起来",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "cut_told"
+      ]
+     }
+    },
+    {
+     "id": "reply",
+     "text": "回一封，只写都好",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "cut_told"
+      ]
+     }
+    },
+    {
+     "id": "work",
+     "text": "第二天就去找活",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "cut_told"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "h_stall",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 7,
+    "maxAge": 11,
+    "flags": [
+     "fam_poor"
+    ]
+   },
+   "title": "看摊",
+   "text": "傍晚你妈去进货，让你看一会儿摊。有人问价，你踮着脚报了一个数，报完才觉出报错了。",
+   "options": [
+    {
+     "id": "chase",
+     "text": "追上去说找错了",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "palm",
+     "text": "把价钱写在手心上",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "等你妈回来再说",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "h_aid",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 17,
+    "flags": [
+     "aid"
+    ]
+   },
+   "title": "牛皮纸信封",
+   "text": "助学金装在一个牛皮纸信封里，班主任单把你叫到办公室给的。你妈说，往后放了学不用来摊上了。",
+   "options": [
+    {
+     "id": "study",
+     "text": "回家多写一页",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stall",
+     "text": "还是去摊上转一圈",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "share",
+     "text": "给对门买根冰棍",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {
+       "mood": 4
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
    "catches": []
   },
   {
@@ -20363,6 +21045,32 @@
    "text": "分班的名单贴在校门口的红纸上。重点班在最上面一栏，放学比别的班晚一个半钟头。",
    "options": [
     {
+     "id": "key_aid",
+     "text": "拿助学金，进重点班",
+     "min": 9.8,
+     "requires": {
+      "flags": [
+       "fam_poor"
+      ]
+     },
+     "lock": "这是给困难人家的",
+     "hide": true,
+     "joins": "key",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "junior_key",
+       "aid"
+      ],
+      "money": 8
+     }
+    },
+    {
      "id": "key",
      "text": "去重点班",
      "min": 7.4,
@@ -20383,12 +21091,21 @@
      "text": "家里交了钱，进重点班",
      "min": 6.9,
      "cost": 20,
+     "homePays": [
+      "exp_book"
+     ],
      "requires": {
       "flags": [
        "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
       ]
      },
      "lock": "家里拿不出这笔钱",
+     "lockBy": {
+      "fam_cut": "家里已经不管你了"
+     },
      "joins": "key",
      "tags": [
       "competitive"
@@ -20453,6 +21170,14 @@
    "swing": true,
    "grades": [
     {
+     "min": 9.8,
+     "label": "考进年级前三",
+     "flags": [
+      "junior_top",
+      "junior_top3"
+     ]
+    },
+    {
      "min": 8.6,
      "label": "考进年级前十",
      "flags": [
@@ -20465,6 +21190,11 @@
      "flags": []
     }
    ],
+   "expect": {
+    "exp_book": [
+     "key"
+    ]
+   },
    "catches": []
   },
   {
@@ -20485,9 +21215,37 @@
    "text": "志愿表发下来了。市里的重点高中在河对岸，天不亮就得过桥；家门口的高中走路十分钟；职专下午三点就放学。",
    "options": [
     {
+     "id": "far_aid",
+     "text": "拿助学金，过桥上重点",
+     "min": 9.8,
+     "requires": {
+      "flags": [
+       "fam_poor"
+      ]
+     },
+     "lock": "这是给困难人家的",
+     "hide": true,
+     "joins": "far",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "distance": 1
+      },
+      "flags": [
+       "school_far",
+       "aid"
+      ],
+      "money": 12
+     }
+    },
+    {
      "id": "far",
      "text": "过桥去念重点高中",
-     "min": 7.6,
+     "min": 8.7,
      "tags": [
       "competitive"
      ],
@@ -20505,14 +21263,24 @@
     {
      "id": "paid",
      "text": "交择校费，过桥上重点",
-     "min": 7.2,
+     "min": 7.8,
      "cost": 35,
+     "homePays": [
+      "exp_book",
+      "exp_abroad"
+     ],
      "requires": {
       "flags": [
        "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
       ]
      },
      "lock": "家里拿不出择校费",
+     "lockBy": {
+      "fam_cut": "家里已经不管你了"
+     },
      "joins": "far",
      "tags": [
       "competitive"
@@ -20526,6 +21294,61 @@
       "flags": [
        "school_far",
        "school_paid"
+      ]
+     }
+    },
+    {
+     "id": "nest",
+     "text": "动了爸妈攒的钱，上重点",
+     "min": 8.3,
+     "requires": {
+      "flags": [
+       "fam_nest"
+      ]
+     },
+     "lock": "家里没攒下这笔钱",
+     "hide": true,
+     "joins": "far",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "distance": 1
+      },
+      "flags": [
+       "school_far",
+       "school_paid",
+       "nest_used"
+      ],
+      "drop": [
+       "fam_nest"
+      ]
+     }
+    },
+    {
+     "id": "zhongzhuan",
+     "text": "考中专，三年后包分配",
+     "min": 8.2,
+     "requires": {
+      "flags": [
+       "fam_poor"
+      ]
+     },
+     "lock": "这是给困难人家的",
+     "hide": true,
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "zhongzhuan",
+       "job_succeed"
       ]
      }
     },
@@ -20571,6 +21394,15 @@
      },
      "flags": []
     },
+    "zhongzhuan": {
+     "text": "两张录取通知书上印着同一个厂徽。你们对着看了半天，说三年后在厂门口见。",
+     "memory": "同一个厂徽",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
     "near": {
      "text": "还是那条路，还是十分钟。校服换了个颜色，别的没换。",
      "memory": "还是那条路",
@@ -20604,7 +21436,7 @@
    "swing": true,
    "grades": [
     {
-     "min": 9,
+     "min": 9.8,
      "label": "考进全区前五十",
      "flags": [
       "senior_top"
@@ -20616,6 +21448,22 @@
      "flags": []
     }
    ],
+   "expect": {
+    "exp_book": [
+     "far"
+    ],
+    "exp_abroad": [
+     "far"
+    ],
+    "exp_pull": [
+     "far",
+     "near"
+    ],
+    "exp_art": [
+     "far",
+     "near"
+    ]
+   },
    "catches": []
   },
   {
@@ -20630,7 +21478,8 @@
    "requires": {
     "notFlags": [
      "dropout",
-     "vocational"
+     "vocational",
+     "zhongzhuan"
     ]
    },
    "title": "高考",
@@ -20652,6 +21501,19 @@
       },
       "flags": [
        "uni_away"
+      ],
+      "flagsIf": [
+       {
+        "flags": [
+         "fam_poor"
+        ],
+        "notFlags": [
+         "aid"
+        ],
+        "add": [
+         "loan"
+        ]
+       }
       ]
      },
      "eraLines": [
@@ -20674,12 +21536,21 @@
      "text": "家里送你出国念书",
      "min": 7.8,
      "cost": 60,
+     "homePays": [
+      "exp_abroad"
+     ],
      "requires": {
       "flags": [
        "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
       ]
      },
      "lock": "家里供不起",
+     "lockBy": {
+      "fam_cut": "家里已经不管你了"
+     },
      "tags": [
       "adventure"
      ],
@@ -20707,6 +21578,19 @@
       "bond": {},
       "flags": [
        "uni_near"
+      ],
+      "flagsIf": [
+       {
+        "flags": [
+         "fam_poor"
+        ],
+        "notFlags": [
+         "aid"
+        ],
+        "add": [
+         "loan"
+        ]
+       }
       ]
      },
      "eraLines": [
@@ -20749,6 +21633,64 @@
       },
       "flags": [
        "army"
+      ]
+     }
+    },
+    {
+     "id": "retake",
+     "text": "复读一年，明年再考",
+     "cost": 20,
+     "homePays": [
+      "fam_rich"
+     ],
+     "requires": {
+      "notFlags": [
+       "fam_poor"
+      ]
+     },
+     "lock": "家里等着你挣钱",
+     "tags": [
+      "patient",
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "retake"
+      ]
+     }
+    },
+    {
+     "id": "retake_nest",
+     "text": "动了爸妈攒的钱，复读一年",
+     "requires": {
+      "flags": [
+       "fam_nest"
+      ]
+     },
+     "lock": "家里没攒下这笔钱",
+     "hide": true,
+     "joins": "retake",
+     "tags": [
+      "patient",
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "retake",
+       "nest_used"
+      ],
+      "drop": [
+       "fam_nest"
       ]
      }
     },
@@ -20805,6 +21747,15 @@
      },
      "flags": []
     },
+    "retake": {
+     "text": "复读班的最后一排，两张桌子拼在一块儿。又是一摞卷子，这回是两个人一起写。",
+     "memory": "拼起来的桌子",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
     "work": {
      "text": "第一个月的工钱，你们一人买了一双新鞋，在楼下比了比谁的贵。",
      "memory": "两双新鞋",
@@ -20851,6 +21802,273 @@
      ]
     }
    ],
+   "expect": {
+    "exp_book": [
+     "away",
+     "local",
+     "abroad",
+     "retake"
+    ],
+    "exp_abroad": [
+     "abroad",
+     "retake"
+    ],
+    "exp_pull": [
+     "away",
+     "local",
+     "abroad",
+     "retake"
+    ],
+    "exp_art": [
+     "away",
+     "local",
+     "abroad",
+     "retake"
+    ]
+   },
+   "catches": []
+  },
+  {
+   "id": "m_retake",
+   "kind": "milestone",
+   "stage": "young",
+   "seasons": [],
+   "weight": 1,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "flags": [
+     "retake"
+    ]
+   },
+   "title": "再考一回",
+   "text": "又是这张志愿表。去年压在暖气片上的那张，边上还卷着。",
+   "options": [
+    {
+     "id": "away",
+     "text": "去外地念大学",
+     "min": 8.4,
+     "tags": [
+      "adventure",
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "distance": 2
+      },
+      "flags": [
+       "uni_away"
+      ],
+      "flagsIf": [
+       {
+        "flags": [
+         "fam_poor"
+        ],
+        "notFlags": [
+         "aid"
+        ],
+        "add": [
+         "loan"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "abroad",
+     "text": "家里送你出国念书",
+     "min": 7.8,
+     "cost": 60,
+     "homePays": [
+      "exp_abroad"
+     ],
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
+      ]
+     },
+     "lock": "家里供不起",
+     "lockBy": {
+      "fam_cut": "家里已经不管你了"
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "distance": 3
+      },
+      "flags": [
+       "uni_abroad"
+      ]
+     }
+    },
+    {
+     "id": "local",
+     "text": "念本市的大学",
+     "min": 6.8,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "uni_near"
+      ],
+      "flagsIf": [
+       {
+        "flags": [
+         "fam_poor"
+        ],
+        "notFlags": [
+         "aid"
+        ],
+        "add": [
+         "loan"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "army",
+     "text": "报名去当兵",
+     "score": {
+      "body": 1
+     },
+     "min": 5.8,
+     "requires": {
+      "notFlags": [
+       "fam_rich"
+      ]
+     },
+     "lock": "家里舍不得",
+     "tags": [
+      "responsible",
+      "adventure"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "distance": 2
+      },
+      "flags": [
+       "army"
+      ]
+     }
+    },
+    {
+     "id": "work",
+     "text": "不念了，找活干",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "work_early"
+      ]
+     }
+    }
+   ],
+   "resonance": {
+    "away": {
+     "text": "晚了一年的两张火车票。站台上没人送，你们自己对了对表。",
+     "memory": "晚一年的票",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "local": {
+     "text": "复读班同一张桌子出来的，又进了同一座城里的两所学校。",
+     "memory": "同一张桌子",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    },
+    "work": {
+     "text": "卷子卖给了收破烂的，一人换了两根冰棍。第二天一块儿去找活。",
+     "memory": "两根冰棍",
+     "bond": {
+      "sync": 2,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "复读的那一年两个人天天在一块儿。这回一个走了，一个留下。",
+    "bond": {
+     "close": -3
+    },
+    "flags": []
+   },
+   "age": 19,
+   "score": {
+    "mind": 1
+   },
+   "swing": true,
+   "grades": [
+    {
+     "min": 9.3,
+     "label": "考进全市前一百",
+     "flags": [
+      "gaokao_good",
+      "gaokao_top"
+     ]
+    },
+    {
+     "min": 6.8,
+     "label": "过了本科线",
+     "flags": [
+      "gaokao_good"
+     ]
+    },
+    {
+     "min": 0,
+     "label": "又没过线",
+     "flags": [
+      "gaokao_bad"
+     ]
+    }
+   ],
+   "expect": {
+    "exp_book": [
+     "away",
+     "local",
+     "abroad"
+    ],
+    "exp_abroad": [
+     "abroad"
+    ],
+    "exp_pull": [
+     "away",
+     "local",
+     "abroad"
+    ],
+    "exp_art": [
+     "away",
+     "local",
+     "abroad"
+    ]
+   },
    "catches": []
   },
   {
@@ -34132,7 +35350,8 @@
     ],
     "notFlags": [
      "uni_near",
-     "uni_away"
+     "uni_away",
+     "retake"
     ]
    },
    "title": "暖气片上的纸",
@@ -34141,6 +35360,11 @@
     {
      "id": "retake",
      "text": "再念一年",
+     "requires": {
+      "notFlags": [
+       "fam_poor"
+      ]
+     },
      "tags": [
       "patient",
       "competitive"
@@ -43799,6 +45023,9 @@
      "flags": [
       "fam_rich"
      ],
+     "notFlags": [
+      "fam_cut"
+     ],
      "hours": [
       930,
       1200
@@ -43838,6 +45065,9 @@
      "maxAge": 17,
      "flags": [
       "fam_rich"
+     ],
+     "notFlags": [
+      "fam_cut"
      ],
      "hours": [
       1080,
@@ -44621,6 +45851,9 @@
      "flags": [
       "fam_rich"
      ],
+     "notFlags": [
+      "fam_cut"
+     ],
      "hours": [
       930,
       1200
@@ -44659,6 +45892,9 @@
      "maxAge": 21,
      "flags": [
       "fam_rich"
+     ],
+     "notFlags": [
+      "fam_cut"
      ],
      "hours": [
       1080,
@@ -45441,6 +46677,9 @@
      "minAge": 6,
      "flags": [
       "fam_rich"
+     ],
+     "notFlags": [
+      "fam_cut"
      ],
      "hours": [
       780,
@@ -48289,6 +49528,357 @@
    "duty": null
   },
   {
+   "id": "primary_class_book",
+   "label": "上小学 · 放了学上奥数班",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11,
+    "flags": [
+     "fam_rich",
+     "exp_book"
+    ],
+    "notFlags": [
+     "class_quit",
+     "fam_cut"
+    ]
+   },
+   "group": "primary",
+   "duty": {
+    "label": "上学，放了学上奥数班",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -21,
+     "mood": -3
+    },
+    "stats": {
+     "mind": 0.99,
+     "charm": 0.07
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "primary_class_pull",
+   "label": "上小学 · 放了学学朗诵",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11,
+    "flags": [
+     "fam_rich",
+     "exp_pull"
+    ],
+    "notFlags": [
+     "class_quit",
+     "fam_cut"
+    ]
+   },
+   "group": "primary",
+   "duty": {
+    "label": "上学，放了学学朗诵",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -20,
+     "mood": -3
+    },
+    "stats": {
+     "mind": 0.29,
+     "charm": 0.62
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "primary_class_abroad",
+   "label": "上小学 · 放了学上外语班",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11,
+    "flags": [
+     "fam_rich",
+     "exp_abroad"
+    ],
+    "notFlags": [
+     "class_quit",
+     "fam_cut"
+    ]
+   },
+   "group": "primary",
+   "duty": {
+    "label": "上学，放了学上外语班",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -21,
+     "mood": -3
+    },
+    "stats": {
+     "mind": 0.61,
+     "charm": 0.38
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "primary_class_art",
+   "label": "上小学 · 放了学去学琴",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11,
+    "flags": [
+     "fam_rich",
+     "exp_art"
+    ],
+    "notFlags": [
+     "class_quit",
+     "fam_cut"
+    ]
+   },
+   "group": "primary",
+   "duty": {
+    "label": "上学，放了学去学琴",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -20,
+     "mood": -3
+    },
+    "stats": {
+     "mind": 0.39,
+     "charm": 0.55
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "primary_help_study",
+   "label": "上小学 · 学习委员，放了学帮家里",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11,
+    "flags": [
+     "fam_poor",
+     "lead_study"
+    ],
+    "notFlags": [
+     "aid"
+    ]
+   },
+   "group": "primary",
+   "duty": {
+    "label": "上学，放了学帮家里",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -22
+    },
+    "stats": {
+     "mind": 0.34,
+     "body": 0.06,
+     "charm": 0.15
+    },
+    "money": 0
+   },
+   "restDuty": {
+    "label": "帮家里看摊",
+    "spot": "breakfast_stall",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 720,
+    "needs": {
+     "energy": -8
+    },
+    "stats": {
+     "body": 0.05,
+     "charm": 0.08
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "primary_help_sport",
+   "label": "上小学 · 体育委员，放了学帮家里",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11,
+    "flags": [
+     "fam_poor",
+     "lead_sport"
+    ],
+    "notFlags": [
+     "aid"
+    ]
+   },
+   "group": "primary",
+   "duty": {
+    "label": "上学，放了学帮家里",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -24
+    },
+    "stats": {
+     "mind": 0.29,
+     "body": 0.18,
+     "charm": 0.15
+    },
+    "money": 0
+   },
+   "restDuty": {
+    "label": "帮家里看摊",
+    "spot": "breakfast_stall",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 720,
+    "needs": {
+     "energy": -8
+    },
+    "stats": {
+     "body": 0.05,
+     "charm": 0.08
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "primary_help_art",
+   "label": "上小学 · 文艺委员，放了学帮家里",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11,
+    "flags": [
+     "fam_poor",
+     "lead_art"
+    ],
+    "notFlags": [
+     "aid"
+    ]
+   },
+   "group": "primary",
+   "duty": {
+    "label": "上学，放了学帮家里",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -22
+    },
+    "stats": {
+     "mind": 0.29,
+     "body": 0.06,
+     "charm": 0.25
+    },
+    "money": 0
+   },
+   "restDuty": {
+    "label": "帮家里看摊",
+    "spot": "breakfast_stall",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 720,
+    "needs": {
+     "energy": -8
+    },
+    "stats": {
+     "body": 0.05,
+     "charm": 0.08
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "primary_help",
+   "label": "上小学 · 放了学帮家里",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11,
+    "flags": [
+     "fam_poor"
+    ],
+    "notFlags": [
+     "aid"
+    ]
+   },
+   "group": "primary",
+   "duty": {
+    "label": "上学，放了学帮家里",
+    "spot": "school_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -22
+    },
+    "stats": {
+     "mind": 0.29,
+     "body": 0.06,
+     "charm": 0.15
+    },
+    "money": 0
+   },
+   "restDuty": {
+    "label": "帮家里看摊",
+    "spot": "breakfast_stall",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 720,
+    "needs": {
+     "energy": -8
+    },
+    "stats": {
+     "body": 0.05,
+     "charm": 0.08
+    },
+    "money": 0
+   }
+  },
+  {
    "id": "primary_study",
    "label": "上小学 · 学习委员",
    "requires": {
@@ -48435,6 +50025,58 @@
    }
   },
   {
+   "id": "junior_key_help",
+   "label": "初中 · 重点班",
+   "requires": {
+    "minAge": 12,
+    "maxAge": 14,
+    "flags": [
+     "junior_key",
+     "fam_poor"
+    ],
+    "notFlags": [
+     "aid"
+    ]
+   },
+   "group": "junior_key",
+   "duty": {
+    "label": "上学",
+    "spot": "middle_gate",
+    "arrive": [
+     420,
+     510
+    ],
+    "until": 1020,
+    "needs": {
+     "hunger": 30,
+     "energy": -22,
+     "mood": -3
+    },
+    "stats": {
+     "mind": 0.48,
+     "charm": 0.05
+    },
+    "money": 0
+   },
+   "restDuty": {
+    "label": "帮家里看摊",
+    "spot": "breakfast_stall",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 720,
+    "needs": {
+     "energy": -10
+    },
+    "stats": {
+     "body": 0.06,
+     "charm": 0.1
+    },
+    "money": 1
+   }
+  },
+  {
    "id": "junior_key",
    "label": "初中 · 重点班",
    "requires": {
@@ -48466,6 +50108,201 @@
    }
   },
   {
+   "id": "junior_class_book",
+   "label": "初中 · 放了学上奥数班",
+   "requires": {
+    "minAge": 12,
+    "maxAge": 14,
+    "flags": [
+     "fam_rich",
+     "exp_book"
+    ],
+    "notFlags": [
+     "class_quit",
+     "fam_cut"
+    ]
+   },
+   "group": "junior",
+   "duty": {
+    "label": "上学，放了学上奥数班",
+    "spot": "middle_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -21,
+     "mood": -3
+    },
+    "stats": {
+     "mind": 1.01,
+     "charm": 0.1
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "junior_class_pull",
+   "label": "初中 · 放了学学朗诵",
+   "requires": {
+    "minAge": 12,
+    "maxAge": 14,
+    "flags": [
+     "fam_rich",
+     "exp_pull"
+    ],
+    "notFlags": [
+     "class_quit",
+     "fam_cut"
+    ]
+   },
+   "group": "junior",
+   "duty": {
+    "label": "上学，放了学学朗诵",
+    "spot": "middle_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -20,
+     "mood": -3
+    },
+    "stats": {
+     "mind": 0.31,
+     "charm": 0.65
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "junior_class_abroad",
+   "label": "初中 · 放了学上外语班",
+   "requires": {
+    "minAge": 12,
+    "maxAge": 14,
+    "flags": [
+     "fam_rich",
+     "exp_abroad"
+    ],
+    "notFlags": [
+     "class_quit",
+     "fam_cut"
+    ]
+   },
+   "group": "junior",
+   "duty": {
+    "label": "上学，放了学上外语班",
+    "spot": "middle_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -21,
+     "mood": -3
+    },
+    "stats": {
+     "mind": 0.63,
+     "charm": 0.41
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "junior_class_art",
+   "label": "初中 · 放了学去学琴",
+   "requires": {
+    "minAge": 12,
+    "maxAge": 14,
+    "flags": [
+     "fam_rich",
+     "exp_art"
+    ],
+    "notFlags": [
+     "class_quit",
+     "fam_cut"
+    ]
+   },
+   "group": "junior",
+   "duty": {
+    "label": "上学，放了学去学琴",
+    "spot": "middle_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -20,
+     "mood": -3
+    },
+    "stats": {
+     "mind": 0.41,
+     "charm": 0.58
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "junior_help",
+   "label": "初中 · 放了学帮家里",
+   "requires": {
+    "minAge": 12,
+    "maxAge": 14,
+    "flags": [
+     "fam_poor"
+    ],
+    "notFlags": [
+     "aid"
+    ]
+   },
+   "group": "junior",
+   "duty": {
+    "label": "上学，放了学帮家里",
+    "spot": "middle_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -23
+    },
+    "stats": {
+     "mind": 0.31,
+     "body": 0.08,
+     "charm": 0.18
+    },
+    "money": 1
+   },
+   "restDuty": {
+    "label": "帮家里看摊",
+    "spot": "breakfast_stall",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 720,
+    "needs": {
+     "energy": -10
+    },
+    "stats": {
+     "body": 0.06,
+     "charm": 0.1
+    },
+    "money": 1
+   }
+  },
+  {
    "id": "junior",
    "label": "初中 · 普通班",
    "requires": {
@@ -48490,6 +50327,58 @@
      "charm": 0.1
     },
     "money": 0
+   }
+  },
+  {
+   "id": "senior_key_help",
+   "label": "重点高中",
+   "requires": {
+    "minAge": 15,
+    "maxAge": 17,
+    "flags": [
+     "school_far",
+     "fam_poor"
+    ],
+    "notFlags": [
+     "aid"
+    ]
+   },
+   "group": "senior_key",
+   "duty": {
+    "label": "过桥上学",
+    "spot": "key_gate",
+    "arrive": [
+     390,
+     480
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -25,
+     "mood": -4
+    },
+    "stats": {
+     "mind": 0.58,
+     "charm": 0.05
+    },
+    "money": 0
+   },
+   "restDuty": {
+    "label": "帮家里看摊",
+    "spot": "breakfast_stall",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 720,
+    "needs": {
+     "energy": -10
+    },
+    "stats": {
+     "body": 0.06,
+     "charm": 0.1
+    },
+    "money": 1
    }
   },
   {
@@ -48524,6 +50413,59 @@
    }
   },
   {
+   "id": "senior_help",
+   "label": "高中 · 放了学帮家里收摊",
+   "requires": {
+    "minAge": 15,
+    "maxAge": 17,
+    "flags": [
+     "school_near",
+     "fam_poor"
+    ],
+    "notFlags": [
+     "aid"
+    ]
+   },
+   "group": "senior",
+   "duty": {
+    "label": "上学，回来帮家里收摊",
+    "spot": "middle_gate",
+    "arrive": [
+     420,
+     510
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -23,
+     "mood": -2
+    },
+    "stats": {
+     "mind": 0.38,
+     "body": 0.04,
+     "charm": 0.14
+    },
+    "money": 0
+   },
+   "restDuty": {
+    "label": "帮家里看摊",
+    "spot": "breakfast_stall",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 720,
+    "needs": {
+     "energy": -10
+    },
+    "stats": {
+     "body": 0.06,
+     "charm": 0.1
+    },
+    "money": 1
+   }
+  },
+  {
    "id": "senior",
    "label": "高中",
    "requires": {
@@ -48552,6 +50494,141 @@
      "charm": 0.1
     },
     "money": 0
+   }
+  },
+  {
+   "id": "zhongzhuan",
+   "label": "中专",
+   "requires": {
+    "minAge": 15,
+    "maxAge": 17,
+    "flags": [
+     "zhongzhuan",
+     "aid"
+    ]
+   },
+   "group": null,
+   "duty": {
+    "label": "上学",
+    "spot": "middle_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 960,
+    "needs": {
+     "hunger": 30,
+     "energy": -16
+    },
+    "stats": {
+     "mind": 0.22,
+     "body": 0.12,
+     "charm": 0.1
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "zhongzhuan_help",
+   "label": "中专 · 放了学帮家里",
+   "requires": {
+    "minAge": 15,
+    "maxAge": 17,
+    "flags": [
+     "zhongzhuan",
+     "fam_poor"
+    ],
+    "notFlags": [
+     "aid"
+    ]
+   },
+   "group": "zhongzhuan",
+   "duty": {
+    "label": "上学，放了学帮家里",
+    "spot": "middle_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -23
+    },
+    "stats": {
+     "mind": 0.22,
+     "body": 0.18,
+     "charm": 0.16
+    },
+    "money": 1
+   },
+   "restDuty": {
+    "label": "帮家里看摊",
+    "spot": "breakfast_stall",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 720,
+    "needs": {
+     "energy": -10
+    },
+    "stats": {
+     "body": 0.06,
+     "charm": 0.1
+    },
+    "money": 1
+   }
+  },
+  {
+   "id": "vocational_help",
+   "label": "职专 · 放了学帮家里",
+   "requires": {
+    "minAge": 15,
+    "maxAge": 17,
+    "flags": [
+     "fam_poor"
+    ],
+    "notFlags": [
+     "aid"
+    ]
+   },
+   "group": "vocational",
+   "duty": {
+    "label": "上学，放了学帮家里",
+    "spot": "middle_gate",
+    "arrive": [
+     420,
+     540
+    ],
+    "until": 1110,
+    "needs": {
+     "hunger": 30,
+     "energy": -22
+    },
+    "stats": {
+     "mind": 0.14,
+     "body": 0.27,
+     "charm": 0.2
+    },
+    "money": 1
+   },
+   "restDuty": {
+    "label": "帮家里看摊",
+    "spot": "breakfast_stall",
+    "arrive": [
+     450,
+     540
+    ],
+    "until": 720,
+    "needs": {
+     "energy": -10
+    },
+    "stats": {
+     "body": 0.06,
+     "charm": 0.1
+    },
+    "money": 1
    }
   },
   {
@@ -48699,6 +50776,66 @@
     "stats": {
      "mind": 0.38,
      "charm": 0.14
+    },
+    "money": 0
+   }
+  },
+  {
+   "id": "zz_assigned",
+   "label": "中专毕业，分配进厂",
+   "requires": {
+    "minAge": 18,
+    "maxAge": 21,
+    "flags": [
+     "zhongzhuan"
+    ]
+   },
+   "group": null,
+   "duty": {
+    "label": "过桥上班",
+    "spot": "river_bridge",
+    "arrive": [
+     420,
+     480
+    ],
+    "until": 1020,
+    "needs": {
+     "hunger": 25,
+     "energy": -22
+    },
+    "stats": {
+     "body": 0.1,
+     "mind": 0.05
+    },
+    "money": 10
+   }
+  },
+  {
+   "id": "retake_class",
+   "label": "复读",
+   "requires": {
+    "minAge": 18,
+    "maxAge": 18,
+    "flags": [
+     "retake"
+    ]
+   },
+   "group": null,
+   "duty": {
+    "label": "去复读班",
+    "spot": "middle_gate",
+    "arrive": [
+     420,
+     510
+    ],
+    "until": 1020,
+    "needs": {
+     "hunger": 30,
+     "energy": -22,
+     "mood": -4
+    },
+    "stats": {
+     "mind": 0.45
     },
     "money": 0
    }

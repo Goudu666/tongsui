@@ -173,6 +173,13 @@
     text: 放了学，一个往操场走，一个往校门外走。走到一半都回了一下头。
     bond: { close: -2 }
 
+# 家境的三种难度（docs/MEANS.md 第八节）：考场公平，同一张卷子同一条线；考场外不公平。
+#   清贫：考进最高那档（年级前十、全区前五十）拿助学金（aid），往后放学那一段还给自己；中考多一条中专（包分配）；
+#         高考考上了背助学贷款（loan，flagsIf），拿过助学金的不用背；没有复读（家里等着你挣钱）。
+#   小康：爸妈攒的一笔钱（fam_nest）一辈子动一回：十五岁交择校费，或者十八岁复读一年。动了就摘掉（drop）。
+#   殷实：expect 是爸妈心里那条线（exp_*）。走的路不在单子上，记一回脸色（strain1，有了的再记就是 fam_cut，家里不管了）；
+#         homePays：走爸妈的意思，钱家里出，不是爸妈的意思就自己出。fam_cut 的人殷实那几条路全锁上（lockBy：家里已经不管你了）。
+#   hide 的路标记不对的人看不见；lockBy 让断了供的人看见的是另一句（理由不是 lock 那句的不藏）。
 - id: m_junior
   kind: milestone
   stage: teen
@@ -184,9 +191,23 @@
   text: 分班的名单贴在校门口的红纸上。重点班在最上面一栏，放学比别的班晚一个半钟头。
   # 比重点班的线高一截的名次：起点高的人这一关也有得冲（goal 纸带上会摆出来）。最后一档是兜底，不写字
   grades:
+    - { min: 9.8, label: 考进年级前三, flags: [junior_top, junior_top3] }
     - { min: 8.6, label: 考进年级前十, flags: [junior_top] }
     - { min: 0, label: "" }
+  # 念书考出去的人家（exp_book）：没进重点班，记一回脸色
+  expect:
+    exp_book: [key]
   options:
+    - id: key_aid
+      text: 拿助学金，进重点班
+      # 和「考进年级前三」同一条线：清贫人家考进最高那档，学校给助学金，放学那一段不用再帮家里
+      min: 9.8
+      requires: { flags: [fam_poor] }
+      lock: 这是给困难人家的
+      hide: true
+      joins: key
+      tags: [competitive]
+      effects: { money: 8, flags: [junior_key, aid] }
     - id: key
       text: 去重点班
       min: 7.4
@@ -196,8 +217,11 @@
       text: 家里交了钱，进重点班
       min: 6.9
       cost: 20
-      requires: { flags: [fam_rich] }
+      # 念书考出去是爸妈的意思：钱家里出。别的人家交的是自己攒的
+      homePays: [exp_book]
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
       lock: 家里拿不出这笔钱
+      lockBy: { fam_cut: 家里已经不管你了 }
       joins: key
       tags: [competitive]
       effects: { flags: [junior_key, junior_paid] }
@@ -228,23 +252,60 @@
   title: 中考
   text: 志愿表发下来了。市里的重点高中在河对岸，天不亮就得过桥；家门口的高中走路十分钟；职专下午三点就放学。
   grades:
-    - { min: 9.0, label: 考进全区前五十, flags: [senior_top] }
+    - { min: 9.8, label: 考进全区前五十, flags: [senior_top] }
     - { min: 0, label: "" }
+  # 念书、出国的人家要市重点；进单位、学琴的人家，上了高中就行
+  expect:
+    exp_book: [far]
+    exp_abroad: [far]
+    exp_pull: [far, near]
+    exp_art: [far, near]
   options:
+    - id: far_aid
+      text: 拿助学金，过桥上重点
+      # 和「考进全区前五十」同一条线
+      min: 9.8
+      requires: { flags: [fam_poor] }
+      lock: 这是给困难人家的
+      hide: true
+      joins: far
+      tags: [competitive]
+      effects: { money: 12, bond: { distance: 1 }, flags: [school_far, aid] }
     - id: far
       text: 过桥去念重点高中
-      min: 7.6
+      min: 8.7
       tags: [competitive]
       effects: { bond: { distance: 1 }, flags: [school_far] }
     - id: paid
       text: 交择校费，过桥上重点
-      min: 7.2
+      min: 7.8
       cost: 35
-      requires: { flags: [fam_rich] }
+      homePays: [exp_book, exp_abroad]
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
       lock: 家里拿不出择校费
+      lockBy: { fam_cut: 家里已经不管你了 }
       joins: far
       tags: [competitive]
       effects: { bond: { distance: 1 }, flags: [school_far, school_paid] }
+    - id: nest
+      text: 动了爸妈攒的钱，上重点
+      # 小康人家的那笔钱（fam_nest）：线和殷实人家交择校费一样，可一辈子只有这一回，用了十八岁就不能拿它复读
+      min: 8.3
+      requires: { flags: [fam_nest] }
+      lock: 家里没攒下这笔钱
+      hide: true
+      joins: far
+      tags: [competitive]
+      effects: { bond: { distance: 1 }, drop: [fam_nest], flags: [school_far, school_paid, nest_used] }
+    - id: zhongzhuan
+      text: 考中专，三年后包分配
+      # 清贫人家的一条稳路：线比市重点低一点，三年后直接分配进厂（打 job_succeed，二十二岁起是厂里那条路），不考大学，天花板低
+      min: 8.2
+      requires: { flags: [fam_poor] }
+      lock: 这是给困难人家的
+      hide: true
+      tags: [responsible]
+      effects: { flags: [zhongzhuan, job_succeed] }
     - id: near
       text: 念家门口的高中
       min: 5.8
@@ -259,6 +320,10 @@
       text: 天不亮，桥上只有两辆自行车。风大，谁也没说话，蹬得一样快。
       memory: 桥上两辆车
       bond: { sync: 3, close: 2 }
+    zhongzhuan:
+      text: 两张录取通知书上印着同一个厂徽。你们对着看了半天，说三年后在厂门口见。
+      memory: 同一个厂徽
+      bond: { sync: 2, close: 2 }
     near:
       text: 还是那条路，还是十分钟。校服换了个颜色，别的没换。
       memory: 还是那条路
@@ -277,33 +342,42 @@
   age: 18
   score: { mind: 1 }
   swing: true
-  requires: { notFlags: [dropout, vocational] }
+  requires: { notFlags: [dropout, vocational, zhongzhuan] }
   title: 高考
   text: 分数出来了，志愿表摊在饭桌上。最远的那所学校，坐火车要一天一夜。
   grades:
     - { min: 9.3, label: 考进全市前一百, flags: [gaokao_good, gaokao_top] }
     - { min: 6.8, label: 过了本科线, flags: [gaokao_good] }
     - { min: 0, label: 没过线, flags: [gaokao_bad] }
+  # 出国的人家要出国；别的殷实人家考上大学就行，复读一年也认
+  expect:
+    exp_book: [away, local, abroad, retake]
+    exp_abroad: [abroad, retake]
+    exp_pull: [away, local, abroad, retake]
+    exp_art: [away, local, abroad, retake]
   options:
     - id: away
       text: 去外地念大学
       min: 8.4
       tags: [adventure, competitive]
-      effects: { bond: { distance: 2 }, flags: [uni_away] }
+      # 清贫人家没拿过助学金的，背一笔助学贷款（loan：往后的工钱打折，rules.yaml）
+      effects: { bond: { distance: 2 }, flags: [uni_away], flagsIf: [{ flags: [fam_poor], notFlags: [aid], add: [loan] }] }
     - id: abroad
       text: 家里送你出国念书
       # 比考外地（8.4）低半分多，留给差一口气的人。6.3 的时候等于花钱买了最好的那所大学（玩法评审）
       min: 7.8
       cost: 60
-      requires: { flags: [fam_rich] }
+      homePays: [exp_abroad]
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
       lock: 家里供不起
+      lockBy: { fam_cut: 家里已经不管你了 }
       tags: [adventure]
       effects: { bond: { distance: 3 }, flags: [uni_abroad] }
     - id: local
       text: 念本市的大学
       min: 6.8
       tags: [gentle]
-      effects: { flags: [uni_near] }
+      effects: { flags: [uni_near], flagsIf: [{ flags: [fam_poor], notFlags: [aid], add: [loan] }] }
     - id: army
       text: 报名去当兵
       score: { body: 1 }
@@ -312,6 +386,23 @@
       lock: 家里舍不得
       tags: [responsible, adventure]
       effects: { bond: { distance: 2 }, flags: [army] }
+    - id: retake
+      text: 复读一年，明年再考
+      # 复读班的学费从自己的积蓄出；殷实人家家里出（断了供的自己出），小康可以动爸妈攒的那笔（retake_nest）
+      cost: 20
+      homePays: [fam_rich]
+      requires: { notFlags: [fam_poor] }
+      lock: 家里等着你挣钱
+      tags: [patient, competitive]
+      effects: { self: { mood: -6 }, flags: [retake] }
+    - id: retake_nest
+      text: 动了爸妈攒的钱，复读一年
+      requires: { flags: [fam_nest] }
+      lock: 家里没攒下这笔钱
+      hide: true
+      joins: retake
+      tags: [patient, competitive]
+      effects: { self: { mood: -6 }, drop: [fam_nest], flags: [retake, nest_used] }
     - id: work
       text: 不念了，找活干
       tags: [responsible]
@@ -333,12 +424,86 @@
       text: 胸口戴着同一种红花，坐上同一趟车。车开了，楼里的人还站在路口。
       memory: 同一种红花
       bond: { sync: 3, close: 2 }
+    retake:
+      text: 复读班的最后一排，两张桌子拼在一块儿。又是一摞卷子，这回是两个人一起写。
+      memory: 拼起来的桌子
+      bond: { sync: 3, close: 2 }
     work:
       text: 第一个月的工钱，你们一人买了一双新鞋，在楼下比了比谁的贵。
       memory: 两双新鞋
       bond: { sync: 2, close: 2 }
   dissonance:
     text: 一个去车站，一个去上工。同一个早上出的门，往两头走的。
+    bond: { close: -3 }
+
+# 十九岁：再考一回（复读了的人，m_gaokao 的 retake）。路和高考一样，不能再复读。
+# 少年以后一年一个日子：复读的那一年就是十八岁那天考完剩下的时间（tracks.yaml 的 retake_class），十九岁早上就考
+- id: m_retake
+  kind: milestone
+  stage: young
+  age: 19
+  score: { mind: 1 }
+  swing: true
+  requires: { flags: [retake] }
+  title: 再考一回
+  text: 又是这张志愿表。去年压在暖气片上的那张，边上还卷着。
+  grades:
+    - { min: 9.3, label: 考进全市前一百, flags: [gaokao_good, gaokao_top] }
+    - { min: 6.8, label: 过了本科线, flags: [gaokao_good] }
+    - { min: 0, label: 又没过线, flags: [gaokao_bad] }
+  expect:
+    exp_book: [away, local, abroad]
+    exp_abroad: [abroad]
+    exp_pull: [away, local, abroad]
+    exp_art: [away, local, abroad]
+  options:
+    - id: away
+      text: 去外地念大学
+      min: 8.4
+      tags: [adventure, competitive]
+      effects: { bond: { distance: 2 }, flags: [uni_away], flagsIf: [{ flags: [fam_poor], notFlags: [aid], add: [loan] }] }
+    - id: abroad
+      text: 家里送你出国念书
+      min: 7.8
+      cost: 60
+      homePays: [exp_abroad]
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
+      lock: 家里供不起
+      lockBy: { fam_cut: 家里已经不管你了 }
+      tags: [adventure]
+      effects: { bond: { distance: 3 }, flags: [uni_abroad] }
+    - id: local
+      text: 念本市的大学
+      min: 6.8
+      tags: [gentle]
+      effects: { flags: [uni_near], flagsIf: [{ flags: [fam_poor], notFlags: [aid], add: [loan] }] }
+    - id: army
+      text: 报名去当兵
+      score: { body: 1 }
+      min: 5.8
+      requires: { notFlags: [fam_rich] }
+      lock: 家里舍不得
+      tags: [responsible, adventure]
+      effects: { bond: { distance: 2 }, flags: [army] }
+    - id: work
+      text: 不念了，找活干
+      tags: [responsible]
+      effects: { flags: [work_early] }
+  resonance:
+    away:
+      text: 晚了一年的两张火车票。站台上没人送，你们自己对了对表。
+      memory: 晚一年的票
+      bond: { sync: 3, close: 2 }
+    local:
+      text: 复读班同一张桌子出来的，又进了同一座城里的两所学校。
+      memory: 同一张桌子
+      bond: { sync: 2, close: 2 }
+    work:
+      text: 卷子卖给了收破烂的，一人换了两根冰棍。第二天一块儿去找活。
+      memory: 两根冰棍
+      bond: { sync: 2, close: 2 }
+  dissonance:
+    text: 复读的那一年两个人天天在一块儿。这回一个走了，一个留下。
     bond: { close: -3 }
 
 - id: m_job

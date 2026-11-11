@@ -33,7 +33,7 @@ if (process.argv[2] === "--one") {
       const p = s.persons[r];
       const m = (id) => marks[id]?.[r];
       out.push({
-        key: m("m_senior") ? ["far", "paid"].some((o) => m("m_senior").open.includes(o)) : null,
+        key: m("m_senior") ? ["far", "far_aid", "paid", "nest"].some((o) => m("m_senior").open.includes(o)) : null,
         desk: m("m_job") ? ["desk", "pull"].some((o) => m("m_job").open.includes(o)) : null,
         money30: m("m_settle") ? m("m_settle").money : null,
         settled: !!m("m_settle"),

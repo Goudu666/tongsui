@@ -1,0 +1,410 @@
+{
+ "scale": 1.25,
+ "cell": [
+  200,
+  220
+ ],
+ "foot": [
+  100,
+  206
+ ],
+ "scenes": {
+  "across": [
+   "piano_teacher",
+   "bath_uncle",
+   "site_worker",
+   "greeter",
+   "clerk",
+   "guard_office"
+  ],
+  "away": [
+   "dorm_ayi",
+   "stall_owner",
+   "coworker",
+   "postal"
+  ],
+  "building": [
+   "er_nainai",
+   "coal",
+   "junk",
+   "silou"
+  ],
+  "hospital": [
+   "nurse",
+   "porter",
+   "queue_old"
+  ],
+  "middle": [
+   "shed_ayi",
+   "stationery",
+   "dean"
+  ],
+  "newhome": [
+   "property",
+   "next_door",
+   "dog_walker"
+  ],
+  "park": [
+   "conductor",
+   "writer",
+   "stroller",
+   "kite_old"
+  ],
+  "primary": [
+   "guard",
+   "teacher",
+   "grandparents"
+  ],
+  "rental": [
+   "landlord",
+   "neighbor_rent"
+  ],
+  "river": [
+   "yam",
+   "photog",
+   "runner"
+  ],
+  "street": [
+   "shop_ayi",
+   "shop_clerk",
+   "grinder",
+   "barber"
+  ]
+ },
+ "folks": {
+  "piano_teacher": {
+   "scene": "across",
+   "row": 0,
+   "sit": false,
+   "bubbles": [
+    "note"
+   ]
+  },
+  "bath_uncle": {
+   "scene": "across",
+   "row": 1,
+   "sit": false,
+   "bubbles": [
+    "sweat"
+   ]
+  },
+  "site_worker": {
+   "scene": "across",
+   "row": 2,
+   "sit": false,
+   "bubbles": [
+    "sweat"
+   ]
+  },
+  "greeter": {
+   "scene": "across",
+   "row": 3,
+   "sit": false,
+   "bubbles": [
+    "talk",
+    "heart"
+   ]
+  },
+  "clerk": {
+   "scene": "across",
+   "row": 4,
+   "sit": true,
+   "bubbles": [
+    "dots"
+   ]
+  },
+  "guard_office": {
+   "scene": "across",
+   "row": 5,
+   "sit": false,
+   "bubbles": [
+    "dots"
+   ]
+  },
+  "dorm_ayi": {
+   "scene": "away",
+   "row": 0,
+   "sit": true,
+   "bubbles": [
+    "dots",
+    "zzz"
+   ]
+  },
+  "stall_owner": {
+   "scene": "away",
+   "row": 1,
+   "sit": false,
+   "bubbles": [
+    "steam",
+    "talk"
+   ]
+  },
+  "coworker": {
+   "scene": "away",
+   "row": 2,
+   "sit": true,
+   "bubbles": [
+    "dots",
+    "sweat"
+   ]
+  },
+  "postal": {
+   "scene": "away",
+   "row": 3,
+   "sit": true,
+   "bubbles": [
+    "dots"
+   ]
+  },
+  "er_nainai": {
+   "scene": "building",
+   "row": 0,
+   "sit": true,
+   "bubbles": [
+    "dots",
+    "heart"
+   ]
+  },
+  "coal": {
+   "scene": "building",
+   "row": 1,
+   "sit": false,
+   "bubbles": [
+    "sweat"
+   ]
+  },
+  "junk": {
+   "scene": "building",
+   "row": 2,
+   "sit": false,
+   "bubbles": [
+    "talk"
+   ]
+  },
+  "silou": {
+   "scene": "building",
+   "row": 3,
+   "sit": false,
+   "bubbles": [
+    "dots"
+   ]
+  },
+  "nurse": {
+   "scene": "hospital",
+   "row": 0,
+   "sit": false,
+   "bubbles": [
+    "dots"
+   ]
+  },
+  "porter": {
+   "scene": "hospital",
+   "row": 1,
+   "sit": false,
+   "bubbles": [
+    "sweat"
+   ]
+  },
+  "queue_old": {
+   "scene": "hospital",
+   "row": 2,
+   "sit": false,
+   "bubbles": [
+    "dots",
+    "zzz"
+   ]
+  },
+  "shed_ayi": {
+   "scene": "middle",
+   "row": 0,
+   "sit": true,
+   "bubbles": [
+    "dots"
+   ]
+  },
+  "stationery": {
+   "scene": "middle",
+   "row": 1,
+   "sit": true,
+   "bubbles": [
+    "dots"
+   ]
+  },
+  "dean": {
+   "scene": "middle",
+   "row": 2,
+   "sit": false,
+   "bubbles": [
+    "bang",
+    "dots"
+   ]
+  },
+  "property": {
+   "scene": "newhome",
+   "row": 0,
+   "sit": false,
+   "bubbles": [
+    "dots"
+   ]
+  },
+  "next_door": {
+   "scene": "newhome",
+   "row": 1,
+   "sit": false,
+   "bubbles": [
+    "talk"
+   ]
+  },
+  "dog_walker": {
+   "scene": "newhome",
+   "row": 2,
+   "sit": false,
+   "bubbles": [
+    "heart",
+    "note"
+   ]
+  },
+  "conductor": {
+   "scene": "park",
+   "row": 0,
+   "sit": false,
+   "bubbles": [
+    "note"
+   ]
+  },
+  "writer": {
+   "scene": "park",
+   "row": 1,
+   "sit": false,
+   "bubbles": [
+    "dots"
+   ]
+  },
+  "stroller": {
+   "scene": "park",
+   "row": 2,
+   "sit": false,
+   "bubbles": [
+    "heart",
+    "note"
+   ]
+  },
+  "kite_old": {
+   "scene": "park",
+   "row": 3,
+   "sit": false,
+   "bubbles": [
+    "note"
+   ]
+  },
+  "guard": {
+   "scene": "primary",
+   "row": 0,
+   "sit": true,
+   "bubbles": [
+    "dots",
+    "zzz"
+   ]
+  },
+  "teacher": {
+   "scene": "primary",
+   "row": 1,
+   "sit": false,
+   "bubbles": [
+    "dots"
+   ]
+  },
+  "grandparents": {
+   "scene": "primary",
+   "row": 2,
+   "sit": false,
+   "bubbles": [
+    "dots"
+   ]
+  },
+  "landlord": {
+   "scene": "rental",
+   "row": 0,
+   "sit": true,
+   "bubbles": [
+    "dots"
+   ]
+  },
+  "neighbor_rent": {
+   "scene": "rental",
+   "row": 1,
+   "sit": true,
+   "bubbles": [
+    "steam"
+   ]
+  },
+  "yam": {
+   "scene": "river",
+   "row": 0,
+   "sit": false,
+   "bubbles": [
+    "talk",
+    "steam"
+   ]
+  },
+  "photog": {
+   "scene": "river",
+   "row": 1,
+   "sit": false,
+   "bubbles": [
+    "spark"
+   ]
+  },
+  "runner": {
+   "scene": "river",
+   "row": 2,
+   "sit": false,
+   "bubbles": [
+    "sweat"
+   ]
+  },
+  "shop_ayi": {
+   "scene": "street",
+   "row": 0,
+   "sit": true,
+   "bubbles": [
+    "dots",
+    "heart"
+   ]
+  },
+  "shop_clerk": {
+   "scene": "street",
+   "row": 1,
+   "sit": false,
+   "bubbles": [
+    "talk",
+    "note"
+   ]
+  },
+  "grinder": {
+   "scene": "street",
+   "row": 2,
+   "sit": false,
+   "bubbles": [
+    "talk"
+   ]
+  },
+  "barber": {
+   "scene": "street",
+   "row": 3,
+   "sit": false,
+   "bubbles": [
+    "dots",
+    "note"
+   ]
+  }
+ },
+ "walkers": [
+  "bag_man",
+  "basket_aunt",
+  "cane_old",
+  "kid",
+  "student",
+  "coat_woman"
+ ]
+}

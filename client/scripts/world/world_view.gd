@@ -10,6 +10,7 @@ const Actor := preload("res://scripts/world/actor.gd")
 const SceneArt := preload("res://scripts/world/scene_art.gd")
 const PrintLight := preload("res://scripts/world/print_light.gd")
 const Weather := preload("res://scripts/world/weather.gd")
+const Folks := preload("res://scripts/world/folks.gd")
 const Atmos := preload("res://scripts/world/atmos.gd")
 const SPOT_RADIUS := 100.0  ## 比服务器的 110 小一点，避免边缘抖动
 const MOVE_SEND_INTERVAL := 0.1
@@ -39,7 +40,7 @@ var hints: Array = []
 var controllable := true
 var camera: Camera2D
 var art: SceneArt
-var street = null  ## 街坊、车流、年代道具：横版的那一层还没做，先空着（street_life.gd 是俯视大地图的）
+var street = null  ## 横版的街坊和路人（folks.gd）：各干各的营生，走近了搭一句；只是画面
 var scene: Dictionary = {}   ## 我现在在哪张图上
 var scenes: Dictionary = {}  ## id -> 图
 var _exiting := 0.0          ## 刚按了出口：等服务器把人挪过去，这期间不报位置（报的是上一张图的横坐标）
@@ -57,8 +58,12 @@ var buffers: Dictionary = {}    ## role -> SnapshotBuffer（只用于对方）
 var _correction := Vector2.ZERO ## 本地角色还没消化掉的服务器校正量
 var _corrected_upto := 0        ## 这个序号及以前的 MOVE 是在校正之前发的，不再拿来校正（避免重复校正）
 var _stage_set := false
-var _flash: Dictionary = {}  ## role -> {act, label, tg, until}：刚当场做完的一回，人在那个点上把它做一会儿给人看
-const FLASH_SECS := 1.1
+var _flash: Dictionary = {}  ## role -> {act, label, tg, until, did}：刚当场做完的一回，人在那个点上把它做一会儿给人看
+const FLASH_SECS := 1.6
+## 两个人一起做事挨着站：一般错开半步；面对面的几样（聊天、下棋、吃饭）错开一大步，再各自转过脸来
+const PAIR_GAP := 24.0
+const FACE_GAP := 46.0
+var _apart := true  ## 两个人上一次离得远（碰面招手用）
 
 
 func setup(content: Dictionary, role: String, names: Dictionary) -> void:
@@ -83,6 +88,9 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 	atmos.light = light
 	add_child(atmos)
 	light.setup(Vector2(float(map.size[0]), SceneArt.BOTTOM - SceneArt.TOP), {})
+	street = Folks.new()
+	street.world = self
+	add_child(street)
 	_marks = _Marks.new(self)
 	_marks.z_index = 70
 	add_child(_marks)
@@ -139,6 +147,8 @@ func _enter_scene(sc: Dictionary) -> void:
 	light.relight(Vector2(float(sc.width), SceneArt.BOTTOM - SceneArt.TOP), SceneArt.anchors_for(str(sc.id)), SceneArt.scene_mask(str(sc.id)))
 	if weather != null:
 		weather.set_scene(str(sc.id))
+	if street != null:
+		street.show_scene(sc)
 	if atmos != null:
 		atmos.set_scene(sc)
 	_refresh_visible()
@@ -291,7 +301,8 @@ func apply_world(view: Dictionary) -> void:
 		# 不在我这张图上的人（楼上、外地）：这儿看不见
 		a.visible = a.is_local or str(scene_at(server_pos.y).get("id", "")) == str(scene.get("id", ""))
 		if side_by_side:
-			server_pos.x += -24.0 if r == "qing" else 24.0
+			var gap := FACE_GAP if _act_loop(str(qs.get("act")), str(qs.get("spot", ""))) in Actor.FACE_LOOPS else PAIR_GAP
+			server_pos.x += -gap if r == "qing" else gap
 		var act: Variant = s.get("act")
 		if act != null:
 			busy.append(str(act))
@@ -311,7 +322,56 @@ func apply_world(view: Dictionary) -> void:
 				buf.push(t, server_pos)
 	if street != null:
 		street.set_busy(busy)
+	var needs: Variant = view.get("needs")
+	if needs is Dictionary:
+		for r in actors:
+			if needs.get(r) is Dictionary:
+				actors[r].needs = needs[r]
+	_pair_faces(side_by_side)
 	queue_redraw()
+
+
+## 搭伴：面对面的几样转过脸来；两人从远处走到一块儿时招个手
+func _pair_faces(side_by_side: bool) -> void:
+	var q: Actor = actors.get("qing")
+	var m: Actor = actors.get("mei")
+	if q == null or m == null:
+		return
+	var lp := q.loop_name()
+	var facing := side_by_side and lp in Actor.FACE_LOOPS and lp == m.loop_name()
+	if facing:
+		q.face_to = 2 if q.position.x <= m.position.x else 3
+		m.face_to = 3 if q.position.x <= m.position.x else 2
+	elif q._emote == "" and m._emote == "":
+		q.face_to = 0
+		m.face_to = 0
+	var both := q.visible and m.visible and str(scene_at(q.position.y).get("id", "")) == str(scene_at(m.position.y).get("id", ""))
+	var d := q.position.distance_to(m.position) if both else INF
+	# 挨得近：「一起……中」只写一份（写在两人中间），名字牌往两边让开
+	var near := d < 130.0
+	var left: Actor = q if q.position.x <= m.position.x else m
+	var right: Actor = m if left == q else q
+	left.quiet_label = false
+	right.quiet_label = near and q.together and m.together and q.doing == m.doing
+	var push := maxf(0.0, (130.0 - d) / 2.0) / maxf(q.scale.x, 0.01) if near else 0.0
+	left.tag_dx = -push
+	right.tag_dx = push
+	left.label_dx = (absf(right.position.x - left.position.x) / 2.0) / maxf(q.scale.x, 0.01) if right.quiet_label else 0.0
+	right.label_dx = 0.0
+	left.label_dy = 0.0
+	# 挨着各做各的事（两行字会叠）：右边那个人的字抬高一行
+	right.label_dy = -32.0 if absf(right.position.x - left.position.x) < 420.0 and not right.quiet_label \
+		and left.action_label != "" and right.action_label != "" else 0.0
+	if d > 700.0:
+		_apart = true
+	elif _apart and d < 320.0 and not q.walking and not m.walking:
+		_apart = false
+		for pair in [[q, m], [m, q]]:
+			var a: Actor = pair[0]
+			if a.loop_name() == "" and not a.asleep:
+				a.face_to = 2 if a.position.x <= pair[1].position.x else 3
+				a.play_emote("wave", 1.3)
+				a.bubble("bang", 1.4)
 
 
 ## 本地预测 + 服务器校正：
@@ -348,8 +408,8 @@ func _reconcile(a: Actor, server_pos: Vector2, busy: bool, seq: int) -> void:
 
 ## 头顶上写的「正在做什么」。日程（duty）的名字跟着这个人走的路：上学 / 出摊 / 过桥上班
 ## 服务器刚当场结算了一回（main 看到 did 变了）：这个人在那个点上做一会儿这件事
-func flash_doing(role: String, act: String, label: String, together: bool) -> void:
-	_flash[role] = {"act": act, "label": label, "tg": together, "until": Time.get_ticks_msec() + int(FLASH_SECS * 1000.0)}
+func flash_doing(role: String, act: String, label: String, together: bool, did: Dictionary = {}) -> void:
+	_flash[role] = {"act": act, "label": label, "tg": together, "until": Time.get_ticks_msec() + int(FLASH_SECS * 1000.0), "did": did}
 	var a: Actor = actors.get(role)
 	if a != null:
 		_apply_flash(role, a, a.doing == "" and not a.asleep)
@@ -365,10 +425,36 @@ func _apply_flash(role: String, a: Actor, idle: bool) -> void:
 			a.doing = ""
 			a.action_label = ""
 			a.together = false
+			_react(role, a, f)
 		return
 	a.doing = str(f.act)
 	a.action_label = str(f.label)
 	a.together = bool(f.tg)
+
+
+## 这件事在这个点上演哪一套动作（和 actor.loop_name 一样的对法，给还没设上 doing 的时候用）
+func _act_loop(act: String, spot: String) -> String:
+	if act == "duty":
+		return str(Actor.DUTY_LOOP.get(spot, "wave"))
+	return str(Actor.ACTION_LOOP.get(act, ""))
+
+
+## 演完一回：按 did 的变化给个反应；两个人刚一起做完一回、又挨着，就转过来击个掌
+func _react(role: String, a: Actor, f: Dictionary) -> void:
+	var did: Dictionary = f.get("did", {}) if f.get("did") is Dictionary else {}
+	a.react(did)
+	if not bool(f.get("tg", false)):
+		return
+	var other: Actor = actors.get("mei" if role == "qing" else "qing")
+	if other == null or not other.visible or other.asleep or other.loop_name() != "":
+		return
+	if absf(other.position.x - a.position.x) > 160.0 or absf(other.position.y - a.position.y) > 40.0:
+		return
+	a.face_to = 2 if a.position.x <= other.position.x else 3
+	a.play_emote("five", 1.2)
+	if other._emote != "five":
+		other.face_to = 3 if a.position.x <= other.position.x else 2
+		other.play_emote("five", 1.2)
 
 
 func _doing_label(role: String, act: String) -> String:

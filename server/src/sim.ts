@@ -249,6 +249,11 @@ function lifePoints(v: number): number {
   return Math.floor(v * 10 + 1e-6);
 }
 
+/** 百分制带一位小数（往下取整）：整数部分和 lifePoints 一样 */
+function lifeFinePoints(v: number): number {
+  return Math.floor(v * 100 + 1e-5) / 10; // ε 是 lifePoints 的十倍：floor(这个数) 恒等于 lifePoints(v)
+}
+
 function lifeWeightsLabel(w: ScoreWeights): string {
   var parts: string[] = [];
   for (var k in w) parts.push(STAT_LABEL[k] || k);
@@ -370,7 +375,9 @@ function lifeTurnsUntilAge(turn: number, age: number): number {
 }
 
 /** have / need：给人看的数。属性类的线按「分」算（属性 × 10，满分 100），钱类的按块 */
-interface GoalLine { id: string; text: string; by: string; unit: string; have: number; need: number; ok: boolean }
+// hx：分数线的「攒着的」那一截，百分制带一位小数往下取整（have 是它的整数部分）。小时候一回只长零点几分，界面拿它让尺上的点和分数后面的小数挪一挪
+/** era：这条线被哪几件年代大事挪了（「考大学 +7」，era.ts → eraLineWhy）；没挪就不发 */
+interface GoalLine { id: string; text: string; by: string; unit: string; have: number; need: number; ok: boolean; hx?: number; era?: string }
 interface GoalView { id: string; title: string; age: number; turns: number; lines: GoalLine[] }
 
 /**
@@ -414,25 +421,31 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
     if (!best || ev.age! < best.age!) best = ev;
   }
   if (!best) return null;
+  // 线按关口那一年的年代标记算（era.ts）：关口那天早上才发生、才过期的大事，纸带上早早就是那天的数
+  var at = { flags: eraFlagsAt(s, c, p, eraYear(s, c, best.age!)) } as Person;
   var lines: GoalLine[] = [];
   for (var j = 0; j < best.options.length; j++) {
     var o = best.options[j];
     if (!o.min) continue;
     var orq = o.requires || {};
-    if (!lifeHasAll(p.flags, orq.flags) || !lifeHasNone(p.flags, orq.notFlags)) continue; // 不是给这个人留的路不摆在目标条上
+    if (!lifeHasAll(at.flags, orq.flags) || !lifeHasNone(at.flags, orq.notFlags)) continue; // 不是给这个人留的路不摆在目标条上
     var w = lifeOptionWeights(best, o);
     var have = lifeScore(p, w, lifePairBond(s, role));
     var raw = lifeScoreRaw(w);
-    var need = lifeOptionMin(o, p);
-    lines.push({ id: o.id, text: o.text, by: lifeWeightsLabel(w), unit: w.money ? "块" : "分", have: raw ? Math.floor(have) : lifePoints(have), need: raw ? need : lifePoints(need), ok: have >= need });
+    var need = lifeOptionMin(o, at);
+    var gl: GoalLine = { id: o.id, text: o.text, by: lifeWeightsLabel(w), unit: w.money ? "块" : "分", have: raw ? Math.floor(have) : lifePoints(have), need: raw ? need : lifePoints(need), ok: have >= need };
+    if (!raw) gl.hx = lifeFinePoints(have);
+    var why = eraLineWhy(c, o, at.flags, raw);
+    if (why) gl.era = why;
+    lines.push(gl);
   }
   // 比最高那条路还高的名次（grades）也摆上来：起点高的人不会开局就无事可冲，每道关都还有一条够一够的线
   var gw = best.score || {};
-  var gis = lifeTapeGrades(best, p);
+  var gis = lifeTapeGrades(best, at);
   var ghave = lifeScore(p, gw, lifePairBond(s, role));
   for (var gi = 0; gi < gis.length; gi++) {
     var gr = best.grades![gis[gi]];
-    lines.push({ id: "grade:" + gis[gi], text: gr.label, by: lifeWeightsLabel(gw), unit: "分", have: lifePoints(ghave), need: lifePoints(gr.min), ok: ghave >= gr.min });
+    lines.push({ id: "grade:" + gis[gi], text: gr.label, by: lifeWeightsLabel(gw), unit: "分", have: lifePoints(ghave), need: lifePoints(gr.min), ok: ghave >= gr.min, hx: lifeFinePoints(ghave) });
   }
   return { id: best.id, title: best.title, age: best.age!, turns: lifeTurnsUntilAge(s.turn, best.age!), lines: lines };
 }

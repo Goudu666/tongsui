@@ -13,8 +13,9 @@ var _failed := 0
 func _init() -> void:
 	_cost()
 	_card()
+	_menu()
 	if _failed == 0:
-		print("✓ 一天的行动：按钮写清花多久、累多少、长什么 / 只够做一截 / 小结卡的时间条和「照这样还要几个日子」")
+		print("✓ 一天的行动：按钮写清花多久、累多少、长什么 / 只够做一截 / 小结卡的时间条和「照这样还要几个日子」/ 点位菜单的牌子和「几点才有」")
 	quit(1 if _failed > 0 else 0)
 
 
@@ -78,3 +79,43 @@ func _card() -> void:
 	DayCard.build(old, {"gains": {"qing": {}}}, "qing", "mei", {})
 	_check(old.get_child_count() == 1, "旧服务器的那一条照样摆得出来")
 	old.free()
+
+
+## 点位菜单：菜单按 spots[].actions 的顺序列出这个人现在看得见的几件；不在钟点上的也列着、带 _late；默认是头一件现在就能做的
+func _menu() -> void:
+	const WV := preload("res://scripts/world/world_view.gd")
+	var w = WV.new()
+	w.actions = {
+		"listen": {"id": "listen", "label": "喝茶听一段", "minutes": 40, "requires": {"minAge": 6, "hours": [540, 1260]}},
+		"tea_box": {"id": "tea_box", "label": "在茶社包个座", "minutes": 90, "requires": {"minAge": 6, "flags": ["fam_rich"], "hours": [780, 1260]}},
+		"tea_runner": {"id": "tea_runner", "label": "在茶社跑堂", "minutes": 120, "requires": {"minAge": 15, "maxAge": 29, "hours": [540, 1260]}},
+		"cards": {"id": "cards", "label": "跟街坊打扑克", "minutes": 60, "requires": {"minAge": 18, "hours": [1110, 1320]}},
+	}
+	w.my_role = "qing"
+	w.unlocks = {"qing": []}
+	w.age = 17
+	w.slot = 2
+	var sp := {"id": "tea_seat", "actions": ["listen", "tea_box", "tea_runner", "cards"]}
+	var ids: Array = []
+	for a in w.actions_of(sp):
+		ids.append(str(a.id))
+	_check(ids == ["listen", "tea_runner"], "十七岁、没有家底：听一段、跑堂（包座要殷实人家，打扑克要成年）：%s" % [ids])
+	_check(str(w.action_of(sp).get("id")) == "listen", "不点就是头一件")
+	_check(str(w.action_of(sp, "tea_runner").get("id")) == "tea_runner", "点了跑堂就是跑堂")
+	w.unlocks = {"qing": ["tea_box"]}
+	w.slot = 0
+	var early: Array = w.actions_of(sp)
+	_check(early.size() == 3 and bool(early[0].get("_late", false)), "一早茶社没开：几件都列着，带着几点才有")
+	_check(Main._late_text(early[0]) == "09:00–21:00 才有", "按钮上写几点才有：%s" % Main._late_text(early[0]))
+	# 后添的事（menu）只在点到时做：头一件不在钟点上，不点还是头一件，不会掉到后添的那件上（和服务器一样）
+	w.actions["boat"] = {"id": "boat", "label": "划船", "minutes": 60, "menu": true, "requires": {"minAge": 45, "hours": [540, 1080]}}
+	w.actions["morning_walk"] = {"id": "morning_walk", "label": "遛弯", "minutes": 60, "requires": {"hours": [360, 540]}}
+	w.age = 70
+	w.slot = 2
+	var lake := {"id": "lake_walk", "actions": ["morning_walk", "boat"]}
+	_check(str(w.action_of(lake).get("id")) == "morning_walk", "下午不点：还是遛弯（不是时候），不去划船")
+	_check(str(w.action_of(lake, "boat").get("id")) == "boat", "点了划船才划船")
+	var chip := Main.menu_chip("在茶社跑堂", true, false)
+	_check(chip.text == "在茶社跑堂", "牌子上写着那件事")
+	chip.free()
+	w.free()

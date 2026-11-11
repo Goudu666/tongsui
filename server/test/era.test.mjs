@@ -79,11 +79,19 @@ const line = (s, r, mid, oid) => G("lifeOptionMin")(opt(mid, oid), s.persons[r])
   const g = G("lifeGoal")(at(old, 17), C, "qing");
   assert.equal(g.id, "m_gaokao");
   assert.equal(g.lines.find((l) => l.id === "away").need, Math.floor((opt("m_gaokao", "away").min + 0.7) * 10 + 1e-6));
+  assert.match(g.lines.find((l) => l.id === "away").era, /考大学 \+7/, "纸带上写着线为什么挪了");
+  assert.equal(G("lifeGoal")(at(born(5, "c92"), 17), C, "qing").lines.find((l) => l.id === "away").era, undefined, "没挪的线不写");
+  // 关口那天早上才发生的大事：纸带上提前就是那天的线（六十年代生六十岁那年赶上晚几年）
+  const r = at(born(5, "c65"), 57);
+  const rg = G("lifeGoal")(r, C, "qing");
+  assert.equal(rg.id, "m_retire");
+  assert.ok(!r.persons.qing.flags.includes("era_yanchi"), "五十七岁那天还没发生");
+  assert.equal(rg.lines.find((l) => l.id === "trip").need, opt("m_retire", "trip").min + 20, "纸带上已经是六十岁那天的线");
   // 看积蓄的线挪了，要掏的钱跟着挪
   const h = at(born(5, "c65"), 29);
   const buy = opt("m_settle", "buy");
-  assert.equal(line(h, "qing", "m_settle", "buy"), buy.min - 60);
-  assert.equal(G("lifeOptionCost")(ms("m_settle"), buy, h.persons.qing), buy.cost - 60);
+  assert.equal(line(h, "qing", "m_settle", "buy"), buy.min - 40);
+  assert.equal(G("lifeOptionCost")(ms("m_settle"), buy, h.persons.qing), buy.cost - 40);
   h.persons.qing.money = buy.min - 30;
   assert.equal(G("lifeOptionLock")(ms("m_settle"), buy, h.persons.qing, 0), null, "分房那几年，原来差 30 块的买得起了");
   const h85 = at(born(5, "c85"), 29);
@@ -168,7 +176,16 @@ const line = (s, r, mid, oid) => G("lifeOptionMin")(opt(mid, oid), s.persons[r])
   bad.cohort = "c_gone";
   bad.eras.push("era_gone");
   G("lifeRepair")(bad, C);
-  assert.equal(bad.cohort, undefined);
+  assert.equal(bad.cohort, DEFAULT, "年代没了换回默认");
   assert.ok(!bad.eras.includes("era_gone"));
+  // 还在投胎页的老存档：页上写的年代和生下来的是同一个
+  for (let seed = 1; seed <= 20; seed++) {
+    const r = J(G("lifeCreate")(seed, C));
+    delete r.cohort; delete r.eras; r.version = 8;
+    G("lifeUpgrade")(r); G("lifeRepair")(r, C);
+    const shown = G("eraView")(r, C).cohort.id;
+    for (const role of ROLES) G("lifeConfirm")(r, C, role, NAMES);
+    assert.equal(r.cohort, shown);
+  }
   console.log("✓ 存档：v8 升 v9 按默认年代补上过去的大事 / 年代或大事没了摘掉");
 }

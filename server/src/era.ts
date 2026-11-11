@@ -168,7 +168,7 @@ function eraApply(s: LifeState, c: Content, ev: EraEvent, quiet: boolean): EraLo
   if (!s.eras) s.eras = [];
   s.eras.push(ev.id);
   var age = lifeTimeAt(s.turn).age;
-  var d = eraDecade(c, eraYear(s, c));
+  var d = eraDecade(c, ev.year); // 中年三年一天、老年五年一天：按这件事发生那年算年代，不按今天
   var info: EraLogInfo = { id: ev.id, title: ev.title, text: ev.text, decade: d ? d.name : "", hits: {} };
   for (var i = 0; i < ROLES.length; i++) {
     var p = s.persons ? s.persons[ROLES[i]] : null;
@@ -212,7 +212,7 @@ function eraDue(s: LifeState, c: Content, year: number): EraEvent[] {
 /** 人生开始（两人都确认那一刻）：生之前和三岁那年以前的事悄悄生效 */
 function eraStart(s: LifeState, c: Content) {
   if (!c.eras || !c.eras.cohorts.length) return;
-  if (!s.cohort) s.cohort = eraPickCohort(c, s.seed);
+  if (!s.cohort) s.cohort = (eraDefaultCohort(c) || c.eras.cohorts[0]).id; // 老存档没写年代：投胎页上显示的就是默认年代，生下来也得是它
   if (!s.eras) s.eras = [];
   var year = eraYear(s, c);
   var due = eraDue(s, c, year);
@@ -252,8 +252,8 @@ function eraRepair(s: LifeState, c: Content, notes: string[]) {
     s.eras = s.eras.filter(function (id) { return lifeHasId(c.eras.events, id); });
     if (s.eras.length !== before) notes.push("eras 摘掉 " + (before - s.eras.length) + " 件已不存在的大事");
   }
+  if (!s.cohort) s.cohort = (eraDefaultCohort(c) || c.eras.cohorts[0]).id; // 还在投胎页的老存档也一样：页上写的和生下来的是同一个年代
   if (s.phase === "life" && s.persons && !s.eras) {
-    if (!s.cohort) s.cohort = (eraDefaultCohort(c) || c.eras.cohorts[0]).id;
     eraStart(s, c);
     notes.push("eras 按 " + s.cohort + " 补上 " + s.eras!.length + " 件");
   }
@@ -269,4 +269,44 @@ function eraSync(s: LifeState, c: Content) {
     eraApply(s, c, due[i], true);
   }
   eraExpire(s, c, year);
+}
+
+/**
+ * 到某一年时这个人身上会有哪些年代标记（不改存档）：纸带上提前写关口那天的线。
+ * 大事在关口那天早上才发生、或者那天早上过期的，冲刺的这几年纸带上就已经是那天的数，不会一夜之间挪线
+ */
+function eraFlagsAt(s: LifeState, c: Content, p: Person, year: number): string[] {
+  var flags = p.flags.slice();
+  if (!c.eras || !c.eras.cohorts.length || !s.eras) return flags;
+  var done = s.eras.slice();
+  var evs = c.eras.events;
+  var drop = function (list: string[]) { flags = flags.filter(function (f) { return list.indexOf(f) < 0; }); };
+  var expire = function (y: number) {
+    for (var i = 0; i < evs.length; i++) if (evs[i].until !== null && evs[i].until! <= y && done.indexOf(evs[i].id) >= 0) drop(evs[i].flags);
+  };
+  var due = evs.filter(function (e) { return e.year <= year && done.indexOf(e.id) < 0; });
+  due.sort(function (a, b) { return a.year - b.year; });
+  for (var j = 0; j < due.length; j++) {
+    expire(due[j].year);
+    drop(due[j].clears);
+    for (var k = 0; k < due[j].flags.length; k++) if (flags.indexOf(due[j].flags[k]) < 0) flags.push(due[j].flags[k]);
+    done.push(due[j].id);
+  }
+  expire(year);
+  return flags;
+}
+
+/** 这条线被哪几件年代大事挪了多少（给人看的口径：分数线按百分制分，积蓄线按块）。纸带上写「考大学 +7」 */
+function eraLineWhy(c: Content, o: EventOption, flags: string[], raw: boolean): string {
+  if (!o.eraLines || !c.eras) return "";
+  var parts: string[] = [];
+  for (var i = 0; i < o.eraLines.length; i++) {
+    var el = o.eraLines[i];
+    if (!lifeHasAll(flags, el.flags)) continue;
+    var title = "";
+    for (var j = 0; j < c.eras.events.length; j++) if (c.eras.events[j].flags.indexOf(el.flags[0]) >= 0) title = c.eras.events[j].title;
+    var d = raw ? Math.round(el.d) : Math.round(el.d * 10);
+    if (title && d) parts.push(title + " " + (d > 0 ? "+" : "") + d);
+  }
+  return parts.join("，");
 }

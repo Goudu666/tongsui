@@ -27,28 +27,24 @@ decades:
   - { from: 2020, name: 二〇年代, look: middle }
   - { from: 2030, name: 三〇年代, look: middle }
   - { from: 2035, name: 三〇年代, look: old }      # 同一个年代名，三〇年代中往后换老年那套街景
-  - { from: 2040, name: 四〇年代, look: old }
-  - { from: 2050, name: 五〇年代, look: old }
-  - { from: 2060, name: 六〇年代, look: old }
-  - { from: 2070, name: 七〇年代, look: old }
-  - { from: 2080, name: 八〇年代, look: old }
+  - { from: 2040, name: 很多年以后, look: old }   # 越往后越虚（手册 §7）：不再按十年起名，也免得「八〇年代」读成八十年代
 
 cohorts:
   - id: c65
     name: 六十年代中生
     born: 1965
     weight: 2
-    note: 粮本压在抽屉最底下，全院就一台电视。
+    note: 粮本和户口本夹在一块儿，全楼就一台电视。
   - id: c75
     name: 七十年代中生
     born: 1975
     weight: 2
-    note: 铁皮铅笔盒，楼道里码着蜂窝煤。
+    note: 小人书摊一分钱看一本，楼道里码着蜂窝煤。
   - id: c85
     name: 八十年代中生
     born: 1985
     weight: 2
-    note: 小人书一分钱看一本，家里刚有了彩电。
+    note: 铁皮铅笔盒。谁家先有了彩电，晚上挤一屋子人。
   - id: c92
     name: 九十年代初生
     born: 1992
@@ -59,7 +55,7 @@ cohorts:
     name: 〇〇后
     born: 2002
     weight: 2
-    note: 爸妈的手机里，存着学走路的那一段。
+    note: 楼下停满了电动车，墙上的小广告一层压一层。
 
 events:
   # ---------------- 早年的规矩（所有年代都在生之前，只打标记） ----------------
@@ -92,9 +88,9 @@ events:
     text: 房子是单位分的，按工龄排队。谁家分着了，全楼帮着搬，搬完在新屋里吃顿饺子。
     flags: [era_fenfang]
     lines:
-      m_settle.buy: -60
-      m_settle.help: -50
-      m_settle.rent: -40
+      m_settle.buy: -40
+      m_settle.help: -40
+      m_settle.rent: -30
 
   # ---------------- 八十年代 ----------------
 
@@ -129,7 +125,7 @@ events:
     year: 1996
     until: 2006
     title: 名单
-    text: 厂门口贴了名单，围着看的人都不说话。早点铺早上多了几个不着急走的人。
+    text: 厂门口贴了名单。早点铺早上多了几个不着急走的人。
     flags: [era_xiagang]
     wages:
       job_succeed: 0.8
@@ -143,8 +139,8 @@ events:
   - id: era_fanggai
     year: 1998
     until: 2010
-    title: 房改
-    text: 单位不再分房了。住着的公房交一笔钱，就成了自己的，房本上头一回写了名字。
+    title: 房本
+    text: 楼长抱着一摞房本挨家发。住了半辈子的公房，交一笔钱就成了自己的。
     flags: [era_fanggai]
     clears: [era_fenfang]
     lines:
@@ -153,7 +149,7 @@ events:
       m_settle.rent: -25
     hits:
       - requires: { flags: [home_unit] }
-        text: 厂里分的那套交了一笔钱，房本上写了你的名字。
+        text: 厂里分的那套，房本上是你的名字。
         money: -10
 
   # 扩招：外地、本市的线摘掉那一截；毕业的人多了，坐办公室的线高一点（八十年代生吃这一口）
@@ -172,8 +168,8 @@ events:
   # 电脑和网吧：teen.yaml 的 t_netcafe_door 只在这几年有（gating_draft.md）。手机那件摘掉它
   - id: era_wangba
     year: 2000
-    title: 网吧
-    text: 楼下的粮店改成了网吧，门口挂着厚棉门帘。谁家买了电脑，孩子放学先往谁家跑。
+    title: 电脑
+    text: 街口多了两块网吧的招牌。谁家买了电脑，楼里的孩子放学先往谁家跑。
     flags: [era_wangba]
 
   # 房价头一波
@@ -217,8 +213,8 @@ events:
   # 只动三十岁以后才有的两条路（支摊、自己的铺子），c92 三十岁安家时的积蓄不受影响
   - id: era_shouji
     year: 2014
-    title: 扫码
-    text: 鏊子边上贴了张收钱的码。送外卖的电动车在楼下排成一排，网吧关了门。
+    title: 低着头
+    text: 早点铺排队的人都低着头看手机。楼下停了几辆送外卖的电动车，网吧关了门。
     flags: [era_shouji]
     clears: [era_wangba]
     wages:
@@ -228,8 +224,8 @@ events:
   # 学校多了、位子少了：高考宽了，考研考公卷起来。〇〇后两头都吃
   - id: era_juan
     year: 2016
-    title: 占座
-    text: 城边上又起了几所大学。图书馆天不亮就有人排队占座，考公的教室坐得满满的。
+    title: 再考
+    text: 楼里的孩子差不多都能上个大学。毕了业又回去考，一年考不上考两年。
     flags: [era_juan]
     lines:
       m_gaokao.away: -3
@@ -257,7 +253,7 @@ events:
     year: 2025
     until: 2048
     title: 晚几年
-    text: 退休的岁数往后挪了几年。早上过桥上班的人里，头发白的多了。
+    text: 早上过桥上班的人里，头发白的多了。楼下的棋摊，要到傍晚才凑得齐人。
     flags: [era_yanchi]
     lines:
       m_retire.mentor: -5
@@ -268,7 +264,7 @@ events:
     year: 2030
     until: 2061
     title: 空了几户
-    text: 楼里空了好几户，晚上亮灯的窗户少了。请人照应倒难请了，价钱一年一涨。
+    text: 楼里空了好几户，晚上亮灯的窗户少了。楼道里找保姆的条子，一张压一张。
     flags: [era_laolou]
     lines:
       m_settle.buy: -25
@@ -280,7 +276,7 @@ events:
   - id: era_dianti
     year: 2063
     title: 装了电梯
-    text: 公示贴了好几回，楼外头总算装上了电梯。社区里有人上门照应，价钱不高。
+    text: 公示贴了好几回，楼外头搭起了电梯井。社区的人隔两天上门量一回血压。
     flags: [era_dianti]
     lines:
       m_evening.walk: -6

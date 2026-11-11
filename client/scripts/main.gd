@@ -1825,6 +1825,13 @@ func _show_goal_detail() -> void:
 		Kit.rule(left)
 		for l in mine.lines:
 			left.add_child(GoalRow.new(l, GoalPanel.their_have(theirs if theirs is Dictionary and theirs.id == mine.id else null, str(l.id)), my_c, their_c))
+			# 到时候谁能拉谁（考前就摆出来：要不要赌这一条，押时间时就能想）
+			var same: Variant = theirs if theirs is Dictionary and theirs.id == mine.id else null
+			var tl: Dictionary = GoalPanel.their_line(same, str(l.id))
+			if l.get("pull") is Dictionary:
+				_label(left, Pull.mine(l.pull, str(names.get(_other(), P.ROLE_NAME[_other()]))), 26, my_c.darkened(0.25))
+			elif tl.get("pull") is Dictionary:
+				_label(left, Pull.theirs(tl.pull, str(names.get(_other(), P.ROLE_NAME[_other()]))), 26, their_c.darkened(0.25))
 		if theirs is Dictionary and theirs.id != mine.id:
 			_label(left, "%s 要过的是另一关：%s。" % [_role_text(_other()), str(theirs.title)], 30, P.INK_SOFT)
 	else:

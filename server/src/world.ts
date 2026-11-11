@@ -828,6 +828,7 @@ function worldActOnce(s: LifeState, c: Content, role: Role, sp: Spot, act: Actio
   worldDecay(c, p, a, t, use); // 这一个半钟头里自己也饿了、困了
   p.money += Math.round(Math.max(0, act.money) * times * 10) / 10;
   if (act.id === "letter") postWrite(s, c, role); // 信第二天早上到对门（post.ts）
+  var walked = circleWalk(c, p, act, times); // 攒门路（circle.ts）
 
   a.x = sp.at[0];
   a.y = sp.at[1];
@@ -854,6 +855,8 @@ function worldActOnce(s: LifeState, c: Content, role: Role, sp: Spot, act: Actio
   if (together) a.did.b = Math.round(bmax * 100) / 100;
   if (times < 1) a.did.part = Math.round(times * 100) / 100;
   if (kgot) a.did.k = kgot;
+  if (walked && walked.tie) a.did.tie = walked.tie;
+  if (walked && walked.tp) a.did.tp = walked.tp;
   if (fee > 0 && guest) a.did.m = 0; // 被带的那份钱记在对门头上
   if (worldTimeLeft(c, w, a) < READY_LEFT) w.ready[role] = true; // 这一段的时间用完了：定了
   return { error: null, together: entry };
@@ -1030,6 +1033,7 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   }
   if (act.id === "eat") worldMealMood(c, p); // 老存档里还在吃的那一顿
   if (act.id === "letter") postWrite(s, c, role); // 信第二天早上到对门（post.ts）
+  if (!duty && !act.duty) circleWalk(c, p, act, times); // 攒门路（circle.ts）：整段做的按遍数记
   p.money += Math.round(money * 10) / 10;
   if (a.until !== null && a.from !== undefined && a.from >= 0) {
     var segFrom = a.start !== undefined ? a.start : SLOTS[a.from][0];

@@ -92,7 +92,7 @@ const PENDING_FLAGS = [];
 const SCENE_ORDER = ["building", "street", "river", "primary", "middle", "across", "away", "rental", "newhome", "park", "hospital"];
 const SCENE_STRIDE = 2000;
 const AREA_HEIGHT = 400; // 地点在世界坐标里的框：地面往上这么高（判定「人在不在这儿」用，美术不看它）
-const ACTION_KEYS = ["id", "label", "minutes", "quick", "sleep", "duty", "requires", "needs", "stats", "money", "together", "bring", "menu", "kid"];
+const ACTION_KEYS = ["id", "label", "minutes", "quick", "sleep", "duty", "requires", "needs", "stats", "money", "together", "bring", "menu", "kid", "tie"];
 const ACTION_REQ_KEYS = ["minAge", "maxAge", "owner", "hours", "flags", "notFlags", "kidAge"];
 const TOGETHER_KEYS = ["needs", "bond", "text"];
 // 规则代码（server/src/sim.ts、world.ts）里按名字写死的行动和标记：影子靠这些行动过日子，天赋效果靠这些标记生效。
@@ -698,6 +698,22 @@ if (remembered.length > REMEMBERED_MAX) errors.push(`remembered.yaml: ${remember
 // ---------- 地图 ----------
 for (const f of PENDING_FLAGS) produced.add(f);
 for (const f of FAMILY_DERIVED_FLAGS) produced.add(f);
+// ---------- 人际圈子（circle.yaml，docs/CIRCLE.md）：门路 tie_* 和欠的人情 owe_* ----------
+const circleRaw = load("circle.yaml") ?? {};
+checkKeys("circle.yaml", circleRaw, ["ties", "owes"]);
+const circle = {
+  ties: (circleRaw.ties ?? []).map((t) => {
+    checkKeys(`circle.ties#${t.id}`, t, ["id", "label", "walk", "fade"]);
+    if (!/^tie_[a-z]+$/.test(t.id ?? "")) errors.push(`circle.ties#${t.id}: id 要 tie_ 开头`);
+    if (!t.label || t.label.length > 12) errors.push(`circle.ties#${t.id}.label: 必填，不过 12 个字（认下那一刻飘的字）`);
+    if (t.walk && t.walk.length > 6) errors.push(`circle.ties#${t.id}.walk: 不过 6 个字`);
+    return { id: t.id, label: t.label, walk: t.walk ?? t.label, fade: t.fade ?? [] };
+  }),
+  owes: circleRaw.owes ?? [],
+};
+const circleTieIds = new Set(circle.ties.map((t) => t.id));
+if (circleTieIds.size !== circle.ties.length) errors.push("circle.yaml: ties 的 id 重复");
+for (const o of circle.owes) if (!/^owe_[a-z]+$/.test(o)) errors.push(`circle.owes: "${o}" 要 owe_ 开头`);
 const map = load("map.yaml");
 const actionIds = new Set(map.actions.map((a) => a.id));
 checkKeys("map", map, MAP_KEYS);
@@ -855,12 +871,22 @@ map.actions = map.actions.map((a) => {
   if (a.quick && Object.keys(a.stats ?? {}).length > 0) errors.push(`map.actions#${a.id}: 顺手的事不长属性，要长属性就去掉 quick`);
   // menu：只在菜单上点到才做（协议 8）。不点菜单的（旧安装包、影子、机器人）永远轮不到它，校准过的活法数不动
   if (a.menu !== undefined && (a.menu !== true || a.sleep || a.duty)) errors.push(`map.actions#${a.id}.menu: 只能写 true，睡觉和日程不能是`);
+  // tie：做够 times 回认下一个门路（人际圈子，server/src/circle.ts）。只能是菜单上点的事（机器人、影子不走动），门路得在 circle.yaml 里
+  if (a.tie !== undefined) {
+    checkKeys(`map.actions#${a.id}.tie`, a.tie, ["flag", "times"]);
+    if (!circleTieIds.has(a.tie?.flag)) errors.push(`map.actions#${a.id}.tie.flag: circle.yaml 的 ties 里没有 "${a.tie?.flag}"`);
+    if (!(Number.isInteger(a.tie?.times) && a.tie.times >= 2 && a.tie.times <= 12)) errors.push(`map.actions#${a.id}.tie.times: 2~12 的整数（做几回认下）`);
+    if (!a.menu) errors.push(`map.actions#${a.id}.tie: 攒门路的事要写 menu: true（机器人、影子、旧安装包不走动，校准过的数不动）`);
+    if (a.quick || a.sleep || a.duty) errors.push(`map.actions#${a.id}.tie: 顺手的事、睡觉、日程不攒门路`);
+    else produced.add(a.tie.flag);
+  }
   return {
     id: a.id, label: a.label, minutes: a.minutes ?? 0, quick: !!a.quick, sleep: !!a.sleep, duty: !!a.duty,
     requires: a.requires ?? {}, needs: a.needs ?? {}, stats: a.stats ?? {}, money: a.money ?? 0,
     together: a.together ? { needs: a.together.needs ?? {}, bond: a.together.bond ?? {}, text: a.together.text ?? "" } : null,
     bring: !!a.bring, menu: !!a.menu,
     ...(a.kid ? { kid: a.kid } : {}),
+    ...(a.tie ? { tie: { flag: a.tie.flag, times: a.tie.times } } : {}),
   };
 });
 // ---------- 接话（duet.yaml）：搭上了 / 回话 ----------
@@ -1190,9 +1216,21 @@ if (errors.length) {
   process.exit(1);
 }
 
+// 人际圈子：门路的 fade 是关口 id；每一笔人情（owe_*）有路欠下、有事来讨，来讨的事每个选项都把它了了（docs/CIRCLE.md）
+for (const t of circle.ties) for (const id of t.fade) if (!milestones.some((m) => m.id === id)) errors.push(`circle.ties#${t.id}.fade: 没有关口 "${id}"`);
+for (const owe of circle.owes) {
+  if (!events.some((e) => e.options.some((o) => (o.effects?.flags ?? []).includes(owe)))) errors.push(`circle.owes: 没有哪条路欠下 "${owe}"`);
+  const collect = events.filter((e) => (e.requires?.flags ?? []).includes(owe));
+  if (!collect.length) errors.push(`circle.owes: 没有事来讨 "${owe}"（events 里 requires.flags 带它）`);
+  for (const e of collect) if (!e.options.every((o) => (o.effects?.drop ?? []).includes(owe))) errors.push(`events#${e.id}: 来讨 ${owe} 的事，每个选项都要 drop 它（这笔人情了了）`);
+}
+for (const e of events) for (const o of e.options) for (const f of o.effects?.flags ?? []) {
+  if (String(f).startsWith("owe_") && !circle.owes.includes(f)) errors.push(`events#${e.id}.${o.id}: 人情 "${f}" 不在 circle.yaml 的 owes 里`);
+}
+
 // 内容版本 = 内容本身的指纹。服务器在 lifeline_open 里报出它的版本，客户端发现和自己带的不一样，
 // 就用 content_get 把服务器这份下载下来用（改剧情只需要更新服务器，不用两台手机重装 APK）。
-const body = { events, families, talents, map, tracks, endings, rules, checks, duet, letters, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks }, atlas, story, eras };
+const body = { events, families, talents, map, tracks, endings, rules, checks, duet, letters, heirlooms, remembered, legacy: { traces: legacyTraces, marks: legacyMarks }, atlas, story, eras, circle };
 const version = createHash("sha256").update(JSON.stringify(body)).digest("hex").slice(0, 12);
 const content = { version, ...body };
 const json = JSON.stringify(content, null, 1);

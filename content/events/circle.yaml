@@ -1,0 +1,519 @@
+# 人际圈子（docs/CIRCLE.md、content/circle.yaml）：认识谁，决定能求谁。
+#
+# 门路（tie_*）和关口上的用法归 milestones.yaml / map.yaml / server/src/circle.ts，这里只写日子里碰上的事：
+#   - 三档人家同一个题目不同的样子：家长会（7~11）、过年拜年（13~17，被求的那一头 / 求人的那一头 / 走亲戚的那一头）、
+#     份子钱（23~29，清贫人家另一份，钱占得更重）
+#   - 事件给的门路：殷实家长会上妈妈留下的纸袋（tie_teacher）、金家爷爷的一封信（tie_unit）、街坊求到门上替他说一句（tie_street）
+#   - 用街坊情：家里老人住院，楼里凑的一沓钱（摘 tie_street、打 owe_street）
+#   - 还人情：每种 owe_* 至少一件，选完都摘掉。owe_kin 推了打 kin_cold（那门亲戚淡了，c_kin_cold 读它）；
+#     owe_pa 推了记一回脸色（照 hardship_time.yaml：没有 strain1 的打 strain1，有了的打 fam_cut）
+#   - 清贫人家的门路是街坊：开不了关口的门，可饭点上有人隔着窗户喊你（c_street_supper）
+#
+# 岁数都从关口后一岁起（4、6、9、12、15、18、19、22、28、30、45 是关口），不然会在关口那天早上冒出来。
+# 写法守文风手册：不评价谁家好谁家差，不哭穷也不炫富。钱和人情只是摆在那儿的事。正文不写阿拉伯数字。
+
+# ======================== A. 老师眼里的你（家长会，7~11） ========================
+
+- id: c_meeting_rich
+  kind: solo
+  stage: childhood
+  weight: 3
+  requires: { minAge: 7, maxAge: 11, flags: [fam_rich], notFlags: [tie_teacher] }
+  title: 留下的纸袋
+  text: 家长会散了，你妈多留了一会儿，手里那个纸袋没拎回来。第二天，你的座位挪到了第二排。
+  options:
+    - id: sit
+      text: 坐过去，上课多举手
+      tags: [competitive]
+      effects: { self: { mood: 2 }, flags: [tie_teacher] }
+    - id: back
+      text: 跟老师说想坐回去
+      tags: [adventure]
+      effects: { self: { charm: 0.1, mood: 1 } }
+    - id: ask
+      text: 回家问纸袋里是什么
+      tags: [patient]
+      effects: { self: { mood: -2 } }
+
+- id: c_meeting_mid
+  kind: solo
+  stage: childhood
+  weight: 3
+  requires: { minAge: 7, maxAge: 11, notFlags: [fam_rich, fam_poor, tie_teacher] }
+  title: 小椅子
+  text: 家长会，你爸请了半天假来的。他坐在你的小椅子上，膝盖顶着桌子，老师说一句他记一句。
+  options:
+    - id: paper
+      text: 散了会拉他看墙报
+      tags: [gentle]
+      effects: { self: { mood: 5 } }
+    - id: ask
+      text: 路上问老师说了什么
+      tags: [responsible]
+      effects: { self: { mind: 0.1, mood: 1 } }
+    - id: door
+      text: 跟对门在门口等着
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 2 }, bond: { close: 1 } }
+
+- id: c_meeting_poor
+  kind: solo
+  stage: childhood
+  weight: 3
+  requires: { minAge: 7, maxAge: 11, flags: [fam_poor], notFlags: [fam_grandma, tie_teacher] }
+  title: 空着的椅子
+  text: 家长会那天，你家那把椅子空着。你妈那个班调不开。老师念到你的名字，停了一下，接着往下念。
+  options:
+    - id: slip
+      text: 自己把成绩条带回家
+      tags: [responsible]
+      effects: { self: { mind: 0.1, mood: -2 } }
+    - id: note
+      text: 记下老师的话念给她听
+      tags: [patient]
+      effects: { self: { mind: 0.1, charm: 0.1, mood: -1 } }
+    - id: sit
+      text: 坐到那把椅子上去
+      tags: [solitude]
+      effects: { self: { mood: -3 } }
+
+- id: c_meeting_grandma
+  kind: solo
+  stage: childhood
+  weight: 3
+  requires: { minAge: 7, maxAge: 11, flags: [fam_grandma], notFlags: [tie_teacher] }
+  title: 最后一排
+  text: 家长会是姥姥去的，坐在最后一排。老师讲了一个钟头，她回来只说了一句：「老师说你坐得直。」
+  options:
+    - id: read
+      text: 把成绩条念给姥姥听
+      tags: [gentle]
+      effects: { self: { mood: 4, charm: 0.1 } }
+    - id: nod
+      text: 点点头，去写作业
+      tags: [patient]
+      effects: { self: { mind: 0.1 } }
+    - id: straight
+      text: 第二天坐得更直
+      tags: [responsible]
+      effects: { self: { body: 0.1, mood: 2 } }
+
+# ======================== B. 人情往来 ========================
+
+# ---------- 过年：被求的那一头 / 求人的那一头 / 走亲戚的那一头 ----------
+
+- id: c_newyear_rich
+  kind: solo
+  stage: teen
+  weight: 3
+  requires: { minAge: 16, maxAge: 17, flags: [fam_rich] }
+  title: 门口的鞋
+  text: 过年你家门口的鞋多。拎东西来的人坐一会儿就走，说话前先看一眼你爸。你妈把东西码进柜子，一样也不拆。
+  options:
+    - id: tea
+      text: 给客人续水，听他们说
+      tags: [responsible]
+      effects: { self: { charm: 0.2, mood: -2 } }
+    - id: room
+      text: 躲进屋里写作业
+      tags: [solitude]
+      effects: { self: { mood: -1 } }
+    - id: share
+      text: 拿两盒点心给对门
+      tags: [gentle]
+      effects: { self: { mood: 3 }, other: { mood: 4 }, bond: { close: 1 } }
+
+- id: c_newyear_poor
+  kind: solo
+  stage: teen
+  weight: 3
+  requires: { minAge: 13, maxAge: 17, flags: [fam_poor], notFlags: [fam_grandma] }
+  title: 拎回来的酒
+  text: 年初二，你妈拎着两瓶酒去给你爸单位的领导拜年，你跟着。在人家门口站了一会儿，她又拎着回来了。
+  options:
+    - id: carry
+      text: 接过酒帮她拎
+      tags: [gentle]
+      effects: { self: { body: 0.1, mood: -2 } }
+    - id: quiet
+      text: 一路什么也不问
+      tags: [patient]
+      effects: { self: { mood: -3 } }
+    - id: knock
+      text: 说下回我去敲门
+      tags: [adventure]
+      effects: { self: { charm: 0.1, mood: -1 } }
+
+- id: c_newyear_kin
+  kind: solo
+  stage: teen
+  weight: 3
+  requires: { minAge: 13, maxAge: 17, flags: [kin_unit] }
+  title: 表舅家
+  text: 年初三，你爸拎着两瓶酒去表舅家。表舅在单位管点事，家里有暖气。他问了两回你念几年级。
+  options:
+    - id: answer
+      text: 坐直了好好回话
+      tags: [responsible]
+      effects: { self: { charm: 0.1, mood: -2 } }
+    - id: kitchen
+      text: 去厨房帮着端菜
+      tags: [gentle]
+      effects: { self: { charm: 0.1, energy: -5, mood: 1 } }
+    - id: tv
+      text: 盯着他家的电视
+      tags: [solitude]
+      effects: { self: { mood: 3 } }
+
+# ---------- 份子钱 ----------
+
+- id: c_wedding
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 23, maxAge: 29, notFlags: [send_home] }
+  title: 玻璃板底下
+  text: 同事结婚，喜帖压在你桌上的玻璃板底下。这个月已经是第三张了。
+  options:
+    - id: full
+      text: 随一份整的
+      tags: [responsible]
+      cost: 8
+      effects: { self: { charm: 0.2, mood: 1 } }
+    - id: half
+      text: 随一半，人到场
+      tags: [patient]
+      cost: 4
+      effects: { self: { charm: 0.1 } }
+    - id: duty
+      text: 推说那天值班
+      tags: [solitude]
+      effects: { self: { mood: -2 } }
+    - id: card
+      text: 写张贺卡递过去
+      tags: [gentle]
+      effects: { self: { mood: 1 } }
+
+- id: c_wedding_poor
+  kind: solo
+  stage: young
+  weight: 3
+  requires: { minAge: 23, maxAge: 29, flags: [send_home] }
+  title: 抽屉里的饭钱
+  text: 同学结婚，请帖寄到了。寄回家的钱前天刚汇走，抽屉里剩的是这个月的饭钱。
+  options:
+    - id: full
+      text: 从饭钱里抠一份
+      tags: [responsible]
+      cost: 8
+      effects: { self: { charm: 0.2, mood: -3 } }
+    - id: half
+      text: 随一半，人到场
+      tags: [patient]
+      cost: 4
+      effects: { self: { charm: 0.1, mood: -1 } }
+    - id: help
+      text: 去帮着搬桌椅
+      tags: [gentle]
+      effects: { self: { body: 0.1, energy: -15, mood: -1 } }
+    - id: letter
+      text: 写信说回不去
+      tags: [solitude]
+      effects: { self: { mood: -3 } }
+
+# ---------- 求到你门上（有了位子，轮到别人来求你） ----------
+
+- id: c_ask_door
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 31, maxAge: 55, flags: [job_desk] }
+  title: 一兜苹果
+  text: 楼下谁家孩子毕业了，他妈拎着一兜苹果来敲门，问你们单位还要不要人。
+  options:
+    - id: speak
+      text: 替他去说一句
+      tags: [gentle]
+      effects: { self: { mood: -4, energy: -10 }, flags: [tie_street] }
+    - id: no
+      text: 说这事你做不了主
+      tags: [patient]
+      effects: { self: { mood: -2 } }
+    - id: apples
+      text: 苹果退回去，留杯茶
+      tags: [responsible]
+      effects: { self: { charm: 0.1, mood: -1 } }
+
+- id: c_ask_door_pull
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 31, maxAge: 55, flags: [job_pull], notFlags: [job_desk] }
+  title: 门口的人
+  text: 楼下谁家的孩子待业在家。他爸在楼道里等了你半天，开口先递烟：「听说你们那儿是托人进的？」
+  options:
+    - id: speak
+      text: 替他去问一句
+      tags: [gentle]
+      effects: { self: { mood: -4, energy: -10 }, flags: [tie_street] }
+    - id: no
+      text: 说你也是托的人
+      tags: [patient]
+      effects: { self: { mood: -2 } }
+    - id: smoke
+      text: 接过烟，陪他站会儿
+      tags: [solitude]
+      effects: { self: { charm: 0.1, mood: -1 } }
+
+# ======================== C. 门路从哪来 ========================
+
+- id: c_old_letter
+  kind: solo
+  stage: young
+  weight: 6
+  requires: { minAge: 20, maxAge: 21, flags: [fam_oldmoney], notFlags: [tie_unit] }
+  title: 箱底的信
+  text: 爷爷从箱底翻出一封信，信封都黄了。他说这人是他当年的学生，如今在局里：「拿着去找他。」
+  options:
+    - id: go
+      text: 揣着信去找他
+      tags: [adventure]
+      effects: { self: { mood: -2, energy: -10 }, flags: [tie_unit] }
+    - id: drawer
+      text: 把信收进抽屉
+      tags: [solitude]
+      effects: { self: { mood: 1 } }
+    - id: listen
+      text: 听爷爷说说那个学生
+      tags: [gentle]
+      effects: { self: { charm: 0.1, mood: 3 } }
+
+- id: c_outsider
+  kind: solo
+  stage: childhood
+  weight: 4
+  requires: { minAge: 8, maxAge: 11, flags: [fam_outsider] }
+  title: 没人敲的门
+  text: 过年，楼里家家串门拜年。你家在这儿没有亲戚，爸妈在屋里包饺子，门一上午没人敲。
+  options:
+    - id: follow
+      text: 跟着对门家去拜年
+      tags: [adventure]
+      effects: { self: { mood: 4 }, other: { mood: 2 }, bond: { close: 1 } }
+    - id: knock
+      text: 端一盘饺子去敲对门
+      tags: [gentle]
+      effects: { self: { charm: 0.1, mood: 3 }, bond: { close: 1 } }
+    - id: wrap
+      text: 在屋里帮着包饺子
+      tags: [patient]
+      effects: { self: { mood: 1 } }
+
+# ======================== D. 街坊 ========================
+
+- id: c_street_supper
+  kind: solo
+  stage: childhood
+  weight: 2
+  requires: { minAge: 7, maxAge: 11, flags: [fam_poor] }
+  title: 一碗粥
+  text: 你妈上夜班，锅是凉的。二门的婶子隔着窗户喊你下去，给你盛了一碗粥，又夹了两筷子咸菜。
+  options:
+    - id: wash
+      text: 吃完把碗洗了送回去
+      tags: [responsible]
+      effects: { self: { charm: 0.1, mood: 4, hunger: 20 } }
+    - id: home
+      text: 端回家慢慢吃
+      tags: [solitude]
+      effects: { self: { mood: 2, hunger: 20 } }
+    - id: no
+      text: 说吃过了
+      tags: [patient]
+      effects: { self: { mood: -2 } }
+
+- id: c_street_help
+  kind: solo
+  stage: middle
+  weight: 4
+  requires: { minAge: 31, maxAge: 59, flags: [tie_street], notFlags: [owe_street] }
+  title: 一沓钱
+  text: 家里老人住了院。楼里知道了，这家五块那家十块，二门的婶子挨家收齐，装在信封里送上门。
+  options:
+    - id: take
+      text: 收下，记在本子上
+      tags: [responsible]
+      effects: { self: { mood: 3 }, money: 15, drop: [tie_street], flags: [owe_street] }
+    - id: thank
+      text: 收下，挨家去道谢
+      tags: [gentle]
+      effects: { self: { charm: 0.1, energy: -10, mood: 2 }, money: 15, drop: [tie_street], flags: [owe_street] }
+    - id: no
+      text: 谢了，不要
+      tags: [solitude]
+      effects: { self: { mood: -2 } }
+
+# ======================== E. 还人情 ========================
+
+- id: c_owe_school
+  kind: solo
+  stage: teen
+  weight: 5
+  requires: { minAge: 13, maxAge: 17, flags: [owe_school] }
+  title: 周末的题
+  text: 当年替你递条子的那位主任，家里孩子要考试了。你妈说，人家开了口，这个周末你去讲讲题。
+  options:
+    - id: teach
+      text: 去讲一下午题
+      tags: [responsible]
+      effects: { self: { mind: 0.2, energy: -15, mood: -2 }, drop: [owe_school] }
+    - id: gift
+      text: 让家里送两盒点心
+      tags: [patient]
+      cost: 4
+      effects: { self: { mood: -1 }, drop: [owe_school] }
+    - id: no
+      text: 说这周要复习
+      tags: [solitude]
+      effects: { self: { mood: -3 }, drop: [owe_school] }
+    - id: drag
+      text: 拉上对门一块儿去
+      tags: [gentle]
+      effects: { self: { mind: 0.1, energy: -10 }, other: { mind: 0.1 }, bond: { close: 1 }, drop: [owe_school] }
+
+- id: c_owe_kin
+  kind: solo
+  stage: young
+  weight: 5
+  requires: { minAge: 23, maxAge: 29, flags: [owe_kin] }
+  title: 表舅家的喜事
+  text: 托你进单位的表舅家娶儿媳妇。你妈打来电话，就一句：「这回的礼不能薄。」
+  options:
+    - id: gift
+      text: 随一份厚的
+      tags: [responsible]
+      cost: 10
+      effects: { self: { charm: 0.1 }, drop: [owe_kin] }
+    - id: help
+      text: 请一天假去帮忙
+      tags: [gentle]
+      effects: { self: { charm: 0.2, energy: -20, mood: -2 }, drop: [owe_kin] }
+    - id: no
+      text: 推说单位加班
+      tags: [solitude]
+      effects: { self: { mood: -2 }, drop: [owe_kin], flags: [kin_cold] }
+
+- id: c_kin_cold
+  kind: solo
+  stage: middle
+  weight: 3
+  requires: { minAge: 31, maxAge: 44, flags: [kin_cold] }
+  title: 没送到的请帖
+  text: 表舅家孙子满月，请帖没送到你家。你是听楼下的人说的。
+  options:
+    - id: red
+      text: 托人捎个红包
+      tags: [responsible]
+      cost: 5
+      effects: { self: { mood: -1 } }
+    - id: call
+      text: 打个电话道喜
+      tags: [gentle]
+      effects: { self: { charm: 0.1, mood: -2 } }
+    - id: let
+      text: 当没听说
+      tags: [solitude]
+      effects: { self: { mood: -3 } }
+
+- id: c_owe_house
+  kind: solo
+  stage: middle
+  weight: 5
+  requires: { minAge: 31, maxAge: 45, flags: [owe_house] }
+  title: 外甥的事
+  text: 帮你买上房的那位打来电话，说外甥待业在家，问你那儿有没有活。
+  options:
+    - id: dinner
+      text: 请人吃顿饭替他问
+      tags: [responsible]
+      cost: 12
+      effects: { self: { charm: 0.1, mood: -1 }, drop: [owe_house] }
+    - id: take
+      text: 带他去你们那儿问问
+      tags: [gentle]
+      effects: { self: { energy: -15, mood: -3 }, drop: [owe_house] }
+    - id: no
+      text: 说实在没有门路
+      tags: [solitude]
+      effects: { self: { mood: -4 }, drop: [owe_house] }
+
+- id: c_owe_street
+  kind: solo
+  stage: young
+  weight: 5
+  requires: { minAge: 23, maxAge: 29, flags: [owe_street] }
+  title: 轮到你了
+  text: 当年带你去当学徒的那家搬家，楼里的年轻人都去搭把手。楼道里有人喊了你一声。
+  options:
+    - id: carry
+      text: 下楼去扛柜子
+      tags: [responsible]
+      effects: { self: { body: 0.1, energy: -20, mood: 1 }, drop: [owe_street] }
+    - id: smoke
+      text: 买两条烟送过去
+      tags: [patient]
+      cost: 5
+      effects: { self: { mood: -1 }, drop: [owe_street] }
+    - id: busy
+      text: 说今天走不开
+      tags: [solitude]
+      effects: { self: { mood: -3 }, drop: [owe_street] }
+
+- id: c_owe_street_mid
+  kind: solo
+  stage: middle
+  weight: 5
+  requires: { minAge: 33, maxAge: 59, flags: [owe_street] }
+  title: 陪床
+  text: 当年帮过你家的那户，老人夜里犯了病，儿子在外地。他家敲开了你的门。
+  options:
+    - id: night
+      text: 去医院陪一宿
+      tags: [responsible]
+      effects: { self: { energy: -25, mood: -1 }, drop: [owe_street] }
+    - id: money
+      text: 塞个信封过去
+      tags: [patient]
+      cost: 15
+      effects: { self: { mood: -1 }, drop: [owe_street] }
+    - id: word
+      text: 说明天一早再去
+      tags: [solitude]
+      effects: { self: { mood: -4 }, drop: [owe_street] }
+
+- id: c_owe_pa
+  kind: solo
+  stage: young
+  weight: 5
+  requires: { minAge: 23, maxAge: 29, flags: [owe_pa], notFlags: [fam_cut] }
+  title: 一桌酒
+  text: 你爸让你周末去陪当年帮过你的那位叔叔吃饭。他说：「坐到散席，酒你端着就行。」
+  options:
+    - id: stay
+      text: 去了，坐到散席
+      tags: [responsible]
+      effects: { self: { charm: 0.3, energy: -15, mood: -4 }, drop: [owe_pa] }
+    - id: early
+      text: 去了，敬一杯就走
+      tags: [patient]
+      effects: { self: { charm: 0.1, energy: -5, mood: -1 }, drop: [owe_pa] }
+    - id: no
+      text: 推了，说有事
+      requires: { notFlags: [strain1] }
+      tags: [adventure]
+      effects: { self: { mood: 3 }, drop: [owe_pa], flags: [strain1] }
+    - id: no_cut
+      text: 推了，说有事
+      requires: { flags: [strain1] }
+      tags: [adventure]
+      effects: { self: { mood: 3 }, drop: [owe_pa], flags: [fam_cut] }

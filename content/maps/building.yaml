@@ -37,7 +37,7 @@ spots:
   # 楼道：两扇对门，中间一只小板凳。哪家都不是，两个人都能坐，写作业也行
   - { id: door_qing, at: 1300, area: hallway, actions: [ knock ] }
   - { id: hall_stool, at: 1480, area: hallway, actions: [ study, read, coal ] }
-  - { id: hall_upstairs, at: 1620, area: hallway, actions: [ old_lessons, pair_cook, mind_kids ] }
+  - { id: hall_upstairs, at: 1620, area: hallway, actions: [ old_lessons, pair_cook, mind_kids, help_neighbor ] }
   - { id: door_mei, at: 1900, area: hallway, actions: [ knock ] }
   # 梅家：和青家左右对称
   - { id: basin_mei, at: 2130, area: home_mei, actions: [ wash ], owner: mei }

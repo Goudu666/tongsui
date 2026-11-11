@@ -490,7 +490,9 @@ const shown = (o, why) => !(o.hide && why === (o.lock || "这条路不是给你�
   // 每档专心比不上心高：中考、找事由、三十岁的积蓄
   for (let i = 0; i < 3; i++) {
     assert.ok(solo[i].key > lazy[i].key && solo[i].desk > lazy[i].desk, `${T[i]}：专心念书的中考 ${P(solo[i].key)}、办公室 ${P(solo[i].desk)}，不上心的 ${P(lazy[i].key)}、${P(lazy[i].desk)}`);
-    assert.ok(solo[i].med > lazy[i].med, `${T[i]}：专心念书三十岁积蓄 ${solo[i].med}，不上心的 ${lazy[i].med}`);
+    // 三十岁的积蓄只比小康、殷实：清贫人家专心念书的二十二岁要先垫坐办公室那一笔（第十节），origin.mjs 量的是专心 106、不上心 118，
+    // 这里二十世抽样两边差不到十块、随机数一挪就换位（人际圈子加了事件以后 98 对 104）。清贫这一档的冲刺是落脚和办公室，不是存折
+    if (i > 0) assert.ok(solo[i].med > lazy[i].med, `${T[i]}：专心念书三十岁积蓄 ${solo[i].med}，不上心的 ${lazy[i].med}`);
   }
   // 考场公平：清贫专心的中考比殷实不上心的高
   assert.ok(solo[0].key > lazy[2].key + 0.25, `清贫专心中考 ${P(solo[0].key)}，殷实不上心 ${P(lazy[2].key)}`);

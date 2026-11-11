@@ -1,0 +1,32 @@
+# 人际圈子（docs/CIRCLE.md）：认识谁，决定能求谁。
+#
+# 门路是标记（tie_*）：有了就是「能求到这个人」。三处来路：
+#   - 生下来就有（families.yaml 的 traits）：爸妈认识谁
+#   - 自己走动攒的（map.yaml 里带 tie 的行动，做够 times 回就认下了，引擎在 server/src/circle.ts）
+#   - 事件给的（content/events/circle.yaml：家长会、爷爷的老关系）
+# 用在关口上（milestones.yaml 里 requires 这些标记的路）：用一回摘掉，打上一个 owe_*（欠的人情），后面有事来讨（events/circle.yaml 的 c_owe_*）。
+#
+# 每条门路：
+#   label：认下的那一刻飘的字（「老师记住你了」）
+#   walk：走动时飘的字的前半截（「帮老师 3/6」），不写用 label
+#   fade：过了这几道关就摘掉（换了学校就换了老师）
+ties:
+  - id: tie_teacher
+    label: 老师记住你了
+    walk: 帮老师
+    fade: [m_junior, m_senior]
+  - id: tie_school
+    label: 学校里有人说得上话
+  - id: tie_unit
+    label: 单位里有人认得你了
+    walk: 走亲戚
+  - id: tie_house
+    label: 房管所有人认得你了
+    walk: 请人吃饭
+  - id: tie_street
+    label: 街坊记着你的好
+    walk: 给街坊帮忙
+  - id: tie_hospital
+    label: 医院里有熟人
+# 欠的人情：每一种都得有事来讨（build-content 校验 events 里有 requires 它、选了摘掉它的事）
+owes: [owe_school, owe_kin, owe_house, owe_street, owe_pa]

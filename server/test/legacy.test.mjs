@@ -865,3 +865,68 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
   assert.deepEqual(empty, { life: 1, ending: { pair: null, lives: { qing: null, mei: null } }, close: 0, persons: { qing: null, mei: null }, memories: [], left: { qing: null, mei: null }, noted: [], stats: { mirrors: 0, rate: 0, together: 0 } });
   console.log(`✓ 住户本：走完的从存档读、换世以后从归档读，是同一页（${text.length} 字节）/ 只有八样东西，没有随机数、标记、长卷 / 外人、没有的世数、没走完的、归档坏了的都读不到`);
 }
+
+// ---------- 18. 成家和下一代接到传承上（docs/FAMILY.md 第三节） ----------
+// 两家孩子一块儿长大、做了一辈子知己、孩子考上了大学：留得下老物件，留得下痕迹，街坊记得住，一生小结写得出来。
+// 守的还是那几条：老物件不超过半点、记住的事不给东西也不看属性和钱、隔世的事只是标记。
+{
+  const KID = /^(has_kid|kid_|single_life$|kids_same_age$)/;
+  const blank = (flags) => ({ flags, stats: { body: 5, mind: 5, charm: 5, luck: 5 }, money: 0, diedAtAge: 80, heirloomId: null });
+  const leave = (flags, taken) => G("legacyLeave")(C, blank(flags), taken);
+  // 老物件：比「虎头鞋」具体的排在它前面；两家的孩子那件和知己那件是两个人一起做过的，排在一个人挣来的后面
+  assert.equal(leave(["has_kid"]), "h_tiger_shoes");
+  assert.equal(leave(["has_kid", "kid_uni_top"]), "h_certificate");
+  assert.equal(leave(["has_kid", "kid_uni_top", "left_city"]), "h_certificate", "孩子考出去的奖状比自己那沓信难得");
+  assert.equal(leave(["has_kid", "kid_uni"]), "h_tiger_shoes", "考上了但不是头一档的，还是虎头鞋");
+  assert.equal(leave(["has_kid", "p_kids_tongsui"]), "h_drawing");
+  assert.equal(leave(["has_kid", "p_kids_tongsui"], "h_drawing"), "h_tiger_shoes", "对门留了那张画，我接着往下找");
+  assert.equal(leave(["p_confidant"]), "h_chessboard");
+  assert.equal(leave(["p_confidant"], "h_chessboard"), C.heirlooms.at(-1).id);
+  assert.equal(leave(["fam_breakfast", "took_over", "p_confidant"]), "h_scraper", "自己接下的营生排在两个人的事前面");
+  for (const id of ["h_drawing", "h_chessboard", "h_certificate"]) {
+    const h = heir(id);
+    assert.ok(Object.values(h.bonus).reduce((a, b) => a + b, 0) <= 0.5 && h.money === 0, `${h.name} 超过了上限`);
+    assert.ok(!/[+＋%]|加成|心智|魅力|体魄|运气|亲近/.test(h.desc), `${h.name} 的那句话只写物件本身`);
+  }
+
+  // 痕迹：三样共同标记都有隔世的事读，下一世的孩子带着 leg_ 出生，别的一样不多
+  const fam = ["p_confidant", "p_kids_tongsui", "p_kid_uni"];
+  for (const t of fam) assert.ok(C.legacy.traces.includes(t), `${t} 该留下痕迹`);
+  const noted = give(endedBlank(1), ["has_kid", ...fam]);
+  G("legacyNote")(noted, C);
+  assert.deepEqual(fam.filter((t) => noted.legacy.traces.includes(t)), fam);
+  const plain = confirm(G("lifeCreate")(13, C, LG({ lives: 1 })));
+  const marked = confirm(G("lifeCreate")(13, C, LG({ lives: 1, traces: fam })));
+  for (const r of ROLES) {
+    for (const t of fam) assert.ok(marked.persons[r].flags.includes("leg_" + t));
+    assert.deepEqual([J(marked.persons[r].stats), marked.persons[r].money], [J(plain.persons[r].stats), plain.persons[r].money]);
+  }
+  assert.deepEqual(J(marked.bond), J(plain.bond));
+  for (const id of ["l_door_marks", "l_stone_table", "l_old_notice"]) {
+    const e = C.events.find((x) => x.id === id);
+    assert.ok(e && ["childhood", "teen"].includes(e.stage) && e.requires.flags.some((f) => f.startsWith("leg_p_")), `${id} 要挂在上一世的痕迹上`);
+    // 不说破是谁：不写「上一世」「爸妈」「爷爷奶奶」这类
+    const words = JSON.stringify([e.text, e.options, e.resonance ?? {}, e.dissonance ?? {}]);
+    assert.ok(!/上一世|上辈子|前世|爷爷|奶奶|姥姥|姥爷|你爸|你妈/.test(words), `${id} 说破了`);
+  }
+
+  // 街坊记住的事：只看这一世做了什么（不看属性和钱），each 的有一个人做到就算
+  const note = (s) => { G("legacyNote")(s, C); return J(s.noted); };
+  const clean = (s) => { for (const r of ROLES) s.persons[r].flags = s.persons[r].flags.filter((f) => !KID.test(f)); return s; };
+  assert.ok(note(give(clean(endedBlank()), ["has_kid", "p_kids_tongsui"])).includes("r_kids_tongsui"));
+  assert.ok(note(give(clean(endedBlank()), ["p_confidant"])).includes("r_confidant"));
+  assert.ok(note(give(clean(endedBlank()), ["has_kid", "kid_away"], ["mei"])).includes("r_kid_away"));
+  assert.ok(!note(give(clean(endedBlank()), ["has_kid", "kid_uni"], ["mei"])).includes("r_kid_away"), "孩子留在本地念的，不算考出去");
+  assert.ok(!note(clean(endedBlank())).some((id) => ["r_kids_tongsui", "r_confidant", "r_kid_away"].includes(id)));
+
+  // 一生小结：孩子考出去的、留在身边的、两家孩子一块儿长大的、自己选了一个人过的；没有孩子结果的还是「当了爹妈」
+  const life = (flags) => C.endings.lives.find((e) => G("lifeLifeEndingOk")(blank(flags), e)).id;
+  assert.equal(life(["has_kid"]), "l_parent");
+  assert.equal(life(["has_kid", "kid_uni", "kid_away"]), "l_kid_far");
+  assert.equal(life(["has_kid", "kid_uni"]), "l_kid_near");
+  assert.equal(life(["has_kid", "kid_uni", "kid_away", "p_kids_tongsui"]), "l_kids_tongsui");
+  assert.equal(life(["single_life"]), "l_single");
+  assert.equal(life(["single_life", "stayed"]), "l_single", "一个人过的，排在守着河畔里前面");
+  assert.equal(life(["left_city", "has_kid", "kid_away"]), "l_wanderer", "自己去了外地的，还是远行的人");
+  console.log("✓ 成家和下一代：蜡笔画 / 棋盘 / 奖状各有人留得下，排在该在的地方 / 知己、两家的孩子、孩子考上大学留下痕迹，只是标记 / 街坊记住三条，只看这一世 / 一生小结四条按顺序");
+}

@@ -31,6 +31,7 @@ const Juice := preload("res://scripts/ui/juice.gd")
 const StatStrip := preload("res://scripts/ui/stat_strip.gd")
 const Reveal := preload("res://scripts/ui/reveal.gd")
 const Icons := preload("res://scripts/ui/icons.gd")
+const PathRuler := preload("res://scripts/ui/path_ruler.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -740,6 +741,8 @@ func _show_spot_action() -> void:
 	# TA 这一段也在这儿做同一件事：现在去做就是搭伴，两个人都长得快
 	if world.partner_doing(spot, act) or _partner_did_here(spot, act):
 		cost.append("和 TA 搭伴")
+	elif plain and world.goal_stat(act) != "":
+		cost.append("冲关口")
 	action_btn.set_meta("spot", spot.id)
 	var spent := plain and not mine.is_empty() and left <= 0.0
 	if spent:
@@ -882,7 +885,7 @@ func _check_did(data: Dictionary) -> void:
 				_toast("TA 也来了 · 刚才那一回%s算搭伴" % str(did.get("l", "")))
 			continue
 		if world != null:
-			world.flash_doing(r, str(did.get("a", "")), str(did.get("l", "")), bool(did.get("tg", false)))
+			world.flash_doing(r, str(did.get("a", "")), str(did.get("l", "")), bool(did.get("tg", false)), did)
 		if r != my_role:
 			continue
 		_clock_from = float(did.get("f", 0))
@@ -926,10 +929,11 @@ func _set_slot_btn() -> void:
 	slot_btn.visible = true
 
 
+## HUD 上那一小行网络延迟：顺的时候不写（头一回玩的人看见「143 ms」只会多想），卡了才说
 func _ping_text() -> String:
-	if net == null or offline_preview or net.rtt_ms < 0.0:
+	if net == null or offline_preview or net.rtt_ms < 300.0:
 		return ""
-	return "%d ms" % int(net.rtt_ms)
+	return "网络有点慢 · %d ms" % int(net.rtt_ms)
 
 
 func _on_action_pressed() -> void:
@@ -1100,6 +1104,7 @@ func _show_lobby() -> void:
 	code_edit.placeholder_text = "输入 TA 发给你的 6 位配对码"
 	code_edit.max_length = 6
 	right.add_child(code_edit)
+	code_edit.text_changed.connect(func(_t: String): _set_status(""))  # 「配对码是 6 位」别在改的时候还挂着
 	Kit.tint(_primary(right, "加入（我是梅）", func(): net.join_lifeline(code_edit.text.strip_edges(), name_edit.text)), P.MEI)
 	_status(right)
 
@@ -1227,7 +1232,9 @@ func _on_net_created(code: String, lifeline_id: String) -> void:
 	# 配对码印在一张票上
 	var ticket := Kit.card(P.QING, 40.0)
 	left.add_child(ticket)
-	_label(ticket, " ".join(code.split("")), 130, P.QING, HORIZONTAL_ALIGNMENT_CENTER)
+	# 三个一组（「YA7 PCD」）：一个字一个空格的写法在 1920 宽的屏上会把最后一个字挤到第二行
+	var shown_code := (code.substr(0, 3) + " " + code.substr(3)) if code.length() == 6 else code
+	_label(ticket, shown_code, 130, P.QING, HORIZONTAL_ALIGNMENT_CENTER)
 	_label(left, "TA 输入之后，这里会自己进屋", 34, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
 	right.alignment = BoxContainer.ALIGNMENT_CENTER
 	_primary(right, "复制配对码", func():
@@ -1335,6 +1342,7 @@ func _show_roll() -> void:
 	legacy.their_offer(right)
 	_label(right, "TA 已经定下来了" if bool(theirs.confirmed) else "TA 还在犹豫", 30, P.INK_SOFT)
 	_status(right)
+	_gate_preview(right, mine, theirs)
 	# 第二世起，我面前摆着的老物件在两栏下面通栏排开，定下来的按钮跟到它下面；头一世按钮就在出生证下面
 	legacy.my_offer(body)
 	var foot: Container = left
@@ -1350,6 +1358,58 @@ func _show_roll() -> void:
 		b.disabled = int(mine.rerollsLeft) <= 0
 		b.autowrap_mode = TextServer.AUTOWRAP_OFF
 		_primary(row, "就这样，出生吧", func(): net.confirm_roll())
+
+## 投胎页右下：这一把抽出来的本事，头一道关（六岁上小学）上够不够得着。抽卡的好坏一眼就有了着落，
+## 落地以后 HUD 上那条纸带接着说的就是这几条线。实心点是我，空心点是 TA
+func _gate_preview(parent: Container, mine: Dictionary, theirs: Dictionary) -> void:
+	var gate: Dictionary = {}
+	for id in events_by_id:
+		var ev: Dictionary = events_by_id[id]
+		if str(ev.get("kind", "")) != "milestone" or ev.get("age") == null:
+			continue
+		var lined := false
+		for o in ev.get("options", []):
+			if o is Dictionary and o.get("min") != null and not o.has("requires"):
+				lined = true
+		if lined and (gate.is_empty() or int(ev.age) < int(gate.age)):
+			gate = ev
+	if gate.is_empty():
+		return
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 14)
+	parent.add_child(head)
+	Kit.chip(head, "头一道关", P.INK, 26)
+	var t := _label(head, "%d 岁 · %s" % [int(gate.age), str(gate.get("title", ""))], 30)
+	t.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var mine_c := P.role_color(my_role)
+	var their_c := P.role_color(_other())
+	for o in gate.get("options", []):
+		if not o is Dictionary or o.get("min") == null or o.has("requires"):
+			continue
+		var w: Dictionary = o.score if o.get("score") is Dictionary else _dict(gate.get("score"))
+		var keys: Array = []
+		for k in w:
+			if not k in ["body", "mind", "charm", "luck"]:
+				keys = []
+				break
+			keys.append(P.STAT_NAME[k])
+		if keys.is_empty():
+			continue
+		var need := int(floor(float(o.min) * 10.0 + 0.001))
+		var have := _roll_points(mine, w)
+		var short_text := str(o.get("text", "")).split("，")[0]
+		var line := {"id": str(o.id), "text": short_text, "by": "和".join(keys), "unit": "分", "have": have, "need": need, "ok": have >= need}
+		parent.add_child(GoalRow.new(line, float(_roll_points(theirs, w)), mine_c, their_c, true))
+
+
+## 投胎时的四项（0~10 的整数）按关口的权重折成百分制
+func _roll_points(r: Dictionary, w: Dictionary) -> int:
+	var st: Dictionary = _dict(r.get("stats"))
+	var total := 0.0
+	for k in w:
+		total += float(w[k]) * float(st.get(k, 0))
+	return int(floor(total * 10.0 + 0.001))
+
 
 ## 卡片从上面一点落到它本来的位置。等容器排好版再动：位置是相对它自己该在的地方算的，
 ## 不然会把卡片挪到页面最顶上，盖住页头
@@ -1516,6 +1576,7 @@ func _refresh_hud() -> void:
 	hud.money = int(last_world.get("money", {}).get(my_role, 0))
 	var my_stats: Dictionary = _dict(_dict(last_world.get("stats")).get(my_role))
 	stat_strip.stats = my_stats
+	stat_strip.fine = _dict(_dict(last_world.get("fine")).get(my_role))
 	stat_strip.color = P.role_color(my_role)
 	stat_strip.visible = not my_stats.is_empty() and hud.visible
 	hud.bond = last_world.get("bond", life.get("bond", {}))
@@ -1592,6 +1653,25 @@ func _refresh_goal(my_track: Dictionary) -> void:
 	goal_panel.eff = float(_dict(last_world.get("eff")).get(my_role, 1.0))
 	goal_panel.track = str(my_track.get("label", ""))
 	goal_panel.stats = _dict(_dict(last_world.get("stats")).get(my_role))
+	if world != null:
+		world.goal_keys = goal_keys(goal_panel.goal, events_by_id)
+
+
+## 纸带上正盯着的那条线看哪几项（mind / body / charm）：地上能长这几项的点位，标签用自己的颜色写「长魅力」
+static func goal_keys(goal: Variant, evs: Dictionary) -> Array:
+	var line := GoalPanel.target_line(goal)
+	if line.is_empty() or bool(line.get("ok", false)):
+		return []
+	var ev: Dictionary = _dict(evs.get(str(goal.get("id", ""))))
+	var w: Dictionary = _dict(ev.get("score"))
+	for o in ev.get("options", []):
+		if o is Dictionary and str(o.get("id", "")) == str(line.id) and o.get("score") is Dictionary:
+			w = o.score
+	var out: Array = []
+	for k in ["mind", "body", "charm"]:
+		if float(w.get(k, 0.0)) > 0.0:
+			out.append(k)
+	return out
 
 
 ## 点开目标纸带：这一关所有的线，两个人各在哪；下面是三项属性和「怎么长得快」
@@ -1682,6 +1762,7 @@ func _on_event_started(data: Dictionary) -> void:
 		Kit.chip(head, "%s · %s" % [Hud.story_text({"chapter": ev.chapter})[0], str(ch.get("title", ""))], P.INK)
 	if mirror:
 		Kit.chip(head, "默契时刻 · 不要商量", P.role_color(my_role))
+	_head_when(head)
 	_label(modal_body, str(ev.get("title", "")), P.FS_TITLE + 4)
 	Kit.rule(modal_body)
 	_label(modal_body, str(ev.get("text", "")), P.FS_BODY + 2, P.INK)
@@ -1744,8 +1825,11 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 	head.add_theme_constant_override("separation", 16)
 	modal_body.add_child(head)
 	Kit.chip(head, "人生关口", P.INK)
-	var sub := _label(head, "各选各的，可以商量" if both else "这一关只有你过", 30, P.INK_SOFT)
+	var sub := _label(head, "各选各的，可以商量" if both else "这一关只有你过", P.FS_LABEL, P.INK_MID)
 	sub.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	sub.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	sub.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_head_when(head)
 	_label(modal_body, str(ev.get("title", "")), P.FS_TITLE + 4)
 	Kit.rule(modal_body)
 	_label(modal_body, str(ev.get("text", "")), P.FS_BODY + 2, P.INK)
@@ -1763,19 +1847,92 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 	var their_name := str(names.get(_other(), "TA"))
 	# 几条路并排摆着：够不着的是灰的，写着差多少；够得着的下面写对门走不走得了
 	var grid := _options(modal_body, opts.size())
+	var goals: Dictionary = _dict(last_world.get("goals"))
+	var my_goal: Dictionary = _dict(goals.get(my_role))
+	var their_goal: Dictionary = _dict(goals.get(_other()))
 	for o in opts:
 		var oid: String = o.id
 		var otext: String = o.text
 		var gated: bool = o.has("min") or o.has("cost")
+		var b: Button
 		if my_locks.has(oid):
-			var b := _option(grid, "%s\n%s" % [otext, str(my_locks[oid])], func(): pass)
+			b = _option(grid, "%s\n%s" % [otext, str(my_locks[oid])], func(): pass)
 			b.disabled = true
 		else:
 			var note := ""
 			if both and gated:
 				note = ("\n%s 够不着这条" if their_locks.has(oid) else "\n%s 也走得了") % their_name
-			_option(grid, otext + note, _pick_path.bind(oid, otext, both))
+			b = _option(grid, otext + note, _pick_path.bind(oid, otext, both))
+		_path_ruler(b, my_goal, their_goal, pe, oid, my_locks.has(oid), their_locks.has(oid), opts.size() > 6)
 	_gap(modal_body, 4)
+
+
+## 弹窗头一行最右边：这是哪一天（「7 岁 · 立夏」），像日记本页眉
+func _head_when(head: HBoxContainer) -> void:
+	var when := str(hud.time_label) if hud != null else ""
+	var room := Control.new()
+	room.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	room.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	head.add_child(room)
+	if when != "":
+		var l := _label(head, when, P.FS_LABEL, P.INK_MID, HORIZONTAL_ALIGNMENT_RIGHT)
+		l.size_flags_horizontal = Control.SIZE_SHRINK_END
+		l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		l.autowrap_mode = TextServer.AUTOWRAP_OFF
+
+
+## 路票底下垫一把小尺：这条路的线、我到哪了、对门到哪了（只有带分数线的路才有）。
+## 尺上的点要和锁上那句话对得上：服务器锁路时用的是「本事 + 今天的发挥」（lifeOptionLock），
+## lifeGoal 的 have 不带发挥，这里补上 swing；再以锁为准夹一下：锁着的点不过旗，没锁的点不落在旗前。
+## compact：路多（超过 6 条）时票不另加高，尺子压进票底下一窄条，只给字让出这一条
+func _path_ruler(b: Button, my_goal: Dictionary, their_goal: Dictionary, pe: Dictionary, option_id: String,
+		locked: bool, their_locked: bool, compact: bool) -> void:
+	var event_id := str(pe.get("eventId", ""))
+	if str(my_goal.get("id", "")) != event_id:
+		return
+	var line: Dictionary = {}
+	for l in my_goal.get("lines", []):
+		if l is Dictionary and str(l.get("id", "")) == option_id:
+			line = l.duplicate()
+	if line.is_empty() or float(line.get("need", 0)) <= 0.0 or str(line.get("unit", "分")) != "分":
+		return
+	var swing: Dictionary = _dict(pe.get("swing"))
+	if str(line.get("by", "")).contains("亲近"):  # 看亲近原数的线不算发挥（sim.ts lifeScoreRaw）
+		swing = {}
+	line["have"] = path_have(float(line.get("have", 0)), float(swing.get(my_role, 0.0)), float(line.need), locked)
+	var theirs := GoalPanel.their_have(their_goal if str(their_goal.get("id", "")) == event_id else null, option_id)
+	if theirs >= 0.0:
+		theirs = path_have(theirs, float(swing.get(_other(), 0.0)), float(line.need), their_locked)
+	var r := PathRuler.new(line, theirs, P.role_color(my_role), P.role_color(_other()), b.disabled)
+	r.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	r.offset_left = 34
+	r.offset_right = -30
+	r.offset_top = -34 if compact else -46
+	r.offset_bottom = -6 if compact else -14
+	b.add_child(r)
+	if not compact:
+		b.custom_minimum_size.y = 168
+	var lift := 12.0 if compact else 20.0
+	for c in b.get_children():  # 甲乙丙那枚印跟着字往上挪，别落在尺子上
+		if c is Label:
+			c.offset_top -= lift
+			c.offset_bottom -= lift
+	for st in ["normal", "hover", "pressed", "disabled"]:
+		var sb: StyleBox = b.get_theme_stylebox(st)
+		if sb != null:
+			sb.content_margin_bottom = 34.0 if compact else 52.0
+
+
+## 路票尺子上的点：本事加今天的发挥（swing 是属性单位，×10 是分），再以锁为准
+## 锁着又不够线：是分数锁，最多画到旗前一格。锁着但分数够：锁的是标记、家底或花销，照实画在旗后，让锁上那句话去解释。
+## 没锁：分数一定够，往上夹到线（差得多了说明 line 和锁算的不是一个数，报一声）。
+static func path_have(have: float, swing: float, need: float, locked: bool) -> float:
+	var v := have + swing * 10.0
+	if locked:
+		return v if v >= need else minf(v, need - 1.0)
+	if v < need - 3.0:
+		push_warning("路票尺子：没锁的路 %.1f 分，线是 %.1f 分，和锁对不上" % [v, need])
+	return maxf(v, need)
 
 
 ## 关口上选路。waiting：对门也过这一关，选完要等 TA

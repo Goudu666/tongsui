@@ -287,11 +287,10 @@ function lifeOptionLock(ev: LifeEvent, o: EventOption, p: Person, swing: number,
  * 只是把已经算出来的东西换成 score 的口径交出去，不影响结算。
  *   line   选的这条路的线
  *   luck   这一场的发挥（含默契托住的 steady）；看原数的线（积蓄、亲近）不算发挥，没有这两项
- *   miss   标记对得上、只差分数的路里，离线最近的一条（够着了的不算）
+ *   差几分没够上的那条不在这儿：用 atlasMilestoneNear 给的 results.near（和锁上那句、结局页的「差一点」同一个数）
  */
-function lifeReveal(ev: LifeEvent, o: EventOption, p: Person, swing: number, steady: number, bond?: Bond) {
-  var out: { line?: number; luck?: number; steady?: number; miss?: { option: string; need: number; have: number } } = {};
-  var show = function (w: ScoreWeights, v: number): number { return lifeScoreRaw(w) ? Math.floor(v) : lifePoints(v); };
+function lifeReveal(ev: LifeEvent, o: EventOption, swing: number, steady: number) {
+  var out: { line?: number; luck?: number; steady?: number } = {};
   var ow = lifeOptionWeights(ev, o);
   if (o.min) out.line = lifeScoreRaw(ow) ? o.min : lifePoints(o.min);
   if (!lifeScoreRaw(o.min ? ow : ev.score || {})) {
@@ -300,29 +299,13 @@ function lifeReveal(ev: LifeEvent, o: EventOption, p: Person, swing: number, ste
     var st = Math.round(steady * 10);
     if (st > 0) out.steady = st;
   }
-  var bestGap = Infinity;
-  for (var i = 0; i < ev.options.length; i++) {
-    var x = ev.options[i];
-    var rq = x.requires || {};
-    if (!x.min || x.id === o.id || !lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) continue;
-    var w = lifeOptionWeights(ev, x);
-    if (w.close && !bond) continue;
-    var have = lifeScore(p, w, bond) + (lifeScoreRaw(w) ? 0 : swing);
-    if (have >= x.min) continue;
-    var gap = (x.min - have) / x.min;
-    if (gap < bestGap) {
-      bestGap = gap;
-      out.miss = { option: x.id, need: lifeScoreRaw(w) ? x.min : lifePoints(x.min), have: show(w, have) };
-    }
-  }
   return out;
 }
 
-function lifeRevealExtras(r: { line?: number; luck?: number; steady?: number; miss?: { option: string; need: number; have: number } }, x: ReturnType<typeof lifeReveal>) {
+function lifeRevealExtras(r: { line?: number; luck?: number; steady?: number }, x: ReturnType<typeof lifeReveal>) {
   if (x.line !== undefined) r.line = x.line;
   if (x.luck !== undefined) r.luck = x.luck;
   if (x.steady !== undefined) r.steady = x.steady;
-  if (x.miss) r.miss = x.miss;
 }
 
 /** 关口上这条路算哪条路：花钱进的重点、托关系进的单位，和考进去的是同一条（joins），两个人还是同路 */
@@ -577,9 +560,11 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       for (var g = 0; g < (ev.grades || []).length; g++) if (gscore >= ev.grades![g].min) { grade = ev.grades![g]; break; }
       // 成绩单上的数要在扣钱、长属性之前算：那是走进考场那一刻的本事
       var sw = o.min ? w : gw;
+      // 差一点：离哪条没走成的路最近（结局页上「差一点」读它，见 atlas.ts）。也是走进考场那一刻的数
+      var near = atlasMilestoneNear(ev, o.id, me, swing, lifePairBond(s, role));
       var shown = lifeScoreRaw(sw) ? Math.floor(lifeScore(me, sw, s.bond)) : lifePoints(lifeScore(me, sw, s.bond) + swing);
-      // 揭晓演出要的几样（线、发挥、差一点的那条），也是走进考场那一刻的
-      var reveal = lifeReveal(ev, o, me, swing, (pe.steady && pe.steady[role]) || 0, lifePairBond(s, role));
+      // 揭晓演出要的几样（线、发挥），也是走进考场那一刻的。差一点的那条就是上面的 near，不另算
+      var reveal = lifeReveal(ev, o, swing, (pe.steady && pe.steady[role]) || 0);
       if (grade) lifeAddFlags(me, grade.flags);
       if (o.cost) me.money = Math.max(0, me.money - o.cost);
       lifeApplySelf(me, o.effects.self, grow);
@@ -599,6 +584,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
         track: lifeTrack(c, me, entry.age).id,
       };
       lifeRevealExtras(entry.results[role]!, reveal);
+      if (near) entry.results[role]!.near = near;
     } else {
       // 检定：这个选项成不成，看本事也看运气（见 growth.ts → growthResolveCheck）
       var out = growthResolveCheck(s, c, pe, ev, o, role, entry);
@@ -704,6 +690,7 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
     legacyDerive(s); // 这一世走完才看得出来的事（同一年走的、干了一辈子同一行……），结局读得到
     s.ending = lifeEnding(s, c);
     legacyAbsorb(s, c); // 记进传承：各自留下了什么，街坊记住了什么
+    atlasAbsorb(s, c); // 差一点就……；这一世的结局记进图鉴
     var end = lifeEntry(s, "end", lifeEndingText(s, c, s.ending) + lifeEpitaph(s));
     out.push(end);
     s.log.push(end);

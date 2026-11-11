@@ -1735,7 +1735,7 @@ func _show_milestone_result(e: Dictionary) -> void:
 			rv.rank = Juice.rank_of(events_by_id.get(e.events[r], ev), rv.grade)
 			if rv.rank != "":
 				rv.grade = ""  # 名次另砸横章，方印只写「过线」
-			var miss: Dictionary = _dict(res.get("near", res.get("miss")))  # near：结局页「差一点」同一个数（atlas.ts）；miss 是没有 near 的服务器
+			var miss: Dictionary = _dict(res.get("near"))  # 差一点：和结局页「差一点」、锁上那句同一个数（atlas.ts → atlasMilestoneNear）
 			if not miss.is_empty():
 				miss = miss.duplicate()
 				miss["text"] = _option_text(e.events[r], miss.get("option"))

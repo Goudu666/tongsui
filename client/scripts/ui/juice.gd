@@ -180,7 +180,7 @@ func milestone_row(e: Dictionary, res: Dictionary) -> Dictionary:
 	var rank := rank_of(ev, str(res.grade)) if res.get("grade") != null else ""
 	if rank != "":  # 兜底那档（「没过线」）不印
 		row["g"] = rank
-	var near: Dictionary = _dict(res.get("near", res.get("miss")))
+	var near: Dictionary = _dict(res.get("near"))
 	if not near.is_empty() and near.has("need") and near.has("have"):
 		row["gap"] = int(near.need) - int(near.have)
 		row["u"] = str(near.get("unit", res.get("unit", "分")))

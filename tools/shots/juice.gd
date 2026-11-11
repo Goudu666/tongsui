@@ -126,7 +126,7 @@ func _run() -> void:
 		"choices": {"qing": "local", "mei": "away"}, "shadow": [], "resonance": false,
 		"text": "一个留在本市，一个坐上了往南的车。车开以前，你们在站台上把那包瓜子分完了。",
 		"results": {
-			"qing": {"score": 81, "scored": true, "unit": "分", "grade": "过了本科线", "option": "local", "track": "uni_local", "line": 68, "luck": -3, "steady": 2, "miss": {"option": "away", "need": 84, "have": 81}},
+			"qing": {"score": 81, "scored": true, "unit": "分", "grade": "过了本科线", "option": "local", "track": "uni_local", "line": 68, "luck": -3, "steady": 2, "near": {"option": "away", "need": 84, "have": 81, "unit": "分", "label": "心智"}},
 			"mei": {"score": 86, "scored": true, "unit": "分", "grade": "过了本科线", "option": "away", "track": "uni_away", "line": 84, "luck": 2}}}]})
 	await _wait(0.75)
 	await _snap("j07_reveal_counting")
@@ -141,7 +141,7 @@ func _run() -> void:
 	# 4. 一个人的关：小升初，差 2 分没进重点班
 	main._on_log_entries({"entries": [{"kind": "milestone", "label": "12 岁 · 上学期", "age": 12, "events": {"qing": "m_junior"},
 		"choices": {"qing": "normal"}, "shadow": [], "resonance": null, "text": "",
-		"results": {"qing": {"score": 72, "scored": true, "unit": "分", "grade": null, "option": "normal", "track": "junior", "luck": -2, "miss": {"option": "key", "need": 74, "have": 72}}}}]})
+		"results": {"qing": {"score": 72, "scored": true, "unit": "分", "grade": null, "option": "normal", "track": "junior", "luck": -2, "near": {"option": "key", "need": 74, "have": 72, "unit": "分", "label": "心智"}}}}]})
 	await _wait(2.6)
 	await _snap("j10_miss")
 	await _wait(1.0)

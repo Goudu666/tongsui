@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "d30c6c457b3d",
+ "version": "314e7e1e3ec0",
  "events": [
   {
    "id": "ch_runner",
@@ -14845,6 +14845,85 @@ var CONTENT: Content = {
     },
     "flags": []
    },
+   "catches": []
+  },
+  {
+   "id": "mw_crib",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 6,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 30,
+    "maxAge": 42,
+    "flags": [
+     "p_married"
+    ],
+    "notFlags": [
+     "has_kid"
+    ]
+   },
+   "title": "半间屋",
+   "text": "家里那半间屋一直空着，堆着两家搬过来的旧东西。你拿尺子量了量那面墙，正好放得下一张小床。",
+   "options": [
+    {
+     "id": "yes",
+     "text": "要个孩子吧",
+     "tags": [
+      "responsible",
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "has_kid"
+      ]
+     }
+    },
+    {
+     "id": "wait",
+     "text": "先接着堆东西",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kid_later"
+      ]
+     }
+    },
+    {
+     "id": "study",
+     "text": "收拾成一间书房",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.5,
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
    "catches": []
   },
   {

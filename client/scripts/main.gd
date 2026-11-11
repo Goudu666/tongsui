@@ -2275,7 +2275,7 @@ func _show_milestone_result(e: Dictionary) -> void:
 			rv.delay = 0.45
 			rv.custom_minimum_size.x = width
 			if audio != null:
-				rv.sound = audio.cue
+				rv.sound = audio.reveal_cue if r == my_role and audio.has_method("reveal_cue") else audio.cue
 			box.add_child(rv)
 			reveals.append(rv)
 			var pick := _label(box, "→ " + pick_text, 34, P.INK)

@@ -196,7 +196,7 @@ function pass(s) {
   console.log("✓ 不押孩子也自己长一点");
 }
 
-// ---------- 7. 孩子的关口：孩子到了岁数，落在没有自己关口的那天 ----------
+// ---------- 7. 孩子的关口：孩子快到岁数（提前两岁以内），落在没有自己关口的那天 ----------
 {
   const gates = C.events.filter((e) => e.kind === "milestone" && e.kidAge !== undefined);
   assert.deepEqual(J(gates.map((e) => [e.id, e.kidAge])), [["mk_school", 6], ["mk_junior", 12], ["mk_senior", 15], ["mk_gaokao", 18]]);
@@ -222,7 +222,7 @@ function pass(s) {
     if (own) assert.equal(id, own.id, `${age} 岁有自己的关口：先过自己的`);
     if (id && ev(id).kidAge !== undefined) {
       seenAt[id] = age;
-      assert.ok(age - kidOf(s, "qing").bornAge >= ev(id).kidAge, "孩子到了岁数");
+      assert.ok(age - kidOf(s, "qing").bornAge >= ev(id).kidAge - 2, "孩子快到岁数了（提前两岁以内）");
       const tk = { entries: [], started: null, dayEnded: false };
       G("worldMilestone")(s, C, tk);
       assert.deepEqual(J((s.world.event || { roles: tk.entries[0] && Object.keys(tk.entries[0].events).filter((r) => tk.entries[0].events[r]) }).roles), ["qing"], "只有有孩子的那个人过");

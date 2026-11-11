@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "f81ee9b6964e",
+ "version": "3015acd3db03",
  "events": [
   {
    "id": "ch_runner",
@@ -7413,8 +7413,9 @@ var CONTENT: Content = {
    },
    "kidAge": 6,
    "score": {
-    "kid_mind": 0.6,
-    "kid_charm": 0.4
+    "kid_mind": 0.4,
+    "kid_charm": 0.3,
+    "kid_body": 0.3
    },
    "swing": false,
    "grades": [],
@@ -8233,8 +8234,8 @@ var CONTENT: Content = {
      "kid_prim_key"
     ],
     "kidAge": [
-     6,
-     9
+     5,
+     11
     ]
    },
    "title": "过桥上学",
@@ -8308,8 +8309,8 @@ var CONTENT: Content = {
      "kid_prim_near"
     ],
     "kidAge": [
-     6,
-     9
+     5,
+     11
     ]
    },
    "title": "拐角的小学",
@@ -8382,8 +8383,8 @@ var CONTENT: Content = {
      "kid_mid_near"
     ],
     "kidAge": [
-     12,
-     14
+     11,
+     16
     ]
    },
    "title": "蓝校服",
@@ -8457,8 +8458,8 @@ var CONTENT: Content = {
      "kid_mid_key"
     ],
     "kidAge": [
-     12,
-     14
+     11,
+     16
     ]
    },
    "title": "趴着睡了",
@@ -8531,8 +8532,8 @@ var CONTENT: Content = {
      "kid_high_key"
     ],
     "kidAge": [
-     15,
-     17
+     14,
+     20
     ]
    },
    "title": "一罐咸菜",
@@ -8605,8 +8606,8 @@ var CONTENT: Content = {
      "kid_trade"
     ],
     "kidAge": [
-     15,
-     19
+     14,
+     20
     ]
    },
    "title": "手稳",
@@ -8678,8 +8679,8 @@ var CONTENT: Content = {
      "kid_uni_top"
     ],
     "kidAge": [
-     18,
-     20
+     17,
+     24
     ]
    },
    "title": "通知书",
@@ -8752,8 +8753,8 @@ var CONTENT: Content = {
      "kid_uni"
     ],
     "kidAge": [
-     18,
-     20
+     17,
+     24
     ]
    },
    "title": "分数条",
@@ -8899,8 +8900,8 @@ var CONTENT: Content = {
      "kid_work"
     ],
     "kidAge": [
-     18,
-     22
+     17,
+     24
     ]
    },
    "title": "一兜水果",
@@ -9087,8 +9088,8 @@ var CONTENT: Content = {
      "kids_same_age"
     ],
     "kidAge": [
-     7,
-     11
+     6,
+     12
     ]
    },
    "title": "一身土",
@@ -9533,7 +9534,7 @@ var CONTENT: Content = {
     ],
     "kidAge": [
      17,
-     20
+     24
     ]
    },
    "title": "两个箱子",

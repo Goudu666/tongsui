@@ -151,7 +151,7 @@
   kind: solo
   stage: middle
   weight: 3
-  requires: { flags: [has_kid, kid_prim_key], kidAge: [6, 9] }
+  requires: { flags: [has_kid, kid_prim_key], kidAge: [5, 11] }
   title: 过桥上学
   text: 小学在河对岸，早上得早起四十分钟。孩子在后座上又睡着了，书包还抱在怀里。
   options:
@@ -172,7 +172,7 @@
   kind: solo
   stage: middle
   weight: 3
-  requires: { flags: [has_kid, kid_prim_near], kidAge: [6, 9] }
+  requires: { flags: [has_kid, kid_prim_near], kidAge: [5, 11] }
   title: 拐角的小学
   text: 小学就在拐角，放学孩子自己走回来。传达室的大爷认得是谁家的，也认得跟谁一块儿走。
   options:
@@ -193,7 +193,7 @@
   kind: solo
   stage: middle
   weight: 3
-  requires: { flags: [has_kid, kid_mid_near], kidAge: [12, 14] }
+  requires: { flags: [has_kid, kid_mid_near], kidAge: [11, 16] }
   title: 蓝校服
   text: 初中分在片儿里那所，校服是蓝的。孩子说挺好，离家近，中午能回来吃饭。
   options:
@@ -215,7 +215,7 @@
   kind: solo
   stage: middle
   weight: 3
-  requires: { flags: [has_kid, kid_mid_key], kidAge: [12, 14] }
+  requires: { flags: [has_kid, kid_mid_key], kidAge: [11, 16] }
   title: 趴着睡了
   text: 进了重点初中，头一个月，孩子回家放下书包就趴在桌上睡着了。饭还没端上来。
   options:
@@ -236,7 +236,7 @@
   kind: solo
   stage: middle
   weight: 3
-  requires: { flags: [has_kid, kid_high_key], kidAge: [15, 17] }
+  requires: { flags: [has_kid, kid_high_key], kidAge: [14, 20] }
   title: 一罐咸菜
   text: 重点高中要住校，礼拜天下午走。你把一罐咸菜塞进箱子，又拿出来，又塞了回去。
   options:
@@ -257,7 +257,7 @@
   kind: solo
   stage: middle
   weight: 3
-  requires: { flags: [has_kid, kid_trade], kidAge: [15, 19] }
+  requires: { flags: [has_kid, kid_trade], kidAge: [14, 20] }
   title: 手稳
   text: 孩子在职高学修车。礼拜天蹲在楼下给人换链条，下棋的老街坊看了半天，说：「手稳。」
   options:
@@ -278,7 +278,7 @@
   kind: solo
   stage: middle
   weight: 3
-  requires: { flags: [has_kid, kid_uni_top], kidAge: [18, 20] }
+  requires: { flags: [has_kid, kid_uni_top], kidAge: [17, 24] }
   title: 通知书
   text: 通知书到了。孩子拆开看完，递给你。你没看字，先摸了摸那张纸，挺厚。
   options:
@@ -300,7 +300,7 @@
   kind: solo
   stage: middle
   weight: 3
-  requires: { flags: [has_kid, kid_uni], kidAge: [18, 20] }
+  requires: { flags: [has_kid, kid_uni], kidAge: [17, 24] }
   title: 分数条
   text: 考上了，不是最好的那所。孩子自己挺高兴。你把分数条看了三遍，折起来夹进自己的本子。
   options:
@@ -342,7 +342,7 @@
   kind: solo
   stage: middle
   weight: 3
-  requires: { flags: [has_kid, kid_work], kidAge: [18, 22] }
+  requires: { flags: [has_kid, kid_work], kidAge: [17, 24] }
   title: 一兜水果
   text: 孩子头一个月的工资，买了一兜水果拎回来。在门口换鞋，说下个月给你买件衣裳。
   options:
@@ -409,7 +409,7 @@
   where: alley
   hint: 楼下有孩子在哭。
   weight: 3
-  requires: { flags: [has_kid, kids_same_age], kidAge: [7, 11] }
+  requires: { flags: [has_kid, kids_same_age], kidAge: [6, 12] }
   title: 一身土
   text: 两家孩子在楼下打起来了，滚了一身土。你俩从两头跑过来，一人拽住一个。
   options:
@@ -572,7 +572,7 @@
   when: [420, 660]
   hint: 楼下有箱子轱辘响。
   weight: 3
-  requires: { flags: [has_kid, kids_same_age, kid_away], kidAge: [17, 20] }
+  requires: { flags: [has_kid, kids_same_age, kid_away], kidAge: [17, 24] }
   title: 两个箱子
   text: 两家孩子同一天走，一个往南，一个往北。楼下两个箱子的轱辘，一个声。
   options:

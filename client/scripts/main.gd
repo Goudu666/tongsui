@@ -845,7 +845,7 @@ func _check_did(data: Dictionary) -> void:
 				_toast("TA 也来了 · 刚才那一回%s算搭伴" % str(did.get("l", "")))
 			continue
 		if world != null:
-			world.flash_doing(r, str(did.get("a", "")), str(did.get("l", "")), bool(did.get("tg", false)))
+			world.flash_doing(r, str(did.get("a", "")), str(did.get("l", "")), bool(did.get("tg", false)), did)
 		if r != my_role:
 			continue
 		_clock_from = float(did.get("f", 0))

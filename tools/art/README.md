@@ -16,7 +16,8 @@ pip install pycairo numpy pillow
 bash tools/fetch_addons.sh            # 需要里面的霞鹜文楷字体（招牌、地名）
 python3 tools/art/scenes.py           # 十一张侧视横图 → client/art/scenes/
 python3 tools/art/scenes.py street    # 只重画一张
-python3 tools/art/actors.py           # 角色（侧视骨骼）→ client/art/actors/
+python3 tools/art/actors.py           # 角色（侧视骨骼）→ client/art/actors/（约 80 秒）
+python3 tools/art/folks.py            # 横版街坊和路人 → client/art/folks/（先 npm run content 出 client/data/folks.json）
 python3 tools/art/layers.py           # 远景、中景、四季的树、前景 → client/art/layers/
 python3 tools/art/street.py           # 街坊、车、年代道具 → client/art/street/
 ```
@@ -37,6 +38,8 @@ python3 tools/art/scenes.py --preview street --x 1200 --w 1600 --scale 0.5 --out
 | `scenes.py` | 侧视横版的十一张图：零件（楼面、窗、门、招牌、雨棚、树、电线杆、路灯、家具）+ 每张图一个 `draw_<图>` |
 | `actors.py` | 青、梅五个人生阶段的侧视精灵表：一副骨架（髋、膝、踝、肩、肘）按关键帧摆姿势，衣裳和头发套在骨架上 |
 | `layers.py` | 视差层：远景天际线和中景屋顶（每个年代一张，带一张夜里亮灯的窗户图）、三种树的四季、四种前景条 |
+| `actor_acts.py` | 主角的二十套专属动作（写作业、吃饭、颠球、跳皮筋、修车、炒菜、钓鱼、下棋、弹琴、放风筝…）和四个情绪动作，套在 `actors.py` 的骨架上，道具在 hook 里跟着关节画 |
+| `folks.py` | 横版街坊（一人一种营生：摇蒲扇、织毛衣、吆喝、剃头、遛狗、推婴儿车、指挥…）和六种路人，同一副骨架、浅一档的网点 |
 | `street_fig.py` | 街坊的参数化小人：体型、朝向、站/坐、衣裳、手里拿的东西，一个字典画一个人 |
 | `street.py` | 街景图集：街坊、公告栏、电话亭、快递柜、共享单车、面的、出租、骑车的人、对岸天际线 |
 
@@ -51,7 +54,15 @@ python3 tools/art/scenes.py --preview street --x 1200 --w 1600 --scale 0.5 --out
 - **视差层**（`layers.py`，`scene_art.gd` 摆）：从后往前是天空着色器（`sky.gdshader`：网点渐变、云、太阳、月亮、星星）→ 远景 `far_<年代>.png` → 中景 `mid_<年代>.png` → 底图 → 树 `tree_<种>_<季>.png`（`sway.gdshader` 晃）→ 前景 `fore_<种>.png` → 天气粒子 → 夜版。
   远景和中景都是 2048 宽、首尾接得上的横条，`_lit.png` 是同样大小的灰度图，标出哪些窗户夜里会亮（`far_layer.gdshader` 按格子随时间开灯关灯）。年代 0~4 对应童年到老年，楼一代比一代高。
 - **角色**：`{qing|mei}_{child|teen|young|middle|old}.png`，8 列 × 3 行，每格 200×220（2 倍输出），脚底在格子 (100, 206)，都朝右（朝左由引擎翻转）。
-  行 0 是走路八帧（一步一个周期）；行 1 列 0~3 站着（列 3 眨眼）、列 4~7 在忙；行 2 列 0~1 坐、2~3 睡、4~7 招手。引擎按走过的距离推帧（`actor.gd` 的 `STRIDE`），所以快慢都不滑步。
+  行 0 是走路八帧（一步一个周期）；行 1 列 0~3 站着（列 3 眨眼）、列 4~7 在忙；行 2 列 0~1 坐、2~3 睡、4~7 招手；
+  行 3 高兴 / 泄气，行 4 击掌 / 挠头（各 4 帧）。引擎按走过的距离推帧（`actor.gd` 的 `STRIDE`），所以快慢都不滑步。
+  体态随年纪变：小孩走路一颠一颠（`hop`）、少年微含胸、中年发福（`belly`）、老人驼背屈膝（`lean`、`knee_bend`）。
+- **专属动作表**：`{qing|mei}_{stage}_act.png`，8 列 × 10 行、1.5 倍输出（2400×3300，省显存）。每行两套 4 帧循环，顺序是 `actor_acts.ACTS`，
+  和 `actor.gd` 的 `ACT_LOOP` 一一对应（`client/tests/unit_life.gd` 对着查）。行动 id 对到哪一套在 `actor.gd` 的 `ACTION_LOOP` / `DUTY_LOOP`。
+  脸上的表情是 `actors._face` 的 expr（笑、大笑、说话、唱、专心、琢磨、使劲、难过、嚼、不好意思…），头可以低头抬头（pose 的 `tilt`）。
+- **街坊**：`client/art/folks/<图>.png` 一位一行（列 0~3 营生、4~7 歇着），`walkers.png` 一种路人一行 8 帧走路，`index.json` 记谁在哪一行。
+  谁在哪张图、哪个年纪、几段在、搭什么腔写在 `content/maps/<图>.yaml` 的 `npcs`（`npm run content` → `client/data/folks.json`）；
+  新加一位要在 `folks.py` 的 `FOLKS` 里给他长相和营生，不然 `folks.py` 和 `unit_life` 都会报。运行时 `client/scripts/world/folks.gd`。
 
 ## 街景：随年代更替的那一层
 

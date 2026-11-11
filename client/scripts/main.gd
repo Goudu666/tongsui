@@ -49,6 +49,11 @@ var slot_btn: Button       ## 行动按钮左边的「就这么过」：这一�
 var slot_title: Label
 var slot_sub: Label
 var fill_btn: Button       ## 行动按钮左边的「做到 12:00」：这件事一直做到这一段完（不按它就是做一回、当场看结果）
+var menu_box: HBoxContainer  ## 行动按钮上头一排小牌子：这个点位的菜单（茶社里听一段 / 上台 / 跑堂），点一块，大按钮换成那件事
+var _menu_pick: Dictionary = {}  ## spot id -> 菜单上点中的那件事的 id（这一段里记着；换了段就回到头一件）
+var _menu_sig := ""          ## 现在摆着的那排牌子是哪个点位、哪几件、点中哪件：一样就不重摆
+var _menu_slot := -1
+var menu_always := false     ## 截图、单测用：不联网也摆菜单（tools/shots/menu.gd）
 var fill_title: Label
 var fill_sub: Label
 var day_card: Control = null  ## 一天收工的小结卡正开着（爽感层 juice.gd 看它：开着的时候不飘字）
@@ -94,6 +99,8 @@ const MODAL_WIDE := 1500.0    ## 选项并排、左右分栏的弹窗
 const ACTION_SIZE := Vector2(640, 128)
 const SLOT_SIZE := Vector2(300, 128)
 const FILL_SIZE := Vector2(300, 128)
+const MENU_H := 72.0       ## 点位菜单那排小牌子的高
+const MENU_WIDTH := 1300.0 ## 那排牌子最宽摆这么多（靠右对齐，从行动按钮右边往左排）
 const CLOCK_SWEEP := 0.9  ## 做完一回，钟拨过去要几秒
 const TOAST_ANCHOR := 0.72  ## 提示条平时在屏高这么多的地方；开着弹窗时贴到顶上
 
@@ -234,6 +241,17 @@ func _build_layers() -> void:
 	for l in [slot_title, slot_sub]:
 		l.autowrap_mode = TextServer.AUTOWRAP_OFF
 		l.clip_text = true
+	# 点位菜单：行动按钮正上方一排小牌子，靠右对齐
+	menu_box = HBoxContainer.new()
+	menu_box.anchor_left = 1.0
+	menu_box.anchor_right = 1.0
+	menu_box.anchor_top = 1.0
+	menu_box.anchor_bottom = 1.0
+	menu_box.alignment = BoxContainer.ALIGNMENT_END
+	menu_box.add_theme_constant_override("separation", 14)
+	menu_box.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	menu_box.visible = false
+	hud.add_child(menu_box)
 	# 「做到点」：和「就这么过」一样的纸色次要按钮，夹在两者中间
 	fill_btn = Button.new()
 	fill_btn.anchor_left = 1.0
@@ -406,6 +424,10 @@ func _layout_hud() -> void:
 	action_btn.offset_left = action_btn.offset_right - ACTION_SIZE.x
 	action_btn.offset_bottom = -44
 	action_btn.offset_top = action_btn.offset_bottom - ACTION_SIZE.y
+	menu_box.offset_right = action_btn.offset_right
+	menu_box.offset_left = action_btn.offset_right - MENU_WIDTH
+	menu_box.offset_bottom = action_btn.offset_top - 18
+	menu_box.offset_top = menu_box.offset_bottom - MENU_H
 	fill_btn.offset_right = action_btn.offset_left - 28
 	fill_btn.offset_left = fill_btn.offset_right - FILL_SIZE.x
 	fill_btn.offset_bottom = action_btn.offset_bottom
@@ -596,8 +618,10 @@ func _process(delta: float) -> void:
 		action_btn.visible = false
 		slot_btn.visible = false
 		fill_btn.visible = false
+		menu_box.visible = false
 		return
 	fill_btn.visible = false
+	menu_box.visible = false
 	match _slot_state():
 		"playing":
 			# 这一段正在眼前过：什么都不用点
@@ -682,7 +706,19 @@ func _show_spot_action() -> void:
 	if spot.is_empty():
 		action_btn.visible = false
 		return
-	var act := world.action_of(spot)
+	if _menu_slot != world.slot:
+		_menu_slot = world.slot
+		_menu_pick.clear()
+	var menu: Array = world.actions_of(spot) if _menu_ok() else []
+	var want := str(_menu_pick.get(str(spot.id), ""))
+	if want == "":
+		# 没点过：TA 正在这儿做菜单上的哪一件，就先摆那一件（一按就是搭伴）
+		for a in menu:
+			if not bool(a.get("duty", false)) and (world.partner_doing(spot, a) or _partner_did_here(spot, a)):
+				want = str(a.id)
+				break
+	var act := world.action_of(spot, want)
+	_show_menu(spot, menu, act)
 	var cost: Array = []
 	var mine: Dictionary = _dict(_dict(last_world.get("actors")).get(my_role))
 	var left := _time_left(mine)
@@ -704,18 +740,24 @@ func _show_spot_action() -> void:
 	if world.partner_doing(spot, act) or _partner_did_here(spot, act):
 		cost.append("和 TA 搭伴")
 	action_btn.set_meta("spot", spot.id)
+	action_btn.set_meta("act", str(act.get("id", "")))
+	action_btn.set_meta("first", str(world.action_of(spot).get("id", "")))
+	if bool(act.get("_late", false)):
+		cost = [_late_text(act)]
 	var spent := plain and not mine.is_empty() and left <= 0.0
 	if spent:
 		cost = ["这一段的时间用完了" if float(mine.get("sp", 0)) > 0.0 else "路上把这一段花掉了"]
 	if offline_preview:
 		cost = ["联网之后才能做"]
-	_set_action("act", str(act.get("label", "")), " · ".join(cost), offline_preview or spent)
+	_set_action("act", str(act.get("label", "")), " · ".join(cost), offline_preview or spent or bool(act.get("_late", false)))
 	# 剩的时间够做不止一回：旁边给一个「做到点」
 	if plain and not spent and not offline_preview and left > float(act.get("minutes", 60)) + 5.0:
 		fill_title.text = "做到 %s" % P.clock(float(WorldView.SLOTS[world.slot][1]))
 		fill_sub.text = "一直%s" % str(act.get("label", ""))
 		fill_btn.set_meta("spot", spot.id)
-		fill_btn.visible = true
+		fill_btn.set_meta("act", str(act.get("id", "")))
+		fill_btn.set_meta("first", str(action_btn.get_meta("first", "")))
+		fill_btn.visible = not bool(act.get("_late", false))
 	_place_slot_btn()
 
 
@@ -798,9 +840,81 @@ func _place_slot_btn() -> void:
 		slot_btn.offset_top = action_btn.offset_top
 
 
+## 菜单只在服务器认得 ACT 的 action 时摆（协议 8）；网页单机版跑的是同一份规则
+func _menu_ok() -> bool:
+	return menu_always or (net != null and net.server_has_menu())
+
+
+## 按钮上记着的那件事：是菜单头一件就不带（和旧服务器一样），点了别的才带上
+func _menu_act(b: Button) -> String:
+	if not _menu_ok() or not b.has_meta("act"):
+		return ""
+	var id := str(b.get_meta("act"))
+	return "" if id == str(b.get_meta("first", "")) else id
+
+
+## 不在钟点上的那件：按钮上写几点开始
+static func _late_text(act: Dictionary) -> String:
+	var hours: Variant = _dict(act.get("requires")).get("hours")
+	if hours is Array and hours.size() == 2:
+		return "%s–%s 才有" % [P.clock(float(hours[0])), P.clock(float(hours[1]))]
+	return "现在不是时候"
+
+
+## 一排小牌子：这个点位能做的几件事。只有一件就不摆；摆着的和上一帧一样就不重摆
+func _show_menu(spot: Dictionary, menu: Array, act: Dictionary) -> void:
+	var picks: Array = []
+	for a in menu:
+		if bool(a.get("duty", false)) or bool(a.get("sleep", false)):
+			continue
+		picks.append(a)
+	if picks.size() < 2:
+		menu_box.visible = false
+		return
+	var sig := "%s|%s" % [str(spot.id), str(act.get("id", ""))]
+	for a in picks:
+		sig += "|%s%s" % [str(a.id), "~" if bool(a.get("_late", false)) else ""]
+	menu_box.visible = true
+	if sig == _menu_sig:
+		return
+	_menu_sig = sig
+	for ch in menu_box.get_children():
+		ch.queue_free()
+	for a in picks:
+		var b := menu_chip(str(a.label), str(a.id) == str(act.get("id", "")), bool(a.get("_late", false)))
+		var sid := str(spot.id)
+		var aid := str(a.id)
+		b.pressed.connect(func():
+			_menu_pick[sid] = aid
+			_menu_sig = ""
+		)
+		menu_box.add_child(b)
+
+
+## 菜单上的一块小牌子：点中的是墨底纸字，别的是纸底墨字；不在钟点上的淡一点
+static func menu_chip(text: String, on: bool, late: bool) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.focus_mode = Control.FOCUS_NONE
+	b.custom_minimum_size = Vector2(0, MENU_H)
+	b.add_theme_font_size_override("font_size", 30)
+	for st in ["normal", "hover", "pressed"]:
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = P.INK if on else (P.PAPER if st != "hover" else P.PAPER.darkened(0.06))
+		sb.border_color = P.INK
+		sb.set_border_width_all(3)
+		sb.content_margin_left = 22
+		sb.content_margin_right = 22
+		b.add_theme_stylebox_override(st, sb)
+	var fg: Color = P.PAPER if on else (Color(P.INK, 0.45) if late else P.INK)
+	for c in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		b.add_theme_color_override(c, fg)
+	return b
+
+
 func _on_fill_pressed() -> void:
 	if net != null and not offline_preview and fill_btn.has_meta("spot"):
-		net.act(str(fill_btn.get_meta("spot")), false)
+		net.act(str(fill_btn.get_meta("spot")), false, _menu_act(fill_btn))
 
 
 ## 钟上显示几点：这一段在过就是大家的钟；还在定的时候是我自己的钟（一件一件做掉的已经拨过去了）；刚做完一回，钟在眼前拨过去
@@ -910,7 +1024,7 @@ func _on_action_pressed() -> void:
 					_toast("还早呢。真要睡，再按一下")
 					return
 				_sleep_armed_at = -1
-				net.act(sp, true)  # 正经事做一回；睡觉、上学、顺手的事服务器照旧
+				net.act(sp, true, _menu_act(action_btn))  # 正经事做一回；睡觉、上学、顺手的事服务器照旧
 		"cancel":
 			net.cancel_slot()
 		"exit":

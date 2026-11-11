@@ -17,9 +17,9 @@ exits:
   - { id: to_hospital, at: 500, to: hospital, arrive: 60, label: 去医院 }
 
 spots:
-  - { id: lake_walk, at: 1080, area: lake_path, actions: [ morning_walk ] }
-  - { id: pavilion_choir, at: 2000, area: pavilion, actions: [ choir ] }
-  - { id: square_ground, at: 2750, area: square, actions: [ ground_write ] }
+  - { id: lake_walk, at: 1080, area: lake_path, actions: [ morning_walk, boat ] }
+  - { id: pavilion_choir, at: 2000, area: pavilion, actions: [ choir, huqin ] }
+  - { id: square_ground, at: 2750, area: square, actions: [ ground_write, square_dance ] }
 
 npcs:
   - id: conductor

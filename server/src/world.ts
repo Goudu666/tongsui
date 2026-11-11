@@ -501,13 +501,19 @@ function worldDutyOpen(s: LifeState, c: Content, role: Role): Duty | null {
  * 这个点位现在给这个人做什么。同一个物件不同年纪做不同的事（书桌：翻小人书 → 写作业 → 看书），
  * 取第一个轮得到他的；日程行动只对今天要来这儿报到的人出现。都不合适时返回原因。
  */
-function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot): { act: Action | null; why: string } {
+/**
+ * 这个点位上现在做哪件事。一个点位是一张小菜单（content/maps/*.yaml 的 spots[].actions，协议 8）：
+ * want 是玩家在菜单上点的那一件；不给就是菜单上头一件能做的（影子、机器人、旧安装包都这么挑，校准过的数不动）。
+ */
+function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot, want?: string): { act: Action | null; why: string } {
   var age = lifeTimeAt(s.turn).age;
   var p = s.persons![role];
   var slot = s.world!.slot;
   var why = "这儿现在没什么可做的";
   var late: Action | null = null;
+  if (want && sp.actions.indexOf(want) < 0) return { act: null, why: "这儿没有这件事" };
   for (var i = 0; i < sp.actions.length; i++) {
+    if (want && sp.actions[i] !== want) continue;
     var act = worldFindAction(c, sp.actions[i]);
     if (act.duty) {
       var d = worldDutyOpen(s, c, role);
@@ -519,7 +525,7 @@ function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot): { act:
     if (rq.maxAge !== undefined && age > rq.maxAge) { why = "已经过了那个年纪"; continue; }
     // 关口上挣来的去处（少年宫、体校）、家里才有的（学琴、厂里的澡堂）：没有那个标记的人看不见它，轮到下一个行动。
     // 对门正在这儿做、而且这件事带得了人，就能跟着做（means.ts）
-    if ((!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) && !meansGuestOk(s, c, role, sp, act)) continue;
+    if ((!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) && !meansGuestOk(s, c, role, sp, act)) { if (want) why = "这件事轮不到你"; continue; }
     // 不在钟点上先轮到下一个：体校四点开练，四点以前操场照样能踢球。
     // 后面没有别的事可做，还是把它给出去：点位上有名字，点了回「现在不是时候」（worldCanAct），不会变成没反应
     if (rq.hours && !worldOverlaps(rq.hours, slot)) { if (!late) late = act; continue; }
@@ -539,7 +545,7 @@ function worldEfficiency(p: Person): number {
   return Math.round(e * 100) / 100;
 }
 
-function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywhere?: boolean): string | null {
+function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywhere?: boolean, want?: string): string | null {
   if (s.phase !== "life") return "人生还没开始";
   var w = s.world!;
   var a = w.actors[role];
@@ -559,7 +565,7 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
     // 外地和河畔里之间隔着一趟车：影子、跟着对门过去的都过不去，得本人坐车
     if (worldSceneOf(c, sp).far !== worldFarAt(c, a)) return "隔着老远";
   }
-  var pick = worldPickAction(s, c, role, sp);
+  var pick = worldPickAction(s, c, role, sp, want);
   if (!pick.act) return pick.why;
   var act = pick.act;
   var rq = act.requires || {};
@@ -799,14 +805,14 @@ function worldActOnce(s: LifeState, c: Content, role: Role, sp: Spot, act: Actio
  * 在点位上做事。once：一件一件做，做一回当场结算（worldActOnce）；不带 once 是「做到点」，把这一段剩下的时间整段押上，段末结算。
  * 机器人、影子、旧安装包都走「做到点」。
  */
-function worldAct(s: LifeState, c: Content, role: Role, spotId: string, once?: boolean): { error: string | null; together: LogEntry | null } {
-  var err = worldCanAct(s, c, role, spotId);
+function worldAct(s: LifeState, c: Content, role: Role, spotId: string, once?: boolean, want?: string): { error: string | null; together: LogEntry | null } {
+  var err = worldCanAct(s, c, role, spotId, false, want);
   if (err) return { error: err, together: null };
   var w = s.world!;
   var a = w.actors[role]!;
   var p = s.persons![role];
   var sp = lifeFind(c.map.spots, spotId);
-  var act = worldPickAction(s, c, role, sp).act!;
+  var act = worldPickAction(s, c, role, sp, want).act!;
   a.x = sp.at[0];
   a.y = sp.at[1];
   a.shadow = false;

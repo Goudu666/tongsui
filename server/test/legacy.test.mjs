@@ -311,7 +311,7 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   // 抽卡中、过到一半的
   for (const src of [G("lifeCreate")(6, C), confirm(G("lifeCreate")(6, C))]) {
     const old = strip(src);
-    assert.deepEqual(J(G("lifeUpgrade")(old)), ["v5→v6", "v6→v7", "v7→v8"]);
+    assert.deepEqual(J(G("lifeUpgrade")(old)), ["v5→v6", "v6→v7", "v7→v8", "v8→v9"]);
     assert.deepEqual(J(old), J(src), "升上来应该和现在新开的一模一样");
     assert.deepEqual(J(G("lifeRepair")(old, C)), []);
   }
@@ -767,7 +767,7 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
   // 抽卡中、过到一半：升上来和现在新开的一模一样
   for (const src of [G("lifeCreate")(6, C), confirm(G("lifeCreate")(6, C))]) {
     const old = down(src);
-    assert.deepEqual(J(G("lifeUpgrade")(old)), ["v6→v7", "v7→v8"]);
+    assert.deepEqual(J(G("lifeUpgrade")(old)), ["v6→v7", "v7→v8", "v8→v9"]);
     assert.deepEqual(J(old), J(src));
     assert.deepEqual(J(G("lifeRepair")(old, C)), []);
   }

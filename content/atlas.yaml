@@ -42,6 +42,8 @@ riddles:
   e_nod: 慢慢地，就生分了。
   e_doors: 住过对门。
   # 一个人
+  l_two_shops: 半路辞了事由，开了第二家铺子。
+  l_restart: 丢了饭碗，又在楼下支起摊。
   l_early: 走得早了些。
   l_long: 活过九十五。
   l_swimmer: 身子骨硬朗，活过八十五。
@@ -75,3 +77,4 @@ says:
   erhu_life: 把二胡拉一辈子
   has_kid: 有个自己的孩子
   left_city: 去外地闯一闯
+  shop_two: 再开一家铺子

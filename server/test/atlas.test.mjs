@@ -231,7 +231,7 @@ const lives = [];
   delete c3.atlas;
   const s3 = J(lives[2]);
   const near3 = G("atlasNear")(s3, c3, { pair: {}, lives: {} });
-  assert.ok(near3.every((n) => n.kind === "milestone"));
+  assert.ok(near3.every((n) => !n.text.includes("就差") && !n.text.includes("坏在") && !n.text.includes("undefined")), "没有 says 就不拿标记说差一点");
   void n2;
   console.log("✓ 旧存档：走完的补算一回差一点和图鉴，只补一回 / 结局删了从图鉴里摘掉 / 旧内容包没有 atlas 不抛错");
 }

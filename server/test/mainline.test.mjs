@@ -176,18 +176,19 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
         beats++;
         const k = SLOT_IDS.indexOf(g.ev.slot);
         if (g.minute >= SLOT_AT[k][0] && g.minute < SLOT_AT[k][1]) there++;
-        assert.ok(!G("storyMilestoneDay")(C, g.turn), `${g.ev.id}：发生在关口那天（${g.age} 岁）`);
+        // 关口那天让给关口；紧的章（第七章：60 以后五年一天，只有 65 不是关口日）关口那天也排，一天一件
+        if (!G("storyTight")(C, S.chapters[g.ev.chapter - 1])) assert.ok(!G("storyMilestoneDay")(C, g.turn), `${g.ev.id}：发生在关口那天（${g.age} 岁）`);
       }
     }
   }
   // 强制的也是到了它自己那一段才发生：写好的晚饭、天黑和时候对得上
   assert.ok(there / beats > 0.97, `只有 ${Math.round((there / beats) * 100)}% 的主线发生在它写的那一段`);
   // 按章看强制的比例。童年到青年日子多，影子多半是自己走到那儿碰上的；第一章楼顶那一件原来写在晚上，三到五岁的孩子回回是被叫起来的，挪到了傍晚。
-  // 中年以后一个日子是三五年（第五、六章各四个空日子，第七章只有一个），事是找上门来的：这是认下的，但也是在它写的那一段
+  // 中年以后一个日子是三五年（第五、六章各四个空日子，第七章连关口日三个），事是找上门来的：这是认下的，但也是在它写的那一段
   const rate = forced.map(([f, n]) => f / Math.max(n, 1));
   for (const i of [0, 1, 2, 3]) assert.ok(rate[i] <= 0.15, `第${i + 1}章强制的有 ${Math.round(rate[i] * 100)}%：日子够多的章，主线该是走到那儿碰上的`);
   console.log(`  各章硬塞的比例：${rate.map((x, i) => `${i + 1} ${Math.round(x * 100)}%`).join(" / ")}（章末躲不过的：${due.map((d, i) => `${i + 1} ${Math.round((d / Math.max(forced[i][1], 1)) * 100)}%`).join(" / ")}，人本来就在那儿的照常发生、不算）`);
-  console.log(`✓ 引擎：${lives} 条全影子人生、${beats} 件主线，每章三件按顺序都过到，没有一件在关口那天，${Math.round((there / beats) * 100)}% 发生在它写的那一段 / 被顶替的旧事件一次没出`);
+  console.log(`✓ 引擎：${lives} 条全影子人生、${beats} 件主线，每章三件按顺序都过到，除了第七章没有一件在关口那天，${Math.round((there / beats) * 100)}% 发生在它写的那一段 / 被顶替的旧事件一次没出`);
 }
 
 // ---------- 6) 引擎的几条规矩 ----------
@@ -253,26 +254,29 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
     s.world.minute = 930;
     assert.equal(G("worldAdvance")(s, C, 0.1, ON).started?.eventId, "s1_door", "上午已经过去了：马上发生");
   }
-  // 第七章只有一个空着的日子（60、70 岁那天是关口）：三件在同一天里按段接着发生，都在自己那一段
+  // 第七章紧（60 以后五年一天，60、70 是关口，只有 65 空着）：关口那天也排，一天一件 —— 退休那天去公园、65 挖盒子、70 岁傍晚坐长椅。
+  // 原来三件全挤在 65 岁那一天、一件接一件硬塞
   {
     const s = fresh();
-    s.turn = at(65);
+    for (const r of ["qing", "mei"]) s.persons[r].lifespan = 99;
+    s.turn = at(60);
+    assert.ok(G("storyTight")(C, S.chapters[6]), "第七章算紧");
+    assert.ok(!G("storyTight")(C, S.chapters[4]) && !G("storyTight")(C, S.chapters[5]), "第五、六章各有四个空日子，不紧");
     G("worldStartDay")(s, C);
-    assert.equal(s.world.fate.mirror, "s7_park");
-    assert.deepEqual(J(s.world.fate.force), ["s7_park"]);
+    assert.ok(s.world.fate.milestone, "60 岁那天有关口");
+    assert.equal(s.world.fate.mirror, "s7_park", "退休那天也排上第七章第一件");
     const SLOT_IDS = ["morning", "am", "pm", "evening", "night"];
     const seen = [];
-    const day = s.turn;
-    for (let k = 0; s.turn === day && k < 100000; k++) {
+    for (let k = 0; G("lifeTimeAt")(s.turn).age <= 70 && s.phase === "life" && k < 400000; k++) {
       G("worldAdvance")(s, C, 0.5, OFF);
       const pe = s.world && s.world.event;
       if (pe) {
         const ev = G("lifeFindEvent")(C, pe.eventId);
-        if (ev.chapter) seen.push(`${ev.beat}:${SLOT_IDS[s.world.slot]}=${ev.slot}`);
+        if (ev.chapter && !pe.seen7) { pe.seen7 = true; seen.push(`${G("lifeTimeAt")(s.turn).age}岁 ${ev.beat}:${SLOT_IDS[s.world.slot]}=${ev.slot}`); }
         for (const r of pe.roles) if (!pe.choices[r] && s.world.event === pe) G("worldChoose")(s, C, r, G("lifeShadowChoose")(s, C, r, pe.eventId), true);
       }
     }
-    assert.equal(seen.length, 3, `第七章三件都在 65 岁那天：${seen.join(" ")}`);
+    assert.deepEqual(seen.map((x) => x.split(":")[0]), ["60岁 1", "65岁 2", "70岁 3"], `第七章一天一件：${seen.join(" ")}`);
     for (const x of seen) { const [, got, want] = x.match(/(\w+)=(\w+)/); assert.equal(got, want, `发生在自己那一段：${seen.join(" ")}`); }
   }
   // 主线带人过桥：12 岁、家里不送去学琴的孩子，平时去不了河对岸；排上「过桥」的那天能去
@@ -298,5 +302,5 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
     assert.match(G("worldChoose")(s, C, "qing", "frog", false).error || "", /走不了/);
     assert.equal(G("worldChoose")(s, C, "qing", "knock", false).error, null);
   }
-  console.log("✓ 引擎规矩：一章三件按章里的日子摊开 / 关口那天不排 / 章末躲不过的到了它那一段才发生、人放到那张图上 / 段过去了才马上发生 / 第七章三件同一天按段接着发生 / 主线那张图当天开着 / 家底门槛服务器也拦");
+  console.log("✓ 引擎规矩：一章三件按章里的日子摊开 / 关口那天不排 / 章末躲不过的到了它那一段才发生、人放到那张图上 / 段过去了才马上发生 / 第七章一天一件（退休那天、65、70） / 主线那张图当天开着 / 家底门槛服务器也拦");
 }

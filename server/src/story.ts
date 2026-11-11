@@ -99,22 +99,38 @@ function storyMilestoneDay(c: Content, turn: number): boolean {
   return !!lifeMilestoneAt(c, age) && (turn === 0 || lifeTimeAt(turn - 1).age < age);
 }
 
-/** 这一章能排主线的日子（关口那天不算），按先后 */
-function storyFreeDays(c: Content, ch: StoryChapter): number[] {
+/** 这一章的日子（withMilestones 为假时关口那天不算），按先后 */
+function storyChapterDays(c: Content, ch: StoryChapter, withMilestones: boolean): number[] {
   var last = storyChapterLast(ch);
   var out: number[] = [];
   for (var t = 0; t < 400; t++) {
     var age = lifeTimeAt(t).age;
     if (age > last) break;
-    if (age >= ch.ages[0] && !storyMilestoneDay(c, t)) out.push(t);
+    if (age >= ch.ages[0] && (withMilestones || !storyMilestoneDay(c, t))) out.push(t);
   }
   return out;
 }
 
-/** 第 k 件（从 0 起）从哪个日子起排得上：按这一章空着的日子摊开 */
+/**
+ * 这一章紧：不算关口那天，空着的日子比要过的事还少。第七章就是这样：60 岁以后五年一个日子，60、65、70 里
+ * 60 退休、70 七十都是关口，只剩 65 一天，三件事（公园、挖盒子、长椅）原来全挤在 65 岁那一天、一件接一件硬塞。
+ * 紧的章关口那天也排（关口在早上，主线在它写的那一段），一天一件：退休那天去公园，65 挖盒子，70 岁傍晚坐长椅。
+ */
+function storyTight(c: Content, ch: StoryChapter): boolean {
+  var n = c.story ? c.story.chapters.indexOf(ch) + 1 : 0;
+  return n > 0 && storyChapterDays(c, ch, false).length < storyBeats(c, n).length;
+}
+
+/** 这一章能排主线的日子（关口那天不算；紧的章算上），按先后 */
+function storyFreeDays(c: Content, ch: StoryChapter): number[] {
+  return storyChapterDays(c, ch, storyTight(c, ch));
+}
+
+/** 第 k 件（从 0 起）从哪个日子起排得上：按这一章空着的日子摊开。紧的章一天一件 */
 function storyOpenTurn(c: Content, ch: StoryChapter, k: number, count: number): number {
   var days = storyFreeDays(c, ch);
   if (days.length === 0) return 0;
+  if (storyTight(c, ch)) return days[Math.min(k, days.length - 1)];
   return days[Math.floor((k * (days.length - 1)) / Math.max(count, 1))];
 }
 
@@ -137,10 +153,10 @@ function storyNextBeat(s: LifeState, beats: StoryEvent[][], role: Role): number 
   return beats.length;
 }
 
-/** 从今天起，这一章还剩几个能排主线的日子（关口那天不算；数到 limit 为止） */
-function storyDaysLeft(c: Content, turn: number, last: number, limit: number): number {
+/** 从今天起，这一章还剩几个能排主线的日子（关口那天不算，tight 时算；数到 limit 为止） */
+function storyDaysLeft(c: Content, turn: number, last: number, limit: number, tight?: boolean): number {
   var n = 0;
-  for (var k = 0; n <= limit && lifeTimeAt(turn + k).age <= last; k++) if (!storyMilestoneDay(c, turn + k)) n++;
+  for (var k = 0; n <= limit && lifeTimeAt(turn + k).age <= last; k++) if (tight || !storyMilestoneDay(c, turn + k)) n++;
   return n;
 }
 
@@ -151,8 +167,10 @@ function storyDaysLeft(c: Content, turn: number, last: number, limit: number): n
 function storyToday(s: LifeState, c: Content, t: TimeInfo, milestone: boolean): { mirror: string | null; qing: string | null; mei: string | null; force: string[] } {
   var out = { mirror: null as string | null, qing: null as string | null, mei: null as string | null, force: [] as string[] };
   var n = storyChapterAt(c, t.age);
-  if (n === 0 || milestone) return out; // 关口那天让给关口
+  if (n === 0) return out;
   var ch = c.story.chapters[n - 1];
+  var tight = storyTight(c, ch);
+  if (milestone && !tight) return out; // 关口那天让给关口（紧的章除外，见 storyTight）
   var beats = storyBeats(c, n);
   var persons = s.persons!;
   var tt: TimeInfo = { age: t.age, stage: t.stage, season: null } as TimeInfo;
@@ -165,7 +183,7 @@ function storyToday(s: LifeState, c: Content, t: TimeInfo, milestone: boolean): 
   }
   var left = function (r: Role) {
     var remain = beats.length - at[r]!;
-    return storyDaysLeft(c, s.turn, storyChapterLast(ch), remain) <= remain;
+    return storyDaysLeft(c, s.turn, storyChapterLast(ch), remain, tight) <= remain;
   };
   if (persons.qing.alive && persons.mei.alive && at.qing !== undefined && at.qing === at.mei) {
     var both = persons.qing.flags.concat(persons.mei.flags);

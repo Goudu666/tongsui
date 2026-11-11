@@ -191,7 +191,7 @@ func _burst(stats: Dictionary, money: float, bond: Dictionary, fresh_did: bool, 
 		if it[2] in KEYS and int(it[1]) > 0:
 			grew = true
 	# 服务器说了刚做完哪一件（did）：「一天行动循环」那边先把钟拨过去、人在点上把这件事做完（约一秒），字再出来
-	var delay := DID_LEAD if fresh_did else 0.0
+	var delay := DID_LEAD if fresh_did and not bool(did.get("j", false)) else 0.0  # j：对门后赶上来补的搭伴，那边不拨钟，不用等
 	if together and grew:
 		var mult := float(did.get("b", 0.0)) if fresh_did else 0.0
 		_stamp_together(mult, delay)

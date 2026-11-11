@@ -46,6 +46,13 @@ pair:
     text: 海河边那块地方，往下挖一层是一个盒子。最底下那个锈死了，两个人也没打算打开。
     requires: { flags: [heir_nested, p_capsule], minClose: 50 }
 
+  # 二十八岁「成家」两个人都选了做一辈子的老朋友（milestones.yaml 的 m_wed）：和成一家并列的好结局。
+  # 排在藏着的那几条后面，不挡它们；排在重逢、合伙这些前面
+  - id: e_confidant
+    title: 老朋友
+    text: 没成一家，也没走远。彼此的喜事上都站在头一排，谁家半夜有事，先到的总是对门。
+    requires: { flags: [p_confidant], minClose: 40 }
+
   - id: e_reunited
     title: 重逢
     text: 走散过很多年。后来在海河边又碰上了，谁也没提那些年，只说了一句：「吃了吗您？」
@@ -254,6 +261,10 @@ lives:
     title: 开心果
     text: "{name} 走到哪儿，哪儿就热闹。告别那天来了很多人，大家想起 {name}，都先笑了。"
     requires: { stats: { charm: 9.5 } }
+  - id: l_single
+    title: 一个人
+    text: "{name} 一个人过了一辈子。阳台上的花年年换，饭做得比谁都讲究，备用钥匙挂在对门。"
+    requires: { flags: [single_life] }
   - id: l_stayer
     title: 守着河畔里
     text: "{name} 一辈子没离开过天津。楼拆了，人散了，{name} 还能闭着眼走到海河边。"

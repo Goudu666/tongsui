@@ -30,6 +30,7 @@ riddles:
   e_same_year: 拉过的钩，到老也没松开。
   e_white_hair: 成了一家，到老还亲。
   e_dinner_table: 成了一家，吵也吵不散。
+  e_confidant: 没成一家，做了一辈子的老朋友。
   e_reunited: 走散了，又在河边碰上。
   e_partners: 两个人合开一间铺子。
   e_neighbors: 拉过钩，后来也没搬远。
@@ -53,6 +54,7 @@ riddles:
   l_wanderer: 去了外地，就没再回来。
   l_parent: 有了自己的孩子。
   l_charmer: 走到哪儿，哪儿热闹。
+  l_single: 一个人，也把日子过得好好的。
   l_stayer: 一辈子没离开过天津。
   l_ordinary: 过了普通的一生。
 
@@ -78,3 +80,5 @@ says:
   has_kid: 有个自己的孩子
   left_city: 去外地闯一闯
   shop_two: 再开一家铺子
+  p_confidant: 做一辈子的老朋友
+  single_life: 一个人过

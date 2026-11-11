@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor
@@ -21,12 +22,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from tongsui_audio import amb, music, sfx  # noqa: E402
+from tongsui_audio import amb, highlight, music, sfx  # noqa: E402
 from tongsui_audio.dsp import SR, lufs, peak_db, write_ogg  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / "client" / "audio"
+# TONGSUI_AUDIO_OUT=目录：生成到别处（几个人同时试声音时各用各的，不碰 client/audio 和它的清单）
+OUT = Path(os.environ["TONGSUI_AUDIO_OUT"]) if os.environ.get("TONGSUI_AUDIO_OUT") else ROOT / "client" / "audio"
 Q_MUSIC, Q_VOICE, Q_HE, Q_AMB, Q_SFX = 2.0, 1.0, 0.0, 1.0, 3.0
+Q_LAYER = 0.0  # 时段 / 天气那几层（morn、eve）：垫在后面，码率低一点省包体
 
 
 def _info(y, extra=None):
@@ -42,14 +45,15 @@ def job_stage(stage: str):
         rel = "music/%s_%s.ogg" % (stage, k)
         if k == "he":  # 「合」是一层很软的垫底，单声道低码率就够
             y = y.mean(axis=1)
-        write_ogg(OUT / rel, y, {"bed": Q_MUSIC, "he": Q_HE}.get(k, Q_VOICE))
+        write_ogg(OUT / rel, y, {"bed": Q_MUSIC, "he": Q_HE, "morn": Q_LAYER, "eve": Q_LAYER}.get(k, Q_VOICE))
         out[rel] = _info(y, dict(loop=True))
     for kind in ("call_qing", "call_mei", "resonance", "mismatch"):
         y = music.stinger(stage, kind)
         rel = "music/%s_%s.ogg" % (stage, kind)
         write_ogg(OUT / rel, y, Q_VOICE)
         out[rel] = _info(y)
-    meta = dict(bpm=loops["bpm"], seconds=round(loops["length"], 4), bar=round(loops["bar"], 4), bars=music.BARS)
+    meta = dict(bpm=loops["bpm"], seconds=round(loops["length"], 4), bar=round(loops["bar"], 4), bars=music.BARS,
+                stems=list(loops["stems"]))
     return out, {stage: meta}
 
 
@@ -59,6 +63,14 @@ def job_single(name: str):
     rel = "music/%s.ogg" % name
     write_ogg(OUT / rel, r["audio"], Q_MUSIC)
     return {rel: _info(r["audio"], dict(loop=name != "ending"))}, {}
+
+
+def job_highlight(name: str):
+    """高光：关口揭晓（<阶段>_rise / pass / top / miss）和长大（grow_<阶段>）。不循环。"""
+    y = highlight.render(name)
+    rel = "music/%s.ogg" % name
+    write_ogg(OUT / rel, y, Q_VOICE)
+    return {rel: _info(y)}, {}
 
 
 def job_loop(name: str):
@@ -98,6 +110,7 @@ def main():
     jobs = []
     if "music" in args.groups:
         jobs += [("job_stage", s) for s in music.STAGES] + [("job_single", n) for n in ("title", "roll", "ending")]
+        jobs += [("job_highlight", n) for n in highlight.names()]
     if "amb" in args.groups:
         jobs += [("job_loop", n) for n in amb.LOOPS] + [("job_shot", n) for n in amb.SHOTS]
     if "sfx" in args.groups:

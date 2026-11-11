@@ -20,6 +20,8 @@ interface OptionEffects {
   other: SelfDelta;
   bond: Partial<Bond>;
   flags: string[];
+  /** 摘掉的标记（跳槽、转行：原来那一行的标记和升到的那一级不跟着走）。先摘再打，同一个标记两边都写等于留着 */
+  drop?: string[];
 }
 
 interface EventOption {
@@ -36,6 +38,8 @@ interface EventOption {
   lock?: string;
   /** 和哪条路是同一条（花钱进的重点和考进去的同校）：两个人一个走这条、一个走那条，也算同路 */
   joins?: string;
+  /** 只有关口用：标记不对的人看不见这一项（升迁关上别的行当的路，docs/CAREER.md）。旧安装包照旧灰着显示 lock */
+  hide?: boolean;
 }
 
 /** 关口怎么算分：各项属性乘权重相加；money 表示积蓄 */

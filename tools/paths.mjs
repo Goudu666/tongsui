@@ -115,7 +115,7 @@ export function live(seed, way, untilAge, pickOption, setup) {
       for (const r of ROLES) {
         const p = s.persons[r];
         if (!G("lifeMilestoneFor")(ms, p) || G("lifeSeenIds")(s, r)[ms.id]) continue;
-        marks[ms.id][r] = { stats: { ...p.stats }, money: p.money, close: s.bond.close, open: ms.options.filter((o) => !G("lifeOptionLock")(ms, o, p, 0, G("lifePairBond")(s, r))).map((o) => o.id) };
+        marks[ms.id][r] = { stats: { ...p.stats }, money: p.money, close: s.bond.close, flags: [...p.flags], open: ms.options.filter((o) => !G("lifeOptionLock")(ms, o, p, 0, G("lifePairBond")(s, r))).map((o) => o.id) };
       }
     }
     if (w.event) {

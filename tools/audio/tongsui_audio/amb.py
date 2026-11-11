@@ -13,7 +13,7 @@ import numpy as np
 
 from . import inst
 from .dsp import (SR, TAU, Mix, bp, bursts, cents, colored, db, echo, fade, far, hp, level, lfo_noise, loop_wrap, loop_xfade, lp,
-                  midi, modal, moving_band, peak, reson, reverb, rng_for, sec, softclip, swell, times, to_stereo, trim,
+                  midi, modal, moving_band, peak, reson, reverb, rng_for, sec, shelf, softclip, swell, times, to_stereo, trim,
                   white)
 
 LOOP_LUFS = -28.0
@@ -323,10 +323,203 @@ def traffic_modern():
     return loop_xfade(_fold(mx.buf, n), 3.0)
 
 
+# ============================================================ 天气 ====
+# 下雨、下雪、秋风。画面上的天气（client/scripts/world/weather.gd）有了，耳朵里也得有。
+# 循环的做法：噪声那几层多做 k 秒再首尾交叠（loop_xfade）；一下一下的雨点、滴水是「事件」，
+# 撒在 0~n 之间，尾巴折回开头（loop_wrap），所以接缝上一个点不多、一个点不少。
+
+DRIP = (587.3, 659.3, 880.0, 987.8)  # 屋檐滴水的「叮」落在 D 宫五声上（D5 E5 A5 B5），和配乐不打架
+
+
+def _bubble(rng, f0: float, d: float = 0.03, rise: float = 1.6, click: float = 0.3) -> np.ndarray:
+    """水泡：一滴水砸进水里，带进去一个小气泡，气泡响一声往上翘的「啵」（Minnaert 共振）。"""
+    n = sec(d * 4)
+    tt = times(n)
+    f = f0 * (1.0 + rise * tt / (d * 4))
+    y = np.sin(TAU * np.cumsum(f) / SR) * np.exp(-tt / d)
+    k = sec(0.002)
+    y[:k] += white(k, rng) * np.linspace(1, 0, k) * click
+    return fade(y, 0.0015, 0.01)
+
+
+def _drop_events(mx: Mix, rng, n: int, rate: float, f_lo: float, f_hi: float, gain: float, d=(0.012, 0.035), pan=0.8):
+    """往带子上撒 rate 个/秒的水泡。"""
+    for _ in range(rng.poisson(rate * n / SR)):
+        y = _bubble(rng, rng.uniform(f_lo, f_hi), rng.uniform(*d), rng.uniform(0.6, 2.4), rng.uniform(0.1, 0.5))
+        mx.add(y, rng.uniform(0, n / SR), gain * rng.uniform(0.2, 1.0) ** 1.5, pan=rng.uniform(-pan, pan))
+
+
+def _eaves(mx: Mix, rng, n: int, periods, gain: float):
+    """屋檐滴水：几个滴水的地方，各滴各的，差不多匀，又不齐。"""
+    for i, per in enumerate(periods):
+        f0 = DRIP[i % len(DRIP)]
+        pan = (-0.7, 0.55, -0.2, 0.8)[i % 4]
+        t = rng.uniform(0, per)
+        while t < n / SR:
+            y = _bubble(rng, f0 * rng.uniform(0.985, 1.015), rng.uniform(0.035, 0.06), 0.9, 0.25)
+            y = y + 0.25 * lp(white(len(y), rng), 900) * np.exp(-times(len(y)) / 0.008)  # 落地那一下
+            mx.add(y, t, gain * rng.uniform(0.55, 1.0), pan=pan)
+            t += per * rng.uniform(0.75, 1.3)
+
+
+def _rain_body(n: int, rng, heavy: bool) -> np.ndarray:
+    """雨的那一片：成千上万的雨点合成一层「沙——」。高频不能太亮，不然听一会儿就累。"""
+    hiss = bp(colored(n, rng, -4.5), 350, 4500) * (0.8 + 0.2 * lfo_noise(n, 0.25, rng))
+    grit = bursts(n, rng, 900 if heavy else 380, (0.001, 0.004), (700, 4000), 1.6) * (4.0 if heavy else 3.0)
+    tap = bursts(n, rng, 60 if heavy else 30, (0.003, 0.009), (350, 1800), 2.0) * 6.0  # 近处打在东西上的
+    roar = hp(lp(colored(n, rng, -5), 500), 140 if heavy else 220) * (0.9 if heavy else 0.2) * (1 + 0.25 * lfo_noise(n, 0.2, rng))
+    y = hiss * (0.55 if heavy else 0.45) + grit + tap + roar
+    y = peak(y, 3000, 0.7, -6.0)                            # 3 kHz 附近挖一块：扎耳朵的那段，听一小时会累
+    return shelf(lp(y, 5000 if heavy else 4000), 2500, -4.0)
+
+
+def _gutter(n: int, rng) -> np.ndarray:
+    """下水口哗哗的流水：带通噪声，被很快的随机起伏切成一串咕噜。"""
+    flow = bp(colored(n, rng, -3), 300, 1600)
+    gurgle = (0.5 + 0.5 * lfo_noise(n, 11, rng)) ** 2
+    return reson(flow, 620, 2.0, 1.0) * gurgle * (0.7 + 0.3 * lfo_noise(n, 0.3, rng))
+
+
+def rain(heavy: bool = False):
+    """户外的雨。轻：细密的一层，屋檐慢慢滴，积水里偶尔啵一声。重：一片哗哗，下水口在流，水泡密。"""
+    name = "rain_heavy" if heavy else "rain_light"
+    rng = rng_for(name)
+    dur, k = 16.0, 3.0
+    n, nk = sec(dur), sec(dur + k)
+    l = _rain_body(nk, rng, heavy)
+    r = _rain_body(nk, rng_for(name + "_r"), heavy)
+    bed = np.stack([l * 0.8 + r * 0.2, r * 0.8 + l * 0.2], axis=1)
+    if heavy:
+        bed = bed + to_stereo(_gutter(nk, rng), 0.35) * 0.35
+    bed = loop_xfade(bed, k)
+    ev = Mix(dur)
+    _drop_events(ev, rng, n, 16 if heavy else 6, 900, 2600, 0.10 if heavy else 0.09)      # 积水里的水泡
+    _eaves(ev, rng, n, (0.55, 0.8, 1.15, 0.37) if heavy else (1.3, 2.1, 1.7), 0.18 if heavy else 0.2)
+    ev_buf = loop_wrap(reverb(ev.buf, 0.7, 0.18, 4000, 101), n)
+    return bed + ev_buf * (1.0 if heavy else 1.2)
+
+
+def rain_indoor():
+    """屋里听雨：外头那一片隔着墙，只剩闷闷的低处；窗玻璃上细细的嗒嗒；窗台上一滴一滴。"""
+    rng = rng_for("rain_in")
+    dur, k = 14.0, 2.5
+    n, nk = sec(dur), sec(dur + k)
+    muffled = lp(colored(nk, rng, -3.5), 650) * (0.85 + 0.15 * lfo_noise(nk, 0.2, rng))
+    muffled = hp(muffled, 70)
+    room = lp(colored(nk, rng, -6), 160) * 0.25
+    bed = loop_xfade(to_stereo(muffled, -0.1) + to_stereo(room, 0.2) + to_stereo(lp(colored(nk, rng, -3.5), 650), 0.6) * 0.4, k)
+    ev = Mix(dur)
+    for _ in range(rng.poisson(14 * dur)):                   # 玻璃上的雨点：很短，有一点玻璃的声
+        f = rng.uniform(1900, 3300)
+        y = modal(sec(0.03), [f, f * 1.63], [0.006, 0.004], [1.0, 0.4], rng, 0.0008)
+        ev.add(lp(y, 3800), rng.uniform(0, dur), 0.08 * rng.uniform(0.2, 1.0) ** 2, pan=rng.uniform(-0.9, 0.2))
+    t = 0.4
+    while t < dur:                                            # 窗台：铁皮雨搭上一滴一滴「嗒」
+        y = modal(sec(0.18), [740, 1480, 2210], [0.045, 0.025, 0.012], [1.0, 0.35, 0.15], rng, 0.002)
+        ev.add(lp(y, 2500), t, 0.22 * rng.uniform(0.6, 1.0), pan=-0.45)
+        t += 1.45 * rng.uniform(0.7, 1.35)
+    ev_buf = loop_wrap(reverb(ev.buf, 0.45, 0.25, 3000, 103), n)
+    return bed + ev_buf
+
+
+def snow_hush():
+    """下雪：世界一下子静了。远处的城压成一层很低的嗡，偶尔一点风，雪落在衣服上的沙沙几乎听不见。"""
+    rng = rng_for("snow_hush")
+    dur, k = 16.0, 3.0
+    nk = sec(dur + k)
+    hum = hp(lp(colored(nk, rng, -6), 260), 60) * 0.3 * (1 + 0.15 * lfo_noise(nk, 0.08, rng))
+    g = 0.25 + 0.75 * (0.5 + 0.5 * lfo_noise(nk, 0.09, rng)) ** 3
+    wind = moving_band(nk, rng, 300, 1200, 0.07, q=1.6) * 1.2 * g
+    flakes = lp(bursts(nk, rng, 90, (0.002, 0.006), (1800, 4500), 2.0), 4000) * 0.15  # 雪片落在帽子上
+    y = to_stereo(hum, 0.0) + to_stereo(wind, -0.35) + to_stereo(flakes, 0.25)
+    y = y + to_stereo(hp(lp(colored(nk, rng, -6), 260), 60) * 0.15, 0.7)
+    return loop_xfade(y, k)
+
+
+def thunder(variant: int = 0):
+    """远处的闷雷：很远，没有「咔嚓」，只有一阵一阵滚过去的低音。"""
+    rng = rng_for("thunder%d" % variant)
+    dur = (6.5, 8.0)[variant]
+    n = sec(dur)
+    tt = times(n)
+    env = np.zeros(n)
+    rolls = [(0.25, 1.0, 0.7), (1.3, 0.75, 1.1), (2.6, 0.55, 1.4), (4.0, 0.3, 1.6)] if variant == 0 else \
+            [(0.4, 0.6, 0.8), (1.1, 1.0, 1.0), (2.9, 0.65, 1.5), (4.6, 0.4, 1.8), (6.0, 0.2, 1.5)]
+    for t0, a, w in rolls:                                    # 一阵一阵：快起、慢落
+        x = (tt - t0) / w
+        env += a * np.where(x > 0, (np.minimum(x * 5, 1)) * np.exp(-x * 2.2), 0)
+    env *= 0.8 + 0.2 * lfo_noise(n, 6, rng)
+    y = lp(colored(n, rng, -6), 220) * env
+    y += lp(colored(n, rng, -4), 600) * env ** 2 * 0.15         # 一点点中频，听得出是雷不是车
+    y = hp(y, 32)
+    return far(y, 0.85, 2.8, 105 + variant)
+
+
+def snow_steps(variant: int = 0):
+    """有人踩着雪走过去：咯吱、咯吱。雪越冷越「吱」。"""
+    rng = rng_for("snow_steps%d" % variant)
+    count, gap = (5, 0.56) if variant == 0 else (4, 0.68)
+    mx = Mix(count * gap + 1.0)
+    for i in range(count):
+        d = sec(rng.uniform(0.14, 0.2))
+        x = np.linspace(0, 1, d)
+        env = np.sin(np.pi * x ** 0.7) ** 1.5
+        crunch = bursts(d, rng, 900, (0.001, 0.004), (350, 2200), 1.4) * env * 6.0
+        sq = sec(0.07)
+        tq = times(sq)
+        rate = rng.uniform(260, 380) * (1 + 0.3 * np.sin(np.pi * tq / 0.07))   # 粘一下滑一下的「吱」
+        pulse = (np.sin(TAU * np.cumsum(rate) / SR) > 0.6).astype(float)
+        squeak = reson(pulse - pulse.mean(), rng.uniform(950, 1250), 4.0) * np.hanning(sq) * 1.5
+        step = np.zeros(d + sq)
+        step[:d] += crunch
+        step[sec(0.04):sec(0.04) + sq] += squeak
+        g = 0.55 + 0.45 * np.sin(np.pi * (i + 0.5) / count)  # 走近、走远
+        mx.add(lp(step, 3200), 0.05 + i * gap * rng.uniform(0.93, 1.07), g, pan=-0.5 + i / count)
+    return far(mx.buf, 0.4, 0.9, 107 + variant)
+
+
+def snow_fall(variant: int = 0):
+    """树枝上的雪落下来：枝子一弹，噗的一团，后面细细地撒一阵。"""
+    rng = rng_for("snow_fall%d" % variant)
+    mx = Mix(2.6)
+    if variant == 0:
+        creak = modal(sec(0.08), [430, 980], [0.02, 0.012], [1.0, 0.4], rng, 0.002)
+        mx.add(lp(creak, 1500), 0.02, 0.15)
+    lumps = [(0.12, 1.0), (0.31, 0.45), (0.55, 0.25)] if variant == 0 else [(0.05, 0.8), (0.18, 0.7), (0.47, 0.3)]
+    for t0, a in lumps:
+        d = sec(0.25)
+        tt = times(d)
+        thump = lp(white(d, rng), 320) * np.exp(-tt / 0.06) * 3.0
+        mx.add(thump, t0, a)
+    d = sec(1.6)
+    powder = bp(white(d, rng), 700, 3800) * np.exp(-times(d) / 0.45) * swell(d, 0.08, 0.6) * 0.35
+    powder += lp(bursts(d, rng, 160, (0.002, 0.008), (600, 3000), 1.5), 4000) * np.exp(-times(d) / 0.5) * 2.0
+    mx.add(powder, lumps[0][0] + 0.02, 1.0, pan=0.15)
+    return far(mx.buf, 0.35, 1.0, 109 + variant)
+
+
+def leaf_gust(variant: int = 0):
+    """秋风：一阵风过来，树上的叶子哗啦啦，地上的干叶子跟着打着滚儿走一截。"""
+    rng = rng_for("leaf_gust%d" % variant)
+    dur = (4.8, 5.6)[variant]
+    n = sec(dur)
+    g = swell(n, (0.42, 0.55)[variant], 1.1)
+    wind = moving_band(n, rng, 250, 1300, 0.5, q=1.4) * g * 1.0
+    rustle = bursts(n, rng, 260, (0.003, 0.012), (800, 3800), 1.8) * g ** 1.5 * 5.0
+    rustle = peak(lp(rustle, 4200), 3000, 0.9, -5.0)
+    skit = np.zeros(n)                                         # 地上滚的叶子：一串小「嚓」，随风起落
+    tumble = bursts(n, rng, 45, (0.004, 0.015), (500, 2400), 1.2) * np.clip(g * 1.4 - 0.3, 0, 1) * 4.0
+    skit += tumble
+    y = to_stereo(wind, -0.2) + to_stereo(rustle, 0.35) * 0.8 + to_stereo(skit, -0.45) * 0.7
+    y = y + to_stereo(lp(bursts(n, rng, 180, (0.003, 0.01), (900, 3500), 1.8), 4000) * g ** 2 * 3.0, -0.6) * 0.5
+    return far(y, 0.3, 1.1, 111 + variant)
+
+
 LOOPS = {
     "air_day": air_day, "air_night": air_night, "crickets": crickets, "cicada": cicada, "river": river,
     "roof_wind": roof_wind, "sizzle": sizzle, "hallway": hallway_tone, "clock": clock,
     "radio": radio_xiangsheng, "school_din": school_din, "traffic": traffic_modern,
+    "rain_light": lambda: rain(False), "rain_heavy": lambda: rain(True), "rain_in": rain_indoor, "snow_hush": snow_hush,
 }
 
 
@@ -743,6 +936,10 @@ SHOTS = {
     "beeper": beeper, "keyboard": keyboard, "pile": pile_driver, "gust": gust,
     "egg": egg_sizzle, "scrape": batter_scrape, "bowl": bowl_clink,
     "tea_laugh": lambda: teahouse_crowd(False), "tea_clap": lambda: teahouse_crowd(True),
+    "thunder_a": lambda: thunder(0), "thunder_b": lambda: thunder(1),
+    "snow_step_a": lambda: snow_steps(0), "snow_step_b": lambda: snow_steps(1),
+    "snow_fall_a": lambda: snow_fall(0), "snow_fall_b": lambda: snow_fall(1),
+    "leaf_a": lambda: leaf_gust(0), "leaf_b": lambda: leaf_gust(1),
 }
 
 

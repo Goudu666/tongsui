@@ -1980,12 +1980,23 @@ static func _list_at(list: Variant, i: int) -> Dictionary:
 	return {}
 
 
+## 关口上摆出来的路：写了 hide 的（升迁关上别的行当的路）标记不对就不摆，锁着的理由正是它的 lock 那句；
+## 只是分数、积蓄不够的照旧灰着摆出来。没写 hide 的路（接班、托关系）照旧灰着给人看见
+static func milestone_options(ev: Dictionary, locks: Dictionary) -> Array:
+	var out: Array = []
+	for o in ev.get("options", []):
+		if o.get("hide", false) and str(locks.get(str(o.id), "")) == str(o.get("lock", "这条路不是给你留的")):
+			continue
+		out.append(o)
+	return out
+
+
 ## 人生关口：够不着的路是灰的，写着差多少；够得着的路上写着对门走不走得了。
 ## 这是整个游戏里最重的一次选择：分数是平时一天天攒的，路是自己挑的，可以为了对门走低的那条。
 func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary, pulls: Dictionary = {}) -> void:
 	_flush_era()  # 同一天来的年代大事先弹，盖在关口上面：先知道线为什么挪了，再选路
 	var both: bool = pe.roles.has(_other())
-	var opts: Array = ev.get("options", [])
+	var opts: Array = milestone_options(ev, _dict(locks.get(my_role)))
 	_open_modal(_options_width(opts.size()))
 	modal.set_meta("waiting_event", pe.eventId)
 	# 只有一条路可走的人，服务器已经替他定了：直接显示结果，等对门
@@ -2361,7 +2372,7 @@ func _show_milestone_result(e: Dictionary) -> void:
 			rv.delay = 0.45
 			rv.custom_minimum_size.x = width
 			if audio != null:
-				rv.sound = audio.cue
+				rv.sound = audio.reveal_cue if r == my_role and audio.has_method("reveal_cue") else audio.cue
 			box.add_child(rv)
 			reveals.append(rv)
 			var pick := _label(box, "→ " + pick_text, 34, P.INK)

@@ -233,7 +233,10 @@ for (let seed = 1; seed <= LIVES; seed++) {
   const rare = [...hit].sort((a, b) => a[1] - b[1]).slice(0, 8).map(([id, n]) => `${id}×${n}`);
   console.log("  最难遇到的事件：" + rare.join("  "));
   // 每一种行当都有人干上了
-  for (const t of C.tracks.filter((x) => x.duty && (x.requires.minAge ?? 0) <= 40 && (x.requires.maxAge ?? 99) >= 40)) assert.ok(trackSeen.has(t.id), `没有人走上「${t.label}」这条路`);
+  // 升了级的路（content/tracks.yaml 的 <行当>_r1 / _r2，docs/CAREER.md）和原来那条算一个行当：干上了这一行、升没升到哪一级都算
+  const career = (id) => id.replace(/_r[12]$/, "");
+  const careerSeen = new Set([...trackSeen].map(career));
+  for (const t of C.tracks.filter((x) => x.duty && (x.requires.minAge ?? 0) <= 40 && (x.requires.maxAge ?? 99) >= 40)) assert.ok(careerSeen.has(career(t.id)), `没有人走上「${t.label}」这条路`);
   for (const f of ["p_wall_names", "p_capsule", "p_pigeon", "p_promise", "p_seaside", "p_lovers", "p_married", "p_partners", "p_reunited", "took_over"]) {
     assert.ok((flagsSeen.get(f) ?? 0) > 0, `故事线索 ${f} 从来没被打上`);
   }

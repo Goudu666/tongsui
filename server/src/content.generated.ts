@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "a7937ab05c42",
+ "version": "beb2873bada0",
  "events": [
   {
    "id": "ch_runner",
@@ -7361,7 +7361,7 @@ var CONTENT: Content = {
     {
      "id": "key",
      "text": "送去那所好小学",
-     "min": 4.6,
+     "min": 4,
      "tags": [
       "competitive"
      ],
@@ -7440,7 +7440,7 @@ var CONTENT: Content = {
     {
      "id": "key",
      "text": "去那所重点初中",
-     "min": 5.8,
+     "min": 5,
      "tags": [
       "competitive"
      ],
@@ -7518,7 +7518,7 @@ var CONTENT: Content = {
     {
      "id": "key",
      "text": "上重点高中",
-     "min": 6.6,
+     "min": 5.8,
      "tags": [
       "competitive"
      ],
@@ -7534,7 +7534,7 @@ var CONTENT: Content = {
     {
      "id": "high",
      "text": "上普通高中",
-     "min": 5.2,
+     "min": 4.6,
      "tags": [
       "patient"
      ],
@@ -7620,7 +7620,7 @@ var CONTENT: Content = {
     {
      "id": "top",
      "text": "去考上的那所好大学",
-     "min": 7.4,
+     "min": 6,
      "tags": [
       "competitive"
      ],
@@ -7636,7 +7636,7 @@ var CONTENT: Content = {
     {
      "id": "away",
      "text": "让孩子去外地念书",
-     "min": 6.4,
+     "min": 5.4,
      "tags": [
       "adventure"
      ],
@@ -7652,7 +7652,7 @@ var CONTENT: Content = {
     {
      "id": "uni",
      "text": "念本市的大学",
-     "min": 5.6,
+     "min": 4.6,
      "tags": [
       "gentle"
      ],
@@ -33187,7 +33187,7 @@ var CONTENT: Content = {
     },
     "bring": false,
     "kid": {
-     "mind": 1.2
+     "mind": 2.4
     }
    },
    {
@@ -33221,7 +33221,7 @@ var CONTENT: Content = {
     },
     "bring": false,
     "kid": {
-     "body": 1.2
+     "body": 2.4
     }
    },
    {
@@ -33259,7 +33259,7 @@ var CONTENT: Content = {
     },
     "bring": false,
     "kid": {
-     "charm": 1.2
+     "charm": 2.4
     }
    },
    {
@@ -33297,7 +33297,7 @@ var CONTENT: Content = {
     },
     "bring": false,
     "kid": {
-     "mind": 1.8
+     "mind": 3.6
     }
    }
   ],
@@ -37198,11 +37198,11 @@ var CONTENT: Content = {
    },
    "inherit": 0.3,
    "noise": 0.6,
-   "room": 7,
+   "room": 10,
    "selfGrow": {
-    "body": 0.18,
-    "mind": 0.12,
-    "charm": 0.12
+    "body": 0.1,
+    "mind": 0.07,
+    "charm": 0.07
    },
    "sameAge": 2
   },

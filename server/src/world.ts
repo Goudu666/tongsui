@@ -256,8 +256,8 @@ function worldStartDay(s: LifeState, c: Content) {
   var msToday = lifeMilestoneAt(c, t.age);
   var msDue = !!msToday && ROLES.some(function (r) { return lifeMilestoneFor(msToday!, persons[r]) && !lifeSeenIds(s, r)[msToday!.id]; });
   // 孩子的关口（family.ts）：自己今天没有关口的日子，孩子到了岁数的那道今天过
+  // 主线照排（不当自己的关口那样让开）：中年一个日子三年，四道孩子的关口再占四天，第五章的三件就排不下了
   var kidGate = msDue ? null : kidGateToday(s, c);
-  if (kidGate) msDue = true;
   var story = storyToday(s, c, t, msDue);
   var storyScene = function (r: Role): string | null {
     var id = story[r] || story.mirror;

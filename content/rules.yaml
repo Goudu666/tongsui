@@ -124,8 +124,8 @@ family:
   start: { body: 1.5, mind: 1.0, charm: 1.0 }
   inherit: 0.3
   noise: 0.6
-  room: 7.0
-  selfGrow: { body: 0.18, mind: 0.12, charm: 0.12 }
+  room: 10.0
+  selfGrow: { body: 0.1, mind: 0.07, charm: 0.07 }
   sameAge: 2
 
 # ---------- 传承 ----------

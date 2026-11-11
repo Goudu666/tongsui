@@ -516,7 +516,20 @@
       text: 把闹钟收起来
       tags: [gentle]
       effects: { self: { mood: 8 }, flags: [retired] }
+    # 关口冲刺 11-11：六十岁心智魅力人人九十上下，带徒弟那条线开局就过了，这道关原来没得拼。
+    # 这条看积蓄：四十五到六十这五个日子挣下的钱挪得动它。出门花掉的六十块，七十岁请人照应（160）那头就紧了
+    - id: trip
+      text: 和对门搭个伴，出去走走
+      score: { money: 1 }
+      min: 180
+      cost: 60
+      tags: [adventure]
+      effects: { self: { mood: 10 }, flags: [retired, retire_trip] }
   resonance:
+    trip:
+      text: 绿皮车，两个下铺。到了海边，鞋里灌满了沙子，回来的一路谁也没倒。
+      memory: 鞋里的沙子
+      bond: { sync: 2, close: 3 }
     mentor:
       text: 你们各带了一个徒弟。两个年轻人在楼下碰见了，互相打听：你师父也这么爱说「我们那时候」吗？
       memory: 两个徒弟
@@ -540,8 +553,9 @@
   options:
     - id: pair
       text: 两家并一家，搭伙过
+      # 关口冲刺 11-11：老了搭伴一段顶好几年（rules.yaml bond.closeWeight），线从 55 抬到 60
       score: { close: 1 }
-      min: 55
+      min: 60
       tags: [gentle]
       effects: { bond: { close: 3 } }
     - id: walk

@@ -186,6 +186,18 @@ function decide(s, P, partnerPlan) {
     if (same && (PERSONA === "careful" ? rand() < 0.8 : rand() < 0.4)) return { ...same, why: "together" };
   }
   if (PERSONA === "casual") return { ...pick(free), why: "random" };
+  // 纸带上还没够着的最低那条线看亲近（退休、七十）：认真的人去找对门一块儿做事（真人会约）
+  const gl = G("lifeGoal")(s, C, role);
+  const low = gl && gl.lines.filter((l) => !l.ok).sort((x, y) => x.need - y.need)[0];
+  if (low && low.by === "亲近") {
+    const tog = free.filter((o) => o.act.together && !w.done.includes("together:" + o.act.id)); // 同一件事搭伴一天只算一回，换着做
+    if (tog.length && rand() < 0.75) return { ...(partnerPlan && tog.find((o) => o.act.id === partnerPlan.act?.id)) || nearest(tog, a), why: "together" };
+  }
+  // 看积蓄的线（安家、四十五、退休、七十）：挑挣钱最多的活儿
+  if (low && low.by === "积蓄") {
+    const earn = free.filter((o) => o.act.money > 0).sort((x, y) => y.act.money - x.act.money);
+    if (earn.length && rand() < 0.75) return { ...earn[0], why: "earn" };
+  }
   // 认真的人：心情差了先玩，不然朝下一个关口使劲（心智/体魄/魅力里最弱的那项），偶尔换换花样
   if (p.needs.mood < 40) {
     const fun = free.filter((o) => (o.act.needs.mood || 0) >= 8);

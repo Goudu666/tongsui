@@ -443,7 +443,7 @@ function playLife(seed) {
   rep.faults = logger.lines.filter((l) => l[0] === "error").map((l) => l[1]).slice(0, 10);
   // 每道关两个人的分（比较按法、调数时看成长总量有没有跑偏）
   rep.gates = (s.log || []).filter((e) => e.kind === "milestone" && e.results).map((e) => ({ age: e.age, qing: e.results.qing ? e.results.qing.score : null, mei: e.results.mei ? e.results.mei.score : null, gate: e.gate || null }));
-  rep.pull.pulled = rep.gates.filter((g) => g.gate && g.gate.pull).length;
+  rep.pull.pulled = rep.gates.filter((g) => g.gate && (g.gate.pull || g.gate.pay)).length;
   rep.pull.missed = rep.gates.filter((g) => g.gate && g.gate.miss).length;
   rep.pull.reunion = rep.gates.filter((g) => g.gate && g.gate.reunion).length;
   rep.pull.pairGates = (s.log || []).filter((e) => e.kind === "milestone" && e.results && e.results.qing && e.results.mei).length;

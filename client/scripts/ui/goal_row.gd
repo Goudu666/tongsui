@@ -28,7 +28,8 @@ func _draw() -> void:
 	var ty := 28.0 if compact else 36.0
 	var right := ("%d / %d %s" % [int(line.have), need, unit]) if need > 0 else ("%d" % int(line.have))
 	var rw := f.get_string_size(right, HORIZONTAL_ALIGNMENT_LEFT, -1, fr).x
-	var by := ("看" + str(line.by) + ("  够着了" if ok else "")) if str(line.get("by", "")) != "" and need > 0 else ""
+	var short := int(line.get("short", 0))  # 线够了、要交的钱还差（服务器 GoalLine.short）
+	var by := ("看" + str(line.by) + (("  还差 %d 块" % short) if ok and short > 0 else ("  够着了" if ok else ""))) if str(line.get("by", "")) != "" and need > 0 else ""
 	if str(line.get("era", "")) != "" and need > 0:
 		by += ("  · " if by != "" else "") + str(line.era)  # 年代挪了这条线（服务器 GoalLine.era：「考大学 +7」）
 	var bw := f.get_string_size(by, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x if by != "" else 0.0

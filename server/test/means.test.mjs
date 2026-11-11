@@ -344,6 +344,50 @@ const shown = (o, why) => !(o.hide && why === (o.lock || "这条路不是给你�
       assert.ok(tr.id === went || tr.group === went, `${id}：${before} 听家里的以后走的是 ${went}（实际 ${tr.id}）`);
     }
   }
+  // 二十二岁坐办公室：线谁都一样，头一年得自己先垫一笔；殷实人家家里出，家里不管了的自己出（docs/MEANS.md 第十节）
+  {
+    const desk = opt("m_job", "desk"), mj = ev("m_job");
+    const costOf = (flags) => G("lifeOptionCost")(mj, desk, { flags });
+    assert.ok(desk.cost > 0 && !desk.requires, "坐办公室谁都考得，要垫一笔");
+    assert.equal(costOf(["fam_poor"]), desk.cost);
+    assert.equal(costOf([]), desk.cost);
+    assert.equal(costOf(["fam_rich", "exp_book"]), 0, "殷实人家家里出");
+    assert.equal(costOf(["fam_rich", "exp_book", "strain1", "fam_cut"]), desk.cost, "家里不管了的自己出");
+    const lock = (flags, money) => G("lifeOptionLock")(mj, desk, { flags, money, stats: { mind: 10, body: 5, charm: 5, luck: 5 } }, 0);
+    assert.ok(lock(["fam_poor"], desk.cost - 1), "清贫人家攒不够那一笔，坐不了办公室");
+    assert.equal(lock(["fam_poor"], desk.cost), null);
+    assert.equal(lock(["fam_rich"], 0), null, "殷实人家一分钱没有也坐得了");
+    // 差的是那一笔钱、分够了：对门塞过来（上限按对门的家境），殷实的对门塞得动，清贫的对门塞不动
+    const atGate = (mf, myMoney, theirMoney) => {
+      const g = lifeAt(29, 22, "wu", mf, 9.5);
+      g.persons.qing.money = myMoney; g.persons.mei.money = theirMoney; g.bond.close = 80;
+      for (let i = 0; i < 800 && !g.world.event; i++) G("worldAdvance")(g, C, 0.1, ON);
+      assert.equal(g.world.event?.eventId, "m_job");
+      return g;
+    };
+    const rich = atGate("dong", desk.cost - 8, 60);
+    const offer = G("lifeMilestonePulls")(rich, C)?.qing?.desk;
+    assert.ok(offer && offer.unit === "块" && offer.gap === 8 && offer.by === "mei", "殷实的对门把差的八块塞过来");
+    assert.equal(G("worldChoose")(rich, C, "qing", "desk", false).error, null);
+    assert.equal(G("worldChoose")(rich, C, "mei", "desk", false).error, null);
+    assert.ok(rich.persons.qing.flags.includes("job_desk"), "塞了钱，坐上了办公室");
+    const gate = rich.log.findLast((e) => e.kind === "milestone").gate;
+    assert.equal(gate.pay?.qing?.gap, 8, "塞的是交的钱：记在 gate.pay");
+    assert.equal(gate.pull?.qing, undefined, "不记进 gate.pull（揭晓卡照 pull 画分的尺子）");
+    // 目标条：二十一岁线已经够了、钱还差，写还差几块；对门殷实，写 TA 能垫多少
+    const tape = (mf, myMoney) => {
+      const g = lifeAt(31, 21, "wu", mf, 9.5);
+      g.persons.qing.money = myMoney; g.persons.mei.money = 60; g.bond.close = 80;
+      return G("lifeGoal")(g, C, "qing")?.lines?.find((l) => l.id === "desk");
+    };
+    const short = tape("ma", 5);
+    assert.ok(short && short.ok && short.short === desk.cost - 5 && !short.pull, `目标条：线够了，还差 ${short?.short} 块`);
+    const helped = tape("dong", desk.cost - 8);
+    assert.ok(helped.short === 8 && helped.pull?.gap === 8 && helped.pull.unit === "块", "对门殷实：目标条上写 TA 能垫你八块");
+    assert.equal(tape("ma", 50).short, undefined, "钱够就不写");
+    const poor = atGate("ma", desk.cost - 15, 60);
+    assert.equal(G("lifeMilestonePulls")(poor, C)?.qing?.desk, undefined, "清贫的对门最多塞十块，差十五块塞不动");
+  }
   // 二十二岁：董家（exp_pull）的「爸妈安排好的单位」不掏钱；郑家（exp_book）看不见这一条，托关系照旧自己掏
   const s = lifeAt(23, 22, "dong", "zheng", 9.5);
   s.persons.qing.money = 50; s.persons.mei.money = 50;
@@ -413,7 +457,8 @@ const shown = (o, why) => !(o.hide && why === (o.lock || "这条路不是给你�
 // ---------- 9. 三档拉开（tools/origin.mjs 的口径：两个人放进同一档人家，过到三十一岁） ----------
 // 只钉谁高谁低，不钉具体的数。三十岁那道关想要个落脚的地方：够得着自己的房先买，再是翻修、合住，都够不着才按 climb
 {
-  const N = 14;
+  // 20 世（40 个人）：14 世的时候一格只有 28 个人，有房的比例上下差十几个点，「一档隔开一截」碰运气
+  const N = 20;
   const HOMES = ["home_own", "home_share", "home_fixed"];
   const homeOf = (o) => (o.effects.flags.includes("home_own") ? 2 : HOMES.some((h) => o.effects.flags.includes(h)) ? 1 : 0);
   const settleFirst = (s, r, e, open) => {
@@ -438,6 +483,8 @@ const shown = (o, why) => !(o.hide && why === (o.lock || "这条路不是给你�
   // 三档拉开：同样一个人念书，三十岁自己的房 清贫 < 小康 < 殷实，一档隔开一截
   assert.ok(solo[0].own + 0.15 <= solo[1].own && solo[1].own + 0.15 <= solo[2].own, `一个人念书三十岁有房 ${solo.map((c) => P(c.own)).join(" / ")}：三档没拉开`);
   assert.ok(solo[0].med < solo[1].med && solo[1].med < solo[2].med, `三十岁的积蓄 ${solo.map((c) => c.med).join(" / ")}：三档没拉开`);
+  // 二十二岁坐办公室：考的是同一条线，可头一年要自己垫一笔（殷实人家家里出），清贫人家二十二岁手里那点钱多半不够
+  assert.ok(solo[0].desk + 0.2 <= solo[1].desk && solo[1].desk + 0.1 <= solo[2].desk, `一个人念书二十二岁坐办公室 ${solo.map((c) => P(c.desk)).join(" / ")}：三档没拉开`);
   // 清贫人家的安家是另一场冲刺：买不起房，落脚的地方（翻修、合住）够得着
   assert.ok(solo[0].home >= solo[0].own + 0.3, `清贫人家一个人念书 落脚 ${P(solo[0].home)}，自己的房 ${P(solo[0].own)}：翻修、合住没接住`);
   // 每档专心比不上心高：中考、找事由、三十岁的积蓄
@@ -447,5 +494,5 @@ const shown = (o, why) => !(o.hide && why === (o.lock || "这条路不是给你�
   }
   // 考场公平：清贫专心的中考比殷实不上心的高
   assert.ok(solo[0].key > lazy[2].key + 0.25, `清贫专心中考 ${P(solo[0].key)}，殷实不上心 ${P(lazy[2].key)}`);
-  console.log(`✓ 三档拉开（一个人念书）：三十岁有房 ${solo.map((c) => P(c.own)).join(" / ")}，落脚 ${solo.map((c) => P(c.home)).join(" / ")}，积蓄 ${solo.map((c) => Math.round(c.med)).join(" / ")} / 每档专心比不上心高（中考、办公室、积蓄）/ 清贫专心中考 ${P(solo[0].key)} 高过殷实不上心 ${P(lazy[2].key)}`);
+  console.log(`✓ 三档拉开（一个人念书）：二十二岁坐办公室 ${solo.map((c) => P(c.desk)).join(" / ")}，三十岁有房 ${solo.map((c) => P(c.own)).join(" / ")}，落脚 ${solo.map((c) => P(c.home)).join(" / ")}，积蓄 ${solo.map((c) => Math.round(c.med)).join(" / ")} / 每档专心比不上心高（中考、办公室、积蓄）/ 清贫专心中考 ${P(solo[0].key)} 高过殷实不上心 ${P(lazy[2].key)}`);
 }

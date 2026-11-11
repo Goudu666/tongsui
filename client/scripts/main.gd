@@ -2377,7 +2377,7 @@ func _show_milestone_result(e: Dictionary) -> void:
 			rv.luck = int(res.get("luck", 0))
 			rv.steady = int(res.get("steady", 0))
 			var pulled: Dictionary = _dict(_dict(_dict(e.get("gate")).get("pull")).get(r))  # 对门拉了一把（pull.ts）
-			if not pulled.is_empty():
+			if not pulled.is_empty() and str(pulled.get("unit", rv.unit)) == rv.unit:  # 尺子上只画同一个单位的（塞钱交学费的那种在 gate.pay，不画）
 				var by := str(pulled.get("by", _other()))
 				rv.pull = int(pulled.get("gap", 0))
 				rv.pull_color = P.role_color(by)

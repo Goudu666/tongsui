@@ -18,6 +18,7 @@ spots:
   - { id: school_gate, at: 380, area: school, actions: [ duty, club_math ] }
   - { id: class_board, at: 1090, area: classroom, actions: [ blackboard ] }
   - { id: class_desk, at: 1530, area: classroom, actions: [ study ] }
+  - { id: class_back, at: 1720, area: classroom, actions: [ side_tutor ] }
   - { id: school_yard, at: 2260, area: yard, actions: [ club_sport, ball ] }
 
 npcs:

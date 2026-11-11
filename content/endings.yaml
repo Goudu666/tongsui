@@ -18,6 +18,12 @@ pair:
     text: 同一年出生，在同一条楼道里长大，后来住进同一扇门。小时候拉过的那个钩，一百年，真的没变。
     requires: { flags: [p_married, p_promise], minClose: 65, minRate: 50 }
 
+  # 藏着：带着「两张合影」出生，又成了一家（老物件会变，见 heirlooms.yaml）
+  - id: e_album
+    title: 又一张
+    text: 相册翻到最后一页，还空着。两个人在楼道里又照了一张，贴进去，正好。
+    requires: { flags: [heir_photo_two, p_married], minClose: 50 }
+
   - id: e_white_hair
     title: 白头
     text: 楼道里的灯坏了又修，修了又坏。两个人的头发白了，一个还是喊另一个「对门的」。
@@ -33,6 +39,12 @@ pair:
     title: 四个名字
     text: 楼道的墙后来刷过好几回，那一块没人刷。四个名字，两个深，两个浅。
     requires: { flags: [p_four_names], minClose: 40 }
+
+  # 藏着：带着「套着的盒子」出生，又去河边埋了一回
+  - id: e_nested
+    title: 一层套一层
+    text: 海河边那块地方，往下挖一层是一个盒子。最底下那个锈死了，两个人也没打算打开。
+    requires: { flags: [heir_nested, p_capsule], minClose: 50 }
 
   - id: e_reunited
     title: 重逢
@@ -109,6 +121,12 @@ pair:
     requires: {}
 
 lives:
+  # 藏着：带着「批注过的书」出生，自己也有了孩子
+  - id: l_margin
+    title: 页边
+    text: "{name} 在页边上接着写。写到后来，分不清哪一行是自己的。"
+    requires: { flags: [heir_noted, has_kid] }
+
   # ---- 接下了家里的营生 ----
   - id: l_heir_breakfast
     title: 早点铺的手艺
@@ -182,6 +200,16 @@ lives:
     title: 风筝
     text: "{name} 扎了一辈子风筝。开春河边天上的风筝，十只里有三只出自 {name} 的手。剩下七只塑料的，线也是 {name} 给理顺的。"
     requires: { flags: [fam_kite, took_over] }
+
+  # ---- 半路上换了的活法（content/events/lives.yaml） ----
+  - id: l_two_shops
+    title: 两家铺子
+    text: "{name} 半路辞了事由，开了自己的铺子，后来开到第二家。两家隔着一条马路，{name} 一天来回跑八趟。"
+    requires: { flags: [own_shop, shop_two], notFlags: [shop_closed] }
+  - id: l_restart
+    title: 又支起来了
+    text: "{name} 四十多岁丢了饭碗，在楼下支了个摊。天不亮就起，起了十几年，摊子上的灯总是楼里第一盏亮的。"
+    requires: { flags: [laid_off, own_stall] }
 
   # ---- 活成了什么样 ----
   - id: l_early

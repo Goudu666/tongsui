@@ -81,6 +81,7 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
     if (rq.anyStat !== undefined) p.stats.luck = rq.anyStat;
     if (rq.minMoney !== undefined) p.money = rq.minMoney;
     if (rq.minDiedAge !== undefined) p.diedAtAge = rq.minDiedAge;
+    p.heirloomId = rq.carried ?? null; // 老物件会变：带着上一件出生的（atlas.test.mjs 第 6 节）
     assert.equal(G("legacyLeave")(C, p), h.id, `${h.name}：刚好够它的条件的人，留下的却是别的（被排在前面的挡住了）`);
     // 加成有上限：属性合计最多半点，钱最多十块，不许是负的
     const bonus = Object.values(h.bonus);
@@ -154,7 +155,8 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   const anyone = (f) => ROLES.some((r) => s.persons[r].flags.includes(f));
   assert.deepEqual(J(lg.traces), J(C.legacy.traces).filter(anyone));
   assert.deepEqual(J(lg.marks), J(C.legacy.marks).filter(anyone));
-  assert.deepEqual(Object.keys(lg).sort(), ["families", "heirlooms", "lives", "marks", "past", "remembered", "traces"], "河畔里不攒跨世的计数");
+  // 图鉴（seen，atlas.ts）是唯一跨世攒着的一张表：见过哪些结局。它只给人看，不进投胎（atlas.test.mjs 钉着）
+  assert.deepEqual(Object.keys(lg).sort(), ["families", "heirlooms", "lives", "marks", "past", "remembered", "seen", "traces"], "河畔里不攒别的跨世计数");
   console.log(`✓ 一世走完：留下 ${ROLES.map((r) => heir(s.left[r]).name).join("、")}，记了小传（${past.memories.length} 段回忆）和住过的人家`);
 }
 
@@ -299,7 +301,7 @@ const lifeOne = liveOut(G("lifeCreate")(20261110, C));
   const strip = (s) => {
     const old = J(s);
     old.version = 5;
-    for (const k of ["legacy", "life", "left", "again", "noted"]) delete old[k];
+    for (const k of ["legacy", "life", "left", "again", "noted", "near"]) delete old[k];
     for (const r of ROLES) {
       for (const k of ["house", "offer", "heirloomId"]) delete old.rolls[r][k];
       if (old.persons) delete old.persons[r].heirloomId;
@@ -670,7 +672,8 @@ const give = (s, flags, roles = ROLES) => { for (const r of roles) s.persons[r].
   assert.ok(m(late, "m_junior") < m(owl, "m_junior") - 0.3, `大器晚成 12 岁心智 ${m(late, "m_junior").toFixed(2)}，不比别人（${m(owl, "m_junior").toFixed(2)}）慢`);
   assert.ok(opens(at(late, "m_junior"), "key") < opens(at(owl, "m_junior"), "key"), "大器晚成进重点班的不该和别人一样多");
   assert.ok(opens(at(late, "m_gaokao"), "away") < opens(at(owl, "m_gaokao"), "away"), "大器晚成考去外地的不该和别人一样多");
-  assert.ok(m(late, "m_retire") > m(owl, "m_retire") + 0.1, `大器晚成 60 岁心智 ${m(late, "m_retire").toFixed(2)}，没有追过别人（${m(owl, "m_retire").toFixed(2)}）`);
+  // 关口冲刺（11-11）以后少年起每个日子算得更重，专心念书的人六十岁都碰到 10 的顶：钉「追上了、不落在后头」，22 岁那道关起就不比别人低
+  assert.ok(m(late, "m_retire") >= m(owl, "m_retire") && m(late, "m_job") >= m(owl, "m_job"), `大器晚成 22 岁心智 ${m(late, "m_job").toFixed(2)}、60 岁 ${m(late, "m_retire").toFixed(2)}，没有追上别人（${m(owl, "m_job").toFixed(2)}、${m(owl, "m_retire").toFixed(2)}）`);
   const gap60 = avg(at(late, "m_retire"), total3) - avg(at(owl, "m_retire"), total3);
   assert.ok(Math.abs(gap60) < 1.2, `大器晚成 60 岁三项合计和别人差了 ${gap60.toFixed(2)}，换一种活法不该差出一大截`);
 

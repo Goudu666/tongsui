@@ -64,10 +64,10 @@ const sum = (st) => st.body + st.mind + st.charm + st.luck;
   // 底子：同样的经历，长过的人长得慢，而且永远长不过 10
   const fresh = person(base);
   const first = growthApply(fresh, "mind", 1, at("childhood"));
-  const grown = person(base); grown.stats.mind = base.mind + R.growth.room * 0.8;
+  const grown = person(base); grown.stats.mind = base.mind + (typeof R.growth.room === "number" ? R.growth.room : R.growth.room.childhood) * 0.8;
   const late = growthApply(grown, "mind", 1, at("childhood"));
   assert.ok(first > 0 && late > 0 && late < first * 0.5, `离底子越远长得越慢：${first} → ${late}`);
-  const maxed = person(base); maxed.stats.mind = base.mind + R.growth.room + 0.5;
+  const maxed = person(base); maxed.stats.mind = base.mind + (typeof R.growth.room === "number" ? R.growth.room : R.growth.room.childhood) + 0.5;
   assert.ok(Math.abs(growthApply(maxed, "mind", 1, at("childhood")) - R.growth.eventScale * R.growth.floor) < 1e-3, "超出 room 以后只剩 floor");
   const top = person({ ...base, mind: 10 });
   growthApply(top, "mind", 5, at("teen"));

@@ -1,0 +1,10 @@
+# 每天 04:30 JST 备份一次，保留 14 天
+[Unit]
+Description=Daily tongsui database backup
+
+[Timer]
+OnCalendar=*-*-* 04:30:00 Asia/Tokyo
+Persistent=true
+
+[Install]
+WantedBy=timers.target

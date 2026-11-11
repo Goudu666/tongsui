@@ -173,12 +173,15 @@ interface Rules {
   growth: {
     eventScale: number;
     actionScale: number;
-    room: number;
+    /** 一个数，或者按阶段写 */
+    room: number | { [S in Stage]: number };
     floor: number;
     /** 底子里出身占多少：1 = 完全看出生时的属性，0 = 人人一样 */
     bornWeight: number;
     plasticity: { [S in Stage]: Stats };
     plainBonus: number;
+    /** 日常行动的成长按阶段再乘这个数：一个日子代表的时间越长算得越重。老内容没写按 1 */
+    turnWeight?: { [S in Stage]: number };
   };
   /** [从几岁起, 每年掉多少] */
   aging: { body: number[][]; mind: number[][]; activeFactor: number };
@@ -524,7 +527,7 @@ interface LogEntry {
   resonance: boolean | null;
   text: string;
   /** 关口：每个人的得分（属性类按百分制，钱类按块）、成绩和走上的路 */
-  results?: { [R in Role]?: { score: number; scored?: boolean; unit: string; grade: string | null; option: string; track: string } };
+  results?: { [R in Role]?: { score: number; scored?: boolean; unit: string; grade: string | null; option: string; track: string; near?: MilestoneNear | null } };
   /** 一天的小结：每个人今天涨了多少 */
   gains?: { [R in Role]?: Partial<Stats> };
   /** 这件事里做过的检定 */

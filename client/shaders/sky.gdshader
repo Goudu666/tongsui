@@ -65,6 +65,12 @@ void fragment() {
 	float t = clamp((world.y - top) / max(horizon - top, 1.0), 0.0, 1.2);
 	vec3 col = PAPER;
 	float day = (1.0 - night) * (1.0 - dusk * 0.6);
+	// 网点底下先铺一层很匀的渐变：天顶深一点、地平线发白发暖，网点再印在上面，天就有了「厚度」
+	vec3 zen = mix(vec3(0.84, 0.92, 0.95), vec3(0.78, 0.74, 0.90), dusk);
+	zen = mix(zen, vec3(0.90, 0.90, 0.95), dawn);
+	vec3 hor = mix(vec3(1.0, 0.99, 0.96), vec3(1.0, 0.90, 0.78), dusk);
+	hor = mix(hor, vec3(1.0, 0.95, 0.88), dawn);
+	col *= mix(zen, hor, smoothstep(0.0, 1.0, t));
 
 	// ---- 青版：地平线附近浓，往上淡 ----
 	float qing_cov = (0.05 + 0.22 * t * t) * (1.0 - night * 0.5) + overcast * 0.12;

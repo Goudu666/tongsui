@@ -191,7 +191,7 @@
     - id: sit
       text: 闭上眼，认了
       tags: [responsible]
-      effects: { self: { clean: 10 } }
+      effects: { self: { mood: 2 } }
     - id: cry
       text: 扯着嗓子哭
       tags: [competitive]
@@ -458,15 +458,15 @@
     - id: soak
       text: 咬着牙泡进大池
       tags: [adventure]
-      effects: { self: { body: 1, clean: 40, mood: 5 } }
+      effects: { self: { body: 1, mood: 5 } }
     - id: scrub
       text: 让师傅搓，疼也不躲
       tags: [patient]
-      effects: { self: { clean: 60, mood: -3 } }
+      effects: { self: { mood: 3 } }  # 清洁砍了以后，这一下换成搓完的那股舒坦
     - id: radish
       text: 出来啃半个青萝卜
       tags: [solitude]
-      effects: { self: { clean: 30, hunger: 5, mood: 8 } }
+      effects: { self: { hunger: 5, mood: 8 } }
 
 # ===================== 少年 =====================
 
@@ -632,7 +632,7 @@
     - id: join
       text: 把兜里的东西塞给对方
       tags: [adventure]
-      effects: { self: { body: 1, mood: 10, energy: -10, clean: -10 } }
+      effects: { self: { body: 1, mood: 10, energy: -10 } }
     - id: worry
       text: 「这岁数，不怕出事？」
       tags: [responsible]
@@ -992,7 +992,7 @@
     - id: grab
       text: 上去就抱腿
       tags: [competitive]
-      effects: { self: { body: 1, clean: -10 }, flags: [tong_mat] }
+      effects: { self: { body: 1 }, flags: [tong_mat] }
     - id: watch
       text: 蹲在圈儿外头看
       tags: [solitude]

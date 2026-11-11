@@ -574,10 +574,9 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
   var broke = worldFeePaid(w, role, act.id) ? null : meansCantPay(s, role, act, guestHere); // 被带着做的看对门兜里（means.ts）；这一段付过进门钱的不再付
   if (broke) return broke;
   if (act.quick) {
-    // 顺手的事不花时间，可也不能一直做：一段里同一件只做一回，吃饱了、洗干净了就不用了
+    // 顺手的事不花时间，可也不能一直做：一段里同一件只做一回，吃饱了就不用了
     if (w.quick.indexOf(role + ":" + act.id) >= 0) return "刚" + act.label + "过";
     if ((act.needs.hunger || 0) > 0 && p.needs.hunger >= 90) return "还不饿";
-    if ((act.needs.clean || 0) > 0 && p.needs.clean >= 90) return "挺干净的";
   }
   return null;
 }
@@ -1042,7 +1041,6 @@ function worldShadowStep(s: LifeState, c: Content, role: Role) {
     if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, by(out ? "eat_out" : "eat")))) return;
     if (out && worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("eat")))) return;
   }
-  if (p.needs.clean < 30 && worldShadowGo(s, c, role, worldShadowFind(s, c, role, by("wash")))) return;
   // 主线今天（晚上的那几件也去：睡觉往后挪）这一段在哪张图上等着：去那儿找件事做（到了那儿，worldFate 会让它发生）
   var stId = w.fate[role] && storyFindEvent(c, w.fate[role]!) ? w.fate[role] : w.fate.mirror && storyFindEvent(c, w.fate.mirror) ? w.fate.mirror : null;
   var stEv = stId && w.done.indexOf(stId) < 0 ? storyFindEvent(c, stId) : null;
@@ -1123,11 +1121,11 @@ function worldDecay(c: Content, p: Person, a: Actor, minute: number, dm: number)
   if (!a.asleep && lifeHasFlag(p, "tal_owl")) energyRate = minute >= 1200 ? 2 : minute < 480 ? 6 : 4;
   // 体魄好的人醒着不那么容易累
   if (!a.asleep) energyRate *= Math.max(0.5, 1 - (p.stats.body - 5) * c.rules.daily.bodyEnergy);
-  var d: SelfDelta = { hunger: -hungerRate * h, energy: -energyRate * h, clean: -2 * h };
+  // 清洁 11-11 砍了：顺手的事、不占时间，押时间的时候不构成取舍（存档里的 needs.clean 留着，不再变）
+  var d: SelfDelta = { hunger: -hungerRate * h, energy: -energyRate * h };
   var moodDrop = 0;
   if (p.needs.hunger < 20) moodDrop += 3;
   if (p.needs.energy < 15) moodDrop += 3;
-  if (p.needs.clean < 20) moodDrop += 2;
   if (moodDrop > 0) d.mood = -moodDrop * h;
   lifeApplySelf(p, d);
 }

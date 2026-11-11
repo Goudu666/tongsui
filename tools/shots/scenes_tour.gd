@@ -9,7 +9,7 @@ var only: Array = []
 var clean := false
 var main: Node
 
-## [名字, 图, 横坐标, 第几层, 几点（分钟）, 人生阶段, 季节]
+## [名字, 图, 横坐标, 第几层, 几点（分钟）, 人生阶段, 季节, 回合（可选，挑下雨下雪的日子）]
 const SHOTS := [
 	["building_home_morning", "building", 520, 1, 430, "childhood", "spring"],
 	["building_hall_dusk", "building", 1650, 1, 1090, "childhood", "autumn"],
@@ -31,6 +31,9 @@ const SHOTS := [
 	["park_day", "park", 1500, 0, 660, "old", "autumn"],
 	["park_dusk", "park", 2400, 0, 1100, "old", "spring"],
 	["hospital_day", "hospital", 1200, 0, 720, "old", "winter"],
+	# 下雨的日子（第 8 个参数是回合：weather._pick 按它决定这天下不下）
+	["street_rain_day", "street", 2200, 0, 820, "teen", "summer", 2],
+	["street_rain_night", "street", 2600, 0, 1240, "young", "summer", 2],
 ]
 
 
@@ -92,7 +95,7 @@ func _run() -> void:
 		other.walk_target = other.position
 		w.set_stage(str(s[5]))
 		if w.has_method("set_season"):
-			w.set_season(str(s[6]))
+			w.set_season(str(s[6]), int(s[7]) if s.size() > 7 else 0)
 		main._preview_minute = float(s[4])
 		await _wait(0.4)
 		# 走两步，镜头和走路的样子都拍进去

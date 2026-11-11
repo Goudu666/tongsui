@@ -1,5 +1,5 @@
 # 行动（各个地方在哪、有哪些点位，见 content/maps/<图>.yaml）
-# 行动。needs：hunger 饱腹 / energy 精力 / mood 心情 / clean 清洁（0~100）
+# 行动。needs：hunger 饱腹 / energy 精力 / mood 心情（0~100。清洁 11-11 砍了，不要再写 clean）
 #       stats：body / mind / charm（0~10，一次涨零点几；运气是天生的，行动不给）
 #       money：正数是挣钱，负数是花钱（钱不够做不了）
 # 每个行动只回答一个问题：它涨什么。日常行动是成长的大头，事件给的属性只是点缀。
@@ -37,7 +37,7 @@ actions:
     label: 洗澡
     quick: true
     minutes: 20
-    needs: { clean: 60, mood: 2 }
+    needs: { mood: 2 }
   - id: duty
     label: 上学
     duty: true
@@ -71,14 +71,14 @@ actions:
     label: 楼下跳皮筋
     minutes: 60
     requires: { maxAge: 14 }
-    needs: { mood: 10, energy: -8, clean: -8 }
+    needs: { mood: 10, energy: -8 }
     stats: { body: 0.25, charm: 0.2 }
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: "「小皮球，架脚踢……」你们俩跳得一样快。" }
   - id: play_river
     label: 海河边放风筝
     minutes: 60
     requires: { maxAge: 17 }
-    needs: { mood: 10, energy: -8, clean: -6 }
+    needs: { mood: 10, energy: -8 }
     stats: { body: 0.3 }
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: 一个人拽线，一个人举着风筝跑。 }
   - id: walk_river
@@ -92,7 +92,7 @@ actions:
     label: 操场踢球
     minutes: 90
     requires: { minAge: 6, maxAge: 40 }
-    needs: { mood: 6, energy: -14, clean: -10 }
+    needs: { mood: 6, energy: -14 }
     stats: { body: 0.45 }
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: 两个人，一个球，书包摆成门。 }
   - id: work
@@ -101,7 +101,7 @@ actions:
     requires: { minAge: 8, maxAge: 17 }
     # 拿成长换钱：两个钟头挣 2 块，长的比踢球、写作业少一半。原来是 5 块外加两项属性都长，从小修车的人三十岁白捡一套房
     money: 2
-    needs: { energy: -12, clean: -15 }
+    needs: { energy: -12 }
     stats: { body: 0.15, mind: 0.1 }
     together: { needs: { mood: 5 }, bond: { close: 1 }, text: 爷爷说你们俩加一块儿顶半个学徒。 }
 
@@ -154,7 +154,7 @@ actions:
     minutes: 120
     money: 3
     requires: { minAge: 8, maxAge: 17, flags: [fam_poor] }
-    needs: { energy: -12, clean: -10 }
+    needs: { energy: -12 }
     stats: { body: 0.15, charm: 0.2 }
     together: { needs: { mood: 5 }, bond: { close: 1 }, text: 对门过来搭了把手，干完了，你家大人塞给你们一人一个苹果。 }
   # 爸妈在厂里的：厂里的澡堂，一张澡票洗得又热又久。带对门去，澡票你出
@@ -164,7 +164,7 @@ actions:
     money: -1
     bring: true
     requires: { minAge: 5, flags: [fam_factory] }
-    needs: { clean: 90, mood: 10, energy: 4 }
+    needs: { mood: 10, energy: 4 }
     together: { needs: { mood: 8 }, bond: { close: 2 }, text: 出来的时候头发还冒着热气，两个人一人一瓶汽水，坐在厂门口晾着。 }
 
   # ---- 魅力 ----
@@ -186,7 +186,7 @@ actions:
   - id: play_roof
     label: 楼顶放鸽子
     minutes: 60
-    needs: { mood: 12, energy: -4, clean: -4 }
+    needs: { mood: 12, energy: -4 }
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: 鸽子绕着楼顶飞了三圈，你们数的圈数不一样。 }
 
   # ---------- 街坊的去处 ----------
@@ -227,7 +227,7 @@ actions:
     label: 出黑板报
     minutes: 60
     requires: { minAge: 7, maxAge: 11, hours: [930, 1080] }
-    needs: { energy: -6, clean: -4, mood: 2 }
+    needs: { energy: -6, mood: 2 }
     stats: { charm: 0.3, mind: 0.05 }
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: 一个画报头，一个抄字，粉笔灰落了两个人一头。 }
   - id: broadcast
@@ -276,7 +276,7 @@ actions:
     minutes: 45
     money: -1
     requires: { minAge: 18 }
-    needs: { hunger: 50, mood: 5, clean: -4 }
+    needs: { hunger: 50, mood: 5 }
     together: { needs: { mood: 6 }, bond: { close: 1 }, text: 一个灶眼，两个人轮着炒，炒出来的是一个味儿。 }
   - id: balcony
     label: 去阳台站会儿
@@ -337,7 +337,7 @@ actions:
     money: -2
     bring: true
     requires: { minAge: 6, maxAge: 11, flags: [fam_rich], hours: [930, 1200] }
-    needs: { energy: -12, hunger: -8, clean: 10 }
+    needs: { energy: -12, hunger: -8 }
     stats: { body: 0.55 }
     together: { needs: { mood: 6 }, bond: { close: 1, sync: 1 }, text: 一块浮板两个人扒着，你踢左腿，TA 踢右腿，在池子里转了个圈。 }
   - id: lang_class
@@ -380,7 +380,7 @@ actions:
     minutes: 120
     money: 2
     requires: { minAge: 22, maxAge: 59, flags: [job_craft], hours: [1020, 1290] }
-    needs: { energy: -12, clean: -10 }
+    needs: { energy: -12 }
     stats: { mind: 0.05 }
   - id: night_market
     label: 去夜市出摊
@@ -402,7 +402,7 @@ actions:
     minutes: 120
     money: 2
     requires: { minAge: 22, maxAge: 59, notFlags: [job_desk, job_pull, job_teach, job_trade, job_craft, own_shop], hours: [1110, 1320] }
-    needs: { energy: -18, clean: -15 }
+    needs: { energy: -18 }
     stats: { body: 0.05 }
 
   # 奇遇开出来的去处（content/events/chance.yaml）：不要钱，长得跟殷实人家花钱的那几样差不多快，能带上对门

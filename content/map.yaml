@@ -494,6 +494,8 @@ actions:
     requires: { minAge: 8, maxAge: 11 }
     needs: { energy: -10, mood: 3 }
     stats: { body: 0.15, charm: 0.12 }
+    # 人际圈子（docs/CIRCLE.md）：搬够五回，楼里记着你的好（tie_street）。十二岁以后是「给楼里搭把手」
+    tie: { flag: tie_street, times: 5 }
     together: { needs: { mood: 5 }, bond: { close: 1 }, text: 一个人在楼下递，一个人在楼梯上接，两张脸都抹黑了。 }
   - id: cards
     label: 跟街坊打扑克
@@ -643,3 +645,51 @@ actions:
     needs: { energy: -6, mood: -3 }
     kid: { mind: 3.6 }
     together: { needs: { mood: 3 }, bond: { close: 1 }, text: 走廊里一排长椅，坐的都是等孩子的。你们俩挨着，把一份报纸分成两半看。 }
+
+  # ---- 人际圈子（docs/CIRCLE.md）：拿时间换「能求到谁」 ----
+  # 带 tie 的事做够 times 回，认下一个门路（tie_*，content/circle.yaml）；有了就不在菜单上（notFlags），用掉了（关口上托了人）再攒。
+  # 都是 menu: true：机器人、影子不走动，校准过的活法数不动（门路只从开局带的那几户进模拟）。长得慢，花的是时间不是成长。
+  # 放了学留下来帮老师：傍晚那一段。清贫人家放了学要帮家里、殷实人家放了学有爸妈报的班，这一段都不在学校——
+  # 老师记住谁，先看谁放了学还在。殷实人家的「老师看重」是家长会上家里替你攒的（events/circle.yaml 的 c_meeting_rich）
+  - id: class_help
+    label: 留下来帮老师收拾教室
+    menu: true
+    minutes: 60
+    requires: { minAge: 7, maxAge: 14, hours: [930, 1110], notFlags: [tie_teacher] }
+    needs: { energy: -6, mood: -1 }
+    stats: { mind: 0.08, charm: 0.1 }
+    tie: { flag: tie_teacher, times: 6 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 一个擦黑板，一个摆桌椅。老师批着作业，抬头说了一句：「你们俩回吧，天黑了。」 }
+  - id: help_neighbor
+    label: 给楼里搭把手
+    menu: true
+    minutes: 60
+    requires: { minAge: 12, maxAge: 59, notFlags: [tie_street] }
+    needs: { energy: -9, mood: 2 }
+    stats: { body: 0.08, charm: 0.08 }
+    tie: { flag: tie_street, times: 5 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 一个抬床头，一个抬床尾，楼梯拐角转了三回才转过去。 }
+  # 小康人家里有亲戚在单位的（kin_unit）：跟爸妈去走动，拎点东西，坐一晚上。没有这门亲戚的人看不见。
+  # bring：对门家有这门亲戚，你跟着去，对门那边的亲戚也就认得你了（两份东西都由带的人拎）
+  - id: visit_kin
+    label: 跟家里去走亲戚
+    menu: true
+    bring: true
+    minutes: 120
+    money: -1
+    requires: { minAge: 14, maxAge: 21, hours: [1110, 1290], flags: [kin_unit], notFlags: [tie_unit, kin_cold] }
+    needs: { energy: -6, mood: -3 }
+    stats: { charm: 0.1 }
+    tie: { flag: tie_unit, times: 4 }
+    together: { needs: { mood: 3 }, bond: { close: 1 }, text: 大人在屋里说话，你们俩在门口剥花生。走的时候，那家人把你们俩的名字都叫对了。 }
+  # 二十几岁自己请人吃饭：一回四块，三回认下一个房管所的人。清贫人家工钱寄一截回家，这十二块是从别处省的
+  - id: treat
+    label: 请人吃顿饭
+    menu: true
+    minutes: 120
+    money: -4
+    requires: { minAge: 23, maxAge: 29, hours: [1080, 1290], notFlags: [tie_house] }
+    needs: { hunger: 35, energy: -10, mood: -2 }
+    stats: { charm: 0.12 }
+    tie: { flag: tie_house, times: 3 }
+    together: { needs: { mood: 3 }, bond: { close: 1 }, text: 一桌四个人，两个是你们俩。酒是你们倒的，话是人家说的。 }

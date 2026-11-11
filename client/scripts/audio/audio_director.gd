@@ -49,7 +49,9 @@ const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "pla
 	"old_breakfast": "work", "old_bikes": "work", "mind_kids": "play_alley", "grandkid_park": "play_river",
 	# 带孩子（docs/FAMILY.md）
 	"kid_homework": "study", "kid_run": "play_river", "kid_listen": "listen", "kid_class": "study",
-	"square_dance": "perform", "pair_cook": "eat", "gk_pickup": "play_alley"}
+	"square_dance": "perform", "pair_cook": "eat", "gk_pickup": "play_alley",
+	# 人际圈子（content/circle.yaml）：攒门路的几样
+	"class_help": "study", "help_neighbor": "work", "visit_kin": "listen", "treat": "eat_out"}
 ## 揭晓：名次章的音高（reveal.gd 砸横章那一下），认它来起 top
 const TOP_PITCH := 1.12
 ## 揭晓的声音隔这么久没来，下一颗算盘珠就算新的一回揭晓

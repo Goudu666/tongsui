@@ -225,6 +225,27 @@
       joins: key
       tags: [competitive]
       effects: { flags: [junior_key, junior_paid] }
+    # 人际圈子（docs/CIRCLE.md）：老师看重你（tie_teacher，放了学留下来帮老师攒的，殷实人家家长会上家里替你攒的）。
+    # 线和交钱那条一样，不花钱，不欠人情；谁都看得见这一条，灰着写「老师还没记住你」。过了这道关换了学校，tie_teacher 摘掉（circle.yaml 的 fade）
+    - id: nod
+      text: 老师推荐，进重点班
+      min: 6.9
+      requires: { flags: [tie_teacher] }
+      lock: 老师还没记住你
+      joins: key
+      tags: [competitive]
+      effects: { flags: [junior_key, junior_nod] }
+    # 爸妈在学校说得上话（tie_school，林家开局带）：托人递个条子。线同上，拎点东西（8 块），人情用掉了，欠下一笔（owe_school，events/circle.yaml 来讨）
+    - id: note
+      text: 托人递了个条子，进重点班
+      min: 6.9
+      cost: 8
+      requires: { flags: [tie_school] }
+      lock: 家里没人在学校说得上话
+      hide: true
+      joins: key
+      tags: [competitive]
+      effects: { drop: [tie_school], flags: [junior_key, owe_school] }
     - id: normal
       text: 去普通班
       tags: [gentle]
@@ -306,6 +327,25 @@
       hide: true
       tags: [responsible]
       effects: { flags: [zhongzhuan, job_succeed] }
+    # 人际圈子（docs/CIRCLE.md）：同小升初，线和交择校费那条一样
+    - id: nod
+      text: 老师推荐，过桥上重点
+      min: 7.8
+      requires: { flags: [tie_teacher] }
+      lock: 老师还没记住你
+      joins: far
+      tags: [competitive]
+      effects: { bond: { distance: 1 }, flags: [school_far, senior_nod] }
+    - id: note
+      text: 托人递了个条子，上重点
+      min: 7.8
+      cost: 12
+      requires: { flags: [tie_school] }
+      lock: 家里没人在学校说得上话
+      hide: true
+      joins: far
+      tags: [competitive]
+      effects: { bond: { distance: 1 }, drop: [tie_school], flags: [school_far, owe_school] }
     - id: near
       text: 念家门口的高中
       min: 5.8
@@ -532,7 +572,7 @@
       hide: true
       joins: pull
       tags: [competitive]
-      effects: { self: { mood: -4 }, flags: [job_pull] }
+      effects: { self: { mood: -4 }, flags: [job_pull, owe_pa] }
     - id: pull
       text: 托家里的关系进单位
       # 自己一份营生（tracks.yaml 的 job_pull），不算考进去的办公室：一天少几块，往后三道要钱的关不跟着坐办公室走。
@@ -545,7 +585,22 @@
       requires: { flags: [fam_rich], notFlags: [fam_cut] }
       lock: 家里没有这层关系
       tags: [competitive]
-      effects: { self: { mood: -3 }, flags: [job_pull] }
+      # 爸妈替你欠下的人情（owe_pa）：二十几岁那几年有一顿饭得你去陪（events/circle.yaml 的 c_owe_pa），推了记一回脸色
+      effects: { self: { mood: -3 }, flags: [job_pull, owe_pa] }
+    # 人际圈子（docs/CIRCLE.md）：小康、清贫人家自己走动来的门路（tie_unit：走亲戚攒的、金家爷爷的老关系）。和托家里的关系同一条路、同一条线，
+    # 礼自己拎（15 块），人情自己欠（owe_kin）。有这门亲戚没走动的（kin_unit），灰着写「亲戚那边没走动」；别人看不见
+    - id: kin
+      text: 托亲戚进单位
+      score: { mind: 0.6, charm: 0.4 }
+      min: 8.9
+      cost: 15
+      requires: { flags: [tie_unit], notFlags: [fam_rich] }
+      lock: 家里没有这层关系
+      lockBy: { kin_unit: 亲戚那边没走动 }
+      hide: true
+      joins: pull
+      tags: [competitive]
+      effects: { self: { mood: -3 }, drop: [tie_unit], flags: [job_pull, owe_kin] }
     - id: teach
       text: 回小学教书
       score: { mind: 0.6, charm: 0.4 }
@@ -570,6 +625,17 @@
       min: 6.0
       tags: [responsible]
       effects: { flags: [job_labor] }
+    # 街坊记着你的好（tie_street：给楼里搭把手攒的，陈家、周家开局带）：街坊介绍去铺子里当学徒。和学手艺同一条路，线低一截，人情欠下（owe_street）
+    - id: street
+      text: 街坊介绍去当学徒
+      score: { body: 0.5, mind: 0.5 }
+      min: 5.6
+      requires: { flags: [tie_street] }
+      lock: 楼里还没人想着你
+      hide: true
+      joins: craft
+      tags: [patient, responsible]
+      effects: { drop: [tie_street], flags: [job_craft, owe_street] }
     - id: succeed
       text: 接爸妈的班，进厂
       requires: { flags: [fam_factory] }
@@ -711,6 +777,17 @@
       joins: buy
       tags: [responsible]
       effects: { self: { mood: 10 }, flags: [home_own, home_help] }
+    # 人际圈子（docs/CIRCLE.md）：房管所有人（tie_house：赵家楼长开局带，二十几岁请人吃饭攒的）。托人买上一套内部价的房，比自己买便宜一截，人情欠下（owe_house）
+    - id: inside
+      text: 托人买上一套内部的房
+      min: 175
+      cost: 175
+      requires: { flags: [tie_house] }
+      lock: 房管所里没有熟人
+      hide: true
+      joins: buy
+      tags: [responsible]
+      effects: { self: { mood: 10 }, drop: [tie_house], flags: [home_own, owe_house] }
     - id: unit
       text: 等到了厂里分的房
       min: 40

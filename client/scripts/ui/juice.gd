@@ -6,6 +6,8 @@ extends CanvasLayer
 ##          连着几张，声音按五声音阶往上走。TA 长的分在 TA 头上小一号地冒一下，不飞。
 ##          做的是带孩子的事（did 带 k）：长的是孩子，飘「孩子 心智 +3」，飞进 HUD 上孩子那张小牌。
 ##   搭伴   两个人搭伴做完的那件事，飘字之前先在两个人中间砸一方「搭伴」的印（有倍率就写倍率）。
+##   门路   人际圈子（content/circle.yaml）：did 带 tie（这一回认下了一个门路）就在人头上盖一张墨色的「门路 · 老师记住你了」，
+##          停得久一点、配一声大印；带 tp（还在攒）就冒一张小字「帮老师 3/6」。都不飞（门路不是格子里的数）。
 ##   成长账 每个日子记一个点（两个人的三项），存在 user://growth/<人生线>.json：
 ##          长大那张墨卡上的阶段成绩单、点开 HUD 成长账看的曲线都从这里来（ui/stage_report.gd）。
 ##
@@ -288,6 +290,10 @@ func _burst(stats: Dictionary, money: float, bond: Dictionary, fresh_did: bool, 
 		delay += 0.62  # 印先砸下来、开始淡了，字再印出来
 	if not items.is_empty():
 		_pop_items(me, items, delay, true)
+	if fresh_did:
+		# 门路等分数那几张飞走了再出来，占人头上同一块地方
+		var after := delay + (mini(items.size(), 5) * 0.14 + 0.8 if not items.is_empty() else 0.0)
+		_pop_circle(me, circle_tags(did), after)
 	# TA 的：小一号，在 TA 头上冒一下，不飞
 	var other := _other()
 	var orow: Dictionary = _dict(stats.get(other))
@@ -302,6 +308,53 @@ func _burst(stats: Dictionary, money: float, bond: Dictionary, fresh_did: bool, 
 				theirs.append([P.STAT_NAME[k], d, k])
 		if not theirs.is_empty():
 			_pop_items(other, theirs, delay + 0.1, false)
+
+
+## 人际圈子：这一回 did 上带的门路。[小字, 大字, "tie" | "tp"]；tie 在前。旧服务器不发就是空的
+static func circle_tags(did: Dictionary) -> Array:
+	var out: Array = []
+	var tie: Dictionary = _dict(did.get("tie"))
+	if str(tie.get("l", "")) != "":
+		out.append(["门路 ·", str(tie.l), "tie"])
+	var tp: Variant = did.get("tp")
+	if tp is Array and tp.size() >= 3 and str(tp[2]) != "":
+		out.append([str(tp[2]), "%d/%d" % [int(tp[0]), int(tp[1])], "tp"])
+	return out
+
+
+## 门路的字：墨色（不和属性的青梅、钱撞），在我头上冒，不飞；认下门路那张大一号、停得久、配一声大印
+func _pop_circle(role: String, tags: Array, delay: float) -> void:
+	if tags.is_empty():
+		return
+	var at: Variant = _head(role)
+	if at == null:
+		at = Vector2(main.ui.size.x * 0.5, main.ui.size.y * 0.55)
+	var vw: Vector2 = main.ui.size
+	var y := 0.0
+	for i in tags.size():
+		var it: Array = tags[i]
+		var tie := str(it[2]) == "tie"
+		var tag := Tag.new()
+		tag.text_small = str(it[0])
+		tag.text_big = str(it[1])
+		tag.color = P.INK if tie else P.INK_MID
+		tag.small = not tie
+		tag.tie = tie
+		tag.linger = 1.1 if tie else 0.3
+		add_child(tag)
+		tag._measure()
+		var start: Vector2 = at + Vector2(0, -y)
+		y += tag.size.y + 18.0
+		start.x = clampf(start.x, tag.size.x / 2.0 + 24.0, vw.x - tag.size.x / 2.0 - 24.0)
+		start.y = clampf(start.y, 420.0, vw.y - 200.0)
+		var t0 := delay + i * 0.22
+		tag.play(start, null, t0, func(): pass)
+		if tie:
+			var tw := create_tween()
+			tw.tween_interval(t0 + 0.12)
+			tw.tween_callback(func():
+				cue("seal", -6.0)
+				_shake = maxf(_shake, 0.1))
 
 
 func _head(role: String) -> Variant:
@@ -604,6 +657,8 @@ class Tag extends Control:
 	var color := P.QING
 	var small := false
 	var bit := false  ## 零点几分：字小一号
+	var tie := false  ## 门路：墨色重影、里头再勾一道细框，像盖了一方长条印
+	var linger := 0.0 ## 不飞的那种多停一会儿
 	var _box := Vector2.ZERO
 
 	func _init() -> void:
@@ -643,7 +698,7 @@ class Tag extends Control:
 			tw.tween_callback(on_land)
 			tw.tween_property(self, "modulate:a", 0.0, 0.06)
 		else:
-			tw.tween_interval(0.55 if not small else 0.35)
+			tw.tween_interval((0.55 if not small else 0.35) + linger)
 			tw.tween_callback(on_land)
 			tw.tween_property(self, "modulate:a", 0.0, 0.35)
 			tw.parallel().tween_property(self, "position:y", position.y - 80.0, 0.35)
@@ -657,6 +712,8 @@ class Tag extends Control:
 		draw_rect(Rect2(r.position + Vector2(5, 5), r.size), color)
 		draw_rect(r, P.PAPER)
 		draw_rect(r, P.INK, false, 2.5)
+		if tie:
+			draw_rect(r.grow(-6.0), Color(P.INK, 0.55), false, 1.5)
 		var sw := f.get_string_size(text_small, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 		var base := _box.y / 2.0 + fb * 0.34
 		draw_string(f, Vector2(12, base - 2), text_small, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, P.INK)

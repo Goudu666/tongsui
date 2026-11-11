@@ -721,6 +721,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
       lifeAddFlags(me, o.effects.flags);
       lifeAddFlags(me, also);
       if (face) lifeFace(me);
+      circleFade(c, ev, me); // 换了学校就换了老师（circle.ts）
       if (!entry.results) entry.results = {};
       var scored = false;
       for (var swk in sw) scored = true;

@@ -41,7 +41,7 @@ spots:
   - { id: key_gate, at: 2260, area: key_school, actions: [ duty ] }
   - { id: mall_floor, at: 2990, area: mall, actions: [ window_shop, mall_clerk ] }
   - { id: mall_food, at: 3430, area: mall, actions: [ dine_west ] }
-  - { id: mall_room, at: 3570, area: mall, actions: [ banquet ] }
+  - { id: mall_room, at: 3570, area: mall, actions: [ banquet, treat ] }
   - { id: book_shelf, at: 3900, area: bookstore, actions: [ read_store ] }
   - { id: uni_gate, at: 4450, area: uni, actions: [ duty ] }
   - { id: uni_night, at: 4700, area: uni, actions: [ lang_class, night_class ] }

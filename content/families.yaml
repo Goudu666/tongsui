@@ -11,6 +11,9 @@
 #         家境的难度（docs/MEANS.md 第八节，build-content 校验）：清贫带 send_home（成年后工钱寄一截回家），
 #         小康带 fam_nest（爸妈攒的一笔钱，一辈子动一回），殷实带一个 exp_*（爸妈心里那条路：
 #         exp_book 念书考出去 / exp_pull 进单位 / exp_abroad 出国 / exp_art 学琴当个体面人）
+#         人际圈子（docs/CIRCLE.md）：tie_* 是生下来就有的门路（爸妈认识谁，能求到谁）：tie_school 爸妈在学校说得上话、
+#         tie_house 房管街道有人、tie_street 街坊记着你家的好、tie_hospital 医院有熟人；kin_unit 是亲戚里有在单位的
+#         （只是有这门亲戚，要走动才变成 tie_unit）。殷实人家的门路不写在这儿：家里的关系就是 fam_rich 那几条路
 # desc: 每户写一个日常细节，再写一样摸得着的东西
 
 - id: chen
@@ -20,7 +23,7 @@
   money: 30
   desc: 你爸在楼下修了二十年车，一手机油洗不出来了。车有毛病，他先拿耳朵听。你妈在纺织厂倒三班。
   bonus: { body: 1 }
-  traits: [fam_handy, fam_factory, fam_nest]
+  traits: [fam_handy, fam_factory, fam_nest, tie_street]
 
 - id: lin
   name: 林家 · 教书先生
@@ -29,7 +32,7 @@
   money: 25
   desc: 爸妈都是小学老师。家里书比碗多，规矩比书多。楼里的孩子路过你家门口，嗓门自动小一半。
   bonus: { mind: 2, charm: -1 }
-  traits: [fam_strict, fam_nest]
+  traits: [fam_strict, fam_nest, tie_school]
 
 - id: zhou
   name: 周家 · 早点铺
@@ -38,7 +41,7 @@
   money: 35
   desc: 楼下的煎饼果子摊是你家的。天不亮爸妈就起来磨绿豆面，全楼都是闻着你家的味儿醒的。
   bonus: { charm: 1 }
-  traits: [fam_breakfast, fam_nest]
+  traits: [fam_breakfast, fam_nest, tie_street]
 
 - id: xu
   name: 许家 · 跑海运
@@ -65,7 +68,7 @@
   money: 30
   desc: 你妈的裁缝铺里挂满别人的新衣裳。她量人不用尺，搭一眼就有数。你的衣裳是这片儿最合身的。
   bonus: { charm: 1, luck: 1 }
-  traits: [fam_tailor, fam_nest]
+  traits: [fam_tailor, fam_nest, kin_unit]
 
 - id: tang
   name: 唐家 · 南方搬来的
@@ -110,7 +113,7 @@
   money: 25
   desc: 你爸是楼长，腰上挂着全楼的钥匙。谁家漏水，谁家欠电费，谁在楼道多码了两棵白菜，他都有数。
   bonus: { mind: 1, charm: 1, luck: -1 }
-  traits: [fam_head, fam_nest]
+  traits: [fam_head, fam_nest, tie_house]
 
 - id: ma
   name: 马家 · 楼顶鸽子棚
@@ -137,7 +140,7 @@
   money: 40
   desc: 楼下的小卖部是你家的。冰柜、汽水、泡泡糖、五毛钱的画片。全楼的孩子都想跟你好，真假得自己分。
   bonus: { luck: 1, mind: 1, body: -1 }
-  traits: [fam_shop, fam_nest]
+  traits: [fam_shop, fam_nest, kin_unit]
 
 # ---- 街坊篇新增的四户（专属剧情见 events/neighbors.yaml） ----
 
@@ -148,7 +151,7 @@
   money: 25
   desc: 这片儿谁家娶媳妇、送老人，都请你爸张罗。他说红事白事一个理儿：把人好好送进门，好好送出门。
   bonus: { mind: 1, charm: 1 }
-  traits: [fam_dale, fam_nest]
+  traits: [fam_dale, fam_nest, kin_unit]
 
 - id: jin
   name: 金家 · 老城里搬来的
@@ -175,7 +178,7 @@
   money: 20
   desc: 你家房梁上挂满没糊纸的风筝骨架，一屋子竹篾和浆糊味儿。爷爷说：扎是手艺，放是能耐，起不起得来看老天爷。
   bonus: { mind: 1, luck: 1 }
-  traits: [fam_kite, fam_nest]
+  traits: [fam_kite, fam_nest, kin_unit]
 
 # ---- 殷实人家（家境篇新增，专属剧情见 events/means.yaml） ----
 # fam_factory：爸妈有一头在厂里（陈、吴、佟三家），二十二岁能接班进厂，三十岁能等厂里分房
@@ -196,4 +199,4 @@
   money: 50
   desc: 你妈是区医院的大夫，你爸在设计院画图纸。家里永远有一股来苏水味儿，书架上一半是你看不懂的厚书。
   bonus: { mind: 2, body: -1 }
-  traits: [fam_rich, fam_doctor, exp_book]
+  traits: [fam_rich, fam_doctor, exp_book, tie_hospital]

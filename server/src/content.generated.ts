@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "0194aaf2c704",
+ "version": "f050009589c0",
  "events": [
   {
    "id": "m_rise",
@@ -4998,6 +4998,1780 @@ var CONTENT: Content = {
       },
       "flags": [
        "cat_gone"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_meeting_rich",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 7,
+    "maxAge": 11,
+    "flags": [
+     "fam_rich"
+    ],
+    "notFlags": [
+     "tie_teacher"
+    ]
+   },
+   "title": "留下的纸袋",
+   "text": "家长会散了，你妈多留了一会儿，手里那个纸袋没拎回来。第二天，你的座位挪到了第二排。",
+   "options": [
+    {
+     "id": "sit",
+     "text": "坐过去，上课多举手",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "tie_teacher"
+      ]
+     }
+    },
+    {
+     "id": "back",
+     "text": "跟老师说想坐回去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "回家问纸袋里是什么",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_meeting_mid",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 7,
+    "maxAge": 11,
+    "notFlags": [
+     "fam_rich",
+     "fam_poor",
+     "tie_teacher"
+    ]
+   },
+   "title": "小椅子",
+   "text": "家长会，你爸请了半天假来的。他坐在你的小椅子上，膝盖顶着桌子，老师说一句他记一句。",
+   "options": [
+    {
+     "id": "paper",
+     "text": "散了会拉他看墙报",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "路上问老师说了什么",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.1,
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "door",
+     "text": "跟对门在门口等着",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {
+       "mood": 2
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_meeting_poor",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 7,
+    "maxAge": 11,
+    "flags": [
+     "fam_poor"
+    ],
+    "notFlags": [
+     "fam_grandma",
+     "tie_teacher"
+    ]
+   },
+   "title": "空着的椅子",
+   "text": "家长会那天，你家那把椅子空着。你妈那个班调不开。老师念到你的名字，停了一下，接着往下念。",
+   "options": [
+    {
+     "id": "slip",
+     "text": "自己把成绩条带回家",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.1,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "note",
+     "text": "记下老师的话念给她听",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.1,
+       "charm": 0.1,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sit",
+     "text": "坐到那把椅子上去",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_meeting_grandma",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 7,
+    "maxAge": 11,
+    "flags": [
+     "fam_grandma"
+    ],
+    "notFlags": [
+     "tie_teacher"
+    ]
+   },
+   "title": "最后一排",
+   "text": "家长会是姥姥去的，坐在最后一排。老师讲了一个钟头，她回来只说了一句：「老师说你坐得直。」",
+   "options": [
+    {
+     "id": "read",
+     "text": "把成绩条念给姥姥听",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4,
+       "charm": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "nod",
+     "text": "点点头，去写作业",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "straight",
+     "text": "第二天坐得更直",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.1,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_newyear_rich",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 16,
+    "maxAge": 17,
+    "flags": [
+     "fam_rich"
+    ]
+   },
+   "title": "门口的鞋",
+   "text": "过年你家门口的鞋多。拎东西来的人坐一会儿就走，说话前先看一眼你爸。你妈把东西码进柜子，一样也不拆。",
+   "options": [
+    {
+     "id": "tea",
+     "text": "给客人续水，听他们说",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "room",
+     "text": "躲进屋里写作业",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "share",
+     "text": "拿两盒点心给对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {
+       "mood": 4
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_newyear_poor",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 17,
+    "flags": [
+     "fam_poor"
+    ],
+    "notFlags": [
+     "fam_grandma"
+    ]
+   },
+   "title": "拎回来的酒",
+   "text": "年初二，你妈拎着两瓶酒去给你爸单位的领导拜年，你跟着。在人家门口站了一会儿，她又拎着回来了。",
+   "options": [
+    {
+     "id": "carry",
+     "text": "接过酒帮她拎",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.1,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "quiet",
+     "text": "一路什么也不问",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "knock",
+     "text": "说下回我去敲门",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_newyear_kin",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 17,
+    "flags": [
+     "kin_unit"
+    ]
+   },
+   "title": "表舅家",
+   "text": "年初三，你爸拎着两瓶酒去表舅家。表舅在单位管点事，家里有暖气。他问了两回你念几年级。",
+   "options": [
+    {
+     "id": "answer",
+     "text": "坐直了好好回话",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "kitchen",
+     "text": "去厨房帮着端菜",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "energy": -5,
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "tv",
+     "text": "盯着他家的电视",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_wedding",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 29,
+    "notFlags": [
+     "send_home"
+    ]
+   },
+   "title": "玻璃板底下",
+   "text": "同事结婚，喜帖压在你桌上的玻璃板底下。这个月已经是第三张了。",
+   "options": [
+    {
+     "id": "full",
+     "text": "随一份整的",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 8,
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "half",
+     "text": "随一半，人到场",
+     "tags": [
+      "patient"
+     ],
+     "cost": 4,
+     "effects": {
+      "self": {
+       "charm": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "duty",
+     "text": "推说那天值班",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "card",
+     "text": "写张贺卡递过去",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_wedding_poor",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 29,
+    "flags": [
+     "send_home"
+    ]
+   },
+   "title": "抽屉里的饭钱",
+   "text": "同学结婚，请帖寄到了。寄回家的钱前天刚汇走，抽屉里剩的是这个月的饭钱。",
+   "options": [
+    {
+     "id": "full",
+     "text": "从饭钱里抠一份",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 8,
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "half",
+     "text": "随一半，人到场",
+     "tags": [
+      "patient"
+     ],
+     "cost": 4,
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "help",
+     "text": "去帮着搬桌椅",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.1,
+       "energy": -15,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "letter",
+     "text": "写信说回不去",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_ask_door",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 55,
+    "flags": [
+     "job_desk"
+    ]
+   },
+   "title": "一兜苹果",
+   "text": "楼下谁家孩子毕业了，他妈拎着一兜苹果来敲门，问你们单位还要不要人。",
+   "options": [
+    {
+     "id": "speak",
+     "text": "替他去说一句",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": -4,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "tie_street"
+      ]
+     }
+    },
+    {
+     "id": "no",
+     "text": "说这事你做不了主",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "apples",
+     "text": "苹果退回去，留杯茶",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_ask_door_pull",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 55,
+    "flags": [
+     "job_pull"
+    ],
+    "notFlags": [
+     "job_desk"
+    ]
+   },
+   "title": "门口的人",
+   "text": "楼下谁家的孩子待业在家。他爸在楼道里等了你半天，开口先递烟：「听说你们那儿是托人进的？」",
+   "options": [
+    {
+     "id": "speak",
+     "text": "替他去问一句",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": -4,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "tie_street"
+      ]
+     }
+    },
+    {
+     "id": "no",
+     "text": "说你也是托的人",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "smoke",
+     "text": "接过烟，陪他站会儿",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_old_letter",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 6,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 20,
+    "maxAge": 21,
+    "flags": [
+     "fam_oldmoney"
+    ],
+    "notFlags": [
+     "tie_unit"
+    ]
+   },
+   "title": "箱底的信",
+   "text": "爷爷从箱底翻出一封信，信封都黄了。他说这人是他当年的学生，如今在局里：「拿着去找他。」",
+   "options": [
+    {
+     "id": "go",
+     "text": "揣着信去找他",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "tie_unit"
+      ]
+     }
+    },
+    {
+     "id": "drawer",
+     "text": "把信收进抽屉",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "listen",
+     "text": "听爷爷说说那个学生",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_outsider",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 4,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 8,
+    "maxAge": 11,
+    "flags": [
+     "fam_outsider"
+    ]
+   },
+   "title": "没人敲的门",
+   "text": "过年，楼里家家串门拜年。你家在这儿没有亲戚，爸妈在屋里包饺子，门一上午没人敲。",
+   "options": [
+    {
+     "id": "follow",
+     "text": "跟着对门家去拜年",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {
+       "mood": 2
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "knock",
+     "text": "端一盘饺子去敲对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "wrap",
+     "text": "在屋里帮着包饺子",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_street_supper",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 7,
+    "maxAge": 11,
+    "flags": [
+     "fam_poor"
+    ]
+   },
+   "title": "一碗粥",
+   "text": "你妈上夜班，锅是凉的。二门的婶子隔着窗户喊你下去，给你盛了一碗粥，又夹了两筷子咸菜。",
+   "options": [
+    {
+     "id": "wash",
+     "text": "吃完把碗洗了送回去",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": 4,
+       "hunger": 20
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "端回家慢慢吃",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2,
+       "hunger": 20
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "no",
+     "text": "说吃过了",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_street_help",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 4,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 59,
+    "flags": [
+     "tie_street"
+    ],
+    "notFlags": [
+     "owe_street"
+    ]
+   },
+   "title": "一沓钱",
+   "text": "家里老人住了院。楼里知道了，这家五块那家十块，二门的婶子挨家收齐，装在信封里送上门。",
+   "options": [
+    {
+     "id": "take",
+     "text": "收下，记在本子上",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "owe_street"
+      ],
+      "drop": [
+       "tie_street"
+      ],
+      "money": 15
+     }
+    },
+    {
+     "id": "thank",
+     "text": "收下，挨家去道谢",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "energy": -10,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "owe_street"
+      ],
+      "drop": [
+       "tie_street"
+      ],
+      "money": 15
+     }
+    },
+    {
+     "id": "no",
+     "text": "谢了，不要",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_owe_school",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 5,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 17,
+    "flags": [
+     "owe_school"
+    ]
+   },
+   "title": "周末的题",
+   "text": "当年替你递条子的那位主任，家里孩子要考试了。你妈说，人家开了口，这个周末你去讲讲题。",
+   "options": [
+    {
+     "id": "teach",
+     "text": "去讲一下午题",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.2,
+       "energy": -15,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_school"
+      ]
+     }
+    },
+    {
+     "id": "gift",
+     "text": "让家里送两盒点心",
+     "tags": [
+      "patient"
+     ],
+     "cost": 4,
+     "effects": {
+      "self": {
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_school"
+      ]
+     }
+    },
+    {
+     "id": "no",
+     "text": "说这周要复习",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_school"
+      ]
+     }
+    },
+    {
+     "id": "drag",
+     "text": "拉上对门一块儿去",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mind": 0.1,
+       "energy": -10
+      },
+      "other": {
+       "mind": 0.1
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": [],
+      "drop": [
+       "owe_school"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_owe_kin",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 5,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 29,
+    "flags": [
+     "owe_kin"
+    ]
+   },
+   "title": "表舅家的喜事",
+   "text": "托你进单位的表舅家娶儿媳妇。你妈打来电话，就一句：「这回的礼不能薄。」",
+   "options": [
+    {
+     "id": "gift",
+     "text": "随一份厚的",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 10,
+     "effects": {
+      "self": {
+       "charm": 0.1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_kin"
+      ]
+     }
+    },
+    {
+     "id": "help",
+     "text": "请一天假去帮忙",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.2,
+       "energy": -20,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_kin"
+      ]
+     }
+    },
+    {
+     "id": "no",
+     "text": "推说单位加班",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kin_cold"
+      ],
+      "drop": [
+       "owe_kin"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_kin_cold",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 44,
+    "flags": [
+     "kin_cold"
+    ]
+   },
+   "title": "没送到的请帖",
+   "text": "表舅家孙子满月，请帖没送到你家。你是听楼下的人说的。",
+   "options": [
+    {
+     "id": "red",
+     "text": "托人捎个红包",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 5,
+     "effects": {
+      "self": {
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "打个电话道喜",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "let",
+     "text": "当没听说",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_owe_house",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 5,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 31,
+    "maxAge": 45,
+    "flags": [
+     "owe_house"
+    ]
+   },
+   "title": "外甥的事",
+   "text": "帮你买上房的那位打来电话，说外甥待业在家，问你那儿有没有活。",
+   "options": [
+    {
+     "id": "dinner",
+     "text": "请人吃顿饭替他问",
+     "tags": [
+      "responsible"
+     ],
+     "cost": 12,
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_house"
+      ]
+     }
+    },
+    {
+     "id": "take",
+     "text": "带他去你们那儿问问",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "energy": -15,
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_house"
+      ]
+     }
+    },
+    {
+     "id": "no",
+     "text": "说实在没有门路",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_house"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_owe_street",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 5,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 29,
+    "flags": [
+     "owe_street"
+    ]
+   },
+   "title": "轮到你了",
+   "text": "当年带你去当学徒的那家搬家，楼里的年轻人都去搭把手。楼道里有人喊了你一声。",
+   "options": [
+    {
+     "id": "carry",
+     "text": "下楼去扛柜子",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 0.1,
+       "energy": -20,
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_street"
+      ]
+     }
+    },
+    {
+     "id": "smoke",
+     "text": "买两条烟送过去",
+     "tags": [
+      "patient"
+     ],
+     "cost": 5,
+     "effects": {
+      "self": {
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_street"
+      ]
+     }
+    },
+    {
+     "id": "busy",
+     "text": "说今天走不开",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_street"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_owe_street_mid",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 5,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 33,
+    "maxAge": 59,
+    "flags": [
+     "owe_street"
+    ]
+   },
+   "title": "陪床",
+   "text": "当年帮过你家的那户，老人夜里犯了病，儿子在外地。他家敲开了你的门。",
+   "options": [
+    {
+     "id": "night",
+     "text": "去医院陪一宿",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "energy": -25,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_street"
+      ]
+     }
+    },
+    {
+     "id": "money",
+     "text": "塞个信封过去",
+     "tags": [
+      "patient"
+     ],
+     "cost": 15,
+     "effects": {
+      "self": {
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_street"
+      ]
+     }
+    },
+    {
+     "id": "word",
+     "text": "说明天一早再去",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_street"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "c_owe_pa",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 5,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 29,
+    "flags": [
+     "owe_pa"
+    ],
+    "notFlags": [
+     "fam_cut"
+    ]
+   },
+   "title": "一桌酒",
+   "text": "你爸让你周末去陪当年帮过你的那位叔叔吃饭。他说：「坐到散席，酒你端着就行。」",
+   "options": [
+    {
+     "id": "stay",
+     "text": "去了，坐到散席",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.3,
+       "energy": -15,
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_pa"
+      ]
+     }
+    },
+    {
+     "id": "early",
+     "text": "去了，敬一杯就走",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "charm": 0.1,
+       "energy": -5,
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "drop": [
+       "owe_pa"
+      ]
+     }
+    },
+    {
+     "id": "no",
+     "text": "推了，说有事",
+     "requires": {
+      "notFlags": [
+       "strain1"
+      ]
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "strain1"
+      ],
+      "drop": [
+       "owe_pa"
+      ]
+     }
+    },
+    {
+     "id": "no_cut",
+     "text": "推了，说有事",
+     "requires": {
+      "flags": [
+       "strain1"
+      ]
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "fam_cut"
+      ],
+      "drop": [
+       "owe_pa"
       ]
      }
     }
@@ -22120,6 +23894,59 @@ var CONTENT: Content = {
      ]
     },
     {
+     "id": "nod",
+     "text": "老师推荐，进重点班",
+     "min": 6.9,
+     "requires": {
+      "flags": [
+       "tie_teacher"
+      ]
+     },
+     "lock": "老师还没记住你",
+     "joins": "key",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "junior_key",
+       "junior_nod"
+      ]
+     }
+    },
+    {
+     "id": "note",
+     "text": "托人递了个条子，进重点班",
+     "min": 6.9,
+     "cost": 8,
+     "requires": {
+      "flags": [
+       "tie_school"
+      ]
+     },
+     "lock": "家里没人在学校说得上话",
+     "hide": true,
+     "joins": "key",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "junior_key",
+       "owe_school"
+      ],
+      "drop": [
+       "tie_school"
+      ]
+     }
+    },
+    {
      "id": "normal",
      "text": "去普通班",
      "tags": [
@@ -22354,6 +24181,63 @@ var CONTENT: Content = {
       "flags": [
        "zhongzhuan",
        "job_succeed"
+      ]
+     }
+    },
+    {
+     "id": "nod",
+     "text": "老师推荐，过桥上重点",
+     "min": 7.8,
+     "requires": {
+      "flags": [
+       "tie_teacher"
+      ]
+     },
+     "lock": "老师还没记住你",
+     "joins": "far",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "distance": 1
+      },
+      "flags": [
+       "school_far",
+       "senior_nod"
+      ]
+     }
+    },
+    {
+     "id": "note",
+     "text": "托人递了个条子，上重点",
+     "min": 7.8,
+     "cost": 12,
+     "requires": {
+      "flags": [
+       "tie_school"
+      ]
+     },
+     "lock": "家里没人在学校说得上话",
+     "hide": true,
+     "joins": "far",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {
+       "distance": 1
+      },
+      "flags": [
+       "school_far",
+       "owe_school"
+      ],
+      "drop": [
+       "tie_school"
       ]
      }
     },
@@ -23202,7 +25086,8 @@ var CONTENT: Content = {
       "other": {},
       "bond": {},
       "flags": [
-       "job_pull"
+       "job_pull",
+       "owe_pa"
       ]
      }
     },
@@ -23234,7 +25119,8 @@ var CONTENT: Content = {
       "other": {},
       "bond": {},
       "flags": [
-       "job_pull"
+       "job_pull",
+       "owe_pa"
       ]
      },
      "flagLocks": [
@@ -23243,6 +25129,47 @@ var CONTENT: Content = {
        "text": "家里已经不管你了"
       }
      ]
+    },
+    {
+     "id": "kin",
+     "text": "托亲戚进单位",
+     "score": {
+      "mind": 0.6,
+      "charm": 0.4
+     },
+     "min": 8.9,
+     "cost": 15,
+     "requires": {
+      "flags": [
+       "tie_unit"
+      ],
+      "notFlags": [
+       "fam_rich"
+      ]
+     },
+     "lock": "家里没有这层关系",
+     "lockBy": {
+      "kin_unit": "亲戚那边没走动"
+     },
+     "hide": true,
+     "joins": "pull",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_pull",
+       "owe_kin"
+      ],
+      "drop": [
+       "tie_unit"
+      ]
+     }
     },
     {
      "id": "teach",
@@ -23343,6 +25270,39 @@ var CONTENT: Content = {
       "bond": {},
       "flags": [
        "job_labor"
+      ]
+     }
+    },
+    {
+     "id": "street",
+     "text": "街坊介绍去当学徒",
+     "score": {
+      "body": 0.5,
+      "mind": 0.5
+     },
+     "min": 5.6,
+     "requires": {
+      "flags": [
+       "tie_street"
+      ]
+     },
+     "lock": "楼里还没人想着你",
+     "hide": true,
+     "joins": "craft",
+     "tags": [
+      "patient",
+      "responsible"
+     ],
+     "effects": {
+      "self": {},
+      "other": {},
+      "bond": {},
+      "flags": [
+       "job_craft",
+       "owe_street"
+      ],
+      "drop": [
+       "tie_street"
       ]
      }
     },
@@ -23787,6 +25747,37 @@ var CONTENT: Content = {
        "d": -20
       }
      ]
+    },
+    {
+     "id": "inside",
+     "text": "托人买上一套内部的房",
+     "min": 175,
+     "cost": 175,
+     "requires": {
+      "flags": [
+       "tie_house"
+      ]
+     },
+     "lock": "房管所里没有熟人",
+     "hide": true,
+     "joins": "buy",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "home_own",
+       "owe_house"
+      ],
+      "drop": [
+       "tie_house"
+      ]
+     }
     },
     {
      "id": "unit",
@@ -45275,7 +47266,8 @@ var CONTENT: Content = {
    "traits": [
     "fam_handy",
     "fam_factory",
-    "fam_nest"
+    "fam_nest",
+    "tie_street"
    ]
   },
   {
@@ -45291,7 +47283,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_strict",
-    "fam_nest"
+    "fam_nest",
+    "tie_school"
    ]
   },
   {
@@ -45306,7 +47299,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_breakfast",
-    "fam_nest"
+    "fam_nest",
+    "tie_street"
    ]
   },
   {
@@ -45355,7 +47349,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_tailor",
-    "fam_nest"
+    "fam_nest",
+    "kin_unit"
    ]
   },
   {
@@ -45437,7 +47432,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_head",
-    "fam_nest"
+    "fam_nest",
+    "tie_house"
    ]
   },
   {
@@ -45489,7 +47485,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_shop",
-    "fam_nest"
+    "fam_nest",
+    "kin_unit"
    ]
   },
   {
@@ -45505,7 +47502,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_dale",
-    "fam_nest"
+    "fam_nest",
+    "kin_unit"
    ]
   },
   {
@@ -45556,7 +47554,8 @@ var CONTENT: Content = {
    },
    "traits": [
     "fam_kite",
-    "fam_nest"
+    "fam_nest",
+    "kin_unit"
    ]
   },
   {
@@ -45591,7 +47590,8 @@ var CONTENT: Content = {
    "traits": [
     "fam_rich",
     "fam_doctor",
-    "exp_book"
+    "exp_book",
+    "tie_hospital"
    ]
   }
  ],
@@ -47773,7 +49773,11 @@ var CONTENT: Content = {
      "text": "一个人在楼下递，一个人在楼梯上接，两张脸都抹黑了。"
     },
     "bring": false,
-    "menu": true
+    "menu": true,
+    "tie": {
+     "flag": "tie_street",
+     "times": 5
+    }
    },
    {
     "id": "cards",
@@ -48370,6 +50374,177 @@ var CONTENT: Content = {
     "menu": false,
     "kid": {
      "mind": 3.6
+    }
+   },
+   {
+    "id": "class_help",
+    "label": "留下来帮老师收拾教室",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 7,
+     "maxAge": 14,
+     "hours": [
+      930,
+      1110
+     ],
+     "notFlags": [
+      "tie_teacher"
+     ]
+    },
+    "needs": {
+     "energy": -6,
+     "mood": -1
+    },
+    "stats": {
+     "mind": 0.08,
+     "charm": 0.1
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个擦黑板，一个摆桌椅。老师批着作业，抬头说了一句：「你们俩回吧，天黑了。」"
+    },
+    "bring": false,
+    "menu": true,
+    "tie": {
+     "flag": "tie_teacher",
+     "times": 6
+    }
+   },
+   {
+    "id": "help_neighbor",
+    "label": "给楼里搭把手",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 12,
+     "maxAge": 59,
+     "notFlags": [
+      "tie_street"
+     ]
+    },
+    "needs": {
+     "energy": -9,
+     "mood": 2
+    },
+    "stats": {
+     "body": 0.08,
+     "charm": 0.08
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个抬床头，一个抬床尾，楼梯拐角转了三回才转过去。"
+    },
+    "bring": false,
+    "menu": true,
+    "tie": {
+     "flag": "tie_street",
+     "times": 5
+    }
+   },
+   {
+    "id": "visit_kin",
+    "label": "跟家里去走亲戚",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 14,
+     "maxAge": 21,
+     "hours": [
+      1110,
+      1290
+     ],
+     "flags": [
+      "kin_unit"
+     ],
+     "notFlags": [
+      "tie_unit",
+      "kin_cold"
+     ]
+    },
+    "needs": {
+     "energy": -6,
+     "mood": -3
+    },
+    "stats": {
+     "charm": 0.1
+    },
+    "money": -1,
+    "together": {
+     "needs": {
+      "mood": 3
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "大人在屋里说话，你们俩在门口剥花生。走的时候，那家人把你们俩的名字都叫对了。"
+    },
+    "bring": true,
+    "menu": true,
+    "tie": {
+     "flag": "tie_unit",
+     "times": 4
+    }
+   },
+   {
+    "id": "treat",
+    "label": "请人吃顿饭",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 23,
+     "maxAge": 29,
+     "hours": [
+      1080,
+      1290
+     ],
+     "notFlags": [
+      "tie_house"
+     ]
+    },
+    "needs": {
+     "hunger": 35,
+     "energy": -10,
+     "mood": -2
+    },
+    "stats": {
+     "charm": 0.12
+    },
+    "money": -4,
+    "together": {
+     "needs": {
+      "mood": 3
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一桌四个人，两个是你们俩。酒是你们倒的，话是人家说的。"
+    },
+    "bring": false,
+    "menu": true,
+    "tie": {
+     "flag": "tie_house",
+     "times": 3
     }
    }
   ],
@@ -49418,7 +51593,8 @@ var CONTENT: Content = {
      10760
     ],
     "actions": [
-     "banquet"
+     "banquet",
+     "treat"
     ],
     "action": "banquet"
    },
@@ -49713,7 +51889,8 @@ var CONTENT: Content = {
     "actions": [
      "old_lessons",
      "pair_cook",
-     "mind_kids"
+     "mind_kids",
+     "help_neighbor"
     ],
     "action": "old_lessons"
    },
@@ -49858,7 +52035,8 @@ var CONTENT: Content = {
      8760
     ],
     "actions": [
-     "study"
+     "study",
+     "class_help"
     ],
     "action": "study"
    },
@@ -50085,7 +52263,8 @@ var CONTENT: Content = {
      6760
     ],
     "actions": [
-     "blackboard"
+     "blackboard",
+     "class_help"
     ],
     "action": "blackboard"
    },
@@ -50330,7 +52509,8 @@ var CONTENT: Content = {
      2760
     ],
     "actions": [
-     "letter"
+     "letter",
+     "visit_kin"
     ],
     "action": "letter"
    },
@@ -60728,6 +62908,56 @@ var CONTENT: Content = {
     "wages": {},
     "hits": []
    }
+  ]
+ },
+ "circle": {
+  "ties": [
+   {
+    "id": "tie_teacher",
+    "label": "老师记住你了",
+    "walk": "帮老师",
+    "fade": [
+     "m_junior",
+     "m_senior"
+    ]
+   },
+   {
+    "id": "tie_school",
+    "label": "学校里有人说得上话",
+    "walk": "学校里有人说得上话",
+    "fade": []
+   },
+   {
+    "id": "tie_unit",
+    "label": "单位里有人认得你了",
+    "walk": "走亲戚",
+    "fade": []
+   },
+   {
+    "id": "tie_house",
+    "label": "房管所有人认得你了",
+    "walk": "请人吃饭",
+    "fade": []
+   },
+   {
+    "id": "tie_street",
+    "label": "街坊记着你的好",
+    "walk": "给街坊帮忙",
+    "fade": []
+   },
+   {
+    "id": "tie_hospital",
+    "label": "医院里有熟人",
+    "walk": "医院里有熟人",
+    "fade": []
+   }
+  ],
+  "owes": [
+   "owe_school",
+   "owe_kin",
+   "owe_house",
+   "owe_street",
+   "owe_pa"
   ]
  }
 };

@@ -336,6 +336,23 @@ func _check_grow(manifest: Dictionary) -> void:
 	for i in 10:
 		m._process(0.1)
 	_ok(m.is_playing_piece() and m.stage == "teen" and m.variant() == "a", "长大放完，少年的第一段（A 曲）接着起：%s %s" % [m.stage, m.variant()])
+	# 长大的时候正赶上关口（hush 30 秒）：长大那段放完也不起新的一段
+	m.grow("young")
+	m.hush(30.0)
+	for i in 120:
+		m._process(0.1)
+	_ok(not m.is_playing_piece(), "长大撞上关口：关口的静不能被长大吃掉")
+	# 几秒里长大两回：旧的那段让开，不叠着响
+	m.grow("middle")
+	m.grow("old")
+	m._process(0.3)
+	var grows := 0
+	for h in m._hl:
+		grows += 1 if h.kind == "grow" and h.busy() and h.to > MusicPlayer.SILENT + 1.0 else 0
+	_ok(grows == 1, "连着长大两回只留新的一段：%d" % grows)
+	m.set_mode("title")
+	m._process(0.5)
+	_ok(not m.highlight_playing() and m._hl.all(func(h): return not h.busy() or h.to <= MusicPlayer.SILENT + 1.0), "离开河畔里，高光跟着收掉")
 	m.queue_free()
 
 
@@ -350,9 +367,10 @@ func _check_director() -> void:
 	for h in d.music._hl:
 		rises += 1 if h.kind == "rise" and h.p.playing else 0
 	_ok(rises == 1, "一回揭晓只起一回 rise：%d" % rises)
-	_ok(d.reveal_active(), "刚揭晓过")
+	_ok(not d.reveal_active(), "只数了珠子（走的路没有线）不算接管：日志里那句乐句还得响")
 	d.reveal_cue("gain", -2.0, 1.5)
 	d.reveal_cue("pass")
+	_ok(d.reveal_active(), "够线的高光响了才算接管")
 	d.music._process(0.2)
 	_ok(d.music.highlight_playing("pass") and not d.music.highlight_playing("rise"), "够线：pass 起，rise 淡掉")
 	d.reveal_cue("seal", -1.0, 1.0)
@@ -391,14 +409,15 @@ func _check_observer() -> void:
 	ob.audio = audio
 	var entry := {"entries": [{"kind": "milestone", "resonance": true}]}
 	ob._on_log_entries(entry)
-	ob._watch_milestone(0.5)
-	_ok(audio.stings.is_empty(), "关口揭晓：先等一等，看尺子数不数")
-	ob._watch_milestone(0.6)
+	ob._watch_milestone(1.0)
+	ob._watch_milestone(1.0)
+	_ok(audio.stings.is_empty(), "关口揭晓：先等尺子数完（2 秒内不定）")
+	ob._watch_milestone(0.7)
 	_ok(audio.stings == ["resonance"], "没有尺子接管：照旧响合上的那一句：%s" % [audio.stings])
 	audio.stings.clear()
 	audio.active = true
 	ob._on_log_entries(entry)
-	ob._watch_milestone(1.2)
+	ob._watch_milestone(2.7)
 	_ok(audio.stings.is_empty(), "揭晓的高光接管了：不再叠「关口」乐句")
 	ob._watch_grow("childhood")
 	_ok(audio.grows.is_empty(), "刚进河畔里不算长大")

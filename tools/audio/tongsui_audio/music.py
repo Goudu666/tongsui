@@ -792,7 +792,8 @@ def stage_loops(stage: str) -> dict:
     if over > 0:
         g *= db(-over)
     stems = {k: v * g for k, v in stems.items()}
-    assert len({len(v) for v in stems.values()}) == 1
+    if len({len(v) for v in stems.values()}) != 1:  # 差一个采样都会越放越错位
+        raise ValueError("%s 的分轨不一样长：%s" % (stage, {k: len(v) for k, v in stems.items()}))
     return dict(stems=stems, length=n / 44100.0, bpm=STAGES[stage]["bpm"], bar=4 * a["spb"])
 
 

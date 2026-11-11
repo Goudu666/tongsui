@@ -45,6 +45,11 @@ func set_season(s: String, p_day := -1) -> void:
 	_apply()
 
 
+## 今天外面下的是什么（不管现在是哪张图）：声音用，人在屋里也听得见窗外的雨
+func today() -> String:
+	return _pick()
+
+
 ## 这一天下不下：按回合撒一个数，一季里大概三分之一的日子下雨、一多半的冬天下雪
 func _pick() -> String:
 	var h := fmod(sin(float(day) * 12.9898 + 4.1) * 43758.5453, 1.0)

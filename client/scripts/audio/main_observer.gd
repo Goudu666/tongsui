@@ -28,7 +28,7 @@ const PAGE_SCENE := {"roll": "roll", "scroll": "ending", "ending": "ending"}
 ## 没有 meta 的按下面这几个字认，认不出来就是普通的 tap
 const TEXT_KINDS := [["重新投胎", "shake"], ["出生吧", "birth"], ["返回", "back"], ["回大厅", "back"]]
 ## 日志里的关口揭晓来了，等这么久看尺子有没有数起来（reveal.gd 的 delay 是 0.45）
-const MILESTONE_WAIT := 1.0
+const MILESTONE_WAIT := 2.6  ## 尺子 0.45 秒后开始数，最多数 1.7 秒，结果音在那之后才来
 ## 人生阶段的先后：只有往后走才算长大（离线逛逛拨回合、重新投胎都不算）
 const STAGE_ORDER := ["childhood", "teen", "young", "middle", "old"]
 
@@ -292,7 +292,7 @@ func _process(delta: float) -> void:
 	var stage := str(LifeTime.at(turn).stage)
 	_watch_grow(stage)
 	audio.set_life(_dict("content").get("map", {}), me, a.position, other_pos, _partner_live or preview, turn,
-		stage, LifeTime.SEASONS[turn % 4], minute, school_day,
+		stage, LifeTime.season_of(turn), minute, school_day,
 		sync, modal != null and modal.visible, _weather(world))
 
 	# 脚步
@@ -311,6 +311,9 @@ func _weather(world: Object) -> String:
 	var w: Variant = world.get("weather")
 	if not (w is Object and is_instance_valid(w)):
 		return ""
+	# 今天下不下（不看图）：屋里的图画面上不下，但人在家也该听见窗外的雨，屋里屋外交给声景表的 in / out 分量
+	if w.has_method("today"):
+		return str(w.today())
 	var k: Variant = w.get("kind")
 	return str(k) if k != null else ""
 
@@ -332,6 +335,8 @@ func _watch_milestone(delta: float) -> void:
 		return
 	_milestone_wait = -1.0
 	if not (audio.has_method("reveal_active") and audio.reveal_active()):
+		if audio.has_method("end_reveal"):
+			audio.end_reveal()
 		audio.sting(_milestone_sting)
 
 

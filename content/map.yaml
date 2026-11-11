@@ -615,7 +615,7 @@ actions:
   - id: kid_homework
     label: 陪孩子写作业
     minutes: 90
-    requires: { minAge: 22, kidAge: [6, 18] }
+    requires: { minAge: 22, kidAge: [4, 18] }
     needs: { energy: -8, mood: -4 }
     kid: { mind: 2.4 }
     together: { needs: { mood: 4 }, bond: { close: 1 }, text: 两个孩子一张桌子，你们俩一人守一头。谁家的先写完，谁家的先去玩。 }
@@ -629,7 +629,7 @@ actions:
   - id: kid_listen
     label: 带孩子去茶社
     minutes: 60
-    money: -1
+    money: -3
     requires: { minAge: 22, kidAge: [3, 18], hours: [540, 1260] }
     needs: { mood: 6 }
     kid: { charm: 2.4 }
@@ -637,7 +637,7 @@ actions:
   - id: kid_class
     label: 给孩子报补习班
     minutes: 120
-    money: -3
+    money: -8
     requires: { minAge: 22, kidAge: [9, 18], hours: [1080, 1260] }
     needs: { energy: -6, mood: -3 }
     kid: { mind: 3.6 }

@@ -126,7 +126,8 @@ family:
   noise: 0.6
   room: 10.0
   selfGrow: { body: 0.1, mind: 0.07, charm: 0.07 }
-  sameAge: 2
+  # 两家孩子差不到几岁算同岁。中年一个日子三年：4 = 同一个日子或者挨着的两个日子生的都算（差 2 的话只有同一天生的才算，实测百人里一个）
+  sameAge: 4
 
 # ---------- 传承 ----------
 # 一世走完留下的东西怎么带到下一世（server/src/legacy.ts，设计说明见 docs/LEGACY.md）。

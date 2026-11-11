@@ -2,6 +2,7 @@
 #
 # 都要 has_kid；requires.kidAge 卡孩子岁数（引擎按「爹妈现在的岁数 − 生孩子那年的岁数」算，没孩子不发生）。
 # 中年一个日子是三年，kidAge 的段至少宽三岁，才一定落得上一个日子。
+# 关口余波的窗口按「关口 kidAge−2 起，到 kidAge+7 止」放：关口在孩子到 kidAge−2 岁以后爹妈第一个没有自己关口的日子排，当天早上才打标记，余波最早第二个日子出。
 # 选项是一道取舍：押在孩子身上（心情、累、花钱），还是押在自己身上（自己长零点几到一）。
 # 孩子关口的结果 kid_* 由 kid_gates.yaml 发（引擎那路），两家孩子同岁 kids_same_age 由引擎打。
 # 两家孩子一起长大的共同标记 p_kids_tongsui 由 kd_dark 和 kd_queue 的共鸣发，下一世带 leg_p_kids_tongsui。
@@ -12,7 +13,7 @@
 - id: kd_stairs
   kind: solo
   stage: middle
-  weight: 1
+  weight: 3
   requires: { flags: [has_kid], kidAge: [2, 4] }
   title: 一级一级
   text: 孩子下楼非要自己走，两只手扶着栏杆，一级一级往下挪。你上班要迟到了。
@@ -33,7 +34,7 @@
 - id: kd_fever
   kind: solo
   stage: middle
-  weight: 1
+  weight: 3
   requires: { flags: [has_kid], kidAge: [2, 8] }
   title: 三十九度
   text: 半夜，孩子额头烫手，三十九度。外头下着雨，楼下一个人也没有。
@@ -59,8 +60,8 @@
 - id: kd_first_day
   kind: solo
   stage: middle
-  weight: 1
-  requires: { flags: [has_kid], kidAge: [5, 7] }
+  weight: 3
+  requires: { flags: [has_kid], kidAge: [4, 9] }
   title: 校门口
   text: 头一天上学。到了校门口，孩子把手抽回去，跟着人往里走，一回头也没回。
   options:
@@ -80,8 +81,8 @@
 - id: kd_meeting
   kind: solo
   stage: middle
-  weight: 1
-  requires: { flags: [has_kid], kidAge: [7, 11] }
+  weight: 3
+  requires: { flags: [has_kid], kidAge: [6, 12] }
   title: 家长会
   text: 家长会，你坐在孩子的小椅子上，膝盖顶着桌板。老师念了一串名字，没有你家的。
   options:
@@ -101,8 +102,8 @@
 - id: kd_slam
   kind: solo
   stage: middle
-  weight: 1
-  requires: { flags: [has_kid], kidAge: [13, 16] }
+  weight: 3
+  requires: { flags: [has_kid], kidAge: [12, 17] }
   title: 摔门
   text: 孩子把门摔上了，隔着门板说：「你们懂什么。」桌上的饭热过一回，又凉了。
   options:
@@ -118,17 +119,16 @@
       text: 自己出门去河边走走
       tags: [solitude]
       effects: { self: { mood: 5, body: 0.3 } }
-    - id: knock
-      text: 隔着门敲三下
+    - id: bowl
+      text: 在门口放下一碗热饭
       tags: [gentle]
-      requires: { flags: [p_knock] }
-      effects: { self: { mood: 6 } }
+      effects: { self: { mood: 4, energy: -3 } }
 
 - id: kd_far_talk
   kind: solo
   stage: middle
-  weight: 1
-  requires: { flags: [has_kid], kidAge: [15, 18] }
+  weight: 3
+  requires: { flags: [has_kid], kidAge: [14, 20] }
   title: 外地
   text: 吃着饭，孩子说想考到外地去。说完就低头扒饭，没看你。
   options:
@@ -150,8 +150,8 @@
 - id: kd_prim_key
   kind: solo
   stage: middle
-  weight: 3
-  requires: { flags: [has_kid, kid_prim_key], kidAge: [5, 11] }
+  weight: 6
+  requires: { flags: [has_kid, kid_prim_key], kidAge: [4, 13] }
   title: 过桥上学
   text: 小学在河对岸，早上得早起四十分钟。孩子在后座上又睡着了，书包还抱在怀里。
   options:
@@ -171,8 +171,8 @@
 - id: kd_prim_near
   kind: solo
   stage: middle
-  weight: 3
-  requires: { flags: [has_kid, kid_prim_near], kidAge: [5, 11] }
+  weight: 6
+  requires: { flags: [has_kid, kid_prim_near], kidAge: [4, 13] }
   title: 拐角的小学
   text: 小学就在拐角，放学孩子自己走回来。传达室的大爷认得是谁家的，也认得跟谁一块儿走。
   options:
@@ -192,8 +192,8 @@
 - id: kd_mid_near
   kind: solo
   stage: middle
-  weight: 3
-  requires: { flags: [has_kid, kid_mid_near], kidAge: [11, 16] }
+  weight: 6
+  requires: { flags: [has_kid, kid_mid_near], kidAge: [10, 19] }
   title: 蓝校服
   text: 初中分在片儿里那所，校服是蓝的。孩子说挺好，离家近，中午能回来吃饭。
   options:
@@ -214,8 +214,8 @@
 - id: kd_mid_key
   kind: solo
   stage: middle
-  weight: 3
-  requires: { flags: [has_kid, kid_mid_key], kidAge: [11, 16] }
+  weight: 6
+  requires: { flags: [has_kid, kid_mid_key], kidAge: [10, 19] }
   title: 趴着睡了
   text: 进了重点初中，头一个月，孩子回家放下书包就趴在桌上睡着了。饭还没端上来。
   options:
@@ -235,8 +235,8 @@
 - id: kd_high_key
   kind: solo
   stage: middle
-  weight: 3
-  requires: { flags: [has_kid, kid_high_key], kidAge: [14, 20] }
+  weight: 6
+  requires: { flags: [has_kid, kid_high_key], kidAge: [13, 22] }
   title: 一罐咸菜
   text: 重点高中要住校，礼拜天下午走。你把一罐咸菜塞进箱子，又拿出来，又塞了回去。
   options:
@@ -256,8 +256,8 @@
 - id: kd_trade
   kind: solo
   stage: middle
-  weight: 3
-  requires: { flags: [has_kid, kid_trade], kidAge: [14, 20] }
+  weight: 6
+  requires: { flags: [has_kid, kid_trade], kidAge: [13, 22] }
   title: 手稳
   text: 孩子在职高学修车。礼拜天蹲在楼下给人换链条，下棋的老街坊看了半天，说：「手稳。」
   options:
@@ -277,8 +277,8 @@
 - id: kd_uni_top
   kind: solo
   stage: middle
-  weight: 3
-  requires: { flags: [has_kid, kid_uni_top], kidAge: [17, 24] }
+  weight: 6
+  requires: { flags: [has_kid, kid_uni_top], kidAge: [16, 25] }
   title: 通知书
   text: 通知书到了。孩子拆开看完，递给你。你没看字，先摸了摸那张纸，挺厚。
   options:
@@ -299,8 +299,8 @@
 - id: kd_uni
   kind: solo
   stage: middle
-  weight: 3
-  requires: { flags: [has_kid, kid_uni], kidAge: [17, 24] }
+  weight: 6
+  requires: { flags: [has_kid, kid_uni], kidAge: [16, 25] }
   title: 分数条
   text: 考上了，不是最好的那所。孩子自己挺高兴。你把分数条看了三遍，折起来夹进自己的本子。
   options:
@@ -309,7 +309,7 @@
       tags: [patient]
       effects: { self: { mood: 3 } }
     - id: say
-      text: 「考得不赖。」
+      text: 「考得挺好。」
       tags: [gentle]
       effects: { self: { mood: 6 } }
     - id: again
@@ -320,8 +320,8 @@
 - id: kd_away_call
   kind: solo
   stage: middle
-  weight: 3
-  requires: { flags: [has_kid, kid_away], kidAge: [18, 24] }
+  weight: 6
+  requires: { flags: [has_kid, kid_away], kidAge: [16, 28] }
   title: 礼拜天晚上
   text: 孩子在外地，礼拜天晚上打电话回来。这个礼拜天没打。你把电话搁在枕头边上。
   options:
@@ -341,8 +341,8 @@
 - id: kd_work
   kind: solo
   stage: middle
-  weight: 3
-  requires: { flags: [has_kid, kid_work], kidAge: [17, 24] }
+  weight: 6
+  requires: { flags: [has_kid, kid_work], kidAge: [16, 25] }
   title: 一兜水果
   text: 孩子头一个月的工资，买了一兜水果拎回来。在门口换鞋，说下个月给你买件衣裳。
   options:
@@ -366,11 +366,11 @@
   stage: middle
   where: hallway
   when: [960, 1200]
-  hint: 楼道里有人在敲门。
+  hint: 楼道里窸窸窣窣的。
   weight: 3
   requires: { flags: [has_kid, kids_same_age], kidAge: [3, 5] }
-  title: 门板
-  text: 楼道里，一个孩子在门外，一个在门里，隔着门板一下一下地敲。你俩都在屋里听着。
+  title: 画片
+  text: 楼道里，两个孩子趴在地上，从门缝底下往对面塞画片。你俩都在屋里听着。
   options:
     - id: open
       text: 把门拉开
@@ -380,27 +380,26 @@
       text: 先不开，听一会儿
       tags: [patient]
       effects: { self: { mood: 5 } }
-    - id: knock
-      text: 也在门上敲三下
+    - id: card
+      text: 也从门缝塞一张
       tags: [gentle]
-      requires: { flags: [p_knock] }
-      effects: { self: { mood: 6 } }
+      effects: { self: { mood: 5 } }
   resonance:
     open:
       text: 两扇门一块儿开了。两个孩子在当间愣着，你俩在门口也愣着。
       memory: 两扇门
       bond: { sync: 2, close: 2 }
     wait:
-      text: 谁也没开门。敲累了，两个孩子一边一个坐在门槛上，隔着门板说起了话。
-      memory: 隔着门板
+      text: 谁也没开门。画片塞完了，两个孩子一边一个趴着，对着门缝说起了话。
+      memory: 门缝底下
       bond: { sync: 3, close: 3 }
       flags: [p_kids_tongsui]
-    knock:
-      text: 你在门里敲了三下，对门门里也敲了三下。两个孩子不敲了，扭头看大人。
-      memory: 大人也敲了
+    card:
+      text: 两张画片同时从两边塞出来，两个孩子扭头看大人。
+      memory: 两张画片
       bond: { sync: 4, close: 3 }
   dissonance:
-    text: 一扇门开了，一扇门还关着。门外的孩子把耳朵贴上去，听了半天。
+    text: 一扇门开了，一扇门还关着。门外的孩子趴在地上，往门缝里看了半天。
     bond: { close: 0 }
 
 - id: kd_fight
@@ -467,13 +466,13 @@
       effects: { self: { mood: -2 } }
   resonance:
     roof:
-      text: 楼顶上，两个孩子并排躺着，指着天在数什么。数乱了，吵了两句，又从头数。
-      memory: 又从头数
+      text: 楼顶上，两个孩子守着鸽子棚，一人手里攥着一把玉米粒。手电一照，谁也没跑。
+      memory: 一把玉米粒
       bond: { sync: 4, close: 3 }
       flags: [p_kids_tongsui]
     river:
-      text: 河边栏杆底下，两个孩子在比谁的石子扔得远。手电一照，两个都没跑。
-      memory: 都没跑
+      text: 河边栏杆底下，两个孩子在比谁的石子打的水漂多。
+      memory: 打水漂
       bond: { sync: 3, close: 2 }
       flags: [p_kids_tongsui]
     wait:
@@ -574,7 +573,7 @@
   weight: 3
   requires: { flags: [has_kid, kids_same_age, kid_away], kidAge: [17, 24] }
   title: 两个箱子
-  text: 两家孩子同一天走，一个往南，一个往北。楼下两个箱子的轱辘，一个声。
+  text: 两家孩子同一天走，一个往南，一个往北。楼下两个箱子的轱辘，一前一后响到路口。
   options:
     - id: corner
       text: 送到路口
@@ -640,7 +639,7 @@
       bond: { sync: 3, close: 2 }
     bridge:
       text: 两只手同时抬起来，指的都是铁桥。孩子顺着看过去，桥上什么也没有。
-      memory: 两只手
+      memory: 都指着桥
       bond: { sync: 3, close: 3 }
   dissonance:
     text: 一个说住对门，一个说不认识。孩子来回看了半天，更想知道了。
@@ -654,7 +653,7 @@
   weight: 1
   requires: { minAge: 65, maxAge: 75, flags: [has_kid] }
   title: 接孙辈
-  text: 校门口接孙辈，你站在一堆老人当中。这道门，你接过两回了。
+  text: 校门口接孙辈，你站在一堆老人当中。这道门，你进过，也接过。
   options:
     - id: front
       text: 往前挤一挤

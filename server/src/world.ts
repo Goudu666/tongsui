@@ -233,6 +233,12 @@ function worldSlotReset(w: WorldState) {
 
 // ---------- 新的一天 ----------
 
+/** 成家这一块的默契事：两口子、两家孩子、知己的（worldStartDay 里先让它们，不被主线挤掉） */
+function worldFamilyMirror(ev: LifeEvent): boolean {
+  var f = (ev.requires && ev.requires.flags) || [];
+  return f.indexOf("has_kid") >= 0 || f.indexOf("p_married") >= 0 || f.indexOf("p_confidant") >= 0;
+}
+
 function worldStartDay(s: LifeState, c: Content) {
   var t = lifeTimeAt(s.turn);
   var persons = s.persons!;
@@ -322,7 +328,10 @@ function worldStartDay(s: LifeState, c: Content) {
     back = worldSceneOf(c, worldHomeBed(s, c, "qing")).far !== worldSceneOf(c, worldHomeBed(s, c, "mei")).far;
   }
 
-  if (story.mirror) fate.mirror = story.mirror;
+  // 成家这一块的默契事（两口子、两家孩子：requires 看 has_kid / p_married / p_confidant）抽到了、主线今天又不是非过不可的，先让家里的事：
+  // 中年第五、六章几乎天天有一件没过的主线 mirror，不让的话三十到五十九岁的随机 mirror 一件也出不来。主线到章末会强制补上
+  var homeFirst = !!fate.mirror && !!story.mirror && story.force.indexOf(story.mirror) < 0 && worldFamilyMirror(lifeFindEvent(c, fate.mirror));
+  if (story.mirror && !homeFirst) fate.mirror = story.mirror;
   for (var sr = 0; sr < ROLES.length; sr++) if (story[ROLES[sr]]) fate[ROLES[sr]] = story[ROLES[sr]];
   if (story.force.length > 0) fate.force = story.force;
 
@@ -340,7 +349,7 @@ function worldStartDay(s: LifeState, c: Content) {
   //   - 回来的那一天（主线在另一片）
   //   - 主线那件事落在大人上班的钟点上（傍晚的楼下、对岸）。上学上班不逃，不然只有碰上歇班日才过得上，
   //     多半拖到章末强制。小孩上学的那几件（一路去上学）本来就写在上学的钟点，不算
-  if (fate.milestone) off = {};
+  if (msDue) off = {};  // 孩子的关口那天主线照排，给碰上主线的人放的那一天也照给
   else {
     for (var sri = 0; sri < ROLES.length; sri++) {
       var sr0 = ROLES[sri];

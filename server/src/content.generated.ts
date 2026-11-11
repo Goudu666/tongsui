@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "cd17abb48d25",
+ "version": "d30c6c457b3d",
  "events": [
   {
    "id": "ch_runner",
@@ -7580,7 +7580,7 @@ var CONTENT: Content = {
      "flags": []
     },
     "trade": {
-     "text": "你们俩去看了那间车床车间。孩子在机床前头站了很久。",
+     "text": "你们俩去看了那间修车的车间。孩子蹲在一辆拆开的车跟前，站起来的时候腿都麻了。",
      "bond": {
       "close": 1
      },
@@ -7694,7 +7694,7 @@ var CONTENT: Content = {
      ]
     },
     "away": {
-     "text": "站台上你们俩一人拎一头行李。车开了，手还举着。",
+     "text": "行李一人拎一头，拎到检票口，交给孩子一个人拎。",
      "memory": "一人一头",
      "bond": {
       "close": 2
@@ -7704,7 +7704,7 @@ var CONTENT: Content = {
      ]
     },
     "uni": {
-     "text": "学校隔着四站地。你们俩说，周末回来吃饭，菜还是那几样。",
+     "text": "学校在河这边，骑车二十分钟。你们俩说，周末回来吃饭，菜还是那几样。",
      "bond": {
       "close": 2
      },
@@ -7713,7 +7713,7 @@ var CONTENT: Content = {
      ]
     },
     "work": {
-     "text": "孩子拿回第一个月的钱，你们俩一人分了一张，压在玻璃板底下。",
+     "text": "孩子上工头一天，你们俩一个递饭盒，一个递手套。",
      "bond": {
       "close": 1
      },
@@ -7738,7 +7738,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 1,
+   "weight": 3,
    "where": null,
    "when": null,
    "hint": null,
@@ -7815,7 +7815,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 1,
+   "weight": 3,
    "where": null,
    "when": null,
    "hint": null,
@@ -7911,7 +7911,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 1,
+   "weight": 3,
    "where": null,
    "when": null,
    "hint": null,
@@ -7920,8 +7920,8 @@ var CONTENT: Content = {
      "has_kid"
     ],
     "kidAge": [
-     5,
-     7
+     4,
+     9
     ]
    },
    "title": "校门口",
@@ -7985,7 +7985,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 1,
+   "weight": 3,
    "where": null,
    "when": null,
    "hint": null,
@@ -7994,8 +7994,8 @@ var CONTENT: Content = {
      "has_kid"
     ],
     "kidAge": [
-     7,
-     11
+     6,
+     12
     ]
    },
    "title": "家长会",
@@ -8058,7 +8058,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 1,
+   "weight": 3,
    "where": null,
    "when": null,
    "hint": null,
@@ -8067,8 +8067,8 @@ var CONTENT: Content = {
      "has_kid"
     ],
     "kidAge": [
-     13,
-     16
+     12,
+     17
     ]
    },
    "title": "摔门",
@@ -8122,19 +8122,15 @@ var CONTENT: Content = {
      }
     },
     {
-     "id": "knock",
-     "text": "隔着门敲三下",
+     "id": "bowl",
+     "text": "在门口放下一碗热饭",
      "tags": [
       "gentle"
      ],
-     "requires": {
-      "flags": [
-       "p_knock"
-      ]
-     },
      "effects": {
       "self": {
-       "mood": 6
+       "mood": 4,
+       "energy": -3
       },
       "other": {},
       "bond": {},
@@ -8151,7 +8147,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 1,
+   "weight": 3,
    "where": null,
    "when": null,
    "hint": null,
@@ -8160,8 +8156,8 @@ var CONTENT: Content = {
      "has_kid"
     ],
     "kidAge": [
-     15,
-     18
+     14,
+     20
     ]
    },
    "title": "外地",
@@ -8224,7 +8220,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,
@@ -8234,8 +8230,8 @@ var CONTENT: Content = {
      "kid_prim_key"
     ],
     "kidAge": [
-     5,
-     11
+     4,
+     13
     ]
    },
    "title": "过桥上学",
@@ -8299,7 +8295,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,
@@ -8309,8 +8305,8 @@ var CONTENT: Content = {
      "kid_prim_near"
     ],
     "kidAge": [
-     5,
-     11
+     4,
+     13
     ]
    },
    "title": "拐角的小学",
@@ -8373,7 +8369,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,
@@ -8383,8 +8379,8 @@ var CONTENT: Content = {
      "kid_mid_near"
     ],
     "kidAge": [
-     11,
-     16
+     10,
+     19
     ]
    },
    "title": "蓝校服",
@@ -8448,7 +8444,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,
@@ -8458,8 +8454,8 @@ var CONTENT: Content = {
      "kid_mid_key"
     ],
     "kidAge": [
-     11,
-     16
+     10,
+     19
     ]
    },
    "title": "趴着睡了",
@@ -8522,7 +8518,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,
@@ -8532,8 +8528,8 @@ var CONTENT: Content = {
      "kid_high_key"
     ],
     "kidAge": [
-     14,
-     20
+     13,
+     22
     ]
    },
    "title": "一罐咸菜",
@@ -8596,7 +8592,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,
@@ -8606,8 +8602,8 @@ var CONTENT: Content = {
      "kid_trade"
     ],
     "kidAge": [
-     14,
-     20
+     13,
+     22
     ]
    },
    "title": "手稳",
@@ -8669,7 +8665,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,
@@ -8679,8 +8675,8 @@ var CONTENT: Content = {
      "kid_uni_top"
     ],
     "kidAge": [
-     17,
-     24
+     16,
+     25
     ]
    },
    "title": "通知书",
@@ -8743,7 +8739,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,
@@ -8753,8 +8749,8 @@ var CONTENT: Content = {
      "kid_uni"
     ],
     "kidAge": [
-     17,
-     24
+     16,
+     25
     ]
    },
    "title": "分数条",
@@ -8777,7 +8773,7 @@ var CONTENT: Content = {
     },
     {
      "id": "say",
-     "text": "「考得不赖。」",
+     "text": "「考得挺好。」",
      "tags": [
       "gentle"
      ],
@@ -8816,7 +8812,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,
@@ -8826,8 +8822,8 @@ var CONTENT: Content = {
      "kid_away"
     ],
     "kidAge": [
-     18,
-     24
+     16,
+     28
     ]
    },
    "title": "礼拜天晚上",
@@ -8890,7 +8886,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 3,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,
@@ -8900,8 +8896,8 @@ var CONTENT: Content = {
      "kid_work"
     ],
     "kidAge": [
-     17,
-     24
+     16,
+     25
     ]
    },
    "title": "一兜水果",
@@ -8968,7 +8964,7 @@ var CONTENT: Content = {
     960,
     1200
    ],
-   "hint": "楼道里有人在敲门。",
+   "hint": "楼道里窸窸窣窣的。",
    "requires": {
     "flags": [
      "has_kid",
@@ -8979,8 +8975,8 @@ var CONTENT: Content = {
      5
     ]
    },
-   "title": "门板",
-   "text": "楼道里，一个孩子在门外，一个在门里，隔着门板一下一下地敲。你俩都在屋里听着。",
+   "title": "画片",
+   "text": "楼道里，两个孩子趴在地上，从门缝底下往对面塞画片。你俩都在屋里听着。",
    "options": [
     {
      "id": "open",
@@ -9013,19 +9009,14 @@ var CONTENT: Content = {
      }
     },
     {
-     "id": "knock",
-     "text": "也在门上敲三下",
+     "id": "card",
+     "text": "也从门缝塞一张",
      "tags": [
       "gentle"
      ],
-     "requires": {
-      "flags": [
-       "p_knock"
-      ]
-     },
      "effects": {
       "self": {
-       "mood": 6
+       "mood": 5
       },
       "other": {},
       "bond": {},
@@ -9044,8 +9035,8 @@ var CONTENT: Content = {
      "flags": []
     },
     "wait": {
-     "text": "谁也没开门。敲累了，两个孩子一边一个坐在门槛上，隔着门板说起了话。",
-     "memory": "隔着门板",
+     "text": "谁也没开门。画片塞完了，两个孩子一边一个趴着，对着门缝说起了话。",
+     "memory": "门缝底下",
      "bond": {
       "sync": 3,
       "close": 3
@@ -9054,9 +9045,9 @@ var CONTENT: Content = {
       "p_kids_tongsui"
      ]
     },
-    "knock": {
-     "text": "你在门里敲了三下，对门门里也敲了三下。两个孩子不敲了，扭头看大人。",
-     "memory": "大人也敲了",
+    "card": {
+     "text": "两张画片同时从两边塞出来，两个孩子扭头看大人。",
+     "memory": "两张画片",
      "bond": {
       "sync": 4,
       "close": 3
@@ -9065,7 +9056,7 @@ var CONTENT: Content = {
     }
    },
    "dissonance": {
-    "text": "一扇门开了，一扇门还关着。门外的孩子把耳朵贴上去，听了半天。",
+    "text": "一扇门开了，一扇门还关着。门外的孩子趴在地上，往门缝里看了半天。",
     "bond": {
      "close": 0
     },
@@ -9253,8 +9244,8 @@ var CONTENT: Content = {
    ],
    "resonance": {
     "roof": {
-     "text": "楼顶上，两个孩子并排躺着，指着天在数什么。数乱了，吵了两句，又从头数。",
-     "memory": "又从头数",
+     "text": "楼顶上，两个孩子守着鸽子棚，一人手里攥着一把玉米粒。手电一照，谁也没跑。",
+     "memory": "一把玉米粒",
      "bond": {
       "sync": 4,
       "close": 3
@@ -9264,8 +9255,8 @@ var CONTENT: Content = {
      ]
     },
     "river": {
-     "text": "河边栏杆底下，两个孩子在比谁的石子扔得远。手电一照，两个都没跑。",
-     "memory": "都没跑",
+     "text": "河边栏杆底下，两个孩子在比谁的石子打的水漂多。",
+     "memory": "打水漂",
      "bond": {
       "sync": 3,
       "close": 2
@@ -9538,7 +9529,7 @@ var CONTENT: Content = {
     ]
    },
    "title": "两个箱子",
-   "text": "两家孩子同一天走，一个往南，一个往北。楼下两个箱子的轱辘，一个声。",
+   "text": "两家孩子同一天走，一个往南，一个往北。楼下两个箱子的轱辘，一前一后响到路口。",
    "options": [
     {
      "id": "corner",
@@ -9716,7 +9707,7 @@ var CONTENT: Content = {
     },
     "bridge": {
      "text": "两只手同时抬起来，指的都是铁桥。孩子顺着看过去，桥上什么也没有。",
-     "memory": "两只手",
+     "memory": "都指着桥",
      "bond": {
       "sync": 3,
       "close": 3
@@ -9750,7 +9741,7 @@ var CONTENT: Content = {
     ]
    },
    "title": "接孙辈",
-   "text": "校门口接孙辈，你站在一堆老人当中。这道门，你接过两回了。",
+   "text": "校门口接孙辈，你站在一堆老人当中。这道门，你进过，也接过。",
    "options": [
     {
      "id": "front",
@@ -11294,12 +11285,12 @@ var CONTENT: Content = {
      "leg_p_kids_tongsui"
     ]
    },
-   "title": "门框上的道道",
-   "text": "楼道里刮旧漆，门框上露出两排铅笔道，一排高一点，一排矮一点，每道旁边写着岁数。写到十八，没了。",
+   "title": "暖气片后头",
+   "text": "楼道里刮旧漆，暖气片后头露出两排铅笔字，一排高一点，一排矮一点，每行旁边写着岁数。写到十八，没了。",
    "options": [
     {
      "id": "stand",
-     "text": "站过去比一比",
+     "text": "蹲过去比一比",
      "tags": [
       "adventure"
      ],
@@ -11314,7 +11305,7 @@ var CONTENT: Content = {
     },
     {
      "id": "draw",
-     "text": "在旁边画上自己的",
+     "text": "在旁边写上自己的",
      "tags": [
       "gentle"
      ],
@@ -11345,8 +11336,8 @@ var CONTENT: Content = {
    ],
    "resonance": {
     "stand": {
-     "text": "你站高的那排，对门的站矮的那排。一比，你俩都比那两道矮一截。",
-     "memory": "矮一截",
+     "text": "你蹲到高的那排跟前，对门的蹲到矮的那排。两个人的头顶，都还够不着头一道。",
+     "memory": "够不着头一道",
      "bond": {
       "sync": 3,
       "close": 2
@@ -11354,8 +11345,8 @@ var CONTENT: Content = {
      "flags": []
     },
     "draw": {
-     "text": "你俩在旁边又画了两排，头一道都画在今天。刷漆的师傅看了看，换了把小刷子。",
-     "memory": "四排铅笔道",
+     "text": "你俩在旁边又写了两排，头一行都写着今天。刷漆的师傅看了看，换了把小刷子。",
+     "memory": "四排铅笔字",
      "bond": {
       "sync": 3,
       "close": 3
@@ -11363,7 +11354,7 @@ var CONTENT: Content = {
      "flags": []
     },
     "keep": {
-     "text": "师傅点点头，沿着门框贴了一圈纸条。漆干了一揭，两排道道还在。",
+     "text": "师傅点点头，沿着暖气片贴了一圈纸条。漆干了一揭，两排字还在。",
      "memory": "一圈纸条",
      "bond": {
       "sync": 2,
@@ -11373,7 +11364,7 @@ var CONTENT: Content = {
     }
    },
    "dissonance": {
-    "text": "一个往门框上画，一个拦着刷漆的。师傅左右看看，蹲下点了根烟。",
+    "text": "一个往墙上写，一个拦着刷漆的。师傅左右看看，蹲下点了根烟。",
     "bond": {
      "close": 0
     },
@@ -13702,7 +13693,7 @@ var CONTENT: Content = {
     },
     {
      "id": "photo",
-     "text": "拍下来，没发出去",
+     "text": "夹进一本书里",
      "tags": [
       "gentle"
      ],
@@ -13761,7 +13752,7 @@ var CONTENT: Content = {
     ]
    },
    "title": "头一张请帖",
-   "text": "你要办喜事了。请帖印了六十张，头一张没往邮局送，你揣着上了三楼。",
+   "text": "你要办喜事了。请帖印了六十张，头一张没往邮局送，你揣着敲了对门的门。",
    "options": [
     {
      "id": "best",
@@ -13837,7 +13828,7 @@ var CONTENT: Content = {
     ]
    },
    "title": "夜里一点",
-   "text": "夜里一点，手机亮了，是对门的。接起来那头半天没说话，只听得见风。",
+   "text": "夜里一点，电话响了，是对门的。接起来那头半天没说话，只听得见风。",
    "options": [
     {
      "id": "wait",
@@ -13919,7 +13910,7 @@ var CONTENT: Content = {
     ]
    },
    "title": "暖气管子",
-   "text": "谁家有事，另一个总先到。这回是一家的暖气管子裂了，水漫到了门口。",
+   "text": "半夜，一家的暖气管子裂了，水漫到了门口。两扇门差不多同时开的。",
    "options": [
     {
      "id": "bucket",
@@ -14449,7 +14440,7 @@ var CONTENT: Content = {
     },
     {
      "id": "text",
-     "text": "只发一句生日快乐",
+     "text": "只捎一句生日快乐",
      "tags": [
       "solitude"
      ],
@@ -14483,7 +14474,7 @@ var CONTENT: Content = {
     ]
    },
    "title": "借梯子",
-   "text": "对门家的那位来借梯子。你递过去，顺嘴说了一句：那个灯口拧不紧，得往左先退半圈。",
+   "text": "对门来借梯子。你递过去，顺嘴说了一句：那个灯口拧不紧，得往左先退半圈。",
    "options": [
     {
      "id": "go",
@@ -14797,7 +14788,9 @@ var CONTENT: Content = {
       },
       "other": {},
       "bond": {},
-      "flags": []
+      "flags": [
+       "kid_later"
+      ]
      }
     },
     {
@@ -14907,7 +14900,9 @@ var CONTENT: Content = {
       },
       "other": {},
       "bond": {},
-      "flags": []
+      "flags": [
+       "kid_later"
+      ]
      }
     },
     {
@@ -14935,7 +14930,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "middle",
    "seasons": [],
-   "weight": 4,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,
@@ -14989,6 +14984,82 @@ var CONTENT: Content = {
     {
      "id": "no",
      "text": "一个人就挺好",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "mw_later",
+   "kind": "solo",
+   "stage": "middle",
+   "seasons": [],
+   "weight": 8,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 33,
+    "maxAge": 45,
+    "flags": [
+     "kid_later"
+    ],
+    "notFlags": [
+     "has_kid"
+    ]
+   },
+   "title": "红鸡蛋",
+   "text": "楼下谁家孩子满月，挨门送了一兜红鸡蛋。你剥了一个，手指头染红了。",
+   "options": [
+    {
+     "id": "yes",
+     "text": "要个孩子吧",
+     "tags": [
+      "responsible",
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 10,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "has_kid"
+      ]
+     }
+    },
+    {
+     "id": "wait",
+     "text": "把蛋壳扫了，不提了",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "no",
+     "text": "就这样过也挺好",
      "tags": [
       "solitude"
      ],
@@ -17389,13 +17460,17 @@ var CONTENT: Content = {
    "when": null,
    "hint": null,
    "requires": {
-    "minAge": 45,
     "flags": [
-     "has_kid"
+     "has_kid",
+     "kid_away"
+    ],
+    "kidAge": [
+     16,
+     28
     ]
    },
    "title": "送站",
-   "text": "孩子考到外地去了。站台上一直嫌你絮叨，耳机塞得严严实实。车门关了，孩子隔着玻璃冲你比了个心。",
+   "text": "孩子考到外地去了。站台上一直嫌你絮叨，脸扭到一边。车门关了，孩子隔着玻璃冲你比了个心。",
    "options": [
     {
      "id": "wave",
@@ -17429,7 +17504,7 @@ var CONTENT: Content = {
     },
     {
      "id": "note",
-     "text": "发消息：兜里有东西",
+     "text": "隔着玻璃比划：兜里有东西",
      "tags": [
       "responsible"
      ],
@@ -19225,7 +19300,7 @@ var CONTENT: Content = {
     ]
    },
    "title": "成家",
-   "text": "二十八了。两家的饭桌上一年问一回，今年问得最勤。往后跟谁过、怎么过，该自己拿个主意了。",
+   "text": "二十八了。两家的饭桌上一年问一回，今年问得最勤。你妈往你碗里夹了块鱼，没往下问。",
    "options": [
     {
      "id": "us",
@@ -19271,7 +19346,7 @@ var CONTENT: Content = {
     {
      "id": "friend",
      "text": "做一辈子的老朋友",
-     "min": 25,
+     "min": 15,
      "tags": [
       "gentle"
      ],
@@ -19326,7 +19401,7 @@ var CONTENT: Content = {
     },
     "friend": {
      "text": "话说开了，一个人笑，另一个也笑。下楼买了两瓶汽水，在楼道里喝完的。",
-     "memory": "两瓶汽水",
+     "memory": "楼道里的汽水",
      "bond": {
       "sync": 3,
       "close": 1
@@ -31784,7 +31859,7 @@ var CONTENT: Content = {
    "kind": "solo",
    "stage": "young",
    "seasons": [],
-   "weight": 4,
+   "weight": 6,
    "where": null,
    "when": null,
    "hint": null,
@@ -31829,7 +31904,9 @@ var CONTENT: Content = {
       },
       "other": {},
       "bond": {},
-      "flags": []
+      "flags": [
+       "kid_later"
+      ]
      }
     },
     {
@@ -38514,7 +38591,7 @@ var CONTENT: Content = {
     "requires": {
      "minAge": 22,
      "kidAge": [
-      6,
+      4,
       18
      ]
     },
@@ -38596,7 +38673,7 @@ var CONTENT: Content = {
      "mood": 6
     },
     "stats": {},
-    "money": -1,
+    "money": -3,
     "together": {
      "needs": {
       "mood": 5
@@ -38636,7 +38713,7 @@ var CONTENT: Content = {
      "mood": -3
     },
     "stats": {},
-    "money": -3,
+    "money": -8,
     "together": {
      "needs": {
       "mood": 3
@@ -42436,7 +42513,7 @@ var CONTENT: Content = {
    {
     "id": "l_kids_tongsui",
     "title": "两家的孩子",
-    "text": "{name} 家的孩子和对门家的同岁，一块儿上学，一块儿挨说，一块儿考。{name} 站在楼道里看他俩，看了很多年。",
+    "text": "{name} 家的孩子和对门家的同岁，一块儿上学，一块儿挨说，一块儿考。{name} 站在楼道里看两个孩子，看了很多年。",
     "requires": {
      "flags": [
       "has_kid",
@@ -42699,7 +42776,7 @@ var CONTENT: Content = {
     "mind": 0.07,
     "charm": 0.07
    },
-   "sameAge": 2
+   "sameAge": 4
   },
   "legacy": {
    "pastKept": 6,
@@ -43788,8 +43865,8 @@ var CONTENT: Content = {
   },
   {
    "id": "r_kids_tongsui",
-   "title": "又一对同岁",
-   "desc": "两家的孩子也是同岁，也在这条楼道里长大。",
+   "title": "两家的孩子",
+   "desc": "两家的孩子同一年生的，在楼道里一块儿挨过说。",
    "who": "pair",
    "requires": {
     "flags": [
@@ -43799,7 +43876,7 @@ var CONTENT: Content = {
   },
   {
    "id": "r_confidant",
-   "title": "老朋友",
+   "title": "做了老朋友",
    "desc": "没成一家，好了一辈子。",
    "who": "pair",
    "requires": {
@@ -43947,7 +44024,7 @@ var CONTENT: Content = {
    "l_erhu": "家里挂着琴，拉了一辈子。",
    "l_koi": "运气好得出奇。",
    "l_wanderer": "去了外地，就没再回来。",
-   "l_kids_tongsui": "两家的孩子也同岁。",
+   "l_kids_tongsui": "两家的孩子同一年生。",
    "l_kid_far": "孩子考到了外地。",
    "l_kid_near": "孩子念完书，留在了身边。",
    "l_single": "自己选了一个人过。",

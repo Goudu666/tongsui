@@ -256,7 +256,7 @@ lives:
   # ---- 成家和下一代（docs/FAMILY.md）：孩子的关口走到了哪儿。比「当了爹妈」具体，排在它前面 ----
   - id: l_kids_tongsui
     title: 两家的孩子
-    text: "{name} 家的孩子和对门家的同岁，一块儿上学，一块儿挨说，一块儿考。{name} 站在楼道里看他俩，看了很多年。"
+    text: "{name} 家的孩子和对门家的同岁，一块儿上学，一块儿挨说，一块儿考。{name} 站在楼道里看两个孩子，看了很多年。"
     requires: { flags: [has_kid, p_kids_tongsui] }
   - id: l_kid_far
     title: 站台

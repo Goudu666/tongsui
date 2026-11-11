@@ -3,7 +3,7 @@
 #   p_married    跟对门过成了一家（中年：吵架、分家务、一起扛事）
 #   married_other 和别人成了家：和对门之间的分寸
 #   single_life  一个人过：体面、自在，也有难处
-# 要孩子的事也在这儿：两口子一件 mirror，和别人成家的、一个人过的各一件 solo。has_kid 一打上，服务器就给这个人生一个孩子。
+# 要孩子的事也在这儿：两口子一件 mirror，和别人成家的、一个人过的各一件 solo；选了「再等等」的，mw_later 再问一回。has_kid 一打上，服务器就给这个人生一个孩子。
 # 中年一个日子是三年（30、33…57），老年是 60/65/70/75；60~70 岁的 mirror 被主线第七章占着，老年的事写 solo。
 
 # ---------- 错过 ----------
@@ -22,7 +22,7 @@
       tags: [patient]
       effects: { self: { mood: -3 }, flags: [p_missed] }
     - id: photo
-      text: 拍下来，没发出去
+      text: 夹进一本书里
       tags: [gentle]
       effects: { self: { mood: -2 }, flags: [p_missed] }
     - id: burn
@@ -38,7 +38,7 @@
   weight: 3
   requires: { minAge: 30, maxAge: 39, flags: [p_confidant], notFlags: [married_other, p_married, single_life] }
   title: 头一张请帖
-  text: 你要办喜事了。请帖印了六十张，头一张没往邮局送，你揣着上了三楼。
+  text: 你要办喜事了。请帖印了六十张，头一张没往邮局送，你揣着敲了对门的门。
   options:
     - id: best
       text: 请对门当伴郎伴娘
@@ -59,7 +59,7 @@
   weight: 2
   requires: { minAge: 33, flags: [p_confidant] }
   title: 夜里一点
-  text: 夜里一点，手机亮了，是对门的。接起来那头半天没说话，只听得见风。
+  text: 夜里一点，电话响了，是对门的。接起来那头半天没说话，只听得见风。
   options:
     - id: wait
       text: 不催，等 TA 开口
@@ -83,7 +83,7 @@
   weight: 2
   requires: { minAge: 36, flags: [p_confidant] }
   title: 暖气管子
-  text: 谁家有事，另一个总先到。这回是一家的暖气管子裂了，水漫到了门口。
+  text: 半夜，一家的暖气管子裂了，水漫到了门口。两扇门差不多同时开的。
   options:
     - id: bucket
       text: 拎桶接水
@@ -276,7 +276,7 @@
       tags: [patient]
       effects: { other: { mood: 3 } }
     - id: text
-      text: 只发一句生日快乐
+      text: 只捎一句生日快乐
       tags: [solitude]
       effects: { self: { mood: -2 } }
 
@@ -286,7 +286,7 @@
   weight: 2
   requires: { minAge: 36, flags: [married_other] }
   title: 借梯子
-  text: 对门家的那位来借梯子。你递过去，顺嘴说了一句：那个灯口拧不紧，得往左先退半圈。
+  text: 对门来借梯子。你递过去，顺嘴说了一句：那个灯口拧不紧，得往左先退半圈。
   options:
     - id: go
       text: 跟过去帮着换
@@ -382,7 +382,7 @@
     - id: wait
       text: 再过两年
       tags: [patient]
-      effects: { self: { mood: -2 } }
+      effects: { self: { mood: -2 }, flags: [kid_later] }
     - id: two
       text: 就咱俩也挺好
       tags: [solitude]
@@ -419,7 +419,7 @@
     - id: wait
       text: 再等等
       tags: [patient]
-      effects: { self: { mood: -3 } }
+      effects: { self: { mood: -3 }, flags: [kid_later] }
     - id: no
       text: 两个人过也挺好
       tags: [solitude]
@@ -428,7 +428,7 @@
 - id: mw_notice
   kind: solo
   stage: middle
-  weight: 4
+  weight: 6
   requires: { minAge: 33, maxAge: 45, flags: [single_life], notFlags: [has_kid] }
   title: 一张纸
   text: 福利院门口的告示栏贴了张纸，说想给几个孩子找人家。你在那张纸前头站了一会儿。
@@ -443,5 +443,27 @@
       effects: { self: { mood: -2 } }
     - id: no
       text: 一个人就挺好
+      tags: [solitude]
+      effects: { self: { mood: 3 } }
+
+# 前头选了「再等等 / 再过两年」的（y_kid / mw_pram / mw_circle 打 kid_later）：过几年再问一回
+- id: mw_later
+  kind: solo
+  stage: middle
+  weight: 8
+  requires: { minAge: 33, maxAge: 45, flags: [kid_later], notFlags: [has_kid] }
+  title: 红鸡蛋
+  text: 楼下谁家孩子满月，挨门送了一兜红鸡蛋。你剥了一个，手指头染红了。
+  options:
+    - id: yes
+      text: 要个孩子吧
+      tags: [responsible, gentle]
+      effects: { self: { mood: 10, energy: -10 }, flags: [has_kid] }
+    - id: wait
+      text: 把蛋壳扫了，不提了
+      tags: [patient]
+      effects: { self: { mood: -2 } }
+    - id: no
+      text: 就这样过也挺好
       tags: [solitude]
       effects: { self: { mood: 3 } }

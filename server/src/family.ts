@@ -52,6 +52,16 @@ function kidSync(s: LifeState, c: Content) {
   if (!s.kids) s.kids = [];
   var fr = familyRules(c);
   var age = lifeTimeAt(s.turn).age;
+  // 先有了孩子、后成的两口子（y_kid 二十六七岁，二十八岁成家）：没孩子的那一个也算进这个孩子里
+  for (var m = 0; m < ROLES.length; m++) {
+    var mr = ROLES[m], mp = s.persons[mr];
+    if (!mp.alive || kidOf(s, mr) || !kidCouple(s, mr)) continue;
+    var mk = kidOf(s, lifeOther(mr));
+    if (mk && mk.of.length === 1) {
+      mk.of.push(mr);
+      lifeAddFlags(mp, ["has_kid"]);
+    }
+  }
   for (var i = 0; i < ROLES.length; i++) {
     var role = ROLES[i];
     var p = s.persons[role];
@@ -173,6 +183,14 @@ function lifeMilestoneForRole(s: LifeState, ev: LifeEvent, role: Role): boolean 
   return ka !== null && ka >= ev.kidAge! - KID_GATE_LEAD;
 }
 
+/** 这个孩子的这道关过没过：爹妈里有一个过了就算过了（后成两口子、半路算进来的那个人不再补过前面的） */
+function kidGateSeen(s: LifeState, role: Role, evId: string): boolean {
+  var kid = kidOf(s, role);
+  var of = kid ? kid.of : [role];
+  for (var i = 0; i < of.length; i++) if (lifeSeenIds(s, of[i])[evId]) return true;
+  return false;
+}
+
 /** 今天轮得到的孩子的关口（自己今天有关口就没有）：孩子岁数最小的那道先过，每道只一次 */
 function kidGateToday(s: LifeState, c: Content): LifeEvent | null {
   var best: LifeEvent | null = null;
@@ -182,7 +200,7 @@ function kidGateToday(s: LifeState, c: Content): LifeEvent | null {
     if (best && ev.kidAge! >= best.kidAge!) continue;
     for (var j = 0; j < ROLES.length; j++) {
       var r = ROLES[j];
-      if (lifeMilestoneForRole(s, ev, r) && !lifeSeenIds(s, r)[ev.id]) { best = ev; break; }
+      if (lifeMilestoneForRole(s, ev, r) && !kidGateSeen(s, r, ev.id)) { best = ev; break; }
     }
   }
   return best;

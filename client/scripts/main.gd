@@ -30,6 +30,7 @@ const DayCard := preload("res://scripts/ui/day_card.gd")
 const Juice := preload("res://scripts/ui/juice.gd")
 const StatStrip := preload("res://scripts/ui/stat_strip.gd")
 const Reveal := preload("res://scripts/ui/reveal.gd")
+const Icons := preload("res://scripts/ui/icons.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -45,6 +46,7 @@ var goal_panel: GoalPanel  ## 下一个人生关口（HUD 里日历牌下面那�
 var action_btn: Button
 var action_title: Label    ## 行动按钮上的大字：做什么
 var action_sub: Label      ## 下面一行小字：多久、多少钱、搭不搭伴
+var action_glyph: Control  ## 行动按钮右头那颗圆（ui/icons.gd 的 Glyph）：能按是玩家的颜色，灰着是空圈
 var slot_btn: Button       ## 行动按钮左边的「就这么过」：这一段不做正经事
 var slot_title: Label
 var slot_sub: Label
@@ -96,10 +98,12 @@ const PAGE_WIDTH := 1560.0    ## 菜单页内容最宽这么多，再宽就居�
 const COLUMN_WIDTH := 1040.0  ## 只有一栏的页面
 const MODAL_WIDTH := 1040.0   ## 普通弹窗
 const MODAL_WIDE := 1500.0    ## 选项并排、左右分栏的弹窗
-const ACTION_SIZE := Vector2(640, 128)
-const SLOT_SIZE := Vector2(300, 128)
-const FILL_SIZE := Vector2(300, 128)
-const MENU_H := 72.0       ## 点位菜单那排小牌子的高
+const ACTION_SIZE := Vector2(600, 120)
+const SLOT_SIZE := Vector2(264, 120)
+const FILL_SIZE := Vector2(264, 120)
+const DOCK_GAP := 20.0      ## 行动按钮和两个次要按钮之间
+const DOCK_BOTTOM := 36.0   ## 离屏幕下沿
+const MENU_H := 68.0       ## 点位菜单那排小牌子的高
 const MENU_WIDTH := 1300.0 ## 那排牌子最宽摆这么多（靠右对齐，从行动按钮右边往左排）
 const CLOCK_SWEEP := 0.9  ## 做完一回，钟拨过去要几秒
 const TOAST_ANCHOR := 0.72  ## 提示条平时在屏高这么多的地方；开着弹窗时贴到顶上
@@ -208,16 +212,28 @@ func _build_layers() -> void:
 	action_btn.pressed.connect(_on_action_pressed)
 	Kit.make_primary(action_btn)
 	hud.add_child(action_btn)
+	# 字靠左两行，右头一颗玩家颜色的圆「按」：一眼看出这是要按的那个
 	var lines := VBoxContainer.new()
 	lines.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	lines.offset_left = 28
-	lines.offset_right = -28
+	lines.offset_left = 36
+	lines.offset_right = -112
 	lines.alignment = BoxContainer.ALIGNMENT_CENTER
-	lines.add_theme_constant_override("separation", 0)
+	lines.add_theme_constant_override("separation", 2)
 	lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	action_btn.add_child(lines)
-	action_title = Kit.label(lines, "", 40, P.PAPER, HORIZONTAL_ALIGNMENT_CENTER)
-	action_sub = Kit.label(lines, "", 26, Color(P.PAPER, 0.8), HORIZONTAL_ALIGNMENT_CENTER)
+	action_title = Kit.label(lines, "", P.FS_H + 2, P.PAPER_HI)
+	action_sub = Kit.label(lines, "", P.FS_CAPTION, Color(P.PAPER_HI, 0.78))
+	action_glyph = Icons.Glyph.new("play", 64.0)
+	action_glyph.anchor_left = 1.0
+	action_glyph.anchor_right = 1.0
+	action_glyph.anchor_top = 0.5
+	action_glyph.anchor_bottom = 0.5
+	action_glyph.offset_left = -96
+	action_glyph.offset_right = -32
+	action_glyph.offset_top = -32
+	action_glyph.offset_bottom = 32
+	action_glyph.set_look("play", P.INK, Kit.accent)
+	action_btn.add_child(action_glyph)
 	for l in [action_title, action_sub]:
 		l.autowrap_mode = TextServer.AUTOWRAP_OFF
 		l.clip_text = true
@@ -236,8 +252,11 @@ func _build_layers() -> void:
 	slot_lines.add_theme_constant_override("separation", 0)
 	slot_lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	slot_btn.add_child(slot_lines)
-	slot_title = Kit.label(slot_lines, "", 36, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
-	slot_sub = Kit.label(slot_lines, "", 24, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
+	slot_lines.offset_left = 64
+	slot_lines.offset_right = -16
+	slot_btn.add_child(_dock_glyph("pause"))
+	slot_title = Kit.label(slot_lines, "", P.FS_H - 6, P.INK)
+	slot_sub = Kit.label(slot_lines, "", P.FS_CAPTION, P.INK_MID)
 	for l in [slot_title, slot_sub]:
 		l.autowrap_mode = TextServer.AUTOWRAP_OFF
 		l.clip_text = true
@@ -267,8 +286,11 @@ func _build_layers() -> void:
 	fill_lines.add_theme_constant_override("separation", 0)
 	fill_lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	fill_btn.add_child(fill_lines)
-	fill_title = Kit.label(fill_lines, "", 36, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
-	fill_sub = Kit.label(fill_lines, "", 24, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
+	fill_lines.offset_left = 64
+	fill_lines.offset_right = -16
+	fill_btn.add_child(_dock_glyph("clock"))
+	fill_title = Kit.label(fill_lines, "", P.FS_H - 6, P.INK)
+	fill_sub = Kit.label(fill_lines, "", P.FS_CAPTION, P.INK_MID)
 	for l in [fill_title, fill_sub]:
 		l.autowrap_mode = TextServer.AUTOWRAP_OFF
 		l.clip_text = true
@@ -335,6 +357,19 @@ func _build_layers() -> void:
 	_layout_hud()
 
 
+## 「就这么过」「做到点」左头的小图标
+func _dock_glyph(kind: String) -> Control:
+	var g := Icons.Glyph.new(kind, 36.0)
+	g.color = Color(P.INK_SOFT, 0.45)
+	g.anchor_top = 0.5
+	g.anchor_bottom = 0.5
+	g.offset_left = 22
+	g.offset_right = 58
+	g.offset_top = -18
+	g.offset_bottom = 18
+	return g
+
+
 ## 菜单页的内容区：可以上下滚，内容最宽 width，宽屏上居中；比一屏矮的时候上下也居中
 func _scroll_column(parent: Control, width: float) -> VBoxContainer:
 	var inset := Kit.safe_sides(ui)
@@ -398,10 +433,11 @@ func _options(parent: Container, count: int) -> GridContainer:
 ## 选项那张票：和普通按钮一个框，字居中，几张票一样高
 func _option(grid: Container, text: String, on_press: Callable) -> Button:
 	var b := Kit.button(grid, text, on_press)
-	b.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	Kit.make_option(b)
 	b.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	b.custom_minimum_size.y = 132
-	b.add_theme_font_size_override("font_size", 36)
+	b.custom_minimum_size.y = 120
+	# 左头一枚小印：甲乙丙丁，像在表上勾一格
+	Kit.option_seal(b, grid.get_child_count() - 1)
 	return b
 
 
@@ -420,15 +456,15 @@ func _layout_hud() -> void:
 	goal_panel.position = strip.position
 	goal_panel.size = strip.size
 	stat_strip.position = Vector2(hud.left(), hud.stats_top())
-	action_btn.offset_right = -40 - inset.y
+	action_btn.offset_right = -Hud.SIDE - inset.y
 	action_btn.offset_left = action_btn.offset_right - ACTION_SIZE.x
-	action_btn.offset_bottom = -44
+	action_btn.offset_bottom = -DOCK_BOTTOM
 	action_btn.offset_top = action_btn.offset_bottom - ACTION_SIZE.y
 	menu_box.offset_right = action_btn.offset_right
 	menu_box.offset_left = action_btn.offset_right - MENU_WIDTH
-	menu_box.offset_bottom = action_btn.offset_top - 18
+	menu_box.offset_bottom = action_btn.offset_top - DOCK_GAP
 	menu_box.offset_top = menu_box.offset_bottom - MENU_H
-	fill_btn.offset_right = action_btn.offset_left - 28
+	fill_btn.offset_right = action_btn.offset_left - DOCK_GAP
 	fill_btn.offset_left = fill_btn.offset_right - FILL_SIZE.x
 	fill_btn.offset_bottom = action_btn.offset_bottom
 	fill_btn.offset_top = action_btn.offset_top
@@ -687,8 +723,9 @@ func _set_action(mode: String, title: String, sub: String, dim: bool) -> void:
 	# 字的颜色跟着按钮灰不灰走。只在变的时候设：同一个颜色再设一遍也会触发主题变更和重排，这里每帧都跑
 	if _action_dim != action_btn.disabled:
 		_action_dim = action_btn.disabled
-		action_title.add_theme_color_override("font_color", P.INK_SOFT if _action_dim else P.PAPER)
-		action_sub.add_theme_color_override("font_color", P.INK_SOFT if _action_dim else Color(P.PAPER, 0.8))
+		action_title.add_theme_color_override("font_color", P.INK_MID if _action_dim else P.PAPER_HI)
+		action_sub.add_theme_color_override("font_color", P.INK_MID if _action_dim else Color(P.PAPER_HI, 0.78))
+	action_glyph.set_look("pause" if _action_dim else "play", P.INK_MID if _action_dim else P.INK, P.HAIR if _action_dim else Kit.accent)
 	action_btn.visible = true
 
 
@@ -832,7 +869,7 @@ func _partner_did_here(spot: Dictionary, act: Dictionary) -> bool:
 
 ## 「就这么过」贴在最左边：中间有「做到点」就让开
 func _place_slot_btn() -> void:
-	var right := (fill_btn.offset_left if fill_btn.visible else action_btn.offset_left) - 28
+	var right := (fill_btn.offset_left if fill_btn.visible else action_btn.offset_left) - DOCK_GAP
 	if slot_btn.offset_right != right:
 		slot_btn.offset_right = right
 		slot_btn.offset_left = right - SLOT_SIZE.x
@@ -891,22 +928,24 @@ func _show_menu(spot: Dictionary, menu: Array, act: Dictionary) -> void:
 		menu_box.add_child(b)
 
 
-## 菜单上的一块小牌子：点中的是墨底纸字，别的是纸底墨字；不在钟点上的淡一点
+## 菜单上的一块小牌子（docs/UI.md 的画法）：点中的是墨底纸字，别的是亮纸墨线；不在钟点上的字淡一档
 static func menu_chip(text: String, on: bool, late: bool) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.focus_mode = Control.FOCUS_NONE
 	b.custom_minimum_size = Vector2(0, MENU_H)
-	b.add_theme_font_size_override("font_size", 30)
+	b.add_theme_font_size_override("font_size", P.FS_LABEL)
 	for st in ["normal", "hover", "pressed"]:
 		var sb := StyleBoxFlat.new()
-		sb.bg_color = P.INK if on else (P.PAPER if st != "hover" else P.PAPER.darkened(0.06))
+		sb.bg_color = P.INK if on else (P.PAPER_HI if st != "pressed" else P.PAPER_DARK)
+		if st == "hover" and not on:
+			sb.bg_color = Color.WHITE.lerp(P.PAPER_HI, 0.4)
 		sb.border_color = P.INK
-		sb.set_border_width_all(3)
-		sb.content_margin_left = 22
-		sb.content_margin_right = 22
+		sb.set_border_width_all(int(round(P.LINE)))
+		sb.content_margin_left = P.SP_M
+		sb.content_margin_right = P.SP_M
 		b.add_theme_stylebox_override(st, sb)
-	var fg: Color = P.PAPER if on else (Color(P.INK, 0.45) if late else P.INK)
+	var fg: Color = P.PAPER_HI if on else (P.INK_MID if late else P.INK)
 	for c in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
 		b.add_theme_color_override(c, fg)
 	return b
@@ -1759,9 +1798,9 @@ func _on_event_started(data: Dictionary) -> void:
 		Kit.chip(head, "%s · %s" % [Hud.story_text({"chapter": ev.chapter})[0], str(ch.get("title", ""))], P.INK)
 	if mirror:
 		Kit.chip(head, "默契时刻 · 不要商量", P.role_color(my_role))
-	_label(modal_body, str(ev.get("title", "")), 68)
+	_label(modal_body, str(ev.get("title", "")), P.FS_TITLE + 4)
 	Kit.rule(modal_body)
-	_label(modal_body, str(ev.get("text", "")), 40)
+	_label(modal_body, str(ev.get("text", "")), P.FS_BODY + 2, P.INK)
 	_gap(modal_body, 4)
 	# 选项并排：一张张票摆在正文下面
 	var grid := _options(modal_body, opts.size())
@@ -1812,9 +1851,9 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 	Kit.chip(head, "人生关口", P.INK)
 	var sub := _label(head, "各选各的，可以商量" if both else "这一关只有你过", 30, P.INK_SOFT)
 	sub.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	_label(modal_body, str(ev.get("title", "")), 68)
+	_label(modal_body, str(ev.get("title", "")), P.FS_TITLE + 4)
 	Kit.rule(modal_body)
-	_label(modal_body, str(ev.get("text", "")), 40)
+	_label(modal_body, str(ev.get("text", "")), P.FS_BODY + 2, P.INK)
 	var luck := float(_dict(pe.get("swing")).get(my_role, 0.0))
 	var swing := int(round(luck * 10.0))
 	if swing != 0:
@@ -1940,18 +1979,24 @@ func _on_log_entries(data: Dictionary) -> void:
 		elif kind == "day":
 			# 一天过完：撕下来的一页日历。分在外地和河畔里的时候，底下压着 TA 的信（post.ts）
 			var letters := LetterCard.mine(e, my_role)
-			_open_modal(MODAL_WIDE if not letters.is_empty() else MODAL_WIDTH)
+			var has_goal := not _dict(_dict(e.get("goal")).get(my_role)).is_empty()
+			_open_modal(MODAL_WIDE if not letters.is_empty() or has_goal else MODAL_WIDTH)
 			var page: Container = modal_body
 			var desk: Container = null
+			var side: Container = null  ## 右栏：下一道关（没有信的时候）
+			Kit.chip(modal_body, str(e.label), P.role_color(my_role))
+			_label(modal_body, str(e.text), P.FS_H, P.INK)
+			Kit.rule(modal_body, P.HAIR)
 			if not letters.is_empty():
 				var cols: Array = _columns(modal_body, 1.0, 1.25, 56)
 				page = cols[0]
 				desk = cols[1]
-			Kit.chip(page, str(e.label), P.role_color(my_role))
-			_label(page, str(e.text), 44)
-			Kit.rule(page, Color(P.INK, 0.25))
+			elif has_goal:
+				var cols2: Array = _columns(modal_body, 1.15, 1.0, 56)
+				page = cols2[0]
+				side = cols2[1]
 			# 今天的时间花在哪、长了多少、朝下一道关挪了几分、照这样还要几个日子（day_card.gd）
-			DayCard.build(page, e, my_role, _other(), names)
+			DayCard.build(page, e, my_role, _other(), names, side)
 			day_card = page
 			if desk != null:
 				_label(page, "早上，信到了。", 32, P.role_color(_other()))
@@ -1959,7 +2004,7 @@ func _on_log_entries(data: Dictionary) -> void:
 					LetterCard.build(desk, l, names)
 				if e.get("crossed") is String:
 					_label(desk, str(e.crossed), 30, P.INK_SOFT)
-			_primary(page, "下一个被记住的日子", _close_modal)
+			_primary(side if side != null else page, "下一个被记住的日子", _close_modal)
 			_gap(page, 4)
 		elif kind == "death":
 			_open_modal()

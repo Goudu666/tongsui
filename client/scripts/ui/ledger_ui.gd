@@ -264,7 +264,7 @@ func _nav_column(split: Container) -> void:
 	col.add_theme_constant_override("separation", 10)
 	split.add_child(col)
 	_title(col)
-	Kit.label(col, "这两扇门里住过的人。", 30, P.INK_SOFT)
+	Kit.label(col, "这两扇门里住过的人。", P.FS_LABEL, P.INK_MID)
 	Kit.gap(col, 18)
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -345,8 +345,10 @@ func _nav_item(box: Container, id: String, text: String, sub: String) -> void:
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL if _wide else Control.SIZE_SHRINK_BEGIN
 	var sb: StyleBox
 	if on:
-		var box_on := RisoBox.make(P.OVERLAP, 7.0, 0.0)
-		box_on.line = 3.0
+		var box_on := RisoBox.make(P.OVERLAP, 6.0, 0.0)
+		box_on.fill = P.PAPER_HI
+		box_on.line = P.LINE
+		box_on.overshoot = 5.0
 		sb = box_on
 	else:
 		sb = StyleBoxEmpty.new()
@@ -360,7 +362,7 @@ func _nav_item(box: Container, id: String, text: String, sub: String) -> void:
 	b.add_theme_font_size_override("font_size", 38 if sub == "" else 34)
 	b.add_theme_constant_override("line_spacing", 6)
 	for c in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color"]:
-		b.add_theme_color_override(c, P.INK if on else P.INK_SOFT)
+		b.add_theme_color_override(c, P.INK if on else P.INK_MID)
 	b.add_theme_color_override("font_hover_color", P.INK)
 	b.pressed.connect(show_tab.bind(id))
 	box.add_child(b)
@@ -390,7 +392,7 @@ func _head(text: String, sub := "") -> void:
 	var l := Kit.label(_page, text, 64, P.INK)
 	l.autowrap_mode = TextServer.AUTOWRAP_OFF
 	if sub != "":
-		Kit.label(_page, sub, 30, P.INK_SOFT)
+		Kit.label(_page, sub, 30, P.INK_MID)
 	Kit.rule(_page, P.INK, 3.0)
 
 
@@ -432,7 +434,7 @@ func _page_life(n: int) -> void:
 		Kit.chip(mh, "共同回忆", P.OVERLAP, 28).size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		var st: Variant = pg.get("stats")
 		if st is Dictionary and int(st.get("mirrors", 0)) > 0:
-			var sl := Kit.label(mh, rate_line(float(st.get("rate", 0))), 28, P.INK_SOFT)
+			var sl := Kit.label(mh, rate_line(float(st.get("rate", 0))), 28, P.INK_MID)
 			sl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		var flow := HFlowContainer.new()
 		flow.name = "Memories"
@@ -504,7 +506,7 @@ func _field(box: Container, key: String, value: String, color := P.INK) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 20)
 	box.add_child(row)
-	var k := Kit.label(row, key, 28, P.INK_SOFT)
+	var k := Kit.label(row, key, 28, P.INK_MID)
 	k.autowrap_mode = TextServer.AUTOWRAP_OFF
 	k.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	k.custom_minimum_size = Vector2(72, 0)
@@ -564,7 +566,7 @@ func _page_kept() -> void:
 		col.add_theme_constant_override("separation", 6)
 		grid.add_child(col)
 		Kit.label(col, str(h.get("name", "")), 42, P.INK)
-		Kit.label(col, str(h.get("desc", "")), 30, P.INK_SOFT)
+		Kit.label(col, str(h.get("desc", "")), 30, P.INK_MID)
 		# 老物件会变：还没变过去的写一句怎么变，变过的写变成了什么
 		var nx := next_form(h.id)
 		if not nx.is_empty():
@@ -683,11 +685,11 @@ func _atlas_cell(grid: Container, e: Dictionary, life_no: int, is_hidden: bool, 
 		col.add_child(head)
 		var t := Kit.label(head, str(e.title), 40, P.INK)
 		t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var when := Kit.label(head, "第 %d 世" % life_no, 24, P.INK_SOFT)
+		var when := Kit.label(head, "第 %d 世" % life_no, 24, P.INK_MID)
 		when.autowrap_mode = TextServer.AUTOWRAP_OFF
 		when.size_flags_horizontal = Control.SIZE_SHRINK_END
 		when.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		Kit.label(col, str(e.get("text", "")).replace("{name}", "TA"), 26, P.INK_SOFT)
+		Kit.label(col, str(e.get("text", "")).replace("{name}", "TA"), 26, P.INK_MID)
 	elif is_hidden:
 		Kit.label(col, "藏", 56, Color(P.INK_SOFT, 0.6), HORIZONTAL_ALIGNMENT_CENTER)
 		Kit.label(col, "还没有人走到过。", 26, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)

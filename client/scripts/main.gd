@@ -31,6 +31,7 @@ const Juice := preload("res://scripts/ui/juice.gd")
 const StatStrip := preload("res://scripts/ui/stat_strip.gd")
 const Reveal := preload("res://scripts/ui/reveal.gd")
 const Icons := preload("res://scripts/ui/icons.gd")
+const PathRuler := preload("res://scripts/ui/path_ruler.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -1682,6 +1683,7 @@ func _on_event_started(data: Dictionary) -> void:
 		Kit.chip(head, "%s · %s" % [Hud.story_text({"chapter": ev.chapter})[0], str(ch.get("title", ""))], P.INK)
 	if mirror:
 		Kit.chip(head, "默契时刻 · 不要商量", P.role_color(my_role))
+	_head_when(head)
 	_label(modal_body, str(ev.get("title", "")), P.FS_TITLE + 4)
 	Kit.rule(modal_body)
 	_label(modal_body, str(ev.get("text", "")), P.FS_BODY + 2, P.INK)
@@ -1733,8 +1735,11 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 	head.add_theme_constant_override("separation", 16)
 	modal_body.add_child(head)
 	Kit.chip(head, "人生关口", P.INK)
-	var sub := _label(head, "各选各的，可以商量" if both else "这一关只有你过", 30, P.INK_SOFT)
+	var sub := _label(head, "各选各的，可以商量" if both else "这一关只有你过", P.FS_LABEL, P.INK_MID)
 	sub.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	sub.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	sub.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_head_when(head)
 	_label(modal_body, str(ev.get("title", "")), P.FS_TITLE + 4)
 	Kit.rule(modal_body)
 	_label(modal_body, str(ev.get("text", "")), P.FS_BODY + 2, P.INK)
@@ -1752,19 +1757,67 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 	var their_name := str(names.get(_other(), "TA"))
 	# 几条路并排摆着：够不着的是灰的，写着差多少；够得着的下面写对门走不走得了
 	var grid := _options(modal_body, opts.size())
+	var goals: Dictionary = _dict(last_world.get("goals"))
+	var my_goal: Dictionary = _dict(goals.get(my_role))
+	var their_goal: Dictionary = _dict(goals.get(_other()))
 	for o in opts:
 		var oid: String = o.id
 		var otext: String = o.text
 		var gated: bool = o.has("min") or o.has("cost")
+		var b: Button
 		if my_locks.has(oid):
-			var b := _option(grid, "%s\n%s" % [otext, str(my_locks[oid])], func(): pass)
+			b = _option(grid, "%s\n%s" % [otext, str(my_locks[oid])], func(): pass)
 			b.disabled = true
 		else:
 			var note := ""
 			if both and gated:
 				note = ("\n%s 够不着这条" if their_locks.has(oid) else "\n%s 也走得了") % their_name
-			_option(grid, otext + note, _pick_path.bind(oid, otext, both))
+			b = _option(grid, otext + note, _pick_path.bind(oid, otext, both))
+		_path_ruler(b, my_goal, their_goal, str(pe.eventId), oid)
 	_gap(modal_body, 4)
+
+
+## 弹窗头一行最右边：这是哪一天（「7 岁 · 立夏」），像日记本页眉
+func _head_when(head: HBoxContainer) -> void:
+	var when := str(hud.time_label) if hud != null else ""
+	var room := Control.new()
+	room.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	room.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	head.add_child(room)
+	if when != "":
+		var l := _label(head, when, P.FS_LABEL, P.INK_MID, HORIZONTAL_ALIGNMENT_RIGHT)
+		l.size_flags_horizontal = Control.SIZE_SHRINK_END
+		l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		l.autowrap_mode = TextServer.AUTOWRAP_OFF
+
+
+## 路票底下垫一把小尺：这条路的线、我到哪了、对门到哪了（只有带分数线的路才有）
+func _path_ruler(b: Button, my_goal: Dictionary, their_goal: Dictionary, event_id: String, option_id: String) -> void:
+	if str(my_goal.get("id", "")) != event_id:
+		return
+	var line: Dictionary = {}
+	for l in my_goal.get("lines", []):
+		if l is Dictionary and str(l.get("id", "")) == option_id:
+			line = l
+	if line.is_empty() or float(line.get("need", 0)) <= 0.0:
+		return
+	var theirs := GoalPanel.their_have(their_goal if str(their_goal.get("id", "")) == event_id else null, option_id)
+	var r := PathRuler.new(line, theirs, P.role_color(my_role), P.role_color(_other()))
+	r.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	r.offset_left = 34
+	r.offset_right = -30
+	r.offset_top = -46
+	r.offset_bottom = -14
+	b.add_child(r)
+	b.custom_minimum_size.y = 168
+	for c in b.get_children():  # 甲乙丙那枚印跟着字往上挪，别落在尺子上
+		if c is Label:
+			c.offset_top -= 20
+			c.offset_bottom -= 20
+	for st in ["normal", "hover", "pressed", "disabled"]:
+		var sb: StyleBox = b.get_theme_stylebox(st)
+		if sb != null:
+			sb.content_margin_bottom = 52.0
 
 
 ## 关口上选路。waiting：对门也过这一关，选完要等 TA

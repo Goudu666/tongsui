@@ -144,6 +144,7 @@ func _run() -> void:
 		await _snap("22_goal_job")
 		main._close_modal()
 		main.life = {"turn": 36}
+		main.last_world.goals = {"qing": junior, "mei": junior_mei}
 		main._on_event_started({"event": {"roles": ["qing", "mei"], "eventId": "m_junior", "kind": "milestone", "choices": {}, "swing": {"qing": 0.2, "mei": -0.1}},
 			"locks": {"qing": {"key": "心智 60 分，线是 64 分"}, "mei": {}}})
 		await _wait(1.5)
@@ -198,6 +199,17 @@ func _many_paths() -> void:
 		for o in ev.options:
 			if o.has("min") and locks.is_empty():
 				locks[o.id] = "心智 58 分，线是 64 分"
+		# 路票底下的小尺：给每条带线的路编一个分（我在线上下晃，对门差一点）
+		var lines: Array = []
+		var lines_mei: Array = []
+		var k := 0
+		for o in ev.options:
+			if o.has("min") and float(o.min) > 0.0:
+				var need := int(round(float(o.min) * 10.0))
+				lines.append({"id": o.id, "text": o.text, "by": "心智", "unit": "分", "have": need + [-6, 3, -2, 8, -11, 1][k % 6], "need": need, "ok": false})
+				lines_mei.append({"id": o.id, "text": o.text, "by": "心智", "unit": "分", "have": need + [2, -4, 5, -1, 0, -7][k % 6], "need": need, "ok": false})
+				k += 1
+		main.last_world.goals = {"qing": {"id": id, "title": ev.get("title", ""), "turns": 0, "lines": lines}, "mei": {"id": id, "title": ev.get("title", ""), "turns": 0, "lines": lines_mei}}
 		main._close_modal()
 		main.my_role = "qing"
 		main._on_event_started({"event": {"roles": ["qing", "mei"], "eventId": id, "kind": "milestone", "choices": {}, "swing": {"qing": -0.2, "mei": 0.1}, "steady": {"qing": 0.3}},

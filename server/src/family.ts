@@ -148,19 +148,35 @@ function kidDayEnd(s: LifeState, c: Content) {
   }
 }
 
-/** 关口按 kid_* 算分之前：把孩子的属性挂到爹妈身上（不可枚举，不进存档；没孩子的去掉） */
+/**
+ * 关口按 kid_* 算分之前：记下两个人各自孩子的属性（模块里的一张小表，不进存档）。
+ * 不往 Person 上挂字段：Nakama 里 match state 是宿主对象，defineProperty 会抛
+ * 「Host object field cannot be made configurable」，取同一个人两回拿到的也未必是同一个对象，
+ * 所以按名字 + 家里认人，不按对象认。
+ */
+var KID_BIND: { key: string; stats: Stats | null }[] = [];
+
+function kidBindKey(p: Person): string {
+  return p.familyId + "|" + p.name;
+}
+
 function lifeKidBind(s: LifeState) {
+  KID_BIND = [];
   if (!s.persons) return;
   for (var i = 0; i < ROLES.length; i++) {
     var kid = kidOf(s, ROLES[i]);
-    Object.defineProperty(s.persons[ROLES[i]], "_kid", { value: kid ? kid.stats : null, enumerable: false, writable: true, configurable: true });
+    KID_BIND.push({ key: kidBindKey(s.persons[ROLES[i]]), stats: kid ? kid.stats : null });
   }
 }
 
 /** 算分时读孩子的那项属性（没孩子按 0） */
 function kidScoreStat(p: Person, k: string): number {
-  var ks = (p as any)._kid as Stats | null | undefined;
-  return ks ? ks[KID_SCORE[k]] : 0;
+  var key = kidBindKey(p);
+  for (var i = 0; i < KID_BIND.length; i++) {
+    var ks = KID_BIND[i].stats;
+    if (KID_BIND[i].key === key) return ks ? ks[KID_SCORE[k]] : 0;
+  }
+  return 0;
 }
 
 /**

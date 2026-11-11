@@ -1,5 +1,5 @@
 {
- "version": "244a4d1b7c08",
+ "version": "833ebe5023c0",
  "events": [
   {
    "id": "ch_runner",
@@ -15834,7 +15834,7 @@
      "memory": "就咱俩",
      "bond": {
       "sync": 3,
-      "close": 4
+      "close": 2
      },
      "flags": [
       "p_lovers",
@@ -15855,7 +15855,7 @@
      "memory": "两瓶汽水",
      "bond": {
       "sync": 3,
-      "close": 3
+      "close": 1
      },
      "flags": [
       "p_confidant"

@@ -405,11 +405,17 @@
     - id: pay
       text: 打钱请个护工
       tags: [competitive]
+      cost: 10
       effects: { self: { mood: -10 }, flags: [parent_sick] }
     - id: door
       text: 托对门先去看一眼
       tags: [gentle]
       effects: { self: { mood: -5 }, other: { energy: -10 }, bond: { close: 2 }, flags: [parent_sick] }
+    - id: ward
+      text: 托人换个单间病房
+      tags: [responsible]
+      requires: { flags: [fam_rich] }
+      effects: { self: { mood: -3 }, flags: [parent_sick] }
 
 - id: m_parent_gone
   kind: solo
@@ -477,26 +483,33 @@
       tags: [responsible]
       effects: { self: { mood: 10 } }
 
+# 下岗换掉这个人走的路（content/events/lives.yaml 文件头）：支摊是 job_stall，去南方是 job_away，回家睡一觉以后是 job_lost（打零工），
+# 后面接「再就业」。自己挣饭吃的（教书、做买卖、手艺、零工、自己的铺子）不在名单上。殷实人家多一条：家里托人另找了个地方
 - id: m_layoff
   kind: solo
   stage: middle
   weight: 2
-  requires: { minAge: 39, maxAge: 51 }
+  requires: { minAge: 39, maxAge: 51, notFlags: [job_teach, job_trade, job_craft, job_odd, own_shop, own_stall, laid_off, no_job, left_city] }
   title: 名单上
   text: 单位一纸通知，名单上有你的名字。回家路上，你在早点铺门口站了很久，没进去，也没走。
   options:
     - id: stall
       text: 在楼下支个摊
       tags: [adventure]
-      effects: { self: { mood: -5, body: 1, charm: 1 } }
+      effects: { self: { mood: -5, body: 1, charm: 1 }, flags: [laid_off, own_stall] }
     - id: south
       text: 去南方再闯一回
       tags: [competitive]
-      effects: { self: { mood: -5, luck: 1 }, bond: { distance: 1 } }
+      effects: { self: { mood: -5, luck: 1 }, bond: { distance: 1 }, flags: [laid_off, left_city] }
     - id: rest
       text: 先回家睡一觉
       tags: [patient]
-      effects: { self: { mood: 5, energy: 20 } }
+      effects: { self: { mood: 5, energy: 20 }, flags: [laid_off, no_job] }
+    - id: family
+      text: 家里托人另找了地方
+      tags: [responsible]
+      requires: { flags: [fam_rich] }
+      effects: { self: { mood: -3 } }
 
 - id: m_checkup
   kind: solo
@@ -518,6 +531,12 @@
       text: 拍给对门看看
       tags: [gentle]
       effects: { self: { mood: 5 }, other: { mood: -5 }, bond: { close: 1 } }
+    # 花钱换身子骨：挂在 70 岁那道「自己下楼走一圈」（看体魄）上
+    - id: recheck
+      text: 去大医院从头查一遍
+      tags: [responsible]
+      cost: 8
+      effects: { self: { body: 1, mood: 3 } }
 
 - id: m_class_reunion
   kind: solo

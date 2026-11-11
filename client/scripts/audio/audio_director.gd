@@ -46,9 +46,9 @@ const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "pla
 ## 设置按钮的三档：全开 → 只关音乐 → 静音
 const LEVELS := ["乐", "响", "静"]
 ## 横屏：菜单页在右上角；河畔里排在右上「对门的牌」下面（ui/hud.gd：横带 y 40~196，再空 16）
-const BUTTON_SIZE := Vector2(128, 68)
-const BUTTON_TOP_MENU := 40.0
-const BUTTON_TOP_WORLD := 212.0
+const BUTTON_SIZE := Vector2(88, 60)
+const BUTTON_TOP_MENU := 28.0
+const BUTTON_TOP_WORLD := 204.0  ## hud.gd right_slot_top()：对门那张牌底下
 
 var music: MusicPlayer
 var scape: Soundscape
@@ -156,7 +156,7 @@ func _make_button() -> void:
 	_button.anchor_left = 1.0
 	_button.anchor_right = 1.0
 	_button.add_theme_font_override("font", P.font())
-	_button.add_theme_font_size_override("font_size", 34)
+	_button.add_theme_font_size_override("font_size", 28)
 	_button.pressed.connect(func():
 		level = (level + 1) % LEVELS.size()
 		_apply_level()
@@ -176,10 +176,10 @@ func adopt_theme(theme: Theme) -> void:
 		if not theme.has_stylebox(st, "Button"):
 			continue
 		var sb: StyleBox = theme.get_stylebox(st, "Button").duplicate()
-		sb.content_margin_left = 16
-		sb.content_margin_right = 16
-		sb.content_margin_top = 10
-		sb.content_margin_bottom = 10
+		sb.content_margin_left = 12
+		sb.content_margin_right = 12
+		sb.content_margin_top = 8
+		sb.content_margin_bottom = 8
 		_button.add_theme_stylebox_override(st, sb)
 		_boxes.append(sb)
 
@@ -196,7 +196,7 @@ func tint_button(color: Color) -> void:
 func place_button(in_world: bool, hidden: bool) -> void:
 	_button.visible = not hidden
 	var top := BUTTON_TOP_WORLD if in_world else BUTTON_TOP_MENU
-	var edge := -40.0 - Kit.safe_sides(_button).y  # 刘海在右边时让开
+	var edge := -32.0 - Kit.safe_sides(_button).y  # 刘海在右边时让开（和 HUD 的 SIDE 对齐）
 	_button.offset_left = edge - BUTTON_SIZE.x
 	_button.offset_right = edge
 	_button.offset_top = top

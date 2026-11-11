@@ -277,6 +277,13 @@ console.log(`✓ 主线：${S.chapters.length} 章 ${S.events.length} 个变体�
       }
     }
     assert.deepEqual(seen.map((x) => x.split(":")[0]), ["60岁 1", "65岁 2", "70岁 3"], `第七章一天一件：${seen.join(" ")}`);
+    // 关口先过（worldAdvance 每跳先看关口），选完路主线才在它那一段发生；强制的那条路也一样
+    // （只剩一条路的关口不弹窗、直接记进长卷，所以按长卷 s.log 的先后查，不按弹出来的事件）
+    const logged = s.log.map((e) => `${e.age}:${e.events.qing}`);
+    for (const [age, ms, id] of [[60, "m_retire", "s7_park"], [70, "m_evening", "s7_bench"]]) {
+      const a = logged.indexOf(`${age}:${ms}`), b = logged.indexOf(`${age}:${id}`);
+      assert.ok(a >= 0 && b > a, `${age} 岁那天关口要在 ${id} 前面：${logged.filter((x) => x.startsWith(age + ":")).join(" ")}`);
+    }
     for (const x of seen) { const [, got, want] = x.match(/(\w+)=(\w+)/); assert.equal(got, want, `发生在自己那一段：${seen.join(" ")}`); }
   }
   // 主线带人过桥：12 岁、家里不送去学琴的孩子，平时去不了河对岸；排上「过桥」的那天能去

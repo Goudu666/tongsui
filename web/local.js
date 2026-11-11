@@ -380,7 +380,10 @@
       var otherRole = role === "qing" ? "mei" : "qing";
       var yourPick = pe.choices[otherRole];
       var sync = (s.bond && s.bond.sync) || 0;
-      var follow = pe.kind === "milestone" ? 0.7 : Math.min(0.85, 0.35 + sync / 150);
+      // TA 是个有自己日子的人：默契低时两三成跟你选到一块儿，默契高时七成上下，到不了九成（各走各的那一半玩法得留着）。
+      // 这是「跟你」的那一份；不跟时 TA 按自己的性子选（影子的选法），本来就可能和你一样。
+      // 实测（web/follow.mjs，16 世）：关口 默契 0~20 三成、60+ 七成多；默契事件 两成五 → 七成多
+      var follow = pe.kind === "milestone" ? Math.min(0.45, 0.25 + sync / 200) : Math.min(0.45, 0.15 + sync / 150);
       var mine = null;
       if (yourPick && rand() < follow) mine = ok.find(function (o) { return o.id === yourPick; }) || null;
       if (!mine && !yourPick && pe.roles.length > 1 && this.wait > -12 * TICK) return out; // 等你先拿主意（最多再等十几秒）

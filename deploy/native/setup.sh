@@ -60,7 +60,7 @@ SERVER_KEY=$(rand_hex 16)
 SESSION_ENCRYPTION_KEY=$(rand_hex 32)
 SESSION_REFRESH_ENCRYPTION_KEY=$(rand_hex 32)
 RUNTIME_HTTP_KEY=$(rand_hex 24)
-CONSOLE_USER=admin
+CONSOLE_USER=tongsui
 CONSOLE_PASSWORD=$(rand_hex 16)
 CONSOLE_SIGNING_KEY=$(rand_hex 32)
 EOF
@@ -150,11 +150,13 @@ curl -fsS --max-time 3 -o /dev/null http://127.0.0.1:7350/healthcheck || {
 	journalctl -u tongsui --since "$since" --no-pager | tail -40
 	die "Nakama 30 秒内没起来"
 }
-journalctl -u tongsui --since "$since" --no-pager | grep -q 'server module loaded' || {
-	journalctl -u tongsui --since "$since" --no-pager | tail -40
+# 先存进变量再 grep：直接 journalctl | grep -q 会因 SIGPIPE + pipefail 误判失败
+logs="$(journalctl -u tongsui --since "$since" --no-pager)"
+grep -q 'server module loaded' <<<"$logs" || {
+	tail -40 <<<"$logs"
 	die "日志里没有 server module loaded"
 }
-journalctl -u tongsui --since "$since" --no-pager | grep -o '同岁 server module loaded[^"]*' | tail -1
+grep -o '同岁 server module loaded[^"]*' <<<"$logs" | tail -1
 
 step "nginx :$PUBLIC_PORT → 127.0.0.1:7350"
 conf=/etc/nginx/sites-available/tongsui
@@ -178,10 +180,9 @@ done
 curl -fsS --max-time 3 -o /dev/null "http://127.0.0.1:$PUBLIC_PORT/healthcheck" || die "nginx :$PUBLIC_PORT 到 Nakama 不通"
 
 step "监听端口（Nakama 应该全在 127.0.0.1）"
-ss -ltnp | grep -E ':(7349|7350|7351|'"$PUBLIC_PORT"')\b' || true
-if ss -ltn | awk '{print $4}' | grep -E ':(7349|7350|7351)$' | grep -vqE '^(127\.0\.0\.1|\[::1\]):'; then
-	die "Nakama 有端口没绑在 127.0.0.1 上"
-fi
+ss -ltnp | grep -E ':(7348|7349|7350|7351|'"$PUBLIC_PORT"')\b' || true
+exposed="$(ss -ltn | awk '{print $4}' | grep -E ':(7348|7349|7350|7351)$' | grep -vE '^(127\.0\.0\.1|\[::1\]):' || true)"
+[[ -z "$exposed" ]] || die "Nakama 有端口没绑在 127.0.0.1 上：$exposed"
 
 ip="$(curl -fsS --max-time 5 -H 'Metadata-Flavor: Google' http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip 2>/dev/null || curl -fsS --max-time 5 https://api.ipify.org)"
 json="{\"host\": \"$ip\", \"port\": $PUBLIC_PORT, \"scheme\": \"http\", \"server_key\": \"$SERVER_KEY\"}"

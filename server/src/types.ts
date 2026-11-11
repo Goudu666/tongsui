@@ -202,6 +202,8 @@ interface Rules {
   bond: {
     closeSoft: number; closeFloor: number; closeScale: number; syncSoft: number; syncFloor: number; syncSteady: number; syncSteadyFrom?: number; syncSteadyFull?: number; slotTogether?: number; closeWeight?: { [S in Stage]: number };
     drift: { [S in Stage]: number }; driftDistance: number; driftFloor: number;
+    /** 关口上拉一把、重逢（server/src/pull.ts）。老内容没写就不拉 */
+    pullFrom?: number; pullFull?: number; pullMoney?: number; pullMoneyClose?: number; reunion?: Partial<Bond>;
   };
 }
 
@@ -292,6 +294,8 @@ interface Action {
   together: { needs: Partial<Needs>; bond: Partial<Bond>; text: string } | null;
   /** 带上对门：标记够的人正在做，对门走过去也能跟着做，两份钱都由带的人出（means.ts） */
   bring: boolean;
+  /** 只在菜单上点到才做（ACT 带 action，协议 8）。不带 action 的永远轮不到它 */
+  menu: boolean;
 }
 
 interface GameMap {

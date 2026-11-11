@@ -39,7 +39,7 @@ spots:
   - { id: palace_piano, at: 1600, area: youth_palace, actions: [ piano ] }
   - { id: palace_pool, at: 1880, area: youth_palace, actions: [ swim_class ] }
   - { id: key_gate, at: 2260, area: key_school, actions: [ duty ] }
-  - { id: mall_floor, at: 2990, area: mall, actions: [ window_shop ] }
+  - { id: mall_floor, at: 2990, area: mall, actions: [ window_shop, mall_clerk ] }
   - { id: mall_food, at: 3430, area: mall, actions: [ dine_west ] }
   - { id: mall_room, at: 3570, area: mall, actions: [ banquet ] }
   - { id: book_shelf, at: 3900, area: bookstore, actions: [ read_store ] }

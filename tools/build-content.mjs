@@ -89,7 +89,7 @@ const PENDING_FLAGS = [];
 const SCENE_ORDER = ["building", "street", "river", "primary", "middle", "across", "away", "rental", "newhome", "park", "hospital"];
 const SCENE_STRIDE = 2000;
 const AREA_HEIGHT = 400; // 地点在世界坐标里的框：地面往上这么高（判定「人在不在这儿」用，美术不看它）
-const ACTION_KEYS = ["id", "label", "minutes", "quick", "sleep", "duty", "requires", "needs", "stats", "money", "together", "bring"];
+const ACTION_KEYS = ["id", "label", "minutes", "quick", "sleep", "duty", "requires", "needs", "stats", "money", "together", "bring", "menu"];
 const ACTION_REQ_KEYS = ["minAge", "maxAge", "owner", "hours", "flags", "notFlags"];
 const TOGETHER_KEYS = ["needs", "bond", "text"];
 // 规则代码（server/src/sim.ts、world.ts）里按名字写死的行动和标记：影子靠这些行动过日子，天赋效果靠这些标记生效。
@@ -468,7 +468,7 @@ const rules = load("rules.yaml");
     daily: ["bodyEnergy", "charmTogether", "luckFate", "slotUse", "needsUse", "wageFlags"],
     check: ["base", "perPoint", "luck", "min", "max", "help"],
     lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max", "flags"],
-    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "syncSteadyFrom", "syncSteadyFull", "slotTogether", "closeWeight", "drift", "driftDistance", "driftFloor"],
+    bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "syncSteadyFrom", "syncSteadyFull", "slotTogether", "closeWeight", "drift", "driftDistance", "driftFloor", "pullFrom", "pullFull", "pullMoney", "pullMoneyClose", "reunion"],
     legacy: ["pastKept", "heirloomOffer", "houseMax", "houseMoney", "lateEarly", "lateAfter", "lateRoom", "linkedDrift", "linkedMood", "oldSoul", "oldSoulCharm"],
   };
   checkKeys("rules", rules, Object.keys(need));
@@ -490,6 +490,10 @@ const rules = load("rules.yaml");
   if (rules?.daily && !(typeof rules.daily.slotUse === "number" && rules.daily.slotUse > 0 && rules.daily.slotUse <= 1)) errors.push("rules.yaml: daily.slotUse 是一段里真花在那件事上的一份，要在 0 到 1 之间");
   if (rules?.bond && (typeof rules.bond.syncSteady !== "number" || rules.bond.syncSteady < 0 || rules.bond.syncSteady > 1)) errors.push("rules.yaml: bond.syncSteady 是默契替考场托住的那一份，要在 0 到 1 之间");
   if (rules?.bond && (rules.bond.syncSteadyFull !== undefined || rules.bond.syncSteadyFrom !== undefined) && !(typeof rules.bond.syncSteadyFull === "number" && typeof rules.bond.syncSteadyFrom === "number" && rules.bond.syncSteadyFull > rules.bond.syncSteadyFrom && rules.bond.syncSteadyFrom >= 0 && rules.bond.syncSteadyFull <= 100)) errors.push("rules.yaml: bond.syncSteadyFrom / syncSteadyFull 是默契从几开始托、到几托满，两个要一起写（只写一个引擎会退回默契 / 100 的老算法），并且 0 ≤ From < Full ≤ 100");
+  // 拉一把（server/src/pull.ts）：看分的线最多拉几分（属性口径，0.6 = 6 分）、要钱的线最多塞几块。拉太多关口就不用冲了
+  if (rules?.bond && !(typeof rules.bond.pullFrom === "number" && typeof rules.bond.pullFull === "number" && rules.bond.pullFrom >= 0 && rules.bond.pullFrom <= rules.bond.pullFull && rules.bond.pullFull <= 1)) errors.push("rules.yaml: bond.pullFrom / pullFull 是关口上默契最低和最高时能拉对门几分（属性口径），要 0 ≤ pullFrom ≤ pullFull ≤ 1");
+  if (rules?.bond && !(typeof rules.bond.pullMoney === "number" && rules.bond.pullMoney >= 0 && rules.bond.pullMoney <= 80 && typeof rules.bond.pullMoneyClose === "number" && rules.bond.pullMoneyClose > 0 && rules.bond.pullMoneyClose <= 100)) errors.push("rules.yaml: bond.pullMoney 是关口上最多替对门垫几块（0~80），pullMoneyClose 是亲近到几垫满（1~100）");
+  if (rules?.bond) checkDeltas("rules.bond.reunion", rules.bond.reunion, BOND_KEYS);
   for (const [f, mul] of Object.entries(rules?.daily?.wageFlags ?? {})) {
     consumed.push(["rules.daily.wageFlags", f]);
     if (typeof mul !== "number" || mul < 1 || mul > 2) errors.push(`rules.yaml: daily.wageFlags.${f} 是工钱的倍数，要在 1 到 2 之间`);
@@ -680,6 +684,8 @@ for (const sc of rawScenes) {
       errors.push(`${w}: 需要 action 或 actions`);
     }
     for (const a of acts) if (!actionIds.has(a)) errors.push(`${w}: 未知 action ${a}`);
+    // menu 的事只在菜单上点到才做：不能当点位的头一件（旧安装包、影子、机器人不点菜单，做的是头一件）
+    if (acts.length && map.actions.find((x) => x.id === acts[0])?.menu) errors.push(`${w}: 头一件 ${acts[0]} 是 menu 的事，换一件当头`);
     spots.push({ id: sp.id, zone: sp.area, scene: sc.id, at: [sp.at, fy(ar.floor, w)], actions: acts, action: acts[0] });
   }
 }
@@ -747,11 +753,13 @@ map.actions = map.actions.map((a) => {
   // 顺手的事当场做完、不占一段：不能是睡觉和日程，也不长属性（长属性的事要花一段时间）
   if (a.quick && (a.sleep || a.duty)) errors.push(`map.actions#${a.id}: 睡觉和日程不能是顺手的事`);
   if (a.quick && Object.keys(a.stats ?? {}).length > 0) errors.push(`map.actions#${a.id}: 顺手的事不长属性，要长属性就去掉 quick`);
+  // menu：只在菜单上点到才做（协议 8）。不点菜单的（旧安装包、影子、机器人）永远轮不到它，校准过的活法数不动
+  if (a.menu !== undefined && (a.menu !== true || a.sleep || a.duty)) errors.push(`map.actions#${a.id}.menu: 只能写 true，睡觉和日程不能是`);
   return {
     id: a.id, label: a.label, minutes: a.minutes ?? 0, quick: !!a.quick, sleep: !!a.sleep, duty: !!a.duty,
     requires: a.requires ?? {}, needs: a.needs ?? {}, stats: a.stats ?? {}, money: a.money ?? 0,
     together: a.together ? { needs: a.together.needs ?? {}, bond: a.together.bond ?? {}, text: a.together.text ?? "" } : null,
-    bring: !!a.bring,
+    bring: !!a.bring, menu: !!a.menu,
   };
 });
 // ---------- 接话（duet.yaml）：搭上了 / 回话 ----------
@@ -762,7 +770,7 @@ const needText = (where, t, max) => {
   if (!t || typeof t !== "string") errors.push(`${where}: 缺少文字`);
   else if (len(t) > max) errors.push(`${where}: ${len(t)} 字，超过 ${max} 字（${t}）`);
 };
-checkKeys("duet.yaml", duetRaw, ["catches", "echo", "epitaph"]);
+checkKeys("duet.yaml", duetRaw, ["catches", "echo", "epitaph", "gate"]);
 const eventById = new Map(events.map((e) => [e.id, e]));
 for (const ev of events) ev.catches = [];
 let catchCount = 0;
@@ -796,7 +804,10 @@ const duetTexts = (name, keys) => {
 const duet = {
   echo: duetTexts("echo", ["ask", "res", "catch", "miss", "like", "unlike", "knew", "kept", "told"]),
   epitaph: duetTexts("epitaph", ["know", "shadow"]),
+  // 关口上的拉一把 / 没拉上 / 重逢（server/src/pull.ts）。回忆的名字和搭上了一样 8 字以内
+  gate: duetTexts("gate", ["pull", "money", "miss", "reunion", "pullMemory", "moneyMemory", "reunionMemory"]),
 };
+for (const k of ["pullMemory", "moneyMemory", "reunionMemory"]) needText(`duet.gate.${k}`, duet.gate[k], 8);
 duet.epitaph.last = (duetRaw.epitaph?.last ?? []).map((l, i) => {
   needText(`duet.epitaph.last[${i}]`, l.text, 40);
   if (typeof l.minRate !== "number") errors.push(`duet.epitaph.last[${i}]: 需要 minRate`);

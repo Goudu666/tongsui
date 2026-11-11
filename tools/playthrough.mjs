@@ -25,6 +25,8 @@ const PERSONA = process.env.PERSONA || "careful";
 const AWAY = (process.env.AWAY || "").split(":").map(Number);
 // ONCE=1：正经事一回一回地按（新安装包的默认按法，world.ts 的 worldActOnce），做完一回再按，偶尔换一件；不设就是「做到点」，整段押上
 const ONCE = !!process.env.ONCE;
+// MENU=1：点位菜单上的每一件都看（协议 8，ACT 带 action）；不设就是只看菜单头一件，和影子、旧安装包一样
+const MENU = !!process.env.MENU;
 // SNAP=1：每个日子收工时记下两个人纸带上的线（lifeGoal），tools/sprint.mjs 拿它量关口冲刺有没有得拼
 const SNAP = !!process.env.SNAP;
 function snapGoals(s) {
@@ -115,6 +117,15 @@ function spotsFor(s, role, test) {
     const z = zoneOf.get(sp.zone);
     if (z.owner && z.owner !== role) continue;
     if (G("worldSceneLock")(s, C, sceneOf.get(sp.scene), role)) continue;
+    if (MENU) {
+      // 点位菜单：每一件都看一眼（真人看得见那排小牌子）
+      for (const id of sp.actions) {
+        const act = G("worldPickAction")(s, C, role, sp, id).act;
+        if (!act || act.id !== id || G("worldCanAct")(s, C, role, sp.id, true, id)) continue;
+        if (test(act, sp)) out.push({ spot: sp, act });
+      }
+      continue;
+    }
     const act = G("worldPickAction")(s, C, role, sp).act;
     if (!act || G("worldCanAct")(s, C, role, sp.id, true)) continue;
     if (test(act, sp)) out.push({ spot: sp, act });
@@ -226,7 +237,7 @@ function playLife(seed) {
   const players = { qing: makePlayer("qing", qa), mei: makePlayer("mei", ma) };
 
   const rep = {
-    seed, persona: PERSONA, ticks: 0, days: [], story: [], errors: {}, stalls: [], events: { story: 0, milestone: 0, mirror: 0, solo: 0, check: 0 },
+    seed, persona: PERSONA, ticks: 0, pull: { offered: 0 }, pullSeen: [], days: [], story: [], errors: {}, stalls: [], events: { story: 0, milestone: 0, mirror: 0, solo: 0, check: 0 },
     firstHour: null, gapMax: { sec: 0 }, gaps: [], hintMismatch: [], chapters: {}, together: 0, forced: 0, end: null, families: {},
   };
   const seconds = () => rep.ticks / TICK;
@@ -330,8 +341,16 @@ function playLife(seed) {
           if (o.cost && my.money < o.cost) return false;
           return true;
         });
+        // 关口上拉一把（server/src/pull.ts）：认真的两个人商量着选——差几分的那个走要人拉的路，拉得动的那个陪着走
+        const pulls = pe.kind === "milestone" ? G("lifeMilestonePulls")(s, C) : null;
+        const mine = pulls && pulls[r] ? Object.keys(pulls[r]) : [];
+        const theirs = pulls && pulls[r === "qing" ? "mei" : "qing"] ? Object.keys(pulls[r === "qing" ? "mei" : "qing"]) : [];
+        if (pulls && !rep.pullSeen.includes(s.turn)) { rep.pullSeen.push(s.turn); rep.pull.offered++; }
+        let o = null;
+        if (PERSONA === "careful" && mine.length) o = ev.options.find((x) => x.id === mine[0]);
+        else if (PERSONA === "careful" && theirs.length) o = ev.options.find((x) => x.id === theirs[0]);
         // 默契事件：认真的两个人六成选到一块儿（先选第一个能选的）
-        const o = PERSONA === "careful" && rand() < 0.6 ? ok[0] : pick(ok.length ? ok : ev.options);
+        if (!o) o = PERSONA === "careful" && rand() < 0.6 ? ok[0] : pick(ok.length ? ok : ev.options);
         msgs.push(R.msg(P.presence, OP.CHOOSE, { optionId: o.id }));
         P.wait = 2 * TICK; // 看结算
       }
@@ -370,13 +389,15 @@ function playLife(seed) {
         if (plan.walkTo && plan.linger) { P.plan = null; P.wait = 3 * TICK; continue; } // 站一会儿，没事就接着干别的
         if (plan.walkTo) { P.plan = { pass: true, why: plan.why + "-arrived" }; P.wait = 5; continue; }
         // 客户端在按钮上写着做不了的原因（比如过了两趟桥，「路上把这一段花掉了」），真人不会再按：这一段歇着
-        if (!plan.sent && G("worldCanAct")(s, C, r, plan.spot.id)) { P.plan = { pass: true, why: plan.why + "-greyed" }; P.did = P.plan.why; continue; }
+        if (!plan.sent && G("worldCanAct")(s, C, r, plan.spot.id, false, MENU && plan.act ? plan.act.id : undefined)) { P.plan = { pass: true, why: plan.why + "-greyed" }; P.did = P.plan.why; continue; }
         if (ONCE && plan.sent && !plan.quick) {
           // 一回做完了（did 的序号变了）：看一眼结果、钟拨过去，再按一回；三成的时候换一件事
           if (((a.did && a.did.n) || 0) > plan.didN) { P.plan = rand() < 0.3 ? null : { ...plan, sent: false }; P.wait = Math.round(THINK.once * TICK); continue; }
           P.plan = { pass: true, why: plan.why + "-failed" }; P.did = P.plan.why; continue;
         }
-        msgs.push(R.msg(P.presence, OP.ACT, ONCE ? { spot: plan.spot.id, once: true } : { spot: plan.spot.id }));
+        const body = ONCE ? { spot: plan.spot.id, once: true } : { spot: plan.spot.id };
+        if (MENU && plan.act) body.action = plan.act.id;
+        msgs.push(R.msg(P.presence, OP.ACT, body));
         if (plan.quick) { P.plan = null; P.wait = THINK.quick * TICK; } else { P.wait = 5; P.plan = { ...plan, sent: true, didN: (a.did && a.did.n) || 0 }; }
         if (plan.sent && !ONCE) { P.plan = { pass: true, why: plan.why + "-failed" }; } // 做不了：歇着
         continue;
@@ -401,7 +422,12 @@ function playLife(seed) {
   rep.misses = rep.days.filter((d) => d.storyMiss && d.storyMiss.length).map((d) => ({ turn: d.turn, age: G("lifeTimeAt")(d.turn).label, miss: d.storyMiss.map((id) => id + "@" + storyOf(id).slot + "/" + storyOf(id).scene + "/" + storyOf(id).kind), slots: d.slots.map((x) => SLOT_ZH[x.slot] + ":" + x.did.qing + "|" + x.did.mei).join("  ") }));
   rep.faults = logger.lines.filter((l) => l[0] === "error").map((l) => l[1]).slice(0, 10);
   // 每道关两个人的分（比较按法、调数时看成长总量有没有跑偏）
-  rep.gates = (s.log || []).filter((e) => e.kind === "milestone" && e.results).map((e) => ({ age: e.age, qing: e.results.qing ? e.results.qing.score : null, mei: e.results.mei ? e.results.mei.score : null }));
+  rep.gates = (s.log || []).filter((e) => e.kind === "milestone" && e.results).map((e) => ({ age: e.age, qing: e.results.qing ? e.results.qing.score : null, mei: e.results.mei ? e.results.mei.score : null, gate: e.gate || null }));
+  rep.pull.pulled = rep.gates.filter((g) => g.gate && g.gate.pull).length;
+  rep.pull.missed = rep.gates.filter((g) => g.gate && g.gate.miss).length;
+  rep.pull.reunion = rep.gates.filter((g) => g.gate && g.gate.reunion).length;
+  rep.pull.pairGates = (s.log || []).filter((e) => e.kind === "milestone" && e.results && e.results.qing && e.results.mei).length;
+  delete rep.pullSeen;
   // 「再来一世」：两个人都点，换成新的一世的投胎
   if (s.phase === "ended") {
     step([R.msg(qa, OP.AGAIN, { yes: true }), R.msg(ma, OP.AGAIN, { yes: true })]);

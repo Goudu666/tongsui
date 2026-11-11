@@ -63,6 +63,7 @@ const FLASH_SECS := 1.6
 ## 两个人一起做事挨着站：一般错开半步；面对面的几样（聊天、下棋、吃饭）错开一大步，再各自转过脸来
 const PAIR_GAP := 24.0
 const FACE_GAP := 46.0
+const PASS_GAP := 84.0  ## 一起踢球：面对面隔开几步，中间滚一个球
 var _apart := true  ## 两个人上一次离得远（碰面招手用）
 
 
@@ -301,7 +302,7 @@ func apply_world(view: Dictionary) -> void:
 		# 不在我这张图上的人（楼上、外地）：这儿看不见
 		a.visible = a.is_local or str(scene_at(server_pos.y).get("id", "")) == str(scene.get("id", ""))
 		if side_by_side:
-			var gap := FACE_GAP if _act_loop(str(qs.get("act")), str(qs.get("spot", ""))) in Actor.FACE_LOOPS else PAIR_GAP
+			var gap := pair_gap(_act_loop(str(qs.get("act")), str(qs.get("spot", ""))))
 			server_pos.x += -gap if r == "qing" else gap
 		var act: Variant = s.get("act")
 		if act != null:
@@ -337,8 +338,14 @@ func _pair_faces(side_by_side: bool) -> void:
 	var m: Actor = actors.get("mei")
 	if q == null or m == null:
 		return
+	# 一起踢球：配成对，面对面对着踢一个球
+	var passing := side_by_side and q.base_loop() == "kick" and m.base_loop() == "kick"
+	q.pass_with = m if passing else null
+	m.pass_with = q if passing else null
+	q.pass_lead = passing
+	m.pass_lead = false
 	var lp := q.loop_name()
-	var facing := side_by_side and lp in Actor.FACE_LOOPS and lp == m.loop_name()
+	var facing := side_by_side and (passing or (lp in Actor.FACE_LOOPS and lp == m.loop_name()))
 	if facing:
 		q.face_to = 2 if q.position.x <= m.position.x else 3
 		m.face_to = 3 if q.position.x <= m.position.x else 2
@@ -348,7 +355,7 @@ func _pair_faces(side_by_side: bool) -> void:
 	var both := q.visible and m.visible and str(scene_at(q.position.y).get("id", "")) == str(scene_at(m.position.y).get("id", ""))
 	var d := q.position.distance_to(m.position) if both else INF
 	# 挨得近：「一起……中」只写一份（写在两人中间），名字牌往两边让开
-	var near := d < 130.0
+	var near := d < 130.0 or (passing and d < PASS_GAP * 2.0 + 30.0)
 	var left: Actor = q if q.position.x <= m.position.x else m
 	var right: Actor = m if left == q else q
 	left.quiet_label = false
@@ -433,6 +440,13 @@ func _apply_flash(role: String, a: Actor, idle: bool) -> void:
 
 
 ## 这件事在这个点上演哪一套动作（和 actor.loop_name 一样的对法，给还没设上 doing 的时候用）
+## 两个人在同一个点做同一件事，左右各让开多远
+func pair_gap(loop: String) -> float:
+	if loop == "kick":
+		return PASS_GAP
+	return FACE_GAP if loop in Actor.FACE_LOOPS else PAIR_GAP
+
+
 func _act_loop(act: String, spot: String) -> String:
 	if act == "duty":
 		return str(Actor.DUTY_LOOP.get(spot, "wave"))
@@ -535,8 +549,29 @@ func my_duty() -> Dictionary:
 
 ## 我现在在这个点位上能做的事。和服务器 world.ts 的 worldPickAction 一个规则：
 ## 点位上的行动按顺序看，日程只给今天该来这儿、还来得及的人，其余按年纪、关口上挣来的资格、钟点取第一件合适的。没有就是 {}
-func action_of(spot: Dictionary) -> Dictionary:
-	var late := {}
+func action_of(spot: Dictionary, want := "") -> Dictionary:
+	var menu := actions_of(spot)
+	if want != "":
+		for a in menu:
+			if str(a.get("id", "")) == want:
+				return a
+	# 不点菜单：头一件现在就能做的；都不在钟点上，还是头一件（点了服务器回「现在不是时候」）。
+	# menu 的事只在点到时做，不点的时候轮不到它（和服务器 worldPickAction 一样）
+	var first := {}
+	for a in menu:
+		if bool(a.get("menu", false)):
+			continue
+		if not bool(a.get("_late", false)):
+			return a
+		if first.is_empty():
+			first = a
+	return first
+
+
+## 这个点位的菜单：这个人现在看得见的几件事，按 spots[].actions 的顺序（和服务器 worldPickAction 同一套规矩）。
+## 不在钟点上的也列着，带 _late（按钮上写「几点以后」）；上学上班只在是自己那份日程的地方才有
+func actions_of(spot: Dictionary) -> Array:
+	var out: Array = []
 	var ids: Array = spot.get("actions", [])
 	if ids.is_empty() and spot.has("action"):
 		ids = [spot.action]
@@ -550,7 +585,7 @@ func action_of(spot: Dictionary) -> Dictionary:
 				var mine := act.duplicate()
 				mine["label"] = str(d.get("label", act.get("label", "")))
 				mine["until"] = d.get("until")
-				return mine
+				out.append(mine)
 			continue
 		var rq: Dictionary = act.get("requires", {})
 		if rq.has("minAge") and age < int(rq.minAge):
@@ -560,14 +595,14 @@ func action_of(spot: Dictionary) -> Dictionary:
 		# 标记在服务器手里，客户端只认它发来的那张单子
 		if (rq.has("flags") or rq.has("notFlags")) and not (unlocks.get(my_role, []) as Array).has(str(id)):
 			continue
-		# 不在钟点上先看后面还有没有别的事；都没有就还是它（点了服务器回「现在不是时候」）
 		var hours: Variant = rq.get("hours")
 		if hours is Array and hours.size() == 2 and not overlaps(hours, slot):
-			if late.is_empty():
-				late = act
+			var late := act.duplicate()
+			late["_late"] = true
+			out.append(late)
 			continue
-		return act
-	return late
+		out.append(act)
+	return out
 
 
 ## 这一分钟在第几段

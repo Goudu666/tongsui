@@ -611,6 +611,14 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
   s.log.push(summary);
 
   s.turn += 1;
+  // 朝下一道关挪了多少（「再过一天」的钩子：照这样还要几个日子）
+  for (var gi = 0; gi < ROLES.length; gi++) {
+    if (!persons[ROLES[gi]].alive || !w.goal0) continue;
+    var dg = worldDayGoal(s, c, ROLES[gi], w.goal0[ROLES[gi]]);
+    if (!dg) continue;
+    if (!summary.goal) summary.goal = {};
+    summary.goal[ROLES[gi]] = dg;
+  }
   for (var m = 0; m < s.memories.length; m++) {
     var mem = s.memories[m];
     if (mem.vivid > 0 && (s.turn - mem.turn) % MEMORY_FADE_EVERY === 0) mem.vivid -= 1;
@@ -628,6 +636,16 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
 
   // 路上的信：今天早上该到的送到（post.ts），挂在「这一天过去了」那条上
   postDeliver(s, c, summary);
+  // 今天的时间花在了哪：只发给客户端的那一份带上，长卷里那一份不带（一辈子七十几天，存档不用背着）
+  if (w.segs) {
+    var si = out.indexOf(summary);
+    if (si >= 0) {
+      var copy: any = {};
+      for (var ck in summary) copy[ck] = (summary as any)[ck];
+      copy.spent = w.segs;
+      out[si] = copy as LogEntry;
+    }
+  }
 
   if (!persons.qing.alive && !persons.mei.alive) {
     s.phase = "ended";

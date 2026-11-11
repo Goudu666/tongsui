@@ -23,6 +23,8 @@ const QUIET = args.includes("--quiet");
 const CHECK = args.includes("--check"); // 当测试用：卡住、服务器回错、房间出错、主线没走完、再来一世进不了投胎，就退出码 1
 const PERSONA = process.env.PERSONA || "careful";
 const AWAY = (process.env.AWAY || "").split(":").map(Number);
+// ONCE=1：正经事一回一回地按（新安装包的默认按法，world.ts 的 worldActOnce），做完一回再按，偶尔换一件；不设就是「做到点」，整段押上
+const ONCE = !!process.env.ONCE;
 
 const OP = G("OP");
 const TICK = 10; // 一秒十跳（main.ts TICK_RATE）
@@ -30,7 +32,7 @@ const WALK = 360 * 0.95; // 一秒走多少（world.ts WALK_SPEED，略慢一点
 const SLOTS = ["morning", "am", "pm", "evening", "night"];
 const SLOT_ZH = ["早上", "上午", "下午", "傍晚", "晚上"];
 /** 真人手速（秒）：定一段干什么、读一件事、读关口、看一天的结算 */
-const THINK = { slot: 3, quick: 1.2, event: 4, perChar: 1 / 9, milestone: 12, dayEnd: 3, roll: 8 };
+const THINK = { slot: 3, quick: 1.2, event: 4, perChar: 1 / 9, milestone: 12, dayEnd: 3, roll: 8, once: 2 };
 
 const actionOf = new Map(C.map.actions.map((a) => [a.id, a]));
 const sceneOf = new Map(C.map.scenes.map((s) => [s.id, s]));
@@ -349,9 +351,14 @@ function playLife(seed) {
         if (plan.walkTo) { P.plan = { pass: true, why: plan.why + "-arrived" }; P.wait = 5; continue; }
         // 客户端在按钮上写着做不了的原因（比如过了两趟桥，「路上把这一段花掉了」），真人不会再按：这一段歇着
         if (!plan.sent && G("worldCanAct")(s, C, r, plan.spot.id)) { P.plan = { pass: true, why: plan.why + "-greyed" }; P.did = P.plan.why; continue; }
-        msgs.push(R.msg(P.presence, OP.ACT, { spot: plan.spot.id }));
-        if (plan.quick) { P.plan = null; P.wait = THINK.quick * TICK; } else { P.wait = 5; P.plan = { ...plan, sent: true }; }
-        if (plan.sent) { P.plan = { pass: true, why: plan.why + "-failed" }; } // 做不了：歇着
+        if (ONCE && plan.sent && !plan.quick) {
+          // 一回做完了（did 的序号变了）：看一眼结果、钟拨过去，再按一回；三成的时候换一件事
+          if (((a.did && a.did.n) || 0) > plan.didN) { P.plan = rand() < 0.3 ? null : { ...plan, sent: false }; P.wait = Math.round(THINK.once * TICK); continue; }
+          P.plan = { pass: true, why: plan.why + "-failed" }; P.did = P.plan.why; continue;
+        }
+        msgs.push(R.msg(P.presence, OP.ACT, ONCE ? { spot: plan.spot.id, once: true } : { spot: plan.spot.id }));
+        if (plan.quick) { P.plan = null; P.wait = THINK.quick * TICK; } else { P.wait = 5; P.plan = { ...plan, sent: true, didN: (a.did && a.did.n) || 0 }; }
+        if (plan.sent && !ONCE) { P.plan = { pass: true, why: plan.why + "-failed" }; } // 做不了：歇着
         continue;
       }
       if (plan.pass) { msgs.push(R.msg(P.presence, OP.PASS, {})); P.wait = 5; }

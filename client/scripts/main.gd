@@ -26,6 +26,7 @@ const DuetUI := preload("res://scripts/duet/duet_ui.gd")
 const LetterCard := preload("res://scripts/ui/letter_card.gd")
 const LegacyUI := preload("res://scripts/ui/legacy_ui.gd")
 const Guide := preload("res://scripts/ui/guide.gd")
+const DayCard := preload("res://scripts/ui/day_card.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -44,6 +45,13 @@ var action_sub: Label      ## 下面一行小字：多久、多少钱、搭不�
 var slot_btn: Button       ## 行动按钮左边的「就这么过」：这一段不做正经事
 var slot_title: Label
 var slot_sub: Label
+var fill_btn: Button       ## 行动按钮左边的「做到 12:00」：这件事一直做到这一段完（不按它就是做一回、当场看结果）
+var fill_title: Label
+var fill_sub: Label
+var _did_seen := {}        ## 每个人看过的最后一条 did（服务器当场结算的那一件）的序号
+var _clock_from := -1.0    ## 钟正在从几点拨到几点（做完一回，钟在眼前走过去）
+var _clock_to := -1.0
+var _clock_t := 0.0
 var _action_dim: Variant = null  ## 行动按钮上的字现在是不是灰的（null：还没设过）
 var modal: ColorRect
 var modal_card: PanelContainer
@@ -79,6 +87,8 @@ const MODAL_WIDTH := 1040.0   ## 普通弹窗
 const MODAL_WIDE := 1500.0    ## 选项并排、左右分栏的弹窗
 const ACTION_SIZE := Vector2(640, 128)
 const SLOT_SIZE := Vector2(300, 128)
+const FILL_SIZE := Vector2(300, 128)
+const CLOCK_SWEEP := 0.9  ## 做完一回，钟拨过去要几秒
 const TOAST_ANCHOR := 0.72  ## 提示条平时在屏高这么多的地方；开着弹窗时贴到顶上
 
 
@@ -207,6 +217,26 @@ func _build_layers() -> void:
 	slot_title = Kit.label(slot_lines, "", 36, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
 	slot_sub = Kit.label(slot_lines, "", 24, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
 	for l in [slot_title, slot_sub]:
+		l.autowrap_mode = TextServer.AUTOWRAP_OFF
+		l.clip_text = true
+	# 「做到点」：和「就这么过」一样的纸色次要按钮，夹在两者中间
+	fill_btn = Button.new()
+	fill_btn.anchor_left = 1.0
+	fill_btn.anchor_right = 1.0
+	fill_btn.anchor_top = 1.0
+	fill_btn.anchor_bottom = 1.0
+	fill_btn.visible = false
+	fill_btn.pressed.connect(_on_fill_pressed)
+	hud.add_child(fill_btn)
+	var fill_lines := VBoxContainer.new()
+	fill_lines.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	fill_lines.alignment = BoxContainer.ALIGNMENT_CENTER
+	fill_lines.add_theme_constant_override("separation", 0)
+	fill_lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fill_btn.add_child(fill_lines)
+	fill_title = Kit.label(fill_lines, "", 36, P.INK, HORIZONTAL_ALIGNMENT_CENTER)
+	fill_sub = Kit.label(fill_lines, "", 24, P.INK_SOFT, HORIZONTAL_ALIGNMENT_CENTER)
+	for l in [fill_title, fill_sub]:
 		l.autowrap_mode = TextServer.AUTOWRAP_OFF
 		l.clip_text = true
 
@@ -360,10 +390,11 @@ func _layout_hud() -> void:
 	action_btn.offset_left = action_btn.offset_right - ACTION_SIZE.x
 	action_btn.offset_bottom = -44
 	action_btn.offset_top = action_btn.offset_bottom - ACTION_SIZE.y
-	slot_btn.offset_right = action_btn.offset_left - 28
-	slot_btn.offset_left = slot_btn.offset_right - SLOT_SIZE.x
-	slot_btn.offset_bottom = action_btn.offset_bottom
-	slot_btn.offset_top = action_btn.offset_top
+	fill_btn.offset_right = action_btn.offset_left - 28
+	fill_btn.offset_left = fill_btn.offset_right - FILL_SIZE.x
+	fill_btn.offset_bottom = action_btn.offset_bottom
+	fill_btn.offset_top = action_btn.offset_top
+	_place_slot_btn()
 	banner.offset_left = 40 + inset.x
 	banner.offset_right = banner.offset_left + 740
 
@@ -544,14 +575,21 @@ func _process(delta: float) -> void:
 		world.set_minute(_preview_minute)
 	world.controllable = not modal.visible and not screen.visible and not world.playing
 	_refresh_partner()
+	_sweep_clock(delta)
 	if modal.visible:
 		action_btn.visible = false
 		slot_btn.visible = false
+		fill_btn.visible = false
 		return
+	fill_btn.visible = false
 	match _slot_state():
 		"playing":
 			# 这一段正在眼前过：什么都不用点
 			action_btn.visible = false
+			slot_btn.visible = false
+		"full":
+			# 一件一件把这一段做满了：等 TA，或者等这一段过去
+			_set_action("", "这一段做满了", "等 TA 定这一段" if not _ready_of(_other()) else "", true)
 			slot_btn.visible = false
 		"decided":
 			# 定下了还能改：按钮变成「改主意」，底下写定了什么、在等谁
@@ -566,7 +604,7 @@ func _process(delta: float) -> void:
 			_set_slot_btn()
 
 
-## 这一段我这边的状态："preview" 离线逛逛 / "playing" 正在过 / "decided" 定了还能改 / "busy" 定了撤不回 / "open" 还没定
+## 这一段我这边的状态："preview" 离线逛逛 / "playing" 正在过 / "decided" 定了还能改 / "busy" 定了撤不回 / "full" 一件一件做满了 / "open" 还没定
 func _slot_state() -> String:
 	if offline_preview:
 		return "preview"
@@ -575,6 +613,8 @@ func _slot_state() -> String:
 	if not _ready_of(my_role):
 		return "open"
 	var me: Dictionary = _dict(_dict(last_world.get("actors")).get(my_role))
+	if me.get("act") == null and not bool(me.get("sleep", false)) and _time_left(me) < 20.0:
+		return "full"
 	var fr: Variant = me.get("fr")
 	if (me.get("act") != null or bool(me.get("sleep", false))) and fr != null and int(fr) < int(last_world.get("slot", 0)):
 		return "busy"
@@ -612,7 +652,8 @@ func _set_action(mode: String, title: String, sub: String, dim: bool) -> void:
 	action_btn.visible = true
 
 
-## 还没定的时候：走近一个点位，按钮上写在这儿能做什么、占多久；站在门口、楼梯口，按钮是「下楼」「去海河边」
+## 还没定的时候：走近一个点位，按钮上写在这儿能做什么、花多久、累多少、长什么；站在门口、楼梯口，按钮是「下楼」「去海河边」
+## 正经事按一下是「做一回」：自己的钟往前拨这件事的时长，当场结算（服务器 worldActOnce）。旁边的「做到点」把这一段剩下的都押上
 func _show_spot_action() -> void:
 	var spot := world.nearest_spot()
 	var ex := world.nearest_exit()
@@ -627,6 +668,9 @@ func _show_spot_action() -> void:
 		return
 	var act := world.action_of(spot)
 	var cost: Array = []
+	var mine: Dictionary = _dict(_dict(last_world.get("actors")).get(my_role))
+	var left := _time_left(mine)
+	var plain := not bool(act.get("sleep", false)) and not bool(act.get("duty", false)) and not bool(act.get("quick", false))
 	if bool(act.get("sleep", false)):
 		# 一睁眼就站在床边：大按钮写着「睡觉」，头一回玩的人一按，这一天就没了。天还亮着就说清楚，按两下才睡
 		cost.append("睡到明天" if world.slot >= SLEEP_EARLY_BEFORE else ("再按一下，今天就过完了" if _sleep_armed() else "天还亮着，今天就过完了"))
@@ -635,25 +679,163 @@ func _show_spot_action() -> void:
 	elif bool(act.get("quick", false)):
 		cost.append("顺手的事")
 	else:
-		cost.append("做到 %s" % P.clock(float(WorldView.SLOTS[world.slot][1])))
+		cost = act_cost(act, left, _needs_factor(act))
 	if int(act.get("money", 0)) < 0:
 		cost.append("%d 块" % -int(act.money))
 	if str(act.get("id", "")) == "letter":
 		cost.append("明天早上到 TA 手里")
-	# TA 这一段也定了在这儿做同一件事：现在定下就是搭伴，两个人都长得快
-	if world.partner_doing(spot, act):
+	# TA 这一段也在这儿做同一件事：现在去做就是搭伴，两个人都长得快
+	if world.partner_doing(spot, act) or _partner_did_here(spot, act):
 		cost.append("和 TA 搭伴")
 	action_btn.set_meta("spot", spot.id)
-	var spent := false
-	if not bool(act.get("sleep", false)) and not bool(act.get("duty", false)) and not bool(act.get("quick", false)):
-		var mine: Variant = _dict(last_world.get("actors")).get(my_role)
-		var use := float(_dict(_dict(content.get("rules")).get("daily")).get("slotUse", 1.0))
-		spent = mine is Dictionary and slot_left(mine, world.slot, use) <= 0.0
+	var spent := plain and not mine.is_empty() and left <= 0.0
 	if spent:
-		cost = ["路上把这一段花掉了"]
+		cost = ["这一段的时间用完了" if float(mine.get("sp", 0)) > 0.0 else "路上把这一段花掉了"]
 	if offline_preview:
 		cost = ["联网之后才能做"]
 	_set_action("act", str(act.get("label", "")), " · ".join(cost), offline_preview or spent)
+	# 剩的时间够做不止一回：旁边给一个「做到点」
+	if plain and not spent and not offline_preview and left > float(act.get("minutes", 60)) + 5.0:
+		fill_title.text = "做到 %s" % P.clock(float(WorldView.SLOTS[world.slot][1]))
+		fill_sub.text = "一直%s" % str(act.get("label", ""))
+		fill_btn.set_meta("spot", spot.id)
+		fill_btn.visible = true
+	_place_slot_btn()
+
+
+## 一回正经事的按钮小字：「一个半钟头 · 精力 −10 · 长心智」。left 是这一段还剩的分钟，不够一整回就写只做一截
+static func act_cost(act: Dictionary, left: float, needs_factor := 1.0) -> Array:
+	var out: Array = []
+	var mins := float(act.get("minutes", 60))
+	var use := minf(mins, maxf(left, 0.0))
+	out.append(duration_text(use) + ("（只够做一截）" if use < mins - 0.5 else ""))
+	var en := float(_dict(act.get("needs")).get("energy", 0.0)) * needs_factor * (use / maxf(mins, 1.0))
+	if en <= -1.0:
+		out.append("精力 %d" % int(round(en)))
+	elif en >= 1.0:
+		out.append("精力 +%d" % int(round(en)))
+	var grow: Array = []
+	var stats: Dictionary = _dict(act.get("stats"))
+	for k in ["mind", "body", "charm"]:
+		if float(stats.get(k, 0.0)) >= 0.2:
+			grow.append(P.STAT_NAME[k])
+	if not grow.is_empty():
+		out.append("长" + "、".join(grow))
+	elif float(_dict(act.get("needs")).get("mood", 0.0)) >= 8.0:
+		out.append("心情好")
+	if int(act.get("money", 0)) > 0:
+		out.append("挣 %d 块" % int(act.money))
+	return out
+
+
+## 分钟写成人话：一个钟头 / 一个半钟头 / 两个钟头 / 四十分钟
+static func duration_text(mins: float) -> String:
+	var m := int(round(mins))
+	if m < 60:
+		return "%d 分钟" % m
+	var h := m / 60
+	var r := m % 60
+	var num: Array = ["", "一", "两", "三", "四", "五"]
+	var hs: String = num[h] if h < num.size() else str(h)
+	if r == 0:
+		return "%s个钟头" % hs
+	if r == 30:
+		return "%s个半钟头" % hs
+	return "%s个钟头 %d 分钟" % [hs, r]
+
+
+## 这一段我还剩多少分钟（服务器 worldTimeLeft：一段的长度 × slotUse，扣掉路上的和一件一件做掉的）
+func _time_left(me: Dictionary) -> float:
+	if me.is_empty():
+		return 0.0
+	var use := float(_dict(_dict(content.get("rules")).get("daily")).get("slotUse", 1.0))
+	return slot_left(me, world.slot, use) - float(me.get("sp", 0))
+
+
+## 一回累多少：一段做满 K 回，需求按 1 + (K − 1) × needsUse 回算，摊到每一回上（同 world.ts 的 worldNeedsFactor）
+func _needs_factor(act: Dictionary) -> float:
+	var daily: Dictionary = _dict(_dict(content.get("rules")).get("daily"))
+	var u := float(daily.get("needsUse", 1.0))
+	var span := float(int(WorldView.SLOTS[world.slot][1]) - int(WorldView.SLOTS[world.slot][0])) * float(daily.get("slotUse", 1.0))
+	var mins := float(act.get("minutes", 60))
+	if span <= 0.0 or mins <= 0.0:
+		return 1.0
+	return minf(1.0, u + (1.0 - u) * mins / span)
+
+
+## TA 这一段刚在这个点一回一回地做过这件事（WORLD 的 did），我现在过去时间多半对得上
+func _partner_did_here(spot: Dictionary, act: Dictionary) -> bool:
+	var other: Dictionary = _dict(_dict(last_world.get("actors")).get(_other()))
+	var did: Dictionary = _dict(other.get("did"))
+	if did.is_empty() or str(did.get("a", "")) != str(act.get("id", "")) or float(other.get("sp", 0)) <= 0.0:
+		return false
+	return Vector2(float(other.get("x", 0)), float(other.get("y", 0))).distance_to(Vector2(float(spot.at[0]), float(spot.at[1]))) < 120.0
+
+
+## 「就这么过」贴在最左边：中间有「做到点」就让开
+func _place_slot_btn() -> void:
+	var right := (fill_btn.offset_left if fill_btn.visible else action_btn.offset_left) - 28
+	if slot_btn.offset_right != right:
+		slot_btn.offset_right = right
+		slot_btn.offset_left = right - SLOT_SIZE.x
+		slot_btn.offset_bottom = action_btn.offset_bottom
+		slot_btn.offset_top = action_btn.offset_top
+
+
+func _on_fill_pressed() -> void:
+	if net != null and not offline_preview and fill_btn.has_meta("spot"):
+		net.act(str(fill_btn.get_meta("spot")), false)
+
+
+## 钟上显示几点：这一段在过就是大家的钟；还在定的时候是我自己的钟（一件一件做掉的已经拨过去了）；刚做完一回，钟在眼前拨过去
+func _shown_minute() -> float:
+	var m := float(last_world.get("minute", 390))
+	if _clock_to >= 0.0:
+		return lerpf(_clock_from, _clock_to, ease(clampf(_clock_t / CLOCK_SWEEP, 0.0, 1.0), -2.0))
+	var me: Dictionary = _dict(_dict(last_world.get("actors")).get(my_role))
+	return maxf(m, float(me.get("pm", m)))
+
+
+func _sweep_clock(delta: float) -> void:
+	if _clock_to < 0.0 or hud == null:
+		return
+	_clock_t += delta
+	hud.minute = _shown_minute()
+	if world != null:
+		world.set_minute(hud.minute)
+	if _clock_t >= CLOCK_SWEEP:
+		_clock_to = -1.0
+
+
+## 服务器当场结算了一件（WORLD actors[role].did 的序号变了）：我的钟在眼前拨过去，人在那个点上做一会儿那件事
+func _check_did(data: Dictionary) -> void:
+	var acts: Dictionary = _dict(data.get("actors"))
+	for r in ["qing", "mei"]:
+		var did: Dictionary = _dict(_dict(acts.get(r)).get("did"))
+		if did.is_empty():
+			continue
+		var n := int(did.get("n", 0))
+		var first := not _did_seen.has(r)
+		if not first and int(_did_seen[r]) == n:
+			continue
+		_did_seen[r] = n
+		if first or bool(did.get("j", false)):
+			if not first and r == my_role:
+				_toast("TA 也来了 · 刚才那一回%s算搭伴" % str(did.get("l", "")))
+			continue
+		if world != null:
+			world.flash_doing(r, str(did.get("a", "")), str(did.get("l", "")), bool(did.get("tg", false)))
+		if r != my_role:
+			continue
+		_clock_from = float(did.get("f", 0))
+		_clock_to = float(did.get("t", 0))
+		_clock_t = 0.0
+		var line := "%s–%s　%s" % [P.clock(_clock_from), P.clock(_clock_to), str(did.get("l", ""))]
+		if did.has("part"):
+			line += "（做了一截）"
+		if bool(did.get("tg", false)):
+			line += "　和 TA 一起"
+		_toast(line)
 
 
 ## 这一段还能花在一件事上的分钟：一段的长度 × slotUse，扣掉过桥、坐车花掉的（WORLD 的 actors 带 rd；同 world.ts 的 worldSlotLeft）
@@ -707,7 +889,7 @@ func _on_action_pressed() -> void:
 					_toast("还早呢。真要睡，再按一下")
 					return
 				_sleep_armed_at = -1
-				net.act(sp)
+				net.act(sp, true)  # 正经事做一回；睡觉、上学、顺手的事服务器照旧
 		"cancel":
 			net.cancel_slot()
 		"exit":
@@ -1256,7 +1438,9 @@ func _refresh_hud() -> void:
 		hud.story = {}
 		goal_panel.visible = false
 		return
-	hud.minute = float(last_world.get("minute", 390))
+	hud.minute = _shown_minute()
+	if world != null and not offline_preview:
+		world.set_minute(hud.minute)
 	hud.slot_name = str(WorldView.SLOTS[world.slot][2]) if world != null else ""
 	hud.playing = bool(last_world.get("playing", false))
 	# 日历牌色条上的那个词：今天要去哪（上学 / 上班 / 出摊），不用去就是休息
@@ -1396,6 +1580,7 @@ func _on_world_state(data: Dictionary) -> void:
 	last_world = data
 	if world != null:
 		world.apply_world(data)
+		_check_did(data)
 		_refresh_hud()
 	var ev: Variant = data.get("event")
 	if ev != null and modal.visible and modal.has_meta("waiting_event"):
@@ -1619,8 +1804,8 @@ func _on_log_entries(data: Dictionary) -> void:
 			Kit.chip(page, str(e.label), P.role_color(my_role))
 			_label(page, str(e.text), 44)
 			Kit.rule(page, Color(P.INK, 0.25))
-			var grew := _gains_text(_dict(_dict(e.get("gains")).get(my_role)))
-			_label(page, ("这一天你长了：" + grew) if grew != "" else "日子一天天过去……", 32, P.INK_SOFT)
+			# 今天的时间花在哪、长了多少、朝下一道关挪了几分、照这样还要几个日子（day_card.gd）
+			DayCard.build(page, e, my_role, _other(), names)
 			if desk != null:
 				_label(page, "早上，信到了。", 32, P.role_color(_other()))
 				for l in letters:
@@ -1638,14 +1823,7 @@ func _on_log_entries(data: Dictionary) -> void:
 
 ## 一天下来长了多少（百分制，不到 1 分的写「一点」）
 func _gains_text(gains: Dictionary) -> String:
-	var parts: Array = []
-	for k in ["body", "mind", "charm"]:
-		var v := float(gains.get(k, 0.0)) * 10.0
-		if v >= 0.95:
-			parts.append("%s +%d" % [P.STAT_NAME[k], int(round(v))])
-		elif v >= 0.15:
-			parts.append("%s 一点" % P.STAT_NAME[k])
-	return "　".join(parts)
+	return DayCard.gains_text(gains)
 
 
 ## 关口揭晓：每个人考了多少、走上了哪条路；两个人都过这一关时，同路是两个圆叠住，分开走是各在一边

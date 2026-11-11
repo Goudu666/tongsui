@@ -2,7 +2,7 @@ extends RefCounted
 ## 与 server/src/main.ts 中的 OP 保持一致（server/test/arch.test.mjs 会逐项比对，改一边忘了另一边测试会挂）
 
 ## 协议版本：和 main.ts 的 PROTOCOL_VERSION 一起改。进房间前双方互报版本，对不上就提示更新，而不是进去以后卡住
-const VERSION := 6
+const VERSION := 7
 ## 能用的最旧的服务器。连到比这还旧的服务器时提示「服务器需要更新」
 ## 4：一天五段。旧服务器的钟一直在跑，这个安装包没有那套按钮了
 ## 5：一张张横着的图，人只左右走。旧服务器还是原来那张大地图

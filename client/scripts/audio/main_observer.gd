@@ -34,6 +34,7 @@ var _themed := false
 var _accent := Color.TRANSPARENT
 var _toast_alpha := 0.0
 var _acts := {}
+var _dids := {}  ## role -> 看过的最后一条 did 的序号（一回一回做的事）
 var _money := -1
 var _other_chosen := false
 var _paired := false  ## 这会儿两人正搭伴做同一件事（world_state 里 actors[我].tg）
@@ -171,6 +172,13 @@ func _on_world_state(data: Dictionary) -> void:
 			if act != null and _acts.get(r) != act and _acts.has(r):
 				audio.act(str(act), r == me, _near())
 			_acts[r] = act
+			# 一回一回当场做完的（did 的序号变了，不是对门补上的那一份）：也响一声那件事
+			var did: Variant = a.get("did") if a is Dictionary else null
+			if did is Dictionary:
+				var n := int(did.get("n", 0))
+				if _dids.has(r) and int(_dids[r]) != n and not bool(did.get("j", false)):
+					audio.act(str(did.get("a", "")), r == me, _near())
+				_dids[r] = n
 		var mine: Variant = actors.get(me)
 		_paired = mine is Dictionary and bool(mine.get("tg", false))
 	var money: Variant = data.get("money")

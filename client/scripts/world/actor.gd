@@ -91,6 +91,7 @@ var face_to := 0                 ## 0 按走的方向；2 朝右 3 朝左（搭�
 var quiet_label := false         ## 搭伴挨着做同一件事：「一起……中」只让一个人写（world_view 设）
 var tag_dx := 0.0                ## 两人挨得太近时名字牌往两边让一让（画布坐标）
 var label_dx := 0.0              ## 「一起……中」挪到两人中间写
+var label_dy := 0.0              ## 两人挨着各做各的：一个人的那行字抬高一行，不叠在一起
 ## 兼容旧接口：直接设目标 = 走直线过去
 var walk_target := Vector2.ZERO:
 	set(v):
@@ -387,7 +388,7 @@ func _draw() -> void:
 		if asleep:
 			_text("z z", Vector2(34, head + 30 + sin(_t * 2.0) * 6.0), 28, P.INK_SOFT)
 		elif action_label != "" and not quiet_label:
-			_text(_doing_text(), Vector2(label_dx, head - 8 + sin(_t * 3.0) * 3.0), 24, P.OVERLAP if together else P.INK_SOFT)
+			_text(_doing_text(), Vector2(label_dx, label_dy + head - 8 + sin(_t * 3.0) * 3.0), 24, P.OVERLAP if together else P.INK_SOFT)
 		_draw_bubbles(head, c)
 		return
 	_draw_fallback(c)
@@ -396,7 +397,7 @@ func _draw() -> void:
 ## 头顶的气泡：在脑袋斜上方、朝着脸的那边（"正在做什么"那行字的旁边，不压字）
 func _draw_bubbles(head: float, c: Color) -> void:
 	var side := 1.0 if (face_to if face_to != 0 and not walking else _dir) == 2 else -1.0
-	var lift := 62.0 if action_label != "" and not quiet_label else 10.0
+	var lift := (62.0 - label_dy) if action_label != "" and not quiet_label else 10.0
 	for i in _bubbles.size():
 		var b: Dictionary = _bubbles[i]
 		var at := Vector2(side * (34.0 + i * 10.0), head - lift - i * 30.0)

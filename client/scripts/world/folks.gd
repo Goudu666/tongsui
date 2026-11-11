@@ -249,6 +249,13 @@ class Folk extends Node2D:
 			_bub = str(bubbles[randi() % bubbles.size()])
 			_bub_t = 0.0
 			_bub_wait = randf_range(5.0, 9.0)
+		# 主角在跟前做事（同一个点位）：街坊往旁边让半步，别叠成一团
+		var give := 0.0
+		if host != null and host.world != null:
+			for a in host.world.actors.values():
+				if a.visible and absf(a.position.y - position.y) < 60.0 and absf(a.position.x - position.x) < 80.0:
+					give = 95.0 if a.position.x <= position.x else -95.0
+		_sprite.position.x = lerpf(_sprite.position.x, give, minf(1.0, delta * 4.0))
 		var fps := 4.0 if _working else 2.0
 		var k := int(_t * fps + _phase) % 4
 		_sprite.frame = _row * 8 + (k if _working else 4 + k)
@@ -263,12 +270,14 @@ class Folk extends Node2D:
 		return str(pool[randi() % pool.size()])
 
 	func _draw() -> void:
-		draw_set_transform(Vector2(3, 2), 0.0, Vector2(1.0, 0.34))
+		draw_set_transform(Vector2(3 + _sprite.position.x, 2), 0.0, Vector2(1.0, 0.34))
 		draw_circle(Vector2.ZERO, 28.0, Color(P.INK, 0.13))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		var night: float = host.night if host != null else 0.0
 		if _say != "":
+			draw_set_transform(Vector2(_sprite.position.x * 1.6, 0.0))
 			_draw_say(night)
+			draw_set_transform(Vector2.ZERO)
 		elif _bub != "" and _bub_t < 1.8:
 			Bubble.draw(self, _bub, Vector2(-30.0 if _flip else 30.0, -196.0), 17.0, P.INK_SOFT, _bub_t, 1.8, 1.0 if _flip else -1.0)
 

@@ -345,6 +345,10 @@ func _pair_faces(side_by_side: bool) -> void:
 	right.tag_dx = push
 	left.label_dx = (absf(right.position.x - left.position.x) / 2.0) / maxf(q.scale.x, 0.01) if right.quiet_label else 0.0
 	right.label_dx = 0.0
+	left.label_dy = 0.0
+	# 挨着各做各的事（两行字会叠）：右边那个人的字抬高一行
+	right.label_dy = -32.0 if absf(right.position.x - left.position.x) < 420.0 and not right.quiet_label \
+		and left.action_label != "" and right.action_label != "" else 0.0
 	if d > 700.0:
 		_apart = true
 	elif _apart and d < 320.0 and not q.walking and not m.walking:

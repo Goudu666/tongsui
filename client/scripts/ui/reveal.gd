@@ -2,6 +2,7 @@ extends Control
 ## 关口揭晓：一个人这一场的分，像拨算盘一样一颗一颗数上去。
 ##   尺子和纸带上的是同一把（20~100 分，钱按线放），墨线小旗是走的这条路的线
 ##   数过线的那一下小旗翻成自己的颜色；数完了：够着线的盖一方印（有成绩档就印成绩档），
+##   够着名次档的（考进年级前十）再砸一条横章，
 ##   差一点没够上的，停在那条线前面，灰旗子抖两下，写「差 3 分」
 ##   底下一行小字：这一场的临场发挥，默契替你托住了多少
 ## 两个人的同时开始数（main.gd 的 _show_milestone_result 一人一把），点一下直接跳到数完。
@@ -21,6 +22,7 @@ var miss: Dictionary = {}     ## { need, have, text } 差一点没够上的那�
 var luck := 0                 ## 临场发挥（已经算在 score 里）
 var steady := 0               ## 默契托住的（算在 luck 里）
 var grade := ""               ## 成绩档（印在章上）
+var rank := ""                ## 够着的名次档（关口 grades 里兜底以上那几档：考进年级前十、过了本科线）：数完再砸一条横章
 var delay := 0.25
 var sound := Callable()       ## func(cue, db, pitch)：main 把声音导演的 cue 递进来
 var _t := -1.0
@@ -32,6 +34,8 @@ var _bead_at := -1.0
 var _crossed := false
 var _done := false
 var _skip := false
+var _rank_hit := false
+const RANK_AT := 0.32           ## 数完多久砸名次章（方印先落）
 
 
 func _ready() -> void:
@@ -95,6 +99,9 @@ func _process(delta: float) -> void:
 		elif not miss.is_empty() or (line >= 0 and score < line):
 			_cue("miss", -1.0)
 		finished.emit(passed())
+	if rank != "" and not _rank_hit and _t >= _dur + RANK_AT:
+		_rank_hit = true
+		_cue("seal", -1.0, 1.12)
 	if _t < _dur + 1.6:
 		queue_redraw()
 
@@ -164,6 +171,27 @@ func _draw() -> void:
 	# 印：够着线的盖一方，压在数字上
 	if passed() and since > 0.0:
 		_seal(f, Vector2(w - 50.0, 66), since)
+	# 名次章：一条横的，实心，挨着名字（尺子右上头留给「差 3 分」）
+	if rank != "" and since > RANK_AT:
+		var nx := (f.get_string_size(who, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x + 24.0 + 22.0) if who != "" else 0.0
+		_rank_stamp(f, Vector2(nx, 25), since - RANK_AT)
+
+
+func _rank_stamp(f: Font, left_mid: Vector2, since: float) -> void:
+	var k := clampf(since / 0.13, 0.0, 1.0)
+	var s := lerpf(2.2, 1.0, 1.0 - pow(1.0 - k, 3.0))
+	var a := clampf(since / 0.07, 0.0, 1.0)
+	var fs := 26
+	var tw := f.get_string_size(rank, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+	var box := Vector2(tw + 34.0, 44.0)
+	var c := left_mid + Vector2(box.x / 2.0, 0)
+	draw_set_transform(c, 0.05, Vector2.ONE * s)
+	var r := Rect2(-box / 2.0, box)
+	draw_rect(Rect2(r.position + Vector2(4, 4), r.size), Color(P.INK, 0.3 * a))
+	draw_rect(r, Color(color, 0.95 * a))
+	draw_rect(r.grow(-5.0), Color(P.PAPER, 0.55 * a), false, 1.5)
+	draw_string(f, Vector2(-tw / 2.0, 9), rank, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color(P.PAPER, a))
+	draw_set_transform(Vector2.ZERO)
 
 
 func _flag(at: Vector2, c: Color, up: bool) -> void:

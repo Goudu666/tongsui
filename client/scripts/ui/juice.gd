@@ -177,8 +177,9 @@ func milestone_row(e: Dictionary, res: Dictionary) -> Dictionary:
 	var line := int(res.get("line", -1)) if res.get("line") != null else -1
 	if scored and line > 0:  # 走的这条路有线才说过没过（普通班、家门口的高中没有线）
 		row["ok"] = int(res.get("score", 0)) >= line
-	if res.get("grade") != null and str(res.grade) != "":
-		row["g"] = str(res.grade)
+	var rank := rank_of(ev, str(res.grade)) if res.get("grade") != null else ""
+	if rank != "":  # 兜底那档（「没过线」）不印
+		row["g"] = rank
 	var near: Dictionary = _dict(res.get("near", res.get("miss")))
 	if not near.is_empty() and near.has("need") and near.has("have"):
 		row["gap"] = int(near.need) - int(near.have)
@@ -495,6 +496,17 @@ func growth_report(width := 1180.0) -> Control:
 	var r := Report.new()
 	r.setup(pts, cur, P.role_color(_role()), P.role_color(_other()), _dict(journal.stages.get(cur)), false, false, width)
 	return r
+
+
+## 这一档是不是名次（关口 grades 里兜底那档以上的，比如「考进年级前十」「过了本科线」）：是就返回它，揭晓卡上砸横章
+static func rank_of(ev: Dictionary, grade: String) -> String:
+	var gs: Array = ev.get("grades", []) if ev.get("grades") is Array else []
+	if grade == "" or gs.size() < 2:
+		return ""
+	for i in gs.size() - 1:
+		if gs[i] is Dictionary and str(gs[i].get("label", "")) == grade:
+			return grade
+	return ""
 
 
 static func _dict(v: Variant) -> Dictionary:

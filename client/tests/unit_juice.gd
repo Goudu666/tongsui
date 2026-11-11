@@ -28,7 +28,7 @@ class FakeMain extends Node:
 	var ui: Control = null
 	var life: Dictionary = {"turn": 0}
 	var stat_strip = null
-	var events_by_id := {"m_junior": {"title": "小升初", "options": [{"id": "key", "text": "去重点班", "min": 7.4}, {"id": "normal", "text": "普通班"}]},
+	var events_by_id := {"m_junior": {"title": "小升初", "grades": [{"min": 8.6, "label": "考进年级前十"}, {"min": 0, "label": ""}], "options": [{"id": "key", "text": "去重点班", "min": 7.4}, {"id": "normal", "text": "普通班"}]},
 		"m_school": {"title": "上小学", "options": [{"id": "go", "text": "背上书包"}]}}
 
 
@@ -92,13 +92,14 @@ func _initialize() -> void:
 	# 成绩单上的关口总账：走了哪条路、过没过线、离没走成的那条差几分；只有一条路的关不记
 	j.on_log([{"kind": "milestone", "age": 12, "events": {"qing": "m_junior"}, "results": {"qing": {"score": 72, "scored": true, "unit": "分", "option": "normal", "grade": null,
 		"near": {"option": "key", "need": 74, "have": 72, "unit": "分", "label": "心智"}}}},
-		{"kind": "milestone", "age": 13, "events": {"qing": "m_junior"}, "results": {"qing": {"score": 80, "scored": true, "unit": "分", "option": "key", "line": 74, "grade": "尖子"}}},
+		{"kind": "milestone", "age": 13, "events": {"qing": "m_junior"}, "results": {"qing": {"score": 80, "scored": true, "unit": "分", "option": "key", "line": 74, "grade": "考进年级前十"}}},
 		{"kind": "milestone", "age": 6, "events": {"qing": "m_school"}, "results": {"qing": {"score": 0, "scored": false, "option": "go"}}}])
 	var rows: Array = j.journal.stages.get("teen", {}).get("list", [])
 	check(rows.size() == 2, "两道有路可挑的关进了总账，上小学不进（实际 %d）" % rows.size())
 	if rows.size() == 2:
 		check(rows[0].o == "普通班" and not rows[0].has("ok") and int(rows[0].gap) == 2 and rows[0].mt == "去重点班", "普通班没有线不盖印，差 2 分没够上「去重点班」：%s" % str(rows[0]))
-		check(rows[1].ok and rows[1].g == "尖子" and not rows[1].has("gap"), "够着了：盖成绩档")
+		check(rows[1].ok and rows[1].g == "考进年级前十" and not rows[1].has("gap"), "够着了：盖名次档")
+		check(Juice.rank_of({"grades": [{"min": 9.3, "label": "考进全市前一百"}, {"min": 6.8, "label": "过了本科线"}, {"min": 0, "label": "没过线"}]}, "没过线") == "" and Juice.rank_of({"grades": [{"min": 9.3, "label": "考进全市前一百"}, {"min": 0, "label": "没过线"}]}, "考进全市前一百") == "考进全市前一百", "兜底那档不算名次")
 		check(Report.ledger_height(j.journal.stages.teen) > 0.0 and Report.ledger_height({}) == 0.0, "有总账才多占地方")
 	check(int(j.journal.stages.get("childhood", {}).get("ms", 0)) == 1 and not j.journal.stages.childhood.has("list"), "只有一条路的关只算个数")
 	j._record(3, {"qing": {"body": 3.0, "mind": 3.0, "charm": 3.0}})

@@ -322,11 +322,11 @@ function sleep(s, r) {
     assert.ok(sum <= 8, "所有的好路都走到也只多活 " + sum + " 年");
   }
 
-  // 从三岁第一天起眼前就有一道关：上小学
+  // 从三岁第一天起眼前就有一道关：四岁的六一（关口冲刺 11-11，开局十分钟里要揭晓一回）
   {
     const s = lifeAt(3, 3);
     const goal = G("lifeGoal")(s, C, "qing");
-    assert.equal(goal.id, "m_school");
+    assert.equal(goal.id, "m_kinder");
     assert.ok(goal.lines.length >= 3);
     // hx：带一位小数（往下取整），整数部分就是 have；小时候一回只长零点几分，界面靠它让纸带的数挪一挪
     s.persons.qing.stats.charm = 3.04;

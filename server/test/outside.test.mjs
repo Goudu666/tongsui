@@ -238,7 +238,7 @@ function happen(s, id, choices, shadow = []) {
   const d = G("worldDuty")(s, C, "qing");
   assert.equal(d.until, Math.max(1110, untilBefore), "上学的日子拖到傍晚");
   assert.equal(d.spot, base.spot, "还是去上学");
-  if (untilBefore < 1110) assert.equal(d.label, "上学，放了学去医院送饭");
+  assert.equal(d.label, "上学，放了学去医院送饭", "本来就上到傍晚的也换 label");
   const tr = G("lifeTrack")(C, s.persons.qing, 14);
   assert.equal(tr.duty.until, untilBefore, "不改内容对象（返回副本）");
   s.world.rest = true;

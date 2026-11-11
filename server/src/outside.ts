@@ -197,7 +197,8 @@ function outsideFlagDuty(s: LifeState, c: Content, role: Role, d: Duty | null, r
       if (x.rest) return outsideDutyCopy(x.rest);
       continue;
     }
-    if (!d || x.until === undefined || x.until <= d.until) continue;
+    // 只往后拖。本来就上到这个钟点的（清贫「上学，放了学帮家里」）不拖，只换 label，看得出放了学去的是医院
+    if (!d || x.until === undefined || x.until < d.until) continue;
     var out = outsideDutyCopy(d);
     out.until = x.until;
     if (x.label) out.label = x.label;

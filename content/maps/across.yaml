@@ -46,6 +46,7 @@ spots:
   - { id: uni_gate, at: 4450, area: uni, actions: [ duty ] }
   - { id: uni_night, at: 4700, area: uni, actions: [ lang_class, night_class ] }
   - { id: office_desk, at: 5100, area: office, actions: [ duty, tutor, overtime ] }
+  - { id: kid_class_door, at: 5350, area: office, actions: [ kid_class ] }
 
 npcs:
   - id: piano_teacher

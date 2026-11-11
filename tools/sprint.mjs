@@ -70,3 +70,26 @@ for (const persona of ["careful", "casual"]) {
     console.log(t.padEnd(8, "　") + String(n).padStart(3) + "  " + pct(G.none) + "  " + pct(G.cross) + " " + pct(G.fail) + "   " + med(G.gain));
   }
 }
+
+// ---------- 成家和下一代（--kids）：押孩子 / 不押孩子各 N 世，孩子高考那条高线和四十五「去争那个位子」够得着的比例 ----------
+if (args.includes("--kids")) {
+  const kdir = mkdtempSync(join(tmpdir(), "sprint-kids-"));
+  const jobs = [];
+  for (const kids of ["push", "none"]) for (let i = 0; i < N; i++) {
+    const seed = SEED0 + i * 7, out = join(kdir, `${kids}-${seed}.json`);
+    jobs.push(new Promise((ok, bad) => {
+      const p = spawn(process.execPath, [join(here, "playthrough.mjs"), "1", `--seed=${seed}`, "--quiet", `--json=${out}`], { env: { ...process.env, PERSONA: "careful", KIDS: kids }, stdio: "ignore" });
+      p.on("exit", (code) => (code === 0 ? ok() : bad(new Error(`kids ${kids} seed ${seed} 退出码 ${code}`))));
+    }));
+  }
+  await Promise.all(jobs);
+  for (const kids of ["push", "none"]) {
+    const c = { m_midlife: [0, 0], mk_gaokao: [0, 0] };
+    for (const f of readdirSync(kdir).filter((f) => f.startsWith(kids))) {
+      const life = JSON.parse(readFileSync(join(kdir, f), "utf8"))[0];
+      for (const id in c) for (const r in (life.kids || {})[id] || {}) { c[id][1]++; if (life.kids[id][r]) c[id][0]++; }
+    }
+    const pct = (x) => (x[1] ? Math.round((x[0] / x[1]) * 100) + "%" : "-") + `（${x[0]}/${x[1]}）`;
+    console.log(`\n== ${kids === "push" ? "押孩子" : "不押孩子"}（认真，${N} 世）：孩子高考高线 ${pct(c.mk_gaokao)}  四十五去争那个位子 ${pct(c.m_midlife)}`);
+  }
+}

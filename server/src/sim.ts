@@ -9,7 +9,7 @@ var SEASON_LABEL = ["立春", "立夏", "立秋", "立冬"];
 var SWING_RANGE = 0.5;
 var SWING_LUCK = 0.04;
 var STAT_KEYS: StatKey[] = ["body", "mind", "charm", "luck"];
-var STAT_LABEL: { [k: string]: string } = { body: "体魄", mind: "心智", charm: "魅力", luck: "运气", money: "积蓄", close: "亲近" };
+var STAT_LABEL: { [k: string]: string } = { body: "体魄", mind: "心智", charm: "魅力", luck: "运气", money: "积蓄", close: "亲近", kid_body: "孩子的体魄", kid_mind: "孩子的心智", kid_charm: "孩子的魅力" };
 
 /** 时间的密度：每个回合是人生里被「放大」的一天，回合之间的日子一笔带过。越长大，跳得越远。 */
 var STAGE_TABLE: { stage: Stage; fromAge: number; turnsPerYear: number; years: number }[] = [
@@ -135,6 +135,7 @@ function lifeCreate(seed: number, c: Content, legacy?: Legacy, cohort?: string):
     log: [],
     world: null,
     legacy: legacy || legacyNew(),
+    kids: [],
   };
   var q = lifeRollOnce(s, c, null, s.legacy);
   var m = lifeRollOnce(s, c, q.familyId, s.legacy);
@@ -220,7 +221,8 @@ function lifeScore(p: Person, w: ScoreWeights, bond?: Bond): number {
   var total = 0;
   for (var k in w) {
     var weight = (w as any)[k] as number;
-    total += weight * (k === "money" ? p.money : k === "close" ? (bond ? bond.close : 0) : p.stats[k as StatKey]);
+    // kid_*：孩子的属性（family.ts → lifeKidBind 先挂上）
+    total += weight * (k === "money" ? p.money : k === "close" ? (bond ? bond.close : 0) : k.indexOf("kid_") === 0 ? kidScoreStat(p, k) : p.stats[k as StatKey]);
   }
   return Math.round(total * 100) / 100;
 }
@@ -354,7 +356,8 @@ function lifeMilestoneLocks(s: LifeState, c: Content): { [R in Role]?: { [option
   var pe = s.world && s.world.event;
   if (!pe) return null;
   var ev = lifeFindEvent(c, pe.eventId);
-  if (!lifeGated(ev)) return null; // 主线和普通事件的选项也可以有门槛：家底、积蓄
+  if (!lifeGated(ev)) return null;
+  lifeKidBind(s); // 主线和普通事件的选项也可以有门槛：家底、积蓄
   var out: { [R in Role]?: { [optionId: string]: string } } = {};
   for (var i = 0; i < pe.roles.length; i++) {
     var r = pe.roles[i];
@@ -379,7 +382,8 @@ function lifeTurnsUntilAge(turn: number, age: number): number {
 /** era：这条线被哪几件年代大事挪了（「考大学 +7」，era.ts → eraLineWhy）；没挪就不发 */
 // pull：这条我还差，到时候对门拉得动（pull.ts → pullGoalHint），界面写「TA 能拉你 3 分」
 interface GoalLine { id: string; text: string; by: string; unit: string; have: number; need: number; ok: boolean; hx?: number; pull?: PullOffer; era?: string }
-interface GoalView { id: string; title: string; age: number; turns: number; lines: GoalLine[] }
+/** kid：这是孩子的关口（age 是到时候爹妈的岁数）；also：另一道（自己的、孩子的）下一道关，比这一道远 */
+interface GoalView { id: string; title: string; age: number; turns: number; lines: GoalLine[]; kid?: boolean; also?: GoalView }
 
 /**
  * 目标条上摆哪几档名次（grades 的下标，从高到低）：比这个人走得了的最高那条路还高的。
@@ -414,16 +418,37 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
   if (!p.alive) return null;
   var age = lifeTimeAt(s.turn).age;
   var seen = lifeSeenIds(s, role);
+  lifeKidBind(s);
   var best: LifeEvent | null = null;
+  // 孩子的下一道关（docs/FAMILY.md）：和自己的下一道关比谁近，近的那道摆在纸带上，另一道挂在 also 上（「今天押谁」）
+  var kid = kidOf(s, role);
+  var kbest: LifeEvent | null = null;
   for (var i = 0; i < c.events.length; i++) {
     var ev = c.events[i];
-    if (ev.kind !== "milestone" || ev.age! < age || seen[ev.id] || !lifeMilestoneFor(ev, p)) continue;
+    if (ev.kind !== "milestone" || seen[ev.id] || !lifeMilestoneFor(ev, p)) continue;
     if (!ev.options.some(function (o) { return !!o.min; })) continue; // 没有线的关口不算目标
+    if (kidIsGate(ev)) {
+      if (kid && (!kbest || ev.kidAge! < kbest.kidAge!)) kbest = ev;
+      continue;
+    }
+    if (ev.age! < age) continue;
     if (!best || ev.age! < best.age!) best = ev;
   }
-  if (!best) return null;
+  var own = best ? lifeGoalView(s, c, role, best, best.age!, lifeTurnsUntilAge(s.turn, best.age!)) : null;
+  var kg = kbest && kid ? lifeGoalView(s, c, role, kbest, kid.bornAge + kbest.kidAge!, kidGateTurns(s, c, kid, kbest)) : null;
+  if (kg) kg.kid = true;
+  if (!own || !kg) return own || kg;
+  var first = kg.turns < own.turns ? kg : own;
+  var second = first === kg ? own : kg;
+  first.also = second;
+  return first;
+}
+
+/** 一道关摆在纸带上的样子：每条路的线离你还有多远 */
+function lifeGoalView(s: LifeState, c: Content, role: Role, best: LifeEvent, atAge: number, turns: number): GoalView {
+  var p = s.persons![role];
   // 线按关口那一年的年代标记算（era.ts）：关口那天早上才发生、才过期的大事，纸带上早早就是那天的数
-  var at = { flags: eraFlagsAt(s, c, p, eraYear(s, c, best.age!)) } as Person;
+  var at = { flags: eraFlagsAt(s, c, p, eraYear(s, c, atAge)) } as Person;
   var lines: GoalLine[] = [];
   for (var j = 0; j < best.options.length; j++) {
     var o = best.options[j];
@@ -449,7 +474,7 @@ function lifeGoal(s: LifeState, c: Content, role: Role): GoalView | null {
     var gr = best.grades![gis[gi]];
     lines.push({ id: "grade:" + gis[gi], text: gr.label, by: lifeWeightsLabel(gw), unit: "分", have: lifePoints(ghave), need: lifePoints(gr.min), ok: ghave >= gr.min, hx: lifeFinePoints(ghave) });
   }
-  return { id: best.id, title: best.title, age: best.age!, turns: lifeTurnsUntilAge(s.turn, best.age!), lines: lines };
+  return { id: best.id, title: best.title, age: atAge, turns: turns, lines: lines };
 }
 
 // ---------- 效果 ----------
@@ -523,6 +548,11 @@ function lifeEligible(ev: LifeEvent, t: TimeInfo, flags: string[], seen: { [id: 
   } else if (rq.alone === true) {
     return false;
   }
+  // 孩子在这个岁数段才发生（docs/FAMILY.md）：没孩子不发生。mirror 看两家里任一个孩子
+  if (rq.kidAge) {
+    var kas = ctx ? (ctx.kidAges || (ctx.kidAge !== undefined ? [ctx.kidAge] : [])) : [];
+    if (!kas.some(function (ka) { return ka >= rq.kidAge![0] && ka <= rq.kidAge![1]; })) return false;
+  }
   return lifeHasAll(flags, rq.flags) && lifeHasNone(flags, rq.notFlags);
 }
 
@@ -561,6 +591,7 @@ function lifeFindOption(ev: LifeEvent, optionId: string): EventOption | null {
 function lifeShadowChoose(s: LifeState, c: Content, role: Role, eventId: string): string {
   var ev = lifeFindEvent(c, eventId);
   var tags = s.persons![role].tags;
+  lifeKidBind(s);
   var pe = s.world && s.world.event;
   var swing = (pe && pe.eventId === eventId && pe.swing && pe.swing[role]) || 0;
   // 对门选了一条要你拉的路、你也走得了：影子跟着走这条（影子自己不去赌要人拉的路）
@@ -595,6 +626,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
   var ev = lifeFindEvent(c, pe.eventId);
   var entry = lifeEntry(s, pe.kind, "");
   var grow = growthCtx(s, c, "event");
+  lifeKidBind(s);
   entry.shadow = pe.shadow.slice();
   // 关口：要人拉的路，对门走了就拉过去（钱真塞过去），没走就换成自己够得着的（pull.ts）
   var gate = pullResolve(s, c, ev, pe);
@@ -692,6 +724,7 @@ function lifeResolveEvent(s: LifeState, c: Content, pe: PendingEvent): LogEntry 
   }
   if (pe.kind === "milestone" && pe.roles.length === 2) pullReunion(s, c, ev, entry); // 上一道关走散了，这一道又走到一块儿
   s.log.push(entry);
+  kidSync(s, c); // 拿到 has_kid 的人：生一个孩子（family.ts）
   return entry;
 }
 
@@ -705,6 +738,8 @@ function lifeEndDay(s: LifeState, c: Content): LogEntry[] {
   var parts: string[] = [];
   // 记下今天的心气，亲近变淡，岁数不饶人（要赶在下面「心情回归日常」之前）
   growthDayEnd(s, c);
+  kidDayEnd(s, c); // 孩子不押也自己长一点（family.ts）
+  kidSync(s, c);
   var prevAge = lifeTimeAt(s.turn).age;
   for (var i = 0; i < ROLES.length; i++) {
     var p = persons[ROLES[i]];

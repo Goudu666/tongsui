@@ -46,6 +46,13 @@ pair:
     text: 海河边那块地方，往下挖一层是一个盒子。最底下那个锈死了，两个人也没打算打开。
     requires: { flags: [heir_nested, p_capsule], minClose: 50 }
 
+  # 二十八岁「成家」两个人都选了做一辈子的老朋友（milestones.yaml 的 m_wed）：和成一家并列的好结局。
+  # 排在藏着的那几条后面，不挡它们；排在重逢、合伙这些前面
+  - id: e_confidant
+    title: 老朋友
+    text: 没成一家，也没走远。彼此的喜事上都站在头一排，谁家半夜有事，先到的总是对门。
+    requires: { flags: [p_confidant], minClose: 40 }
+
   - id: e_reunited
     title: 重逢
     text: 走散过很多年。后来在海河边又碰上了，谁也没提那些年，只说了一句：「吃了吗您？」
@@ -246,10 +253,28 @@ lives:
     title: 远行的人
     text: "{name} 在很远的城市过了大半辈子。那边的人都说 {name} 是天津人，可 {name} 已经说不准天津话了。"
     requires: { flags: [left_city], notFlags: [stayed] }
+  # ---- 成家和下一代（docs/FAMILY.md）：孩子的关口走到了哪儿。比「当了爹妈」具体，排在它前面 ----
+  - id: l_kids_tongsui
+    title: 两家的孩子
+    text: "{name} 家的孩子和对门家的同岁，一块儿上学，一块儿挨说，一块儿考。{name} 站在楼道里看两个孩子，看了很多年。"
+    requires: { flags: [has_kid, p_kids_tongsui] }
+  - id: l_kid_far
+    title: 站台
+    text: "{name} 的孩子考到了外地。每年腊月 {name} 都去车站接，回回到得早，在站台上来回走。"
+    requires: { flags: [has_kid, kid_away] }
+  - id: l_kid_near
+    title: 隔两站地
+    text: "{name} 的孩子在本地念完大学，没走远，住得隔两站地。礼拜天回来吃饭，{name} 一上午都在剁馅。"
+    requires: { flags: [has_kid, kid_uni], notFlags: [kid_away] }
   - id: l_parent
     title: 当了爹妈
     text: "{name} 有了自己的孩子，带孩子去海河边放风筝，就像当年有人带 {name} 去一样。"
     requires: { flags: [has_kid] }
+  # 自己选了一个人过（成家那一关的兜底，single_life）
+  - id: l_single
+    title: 一个人
+    text: "{name} 一个人过了一辈子。早上去河边走一圈，晚上一碗面。窗台上的几盆花，一盆没死过。"
+    requires: { flags: [single_life], notFlags: [has_kid] }
   - id: l_charmer
     title: 开心果
     text: "{name} 走到哪儿，哪儿就热闹。告别那天来了很多人，大家想起 {name}，都先笑了。"

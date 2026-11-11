@@ -488,6 +488,9 @@ function worldView(s: LifelineMatch) {
     needs[r] = { hunger: r1(p.needs.hunger), energy: r1(p.needs.energy), mood: r1(p.needs.mood), clean: r1(p.needs.clean) };
     money[r] = p.money;
     if (!p.alive || !a) continue;
+    // 孩子（family.ts，docs/FAMILY.md）：没有就不发。只加了可选字段，PROTOCOL_VERSION 不动
+    var kv = kidView(life, r);
+    if (kv) actors[r].kid = kv;
     stats[r] = { body: lifeRound1(p.stats.body), mind: lifeRound1(p.stats.mind), charm: lifeRound1(p.stats.charm), luck: lifeRound1(p.stats.luck) };
     // fine：三项的百分制带一位小数（往下取整）。stats 按一位小数四舍五入，小时候一回只长零点几分，客户端靠它飘「+0.3」、攒着的那一截
     fine[r] = { body: lifeFinePoints(p.stats.body), mind: lifeFinePoints(p.stats.mind), charm: lifeFinePoints(p.stats.charm) };

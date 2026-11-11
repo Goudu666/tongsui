@@ -27,7 +27,7 @@ const NEED_KEYS = ["hunger", "energy", "mood"]; // 清洁 11-11 砍了：内容�
 const SELF_KEYS = [...STAT_KEYS, ...NEED_KEYS];
 const BOND_KEYS = ["sync", "close", "distance"];
 const TAGS = ["gentle", "adventure", "solitude", "responsible", "competitive", "patient"];
-const REQ_KEYS = ["minAge", "maxAge", "flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "alone"];
+const REQ_KEYS = ["minAge", "maxAge", "flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "alone", "kidAge"];
 const PAIR_REQ_KEYS = ["flags", "notFlags", "minClose", "maxClose", "minSync", "maxSync", "minDistance", "maxDistance", "minMemories", "maxMemories", "minRate", "maxRate", "minTogether"];
 const LIFE_REQ_KEYS = ["flags", "notFlags", "stats", "minDiedAge", "maxDiedAge"];
 // 老物件的条件比一生小结多两样（server/src/legacy.ts → legacyPersonOk）
@@ -55,9 +55,12 @@ const REMEMBERED_MAX = 19;
 // 事件就变成「没有条件」「没有效果」；现在直接报错。加新字段时先加到这里，再去 types.ts 和 sim.ts 里用它。
 const EVENT_KEYS = ["id", "kind", "stage", "where", "when", "hint", "seasons", "weight", "requires", "title", "text", "options", "resonance", "dissonance"];
 // 关口（kind: milestone）多出来的字段，见 content/events/milestones.yaml 文件头
-const MILESTONE_KEYS = [...EVENT_KEYS, "age", "score", "swing", "grades", "withStory"];
+const MILESTONE_KEYS = [...EVENT_KEYS, "age", "score", "swing", "grades", "kidAge", "withStory"];
 const MILESTONE_OPTION_KEYS = ["id", "text", "tags", "effects", "min", "score", "cost", "requires", "lock", "joins", "hide"];
-const SCORE_KEYS = ["body", "mind", "charm", "luck", "money", "close"];
+const SCORE_KEYS = ["body", "mind", "charm", "luck", "money", "close", "kid_mind", "kid_body", "kid_charm"];
+// 孩子（docs/FAMILY.md）：带孩子的行动只长这三项；关口按 kid_* 读孩子的属性
+const KID_STAT_KEYS = ["body", "mind", "charm"];
+const KID_SCORE_KEYS = ["kid_mind", "kid_body", "kid_charm"];
 const GRADE_KEYS = ["min", "label", "flags"];
 const TRACK_KEYS = ["id", "label", "requires", "group", "duty"];
 const TRACK_REQ_KEYS = ["minAge", "maxAge", "flags", "notFlags"];
@@ -89,13 +92,16 @@ const PENDING_FLAGS = [];
 const SCENE_ORDER = ["building", "street", "river", "primary", "middle", "across", "away", "rental", "newhome", "park", "hospital"];
 const SCENE_STRIDE = 2000;
 const AREA_HEIGHT = 400; // 地点在世界坐标里的框：地面往上这么高（判定「人在不在这儿」用，美术不看它）
-const ACTION_KEYS = ["id", "label", "minutes", "quick", "sleep", "duty", "requires", "needs", "stats", "money", "together", "bring", "menu"];
-const ACTION_REQ_KEYS = ["minAge", "maxAge", "owner", "hours", "flags", "notFlags"];
+const ACTION_KEYS = ["id", "label", "minutes", "quick", "sleep", "duty", "requires", "needs", "stats", "money", "together", "bring", "menu", "kid"];
+const ACTION_REQ_KEYS = ["minAge", "maxAge", "owner", "hours", "flags", "notFlags", "kidAge"];
 const TOGETHER_KEYS = ["needs", "bond", "text"];
 // 规则代码（server/src/sim.ts、world.ts）里按名字写死的行动和标记：影子靠这些行动过日子，天赋效果靠这些标记生效。
 // 在内容里改名或删掉它们，规则会悄悄失效，所以在这里钉住。
 const ENGINE_ACTIONS = ["eat", "eat_out", "sleep", "duty", "wash", "knock", "play_roof", "letter"];
 const ENGINE_FLAGS = ["tal_sunny", "tal_memory", "tal_foodie", "tal_owl", "tal_plain"];
+// 成家和下一代（server/src/family.ts）：has_kid 一拿到就生孩子（内容里要有事件发它），kids_same_age 由引擎打
+const FAMILY_ENGINE_FLAGS = ["has_kid"];
+const FAMILY_DERIVED_FLAGS = ["kids_same_age"];
 
 const errors = [];
 const events = [];
@@ -119,6 +125,8 @@ function checkRequires(where, rq, allowed) {
       else if (k === "flags") for (const f of v) consumed.push([where, f]);
     } else if (k === "alone") {
       if (typeof v !== "boolean") errors.push(`${where}.requires.alone: 必须是 true / false`);
+    } else if (k === "kidAge") {
+      if (!(Array.isArray(v) && v.length === 2 && v.every((x) => Number.isInteger(x) && x >= 0 && x <= 40) && v[0] <= v[1])) errors.push(`${where}.requires.kidAge: 应为 [从几岁, 到几岁]，0~40 的整数，起不大于止`);
     } else if (k === "stats") checkDeltas(`${where}.requires.stats`, v, STAT_KEYS);
     else if (k === "carried") {
       if (typeof v !== "string") errors.push(`${where}.requires.carried: 必须是老物件的 id`);
@@ -165,7 +173,14 @@ for (const file of eventFiles) {
     else if (ev.when && !(typeof ev.when[0] === "number" && typeof ev.when[1] === "number" && ev.when[0] < ev.when[1])) errors.push(`${at}: when 的起始分钟要小于结束分钟`);
     if (!Array.isArray(ev.options) || ev.options.length < (ms ? 1 : 2)) errors.push(`${at}: 至少${ms ? "一" : "两"}个选项`);
     if (ms) {
-      if (!(Number.isInteger(ev.age) && ev.age >= 3)) errors.push(`${at}: 关口需要 age（到几岁的第一天发生）`);
+      if (ev.kidAge !== undefined) {
+        // 孩子的关口：没有 age，孩子到了 kidAge 岁以后爹妈第一个没有自己关口的日子发生（server/src/family.ts）
+        if (!(Number.isInteger(ev.kidAge) && ev.kidAge >= 1 && ev.kidAge <= 30)) errors.push(`${at}.kidAge: 孩子几岁，1~30 的整数`);
+        if (ev.age !== undefined) errors.push(`${at}: 孩子的关口写 kidAge，不写 age`);
+        if (!(ev.requires?.flags ?? []).includes("has_kid")) errors.push(`${at}: 孩子的关口要写 requires.flags: [has_kid]`);
+        if (ev.stage !== "middle") errors.push(`${at}: 孩子的关口落在爹妈的中年，stage 写 middle`);
+      } else if (!(Number.isInteger(ev.age) && ev.age >= 3)) errors.push(`${at}: 关口需要 age（到几岁的第一天发生）`);
+      if (ev.kidAge === undefined && Object.keys(ev.score ?? {}).some((k) => KID_SCORE_KEYS.includes(k))) errors.push(`${at}.score: kid_* 只能用在孩子的关口（写 kidAge 的）上`);
       if (ev.where || ev.when || ev.hint || ev.seasons) errors.push(`${at}: 关口到了年纪的早上一定发生，不要写 where / when / hint / seasons`);
       checkDeltas(`${at}.score`, ev.score, SCORE_KEYS);
       for (const [gi, g] of (ev.grades ?? []).entries()) {
@@ -252,7 +267,7 @@ for (const file of eventFiles) {
       where: ev.where ?? null, when: ev.when ?? null, hint: ev.hint ?? null,
       requires: ev.requires ?? {}, title: ev.title, text: ev.text, options: ev.options,
       resonance: ev.resonance ?? null, dissonance: ev.dissonance ?? null,
-      ...(ms ? { age: ev.age, score: ev.score ?? {}, swing: !!ev.swing, grades: ev.grades ?? [], ...(ev.withStory ? { withStory: true } : {}) } : {}),
+      ...(ms ? { ...(ev.kidAge !== undefined ? { kidAge: ev.kidAge } : { age: ev.age }), score: ev.score ?? {}, swing: !!ev.swing, grades: ev.grades ?? [], ...(ev.withStory ? { withStory: true } : {}) } : {}),
     });
   }
 }
@@ -470,6 +485,7 @@ const rules = load("rules.yaml");
     check: ["base", "perPoint", "luck", "min", "max", "help"],
     lifespan: ["base", "spread", "body", "moodMid", "moodStep", "moodMin", "moodMax", "bondClose", "bond", "widowClose", "widow", "min", "max", "flags"],
     bond: ["closeSoft", "closeFloor", "closeScale", "syncSoft", "syncFloor", "syncSteady", "syncSteadyFrom", "syncSteadyFull", "slotTogether", "closeWeight", "drift", "driftDistance", "driftFloor", "pullFrom", "pullFull", "pullMoney", "pullMoneyClose", "reunion"],
+    family: ["names", "start", "inherit", "noise", "room", "selfGrow", "sameAge"],
     legacy: ["pastKept", "heirloomOffer", "houseMax", "houseMoney", "lateEarly", "lateAfter", "lateRoom", "linkedDrift", "linkedMood", "oldSoul", "oldSoulCharm"],
   };
   checkKeys("rules", rules, Object.keys(need));
@@ -508,6 +524,18 @@ const rules = load("rules.yaml");
     for (const k of STAT_KEYS) if (typeof rules?.growth?.plasticity?.[st]?.[k] !== "number") errors.push(`rules.yaml: growth.plasticity.${st}.${k} 必须是数字`);
     if (typeof rules?.bond?.drift?.[st] !== "number") errors.push(`rules.yaml: bond.drift.${st} 必须是数字`);
     if (rules?.bond?.closeWeight !== undefined && !(rules.bond.closeWeight[st] > 0)) errors.push(`rules.yaml: bond.closeWeight.${st} 必须是正数`);
+  }
+  {
+    // 成家和下一代（server/src/family.ts）
+    const fm = rules?.family ?? {};
+    if (!(Array.isArray(fm.names) && fm.names.length >= 4 && fm.names.every((n) => typeof n === "string" && [...n].length <= 3))) errors.push("rules.yaml: family.names 至少四个小名，每个不超过三个字");
+    for (const sec of ["start", "selfGrow"]) {
+      checkDeltas(`rules.family.${sec}`, fm[sec], ["body", "mind", "charm"]);
+      for (const k of ["body", "mind", "charm"]) if (typeof fm[sec]?.[k] !== "number" || fm[sec][k] < 0) errors.push(`rules.yaml: family.${sec}.${k} 必须是不小于 0 的数`);
+    }
+    for (const k of ["inherit", "noise"]) if (typeof fm[k] !== "number" || fm[k] < 0 || fm[k] > 1) errors.push(`rules.yaml: family.${k} 要在 0 到 1 之间`);
+    if (!(fm.room > 0)) errors.push("rules.yaml: family.room 必须是正数");
+    if (!(Number.isInteger(fm.sameAge) && fm.sameAge >= 1)) errors.push("rules.yaml: family.sameAge 是正整数（差不到几岁算同岁）");
   }
   if (rules?.roll && rules.roll.wealthAdjust?.length !== 3) errors.push("rules.yaml: roll.wealthAdjust 需要三个数（清贫 / 小康 / 殷实）");
   // 投胎的点数要分得下去：每种人家 × 天赋，按单项算。
@@ -608,11 +636,13 @@ if (remembered.length > REMEMBERED_MAX) errors.push(`remembered.yaml: ${remember
 
 // ---------- 地图 ----------
 for (const f of PENDING_FLAGS) produced.add(f);
+for (const f of FAMILY_DERIVED_FLAGS) produced.add(f);
 const map = load("map.yaml");
 const actionIds = new Set(map.actions.map((a) => a.id));
 checkKeys("map", map, MAP_KEYS);
 for (const id of ENGINE_ACTIONS) if (!actionIds.has(id)) errors.push(`map.actions: 缺少行动 "${id}"（规则代码按这个名字找它，见 server/src/world.ts）`);
 for (const f of ENGINE_FLAGS) if (!produced.has(f)) errors.push(`talents: 没有任何天赋带标记 "${f}"（规则代码按这个名字给天赋效果，见 server/src/sim.ts、world.ts）`);
+for (const f of FAMILY_ENGINE_FLAGS) if (!produced.has(f)) errors.push(`成家：没有任何选项会打上标记 "${f}"（拿到它服务器就生一个孩子，见 server/src/family.ts）`);
 const mapDir = join(root, "content", "maps");
 const sceneFiles = readdirSync(mapDir).filter((f) => f.endsWith(".yaml")).sort();
 const rawScenes = sceneFiles.map((f) => ({ file: f, ...parse(readFileSync(join(mapDir, f), "utf8")) }));
@@ -737,6 +767,14 @@ map.actions = map.actions.map((a) => {
   checkKeys(`map.actions#${a.id}.together`, a.together, TOGETHER_KEYS);
   checkDeltas(`map.actions#${a.id}.needs`, a.needs, NEED_KEYS);
   checkDeltas(`map.actions#${a.id}.stats`, a.stats, STAT_KEYS);
+  // 带孩子（server/src/family.ts）：kid 只有体魄 / 心智 / 魅力，长孩子不长自己（stats 不写）；要写 kidAge
+  if (a.kid !== undefined) {
+    checkDeltas(`map.actions#${a.id}.kid`, a.kid, KID_STAT_KEYS);
+    if (!Object.values(a.kid ?? {}).some((v) => v > 0)) errors.push(`map.actions#${a.id}.kid: 至少一项是正数`);
+    if (Object.keys(a.stats ?? {}).length) errors.push(`map.actions#${a.id}: 带孩子的事长孩子不长自己，不要写 stats`);
+    if (!a.requires?.kidAge) errors.push(`map.actions#${a.id}: 带孩子的事要写 requires.kidAge（孩子几岁到几岁做得了）`);
+    if (a.quick || a.sleep || a.duty || a.bring) errors.push(`map.actions#${a.id}: 带孩子的事不能是顺手的事、睡觉、日程、带人`);
+  } else if (a.requires?.kidAge) errors.push(`map.actions#${a.id}.requires.kidAge: 只有带孩子（kid）的事写`);
   checkDeltas(`map.actions#${a.id}.together.needs`, a.together?.needs, NEED_KEYS);
   checkDeltas(`map.actions#${a.id}.together.bond`, a.together?.bond, BOND_KEYS);
   if (!a.sleep && !a.duty && !(a.minutes > 0)) errors.push(`map.actions#${a.id}: 需要 minutes（睡觉和日程除外）`);
@@ -761,6 +799,7 @@ map.actions = map.actions.map((a) => {
     requires: a.requires ?? {}, needs: a.needs ?? {}, stats: a.stats ?? {}, money: a.money ?? 0,
     together: a.together ? { needs: a.together.needs ?? {}, bond: a.together.bond ?? {}, text: a.together.text ?? "" } : null,
     bring: !!a.bring, menu: !!a.menu,
+    ...(a.kid ? { kid: a.kid } : {}),
   };
 });
 // ---------- 接话（duet.yaml）：搭上了 / 回话 ----------
@@ -866,7 +905,10 @@ const tracks = (load("tracks.yaml") ?? []).map((t) => {
 if (tracks.length === 0 || Object.keys(tracks.at(-1).requires).length > 0) errors.push("tracks.yaml: 最后一条是兜底的路，不能有 requires");
 if (new Set(tracks.map((t) => t.id)).size !== tracks.length) errors.push("tracks.yaml: id 重复");
 const milestones = events.filter((e) => e.kind === "milestone");
-if (new Set(milestones.map((e) => e.age)).size !== milestones.length) errors.push("milestones: 同一个年纪只能有一个关口");
+const ownMilestones = milestones.filter((e) => e.kidAge === undefined);
+if (new Set(ownMilestones.map((e) => e.age)).size !== ownMilestones.length) errors.push("milestones: 同一个年纪只能有一个关口");
+const kidGates = milestones.filter((e) => e.kidAge !== undefined);
+if (new Set(kidGates.map((e) => e.kidAge)).size !== kidGates.length) errors.push("milestones: 孩子的同一个岁数只能有一道关口");
 // 每个关口都要有一条谁都走得了的路：不带线、不要钱、不看标记。没有的话，属性低的人到了这一关无路可走
 const hasKeys = (x) => !!x && Object.values(x).some((v) => (Array.isArray(v) ? v.length > 0 : v != null));
 for (const ev of milestones) {

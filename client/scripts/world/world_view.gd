@@ -30,6 +30,7 @@ var map: Dictionary = {}
 var actions: Dictionary = {}
 var my_role := "qing"
 var age := 3                 ## 现在几岁（main 喂）：一个点位上挂着几件事，按年纪取第一件合适的
+var kid_age := -1  ## 我孩子几岁（WORLD actors[我].kid.age）；没孩子 -1。带孩子的事 requires.kidAge 看它
 var goal_keys: Array = []    ## 纸带上正盯着的那条线看哪几项（main 喂）：能长这几项的点位，标签上写「长魅力」、用自己的颜色
 var duties: Dictionary = {}  ## role -> 今天该去的地方 { label, spot, arrive, until, done, open }，没有是 null（服务器 WORLD 里的 tracks）
 var unlocks: Dictionary = {} ## role -> 关口上挣来的去处（带 requires.flags 的行动 id，服务器 WORLD 里的 tracks[role].unlocks）
@@ -613,6 +614,10 @@ func actions_of(spot: Dictionary) -> Array:
 		if rq.has("minAge") and age < int(rq.minAge):
 			continue
 		if rq.has("maxAge") and age > int(rq.maxAge):
+			continue
+		# 带孩子的事：孩子在这个岁数段才做得了，没孩子做不了（服务器 requires.kidAge，docs/FAMILY.md）
+		var ka: Variant = rq.get("kidAge")
+		if ka is Array and ka.size() == 2 and (kid_age < 0 or kid_age < int(ka[0]) or kid_age > int(ka[1])):
 			continue
 		# 标记在服务器手里，客户端只认它发来的那张单子
 		if (rq.has("flags") or rq.has("notFlags")) and not (unlocks.get(my_role, []) as Array).has(str(id)):

@@ -47,6 +47,8 @@ const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "pla
 	"tea_box": "listen",
 	# 后半生押时间（content/events/later.yaml）
 	"old_breakfast": "work", "old_bikes": "work", "mind_kids": "play_alley", "grandkid_park": "play_river",
+	# 带孩子（docs/FAMILY.md）
+	"kid_homework": "study", "kid_run": "play_river", "kid_listen": "listen", "kid_class": "study",
 	"square_dance": "perform", "pair_cook": "eat", "gk_pickup": "play_alley"}
 ## 揭晓：名次章的音高（reveal.gd 砸横章那一下），认它来起 top
 const TOP_PITCH := 1.12

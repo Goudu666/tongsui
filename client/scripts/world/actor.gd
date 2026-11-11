@@ -62,6 +62,7 @@ const ACTION_LOOP := {
 	"flowers": "gaze", "boat": "gaze", "huqin": "sing",
 	# 后半生押时间（content/events/later.yaml）
 	"old_breakfast": "cook", "old_bikes": "fix", "mind_kids": "talk", "grandkid_park": "kite",
+	"kid_homework": "write", "kid_run": "kick", "kid_listen": "talk", "kid_class": "read",
 	"square_dance": "exercise", "pair_cook": "cook", "gk_pickup": "talk",
 }
 ## 上学 / 上班（duty）按在哪个点上：坐办公桌敲电脑、修车铺修车、早点铺出摊…（没写的就招手进门）

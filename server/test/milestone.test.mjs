@@ -5,7 +5,8 @@ import { G, C, J, NAMES } from "./harness.mjs";
 
 const ON = { qing: true, mei: true };
 const ROLES = ["qing", "mei"];
-const MILESTONES = C.events.filter((e) => e.kind === "milestone");
+// 孩子的关口（kidAge，没有 age）不按年纪排，在 family.test.mjs 里测
+const MILESTONES = C.events.filter((e) => e.kind === "milestone" && e.kidAge === undefined);
 const turnAtAge = (age) => { for (let t = 0; t < 400; t++) if (G("lifeTimeAt")(t).age === age) return t; return -1; };
 
 /** 一条走到 age 岁第一天早上的人生（没走过前面的日子，属性是出生时的；给了 stat 就三项都设成它） */

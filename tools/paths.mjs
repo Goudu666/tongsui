@@ -68,6 +68,24 @@ function free(s, role, want, visit) {
 }
 
 const grow = (key) => (act) => act.stats[key] || 0;
+// 带孩子（docs/FAMILY.md）：纸带上孩子那道关看哪项，就带孩子去长哪项
+const kidGrow = (key) => (act) => (act.kid && act.kid[key]) || 0;
+/** 顾自己：「混着来」那样过（心智、体魄、魅力、玩轮着），三十以后盯四十五（看心智和魅力）。不押孩子的那份时间全在这儿 */
+const mine = (s) => (G("lifeTimeAt")(s.turn).age < 30 ? [grow("mind"), grow("body"), grow("charm"), fun][s.turn % 4] : s.turn % 2 ? grow("charm") : grow("mind"));
+/** 年轻时一半玩着过来的（三十岁四十五那条线还没够着）：押不押孩子的取舍在这种人身上看得出来 */
+const loose = (s) => (G("lifeTimeAt")(s.turn).age < 30 ? (s.turn % 2 ? grow("mind") : fun) : s.turn % 2 ? grow("charm") : grow("mind"));
+/** 认真押孩子：孩子那道关是最近的时候，空闲时段一半给孩子（隔一段一回），另一半念书 */
+const forKidWith = (base) => (s, role) => {
+  const g = G("lifeGoal")(s, C, role);
+  const kg = g && (g.kid ? g : g.also && g.also.kid ? g.also : null);
+  if (!kg || (s.turn + s.world.slot) % 2) return base(s);
+  // 这道关看的那几项里权重最大的那项
+  const ev = C.events.find((e) => e.id === kg.id);
+  const w = ev.score || {};
+  const key = ["kid_mind", "kid_body", "kid_charm"].sort((a, b) => (w[b] || 0) - (w[a] || 0))[0];
+  return kidGrow(key.slice(4));
+};
+const forKid = forKidWith(mine);
 const fun = (act) => (act.money >= 0 && !Object.keys(act.stats).length ? (act.needs.mood || 0) : 0);
 
 /**
@@ -89,7 +107,15 @@ export const WAYS = {
   // 梅不在线，影子替她过。影子是替人过日子的，不是替人拼的：梅应该落在「不上心」和「一半一半」之间，不能比真人专心还强
   "青不上心，梅是影子": { each: () => fun, shadow: ["mei"] },
   "青念书，梅是影子": { each: () => grow("mind"), shadow: ["mei"] },
+  // 成家和下一代：二十八岁两个人各有一个孩子（kids: true，live 里给 has_kid）。押孩子的空闲一半给孩子；不押的只顾自己念书
+  "押孩子": { each: forKid, kids: true },
+  "不押孩子": { each: (s) => mine(s), kids: true },
+  "搭伴押孩子": { each: forKid, kids: true, together: true },
+  "两口子押孩子": { each: forKid, kids: "married", together: true },
+  "松着长大，押孩子": { each: forKidWith(loose), kids: true },
+  "松着长大，不押孩子": { each: (s) => loose(s), kids: true },
 };
+export const KID_WAYS = ["押孩子", "不押孩子", "搭伴押孩子", "两口子押孩子", "松着长大，押孩子", "松着长大，不押孩子"];
 
 /**
  * 把一条人生过到 untilAge 岁。pickOption(s, role, ev, open) 决定关口和事件怎么选。
@@ -108,14 +134,24 @@ export function live(seed, way, untilAge, pickOption, setup) {
   while (s.phase === "life" && G("lifeTimeAt")(s.turn).age < untilAge) {
     if (++guard > 2e6) throw new Error("人生没有往前走");
     const w = s.world;
+    // 带孩子的活法：二十八岁那天早上两个人都拿 has_kid（married：先成两口子，共用一个）
+    if (way.kids && G("lifeTimeAt")(s.turn).age >= 28 && !s.persons.qing.flags.includes("has_kid")) {
+      for (const r of ROLES) {
+        if (way.kids === "married") G("lifeAddFlags")(s.persons[r], ["p_married"]);
+        G("lifeAddFlags")(s.persons[r], ["has_kid"]);
+      }
+      G("kidSync")(s, C);
+    }
     // 关口那天一早，记下每个人够得着哪几条线（不算发挥）
     if (w.fate.milestone && w.slot === 0 && !w.playing && !marks[w.fate.milestone]) {
       const ms = C.events.find((e) => e.id === w.fate.milestone);
       marks[ms.id] = {};
+      G("lifeKidBind")(s);
       for (const r of ROLES) {
         const p = s.persons[r];
-        if (!G("lifeMilestoneFor")(ms, p) || G("lifeSeenIds")(s, r)[ms.id]) continue;
-        marks[ms.id][r] = { stats: { ...p.stats }, money: p.money, close: s.bond.close, flags: [...p.flags], open: ms.options.filter((o) => !G("lifeOptionLock")(ms, o, p, 0, G("lifePairBond")(s, r))).map((o) => o.id) };
+        if (!G("lifeMilestoneForRole")(s, ms, r) || G("lifeSeenIds")(s, r)[ms.id]) continue;
+        const kid = G("kidOf")(s, r);
+        marks[ms.id][r] = { stats: { ...p.stats }, kid: kid ? { ...kid.stats } : null, money: p.money, close: s.bond.close, flags: [...p.flags], open: ms.options.filter((o) => !G("lifeOptionLock")(ms, o, p, 0, G("lifePairBond")(s, r))).map((o) => o.id) };
       }
     }
     if (w.event) {
@@ -124,6 +160,7 @@ export function live(seed, way, untilAge, pickOption, setup) {
         if (pe.choices[r]) continue;
         if (!online[r]) { G("worldChoose")(s, C, r, G("lifeShadowChoose")(s, C, r, ev.id), true); if (!s.world || s.world.event !== pe) break; continue; }
         const swing = (pe.swing && pe.swing[r]) || 0;
+        G("lifeKidBind")(s);
         const open = ev.options.filter((o) => !G("lifeGated")(ev) || !G("lifeOptionLock")(ev, o, s.persons[r], swing, G("lifePairBond")(s, r)));
         const id = pickOption ? pickOption(s, r, ev, open) : open[Math.floor(G("lifeRand")(s) * open.length)].id;
         G("worldChoose")(s, C, r, id, false);
@@ -167,7 +204,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const N = Number(process.argv[2]) || 60;
   const UNTIL = Number(process.env.UNTIL) || 76;
   const only = process.argv.slice(3);
-  const stones = C.events.filter((e) => e.kind === "milestone" && e.options.some((o) => o.min)).sort((a, b) => a.age - b.age);
+  // 孩子的关口按孩子的岁数排在爹妈三十岁以后（kidAge + 30 只是排序用）
+  const stones = C.events.filter((e) => e.kind === "milestone" && e.options.some((o) => o.min)).sort((a, b) => (a.age ?? a.kidAge + 30) - (b.age ?? b.kidAge + 30));
   console.log(`每种活法 ${N} 条人生（两个人 = ${N * 2} 个人），关口上总选够得着的最高那条线。数字是够得着这条线的人的比例。\n`);
   for (const [name, way] of Object.entries(WAYS)) {
     if (only.length && !only.includes(name)) continue;
@@ -178,7 +216,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       for (const ev of stones) for (const r of way.shadow || ROLES) {
         const m = marks[ev.id]?.[r];
         if (!m) continue;
-        const a = (acc[ev.id] ||= { n: 0, open: {}, stat: { body: 0, mind: 0, charm: 0 }, money: 0, close: 0 });
+        const a = (acc[ev.id] ||= { n: 0, open: {}, stat: { body: 0, mind: 0, charm: 0 }, kid: { body: 0, mind: 0, charm: 0 }, money: 0, close: 0 });
+        if (m.kid) for (const k of Object.keys(a.kid)) a.kid[k] += m.kid[k];
         a.n++;
         for (const id of m.open) a.open[id] = (a.open[id] || 0) + 1;
         for (const k of Object.keys(a.stat)) a.stat[k] += m.stats[k];
@@ -190,8 +229,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       const a = acc[ev.id];
       if (!a) continue;
       const pct = ev.options.filter((o) => o.min).map((o) => `${o.id} ${Math.round(((a.open[o.id] || 0) / a.n) * 100)}%`).join("  ");
-      const st = Object.entries(a.stat).map(([k, v]) => `${k} ${(v / a.n).toFixed(1)}`).join(" ");
-      rows.push(`  ${String(ev.age).padStart(2)} 岁 ${ev.title.padEnd(6, "　")} ${pct.padEnd(64)} | ${st}  积蓄 ${Math.round(a.money / a.n)}  亲近 ${Math.round(a.close / a.n)}  (${a.n} 人)`);
+      const st = Object.entries(ev.kidAge !== undefined ? a.kid : a.stat).map(([k, v]) => `${ev.kidAge !== undefined ? "孩子" : ""}${k} ${(v / a.n).toFixed(1)}`).join(" ");
+      rows.push(`  ${ev.kidAge !== undefined ? "孩" + String(ev.kidAge).padStart(2) : String(ev.age).padStart(2) + " 岁"} ${ev.title.padEnd(6, "　")} ${pct.padEnd(64)} | ${st}  积蓄 ${Math.round(a.money / a.n)}  亲近 ${Math.round(a.close / a.n)}  (${a.n} 人)`);
     }
     console.log(`【${name}】\n${rows.join("\n")}\n`);
   }

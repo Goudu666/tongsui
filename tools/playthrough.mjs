@@ -22,6 +22,9 @@ const JSON_OUT = (args.find((a) => a.startsWith("--json=")) || "").slice(7);
 const QUIET = args.includes("--quiet");
 const CHECK = args.includes("--check"); // 当测试用：卡住、服务器回错、房间出错、主线没走完、再来一世进不了投胎，就退出码 1
 const PERSONA = process.env.PERSONA || "careful";
+// 成家和下一代的校准（tools/sprint.mjs --kids）：KIDS=push 二十八岁两个人各有一个孩子、认真的人孩子那道关最近时押孩子；
+// KIDS=none 一样有孩子，但从不带孩子（纸带上孩子那道关最近时也顾自己）
+const KIDS = process.env.KIDS || "";
 const AWAY = (process.env.AWAY || "").split(":").map(Number);
 // ONCE=1：正经事一回一回地按（新安装包的默认按法，world.ts 的 worldActOnce），做完一回再按，偶尔换一件；不设就是「做到点」，整段押上
 const ONCE = !!process.env.ONCE;
@@ -215,8 +218,11 @@ function decide(s, P, partnerPlan) {
   }
   // 盯着纸带上那条线练（和影子一个算法：还没够着的线里最低的那条，都够着了就最高的那条）。
   // 原来读的 goal.stat 在 GoalView 上不存在，「认真的人」其实是三项轮着练（11-11 玩法总把关查出来的）
-  const want = G("worldShadowNeed")(s, C, role) || ["mind", "body", "charm"][s.turn % 3];
-  const grow = free.filter((o) => (o.act.stats[want] || 0) > 0).sort((x, y) => (y.act.stats[want] || 0) - (x.act.stats[want] || 0));
+  let want = G("worldShadowNeed")(s, C, role) || ["mind", "body", "charm"][s.turn % 3];
+  if (KIDS === "none" && want.startsWith("kid_")) want = ["mind", "charm"][s.turn % 2]; // 不押孩子：顾自己的四十五（心智和魅力）
+  // 孩子的关口是纸带上最近的那道（kid_mind 这样的键）：认真的人带孩子去长那一项（docs/FAMILY.md）
+  const by = (act) => (want.startsWith("kid_") ? (act.kid && act.kid[want.slice(4)]) || 0 : act.stats[want] || 0);
+  const grow = free.filter((o) => by(o.act) > 0).sort((x, y) => by(y.act) - by(x.act));
   if (grow.length && rand() < 0.75) return { ...grow[0], why: "grow:" + want };
   return { ...pick(free), why: "variety" };
 }
@@ -241,7 +247,21 @@ function playLife(seed) {
     firstHour: null, gapMax: { sec: 0 }, gaps: [], hintMismatch: [], chapters: {}, together: 0, forced: 0, end: null, families: {},
   };
   const seconds = () => rep.ticks / TICK;
+  rep.kids = {};
   const step = (msgs = []) => {
+    const L = R.state.record.life;
+    if (KIDS && L && L.phase === "life" && G("lifeTimeAt")(L.turn).age >= 28 && !L.persons.qing.flags.includes("has_kid")) {
+      for (const r of ["qing", "mei"]) G("lifeAddFlags")(L.persons[r], ["has_kid"]);
+      G("kidSync")(L, C);
+    }
+    // 四十五「去争那个位子」、孩子高考那条高线：关口一开就记下够不够得着（不算发挥）
+    const pe = L && L.world && L.world.event;
+    if (KIDS && pe && (pe.eventId === "m_midlife" || pe.eventId === "mk_gaokao") && !rep.kids[pe.eventId]) {
+      const ev = evOf(pe.eventId), line = ev.options.find((o) => o.id === (pe.eventId === "m_midlife" ? "post" : "top"));
+      G("lifeKidBind")(L);
+      rep.kids[pe.eventId] = {};
+      for (const r of pe.roles) rep.kids[pe.eventId][r] = !G("lifeOptionLock")(ev, line, L.persons[r], 0, G("lifePairBond")(L, r));
+    }
     R.sent.length = 0;
     const ok = R.loop(msgs);
     rep.ticks++;

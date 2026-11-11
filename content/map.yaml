@@ -608,3 +608,37 @@ actions:
     needs: { mood: 6, energy: -6 }
     stats: { body: 0.1 }
     together: { needs: { mood: 4 }, bond: { close: 1 }, text: 两个人站在校门口等，跟三十年前等自己的孩子站的是一个地方。 }
+  # ---- 带孩子（成家和下一代，docs/FAMILY.md；server/src/family.ts）----
+  # kid：这件事长的是孩子，不是自己（自己照样累、照样花钱，不长属性）。requires.kidAge：孩子几岁到几岁做得了，没孩子做不了。
+  # 同一个点同一件事两个人一起做 = 搭伴，孩子那份也按搭伴倍率长（两家各带各的，两个孩子都长）；两口子带同一个孩子，两份都长在这一个身上。
+  # 点位单独摆（不和看书、走一圈挤在一个点上），见 maps/building / newhome / river / park / street / across 里 kid_ 开头的点位
+  - id: kid_homework
+    label: 陪孩子写作业
+    minutes: 90
+    requires: { minAge: 22, kidAge: [4, 18] }
+    needs: { energy: -8, mood: -4 }
+    kid: { mind: 2.4 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 两个孩子一张桌子，你们俩一人守一头。谁家的先写完，谁家的先去玩。 }
+  - id: kid_run
+    label: 带孩子去跑跑
+    minutes: 60
+    requires: { minAge: 22, kidAge: [2, 18] }
+    needs: { energy: -10, mood: 4 }
+    kid: { body: 2.4 }
+    together: { needs: { mood: 6 }, bond: { close: 1 }, text: 两个孩子在前头跑，你们俩在后头走。喊了三回，谁也没回头。 }
+  - id: kid_listen
+    label: 带孩子去茶社
+    minutes: 60
+    money: -3
+    requires: { minAge: 22, kidAge: [3, 18], hours: [540, 1260] }
+    needs: { mood: 6 }
+    kid: { charm: 2.4 }
+    together: { needs: { mood: 5 }, bond: { close: 1, sync: 1 }, text: 台上一拍醒木，两个孩子同时坐直了。你们俩对看了一眼。 }
+  - id: kid_class
+    label: 给孩子报补习班
+    minutes: 120
+    money: -8
+    requires: { minAge: 22, kidAge: [9, 18], hours: [1080, 1260] }
+    needs: { energy: -6, mood: -3 }
+    kid: { mind: 3.6 }
+    together: { needs: { mood: 3 }, bond: { close: 1 }, text: 走廊里一排长椅，坐的都是等孩子的。你们俩挨着，把一份报纸分成两半看。 }

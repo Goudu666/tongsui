@@ -18,8 +18,10 @@ spots:
   - { id: new_bed, at: 160, area: flat, actions: [ sleep ] }
   - { id: new_table, at: 510, area: flat, actions: [ eat ] }
   - { id: new_desk, at: 730, area: flat, actions: [ read ] }
+  - { id: kid_new_desk, at: 900, area: flat, actions: [ kid_homework ] }
   - { id: new_balcony, at: 1060, area: flat, actions: [ balcony, flowers ] }
   - { id: garden_path, at: 2190, area: garden, actions: [ walk_river, river_run ] }
+  - { id: kid_garden, at: 2450, area: garden, actions: [ kid_run ] }
 
 npcs:
   - id: property

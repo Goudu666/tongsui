@@ -1,0 +1,143 @@
+# 孩子的关口（成家和下一代，docs/FAMILY.md；server/src/family.ts）。
+# 和人生关口是同一套 milestone，多一个 kidAge：孩子快到这个岁数（提前两岁以内，family.ts 的 KID_GATE_LEAD）以后，爹妈第一个「没有自己关口」的日子早上发生，每道只一次。
+# 只有有孩子的人过（requires.flags: [has_kid]）；两口子两个人一起过，可以共鸣。score 里的 kid_* 读孩子的属性，显示照百分制。
+# 选项打的标记落在爹妈身上，统一 kid_ 开头；两口子共鸣的共同标记 p_kid_*。正文是爹妈的视角，孩子不起名。
+# 中年一个日子是三年：二十八岁生的孩子，上学落在爹妈三十三、小升初三十九、中考四十二、高考四十八（四十五有自己的关）。
+# 线是 tools/sprint.mjs --kids 校的：认真押孩子的过半够得着高考那条高线，不押的两成以下。
+
+- id: mk_school
+  kind: milestone
+  stage: middle
+  kidAge: 6
+  # 六岁以前写不了作业：这道关体魄、魅力也算，带去跑、带去茶社的工夫不白花
+  score: { kid_mind: 0.4, kid_charm: 0.3, kid_body: 0.3 }
+  requires: { flags: [has_kid] }
+  title: 孩子上学
+  text: 报名那天，校门口排到了路口。前头的人手里一沓表，你手里就一个户口本。
+  options:
+    - id: key
+      text: 送去那所好小学
+      min: 4.0
+      tags: [competitive]
+      effects: { flags: [kid_prim_key] }
+    - id: near
+      text: 就近上，走着去
+      tags: [gentle]
+      effects: { flags: [kid_prim_near] }
+  resonance:
+    key:
+      text: 开学那天你们俩都站在校门外头。铃响了，谁也没先走。
+      bond: { close: 1 }
+    near:
+      text: 学校就在拐角。放学的时候，你们俩一个在楼下，一个在窗口。
+      bond: { close: 1 }
+
+- id: mk_junior
+  kind: milestone
+  stage: middle
+  kidAge: 12
+  score: { kid_mind: 1 }
+  swing: true
+  requires: { flags: [has_kid] }
+  title: 小升初
+  text: 分班的榜贴在传达室窗户上。你从底下往上找，找了两遍。
+  options:
+    - id: key
+      text: 去那所重点初中
+      min: 5.0
+      tags: [competitive]
+      effects: { flags: [kid_mid_key] }
+    - id: near
+      text: 就近上初中
+      tags: [gentle]
+      effects: { flags: [kid_mid_near] }
+  resonance:
+    key:
+      text: 回来的路上你们俩谁都没说话，到了楼门口才一起笑出来。
+      bond: { close: 1 }
+    near:
+      text: 新书包挂在门后头。你们俩说，近点好，早上能多睡一会儿。
+      bond: { close: 1 }
+
+- id: mk_senior
+  kind: milestone
+  stage: middle
+  kidAge: 15
+  score: { kid_mind: 0.8, kid_body: 0.2 }
+  swing: true
+  requires: { flags: [has_kid] }
+  title: 孩子中考
+  text: 孩子考完回来，书包往门后一挂，说饿了。分数要等半个月。
+  options:
+    - id: key
+      text: 上重点高中
+      min: 5.8
+      tags: [competitive]
+      effects: { flags: [kid_high_key] }
+    - id: high
+      text: 上普通高中
+      min: 4.6
+      tags: [patient]
+      effects: { flags: [kid_high] }
+    - id: trade
+      text: 去念职高，学门手艺
+      tags: [responsible]
+      effects: { flags: [kid_trade] }
+  resonance:
+    key:
+      text: 榜上那个名字，你们俩一人用手指着念了一遍。
+      bond: { close: 1 }
+    high:
+      text: 学校离家三站地。你们俩算了算，一个月的车钱是二十四块。
+      bond: { close: 1 }
+    trade:
+      text: 你们俩去看了那间修车的车间。孩子蹲在一辆拆开的车跟前，站起来的时候腿都麻了。
+      bond: { close: 1 }
+
+- id: mk_gaokao
+  kind: milestone
+  stage: middle
+  kidAge: 18
+  score: { kid_mind: 1 }
+  swing: true
+  requires: { flags: [has_kid] }
+  title: 孩子高考
+  text: 志愿表又摊在饭桌上。这回拿笔的不是你，你在旁边倒了杯水。
+  options:
+    - id: top
+      text: 去考上的那所好大学
+      min: 6.0
+      tags: [competitive]
+      effects: { flags: [kid_uni_top] }
+    - id: away
+      text: 让孩子去外地念书
+      min: 5.4
+      tags: [adventure]
+      effects: { flags: [kid_away] }
+    - id: uni
+      text: 念本市的大学
+      min: 4.6
+      tags: [gentle]
+      effects: { flags: [kid_uni] }
+    - id: work
+      text: 不念了，先找活干
+      tags: [responsible]
+      effects: { flags: [kid_work] }
+  resonance:
+    top:
+      text: 通知书寄到那天，你们俩把信封翻过来看了三遍邮戳。
+      memory: 三遍邮戳
+      bond: { close: 2 }
+      flags: [p_kid_uni]
+    away:
+      text: 行李一人拎一头，拎到检票口，交给孩子一个人拎。
+      memory: 一人一头
+      bond: { close: 2 }
+      flags: [p_kid_uni]
+    uni:
+      text: 学校在河这边，骑车二十分钟。你们俩说，周末回来吃饭，菜还是那几样。
+      bond: { close: 2 }
+      flags: [p_kid_uni]
+    work:
+      text: 孩子上工头一天，你们俩一个递饭盒，一个递手套。
+      bond: { close: 1 }

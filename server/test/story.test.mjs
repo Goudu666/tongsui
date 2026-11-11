@@ -203,7 +203,9 @@ for (let seed = 1; seed <= LIVES; seed++) {
 }
 {
   // 等别的线程发的标记（tools/build-content.mjs 的 PENDING_FLAGS）：发标记的合进来以前，要它的事件出不来
-  const PENDING = ["fam_factory", "uni_abroad", "school_paid", "job_pull", "job_succeed", "home_unit"];
+  const PENDING = ["fam_factory", "uni_abroad", "school_paid", "job_pull", "job_succeed", "home_unit",
+    // 成家和下一代：孩子关口 kid_* 走地图那边（world.ts 按孩子岁数排的关口），这里不走地图，读它们的事件出不来
+    "kid_prim_key", "kid_prim_near", "kid_mid_key", "kid_mid_near", "kid_high_key", "kid_high", "kid_trade", "kid_uni_top", "kid_uni", "kid_away", "kid_work"];
   // 这里不走地图，也就不攒钱：三十岁买不起房（m_settle 的 buy 要 200 块），要 home_own 的事件在这儿出不来，由 paths.test 那种过日子的模拟兜着
   const NO_MONEY = ["home_own"];
   const held = (flags) => (flags ?? []).some((f) => PENDING.includes(f) || NO_MONEY.includes(f));
@@ -222,7 +224,7 @@ for (let seed = 1; seed <= LIVES; seed++) {
   assert.deepEqual(deadPair, [], `走不到的结局：${deadPair.join(", ")}`);
   // 高寿的小结（长寿、冬泳的老人）靠的是一辈子吃好睡好心情好，这里不模拟过日子，放在 growth.test.mjs 里测
   const needsLongLife = new Set(C.endings.lives.filter((e) => (e.requires.minDiedAge ?? 0) >= 85).map((e) => e.id));
-  const deadLife = [...lifeEnd].filter(([id, n]) => n === 0 && !needsLongLife.has(id)).map(([id]) => id);
+  const deadLife = [...lifeEnd].filter(([id, n]) => n === 0 && !needsLongLife.has(id) && !held(C.endings.lives.find((e) => e.id === id).requires.flags)).map(([id]) => id);
   assert.deepEqual(deadLife, [], `走不到的一生小结：${deadLife.join(", ")}`);
   // 结局不能一边倒：最常见的结局不超过一半
   const top = Math.max(...pairEnd.values());
@@ -242,11 +244,11 @@ for (let seed = 1; seed <= LIVES; seed++) {
     assert.ok((flagsSeen.get(f) ?? 0) > 0, `故事线索 ${f} 从来没被打上`);
   }
   // 隔世：每一种痕迹都有人带着出生过；藏着的天赋出过事以后抽得到；街坊记住的事每条都有人被记住过
-  for (const f of ["leg_any", "leg_house", ...C.legacy.traces.map((t) => "leg_" + t)]) assert.ok((flagsSeen.get(f) ?? 0) > 0, `痕迹 ${f} 从来没人带着出生`);
+  for (const f of ["leg_any", "leg_house", ...C.legacy.traces.map((t) => "leg_" + t)].filter((f) => !held([f]))) assert.ok((flagsSeen.get(f) ?? 0) > 0, `痕迹 ${f} 从来没人带着出生`);
   for (const t of C.talents.filter((t) => t.unlock)) assert.ok((talentSeen.get(t.id) ?? 0) > 0, `藏着的天赋 ${t.name} 出过事以后也没人抽到`);
   // 活过九十要一辈子吃好睡好，这里不模拟过日子（同上面高寿的小结）
   const slow = new Set(C.remembered.filter((a) => (a.requires.minDiedAge ?? 0) >= 85).map((a) => a.id));
-  const deadNote = [...noted].filter(([id, n]) => n === 0 && !slow.has(id)).map(([id]) => id);
+  const deadNote = [...noted].filter(([id, n]) => n === 0 && !slow.has(id) && !held(C.remembered.find((a) => a.id === id).requires.flags)).map(([id]) => id);
   assert.deepEqual(deadNote, [], `街坊从来没记住过的事：${deadNote.join(", ")}`);
   console.log("  街坊记住的事（每 100 世）：" + [...noted].sort((a, b) => b[1] - a[1]).map(([id, n]) => `${C.remembered.find((a) => a.id === id).title} ${((n / LIVES) * 100).toFixed(1)}`).join("  "));
 }

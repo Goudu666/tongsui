@@ -30,6 +30,7 @@ const DayCard := preload("res://scripts/ui/day_card.gd")
 const Juice := preload("res://scripts/ui/juice.gd")
 const StatStrip := preload("res://scripts/ui/stat_strip.gd")
 const Reveal := preload("res://scripts/ui/reveal.gd")
+const Pull := preload("res://scripts/duet/pull_text.gd")
 const Icons := preload("res://scripts/ui/icons.gd")
 const Era := preload("res://scripts/ui/era.gd")
 const PathRuler := preload("res://scripts/ui/path_ruler.gd")
@@ -1921,7 +1922,7 @@ func _on_event_started(data: Dictionary) -> void:
 	var ev: Dictionary = events_by_id.get(pe.eventId, {})
 	var mirror: bool = pe.kind == "mirror"
 	if pe.kind == "milestone":
-		_show_milestone(pe, ev, _dict(data.get("locks", pe.get("locks"))))
+		_show_milestone(pe, ev, _dict(data.get("locks", pe.get("locks"))), _dict(data.get("pulls", pe.get("pulls"))))
 		return
 	# 主线的选项有门槛：家里给不了的那条不摆出来，积蓄不够的灰着写差多少（服务器在 locks 里说）
 	var my_locks: Dictionary = _dict(_dict(data.get("locks", pe.get("locks"))).get(my_role))
@@ -1974,7 +1975,7 @@ static func _list_at(list: Variant, i: int) -> Dictionary:
 
 ## 人生关口：够不着的路是灰的，写着差多少；够得着的路上写着对门走不走得了。
 ## 这是整个游戏里最重的一次选择：分数是平时一天天攒的，路是自己挑的，可以为了对门走低的那条。
-func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
+func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary, pulls: Dictionary = {}) -> void:
 	_flush_era()  # 同一天来的年代大事先弹，盖在关口上面：先知道线为什么挪了，再选路
 	var both: bool = pe.roles.has(_other())
 	var opts: Array = ev.get("options", [])
@@ -2008,7 +2009,12 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 	_gap(modal_body, 4)
 	var my_locks: Dictionary = _dict(locks.get(my_role))
 	var their_locks: Dictionary = _dict(locks.get(_other()))
+	var my_pulls: Dictionary = _dict(pulls.get(my_role))
+	var their_pulls: Dictionary = _dict(pulls.get(_other()))
 	var their_name := str(names.get(_other(), "TA"))
+	# 拉一把（server/src/pull.ts）：差几分的路，对门有富余就拉得过去，要两个人都走这条
+	if not my_pulls.is_empty() or not their_pulls.is_empty():
+		_label(modal_body, Pull.headline(my_pulls, their_pulls, their_name), 30, P.role_color(_other() if not my_pulls.is_empty() else my_role))
 	# 几条路并排摆着：够不着的是灰的，写着差多少；够得着的下面写对门走不走得了
 	var grid := _options(modal_body, opts.size())
 	var goals: Dictionary = _dict(last_world.get("goals"))
@@ -2019,12 +2025,16 @@ func _show_milestone(pe: Dictionary, ev: Dictionary, locks: Dictionary) -> void:
 		var otext: String = o.text
 		var gated: bool = o.has("min") or o.has("cost")
 		var b: Button
-		if my_locks.has(oid):
+		if my_locks.has(oid) and my_pulls.has(oid):
+			b = _option(grid, "%s\n%s" % [otext, Pull.mine(_dict(my_pulls[oid]), their_name)], _pick_path.bind(oid, otext, both))
+		elif my_locks.has(oid):
 			b = _option(grid, "%s\n%s" % [otext, str(my_locks[oid])], func(): pass)
 			b.disabled = true
 		else:
 			var note := ""
-			if both and gated:
+			if their_pulls.has(oid):
+				note = "\n" + Pull.theirs(_dict(their_pulls[oid]), their_name)
+			elif both and gated:
 				note = ("\n%s 够不着这条" if their_locks.has(oid) else "\n%s 也走得了") % their_name
 			b = _option(grid, otext + note, _pick_path.bind(oid, otext, both))
 		_path_ruler(b, my_goal, their_goal, pe, oid, my_locks.has(oid), their_locks.has(oid), opts.size() > 6)
@@ -2326,6 +2336,12 @@ func _show_milestone_result(e: Dictionary) -> void:
 			rv.line = int(res.get("line", -1)) if res.get("line") != null else -1
 			rv.luck = int(res.get("luck", 0))
 			rv.steady = int(res.get("steady", 0))
+			var pulled: Dictionary = _dict(_dict(_dict(e.get("gate")).get("pull")).get(r))  # 对门拉了一把（pull.ts）
+			if not pulled.is_empty():
+				var by := str(pulled.get("by", _other()))
+				rv.pull = int(pulled.get("gap", 0))
+				rv.pull_color = P.role_color(by)
+				rv.pull_who = str(names.get(by, "TA"))
 			rv.grade = str(res.grade) if res.get("grade") != null else ""
 			rv.rank = Juice.rank_of(events_by_id.get(e.events[r], ev), rv.grade)
 			if rv.rank != "":
@@ -2363,6 +2379,15 @@ func _show_milestone_result(e: Dictionary) -> void:
 				if c is CanvasItem:
 					c.modulate.a = 0.0
 					late.append(c)
+	# 关口上两个人之间的那几句：谁拉了谁、没拉上、走散了又走到一块儿（pull.ts 的 entry.gate.lines）
+	for gl in _dict(e.get("gate")).get("lines", []):
+		if not gl is Dictionary:
+			continue
+		var who := str(gl.get("role", ""))
+		var said2 := _label(box, str(gl.get("text", "")), 34, P.role_color(who) if who != "" else P.OVERLAP)
+		if not reveals.is_empty():
+			said2.modulate.a = 0.0
+			late.append(said2)
 	if track_label != "":
 		var from := _label(box, "从今天起：%s。" % track_label, 30, P.INK_SOFT)
 		if not reveals.is_empty():

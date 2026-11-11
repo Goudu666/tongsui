@@ -192,6 +192,11 @@
       text: 扔了，不听了
       tags: [solitude]
       effects: { self: { mood: -5 } }
+    - id: new
+      text: 让家里再买一盘
+      tags: [adventure]
+      requires: { flags: [fam_rich] }
+      effects: { self: { mood: 4 } }
 
 - id: t_misjudged
   kind: solo

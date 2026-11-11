@@ -17,6 +17,7 @@ exits:
 spots:
   - { id: river_dawn, at: 300, area: river, actions: [ run_dawn ] }
   - { id: river_bank, at: 560, area: river, actions: [ play_river, walk_river ] }
+  - { id: kid_river, at: 820, area: river, actions: [ kid_run ] }
   - { id: river_rail, at: 1310, area: river, actions: [ rail_talk ] }
   - { id: river_fish, at: 2000, area: river, actions: [ fish ] }
   - { id: river_bridge, at: 2940, area: bridge, actions: [ duty, night_shift ] }

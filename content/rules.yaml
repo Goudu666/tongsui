@@ -114,6 +114,20 @@ bond:
   driftDistance: 0.35
   driftFloor: 5         # 最多淡到这儿：住过对门，总归认识
 
+# ---------- 成家和下一代 ----------
+# 孩子（server/src/family.ts，设计说明见 docs/FAMILY.md）。孩子用的是和人一样的三项属性，关口是同一套 milestone（kidAge）。
+# 生的时候：每项 = start + 爹妈这项的平均 × inherit + (随机 − 0.5) × noise。以后靠爹妈押时间（带孩子的行动，map.yaml 的 kid）；
+# 不押也自己长 selfGrow × 这个日子隔的年数（中年一个日子三年）。比 start 高出 room 以后长得越来越慢（和人的 growth.room 一个意思）。
+# 校准（tools/sprint.mjs --kids）：三十到四十五岁空闲时段一半给孩子的，孩子高考那条高线够得着的过半；不押的两成以下
+family:
+  names: [小满, 豆豆, 石头, 小雨, 冬冬, 小舟, 果果, 小麦]
+  start: { body: 1.5, mind: 1.0, charm: 1.0 }
+  inherit: 0.3
+  noise: 0.6
+  room: 10.0
+  selfGrow: { body: 0.1, mind: 0.07, charm: 0.07 }
+  sameAge: 2
+
 # ---------- 传承 ----------
 # 一世走完留下的东西怎么带到下一世（server/src/legacy.ts，设计说明见 docs/LEGACY.md）。
 # 老物件的加成写在 content/heirlooms.yaml 里：属性最多半点。

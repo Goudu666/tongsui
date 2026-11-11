@@ -8,7 +8,7 @@
 //
 // 纯函数，不依赖 Nakama。
 
-var LIFE_VERSION = 8;
+var LIFE_VERSION = 9;
 
 /** 结构升级。返回做了什么（写服务器日志用）；存档比服务器还新时抛错（服务器被回滚了，不能硬读） */
 function lifeUpgrade(s: any): string[] {
@@ -83,6 +83,12 @@ function lifeUpgrade(s: any): string[] {
     }
     v = 8;
     notes.push("v7→v8");
+  }
+  if (v === 8) {
+    // v9：成家和下一代（docs/FAMILY.md）。孩子是拿到 has_kid 那一刻生的；旧存档里已经有 has_kid 的人，下一个日子 kidSync 补上一个
+    if (!Array.isArray(s.kids)) s.kids = [];
+    v = 9;
+    notes.push("v8→v9");
   }
   s.version = v;
   return notes;

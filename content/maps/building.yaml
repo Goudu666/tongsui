@@ -31,6 +31,7 @@ spots:
   - { id: bed_qing, at: 180, area: home_qing, actions: [ sleep ], owner: qing }
   - { id: corner_qing, at: 350, area: home_qing, actions: [ piano ], owner: qing }
   - { id: desk_qing, at: 520, area: home_qing, actions: [ picture_book, study, read ], owner: qing }
+  - { id: kid_desk_qing, at: 660, area: home_qing, actions: [ kid_homework ], owner: qing }
   - { id: table_qing, at: 800, area: home_qing, actions: [ eat ], owner: qing }
   - { id: basin_qing, at: 1070, area: home_qing, actions: [ wash ], owner: qing }
   # 楼道：两扇对门，中间一只小板凳。哪家都不是，两个人都能坐，写作业也行
@@ -42,6 +43,7 @@ spots:
   - { id: basin_mei, at: 2130, area: home_mei, actions: [ wash ], owner: mei }
   - { id: table_mei, at: 2400, area: home_mei, actions: [ eat ], owner: mei }
   - { id: desk_mei, at: 2680, area: home_mei, actions: [ picture_book, study, read ], owner: mei }
+  - { id: kid_desk_mei, at: 2540, area: home_mei, actions: [ kid_homework ], owner: mei }
   - { id: corner_mei, at: 2850, area: home_mei, actions: [ piano ], owner: mei }
   - { id: bed_mei, at: 3020, area: home_mei, actions: [ sleep ], owner: mei }
   # 楼顶

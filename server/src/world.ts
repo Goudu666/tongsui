@@ -255,6 +255,9 @@ function worldStartDay(s: LifeState, c: Content) {
   // 主线（story.ts）：今天排上的那一件占掉命运的那一格。先算它，不吃随机数。关口那天不排
   var msToday = lifeMilestoneAt(c, t.age);
   var msDue = !!msToday && ROLES.some(function (r) { return lifeMilestoneFor(msToday!, persons[r]) && !lifeSeenIds(s, r)[msToday!.id]; });
+  // 孩子的关口（family.ts）：自己今天没有关口的日子，孩子到了岁数的那道今天过
+  // 主线照排（不当自己的关口那样让开）：中年一个日子三年，四道孩子的关口再占四天，第五章的三件就排不下了
+  var kidGate = msDue ? null : kidGateToday(s, c);
   var story = storyToday(s, c, t, msDue);
   var storyScene = function (r: Role): string | null {
     var id = story[r] || story.mirror;
@@ -269,7 +272,9 @@ function worldStartDay(s: LifeState, c: Content) {
     var z = lifeFind(c.map.zones, e.where);
     return !worldSceneLock(s, c, lifeFind(c.map.scenes, z.scene), r, { duty: lifeTrack(c, persons[r], t.age).duty, story: storyScene(r) });
   };
-  var together: EligibleCtx = { bond: s.bond, alone: false };
+  var kidAges: number[] = [];
+  for (var ki = 0; ki < ROLES.length; ki++) { var ka0 = kidAgeFor(s, ROLES[ki]); if (ka0 !== null) kidAges.push(ka0); }
+  var together: EligibleCtx = { bond: s.bond, alone: false, kidAges: kidAges };
   if (persons.qing.alive && persons.mei.alive) {
     var both = persons.qing.flags.concat(persons.mei.flags);
     var mirrors = c.events.filter(function (e) { return e.kind === "mirror" && lifeEligible(e, t, both, seen, together) && reach(e, "qing") && reach(e, "mei"); });
@@ -284,6 +289,8 @@ function worldStartDay(s: LifeState, c: Content) {
     if (!persons[role].alive) continue;
     var flags = persons[role].flags;
     var ctx: EligibleCtx = { bond: s.bond, alone: !persons[lifeOther(role)].alive };
+    var myKid = kidAgeFor(s, role);
+    if (myKid !== null) ctx.kidAge = myKid;
     // solo 按人算：对门遇到过的事，你也可能遇到（但同一天两人不会是同一件）
     var mine = lifeSeenIds(s, role);
     if (fate.qing) mine[fate.qing] = true;
@@ -325,6 +332,7 @@ function worldStartDay(s: LifeState, c: Content) {
     var due = ROLES.some(function (r) { return lifeMilestoneFor(ms!, persons[r]) && !lifeSeenIds(s, r)[ms!.id]; });
     if (due) fate.milestone = ms.id;
   }
+  if (!fate.milestone && kidGate) fate.milestone = kidGate.id;
 
   // 关口那天不歇：考试、报到都在今天
   var rest = lifeRand(s) < REST_DAY_CHANCE && !fate.milestone;
@@ -517,6 +525,13 @@ function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot): { act:
     var rq = act.requires || {};
     if (rq.minAge !== undefined && age < rq.minAge) { why = "还太小了"; continue; }
     if (rq.maxAge !== undefined && age > rq.maxAge) { why = "已经过了那个年纪"; continue; }
+    // 带孩子的事：孩子在这个岁数段才做得了（family.ts）
+    if (act.kid || rq.kidAge) {
+      var ka = kidAgeFor(s, role);
+      if (ka === null) { why = "家里没有孩子"; continue; }
+      if (rq.kidAge && ka < rq.kidAge[0]) { why = "孩子还太小"; continue; }
+      if (rq.kidAge && ka > rq.kidAge[1]) { why = "孩子大了，用不着了"; continue; }
+    }
     // 关口上挣来的去处（少年宫、体校）、家里才有的（学琴、厂里的澡堂）：没有那个标记的人看不见它，轮到下一个行动。
     // 对门正在这儿做、而且这件事带得了人，就能跟着做（means.ts）
     if ((!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) && !meansGuestOk(s, c, role, sp, act)) continue;
@@ -690,9 +705,18 @@ function worldJoinLate(s: LifeState, c: Content, role: Role, run: Run) {
   }
   var before = worldStatsCopy(p);
   lifeApplySelf(p, extra, growthCtx(s, c, "action"));
+  // 带孩子的那一份也补上搭伴（长在这个人自己的孩子身上）
+  var kd: Partial<Stats> | null = null;
+  var kid = run.kr ? kidOf(s, role) : null;
+  if (kid && run.kr) {
+    var kx: Partial<Stats> = {};
+    for (var kk in run.kr) { (kx as any)[kk] = ((run.kr as any)[kk] as number) * (TOGETHER_BOOST - 1); b = Math.max(b, TOGETHER_BOOST); }
+    kd = kidGrow(s, c, kid, kx);
+  }
   if (!a) return;
   var act = worldFindAction(c, run.a);
   a.did = { n: ((a.did && a.did.n) || 0) + 1, a: run.a, l: act.label, f: run.f, t: run.t, s: worldStatsDiff(before, p), nd: {}, m: 0, tg: true, b: Math.round(b * 100) / 100, j: true };
+  if (kd) a.did.k = kd;
 }
 
 function worldStatsCopy(p: Person): Stats {
@@ -759,6 +783,21 @@ function worldActOnce(s: LifeState, c: Content, role: Role, sp: Spot, act: Actio
     bmax = Math.max(bmax, m);
     (boosted as any)[k] = v * m;
   }
+  // 带孩子（family.ts）：孩子那份按同样的状态、遍数、搭伴倍率，长在自己的孩子身上
+  var kraw: Partial<Stats> | null = null;
+  var kgot: Partial<Stats> | null = null;
+  var kid = act.kid ? kidOf(s, role) : null;
+  if (kid && act.kid) {
+    kraw = {};
+    var kb: Partial<Stats> = {};
+    for (var kk in act.kid) {
+      var kv = ((act.kid as any)[kk] as number) * eff * times;
+      (kraw as any)[kk] = kv;
+      (kb as any)[kk] = kv * (together ? TOGETHER_BOOST : 1);
+      if (together) bmax = Math.max(bmax, TOGETHER_BOOST);
+    }
+    kgot = kidGrow(s, c, kid, kb);
+  }
   var nf = times * worldNeedsFactor(c, w.slot, act);
   var needs: SelfDelta = {};
   for (var nk in act.needs) (needs as any)[nk] = ((act.needs as any)[nk] as number) * nf;
@@ -775,7 +814,9 @@ function worldActOnce(s: LifeState, c: Content, role: Role, sp: Spot, act: Actio
   a.spentSlot = w.slot;
   if (!w.runs) w.runs = {};
   if (!w.runs[role]) w.runs[role] = [];
-  w.runs[role]!.push({ a: act.id, sp: sp.id, f: f, t: t, raw: raw, tg: together });
+  var runRec: Run = { a: act.id, sp: sp.id, f: f, t: t, raw: raw, tg: together };
+  if (kraw) runRec.kr = kraw;
+  w.runs[role]!.push(runRec);
   worldSeg(w, role, act, act.label, f, t, together);
 
   var entry: LogEntry | null = null;
@@ -790,6 +831,7 @@ function worldActOnce(s: LifeState, c: Content, role: Role, sp: Spot, act: Actio
   };
   if (together) a.did.b = Math.round(bmax * 100) / 100;
   if (times < 1) a.did.part = Math.round(times * 100) / 100;
+  if (kgot) a.did.k = kgot;
   if (fee > 0 && guest) a.did.m = 0; // 被带的那份钱记在对门头上
   if (worldTimeLeft(c, w, a) < READY_LEFT) w.ready[role] = true; // 这一段的时间用完了：定了
   return { error: null, together: entry };
@@ -952,6 +994,18 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   // 状态、搭伴、天赋先乘好，再交给成长规则按年纪和底子折算（growth.ts → growthApply）
   lifeApplySelf(p, stats, growthCtx(s, c, "action"));
   lifeApplySelf(p, scaled);
+  // 带孩子（family.ts）：孩子那份按同样的状态、遍数、搭伴倍率长。两口子一起带同一个孩子，两份都长在这一个身上
+  var kid = act.kid && !act.duty ? kidOf(s, role) : null;
+  if (kid && act.kid) {
+    var kg: Partial<Stats> = {};
+    for (var kk in act.kid) {
+      var kv = ((act.kid as any)[kk] as number) * eff * times;
+      if (a.together) kv *= TOGETHER_BOOST;
+      else if (a.tgMin && a.start !== undefined && a.until !== null) kv *= 1 + (TOGETHER_BOOST - 1) * lifeClamp(a.tgMin / Math.max(1, a.until - a.start), 0, 1);
+      (kg as any)[kk] = kv;
+    }
+    kidGrow(s, c, kid, kg);
+  }
   if (act.id === "eat") worldMealMood(c, p); // 老存档里还在吃的那一顿
   if (act.id === "letter") postWrite(s, c, role); // 信第二天早上到对门（post.ts）
   p.money += Math.round(money * 10) / 10;
@@ -997,7 +1051,7 @@ function worldShadowFind(s: LifeState, c: Content, role: Role, want: (act: Actio
 }
 
 /** 下一个关口最缺的那项属性（没有关口了返回 null） */
-function worldShadowNeed(s: LifeState, c: Content, role: Role): StatKey | null {
+function worldShadowNeed(s: LifeState, c: Content, role: Role): string | null {
   var goal = lifeGoal(s, c, role);
   if (!goal) return null;
   var ev = lifeFindEvent(c, goal.id);
@@ -1013,12 +1067,14 @@ function worldShadowNeed(s: LifeState, c: Content, role: Role): StatKey | null {
     else if (gap <= 0 && tGap <= 0 && o.min > target.min!) { target = o; tGap = gap; }
   }
   if (!target) return null;
-  var w = lifeOptionWeights(ev, target);
-  var best: StatKey | null = null;
-  for (var k = 0; k < STAT_KEYS.length; k++) {
-    var key = STAT_KEYS[k];
+  var w = lifeOptionWeights(ev, target) as { [k: string]: number };
+  var best: string | null = null;
+  // 孩子的关口是最近要冲的那道：去做带孩子的事（返回 kid_mind 这样的键）
+  var keys: string[] = goal.kid ? ["kid_body", "kid_mind", "kid_charm"] : STAT_KEYS;
+  for (var k = 0; k < keys.length; k++) {
+    var key = keys[k];
     if (key === "luck" || !w[key]) continue;
-    if (!best || w[key]! > w[best]!) best = key;
+    if (!best || w[key] > w[best]) best = key;
   }
   return best;
 }
@@ -1084,7 +1140,8 @@ function worldShadowStep(s: LifeState, c: Content, role: Role) {
   var need = p.needs.mood < 40 ? null : worldShadowNeed(s, c, role);
   if (need && lifeRand(s) < SHADOW_STRIVE) {
     var k = need;
-    if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, function (act) { return !act.duty && !act.quick && act.money === 0 && (act.stats[k] || 0) > 0; }))) return;
+    var kk = k.indexOf("kid_") === 0 ? k.slice(4) : null;
+    if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, function (act) { return !act.duty && !act.quick && act.money === 0 && (kk ? !!act.kid && ((act.kid as any)[kk] || 0) > 0 : ((act.stats as any)[k] || 0) > 0); }))) return;
   }
   if (worldShadowGo(s, c, role, worldShadowFind(s, c, role, function (act) { return !act.duty && !act.sleep && !act.quick && act.money >= 0 && (act.needs.mood || 0) >= 8; }))) return;
   // 4. 实在没事做：这一段歇着
@@ -1155,7 +1212,8 @@ function worldMilestoneDue(s: LifeState): boolean {
 function worldMilestone(s: LifeState, c: Content, out: WorldTick): boolean {
   var w = s.world!;
   var ms = lifeFindEvent(c, w.fate.milestone!);
-  var due = worldAliveRoles(s).filter(function (r) { return lifeMilestoneFor(ms, s.persons![r]) && !lifeSeenIds(s, r)[ms.id]; });
+  var due = worldAliveRoles(s).filter(function (r) { return lifeMilestoneForRole(s, ms, r) && !lifeSeenIds(s, r)[ms.id]; });
+  lifeKidBind(s); // 孩子的关口按 kid_* 算分
   if (due.length === 0) {
     w.done.push(ms.id);
     return false;
@@ -1410,6 +1468,7 @@ function worldChoose(s: LifeState, c: Content, role: Role, optionId: string, fro
   var opt = lifeFindOption(ev, optionId);
   if (!opt) return { error: "没有这个选项", entry: null };
   if (lifeGated(ev)) {
+    lifeKidBind(s);
     var lock = lifeOptionLock(ev, opt, s.persons![role], (w.event.swing && w.event.swing[role]) || 0, lifePairBond(s, role));
     if (lock) return { error: "这条路现在走不了（" + lock + "）", entry: null };
   }

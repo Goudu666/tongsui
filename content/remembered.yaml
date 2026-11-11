@@ -56,12 +56,12 @@
   requires: { flags: [x_same_year] }
 
 - id: r_kids_tongsui
-  title: 又一对同岁
-  desc: 两家的孩子也是同岁，也在这条楼道里长大。
+  title: 两家的孩子
+  desc: 两家的孩子同一年生的，在楼道里一块儿挨过说。
   requires: { flags: [p_kids_tongsui] }
 
 - id: r_confidant
-  title: 老朋友
+  title: 做了老朋友
   desc: 没成一家，好了一辈子。
   requires: { flags: [p_confidant] }
 

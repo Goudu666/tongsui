@@ -270,15 +270,15 @@
   hint: 楼道里有人刮旧漆。
   weight: 2
   requires: { minAge: 7, flags: [leg_p_kids_tongsui] }
-  title: 门框上的道道
-  text: 楼道里刮旧漆，门框上露出两排铅笔道，一排高一点，一排矮一点，每道旁边写着岁数。写到十八，没了。
+  title: 暖气片后头
+  text: 楼道里刮旧漆，暖气片后头露出两排铅笔字，一排高一点，一排矮一点，每行旁边写着岁数。写到十八，没了。
   options:
     - id: stand
-      text: 站过去比一比
+      text: 蹲过去比一比
       tags: [adventure]
       effects: { self: { mood: 5 } }
     - id: draw
-      text: 在旁边画上自己的
+      text: 在旁边写上自己的
       tags: [gentle]
       effects: { self: { mood: 8 } }
     - id: keep
@@ -287,19 +287,19 @@
       effects: { self: { charm: 1 } }
   resonance:
     stand:
-      text: 你站高的那排，对门的站矮的那排。一比，你俩都比那两道矮一截。
-      memory: 矮一截
+      text: 你蹲到高的那排跟前，对门的蹲到矮的那排。两个人的头顶，都还够不着头一道。
+      memory: 够不着头一道
       bond: { sync: 3, close: 2 }
     draw:
-      text: 你俩在旁边又画了两排，头一道都画在今天。刷漆的师傅看了看，换了把小刷子。
-      memory: 四排铅笔道
+      text: 你俩在旁边又写了两排，头一行都写着今天。刷漆的师傅看了看，换了把小刷子。
+      memory: 四排铅笔字
       bond: { sync: 3, close: 3 }
     keep:
-      text: 师傅点点头，沿着门框贴了一圈纸条。漆干了一揭，两排道道还在。
+      text: 师傅点点头，沿着暖气片贴了一圈纸条。漆干了一揭，两排字还在。
       memory: 一圈纸条
       bond: { sync: 2, close: 2 }
   dissonance:
-    text: 一个往门框上画，一个拦着刷漆的。师傅左右看看，蹲下点了根烟。
+    text: 一个往墙上写，一个拦着刷漆的。师傅左右看看，蹲下点了根烟。
     bond: { close: 0 }
 
 - id: l_stone_table

@@ -316,3 +316,35 @@ function pass(s) {
   assert.equal(v.actors.qing.kid.age, 8);
   console.log("✓ 存档 v8→v9 补 kids，往返不丢；WORLD 里 kid { name, age, stats, shared }，没孩子不发");
 }
+
+// ---------- 12. 先有孩子、后成两口子：对门算进这个孩子，不补过前面的关 ----------
+{
+  const s = grown(33);
+  const k = giveKid(s, "qing", 6);
+  s.log.push({ ...G("lifeEntry")(s, "milestone", ""), events: { qing: "mk_school", mei: null } });
+  for (const r of ROLES) G("lifeAddFlags")(s.persons[r], ["p_married"]);
+  G("kidSync")(s, C);
+  assert.equal(kidOf(s, "mei"), k, "后成的两口子：对门也是这个孩子的爹妈");
+  assert.ok(s.persons.mei.flags.includes("has_kid"));
+  assert.equal(G("kidGateSeen")(s, "mei", "mk_school"), true, "上学那道对门已经过了，半路算进来的不补过");
+  console.log("✓ 先有孩子后成家：两口子共用这一个孩子，前面过了的关不再补");
+}
+
+// ---------- 13. 家里的默契事不被主线挤掉：主线今天不是非过不可的，先让两家孩子的事 ----------
+{
+  let hit = 0, tried = 0;
+  for (let seed = 1; seed <= 40 && hit === 0; seed++) {
+    // 三十三岁：直接跳到这天的存档主线还没落下太多，不是章末强制的那种（强制的那天主线照样先过）
+    const s = grown(33, seed);
+    for (const r of ROLES) giveKid(s, r, 8);
+    G("kidSync")(s, C);
+    s.persons.qing.flags = s.persons.qing.flags.filter((f) => f !== "p_married");
+    s.persons.mei.flags = s.persons.mei.flags.filter((f) => f !== "p_married");
+    G("worldStartDay")(s, C);
+    tried++;
+    const m = s.world.fate.mirror;
+    if (m && ev(m) && G("worldFamilyMirror")(ev(m))) hit++;
+  }
+  assert.ok(hit > 0, `中年两家各有孩子：${tried} 天里至少有一天命运那一格是家里的事`);
+  console.log(`✓ 中年家里的默契事出得来：主线今天不是非过不可的，两家孩子的事先过（试到第 ${tried} 天碰上）`);
+}

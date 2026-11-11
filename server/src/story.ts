@@ -254,7 +254,7 @@ function storyAfter(s: LifeState, c: Content, eventId: string) {
   var w = s.world;
   if (!w || !storyFindEvent(c, eventId)) return;
   var t = lifeTimeAt(s.turn);
-  var next = storyToday(s, c, t, !!w.fate.milestone);
+  var next = storyToday(s, c, t, !!w.fate.milestone && !kidIsGate(lifeFindEvent(c, w.fate.milestone)));  // 孩子的关口那天主线照排
   var slots: ("mirror" | "qing" | "mei")[] = ["mirror", "qing", "mei"];
   for (var i = 0; i < slots.length; i++) {
     var cur = w.fate[slots[i]];

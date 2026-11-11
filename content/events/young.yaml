@@ -843,8 +843,9 @@
 - id: y_kid
   kind: solo
   stage: young
-  # 2 → 4：当了爹妈的从一成抬到五六成（docs/FAMILY.md 第四节），另一半在 marriage.yaml 的 mw_pram / mw_circle / mw_notice
-  weight: 4
+  # 2 → 4 → 6：当了爹妈的抬到五六成（docs/FAMILY.md 第四节），另一半在 marriage.yaml 的 mw_pram / mw_circle / mw_notice；
+  # 「再等等」打 kid_later，三十三岁以后 mw_later 再问一回
+  weight: 6
   requires: { minAge: 26, notFlags: [has_kid, single_life] }
   title: 虎头鞋
   text: 你妈把你小时候那双虎头鞋翻了出来，洗得干干净净，搁在你床头。什么也没说。
@@ -856,7 +857,7 @@
     - id: wait
       text: 再等等
       tags: [patient]
-      effects: { self: { mood: -5 } }
+      effects: { self: { mood: -5 }, flags: [kid_later] }
     - id: no
       text: 不要了，这样挺好
       tags: [solitude]

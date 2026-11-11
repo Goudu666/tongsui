@@ -466,9 +466,9 @@
   kind: solo
   stage: middle
   weight: 2
-  requires: { minAge: 45, flags: [has_kid] }
+  requires: { flags: [has_kid, kid_away], kidAge: [16, 28] }
   title: 送站
-  text: 孩子考到外地去了。站台上一直嫌你絮叨，耳机塞得严严实实。车门关了，孩子隔着玻璃冲你比了个心。
+  text: 孩子考到外地去了。站台上一直嫌你絮叨，脸扭到一边。车门关了，孩子隔着玻璃冲你比了个心。
   options:
     - id: wave
       text: 挥手挥到看不见
@@ -479,7 +479,7 @@
       tags: [patient]
       effects: { self: { mood: -5 } }
     - id: note
-      text: 发消息：兜里有东西
+      text: 隔着玻璃比划：兜里有东西
       tags: [responsible]
       effects: { self: { mood: 10 } }
 

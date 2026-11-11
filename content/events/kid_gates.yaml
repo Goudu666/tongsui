@@ -91,7 +91,7 @@
       text: 学校离家三站地。你们俩算了算，一个月的车钱是二十四块。
       bond: { close: 1 }
     trade:
-      text: 你们俩去看了那间车床车间。孩子在机床前头站了很久。
+      text: 你们俩去看了那间修车的车间。孩子蹲在一辆拆开的车跟前，站起来的时候腿都麻了。
       bond: { close: 1 }
 
 - id: mk_gaokao
@@ -130,14 +130,14 @@
       bond: { close: 2 }
       flags: [p_kid_uni]
     away:
-      text: 站台上你们俩一人拎一头行李。车开了，手还举着。
+      text: 行李一人拎一头，拎到检票口，交给孩子一个人拎。
       memory: 一人一头
       bond: { close: 2 }
       flags: [p_kid_uni]
     uni:
-      text: 学校隔着四站地。你们俩说，周末回来吃饭，菜还是那几样。
+      text: 学校在河这边，骑车二十分钟。你们俩说，周末回来吃饭，菜还是那几样。
       bond: { close: 2 }
       flags: [p_kid_uni]
     work:
-      text: 孩子拿回第一个月的钱，你们俩一人分了一张，压在玻璃板底下。
+      text: 孩子上工头一天，你们俩一个递饭盒，一个递手套。
       bond: { close: 1 }

@@ -79,7 +79,7 @@ func _run() -> void:
 	them.position = me.position + Vector2(120, 0)
 	them.net_target = them.position
 	main.guide.process_mode = Node.PROCESS_MODE_DISABLED  # 开局引导的章首卡、小纸条不来凑热闹（长大那张卡上的章名照样有）
-	await _juice_journal()
+	await _juice_journal(36)
 	_world({})
 	await _wait(0.3)
 	while main.fx.is_busy():  # 开局引导的章首卡先过去
@@ -148,12 +148,12 @@ func _run() -> void:
 	main._close_modal()
 	await _wait(0.5)
 
-	# 5. 长大：童年过完的墨卡上放成绩单
-	main.life = {"phase": "life", "turn": 36}
-	main._stage_shown = "childhood"
-	await _juice_journal()  # 前面演飘字的时候记了几个点，换成一整段童年
-	main.juice._record(36, _stats)
-	main._grow_up({"age": 12, "stage": "teen"})
+	# 5. 长大：少年过完（18 岁）的墨卡上放成绩单，最上面是这一章两场冲刺的总账
+	main.life = {"phase": "life", "turn": 48}
+	main._stage_shown = "teen"
+	await _juice_journal(48)  # 前面演飘字的时候记了几个点，换成一整段童年加少年
+	main.juice._record(48, _stats)
+	main._grow_up({"age": 18, "stage": "young"})
 	await _wait(1.7)
 	await _snap("j11_stage_report")
 	await _wait(2.0)
@@ -170,15 +170,15 @@ func _run() -> void:
 	quit()
 
 
-## 假的成长账：童年九年，一年四个日子，两个人一路长上来（读书的心智长得快，TA 魅力长得快）
-func _juice_journal() -> void:
+## 假的成长账：童年九年一年四个日子、少年一年两个，两个人一路长上来（读书的心智长得快，TA 魅力长得快）
+func _juice_journal(turns: int) -> void:
 	var LifeTime := load("res://scripts/ui/life_time.gd")
 	var pts: Array = []
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7
 	var q := [33.0, 36.0, 31.0]
 	var m := [36.0, 33.0, 38.0]
-	for turn in 36:
+	for turn in turns:
 		var t: Dictionary = LifeTime.at(turn)
 		pts.append([turn, int(t.age), str(t.stage), int(q[0]), int(q[1]), int(q[2]), int(m[0]), int(m[1]), int(m[2])])
 		q[0] += rng.randf_range(0.1, 0.5)
@@ -187,6 +187,10 @@ func _juice_journal() -> void:
 		m[0] += rng.randf_range(0.2, 0.5)
 		m[1] += rng.randf_range(0.1, 0.6)
 		m[2] += rng.randf_range(0.3, 0.8)
-	main.juice.journal = {"pts": pts, "stages": {"childhood": {"tg": 23, "res": 4, "ms": 2}, "teen": {"tg": 3}}}
+	main.juice.journal = {"pts": pts, "stages": {"childhood": {"tg": 23, "res": 4, "ms": 2,
+		"list": [{"a": 9, "t": "三年级", "o": "进数学小组", "ok": true}]},
+		"teen": {"tg": 14, "res": 3, "ms": 2, "list": [
+			{"a": 12, "t": "小升初", "o": "去普通班", "gap": 2, "u": "分", "mt": "去重点班"},
+			{"a": 15, "t": "中考", "o": "过桥去念重点高中", "ok": true}]}}}
 	_stats.qing = {"body": q[0] / 10.0, "mind": q[1] / 10.0, "charm": q[2] / 10.0, "luck": 5.0}
 	_stats.mei = {"body": m[0] / 10.0, "mind": m[1] / 10.0, "charm": m[2] / 10.0, "luck": 4.0}

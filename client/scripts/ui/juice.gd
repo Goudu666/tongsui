@@ -144,12 +144,49 @@ func on_log(entries: Array) -> void:
 				if e.get("resonance") == true:
 					c["res"] = int(c.get("res", 0)) + 1
 			"milestone":
-				if _dict(e.get("results")).has(_role()):
-					c["ms"] = int(c.get("ms", 0)) + 1
+				var results := _dict(e.get("results"))
+				if not results.has(_role()):
+					continue
+				var res := _dict(results[_role()])
+				c["ms"] = int(c.get("ms", 0)) + 1
+				var row := milestone_row(e, res)
+				if not row.is_empty():
+					var list: Array = c.get("list", [])
+					list.append(row)
+					c["list"] = list
 			_:
 				continue
 		journal.stages[st] = c
 		_dirty = true
+
+
+## 成绩单上的一行关口：几岁、哪一关、走了哪条路、过没过线（有成绩档写成绩档）、离没走成的那条差几分。
+## 只有一条路、也没分数可说的关（上小学、退休）不记
+func milestone_row(e: Dictionary, res: Dictionary) -> Dictionary:
+	var evs: Dictionary = _dict(main.get("events_by_id"))
+	var ev: Dictionary = _dict(evs.get(_dict(e.get("events")).get(_role())))
+	var opts: Array = ev.get("options", []) if ev.get("options") is Array else []
+	if opts.size() <= 1:
+		return {}
+	var pick := ""
+	for o in opts:
+		if o is Dictionary and o.get("id") == res.get("option"):
+			pick = str(o.get("text", ""))
+	var row := {"a": int(e.get("age", 0)), "t": str(ev.get("title", "")), "o": pick}
+	var scored := bool(res.get("scored", true))
+	var line := int(res.get("line", -1)) if res.get("line") != null else -1
+	if scored and line > 0:  # 走的这条路有线才说过没过（普通班、家门口的高中没有线）
+		row["ok"] = int(res.get("score", 0)) >= line
+	if res.get("grade") != null and str(res.grade) != "":
+		row["g"] = str(res.grade)
+	var near: Dictionary = _dict(res.get("near", res.get("miss")))
+	if not near.is_empty() and near.has("need") and near.has("have"):
+		row["gap"] = int(near.need) - int(near.have)
+		row["u"] = str(near.get("unit", res.get("unit", "分")))
+		for o in opts:
+			if o is Dictionary and o.get("id") == near.get("option"):
+				row["mt"] = str(o.get("text", ""))
+	return row
 
 
 func _rebase(stats: Dictionary, money: float, bond: Dictionary) -> void:

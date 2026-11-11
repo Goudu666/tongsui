@@ -1,5 +1,5 @@
 {
- "version": "65a5f254cedf",
+ "version": "11e865427700",
  "events": [
   {
    "id": "ch_runner",
@@ -704,8 +704,7 @@
      "effects": {
       "self": {
        "body": 1,
-       "mood": 5,
-       "clean": -20
+       "mood": 5
       },
       "other": {},
       "bond": {},
@@ -1495,8 +1494,7 @@
      "effects": {
       "self": {
        "body": 1,
-       "mood": 10,
-       "clean": -10
+       "mood": 10
       },
       "other": {},
       "bond": {},
@@ -1807,8 +1805,7 @@
      ],
      "effects": {
       "self": {
-       "body": 1,
-       "clean": -10
+       "body": 1
       },
       "other": {},
       "bond": {},
@@ -2351,8 +2348,7 @@
      ],
      "effects": {
       "self": {
-       "body": 1,
-       "clean": -10
+       "body": 1
       },
       "other": {},
       "bond": {},
@@ -2882,8 +2878,7 @@
      "effects": {
       "self": {
        "body": 1,
-       "mood": 5,
-       "clean": -15
+       "mood": 5
       },
       "other": {},
       "bond": {},
@@ -3821,8 +3816,7 @@
      ],
      "effects": {
       "self": {
-       "body": 1,
-       "clean": -10
+       "body": 1
       },
       "other": {},
       "bond": {},
@@ -4532,8 +4526,7 @@
      ],
      "effects": {
       "self": {
-       "body": 1,
-       "clean": -10
+       "body": 1
       },
       "other": {},
       "bond": {},
@@ -4593,7 +4586,6 @@
      "effects": {
       "self": {
        "body": 1,
-       "clean": -15,
        "energy": -10
       },
       "other": {},
@@ -7163,7 +7155,6 @@
      "effects": {
       "self": {
        "body": 1,
-       "clean": -15,
        "mood": 5
       },
       "other": {},
@@ -7480,8 +7471,7 @@
      ],
      "effects": {
       "self": {
-       "mood": 5,
-       "clean": -10
+       "mood": 5
       },
       "other": {},
       "bond": {},
@@ -10829,8 +10819,7 @@
        "mood": 5
       },
       "other": {
-       "mood": 5,
-       "clean": 20
+       "mood": 5
       },
       "bond": {},
       "flags": []
@@ -15253,7 +15242,7 @@
      ],
      "effects": {
       "self": {
-       "clean": 10
+       "mood": 2
       },
       "other": {},
       "bond": {},
@@ -15998,7 +15987,6 @@
      "effects": {
       "self": {
        "body": 1,
-       "clean": 40,
        "mood": 5
       },
       "other": {},
@@ -16014,8 +16002,7 @@
      ],
      "effects": {
       "self": {
-       "clean": 60,
-       "mood": -3
+       "mood": 3
       },
       "other": {},
       "bond": {},
@@ -16030,7 +16017,6 @@
      ],
      "effects": {
       "self": {
-       "clean": 30,
        "hunger": 5,
        "mood": 8
       },
@@ -16473,8 +16459,7 @@
       "self": {
        "body": 1,
        "mood": 10,
-       "energy": -10,
-       "clean": -10
+       "energy": -10
       },
       "other": {},
       "bond": {},
@@ -17523,8 +17508,7 @@
      ],
      "effects": {
       "self": {
-       "body": 1,
-       "clean": -10
+       "body": 1
       },
       "other": {},
       "bond": {},
@@ -20202,8 +20186,7 @@
      "effects": {
       "self": {
        "body": 1,
-       "energy": -20,
-       "clean": -10
+       "energy": -20
       },
       "other": {
        "mood": 5
@@ -21126,8 +21109,7 @@
      ],
      "effects": {
       "self": {
-       "mind": 1,
-       "clean": -15
+       "mind": 1
       },
       "other": {},
       "bond": {},
@@ -23824,8 +23806,7 @@
      ],
      "effects": {
       "self": {
-       "mood": 10,
-       "clean": -10
+       "mood": 10
       },
       "other": {},
       "bond": {},
@@ -25740,8 +25721,7 @@
      ],
      "effects": {
       "self": {
-       "body": 1,
-       "clean": -15
+       "body": 1
       },
       "other": {},
       "bond": {},
@@ -26957,7 +26937,7 @@
      ],
      "effects": {
       "self": {
-       "clean": 20
+       "mood": 4
       },
       "other": {},
       "bond": {},
@@ -26972,7 +26952,6 @@
      ],
      "effects": {
       "self": {
-       "clean": 15,
        "mood": 3
       },
       "other": {},
@@ -26988,8 +26967,7 @@
      ],
      "effects": {
       "self": {
-       "mood": 5,
-       "clean": -5
+       "mood": 5
       },
       "other": {},
       "bond": {},
@@ -27659,8 +27637,7 @@
      ],
      "effects": {
       "self": {
-       "body": 1,
-       "clean": -10
+       "body": 1
       },
       "other": {},
       "bond": {},
@@ -27675,8 +27652,7 @@
      ],
      "effects": {
       "self": {
-       "mood": 3,
-       "clean": -5
+       "mood": 3
       },
       "other": {},
       "bond": {},
@@ -31098,7 +31074,6 @@
     "duty": false,
     "requires": {},
     "needs": {
-     "clean": 60,
      "mood": 2
     },
     "stats": {},
@@ -31228,8 +31203,7 @@
     },
     "needs": {
      "mood": 10,
-     "energy": -8,
-     "clean": -8
+     "energy": -8
     },
     "stats": {
      "body": 0.25,
@@ -31259,8 +31233,7 @@
     },
     "needs": {
      "mood": 10,
-     "energy": -8,
-     "clean": -6
+     "energy": -8
     },
     "stats": {
      "body": 0.3
@@ -31319,8 +31292,7 @@
     },
     "needs": {
      "mood": 6,
-     "energy": -14,
-     "clean": -10
+     "energy": -14
     },
     "stats": {
      "body": 0.45
@@ -31349,8 +31321,7 @@
      "maxAge": 17
     },
     "needs": {
-     "energy": -12,
-     "clean": -15
+     "energy": -12
     },
     "stats": {
      "body": 0.15,
@@ -31571,8 +31542,7 @@
      ]
     },
     "needs": {
-     "energy": -12,
-     "clean": -10
+     "energy": -12
     },
     "stats": {
      "body": 0.15,
@@ -31604,7 +31574,6 @@
      ]
     },
     "needs": {
-     "clean": 90,
      "mood": 10,
      "energy": 4
     },
@@ -31684,8 +31653,7 @@
     "requires": {},
     "needs": {
      "mood": 12,
-     "energy": -4,
-     "clean": -4
+     "energy": -4
     },
     "stats": {},
     "money": 0,
@@ -31852,7 +31820,6 @@
     },
     "needs": {
      "energy": -6,
-     "clean": -4,
      "mood": 2
     },
     "stats": {
@@ -32065,8 +32032,7 @@
     },
     "needs": {
      "hunger": 50,
-     "mood": 5,
-     "clean": -4
+     "mood": 5
     },
     "stats": {},
     "money": -1,
@@ -32301,8 +32267,7 @@
     },
     "needs": {
      "energy": -12,
-     "hunger": -8,
-     "clean": 10
+     "hunger": -8
     },
     "stats": {
      "body": 0.4
@@ -32477,8 +32442,7 @@
      ]
     },
     "needs": {
-     "energy": -12,
-     "clean": -10
+     "energy": -12
     },
     "stats": {
      "mind": 0.05
@@ -32573,8 +32537,7 @@
      ]
     },
     "needs": {
-     "energy": -18,
-     "clean": -15
+     "energy": -18
     },
     "stats": {
      "body": 0.05
@@ -35055,8 +35018,7 @@
     ],
     "until": 900,
     "needs": {
-     "energy": -20,
-     "clean": -15
+     "energy": -20
     },
     "stats": {
      "body": 0.24
@@ -35264,8 +35226,7 @@
     "until": 1050,
     "needs": {
      "hunger": 35,
-     "energy": -28,
-     "clean": -15
+     "energy": -28
     },
     "stats": {
      "body": 0.5,
@@ -35351,8 +35312,7 @@
     ],
     "until": 1020,
     "needs": {
-     "energy": -22,
-     "clean": -15
+     "energy": -22
     },
     "stats": {
      "body": 0.19
@@ -35444,8 +35404,7 @@
     ],
     "until": 780,
     "needs": {
-     "energy": -22,
-     "clean": -10
+     "energy": -22
     },
     "stats": {
      "charm": 0.08
@@ -35473,8 +35432,7 @@
     ],
     "until": 900,
     "needs": {
-     "energy": -20,
-     "clean": -15
+     "energy": -20
     },
     "stats": {
      "body": 0.07
@@ -35590,8 +35548,7 @@
     ],
     "until": 840,
     "needs": {
-     "energy": -25,
-     "clean": -10
+     "energy": -25
     },
     "stats": {
      "charm": 0.12
@@ -35619,8 +35576,7 @@
     ],
     "until": 1020,
     "needs": {
-     "energy": -22,
-     "clean": -15
+     "energy": -22
     },
     "stats": {
      "body": 0.07,
@@ -35650,8 +35606,7 @@
     "until": 1050,
     "needs": {
      "hunger": 15,
-     "energy": -32,
-     "clean": -20
+     "energy": -32
     },
     "stats": {
      "body": 0.14
@@ -35680,8 +35635,7 @@
     "until": 1020,
     "needs": {
      "hunger": 25,
-     "energy": -24,
-     "clean": -12
+     "energy": -24
     },
     "stats": {
      "body": 0.07
@@ -35706,8 +35660,7 @@
     ],
     "until": 900,
     "needs": {
-     "energy": -20,
-     "clean": -15
+     "energy": -20
     },
     "stats": {
      "body": 0.07
@@ -36525,8 +36478,7 @@
    "fail": {
     "text": "连人带车拍进白菜堆，楼长的白菜碎了三棵。",
     "self": {
-     "mood": -3,
-     "clean": -10
+     "mood": -3
     },
     "flags": null
    }
@@ -36554,7 +36506,7 @@
    "fail": {
     "text": "摸了一晚上，就摸着一手泥。",
     "self": {
-     "clean": -10
+     "mood": -2
     },
     "flags": null
    }

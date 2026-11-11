@@ -143,7 +143,6 @@ function botStep(s, role, bot, pairing, R, day) {
     if (!day.truant[role] && R() < truant) day.truant[role] = true;
     if (!day.truant[role] && tryAct(s, role, "duty")) return true;
   }
-  if (p.needs.clean < 30 && tryAct(s, role, "wash")) return true;
 
   // 相处：形影不离的会凑过去做同一件事
   if (b && b.action && pairing !== "apart") {

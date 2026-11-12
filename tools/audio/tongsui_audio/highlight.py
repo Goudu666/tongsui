@@ -28,8 +28,9 @@ PAN_Q, PAN_M = -0.25, 0.25
 TARGET = -18.0  # 高光整段的响度（配乐全开是 -20）
 TRUE_PEAK = -2.0  # 编码前留 0.5 dB 给 Vorbis，解码后 ≤ -1.5
 
-# 每个阶段两条线整体挪的音区（半音）。中年老年低一个八度：大提琴、二胡、三弦的好听的地方在下面。
-REG = {"child": 0, "teen": 0, "young": 0, "middle": -12, "old": -12}
+# 每个阶段两条线整体挪的音区（半音）。中年低一个八度：大提琴好听的地方在下面。
+# 老年（颤音琴 + 单簧管）在原音区：颤音琴最低只到 F3。
+REG = {"child": 0, "teen": 0, "young": 0, "middle": -12, "old": 0}
 # 揭晓和长大的速度：比配乐快一点，但老年仍然慢
 BPM_PASS = {"child": 150, "teen": 144, "young": 152, "middle": 140, "old": 132}
 BPM_MISS = {"child": 108, "teen": 100, "young": 108, "middle": 92, "old": 88}
@@ -199,14 +200,18 @@ def comp(stage: str, mx: Mix, t: float, dur: float, name: str, spb: float, vel: 
     elif stage == "middle":  # 弦乐长音
         y = _pad([(0.0, dur, m, 0.6 * vel) for m in tones], dur + 1.2, "pad", 60, 0.5, 3, 10.0)
         mx.add(y, t, 0.45)
-    elif stage == "old":  # 只有根音和五度两个长音
-        y = _pad([(0.0, dur, root + 12, 0.55 * vel), (0.0, dur, root + 19, 0.45 * vel)], dur + 1.0, "organ", 70, 0.5, 2, 6.0)
-        mx.add(y, t, 0.38)
+    elif stage == "old":  # 暖垫 + 尼龙吉他慢慢拨（少年那把吉他，老了）
+        y = _pad([(0.0, dur, m, 0.55 * vel) for m in tones], dur + 1.2, "warm", 70, 0.5, 2, 7.0)
+        mx.add(y, t, 0.42)
+        pat = [root, tones[0], tones[1], tones[2]]
+        for i in range(max(1, int(round(dur / spb)))):
+            mx.add(inst.guitar(pat[i % 4] + (12 if i else 0), 1.8 * spb, round((0.5 if i == 0 else 0.38) * vel, 2), True),
+                   t + i * spb + abs(rng.uniform(0, 0.008)), 0.9, pan=-0.15)
     if bass:
         if stage == "middle":
             mx.add(inst.piano(root, dur * 1.1, round(0.45 * vel, 2)), t, 1.0, pan=-0.15)
-        elif stage != "old":
-            mx.add(inst.bass(root, dur * 0.95, round(0.6 * vel, 2), stage != "young"), t, 0.55)
+        else:
+            mx.add(inst.bass(root, dur * 0.95, round(0.6 * vel, 2), stage != "young"), t, 0.55 if stage != "old" else 0.4)
 
 
 def bloom(stage: str, mx: Mix, t: float, spb: float, vel: float, rng, full: bool = False, ring: float = 2.4):
@@ -226,17 +231,15 @@ def bloom(stage: str, mx: Mix, t: float, spb: float, vel: float, rng, full: bool
     elif stage == "middle":
         for j, m in enumerate(spread[:5]):
             mx.add(inst.piano(m, ring, round(0.42 * vel, 2)), t + j * gap, 0.9, pan=-0.3 + 0.15 * j)
-    # 垫子：老年用风琴，其余用弦
-    model = "organ" if stage == "old" else "pad"
+    elif stage == "old":  # 颤音琴一个一个摊开，余音带着电机的「哇——」
+        for j, m in enumerate([62, 69, 76, 78, 81] + ([86] if full else [])):
+            mx.add(inst.vibes(m, ring, round(0.45 * vel, 2)), t + j * gap, 0.8, pan=-0.3 + 0.12 * j)
+    # 垫子：老年用暖垫，其余用弦
+    model = "warm" if stage == "old" else "pad"
     tones = [50, 57, 64, 66] + ([69, 74] if full else [])
-    if stage == "old":
-        tones = [38, 45, 57, 64] + ([69] if full else [])
     y = _pad([(0.0, ring, m, 0.6) for m in tones], ring + 1.4, model, 81, 0.5, 3 if full else 2, 8.0)
-    mx.add(y, t, (0.42 if stage == "old" else 0.32) * vel)
-    if stage != "old":
-        mx.add(inst.bass(38, ring * 0.9, round(0.65 * vel, 2)), t, 0.6)
-    else:
-        mx.add(inst.sanxian(38, ring * 0.6, 0.5), t, 0.5)
+    mx.add(y, t, (0.4 if stage == "old" else 0.32) * vel)
+    mx.add(inst.bass(38, ring * 0.9, round(0.65 * vel, 2)), t, 0.6 if stage != "old" else 0.45)
 
 
 # ------------------------------------------------------------ 揭晓 ----
@@ -246,7 +249,7 @@ def rise(stage: str) -> np.ndarray:
     rng = rng_for(stage + "_rise")
     dur = 2.25
     mx = Mix(dur + 2.0)
-    lo, hi = {"child": (57, 88), "teen": (50, 76), "young": (50, 76), "middle": (50, 76), "old": (50, 69)}[stage]
+    lo, hi = {"child": (57, 88), "teen": (50, 76), "young": (50, 76), "middle": (50, 76), "old": (57, 81)}[stage]
     notes = _penta(lo, hi)
     while notes and (notes[-1] - 62) % 12 != 4:  # 停在「2」上：A 上面的五度，悬着
         notes.pop()
@@ -264,19 +267,14 @@ def rise(stage: str) -> np.ndarray:
             mx.add(inst.epiano(m, 1.4 if last else 0.6, round(v, 2)), t, 0.7, pan)
         elif stage == "middle":
             mx.add(inst.piano(m, 1.6 if last else 0.8, round(v * 0.9, 2)), t, 1.1, pan)
-    if stage == "old":  # 风琴一个音一个音叠上去，叠成一片
-        ln = [(t, dur + 0.3 - t, m, 0.35 + 0.35 * i / max(1, k - 1)) for i, (m, t) in enumerate(zip(notes, at))]
-        mx.add(_pad(ln, dur + 1.6, "organ", 71, 0.5, 2, 6.0), 0.0, 0.5)
-        for i, (m, t) in enumerate(zip(notes, at)):  # 三弦轻轻点着
-            if i % 2 == 0:
-                mx.add(inst.sanxian(m, 0.5, round(0.3 + 0.3 * i / k, 2)), t, 0.5, pan=0.2)
+        elif stage == "old":
+            mx.add(inst.vibes(m, 1.8 if last else 0.9, round(v * 0.9, 2)), t, 0.9, pan)
     # 底下：A 的长音（属，不落回 D）+ 弦的悬挂和弦慢慢涨上来
     sus = CHORD["A7sus4"]
-    swell = _pad([(0.0, dur + 0.2, m, 0.5) for m in sus[1]], dur + 1.6, "organ" if stage == "old" else "pad", 91, 0.5, 2, 8.0)
+    swell = _pad([(0.0, dur + 0.2, m, 0.5) for m in sus[1]], dur + 1.6, "warm" if stage == "old" else "pad", 91, 0.5, 2, 8.0)
     ramp = np.linspace(0.25, 1.0, len(swell)) ** 1.5
     mx.add(swell * ramp, 0.0, 0.35 if stage != "middle" else 0.5)
-    if stage != "old":
-        mx.add(inst.bass(sus[0] - 12 if stage != "young" else sus[0], dur + 0.4, 0.55), 0.0, 0.5)
+    mx.add(inst.bass(sus[0] - 12 if stage != "young" else sus[0], dur + 0.4, 0.55), 0.0, 0.5 if stage != "old" else 0.4)
     # 滚奏是「轻」的：比上面的音低 7 dB（老年 9 dB），只给一个越来越紧的底
     r = roll(dur + 0.15, 110.0 if stage != "old" else 98.0, 300 + ORDER.index(stage), 15.0 if stage == "old" else 18.0)
     mx.add(r * db(lufs(mx.buf) - (9.0 if stage == "old" else 7.0) - lufs(r)), 0.0)
@@ -347,22 +345,19 @@ def miss(stage: str) -> np.ndarray:
     # 第 3 拍：低音轻轻垫一个 G（下属），把悬着的 2 接住；第 4 拍挪到 A7sus4，不解决
     g, a = CHORD["G"], CHORD["A7sus4"]
     t1, t2 = ck.t(3.0), ck.t(4.0)
-    model = "organ" if stage == "old" else "pad"
+    model = "warm" if stage == "old" else "pad"
     pad = _pad([(t1, t2 - t1 + 0.1, m, 0.55) for m in g[1]] + [(t2, 1.6 * spb, m, 0.5) for m in a[1]],
                ck.length + 2.0, model, 95, 0.5, 2, 8.0)
     mx.add(pad, 0.0, 0.4 if stage != "old" else 0.45)
-    if stage == "old":
-        mx.add(inst.sanxian(43, 1.2 * spb, 0.45), t1, 0.5)
-        mx.add(inst.sanxian(45, 1.8 * spb, 0.4), t2, 0.45)
-    elif stage == "middle":
+    if stage == "middle":
         mx.add(inst.piano(43, 1.6 * spb, 0.42), t1, 1.0, pan=-0.15)
         mx.add(inst.piano(45, 2.4 * spb, 0.38), t2, 1.0, pan=-0.15)
     else:
         mx.add(inst.bass(43, 1.4 * spb, 0.55), t1, 0.55)
         mx.add(inst.bass(45, 2.2 * spb, 0.5), t2, 0.5)
-    if stage in ("child", "teen", "young"):  # 伴奏乐器在 sus 上轻轻点一下 D（四度那个音），不往 C# 走
+    if stage in ("child", "teen", "young", "old"):  # 伴奏乐器在 sus 上轻轻点一下 D（四度那个音），不往 C# 走
         note = {"child": inst.kalimba(74, 1.0, 0.4), "teen": inst.guitar(74, 1.6, 0.4, True),
-                "young": inst.epiano(74, 1.4, 0.38)}[stage]
+                "young": inst.epiano(74, 1.4, 0.38), "old": inst.vibes(74, 1.6, 0.38)}[stage]
         mx.add(note, t2 + 0.5 * spb, 0.45 if stage != "teen" else 0.9, pan=0.2)
     y = _space(mx.buf, stage, 29, 0.06)
     return _finish(y, ck.t(5.4) + 0.75, 0.9)
@@ -391,7 +386,7 @@ def grow(prev: str, new: str) -> np.ndarray:
     b.add(_m(new, ck, m_line), 0.0, 1.0, PAN_M)
     b.add(_q(new, ck, [(GROW_LAND, 3.0, 1, 0), (GROW_LAND + 1.5, 2.0, 5, 0)]), 0.0, 0.7, PAN_Q)
     # 旧和新之间垫一个很轻的 Bm7 → A7sus4，不然中间空着像断了
-    model = "organ" if new == "old" else "pad"
+    model = "warm" if new == "old" else "pad"
     mid = _pad([(ck.t(3.5), 1.5 * spb, m, 0.4) for m in CHORD["Bm7"][1]] +
                [(ck.t(5.0), 2.0 * spb, m, 0.4) for m in CHORD["A7sus4"][1]], ck.length + 2.0, model, 33, 0.5, 2, 8.0)
     b.add(mid, 0.0, 0.22)

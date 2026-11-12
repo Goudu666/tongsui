@@ -1,8 +1,9 @@
 """《同岁》的乐器。全部是合成的，没有采样。
 
 两个家族，对应两位玩家：
-  拨（青）：八音盒 → 木吉他 → 电吉他 → 钢琴 → 三弦      一下一下的，有头没尾
-  吟（梅）：竖笛   → 口琴   → 合成主音 → 大提琴 → 二胡   连着的，有气息
+  拨（青）：八音盒 → 木吉他 → 电吉他 → 钢琴 → 颤音琴      一下一下的，有头没尾
+  吟（梅）：竖笛   → 口琴   → 合成主音 → 大提琴 → 单簧管    连着的，有气息
+（11-12 起老年不再用三弦、二胡：用户不要水墨 / 国风的意境。sanxian 和 erhu 留着，二胡只在街上的环境音里。）
 
 拨的乐器按「每个泛音各自衰减」做加法合成；吟的乐器先画一条连续的音高曲线
 （带滑音和揉弦），再让每个泛音穿过共鸣峰，所以揉弦时音色会跟着动。
@@ -57,6 +58,11 @@ def music_box(m: float, dur: float, vel: float = 0.8) -> np.ndarray:
     y[:k] += hp(white(k, rng), 3000) * np.linspace(1, 0, k) * 0.12 * vel
     y = reson(y, 420, 2.0, 0.25) + y  # 木盒子的一点共鸣
     return fade(y * vel, 0.0005, 0.05)
+
+
+def music_box_hit(m: float, vel: float = 0.6) -> np.ndarray:
+    """早上那一层用的八音盒（老年）：童年的那只，隔了几十年又响了。"""
+    return music_box(m, 0.6, vel) * 0.8
 
 
 @lru_cache(maxsize=4096)
@@ -173,6 +179,26 @@ def sanxian(m: float, dur: float, vel: float = 0.8, slide: float = 0.0) -> np.nd
 
 
 @lru_cache(maxsize=4096)
+def vibes(m: float, dur: float, vel: float = 0.7) -> np.ndarray:
+    """颤音琴（老年）：软槌敲铝条。铝条的泛音是 1 : 4 : 10，底下的共鸣管只放大基音，
+    电机转着让共鸣管一开一合，余音里有慢慢的「哇——哇——」。松踏板就收掉。"""
+    f = midi(m)
+    n = sec(dur + 1.2)
+    tt = times(n)
+    tau = 2.8 * (440.0 / f) ** 0.35
+    y = modal(n, [f, 4.0 * f, 10.0 * f], [tau, tau * 0.18, 0.05], [1.0, 0.11 * vel, 0.025 * vel])
+    trem = 1.0 - 0.26 * (0.5 + 0.5 * np.sin(TAU * 4.6 * tt + m))  # 电机，只作用在共鸣管放大的那部分
+    y = y * (0.55 + 0.45 * trem)
+    rng = np.random.default_rng(int(m * 100) + 15)
+    k = sec(0.01)
+    y[:k] += lp(white(k, rng), 1400) * np.linspace(1, 0, k) ** 2 * 0.12 * vel  # 毛线槌
+    hold = sec(dur)
+    if hold < n:
+        y[hold:] *= np.exp(-np.arange(n - hold) / (SR * 0.25))
+    return fade(lp(y, 6000) * vel * 0.42, 0.001, 0.08)
+
+
+@lru_cache(maxsize=4096)
 def bass(m: float, dur: float, vel: float = 0.7, soft: bool = True) -> np.ndarray:
     f = midi(m)
     y = _string(f, dur, vel, pluck_pos=0.3, tau0=2.2, tau_slope=500 if soft else 900, n_harm=10, bright=0.2,
@@ -231,6 +257,19 @@ MODELS = {
                  attack=0.9, release=1.4, vib=(0.0, 0.0, 1.0), glide=0.05, drift=5.0),
     "glass": dict(formants=[(1500, 1.5, 0)], tilt=-24.0, cutoff=4000, harm=3, even=0.4, breath=0.0,
                   attack=1.2, release=1.6, vib=(0.0, 0.0, 1.0), glide=0.05, drift=2.0),
+    # ---- 11-12 换掉国风之后加的 ----
+    # 单簧管（老年的梅）：闭管，奇次泛音为主，低音区又暗又圆；几乎不揉音
+    "clarinet": dict(formants=[(380, 0.7, 3), (1500, 0.6, 4), (2900, 0.5, 1.5)], tilt=-9.5, cutoff=4200, harm=22,
+                     even=0.18, breath=0.012, air=(700, 4200), chiff=0.5, attack=0.06, release=0.12,
+                     vib=(4.6, 3.5, 0.5), glide=0.03, drift=2.0),
+    # 柔音号（老年傍晚）：铜管里最软的，像远处有人在阳台上吹
+    "flugel": dict(formants=[(560, 0.8, 4), (1150, 0.7, 3), (2300, 0.6, 0.5)], tilt=-12.5, cutoff=3000, harm=16,
+                   even=0.9, breath=0.01, air=(600, 3200), chiff=0.4, attack=0.07, release=0.2, vib=(5.0, 9.0, 0.4),
+                   glide=0.035, drift=2.5),
+    # 口风琴（少年傍晚）：音乐课上那种，簧片的鼻音，不揉音
+    "melodica": dict(formants=[(1250, 0.8, 4), (500, 0.9, 2)], tilt=-10.5, cutoff=3600, harm=20,
+                     even=0.75, breath=0.01, air=(900, 4000), chiff=0.6, attack=0.035, release=0.08,
+                     vib=(0.0, 0.0, 1.0), glide=0.015, drift=3.0),
 }
 
 

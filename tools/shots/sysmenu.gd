@@ -83,7 +83,7 @@ func _run() -> void:
 	await _snap("m03_world_button")
 	await _open()
 	await _snap("m04_world_menu")
-	print("sheet ", main.sysmenu._sheet.get_rect(), " body min ", main.sysmenu._body.get_combined_minimum_size())
+	print("菜单开着：每帧绘制调用 ", Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
 	# 拖一下音量：音乐拉到一半、动静关掉
 	var sliders: Array = main.sysmenu._body.get_children().filter(func(c): return c is Menu.InkSlider)
 	if sliders.size() == 3:

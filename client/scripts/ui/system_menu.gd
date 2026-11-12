@@ -413,26 +413,27 @@ func _fill_info() -> void:
 
 # ---------------------------------------------------------------- 画 ----
 
-## 压暗：一层墨，上面一层很淡的网点（和转场「印出来」的网点一个意思）
-class _Dim extends Control:
+## 压暗：一层墨，上面一层很淡的网点（和转场「印出来」的网点一个意思）。网点在 shaders/menu_dim.gdshader 里算
+class _Dim extends ColorRect:
 	const P := preload("res://scripts/ui/palette.gd")
 
 	func _init() -> void:
 		mouse_filter = Control.MOUSE_FILTER_STOP
-		resized.connect(queue_redraw)
+		color = Color(P.INK, 0.8)
+		var mat := ShaderMaterial.new()
+		mat.shader = load("res://shaders/menu_dim.gdshader")
+		mat.set_shader_parameter("ink", Color(P.INK, 0.8))
+		mat.set_shader_parameter("dot_color", Color(P.OVERLAP, 0.55))
+		material = mat
+		resized.connect(_fit_cell)
 
-	func _draw() -> void:
-		draw_rect(Rect2(Vector2.ZERO, size), Color(P.INK, 0.8))
-		var step := 22.0
-		var y := 0.0
-		var row := 0
-		while y < size.y + step:
-			var x := (step / 2.0) if row % 2 == 1 else 0.0
-			while x < size.x + step:
-				draw_circle(Vector2(x, y), 2.2, Color(P.OVERLAP, 0.55), true, -1.0, true)
-				x += step
-			y += step * 0.866
-			row += 1
+	## 网点大小跟着真实分辨率走，手机和电脑上看起来一样大（同 fx.gd _start）
+	func _fit_cell() -> void:
+		if not is_inside_tree():
+			return
+		var vis := get_viewport().get_visible_rect().size
+		var ratio := float(get_window().size.x) / maxf(1.0, vis.x)
+		(material as ShaderMaterial).set_shader_parameter("cell", maxf(10.0, 22.0 * vis.y / 1080.0 * ratio))
 
 
 ## 左边那一半：两个圆、名字、几岁几点、一句话。都印在压暗的墨上，纸色的字

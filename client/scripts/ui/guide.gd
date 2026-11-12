@@ -55,7 +55,7 @@ var _t := 0.0
 
 
 func _ready() -> void:
-	layer = 4  # 界面（1）上面、小游戏和音量按钮（5）下面
+	layer = 4  # 界面（1）上面、搭伴小游戏（5）和菜单（8，ui/system_menu.gd）下面
 	var cfg := ConfigFile.new()
 	if cfg.load(SAVE) == OK:
 		for k in cfg.get_section_keys("tips") if cfg.has_section("tips") else []:

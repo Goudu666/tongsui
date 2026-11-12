@@ -64,6 +64,11 @@ const ACTION_LOOP := {
 	"old_breakfast": "cook", "old_bikes": "fix", "mind_kids": "talk", "grandkid_park": "kite",
 	"kid_homework": "write", "kid_run": "kick", "kid_listen": "talk", "kid_class": "read",
 	"square_dance": "exercise", "pair_cook": "cook", "gk_pickup": "talk",
+	# 门外的世界：早市、海边、乡下、看病、给住院的家里人送饭（content/maps/{market,seaside,village}.yaml、map.yaml 末尾）
+	"soy_milk": "eat", "stall_sell": "talk", "market_walk": "gaze", "buy_veg": "talk", "haul_crate": "carry", "scrap_sell": "carry",
+	"shell_buy": "talk", "sea_swim": "exercise", "sand_castle": "brush", "tide_dig": "fish", "ship_watch": "gaze",
+	"feed_chicken": "carry", "farm_help": "carry", "creek_fish": "fish", "star_night": "gaze",
+	"see_doctor": "gaze", "ward_meal": "eat",
 	# 家里的东西（content/home.yaml）：看电视、听广播是望着；游戏机、电脑是手上忙；糊纸盒是刷浆糊；攒钱买的是搬回家
 	"hm_tv": "gaze", "hm_radio": "gaze", "hm_console": "type", "hm_books": "read", "hm_tape": "read",
 	"hm_pc": "type", "hm_pc_game": "type", "hm_milk": "eat", "hm_piece": "brush",
@@ -75,6 +80,7 @@ const ACTION_LOOP := {
 const DUTY_LOOP := {
 	"office_desk": "type", "bike_bench": "fix", "breakfast_stall": "cook", "class_desk": "write",
 	"middle_desk": "write", "away_work": "carry", "river_bridge": "carry", "uni_gate": "read",
+	"veg_stall": "talk",  # 清贫人家的孩子歇着的日子在早市帮家里看摊（tracks.yaml 的 restDuty）
 }
 const SIT_ACTIONS := ["listen", "accompany", "tea_box"]
 const WAVE_ACTIONS := ["knock"]

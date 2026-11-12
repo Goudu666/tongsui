@@ -50,6 +50,12 @@ riddles:
   l_first_desk: 家里头一个坐办公室的。
   l_own_door: 四口挤一间，后来有了自己的门。
   l_spent: 家里的买卖倒了。
+  # 门外的世界（content/events/outside.yaml）
+  l_took_sea: 头一回看海，是跟着对门家去的。
+  l_took_market: 跟着对门家，去过一回早市。
+  l_sea_summer: 小时候在海边住过几天。
+  l_threshing: 夏天回过乡下的姥姥家。
+  l_dawn_market: 在天不亮的早市上长大。
   l_early: 走得早了些。
   l_long: 活过九十五。
   l_swimmer: 身子骨硬朗，活过八十五。

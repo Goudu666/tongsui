@@ -48,6 +48,11 @@ const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "pla
 	# 带孩子（docs/FAMILY.md）
 	"kid_homework": "study", "kid_run": "play_river", "kid_listen": "listen", "kid_class": "study",
 	"square_dance": "perform", "pair_cook": "eat", "gk_pickup": "play_alley",
+	# 门外的世界（content/maps/{market,seaside,village}.yaml）：早市借早点铺的吆喝、海边和河沟借河边的水声、地里的活借干活
+	"soy_milk": "eat_out", "stall_sell": "eat_out", "market_walk": "eat_out", "buy_veg": "eat_out", "haul_crate": "work", "scrap_sell": "work",
+	"shell_buy": "eat_out", "sea_swim": "play_river", "sand_castle": "play_alley", "tide_dig": "fish", "ship_watch": "play_river",
+	"feed_chicken": "play_alley", "farm_help": "work", "creek_fish": "fish", "star_night": "play_roof",
+	"see_doctor": "listen", "ward_meal": "eat",
 	# 家里的东西（content/home.yaml）
 	"hm_tv": "listen", "hm_radio": "listen", "hm_console": "play_alley", "hm_books": "study", "hm_tape": "study",
 	"hm_pc": "study", "hm_pc_game": "play_alley", "hm_milk": "eat", "hm_piece": "work",

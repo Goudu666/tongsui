@@ -34,6 +34,31 @@ const SHOTS := [
 	# 下雨的日子（第 8 个参数是回合：weather._pick 按它决定这天下不下）
 	["street_rain_day", "street", 2200, 0, 820, "teen", "summer", 2],
 	["street_rain_night", "street", 2600, 0, 1240, "young", "summer", 2],
+	# 门外的三个世界（家境不同，夏天去的地方不同）和两处出口
+	["market_dawn_a", "market", 800, 0, 400, "childhood", "summer"],
+	["market_dawn_b", "market", 2400, 0, 420, "childhood", "summer"],
+	["market_day", "market", 1500, 0, 660, "teen", "autumn"],
+	["market_night", "market", 900, 0, 1280, "young", "winter"],
+	["seaside_day_a", "seaside", 800, 0, 700, "childhood", "summer"],
+	["seaside_day_b", "seaside", 2000, 0, 760, "childhood", "summer"],
+	["seaside_day_c", "seaside", 3000, 0, 820, "childhood", "summer"],
+	["seaside_dusk", "seaside", 2900, 0, 1100, "childhood", "summer"],
+	["seaside_night", "seaside", 3200, 0, 1270, "childhood", "summer"],
+	["village_day_a", "village", 800, 0, 700, "childhood", "summer"],
+	["village_day_b", "village", 2000, 0, 760, "childhood", "summer"],
+	["village_day_c", "village", 3000, 0, 820, "childhood", "summer"],
+	["village_night", "village", 1000, 0, 1270, "childhood", "summer"],
+	["village_stars", "village", 3200, 0, 1290, "childhood", "summer"],
+	["street_lane_market", "street", 1390, 0, 430, "childhood", "summer"],
+	["street_bus_hospital", "street", 3150, 0, 700, "childhood", "winter"],
+	["hospital_door", "hospital", 500, 0, 600, "childhood", "winter"],
+	# 整幅（RES 宽 = 图宽 × 1.2，一屏装下整张图）：RES=3840x1080 --only=market_full_dawn,market_full_night 之类
+	["market_full_dawn", "market", 1600, 0, 420, "childhood", "summer"],
+	["market_full_night", "market", 1600, 0, 1280, "childhood", "summer"],
+	["seaside_full_day", "seaside", 1900, 0, 720, "childhood", "summer"],
+	["seaside_full_night", "seaside", 1900, 0, 1280, "childhood", "summer"],
+	["village_full_day", "village", 1800, 0, 720, "childhood", "summer"],
+	["village_full_night", "village", 1800, 0, 1280, "childhood", "summer"],
 ]
 
 

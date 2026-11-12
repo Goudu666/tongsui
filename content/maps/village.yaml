@@ -1,0 +1,81 @@
+# 乡下：小康人家夏天回姥姥家住几天。不点名是哪个村。写法见 building.yaml 文件头。
+# 接口稿见「门外的世界」线程（outside/SPEC.md 第一节）。
+#
+# 和海边一样是 trip：只有夏天那件事（events/outside.yaml 的 out_village_*）送来，被叫上的对门一起来。
+# 姥姥家的院没有 owner：谁住进来谁就睡这张炕。这里的行动不写家境。
+# 姥姥只是这张图上的一位老人，跟楼里各家的姥姥（何家）不是一回事，不写她是谁家的。
+
+id: village
+name: 乡下
+width: 3600
+far: true
+trip: true
+seen: saw_village
+
+areas:
+  - { id: village_gate, name: 村口, span: [ 0, 600 ], floor: 0 }
+  - { id: grandma_yard, name: 姥姥家的院, span: [ 600, 1500 ], floor: 0 }
+  - { id: cornfield, name: 玉米地, span: [ 1500, 2400 ], floor: 0 }
+  - { id: creek, name: 河沟, span: [ 2400, 3000 ], floor: 0 }
+  - { id: threshing, name: 晒场, span: [ 3000, 3600 ], floor: 0 }
+
+exits:
+  - { id: to_home, at: 100, to: street, arrive: 330, label: 坐车回家, ride: 240 }
+
+spots:
+  - { id: yard_bed, at: 800, area: grandma_yard, actions: [ sleep ] }
+  - { id: yard_table, at: 1050, area: grandma_yard, actions: [ eat ] }
+  - { id: yard_chicken, at: 1320, area: grandma_yard, actions: [ feed_chicken ] }
+  - { id: corn_row, at: 1950, area: cornfield, actions: [ farm_help ] }
+  - { id: creek_bank, at: 2700, area: creek, actions: [ creek_fish ] }
+  - { id: threshing_ground, at: 3300, area: threshing, actions: [ star_night ] }
+
+npcs:
+  - id: grandma_v
+    name: 姥姥
+    at: 960
+    eras: [ childhood, teen ]
+    lines:
+      default:
+        - 饿不饿？锅里还有饼子。
+        - 城里来的孩子，脸都白。
+        - 鸡蛋别攥着，攥碎了。
+        - 晚上盖上点儿肚子，地里返凉。
+  - id: gate_old
+    name: 村口坐着的老人
+    at: 300
+    eras: [ childhood, teen ]
+    lines:
+      default:
+        - 谁家的？城里来的吧。
+        - 喇叭一响，就是有电影了。
+  - id: cousin
+    name: 表哥
+    at: 2100
+    eras: [ childhood, teen ]
+    slots: [ am, pm, evening ]
+    lines:
+      default:
+        - 跟着我，别踩苗。
+        - 你们城里有河沟吗？没有吧。
+        - 晚上晒场有电影，早点去占地方。
+
+props:
+  - id: pump_well
+    name: 压水井
+    at: 1180
+    lines:
+      default:
+        - 一口压水井，得先倒一瓢水进去引着，才压得上来。
+  - id: loudspeaker
+    name: 电线杆上的喇叭
+    at: 420
+    lines:
+      default:
+        - 村口电线杆上挂着一个大喇叭，一早一晚各响一回。
+
+art: |
+  土路、一棵大槐树，村口一根电线杆挂着喇叭。姥姥家是砖瓦房带院墙，院里一口压水井、几只鸡、晒着的玉米，屋檐下挂着蒜辫子；
+  玉米地一人多高，人走进去就看不见；河沟上搭一块石板，水浅，看得见底下的小鱼；
+  晒场平平一大片，堆着麦秸垛，夜里满天星，放电影的时候支一块白布。
+  梅版为主（土和玉米），青版点在树和河沟上。

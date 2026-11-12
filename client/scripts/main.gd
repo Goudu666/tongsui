@@ -34,6 +34,7 @@ const Pull := preload("res://scripts/duet/pull_text.gd")
 const Icons := preload("res://scripts/ui/icons.gd")
 const Era := preload("res://scripts/ui/era.gd")
 const PathRuler := preload("res://scripts/ui/path_ruler.gd")
+const SystemMenu := preload("res://scripts/ui/system_menu.gd")
 
 var content: Dictionary = {}
 var events_by_id: Dictionary = {}
@@ -98,6 +99,7 @@ var legacy: LegacyUI  ## 传承的界面：投胎页的老物件、结局页的�
 var guide: Guide  ## 开局引导：章首卡、主线路标、头几天的小纸条（ui/guide.gd）
 var juice: Juice  ## 爽感层：做完一件事的飘字、搭伴的印、成长账（ui/juice.gd）
 var stat_strip: StatStrip  ## HUD 左边四个圆表底下的成长账：体魄 / 心智 / 魅力（点开看成长曲线）
+var sysmenu: SystemMenu  ## 菜单：右上角的小按钮 / 返回键 / Esc（音量、回大厅、回标题、退出，ui/system_menu.gd）
 var _preview_minute := 390.0
 const PAGE_WIDTH := 1560.0    ## 菜单页内容最宽这么多，再宽就居中（两栏）
 const COLUMN_WIDTH := 1040.0  ## 只有一栏的页面
@@ -119,6 +121,9 @@ func _ready() -> void:
 	legacy = LegacyUI.new(self)
 	_load_content()
 	_build_layers()
+	sysmenu = SystemMenu.new()
+	sysmenu.main = self
+	add_child(sysmenu)
 	_show_title()
 
 
@@ -652,7 +657,7 @@ func _process(delta: float) -> void:
 		_preview_minute = fmod(_preview_minute + delta * 4.0 - 390.0, 930.0) + 390.0
 		hud.minute = _preview_minute
 		world.set_minute(_preview_minute)
-	world.controllable = not modal.visible and not screen.visible and not world.playing
+	world.controllable = not modal.visible and not screen.visible and not world.playing and not sysmenu.is_open()
 	_pump_era(delta)
 	_refresh_partner()
 	_sweep_clock(delta)
@@ -1243,6 +1248,19 @@ func _show_lobby() -> void:
 	code_edit.text_changed.connect(func(_t: String): _set_status(""))  # 「配对码是 6 位」别在改的时候还挂着
 	Kit.tint(_primary(right, "加入（我是梅）", func(): net.join_lifeline(code_edit.text.strip_edges(), name_edit.text)), P.MEI)
 	_status(right)
+
+
+## 菜单里的「回大厅」：离开这条人生线（存档在服务器上，影子替你过着），回到挑人生线的那一页
+func leave_to_lobby() -> void:
+	var solo := net != null and net.is_local()
+	_leave_world()
+	banner.visible = false
+	if net != null:
+		net.go_offline()
+	if solo:
+		_show_solo()
+	else:
+		_show_online()
 
 
 func _show_server_settings() -> void:

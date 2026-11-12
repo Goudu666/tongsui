@@ -5,7 +5,7 @@ extends RefCounted
 
 const P := preload("res://scripts/ui/palette.gd")
 
-const KINDS := ["clock", "coin", "flag", "sun", "moon", "play", "pause", "chevron", "lock", "check", "pair", "book", "bed", "walk", "star"]
+const KINDS := ["clock", "coin", "flag", "sun", "moon", "play", "pause", "chevron", "lock", "check", "pair", "book", "bed", "walk", "star", "menu"]
 
 
 static func draw(c: CanvasItem, kind: String, at: Vector2, r: float, color := Color(0, 0, 0, 0), ink := P.INK) -> void:
@@ -80,6 +80,14 @@ static func draw(c: CanvasItem, kind: String, at: Vector2, r: float, color := Co
 			c.draw_polyline(PackedVector2Array([at + Vector2(r * 0.05, -r * 0.35), at + Vector2(-r * 0.1, r * 0.2), at + Vector2(-r * 0.45, r * 0.8)]), ink, w, true)
 			c.draw_line(at + Vector2(-r * 0.1, r * 0.2), at + Vector2(r * 0.35, r * 0.8), ink, w, true)
 			c.draw_line(at + Vector2(-r * 0.45, -r * 0.05), at + Vector2(r * 0.45, -r * 0.15), ink, w, true)
+		"menu":
+			# 三道墨线，长短不齐（手画的）；中间那道底下垫一块专色
+			if color.a > 0.0:
+				c.draw_rect(Rect2(at + Vector2(-r * 0.62, -r * 0.12) + slip, Vector2(r * 1.24, r * 0.3)), color)
+			for i in 3:
+				var yy := (i - 1) * r * 0.5
+				var len := r * (0.78 if i != 1 else 0.62)
+				c.draw_line(at + Vector2(-r * 0.78, yy + (i - 1) * 0.6), at + Vector2(-r * 0.78 + len * 2.0 * (0.96 if i == 2 else 1.0), yy - (i - 1) * 0.4), ink, w * 1.15, true)
 		"star":
 			var pts := PackedVector2Array()
 			for i in 10:

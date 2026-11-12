@@ -132,7 +132,21 @@ def layer_strip(name):
     return np.asarray(Image.open(p).convert("RGBA")) if os.path.exists(p) else None
 
 
-def render(sid, x, w=2133, time="day", actors=(("qing", "young", 0), ("mei", "young", 0)), ax=None):
+def layout():
+    """scene_art.gd 里的 LAYOUT（远景、中景楼脚）。"""
+    import re
+    src = open(os.path.join(ROOT, "client", "scripts", "world", "scene_art.gd"), encoding="utf-8").read()
+    out = {}
+    for m in re.finditer(r'"(\w+)": \{([^}]*)\}', src.split("const LAYOUT")[1].split("\n}")[0]):
+        d = {}
+        for k, v in re.findall(r'"(\w+)": ([^,]+)', m.group(2)):
+            v = v.strip()
+            d[k] = None if v == "null" else (v.strip('"') if v.startswith('"') else float(v))
+        out[m.group(1)] = d
+    return out
+
+
+def render(sid, x, w=2133, time="day", actors=(("qing", "young", 0), ("mei", "young", 0)), ax=None, season="summer"):
     sc = scenes.load_scenes()[sid]
     x = int(x) // PX * PX
     w = int(w) // PX * PX
@@ -145,14 +159,22 @@ def render(sid, x, w=2133, time="day", actors=(("qing", "young", 0), ("mei", "yo
     canvas[:] = np.repeat(np.repeat(s, PX, 0), PX, 1)
     # 远景、中景（有就贴；按 scene_art 的视差摆，这里镜头左边 = x）
     era = "young"
-    for kind, par in (("far", 0.1), ("mid", 0.32)):
-        st = layer_strip(f"{kind}_{era}.png")
+    lay = layout().get(sid, {})
+    hz = np.array([0.90, 0.92, 0.88]) * (1 - dusk) + np.array([0.97, 0.80, 0.66]) * dusk * 0.8 + np.array([0.90, 0.92, 0.88]) * dusk * 0.2
+    for kind, par, hz_amt in (("far", 0.1, 0.42), ("mid", 0.32, 0.12)):
+        if kind in lay and lay[kind] is None:
+            continue
+        st = layer_strip(f"{kind}_{lay.get(kind + '_kind', era)}.png")
         if st is None:
             continue
-        lay = {"street": {"far": 420.0, "mid": 640.0}}.get(sid, {})
         base = lay.get(kind, horizon + scenes.TOP if kind == "far" else horizon + scenes.TOP + 60)
+        st = st.astype(np.float32)
+        hzv = float(lay.get(kind + "_haze", hz_amt))
+        st[..., :3] = st[..., :3] * (1 - hzv) + hz * 255 * hzv
+        st[..., :3] *= (1 - dusk * 0.4) + np.array([0.98, 0.70, 0.52]) * dusk * 0.4
         tw = st.shape[1]
-        off = int(-(x * par) % tw)
+        off = int(x * par) % tw
+        off -= off % PX
         reps = np.concatenate([st] * (w // tw + 2), 1)[:, off:off + w]
         paste(canvas, reps, 0, int(base - scenes.TOP - st.shape[0]))
     # 底图
@@ -165,6 +187,18 @@ def render(sid, x, w=2133, time="day", actors=(("qing", "young", 0), ("mei", "yo
             parts.append(np.asarray(Image.open(p).convert("RGBA")))
     full = np.concatenate(parts, 1)[:, x - k0 * scenes.SLICE:x - k0 * scenes.SLICE + w]
     paste(canvas, full, 0, 0)
+    # 树（不缩放，落在格子上）
+    trees = {"huai": [624, 702], "willow": [642, 681], "young": [300, 381]}
+    for a in anc.get("trees", []):
+        kind = a[4]
+        if kind not in trees:
+            continue
+        t = layer_strip(f"tree_{kind}_{season}.png")
+        if t is None:
+            continue
+        tx = int(round((a[0] - trees[kind][0] / 2) / 3) * 3) - x
+        ty = int(round((a[1] - trees[kind][1] - scenes.TOP) / 3) * 3)
+        paste(canvas, t, tx, ty)
     # 人
     gy = sc["floors"][0] - scenes.TOP if sc.get("top", 0) == 0 else sc["floors"][0] - sc["top"] - scenes.TOP
     ax = ax if ax is not None else w // 2

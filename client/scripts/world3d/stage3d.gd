@@ -369,6 +369,8 @@ func _process(delta: float) -> void:
 	if world == null or set3d == null:
 		return
 	_watch(delta)
+	if set3d == null:  # 刚测出太卡、退回了 2D（fell_back 里已经把 3D 拆了）
+		return
 	_sync_camera()
 	_sync_actors(delta)
 	_sync_folks()

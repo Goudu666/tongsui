@@ -9,6 +9,7 @@ var cx := -4.0
 var cy := 0.75
 var fov := 22.0
 var tag := ""
+var portrait := ""  ## qing:young —— 只拍一个人的近景（头和肩），正脸偏一点、背后一道逆光
 
 func _initialize() -> void:
 	for a in OS.get_cmdline_user_args():
@@ -20,6 +21,7 @@ func _initialize() -> void:
 		elif a.begins_with("--cy="): cy = float(a.trim_prefix("--cy="))
 		elif a.begins_with("--fov="): fov = float(a.trim_prefix("--fov="))
 		elif a.begins_with("--tag="): tag = a.trim_prefix("--tag=")
+		elif a.begins_with("--portrait="): portrait = a.trim_prefix("--portrait=")
 	DirAccess.make_dir_recursive_absolute(out)
 	_run()
 
@@ -49,8 +51,14 @@ func _run() -> void:
 	var fm := StandardMaterial3D.new(); fm.albedo_color = Color("#6f685d"); fm.roughness = 0.9; floor.material_override = fm; vp.add_child(floor)
 	var figs: Array = []
 	var x := -4.5
-	for st in ["childhood", "teen", "young", "middle", "old"]:
-		for r in ["qing", "mei"]:
+	var who := [["qing", "childhood"], ["mei", "childhood"], ["qing", "teen"], ["mei", "teen"], ["qing", "young"], ["mei", "young"], ["qing", "middle"], ["mei", "middle"], ["qing", "old"], ["mei", "old"]]
+	if portrait != "":
+		who = [portrait.split(":")]
+		var back := DirectionalLight3D.new(); back.rotation_degrees = Vector3(-25, 160, 0); back.light_color = Color(1.0, 0.86, 0.7); back.light_energy = 0.6; vp.add_child(back)
+	for pair in who:
+		if true:
+			var r: String = pair[0]
+			var st: String = pair[1]
 			var f := Figure.new()
 			vp.add_child(f)
 			f.build(r, st)
@@ -78,8 +86,19 @@ func _run() -> void:
 		for f in figs:
 			f.phase = fmod(f.phase + 0.03, 1.0)
 		await process_frame
+	if portrait != "":
+		var f: Node3D = figs[0]
+		var hd: Node3D = f.j.head
+		var hp: Vector3 = hd.global_position + Vector3(0, f._spec.hr * 0.75, 0)
+		var fwd: Vector3 = (f.j.root as Node3D).global_transform.basis.z.normalized()
+		fwd = fwd.rotated(Vector3.UP, -0.3 if f.dir > 0 else 0.3)
+		cam.fov = 21.0
+		var dist: float = 1.35 + float(f._spec.hr) * 2.0
+		cam.look_at_from_position(hp + fwd * dist + Vector3(0, 0.06, 0), hp - Vector3(0, f._spec.hr * 0.55, 0))
+		for i in 3:
+			await process_frame
 	await RenderingServer.frame_post_draw
-	var name := "%s%s%s" % [pose, "_close" if close else "", tag]
+	var name := "%s%s%s%s" % [pose, "_close" if close else "", ("_" + portrait.replace(":", "_")) if portrait != "" else "", tag]
 	vp.get_texture().get_image().save_png("%s/%s.png" % [out, name])
 	print("saved ", name)
 	quit()

@@ -294,10 +294,10 @@ static func anime_head(r: Vector3, jaw := 1.0, seg := 32, rings := 22) -> ArrayM
 			var p := _sph(theta, phi, r)
 			var low := clampf(-cos(theta), 0.0, 1.0)      # 0 赤道 … 1 下巴尖
 			var front := clampf(cos(phi), 0.0, 1.0)        # 脸这一面
-			p.x *= 1.0 - jaw * 0.42 * pow(low, 1.4)
+			p.x *= 1.0 - jaw * 0.36 * pow(low, 1.5)
 			p.z *= 1.0 - jaw * 0.3 * pow(low, 1.6) * (1.0 - front)
 			p.z += jaw * r.z * 0.08 * pow(low, 2.0) * front
-			p.y *= 1.0 + jaw * 0.1 * pow(low, 2.0)
+			p.y *= 1.0 + jaw * 0.03 * pow(low, 2.0)
 			row.append(p)
 		grid.append(row)
 	for j in rings:

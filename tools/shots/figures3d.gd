@@ -5,12 +5,21 @@ const Figure := preload("res://scripts/world3d/figure3d.gd")
 var out := "/tmp/fig"
 var pose := "idle"
 var close := false
+var cx := -4.0
+var cy := 0.75
+var fov := 22.0
+var tag := ""
 
 func _initialize() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--out="): out = a.trim_prefix("--out=")
 		elif a.begins_with("--pose="): pose = a.trim_prefix("--pose=")
 		elif a == "--close": close = true
+		elif a.begins_with("--style="): Figure.style = a.trim_prefix("--style=")
+		elif a.begins_with("--cx="): cx = float(a.trim_prefix("--cx="))
+		elif a.begins_with("--cy="): cy = float(a.trim_prefix("--cy="))
+		elif a.begins_with("--fov="): fov = float(a.trim_prefix("--fov="))
+		elif a.begins_with("--tag="): tag = a.trim_prefix("--tag=")
 	DirAccess.make_dir_recursive_absolute(out)
 	_run()
 
@@ -23,17 +32,21 @@ func _run() -> void:
 	root.add_child(vp)
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color("#d9d2c4")
+	env.background_color = Color("#cfc8bb")
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color("#c9d4e0")
-	env.ambient_light_energy = 0.3
+	env.ambient_light_color = Color("#b9c8dc")
+	env.ambient_light_energy = 0.35
 	env.tonemap_mode = Environment.TONE_MAPPER_ACES
-	env.tonemap_exposure = 1.0
+	env.tonemap_exposure = 0.95
+	env.tonemap_white = 6.0  # 光和调色跟街上（stage3d 白天）一样
+	env.adjustment_enabled = true
+	env.adjustment_contrast = 1.1
+	env.adjustment_saturation = 1.12
 	var we := WorldEnvironment.new(); we.environment = env; vp.add_child(we)
-	var sun := DirectionalLight3D.new(); sun.shadow_enabled = true; sun.rotation_degrees = Vector3(-38, 35, 0); sun.light_color = Color("#fff1dc"); sun.light_energy = 0.9; vp.add_child(sun)
-	var fill := DirectionalLight3D.new(); fill.rotation_degrees = Vector3(-10, -140, 0); fill.light_color = Color("#a9c4ff"); fill.light_energy = 0.35; vp.add_child(fill)
+	var sun := DirectionalLight3D.new(); sun.shadow_enabled = true; sun.rotation_degrees = Vector3(-38, 35, 0); sun.light_color = Color(1.0, 0.96, 0.9); sun.light_energy = 0.75; vp.add_child(sun)
+	var fill := DirectionalLight3D.new(); fill.rotation_degrees = Vector3(-10, -140, 0); fill.light_color = Color(1.0, 0.93, 0.85); fill.light_energy = 0.25; vp.add_child(fill)
 	var floor := MeshInstance3D.new(); var pm := PlaneMesh.new(); pm.size = Vector2(30, 30); floor.mesh = pm
-	var fm := StandardMaterial3D.new(); fm.albedo_color = Color("#9c917f"); fm.roughness = 0.9; floor.material_override = fm; vp.add_child(floor)
+	var fm := StandardMaterial3D.new(); fm.albedo_color = Color("#6f685d"); fm.roughness = 0.9; floor.material_override = fm; vp.add_child(floor)
 	var figs: Array = []
 	var x := -4.5
 	for st in ["childhood", "teen", "young", "middle", "old"]:
@@ -55,8 +68,8 @@ func _run() -> void:
 	var cam := Camera3D.new()
 	vp.add_child(cam)
 	if close:
-		cam.fov = 22
-		cam.look_at_from_position(Vector3(-4.0, 1.0, 3.6), Vector3(-4.0, 0.75, 0))
+		cam.fov = fov
+		cam.look_at_from_position(Vector3(cx, cy + 0.25, 3.6), Vector3(cx, cy, 0))
 	else:
 		cam.fov = 30
 		cam.look_at_from_position(Vector3(0, 1.4, 10.5), Vector3(0, 0.8, 0))
@@ -66,7 +79,7 @@ func _run() -> void:
 			f.phase = fmod(f.phase + 0.03, 1.0)
 		await process_frame
 	await RenderingServer.frame_post_draw
-	var name := "%s%s" % [pose, "_close" if close else ""]
+	var name := "%s%s%s" % [pose, "_close" if close else "", tag]
 	vp.get_texture().get_image().save_png("%s/%s.png" % [out, name])
 	print("saved ", name)
 	quit()

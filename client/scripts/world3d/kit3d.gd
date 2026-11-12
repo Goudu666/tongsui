@@ -279,3 +279,62 @@ static func mat(c: Color, rough := 0.75, metal := 0.0, rim := 0.0) -> StandardMa
 		m.rim = rim
 		m.rim_tint = 0.6
 	return m
+
+
+## 日漫的头：上半个球，下半往下巴收（腮帮子收窄、下巴略往前、略尖），jaw 0 就是椭球
+static func anime_head(r: Vector3, jaw := 1.0, seg := 32, rings := 22) -> ArrayMesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var grid: Array = []
+	for j in rings + 1:
+		var theta := PI * float(j) / float(rings)
+		var row := PackedVector3Array()
+		for i in seg + 1:
+			var phi := TAU_ * float(i) / float(seg)
+			var p := _sph(theta, phi, r)
+			var low := clampf(-cos(theta), 0.0, 1.0)      # 0 赤道 … 1 下巴尖
+			var front := clampf(cos(phi), 0.0, 1.0)        # 脸这一面
+			p.x *= 1.0 - jaw * 0.42 * pow(low, 1.4)
+			p.z *= 1.0 - jaw * 0.3 * pow(low, 1.6) * (1.0 - front)
+			p.z += jaw * r.z * 0.08 * pow(low, 2.0) * front
+			p.y *= 1.0 + jaw * 0.1 * pow(low, 2.0)
+			row.append(p)
+		grid.append(row)
+	for j in rings:
+		for i in seg:
+			var a: Vector3 = grid[j][i]
+			var b: Vector3 = grid[j][i + 1]
+			var c: Vector3 = grid[j + 1][i + 1]
+			var d: Vector3 = grid[j + 1][i]
+			for p in [a, b, c, a, c, d]:
+				st.set_uv(Vector2.ZERO)
+				st.add_vertex(p)
+	st.index()
+	st.generate_normals()
+	return st.commit()
+
+
+## 一缕头发：沿 path 走的扁管子。截面是椭圆，宽的一边横着贴头皮，薄的一边朝 outs（往外）；
+## 根上略窄、三分之一处最宽、到发梢收成尖。几缕可以加进同一个 SurfaceTool 并成一张网格。
+static func lock_into(st: SurfaceTool, path: PackedVector3Array, outs: PackedVector3Array, w0: float, t0: float, seg := 8, tip := 0.0) -> void:
+	var n := path.size()
+	var rings: Array = []
+	for k in n:
+		var tg: Vector3 = (path[mini(k + 1, n - 1)] - path[maxi(k - 1, 0)]).normalized()
+		var o: Vector3 = outs[k] - tg * outs[k].dot(tg)
+		if o.length() < 1e-5:
+			o = Vector3.UP.cross(tg)
+		o = o.normalized()
+		var side := tg.cross(o).normalized()
+		var t := float(k) / float(n - 1)
+		var f := lerpf(0.72, 1.0, t / 0.3) if t < 0.3 else pow(maxf(0.0, 1.0 - (t - 0.3) / 0.7), 0.85)
+		f = maxf(f, tip * (1.0 - pow(t, 6.0) * 0.3))  # tip > 0：齐的发梢（剪平的刘海）
+		var row := PackedVector3Array()
+		for i in seg:
+			var a := TAU_ * float(i) / float(seg)
+			row.append(path[k] + side * cos(a) * w0 * f + o * sin(a) * t0 * maxf(f, 0.0))
+		rings.append(row)
+	for k in n - 1:
+		for i in seg:
+			var i2 := (i + 1) % seg
+			_quad(st, rings[k][i2], rings[k][i], rings[k + 1][i], rings[k + 1][i2], Vector2.ZERO, Vector2.ZERO, Vector2.ZERO, Vector2.ZERO)

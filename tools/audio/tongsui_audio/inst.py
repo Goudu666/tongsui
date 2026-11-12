@@ -266,6 +266,9 @@ MODELS = {
     "flugel": dict(formants=[(560, 0.8, 4), (1150, 0.7, 3), (2300, 0.6, 0.5)], tilt=-12.5, cutoff=3000, harm=16,
                    even=0.9, breath=0.01, air=(600, 3200), chiff=0.4, attack=0.07, release=0.2, vib=(5.0, 9.0, 0.4),
                    glide=0.035, drift=2.5),
+    # 芯片主旋律（青年的梅）：25% 脉冲波，连着吹时音高快速滑过去，揉音晚进来
+    "pulse": dict(formants=[(900, 1.2, 2)], tilt=-8.0, cutoff=2500, harm=24, even=1.0, duty=0.25, breath=0.0,
+                  attack=0.006, release=0.06, vib=(5.6, 11.0, 0.3), glide=0.01, drift=1.0),
     # 口风琴（少年傍晚）：音乐课上那种，簧片的鼻音，不揉音
     "melodica": dict(formants=[(1250, 0.8, 4), (500, 0.9, 2)], tilt=-10.5, cutoff=3600, harm=20,
                      even=0.75, breath=0.01, air=(900, 4000), chiff=0.6, attack=0.035, release=0.08,
@@ -329,6 +332,8 @@ def sustained_line(notes, total: float, model: str, seed: int = 1, level: float 
     for k in range(1, p["harm"] + 1):
         fk = freq * k
         a_k = gain(fk) * (1.0 if k % 2 == 1 else p["even"]) * np.where(fk < SR * 0.45, 1.0, 0.0)
+        if "duty" in p:  # 脉冲波：谐波按占空比挖掉一些（芯片主旋律）
+            a_k = a_k * float(_pulse_amps(np.array([k]), p["duty"])[0])
         if k > 3:
             a_k = a_k * bright ** (k / 6.0)
         out += a_k * np.sin(k * phase + rng.uniform(0, TAU))
@@ -489,3 +494,89 @@ def clapper(big: bool, vel: float = 0.8, seed: int = 0) -> np.ndarray:
         p = modal(sec(0.06), [2350 * rng.uniform(0.95, 1.05), 3480, 5150], [0.012, 0.009, 0.006], [1.0, 0.6, 0.35], rng, 0.001)
         y[at:at + len(p)] += p[: len(y) - at] * (0.9 ** j)
     return y * vel * 0.38
+
+
+# ============================================================ 芯片（11-12 画面定成像素以后加的） ====
+# 老游戏机的声音：方波（脉冲波）、阶梯三角波、噪声。但这里是「暖的」芯片——全部带限合成（不混叠），
+# 3.5 kHz 以上很快掉下去，音量包络按 16 级台阶走（那一点「一格一格」的味道），跟真乐器混着用。
+
+def _pulse_amps(k: np.ndarray, duty: float) -> np.ndarray:
+    """占空比 duty 的脉冲波第 k 次谐波的幅度（相对 1/k）。duty=0.5 是方波，只有奇次谐波。"""
+    return np.abs(np.sin(np.pi * k * duty)) / (np.pi * duty)
+
+
+def _steps(env: np.ndarray, levels: int = 16) -> np.ndarray:
+    """把包络量化成 levels 级台阶，再用 1.5 毫秒抹一下台阶的棱，免得「咔咔」响。"""
+    q = np.round(np.clip(env, 0, 1) * (levels - 1)) / (levels - 1)
+    w = max(3, sec(0.0015))
+    return np.convolve(np.pad(q, (w, w), mode="edge"), np.ones(2 * w + 1) / (2 * w + 1), mode="valid")
+
+
+@lru_cache(maxsize=4096)
+def chip(m: float, dur: float, vel: float = 0.7, duty: float = 0.25, decay: float = 0.9) -> np.ndarray:
+    """芯片的一声：脉冲波，起音一点点往下弯（像老卡带的音高包络），按住时一格一格变轻，晚一点进来的轻揉音。"""
+    f = midi(m)
+    n = sec(dur + 0.25)
+    tt = times(n)
+    k = np.arange(1, 25)
+    amps = _pulse_amps(k, duty) / k
+    gain = _spectral_env([(800, 1.2, 2)], -3.5, 2500)
+    vib = cents(9.0 * np.sin(TAU * 5.6 * tt) * np.clip((tt - 0.28) / 0.2, 0, 1))
+    bend = cents(35.0 * np.exp(-tt / 0.012))
+    ph = TAU * np.cumsum(f * vib * bend) / SR
+    y = np.zeros(n)
+    for kk, a in zip(k, amps):
+        fk = f * kk
+        if fk > SR * 0.45:
+            break
+        y += a * gain(fk) * np.sin(kk * ph)
+    env = 0.35 + 0.65 * np.exp(-tt / max(0.08, decay * (440.0 / f) ** 0.2))
+    hold = sec(dur)
+    if hold < n:
+        env[hold:] *= np.exp(-np.arange(n - hold) / (SR * 0.045))
+    y = y * _steps(env)
+    y = y / (np.max(np.abs(y)) + 1e-9)
+    return fade(y * vel * 0.32, 0.002, 0.03)
+
+
+@lru_cache(maxsize=4096)
+def tri_bass(m: float, dur: float, vel: float = 0.7) -> np.ndarray:
+    """阶梯三角波贝斯：三角波量化成 32 级（老游戏机那种有一点颗粒的低音），低通磨圆，不刺。"""
+    f = midi(m)
+    n = sec(dur + 0.12)
+    tt = times(n)
+    ph = (f * tt) % 1.0
+    tri = 1.0 - 4.0 * np.abs(ph - 0.5)
+    tri = np.round(tri * 15.5) / 15.5
+    y = lp(tri, 1100, 4)
+    env = np.ones(n)
+    hold = sec(dur)
+    if hold < n:
+        env[hold:] = np.exp(-np.arange(n - hold) / (SR * 0.03))
+    return fade(y * env * vel * 0.5, 0.004, 0.02)
+
+
+def chip_noise(kind: str = "hat", vel: float = 0.5, seed: int = 0) -> np.ndarray:
+    """噪声鼓：hat 是短的高噪声，snare 是带一点音高的中频噪声。用 15 位移位寄存器那种「粗」的噪声，再磨一磨。"""
+    rng = np.random.default_rng(700 + seed)
+    hold = 6 if kind == "hat" else 14  # 每个随机值保持几个采样：越大越粗、越低
+    n = sec(0.08 if kind == "hat" else 0.18)
+    raw = np.repeat(rng.choice([-1.0, 1.0], n // hold + 1), hold)[:n]
+    tt = times(n)
+    if kind == "hat":
+        y = bp(raw, 4500, 9000) * _steps(np.exp(-tt / 0.018), 8) * 0.3
+    else:
+        body = np.sin(TAU * 190 * tt) * np.exp(-tt / 0.03) * 0.5
+        y = (bp(raw, 800, 4200) * 0.6 + body) * _steps(np.exp(-tt / 0.055), 8)
+    return fade(y * vel * 0.45, 0.0005, 0.01)
+
+
+@lru_cache(maxsize=1024)
+def chip_blip(m: float, vel: float = 0.6) -> np.ndarray:
+    """早上那一层的芯片小铃：一声很短的方波 + 一个同音的轻回声（老游戏没有混响，只有这种假回声）。"""
+    a = chip(m, 0.09, vel, 0.25, 0.15)
+    b = chip(m, 0.07, vel * 0.4, 0.5, 0.12)
+    out = np.zeros(len(a) + sec(0.11) + len(b))
+    out[:len(a)] += a
+    out[sec(0.11):sec(0.11) + len(b)] += b
+    return lp(out, 2400, 4) * 0.9

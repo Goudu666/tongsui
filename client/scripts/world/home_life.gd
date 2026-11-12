@@ -1,8 +1,9 @@
 extends Node2D
 ## 家里的东西：红砖楼三楼两户人家屋里摆着什么（content/home.yaml，服务器 WORLD.homes）和按家境摆的陈设。
 ##
-## 美术：res://art/home/atlas.png + sprites.json（tools/art/home.py 生成）。每张精灵按它在楼里那张图上的位置印好了
-## （at = 这张图自己的坐标，左上角），这里原样贴回去，不缩放不翻转；梅家是另印的镜像。
+## 美术：res://art/home/atlas.png + sprites.json（tools/art/pixel/pxhome.py 生成，像素版；老的孔版是 tools/art/home.py）。
+## 每张精灵按它在楼里那张图上的位置印好了（at = 这张图自己的坐标，左上角，落在 3×3 的点格上），这里原样贴回去，
+## 贴图 1 像素 = 1 世界像素（scale 1），不缩放不翻转；梅家是另印的镜像。
 ## 挑哪几张（pick）和 tools/art/home.py 的 pick() 一致：
 ##   家境（0 清贫 1 小康 2 殷实）定陈设：布帘子和折叠床、糊好的纸盒 / 缝纫机、圆钟 / 地板革、沙发、摆钟；电视柜是木箱子、矮柜还是玻璃门柜
 ##   WORLD.homes 定物件：收音机、电视、游戏机、冰箱、书柜、电话、复读机、电脑、门口的牛奶箱
@@ -26,7 +27,7 @@ var wealth: Dictionary = {"qing": 1, "mei": 1}
 var decade := 3
 var _atlas: Texture2D
 var _sprites: Dictionary = {}
-var _scale := 1.25
+var _scale := 1.0
 var _keys: Array = []          ## 现在摆着的，从后往前
 var _born: Dictionary = {}     ## key -> 哪一刻开始印（秒）；一进场就有的是 -INF
 var _t := 0.0
@@ -34,7 +35,7 @@ var _seen := false             ## 头一回拿到 homes 之前别放动画（进
 
 
 func _init() -> void:
-	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	set_process(false)
 	if not (FileAccess.file_exists(META) and ResourceLoader.exists(ATLAS)):
 		return
@@ -43,7 +44,7 @@ func _init() -> void:
 		return
 	_atlas = load(ATLAS)
 	_sprites = meta.get("sprites", {})
-	_scale = float(meta.get("scale", 1.25))
+	_scale = float(meta.get("scale", 1.0))
 	scene_id = str(meta.get("scene", scene_id))
 	ready_ok = _atlas != null and not _sprites.is_empty()
 	_rebuild(false)
@@ -185,5 +186,5 @@ func _draw() -> void:
 			continue
 		# 印出来：先淡后实，往下落一点点
 		var e := 1.0 - pow(1.0 - k, 3.0)
-		var dst := Rect2(float(at[0]), float(at[1]) - (1.0 - e) * 6.0, src.size.x / _scale, src.size.y / _scale)
+		var dst := Rect2(float(at[0]), float(at[1]) - roundf((1.0 - e) * 2.0) * 3.0, src.size.x / _scale, src.size.y / _scale)  # 落下来按整点走
 		draw_texture_rect_region(_atlas, dst, src, Color(1, 1, 1, e))

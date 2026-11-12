@@ -378,10 +378,10 @@
   },
   "music/child_bed.ogg": {
    "seconds": 40.0,
-   "lufs": -24.9,
-   "peak": -12.5,
+   "lufs": -24.8,
+   "peak": -13.2,
    "loop": true,
-   "bytes": 345305
+   "bytes": 331060
   },
   "music/child_call_mei.ogg": {
    "seconds": 3.919,
@@ -390,83 +390,83 @@
    "bytes": 30372
   },
   "music/child_call_qing.ogg": {
-   "seconds": 5.258,
+   "seconds": 3.957,
    "lufs": -18.0,
-   "peak": -7.5,
-   "bytes": 28995
+   "peak": -10.6,
+   "bytes": 23832
   },
   "music/child_eve.ogg": {
    "seconds": 40.0,
-   "lufs": -26.4,
-   "peak": -14.8,
+   "lufs": -26.2,
+   "peak": -14.6,
    "loop": true,
-   "bytes": 183157
+   "bytes": 183435
   },
   "music/child_he.ogg": {
    "seconds": 40.0,
-   "lufs": -36.1,
-   "peak": -22.0,
+   "lufs": -35.9,
+   "peak": -21.8,
    "loop": true,
-   "bytes": 125306
+   "bytes": 125421
   },
   "music/child_mei.ogg": {
    "seconds": 40.0,
-   "lufs": -22.9,
-   "peak": -9.8,
+   "lufs": -22.8,
+   "peak": -9.6,
    "loop": true,
-   "bytes": 177008
+   "bytes": 177258
   },
   "music/child_mei_b.ogg": {
    "seconds": 40.0,
-   "lufs": -22.9,
-   "peak": -12.0,
+   "lufs": -22.8,
+   "peak": -11.9,
    "loop": true,
-   "bytes": 177909
+   "bytes": 178015
   },
   "music/child_mismatch.ogg": {
-   "seconds": 6.307,
+   "seconds": 5.751,
    "lufs": -17.0,
-   "peak": -5.8,
-   "bytes": 48316
+   "peak": -7.1,
+   "bytes": 47392
   },
   "music/child_miss.ogg": {
-   "seconds": 3.577,
+   "seconds": 3.613,
    "lufs": -18.0,
-   "peak": -6.7,
-   "bytes": 29696
+   "peak": -7.0,
+   "bytes": 29238
   },
   "music/child_morn.ogg": {
    "seconds": 40.0,
-   "lufs": -30.9,
-   "peak": -22.0,
+   "lufs": -30.8,
+   "peak": -21.8,
    "loop": true,
    "bytes": 132107
   },
   "music/child_pass.ogg": {
    "seconds": 4.083,
    "lufs": -18.0,
-   "peak": -7.0,
-   "bytes": 34008
+   "peak": -6.1,
+   "bytes": 32623
   },
   "music/child_qing.ogg": {
    "seconds": 40.0,
-   "lufs": -21.9,
-   "peak": -8.6,
+   "lufs": -21.7,
+   "peak": -11.9,
    "loop": true,
-   "bytes": 167422
+   "bytes": 147970
   },
   "music/child_qing_b.ogg": {
    "seconds": 40.0,
-   "lufs": -21.9,
-   "peak": -10.3,
+   "lufs": -21.7,
+   "peak": -12.8,
    "loop": true,
-   "bytes": 179137
+   "bytes": 150653
   },
   "music/child_resonance.ogg": {
-   "seconds": 7.499,
+   "seconds": 6.732,
    "lufs": -17.0,
-   "peak": -5.1,
-   "bytes": 54103
+   "peak": -2.9,
+   "bytes": 51066
   },
   "music/child_rise.ogg": {
    "seconds": 2.695,
@@ -475,17 +475,17 @@
    "bytes": 14706
   },
   "music/child_top.ogg": {
-   "seconds": 5.493,
-   "lufs": -17.8,
-   "peak": -5.8,
-   "bytes": 44252
+   "seconds": 5.472,
+   "lufs": -17.9,
+   "peak": -5.1,
+   "bytes": 42038
   },
   "music/ending.ogg": {
-   "seconds": 61.377,
+   "seconds": 59.915,
    "lufs": -20.0,
-   "peak": -5.5,
+   "peak": -5.4,
    "loop": false,
-   "bytes": 543988
+   "bytes": 517477
   },
   "music/grow_middle.ogg": {
    "seconds": 6.634,
@@ -494,22 +494,22 @@
    "bytes": 55327
   },
   "music/grow_old.ogg": {
-   "seconds": 7.171,
+   "seconds": 7.204,
    "lufs": -18.0,
-   "peak": -6.8,
-   "bytes": 54806
+   "peak": -4.7,
+   "bytes": 52344
   },
   "music/grow_teen.ogg": {
    "seconds": 6.405,
    "lufs": -18.0,
-   "peak": -5.8,
-   "bytes": 49695
+   "peak": -4.0,
+   "bytes": 49984
   },
   "music/grow_young.ogg": {
-   "seconds": 6.263,
+   "seconds": 6.228,
    "lufs": -18.0,
-   "peak": -6.0,
-   "bytes": 51641
+   "peak": -4.5,
+   "bytes": 47516
   },
   "music/middle_bed.ogg": {
    "seconds": 53.333,
@@ -617,114 +617,114 @@
   },
   "music/old_bed.ogg": {
    "seconds": 60.952,
-   "lufs": -30.2,
-   "peak": -18.2,
+   "lufs": -27.6,
+   "peak": -15.6,
    "loop": true,
-   "bytes": 583085
+   "bytes": 532710
   },
   "music/old_call_mei.ogg": {
-   "seconds": 6.655,
+   "seconds": 6.137,
    "lufs": -18.0,
-   "peak": -8.4,
-   "bytes": 54881
+   "peak": -12.8,
+   "bytes": 45334
   },
   "music/old_call_qing.ogg": {
-   "seconds": 5.77,
-   "lufs": -18.2,
-   "peak": -3.0,
-   "bytes": 40705
+   "seconds": 6.368,
+   "lufs": -18.0,
+   "peak": -7.2,
+   "bytes": 27123
   },
   "music/old_eve.ogg": {
    "seconds": 60.952,
-   "lufs": -29.2,
-   "peak": -17.0,
+   "lufs": -28.5,
+   "peak": -17.2,
    "loop": true,
-   "bytes": 266131
+   "bytes": 262489
   },
   "music/old_he.ogg": {
    "seconds": 60.952,
-   "lufs": -39.6,
-   "peak": -25.8,
+   "lufs": -38.7,
+   "peak": -23.8,
    "loop": true,
-   "bytes": 301093
+   "bytes": 187106
   },
   "music/old_mei.ogg": {
    "seconds": 60.952,
-   "lufs": -21.2,
-   "peak": -8.6,
+   "lufs": -22.6,
+   "peak": -10.0,
    "loop": true,
-   "bytes": 333839
+   "bytes": 277689
   },
   "music/old_mei_b.ogg": {
    "seconds": 60.952,
-   "lufs": -21.2,
-   "peak": -9.9,
+   "lufs": -22.5,
+   "peak": -13.1,
    "loop": true,
-   "bytes": 353909
+   "bytes": 293089
   },
   "music/old_mismatch.ogg": {
-   "seconds": 9.089,
+   "seconds": 9.917,
    "lufs": -17.0,
-   "peak": -6.7,
-   "bytes": 72121
+   "peak": -6.9,
+   "bytes": 64617
   },
   "music/old_miss.ogg": {
-   "seconds": 4.302,
+   "seconds": 4.339,
    "lufs": -18.0,
-   "peak": -6.1,
-   "bytes": 37030
+   "peak": -7.7,
+   "bytes": 32159
   },
   "music/old_morn.ogg": {
    "seconds": 60.952,
-   "lufs": -34.2,
-   "peak": -22.1,
+   "lufs": -33.6,
+   "peak": -14.1,
    "loop": true,
-   "bytes": 211110
+   "bytes": 209443
   },
   "music/old_pass.ogg": {
-   "seconds": 4.455,
+   "seconds": 4.472,
    "lufs": -18.0,
-   "peak": -4.8,
-   "bytes": 38912
+   "peak": -6.5,
+   "bytes": 33836
   },
   "music/old_qing.ogg": {
    "seconds": 60.952,
-   "lufs": -20.2,
-   "peak": -3.3,
+   "lufs": -21.5,
+   "peak": -10.1,
    "loop": true,
-   "bytes": 286524
+   "bytes": 172820
   },
   "music/old_qing_b.ogg": {
    "seconds": 60.952,
-   "lufs": -20.2,
-   "peak": -3.5,
+   "lufs": -21.5,
+   "peak": -9.7,
    "loop": true,
-   "bytes": 276033
+   "bytes": 173763
   },
   "music/old_resonance.ogg": {
-   "seconds": 10.247,
+   "seconds": 11.206,
    "lufs": -17.0,
-   "peak": -3.1,
-   "bytes": 80970
+   "peak": -2.3,
+   "bytes": 72095
   },
   "music/old_rise.ogg": {
    "seconds": 2.7,
    "lufs": -18.5,
-   "peak": -6.5,
-   "bytes": 16120
+   "peak": -5.7,
+   "bytes": 14358
   },
   "music/old_top.ogg": {
-   "seconds": 6.075,
-   "lufs": -17.5,
-   "peak": -4.8,
-   "bytes": 52402
+   "seconds": 6.096,
+   "lufs": -16.7,
+   "peak": -4.7,
+   "bytes": 44535
   },
   "music/roll.ogg": {
    "seconds": 20.87,
    "lufs": -22.0,
-   "peak": -11.2,
+   "peak": -11.1,
    "loop": true,
-   "bytes": 173378
+   "bytes": 171847
   },
   "music/teen_bed.ogg": {
    "seconds": 45.714,
@@ -747,10 +747,10 @@
   },
   "music/teen_eve.ogg": {
    "seconds": 45.714,
-   "lufs": -26.3,
-   "peak": -14.6,
+   "lufs": -26.4,
+   "peak": -14.9,
    "loop": true,
-   "bytes": 206481
+   "bytes": 204741
   },
   "music/teen_he.ogg": {
    "seconds": 45.714,
@@ -788,9 +788,9 @@
   "music/teen_morn.ogg": {
    "seconds": 45.714,
    "lufs": -30.9,
-   "peak": -20.9,
+   "peak": -15.7,
    "loop": true,
-   "bytes": 152638
+   "bytes": 176463
   },
   "music/teen_pass.ogg": {
    "seconds": 4.25,
@@ -833,22 +833,22 @@
   "music/title.ogg": {
    "seconds": 50.526,
    "lufs": -23.0,
-   "peak": -10.9,
+   "peak": -7.9,
    "loop": true,
-   "bytes": 391266
+   "bytes": 394586
   },
   "music/young_bed.ogg": {
    "seconds": 38.4,
-   "lufs": -24.7,
-   "peak": -9.7,
+   "lufs": -24.9,
+   "peak": -10.3,
    "loop": true,
-   "bytes": 415245
+   "bytes": 378669
   },
   "music/young_call_mei.ogg": {
-   "seconds": 4.518,
+   "seconds": 4.338,
    "lufs": -18.0,
-   "peak": -11.2,
-   "bytes": 38060
+   "peak": -7.3,
+   "bytes": 31684
   },
   "music/young_call_qing.ogg": {
    "seconds": 4.601,
@@ -858,76 +858,76 @@
   },
   "music/young_eve.ogg": {
    "seconds": 38.4,
-   "lufs": -26.2,
-   "peak": -15.0,
+   "lufs": -26.4,
+   "peak": -15.2,
    "loop": true,
-   "bytes": 180001
+   "bytes": 179970
   },
   "music/young_he.ogg": {
    "seconds": 38.4,
-   "lufs": -35.8,
-   "peak": -21.4,
+   "lufs": -36.0,
+   "peak": -21.6,
    "loop": true,
-   "bytes": 120646
+   "bytes": 120634
   },
   "music/young_mei.ogg": {
    "seconds": 38.4,
-   "lufs": -22.7,
-   "peak": -9.1,
+   "lufs": -22.9,
+   "peak": -9.0,
    "loop": true,
-   "bytes": 206988
+   "bytes": 173829
   },
   "music/young_mei_b.ogg": {
    "seconds": 38.4,
-   "lufs": -22.7,
-   "peak": -10.3,
+   "lufs": -22.9,
+   "peak": -10.5,
    "loop": true,
-   "bytes": 219358
+   "bytes": 184130
   },
   "music/young_mismatch.ogg": {
    "seconds": 6.594,
    "lufs": -17.0,
    "peak": -4.9,
-   "bytes": 53368
+   "bytes": 51613
   },
   "music/young_miss.ogg": {
-   "seconds": 3.649,
+   "seconds": 3.651,
    "lufs": -18.0,
-   "peak": -7.0,
-   "bytes": 30618
+   "peak": -7.2,
+   "bytes": 28851
   },
   "music/young_morn.ogg": {
    "seconds": 38.4,
-   "lufs": -30.7,
-   "peak": -20.8,
+   "lufs": -30.9,
+   "peak": -15.7,
    "loop": true,
-   "bytes": 138925
+   "bytes": 152428
   },
   "music/young_pass.ogg": {
    "seconds": 4.052,
    "lufs": -18.0,
-   "peak": -6.0,
-   "bytes": 33928
+   "peak": -6.2,
+   "bytes": 32493
   },
   "music/young_qing.ogg": {
    "seconds": 38.4,
-   "lufs": -21.7,
-   "peak": -6.8,
+   "lufs": -21.9,
+   "peak": -7.0,
    "loop": true,
-   "bytes": 203769
+   "bytes": 203560
   },
   "music/young_qing_b.ogg": {
    "seconds": 38.4,
-   "lufs": -21.7,
-   "peak": -7.5,
+   "lufs": -21.9,
+   "peak": -7.8,
    "loop": true,
-   "bytes": 201483
+   "bytes": 201383
   },
   "music/young_resonance.ogg": {
-   "seconds": 7.562,
+   "seconds": 7.575,
    "lufs": -17.0,
-   "peak": -4.7,
-   "bytes": 60651
+   "peak": -4.5,
+   "bytes": 55473
   },
   "music/young_rise.ogg": {
    "seconds": 2.7,
@@ -936,10 +936,10 @@
    "bytes": 22530
   },
   "music/young_top.ogg": {
-   "seconds": 5.477,
-   "lufs": -16.9,
-   "peak": -5.1,
-   "bytes": 45229
+   "seconds": 5.481,
+   "lufs": -16.8,
+   "peak": -5.9,
+   "bytes": 43919
   },
   "sfx/act_eat.ogg": {
    "seconds": 1.265,

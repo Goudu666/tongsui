@@ -18,7 +18,8 @@ uniform vec3 night_ink : source_color = vec3(0.17, 0.24, 0.50);
 uniform vec3 lamp_ink : source_color = vec3(0.98, 0.80, 0.42);
 uniform vec3 dusk_ink : source_color = vec3(0.98, 0.66, 0.40);
 uniform vec3 dawn_ink : source_color = vec3(0.99, 0.86, 0.55);
-uniform float cell = 6.0;    // 网点间距（世界像素），和底图的网点差不多大
+uniform float cell = 6.0;    // （孔版时的网点间距，像素版不用）
+const float PX = 3.0;        // 一个点多大（世界像素）
 // 两个人各带一圈光：xy 位置，z 半径，w 强度
 uniform vec4 actor_a = vec4(0.0);
 uniform vec4 actor_b = vec4(0.0);
@@ -47,17 +48,17 @@ float vnoise(vec2 p) {
 	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 
-// 调幅网点：cov 是墨的覆盖率，返回这一点上有没有墨（抗锯齿）。
-// 50% 以下是墨点，以上是纸上的小白点，和真的网版一样。
+// 像素版的「网点」：每 3 个世界像素一个点（和底图同一张格子），cov 是这一点印不印的概率，
+// 按 4×4 拜耳阈值抖动——灯下一圈圈的光是一档一档的点，不是网点。angle、size 留着不用（和孔版那版同一个接口）。
+float bayer(vec2 q) {
+	int x = int(mod(q.x, 4.0));
+	int y = int(mod(q.y, 4.0));
+	int m[16] = int[16](0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5);
+	return (float(m[y * 4 + x]) + 0.5) / 16.0;
+}
+
 float screen_dots(vec2 p, float angle, float size, float cov) {
-	float s = sin(angle);
-	float c = cos(angle);
-	vec2 q = mat2(vec2(c, s), vec2(-s, c)) * p / size;
-	float v = (cos(q.x * 6.2831853) + cos(q.y * 6.2831853)) * 0.25 + 0.5;
-	// v 在 [0,1] 上不是均匀分布，按面积校一下，让 cov 大致等于实际覆盖率
-	float th = cov < 0.5 ? 0.5 * pow(2.0 * cov, 0.62) : 1.0 - 0.5 * pow(2.0 * (1.0 - cov), 0.62);
-	float w = fwidth(v) * 0.75 + 0.001;
-	return (1.0 - smoothstep(th - w, th + w, v)) * step(0.002, cov);
+	return step(bayer(floor(p / PX)), cov) * step(0.002, cov);
 }
 
 float glow(vec2 p, vec4 a) {
@@ -66,50 +67,53 @@ float glow(vec2 p, vec4 a) {
 }
 
 void fragment() {
-	float solid = use_mask ? texture(scene_mask, UV).r : 1.0;
+	// 整块按点算：一个点里颜色一样
+	vec2 pw = (floor(world / PX) + 0.5) * PX;
+	vec2 puv = pw / map_size;
+	float solid = use_mask ? texture(scene_mask, puv).r : 1.0;
 	float k = mix(sky_keep, 1.0, solid);
 	float nt = night * k;
 	float dk = dusk * k;
 	float dw = dawn * k;
 	// 网点边缘带一点手抖，不然太像电脑算的
-	float jitter = (vnoise(world * 0.035) - 0.5) * 0.08;
+	float jitter = (vnoise(pw * 0.035) - 0.5) * 0.04;
 
 	vec3 col = vec3(1.0);
 
 	// 晚霞 / 清早：主要是一层很淡的平网，再疏疏地撒一点大网点，斜着由浓到淡
-	float slope = clamp((world.x * 0.8 + (map_size.y - world.y) * 0.6) / (map_size.x * 0.8 + map_size.y * 0.6), 0.0, 1.0);
+	float slope = clamp((pw.x * 0.8 + (map_size.y - pw.y) * 0.6) / (map_size.x * 0.8 + map_size.y * 0.6), 0.0, 1.0);
 	if (dk > 0.001) {
 		float dusk_cov = dk * (0.03 + 0.13 * slope + jitter * 0.5);
-		col *= mix(vec3(1.0), dusk_ink, screen_dots(world, 1.309, cell * 2.0, clamp(dusk_cov, 0.0, 1.0)) * 0.55);
+		col *= mix(vec3(1.0), dusk_ink, screen_dots(pw, 1.309, cell * 2.0, clamp(dusk_cov, 0.0, 1.0)) * 0.55);
 		col *= mix(vec3(1.0), dusk_ink, dk * (0.12 + 0.20 * slope));
 	}
 	if (dw > 0.001) {
 		float dawn_cov = dw * (0.12 - 0.09 * slope + jitter * 0.5);
-		col *= mix(vec3(1.0), dawn_ink, screen_dots(world, 1.309, cell * 2.0, clamp(dawn_cov, 0.0, 1.0)) * 0.5);
+		col *= mix(vec3(1.0), dawn_ink, screen_dots(pw, 1.309, cell * 2.0, clamp(dawn_cov, 0.0, 1.0)) * 0.5);
 		col *= mix(vec3(1.0), dawn_ink, dw * (0.20 - 0.12 * slope));
 	}
 
 	if (nt > 0.001) {
 		// 灯：烘好的灯光图 + 两个人身上的一小圈
-		float lit = texture(light_map, UV).r;
-		lit = 1.0 - (1.0 - lit) * (1.0 - glow(world, actor_a)) * (1.0 - glow(world, actor_b));
+		float lit = texture(light_map, puv).r;
+		lit = 1.0 - (1.0 - lit) * (1.0 - glow(pw, actor_a)) * (1.0 - glow(pw, actor_b));
 		// 靛蓝夜版：一层平网打底 + 一层网点。暗处网点连成一片实地，
 		// 只有靠近灯的那一圈才看得出网点一点点变小、露出纸来
 		float dark = nt * (1.0 - lit);
 		float night_cov = clamp(smoothstep(0.0, 0.78, dark) + jitter * nt * (1.0 - dark), 0.0, 1.0);
-		col *= mix(vec3(1.0), night_ink, screen_dots(world, 0.785, cell, night_cov) * 0.58);
-		col *= mix(vec3(1.0), night_ink, dark * 0.56);
+		col *= mix(vec3(1.0), night_ink, screen_dots(pw, 0.785, cell, night_cov) * 0.30);
+		col *= mix(vec3(1.0), night_ink, dark * 0.70);
 		// 灯黄版：只在灯下，网角和靛蓝版错开
 		float lamp_cov = nt * smoothstep(0.25, 1.0, lit) * 0.55;
-		col *= mix(vec3(1.0), lamp_ink, screen_dots(world, 0.262, cell, lamp_cov) * 0.85);
+		col *= mix(vec3(1.0), lamp_ink, screen_dots(pw, 0.262, cell, lamp_cov) * 0.85);
 		col *= mix(vec3(1.0), lamp_ink, nt * smoothstep(0.05, 0.9, lit) * 0.25);
 	}
 
 	// 旧纸：整体泛黄 + 零星的斑 + 四边更深
 	if (age > 0.001) {
-		vec2 e = min(world, map_size - world) / 260.0;
+		vec2 e = min(pw, map_size - pw) / 260.0;
 		float edge = 1.0 - clamp(min(e.x, e.y), 0.0, 1.0);
-		float fox = smoothstep(0.74, 0.86, vnoise(world * 0.012) * 0.7 + vnoise(world * 0.05) * 0.3);
+		float fox = smoothstep(0.74, 0.86, vnoise(pw * 0.012) * 0.7 + vnoise(pw * 0.05) * 0.3);
 		float amount = age * (0.55 + 0.45 * edge) + fox * age * 0.6;
 		col *= mix(vec3(1.0), vec3(0.93, 0.86, 0.70), clamp(amount, 0.0, 1.0) * 0.42);
 	}

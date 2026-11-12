@@ -17,7 +17,7 @@ const FORE_SHADER := preload("res://shaders/fore_dof.gdshader")
 const SLICE := 1024.0   ## 每片多宽（世界像素）
 const TOP := -200.0     ## 切片从这张图的 y = TOP 画起（楼顶上头还有一截天）
 const BOTTOM := 1000.0
-const ART_SCALE := 1.25
+const ART_SCALE := 1.0   ## 像素画：贴图 1 像素 = 1 世界像素（每个点 3×3，tools/art/pixel）
 const MASK_STEP := 4.0  ## scene_mask 一格 = 4 世界像素
 const FAR_PARALLAX := 0.1
 const MID_PARALLAX := 0.32
@@ -144,7 +144,7 @@ func show_scene(sc: Dictionary, all_zones: Array, all_exits: Array) -> void:
 		spr.centered = false
 		spr.scale = Vector2.ONE / ART_SCALE
 		spr.position = Vector2(k * SLICE, TOP)
-		spr.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		spr.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR  ## 像素画不要 mipmap：缩小一点时点会糊成一片
 		add_child(spr)
 		_slices.append(spr)
 		has_art = true

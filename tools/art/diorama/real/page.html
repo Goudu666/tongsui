@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../node_modules/@fontsource/noto-sans-sc/900.css">
+<style>body{margin:0;background:#000}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+// shoot.js 用：window.go(opt) 拍一张；window.glbScene(opt) / window.glbFigure(opt) 导 glb（base64）
+import { render, exportScene } from './real.js';
+import { exportFigure, previewGlbs } from './rig.js';
+await document.fonts.load('900 40px "Noto Sans SC"', '小卖部河畔茶社修车里早点告示冰曲艺公交医院3号楼');
+const FIGS = await (await fetch('out/figs.json')).json();
+const sceneData = async (id) => (await fetch('../scene3d/out/' + id + '.json')).json();
+const figList = (opt) => (opt.figs || []).map((f) => ({ ...f, F: FIGS[f.design || 'a'][f.who] }));
+const b64 = (buf) => { let s = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+window.go = async (opt) => render(await sceneData(opt.scene), { ...opt, figs: figList(opt) });
+window.glbScene = async (opt) => b64(await exportScene(await sceneData(opt.scene), { ...opt, figs: figList(opt) }));
+window.glbFigure = async (opt) => b64(await exportFigure(FIGS[opt.design || 'a'][opt.who], opt));
+window.previewGlbs = previewGlbs;
+window.READY = 1;
+</script></body></html>

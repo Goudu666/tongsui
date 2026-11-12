@@ -266,6 +266,10 @@ MODELS = {
     "flugel": dict(formants=[(560, 0.8, 4), (1150, 0.7, 3), (2300, 0.6, 0.5)], tilt=-12.5, cutoff=3000, harm=16,
                    even=0.9, breath=0.01, air=(600, 3200), chiff=0.4, attack=0.07, release=0.2, vib=(5.0, 9.0, 0.4),
                    glide=0.035, drift=2.5),
+    # 人声和声「呜——」（R&B 的伴唱，用在「合」那一层）：o / u 之间的元音，气声多一点
+    "vox": dict(formants=[(330, 0.35, 9), (800, 0.4, 6), (2400, 0.5, 1.5)], tilt=-11.0, cutoff=3200, harm=26,
+                even=0.9, breath=0.02, air=(600, 3800), attack=0.18, release=0.35, vib=(5.2, 12.0, 0.45), glide=0.06,
+                drift=4.0),
     # 口风琴（少年傍晚）：音乐课上那种，簧片的鼻音，不揉音
     "melodica": dict(formants=[(1250, 0.8, 4), (500, 0.9, 2)], tilt=-10.5, cutoff=3600, harm=20,
                      even=0.75, breath=0.01, air=(900, 4000), chiff=0.6, attack=0.035, release=0.08,
@@ -489,3 +493,79 @@ def clapper(big: bool, vel: float = 0.8, seed: int = 0) -> np.ndarray:
         p = modal(sec(0.06), [2350 * rng.uniform(0.95, 1.05), 3480, 5150], [0.012, 0.009, 0.006], [1.0, 0.6, 0.35], rng, 0.001)
         y[at:at + len(p)] += p[: len(y) - at] * (0.9 ** j)
     return y * vel * 0.38
+
+
+# ============================================================ R&B / 现代流行（11-12 用户要的） ====
+# 圆的底鼓、拍手叠军鼓、摇摆的踩镲、响指、会滑音的暖贝斯、「呜——」的人声和声。
+# 都往暖和软的方向做：底鼓只要圆不要「哒」，军鼓 5 kHz 以上切掉，踩镲压得很低。
+
+def rnb_kick(vel: float = 0.8, long: bool = False) -> np.ndarray:
+    """圆的底鼓：起音从 110 Hz 往下滑到 48 Hz，一点点饱和让小喇叭也听得见；long 是 808 式的长尾巴。"""
+    n = sec(0.75 if long else 0.38)
+    tt = times(n)
+    f = 48 + 62 * np.exp(-tt / 0.03)
+    body = np.sin(TAU * np.cumsum(f) / SR) * np.exp(-tt / (0.32 if long else 0.13))
+    y = softclip(body * 1.6, 1.4) * 0.8
+    rng = np.random.default_rng(810)
+    k = sec(0.006)
+    y[:k] += lp(white(k, rng), 1800) * np.linspace(1, 0, k) * 0.25  # 很轻的「嗒」
+    return fade(lp(y, 2200) * vel, 0.0008, 0.04)
+
+
+def rnb_snare(vel: float = 0.7, seed: int = 0) -> np.ndarray:
+    """拍手叠一层软军鼓：三下拍手前后差几毫秒，底下一个 200 Hz 的鼓皮和一小段沙沙的响弦。"""
+    rng = np.random.default_rng(820 + seed)
+    n = sec(0.32)
+    tt = times(n)
+    y = np.zeros(n)
+    for j, at in enumerate((0.0, 0.009, 0.017)):  # 拍手的几下
+        a = sec(at)
+        m = n - a
+        y[a:] += bp(white(m, rng), 900, 3200) * np.exp(-times(m) / (0.008 if j < 2 else 0.05)) * (0.6 + 0.2 * j)
+    y += np.sin(TAU * 196 * tt) * np.exp(-tt / 0.045) * 0.55
+    y += bp(white(n, rng), 1500, 5000) * np.exp(-tt / 0.09) * 0.22
+    return fade(lp(y, 5200, 4) * vel * 0.42, 0.0005, 0.03)
+
+
+def rnb_hat(vel: float = 0.4, seed: int = 0) -> np.ndarray:
+    """很轻的闭镲：短，往下压在 9 kHz 附近，不扎。"""
+    rng = np.random.default_rng(830 + seed)
+    n = sec(0.05)
+    y = bp(white(n, rng), 6500, 11000) * np.exp(-times(n) / 0.011)
+    return fade(y * vel * 0.16, 0.0004, 0.004)
+
+
+def snap(vel: float = 0.6, seed: int = 0) -> np.ndarray:
+    """响指（中年）：一下很短的中高频「啪」，带一点皮肤的闷。"""
+    rng = np.random.default_rng(840 + seed)
+    n = sec(0.09)
+    tt = times(n)
+    y = bp(white(n, rng), 1800, 4200) * np.exp(-tt / 0.012) + np.sin(TAU * 1250 * tt) * np.exp(-tt / 0.01) * 0.3
+    return fade(lp(y, 5000) * vel * 0.45, 0.0003, 0.01)
+
+
+@lru_cache(maxsize=4096)
+def rbass(m: float, dur: float, vel: float = 0.7, slide_from: float = 0.0) -> np.ndarray:
+    """R&B 的暖贝斯：基音为主带两三个泛音，一点点饱和；slide_from 不为 0 时从那个音滑进来（半音数，负的是从下面）。"""
+    f = midi(m)
+    n = sec(dur + 0.1)
+    tt = times(n)
+    bend = cents(100.0 * slide_from * np.exp(-tt / 0.06)) if slide_from else np.ones(n)
+    ph = TAU * np.cumsum(f * bend) / SR
+    y = np.sin(ph) + 0.28 * np.sin(2 * ph) + 0.1 * np.sin(3 * ph)
+    env = np.exp(-tt / 1.6)
+    k = sec(0.012)
+    env[:k] *= np.linspace(0, 1, k)
+    hold = sec(dur)
+    if hold < n:
+        env[hold:] *= np.exp(-np.arange(n - hold) / (SR * 0.03))
+    y = softclip(y * env * 1.2, 1.2)
+    return fade(lp(y, 900) * vel * 0.55, 0.002, 0.02)
+
+
+def rhodes_trem(y: np.ndarray, rate: float, depth: float = 0.35) -> np.ndarray:
+    """电钢琴的左右颤：单声道进，立体声出。"""
+    tt = times(len(y))
+    l = 1.0 - depth * (0.5 + 0.5 * np.sin(TAU * rate * tt))
+    r = 1.0 - depth * (0.5 - 0.5 * np.sin(TAU * rate * tt))
+    return np.stack([y * l, y * r], axis=1)

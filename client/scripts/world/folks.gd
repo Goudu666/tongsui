@@ -39,6 +39,8 @@ var _walkers: Array = []      ## 正在走的路人（Walker）
 var _spawn_wait := 1.5
 var _slot := -1
 var talk_until := 0.0  ## 同一时间只让一位街坊开口（几个人挨着站时纸条不叠在一块）
+## 这张图是实时 3D：街坊、路人照旧在这儿干活、搭腔、让路，身子由 world3d/stage3d.gd 换成 3D 小人演，这里只留说的话和气泡
+var body_3d := false
 
 
 func _ready() -> void:
@@ -316,6 +318,9 @@ class Folk extends Node2D:
 		return str(pool[randi() % pool.size()])
 
 	func _draw() -> void:
+		_sprite.visible = host == null or not host.body_3d
+		if not _sprite.visible:
+			return
 		draw_set_transform(Vector2(3 + _sprite.position.x, 2), 0.0, Vector2(1.0, 0.34))
 		draw_circle(Vector2.ZERO, 28.0, Color(P.INK, 0.13))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
@@ -390,6 +395,10 @@ class Walker extends Node2D:
 		queue_redraw()
 
 	func _draw() -> void:
+		var hidden: bool = get_parent() != null and bool(get_parent().get("body_3d"))
+		_sprite.visible = not hidden
+		if hidden:
+			return
 		draw_set_transform(Vector2(3, 2), 0.0, Vector2(1.0, 0.34))
 		draw_circle(Vector2.ZERO, 24.0, Color(P.INK, 0.11))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

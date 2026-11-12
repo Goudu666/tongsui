@@ -14,6 +14,7 @@ const Folks := preload("res://scripts/world/folks.gd")
 const Atmos := preload("res://scripts/world/atmos.gd")
 const Era := preload("res://scripts/ui/era.gd")
 const HomeLife := preload("res://scripts/world/home_life.gd")
+const Stage3D := preload("res://scripts/world3d/stage3d.gd")
 const SPOT_RADIUS := 100.0  ## 比服务器的 110 小一点，避免边缘抖动
 const MOVE_SEND_INTERVAL := 0.1
 const SnapshotBuffer := preload("res://scripts/net/snapshot_buffer.gd")
@@ -26,6 +27,8 @@ const ACTOR_SCALE := 1.5        ## 横版里人画大一点（精灵表是给俯
 const VIEW_MIN := 900.0         ## 镜头竖着至少看这么高（世界像素）：一层的图，地面在下面五分之四
 const HEAD_ROOM := 430.0        ## 最上一层地面往上留这么多：头、头顶上的字、HUD 那一条
 const FOOT_ROOM := 220.0        ## 最下一层地面往下留这么多：底下的按钮
+const VIEW_3D := 680.0          ## 实时 3D 的图镜头推近一点：人是真比例的，远了看不清脸
+const FOOT_ROOM_3D := 190.0
 
 var map: Dictionary = {}
 var actions: Dictionary = {}
@@ -56,6 +59,10 @@ var _exiting := 0.0          ## 刚按了出口：等服务器把人挪过去，
 var light: PrintLight  ## 昼夜和旧纸感（夜版套印）
 var weather: Weather   ## 雨、雪、柳絮、落叶（只是画面）
 var atmos: Atmos       ## 光与空气：调色、晕、光柱、地气、压角（只是画面）
+## 实时 3D（world3d/stage3d.gd）：有 3D 的图（现在是楼下这条街）换成真 3D 场景和 3D 小人，2D 的底图、夜版、光与空气藏起来；
+## 互动点、名字牌、气泡、雨雪还是这边画。没有 3D 的图照旧全走 2D
+var stage3d: Stage3D
+var _season := "spring"
 var _marks: Node2D  ## 互动点和命运提示：画在叠印层上面
 var _tap_fx := Vector2.INF
 var _tap_t := 0.0
@@ -109,6 +116,9 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 	street = Folks.new()
 	street.world = self
 	add_child(street)
+	stage3d = Stage3D.new()
+	stage3d.world = self
+	add_child(stage3d)
 	_marks = _Marks.new(self)
 	_marks.z_index = 70
 	add_child(_marks)
@@ -149,8 +159,9 @@ func _enter_scene(sc: Dictionary) -> void:
 	scene = sc
 	art.show_scene(sc, map.zones, map.get("exits", []))
 	var floors: Array = sc.floors
-	var bottom := float(floors[-1]) + FOOT_ROOM
-	var top := minf(float(floors[0]) - HEAD_ROOM, bottom - VIEW_MIN)
+	var three := stage3d != null and Stage3D.supports(str(sc.get("id", ""))) and floors.size() == 1
+	var bottom := float(floors[-1]) + (FOOT_ROOM_3D if three else FOOT_ROOM)
+	var top := (bottom - VIEW_3D) if three else minf(float(floors[0]) - HEAD_ROOM, bottom - VIEW_MIN)
 	var view := get_viewport_rect().size
 	# 竖着正好装下这一截；横着比这张图还宽的长屏，再放大一点，别露出图外面
 	camera.zoom = Vector2.ONE * maxf(view.y / (bottom - top), view.x / float(sc.width))
@@ -171,7 +182,27 @@ func _enter_scene(sc: Dictionary) -> void:
 		atmos.set_scene(sc)
 	if home != null:
 		home.show_scene(sc)
+	_apply_3d(sc)
 	_refresh_visible()
+
+
+## 这张图有 3D 就换上，2D 的画（底图、屋里陈设、夜版、光与空气、人和街坊的身子）收起来
+func _apply_3d(sc: Dictionary) -> void:
+	if stage3d == null:
+		return
+	stage3d.show_scene(sc)
+	var three := stage3d.active()
+	art.visible = not three
+	home.visible = not three
+	light.visible = not three
+	atmos.visible = not three
+	street.body_3d = three
+	for a in actors.values():
+		a.body_3d = three
+	if three:
+		stage3d.set_look(scene_look())
+		stage3d.set_season(_season, weather.kind if weather != null else "")
+		stage3d.set_time(minute, light.night)
 
 
 ## 对门在别的图上（楼上楼下、外地）：这张图上看不见 TA
@@ -217,6 +248,8 @@ func _apply_scene_look() -> void:
 	if art != null:
 		art.set_stage(key)
 		art.queue_redraw()
+	if stage3d != null:
+		stage3d.set_look(key)
 	_push_home()
 
 
@@ -226,6 +259,9 @@ func set_season(season: String, turn := -1) -> void:
 		art.set_season(season)
 	if weather != null:
 		weather.set_season(season, turn)
+	_season = season
+	if stage3d != null:
+		stage3d.set_season(season, weather.kind if weather != null else "")
 
 
 ## 时钟：决定昼夜（联机时 apply_world 自动调用；离线预览由 main 喂）
@@ -243,6 +279,8 @@ func set_minute(m: float) -> void:
 			_marks.modulate = Color.WHITE.lerp(Color(0.72, 0.76, 0.9), light.night)
 		if street != null:
 			street.set_night(light.night)
+		if stage3d != null and stage3d.active():
+			stage3d.set_time(m, light.night)
 
 
 func _process(delta: float) -> void:

@@ -309,37 +309,40 @@ def clashes(line, strict: bool = False):
 # ------------------------------------------------------------ 阶段 ----
 
 STAGES = {
-    "child": dict(bpm=96, q=("music_box", 1), m=("recorder", 1), rt=1.3, wet=0.24, sparse=False),
+    # 11-12 画面定成像素：童年的青是芯片（小时候的游戏机），青年的梅是芯片主旋律，少年早上有掌机的小铃，
+    # 中年一点电子音都没有，老年早上童年那串芯片小铃又回来了
+    "child": dict(bpm=96, q=("chip", 1), m=("recorder", 1), rt=1.3, wet=0.24, sparse=False),
     "teen": dict(bpm=84, q=("guitar", 0), m=("harmonica", 0), rt=1.5, wet=0.2, sparse=False),
-    "young": dict(bpm=100, q=("egtr", 0), m=("lead", 0), rt=1.8, wet=0.2, sparse=False),
+    "young": dict(bpm=100, q=("egtr", 0), m=("pulse", 0), rt=1.8, wet=0.2, sparse=False),
     "middle": dict(bpm=72, q=("piano", 0), m=("cello", -1), rt=2.4, wet=0.28, sparse=False),
-    "old": dict(bpm=63, q=("sanxian", -1), m=("erhu", 0), rt=2.9, wet=0.32, sparse=True),
+    # 老年 11-12 换掉了三弦、二胡、D-A 空五度长音（太像水墨）：颤音琴 + 单簧管，伴奏是暖垫和尼龙吉他，混响也短一点
+    "old": dict(bpm=63, q=("vibes", 0), m=("clarinet", 0), rt=2.1, wet=0.25, sparse=True),
 }
 # 早上那一层：乐器、音区（MIDI 上下限）、每小节在第几拍点一下（按小节轮着用）、「泛音」长音垫多少
 MORN = {
     "child": dict(inst="glock", lo=81, hi=93, pat=[[0, 1.5, 3], [.5, 2], [0, 2, 2.5], [1, 3]], glass=0.10),
-    "teen": dict(inst="harmonic", lo=74, hi=86, pat=[[0, 2.5], [1.5], [0, 3], [2]], glass=0.12),
-    "young": dict(inst="fm_bell", lo=79, hi=91, pat=[[.5, 2.5], [1.5, 3.5], [0, 1.5], [2.5]], glass=0.10),
+    "teen": dict(inst="chip_blip", lo=74, hi=83, pat=[[0, 2.5], [1.5], [0, 3], [2]], glass=0.12),
+    "young": dict(inst="chip_blip", lo=74, hi=86, pat=[[.5, 2.5], [1.5, 3.5], [0, 1.5], [2.5]], glass=0.10),
     "middle": dict(inst="celesta", lo=74, hi=88, pat=[[0, 1, 2], [3], [.5, 2], []], glass=0.12),
-    "old": dict(inst="bowl", lo=74, hi=83, pat=[[0], [], [2], []], glass=0.08),
+    "old": dict(inst="chip_blip", lo=74, hi=83, pat=[[0], [], [2], []], glass=0.08),  # 童年的那串芯片小铃回来了
 }
 # 傍晚那一层：副旋律的乐器和八度、底下的长音垫、远近（0 贴着，越大越远）
 EVE = {
     "child": dict(lead="ocarina", oct=0, pad="strings", far=0.0),
-    "teen": dict(lead="xiao", oct=0, pad="strings", far=0.25),
+    "teen": dict(lead="melodica", oct=0, pad="strings", far=0.25),
     "young": dict(lead="harmonica", oct=0, pad="warm", far=0.6),
     "middle": dict(lead="viola", oct=0, pad="strings", far=0.0),
-    "old": dict(lead="xun", oct=0, pad="strings", far=0.15, sparse=True),
+    "old": dict(lead="flugel", oct=0, pad="warm", far=0.2, sparse=True),
 }
 PAN_Q, PAN_M = -0.28, 0.28
 TARGET_LUFS = -20.0  # 四条原分轨（bed qing mei he）全开时的响度
 # 各轨相对伴奏的响度（dB），按各轨自己出声的部分量。B 曲和 A 曲一样响；morn 浮在上面但比伴奏轻；
 # eve 和伴奏差不多（傍晚伴奏退、它进，晚上伴奏撤了靠它托着两条旋律）。
 BALANCE = {"bed": 0.0, "qing": 3.0, "mei": 2.0, "he": -8.0, "qing_b": 3.0, "mei_b": 2.0, "morn": -6.0, "eve": -1.5}
-STAGE_BALANCE = {"old": {"bed": -7.0, "he": -13.0, "morn": -11.0, "eve": -6.0}, "middle": {"bed": -1.5, "eve": -2.5}}
+STAGE_BALANCE = {"old": {"bed": -3.0, "he": -11.0, "morn": -9.0, "eve": -4.0}, "middle": {"bed": -1.5, "eve": -2.5}}
 STEM_KEYS = ("bed", "qing", "mei", "he", "qing_b", "mei_b", "morn", "eve")
 # 伴奏在 250 Hz 附近挖一点（dB）：那一段几件乐器的基音和混响都挤在一起，是「浑」的来源
-BED_DIP = {"child": -2.5, "teen": -4.5, "young": -2.0, "middle": -3.5, "old": 0.0}
+BED_DIP = {"child": -2.5, "teen": -4.5, "young": -2.0, "middle": -3.5, "old": -2.5}
 # 旋律里低的那件（中年大提琴、青年合成主音）在 200 Hz 附近也让一点，不跟伴奏挤
 MEL_DIP = {"young": -2.0, "middle": -2.0}
 # 一遍主题里的大起伏（每小节 dB）：前两句慢慢起来，第 9~12 小节换梅先说的时候收一点，最后一句最满再落下。
@@ -419,7 +422,11 @@ def voice_q(stage: str, ck: Clock, line=None, seed: int = 11) -> Mix:
         vel = round(float(np.clip((0.7 + 0.1 * (deg in (6, 1)) + dv) * _arc(beat, 0.6), 0.35, 1.0)), 2)
         first_of_phrase = beat - prev_end > 0.6
         prev_end = beat + dur
-        if name == "music_box":
+        if name == "chip":
+            mx.add(inst.chip(m, d * 0.92, vel, 0.25), t, 0.55)
+            if dur >= 1.5:  # 长音后面跟一个轻的回音，老游戏没有混响，只有这种「假回声」
+                mx.add(inst.chip(m, d * 0.4, round(vel * 0.4, 2), 0.25), t + 0.75 * ck.spb, 0.3)
+        elif name == "music_box":
             mx.add(inst.music_box(m, d, vel), t, 0.5)
             if dur >= 1.5:  # 长音上面再点一个高八度，像梳齿多拨了一下
                 mx.add(inst.music_box(m + 12, d * 0.5, 0.4), t + 0.5 * ck.spb, 0.3)
@@ -431,10 +438,10 @@ def voice_q(stage: str, ck: Clock, line=None, seed: int = 11) -> Mix:
             mx.add(inst.piano(m, d * 1.5, round(vel * 0.9, 2)), t, 1.25)
             if dur >= 2:
                 mx.add(inst.piano(m - 12, d * 1.5, 0.45), t + 0.012, 0.8)
-        elif name == "sanxian":
-            mx.add(inst.sanxian(m, d * 1.1, vel, 2.0 if first_of_phrase else 0.0), t, 1.0)
-            if first_of_phrase:  # 空弦垫一下
-                mx.add(inst.sanxian(P(1, -2), d * 1.5, 0.5), max(0.0, t - 0.03), 0.45)
+        elif name == "vibes":
+            mx.add(inst.vibes(m, d * 1.6, round(vel * 0.9, 2)), t, 1.0)
+            if dur >= 2:  # 长音下面轻轻带一个低八度，像左手顺手按了一下
+                mx.add(inst.vibes(m - 12, d * 1.2, 0.4), t + 0.02, 0.45)
     return mx
 
 
@@ -471,10 +478,14 @@ def voice_m(stage: str, ck: Clock, line=None, seed: int = 0) -> np.ndarray:
         return inst.harmonica_line(seq, total, seed=21 + seed, level=0.62)
     if name == "erhu":
         return inst.sustained_line(seq, total, "erhu", seed=22 + seed, level=0.6, glide_scale=1.25)
+    if name == "clarinet":
+        return inst.sustained_line(seq, total, "clarinet", seed=26 + seed, level=0.62)
     if name == "cello":
         return inst.sustained_line(seq, total, "cello", seed=23 + seed, level=0.7)
     if name == "lead":
         return inst.sustained_line(seq, total, "lead", seed=24 + seed, level=0.5)
+    if name == "pulse":
+        return inst.ensemble_line(seq, total, "pulse", seed=27 + seed, level=0.5, voices=2, spread=6.0)
     return inst.sustained_line(seq, total, "recorder", seed=25 + seed, level=0.55)
 
 
@@ -519,11 +530,11 @@ def bed(stage: str, ck: Clock) -> Mix:
                 acc = 0.62 if i % 4 == 0 else (0.5 if i % 2 == 0 else 0.4)
                 mx.add(inst.kalimba(pat[i % 4], 0.45, round(acc + float(rng.uniform(-0.05, 0.05)), 2)),
                        at(b + i * 0.5), 0.5 * ag, pan=0.18 * (1 if i % 2 else -1))
-            mx.add(inst.bass(root, beats * spb * 0.9, 0.6), ck.t(b), 0.55 * ag)
+            mx.add(inst.tri_bass(root + 12, beats * spb * 0.9, 0.6), ck.t(b), 0.6 * ag)
         for bar in range(int(ck.lo / 4), int(ck.hi / 4)):
-            for beat in (1, 3):  # 皮筋落地的那一下
-                mx.add(inst.shaker(0.5 * float(rng.uniform(0.8, 1.1)), bar * 4 + beat), at(bar * 4 + beat, 0.006),
-                       0.5 * _arc(bar * 4), pan=0.3)
+            for beat in (1, 3):  # 皮筋落地的那一下（芯片的噪声鼓）
+                mx.add(inst.chip_noise("hat", 0.6 * float(rng.uniform(0.85, 1.1)), bar * 4 + beat),
+                       at(bar * 4 + beat, 0.006), 0.8 * _arc(bar * 4), pan=0.3)
             if bar % 4 == 0:
                 mx.add(inst.triangle(0.5), ck.t(bar * 4), 0.6, pan=-0.35)
 
@@ -567,7 +578,7 @@ def bed(stage: str, ck: Clock) -> Mix:
             quiet = 8 <= bar < 12  # B 段把鼓撤掉，喘口气
             for i in range(8):
                 v = (0.45 if i % 2 == 0 else 0.26) * float(rng.uniform(0.8, 1.15))
-                mx.add(inst.hat(v, bar * 8 + i), at(b0 + i * 0.5), (0.5 if not quiet else 0.3) * ag, pan=0.3)
+                mx.add(inst.chip_noise("hat", v, bar * 8 + i), at(b0 + i * 0.5), (0.9 if not quiet else 0.55) * ag, pan=0.3)
             if quiet:
                 continue
             mx.add(inst.kick(0.75), ck.t(b0), 0.5 * ag)
@@ -594,20 +605,29 @@ def bed(stage: str, ck: Clock) -> Mix:
             mx.add(y, 0.0, 0.4, pan=(-0.4, 0.0, 0.4)[i])
 
     elif stage == "old":
+        # 暖垫按真的和弦走，尼龙吉他一小节拨四下（少年那把吉他，慢下来了），底下一点唱片的沙沙声
         total = ck.length + 2.0
-        low, high = [], []
+        lines = [[], [], []]
         for b, beats, name in ch:
-            bar = int(b // 4)
+            root, tones, _ = CHORD[name]
             ag = _arc(b)
-            pair = (43, 50) if bar in (8, 9) else ((45, 52) if bar in (10, 11) else (38, 45))  # 平时就是 D 和 A 两个音
-            low.append((ck.t(b), beats * spb, pair[0], 0.6 * ag))
-            high.append((ck.t(b), beats * spb, pair[1], 0.5 * ag))
-        for i, ln in enumerate((low, high)):
-            y = inst.ensemble_line(ln, total, "organ", seed=70 + i, level=0.5, voices=2, spread=6.0)
-            mx.add(y, 0.0, 0.42, pan=-0.2 + 0.4 * i)
-        for bar in range(int(ck.lo / 4), int(ck.hi / 4)):
-            if bar % 8 == 0:
-                mx.add(inst.triangle(0.35), ck.t(bar * 4), 0.4, pan=0.3)
+            for i, m in enumerate(tones):
+                lines[i].append((ck.t(b), beats * spb, m, 0.6 * ag))
+            pat = [root, tones[0], tones[1], tones[2]]
+            for i in range(int(beats)):
+                if i == 3 and rng.uniform() < 0.3:
+                    continue
+                v = 0.5 if i == 0 else 0.38 + float(rng.uniform(-0.05, 0.05))
+                mx.add(inst.guitar(pat[i % 4] + (12 if i else 0), 1.8 * spb, round(v, 2), True), at(b + i, 0.01),
+                       0.9 * ag, pan=-0.15)
+        for i, ln in enumerate(lines):
+            y = inst.ensemble_line(ln, total, "warm", seed=70 + i, level=0.5, voices=2, spread=7.0)
+            mx.add(y, 0.0, 0.4, pan=(-0.35, 0.0, 0.35)[i])
+        crackle = np.zeros(sec(ck.length))
+        pops = rng.integers(0, len(crackle), int(ck.length * 9))
+        crackle[pops] = rng.uniform(-1, 1, len(pops)) * rng.uniform(0.2, 1.0, len(pops)) ** 3
+        crackle = lp(hp(crackle, 900), 6000) * db(-30) + lp(colored(len(crackle), rng, -1.0), 3500) * db(-62)
+        mx.add(fade(crackle, 0.3, 0.3), 0.0)
     return mx
 
 
@@ -745,7 +765,7 @@ def arrange(stage: str, bpm: float | None = None, bars=(0, BARS), lines=None, ex
         m = voice_m(stage, ck, mline, seed=seed)
         if cfg["q"][0] == "egtr":
             q = echo(q, 0.75 * ck.spb, 0.4, 0.22, 2600, 3).mean(axis=1)
-        if cfg["m"][0] == "lead":
+        if cfg["m"][0] in ("lead", "pulse"):
             m = echo(m, 0.75 * ck.spb, 0.4, 0.2, 2400, 3).mean(axis=1)
         if stage in MEL_DIP:
             m = peak(m, 210, 0.8, MEL_DIP[stage])
@@ -759,7 +779,7 @@ def arrange(stage: str, bpm: float | None = None, bars=(0, BARS), lines=None, ex
         "bed": _space(b, stage, 3),
         "qing": qa,
         "mei": ma,
-        "he": _space(voice_he(ck, "organ" if stage == "old" else "pad") * 0.55, stage, 13, 0.08),
+        "he": _space(voice_he(ck, "pad") * 0.55, stage, 13, 0.08),
     }
     if extra:
         qb, mb = melody(*B_LINES[stage], 100)
@@ -857,12 +877,12 @@ def stinger(stage: str, kind: str) -> np.ndarray:
 # ---- 标题、投胎、一生 ----
 
 def title_loop() -> dict:
-    """标题：八音盒一个人把两个人的话都说了。慢，像回忆。"""
+    """标题：芯片说青的半边，八音盒接梅的半边。慢，像回忆。"""
     ck = Clock(76)
     mx = Mix(ck.length + 2)
     rng = np.random.default_rng(5)
-    for beat, dur, deg, o in Q_FULL:
-        mx.add(inst.music_box(P(deg, o + 1), dur * ck.spb, 0.8), ck.t(beat) + abs(_jit(rng, 0.012)), 0.5, pan=-0.2)
+    for beat, dur, deg, o in Q_FULL:  # 青那半边是芯片（像素画面的声音），梅那半边还是八音盒
+        mx.add(inst.chip(P(deg, o + 1), dur * ck.spb * 0.9, 0.7, 0.25), ck.t(beat) + abs(_jit(rng, 0.012)), 0.5, pan=-0.2)
     for beat, dur, deg, o in M_FULL:
         if beat >= 60:
             continue
@@ -892,7 +912,7 @@ def roll_loop() -> dict:
                 continue
             mx.add(inst.kalimba(pat[i], 0.4, round(0.5 + 0.12 * (i % 4 == 0), 2)), ck.t(bar * 4 + i * 0.5), 0.5,
                    pan=0.25 * np.sin(i * 1.3))
-        mx.add(inst.bass(root, 3.5 * ck.spb, 0.55), ck.t(bar * 4), 0.5)
+        mx.add(inst.tri_bass(root + 12, 3.5 * ck.spb, 0.55), ck.t(bar * 4), 0.55)
         mx.add(inst.shaker(0.4, bar), ck.t(bar * 4 + 1), 0.4, pan=0.3)
         mx.add(inst.shaker(0.4, bar + 30), ck.t(bar * 4 + 3), 0.4, pan=0.3)
         if bar % 2 == 0:
@@ -913,11 +933,11 @@ def ending() -> dict:
         for k, v in a["stems"].items():
             w = 1.0 if k != "he" else (0.5 if bars[0] >= 8 else 0.0)
             mx.add(v, bars[0] * 4 * spb, db(g) * w)
-    # 最后那个合音之后，八音盒把「小皮球」再说一遍，越说越慢
+    # 最后那个合音之后，童年那把芯片把「小皮球」再说一遍，越说越慢
     t = 16 * 4 * spb + 1.2
     coda = Mix(9)
     for i, (deg, gap) in enumerate([(3, 0.0), (5, 1.0), (6, 2.25)]):
-        coda.add(inst.music_box(P(deg, 1), 2.0, 0.7 - 0.08 * i), gap, 0.5)
+        coda.add(inst.chip(P(deg, 1), 0.8 + 0.4 * i, 0.65 - 0.08 * i, 0.25), gap, 0.5)
     mx.add(reverb(coda.buf, 2.6, 0.35, 4200, 3), t)
     y = trim(mx.buf, -62, 1.5)
     return dict(audio=level(y, -20.0, -2), length=len(y) / 44100.0)

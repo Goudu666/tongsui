@@ -26,7 +26,7 @@ TONGSUI_AUDIO_OUT=/tmp/try python3 tools/audio/build_audio.py music --only old  
 | 文件 | 内容 |
 | --- | --- |
 | `tongsui_audio/dsp.py` | 底层：包络、滤波、噪声、混响、响度（BS.1770）、循环无缝、导出 |
-| `tongsui_audio/inst.py` | 乐器。拨的（八音盒、吉他、钢琴、三弦……）和吟的（竖笛、口琴、大提琴、二胡……） |
+| `tongsui_audio/inst.py` | 乐器。拨的（八音盒、吉他、钢琴、颤音琴……）和吟的（竖笛、口琴、大提琴、单簧管……） |
 | `tongsui_audio/music.py` | 主题的谱子（A 曲、B 曲）、五个阶段的编曲和 morn / eve 两层、默契乐句、标题 / 投胎 / 一生 |
 | `tongsui_audio/highlight.py` | 高光：关口揭晓（rise / pass / top / miss）和长大（grow_*） |
 | `tongsui_audio/amb.py` | 河畔里的环境音：循环（`LOOPS`）和单发（`SHOTS`） |

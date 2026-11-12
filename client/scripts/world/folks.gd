@@ -18,6 +18,12 @@ const SLOT_IDS := ["morning", "am", "pm", "evening", "night"]
 const INDOOR := ["building", "rental"]
 const TALK_DIST := 190.0
 const TALK_COOLDOWN := 24.0
+## 给主角让地方：只在主角停下来做事、站得跟街坊几乎叠在一块时才让；走过去不让（以前一走近就滑开 95，像被挤走）
+const GIVE_NEAR := 70.0   ## 叠得多近才算挡着
+const GIVE_WAIT := 0.6    ## 停下来做事多久之后才挪（刚到跟前不动）
+const GIVE_STEP := 78.0   ## 挪一步多远
+const GIVE_SPEED := 70.0  ## 慢慢踱过去（像迈了一步），不是滑
+const BACK_WAIT := 1.2    ## 人走了等一下再踱回原处
 
 var world: Node = null        ## world_view（拿主角的位置）
 var stage := "childhood"
@@ -204,6 +210,10 @@ class Folk extends Node2D:
 	var _say_t := 0.0
 	var _cool := 0.0
 	var _flip := false
+	var _give_side := 0.0  ## 往哪边让（-1 左 / 1 右 / 0 没让）：定下来就不变，不会人一过中线就从这边滑到那边
+	var _settle := 0.0     ## 主角在跟前停了多久
+	var _away := 99.0      ## 主角走开多久了
+	var _step := 0.0
 
 	func setup(tex: Texture2D, row: int, rows: int, art_scale: float, foot: Vector2) -> void:
 		_row = row
@@ -254,19 +264,43 @@ class Folk extends Node2D:
 			_bub = str(bubbles[randi() % bubbles.size()])
 			_bub_t = 0.0
 			_bub_wait = randf_range(5.0, 9.0)
-		# 主角在跟前做事（同一个点位）：街坊往旁边让半步，别叠成一团
-		var give := 0.0
+		# 主角在跟前停下来做事（同一个点位，比如在小卖部柜台帮忙）：街坊等一会儿，再往旁边挪一步，别叠成一团。
+		# 只是走过：谁也不让，前后错身过去（y_sort）。往哪边让定下来就不变，人走了等一下再踱回原处。
+		var occupied := false
+		var occ_x := 0.0
 		var lift := 0.0
 		if host != null and host.world != null:
 			for a in host.world.actors.values():
 				if not a.visible or absf(a.position.y - position.y) >= 60.0:
 					continue
-				if absf(a.position.x - position.x) < 80.0:
-					give = 95.0 if a.position.x <= position.x else -95.0
+				var settled: bool = not a.walking and (str(a.action_label) != "" or a.asleep)
+				if settled and absf(a.position.x - position.x) < GIVE_NEAR:
+					occupied = true
+					occ_x = a.position.x
 				if absf(a.position.x - position.x) < 320.0 and (str(a.action_label) != "" or a.asleep):
 					lift = 58.0
 		_lift = lerpf(_lift, lift, minf(1.0, delta * 6.0))
-		_sprite.position.x = lerpf(_sprite.position.x, give, minf(1.0, delta * 4.0))
+		_settle = _settle + delta if occupied else 0.0
+		_away = 0.0 if occupied else _away + delta
+		if occupied and _settle > GIVE_WAIT and _give_side == 0.0:
+			# 人在我左边（或正当中）就往右让，反之往左
+			_give_side = 1.0 if occ_x <= position.x else -1.0
+		var target := _give_side * GIVE_STEP if (occupied or _away < BACK_WAIT) else 0.0
+		var before := _sprite.position.x
+		_sprite.position.x = move_toward(before, target, GIVE_SPEED * delta)
+		var moving := absf(_sprite.position.x - before) > 0.01
+		if moving:
+			# 挪步：小步颠两下，脸朝着走的方向
+			_step += delta
+			_sprite.position.y = -absf(sin(_step * TAU * 1.6)) * 3.0
+			_flip = _sprite.position.x < before
+		else:
+			_step = 0.0
+			_sprite.position.y = 0.0
+			if _give_side != 0.0 and is_zero_approx(_sprite.position.x):
+				_give_side = 0.0
+			elif occupied and _give_side != 0.0:
+				_flip = occ_x < position.x + _sprite.position.x  # 让到了：回过脸看着你干
 		var fps := 4.0 if _working else 2.0
 		var k := int(_t * fps + _phase) % 4
 		_sprite.frame = _row * 8 + (k if _working else 4 + k)
@@ -294,7 +328,7 @@ class Folk extends Node2D:
 			_draw_say(cv, night)
 			cv.draw_set_transform(Vector2.ZERO)
 		elif _bub != "" and _bub_t < 1.8:
-			Bubble.draw(cv, _bub, Vector2(-30.0 if _flip else 30.0, -196.0), 17.0, P.INK_SOFT, _bub_t, 1.8, 1.0 if _flip else -1.0)
+			Bubble.draw(cv, _bub, Vector2(_sprite.position.x + (-30.0 if _flip else 30.0), -196.0), 17.0, P.INK_SOFT, _bub_t, 1.8, 1.0 if _flip else -1.0)
 
 	## 搭的那句话：一条纸片，上头一行小字写是谁
 	func _draw_say(cv: CanvasItem, night: float) -> void:

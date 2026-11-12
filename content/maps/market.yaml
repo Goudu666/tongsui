@@ -1,0 +1,114 @@
+# 早市：楼下胡同口进去，天刚亮的一条棚子街。从左到右：胡同口的豆浆摊、菜摊、批发的棚子、收废品的。
+# 写法见 building.yaml 文件头。接口稿见「门外的世界」线程（outside/SPEC.md 第一节）。
+#
+# 清贫人家的孩子歇着的日子在这儿看摊（tracks.yaml 的 restDuty 指到 veg_stall；away.yaml 已经有一个 market_stall，所以这里不叫那个名字）。
+# 十八岁以后谁都能来买菜、转转、卸货挣几块。夏天清贫人家把对门叫来（events/outside.yaml 的 out_market_*），
+# 被带来的孩子也做得了这里的事：看摊、转转、卖瓶子都没写家境，进得来就做得了。
+# 这条街上的人只叫行当，不起姓。
+
+id: market
+name: 早市
+width: 3200
+unlock:
+  any:
+    - { minAge: 6, flags: [ fam_poor ] }
+    - { minAge: 18 }
+seen: saw_market        # 引擎：第一次被 goto 送来时打这个标记（一生小结读）
+
+areas:
+  - { id: market_mouth, name: 胡同口, span: [ 0, 560 ], floor: 0 }
+  - { id: veg_row, name: 菜摊, span: [ 560, 1500 ], floor: 0 }
+  - { id: wholesale, name: 批发的棚子, span: [ 1500, 2300 ], floor: 0 }
+  - { id: scrap, name: 收废品的, span: [ 2300, 3200 ], floor: 0 }
+
+exits:
+  - { id: to_street, at: 60, to: street, arrive: 1390, label: 回楼下 }
+
+spots:
+  - { id: market_soy, at: 330, area: market_mouth, actions: [ soy_milk ] }
+  # 看摊：清贫人家歇着的日子的日程块落在这儿（duty），日程以外的时候能帮着卖一会儿
+  - { id: veg_stall, at: 900, area: veg_row, actions: [ duty, stall_sell ] }
+  - { id: market_walk, at: 1300, area: veg_row, actions: [ market_walk, buy_veg ] }
+  - { id: haul_dock, at: 1900, area: wholesale, actions: [ haul_crate ] }
+  - { id: scrap_scale, at: 2700, area: scrap, actions: [ scrap_sell ] }
+
+npcs:
+  - id: soy_seller
+    name: 卖豆浆的
+    at: 260
+    slots: [ morning, am ]
+    lines:
+      childhood:
+        - 碗烫，两只手端。
+        - 喝完了把碗搁这儿，别拿走。
+      teen:
+        - 甜的咸的？上回你要的是甜的。
+      young:
+        - 一块钱一碗，涨了五毛，豆子贵了。
+      middle:
+        - 碗换成纸杯了。你要还想用碗，我给你留一个。
+      old:
+        - 慢点儿喝，今天不赶。
+  - id: veg_seller
+    name: 卖菜的
+    at: 1120
+    slots: [ morning, am ]
+    lines:
+      childhood:
+        - 秤杆往上翘才算够，你看着。
+        - 这孩子算账比我快。
+      teen:
+        - 别光看，蹲下帮我把烂叶子择了。
+        - 黄瓜两块一斤，三块钱给你两斤。
+      young:
+        - 你小时候在对面那个摊上蹲着，我记得。
+      middle:
+        - 来买菜的少了，来的还是那些人。
+      old:
+        - 给您挑嫩的，回去好咬。
+  - id: wholesale_boss
+    name: 批发棚子的老板
+    at: 1720
+    slots: [ morning, am ]
+    lines:
+      teen:
+        - 一筐五毛，卸完一车再结。
+        - 搬不动就两个人抬，别逞能。
+      young:
+        - 力气活儿，不白干。车来了，上吧。
+      middle:
+        - 现在卸货有叉车了，人少了。
+  - id: scrap_buyer
+    name: 收废品的
+    at: 2560
+    slots: [ morning, am, pm ]
+    lines:
+      childhood:
+        - 纸壳子要压平，压平了才压秤。
+        - 瓶子一毛一个，铁的另算。
+      teen:
+        - 你这是攒了一个月吧？
+      default:
+        - 往秤上搁，自己看数。
+
+props:
+  - id: big_scale
+    name: 收废品的大秤
+    at: 2820
+    lines:
+      default:
+        - 一杆大秤，秤砣比人的头还大。
+      old:
+        - 大秤换成了电子秤，那杆老秤还靠在墙上。
+  - id: bulb_string
+    name: 棚子底下的灯泡
+    at: 760
+    lines:
+      default:
+        - 一根电线上挂着一串灯泡，天亮了也没人关。
+
+art: |
+  天刚亮的一条棚子街。帆布棚一个挨一个，一根电线上挂一串灯泡；三轮车、竹筐、杆秤，黄瓜西红柿码成堆，地上一层菜叶子。
+  胡同口一个豆浆摊，一口大锅，几张折叠桌，碗摞着。
+  批发的棚子底下停着卡车卸货，纸箱码到棚顶；收废品的那头一座纸壳和瓶子的山，一杆大秤（老了以后换成电子秤，老秤靠墙）。
+  墨版为主，梅版点在灯泡和西红柿上。人多，挤，地是湿的。

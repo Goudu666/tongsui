@@ -1,0 +1,137 @@
+# 早市的支线（pl_mk_ 前缀）。where 用 content/maps/market.yaml 的 areas。写法见 places/building.yaml 文件头。
+# 来这儿的是清贫人家的孩子（六岁起看摊）、被他们叫来的对门、十八岁以后买菜卸货的人。
+# 每件挂在下一道关前面：选项拿精力或几块钱换一点属性、亲近。不写家境，图的锁管谁在这儿。
+# 童年两件挂九岁、十二岁那两道，少年两件挂十五、十八，老年一件挂七十。
+
+- id: pl_mk_bulb
+  kind: solo
+  stage: childhood
+  where: veg_row
+  when: [390, 540]
+  seasons: [winter]
+  hint: 棚子底下亮着一串灯泡。
+  weight: 3
+  requires: { minAge: 7, maxAge: 11 }
+  title: 一串灯泡
+  text: 冬天的早上，天还黑着。棚子底下一根电线挂着一串灯泡，你蹲在菜筐后头，借着光。
+  options:
+    - id: write
+      text: 把昨天的生字写一遍
+      tags: [responsible]
+      effects: { self: { mind: 1, energy: -4 } }
+    - id: shout
+      text: 跟着大人吆喝
+      tags: [competitive]
+      effects: { self: { charm: 1, energy: -4 } }
+    - id: doze
+      text: 揣着手打个盹
+      tags: [patient]
+      effects: { self: { energy: 6 } }
+
+- id: pl_mk_scale
+  kind: solo
+  stage: childhood
+  where: veg_row
+  when: [420, 660]
+  hint: 有人盯着秤星看。
+  weight: 3
+  requires: { minAge: 7, maxAge: 11 }
+  title: 秤杆
+  text: 卖菜的教你看秤：秤杆往上翘才算够。来买菜的老太太盯着秤星，你也盯着。
+  options:
+    - id: read
+      text: 一颗一颗认秤星
+      tags: [patient]
+      effects: { self: { mind: 1, energy: -4 } }
+    - id: lift
+      text: 让秤杆再翘高一点
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+    - id: onion
+      text: 自己掏钱搭两根葱
+      cost: 1
+      tags: [gentle]
+      effects: { self: { charm: 1, mood: 4 } }
+    - id: count
+      text: 在心里把账算一遍
+      tags: [competitive]
+      effects: { self: { mind: 1 } }
+
+- id: pl_mk_peach
+  kind: solo
+  stage: teen
+  where: wholesale
+  when: [390, 660]
+  hint: 棚子底下卸了一车桃。
+  weight: 3
+  requires: { minAge: 13, maxAge: 14 }
+  title: 半边桃
+  text: 卸完一车桃，批发棚子的老板挑了一个磕烂了半边的塞给你：「好的那半边能吃。」
+  options:
+    - id: eat
+      text: 蹲在纸箱上吃了
+      tags: [solitude]
+      effects: { self: { hunger: 10, mood: 4 } }
+    - id: keep
+      text: 揣回去给对门
+      tags: [gentle]
+      effects: { self: { mood: 2 }, other: { mood: 3 }, bond: { close: 1 } }
+    - id: more
+      text: 再卸一车
+      tags: [competitive]
+      effects: { self: { body: 1, energy: -12 }, money: 1 }
+
+- id: pl_mk_bargain
+  kind: solo
+  stage: teen
+  where: veg_row
+  when: [420, 720]
+  hint: 有人蹲在摊前挑了半天。
+  weight: 3
+  requires: { minAge: 16, maxAge: 17 }
+  title: 五毛钱
+  text: 有人蹲下挑了半天，一斤西红柿非要便宜五毛。大人去进货了，摊上就你一个。
+  options:
+    - id: give
+      text: 让五毛，搭两根葱
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+    - id: hold
+      text: 一分不让，讲道理
+      tags: [competitive]
+      effects: { self: { mind: 1, mood: -2 } }
+    - id: pay
+      text: 让了，五毛自己补上
+      cost: 1
+      tags: [responsible]
+      effects: { self: { charm: 1, mood: 3 } }
+    - id: wait
+      text: 说等大人回来再定
+      tags: [patient]
+      effects: { self: { mood: -1 } }
+
+# 老了来买菜的：七十岁那道关看体魄、积蓄、亲近
+- id: pl_mk_early
+  kind: solo
+  stage: old
+  where: veg_row
+  when: [390, 600]
+  hint: 早市上人还不多。
+  weight: 3
+  requires: { minAge: 61, maxAge: 69 }
+  title: 嫩的
+  text: 卖菜的不问，先给你挑了一把嫩的。
+  options:
+    - id: walk
+      text: 拎着菜绕远路走回去
+      tags: [adventure]
+      effects: { self: { body: 1, energy: -6 } }
+    - id: chat
+      text: 站着说会儿话
+      tags: [gentle]
+      effects: { self: { mood: 4 } }
+    - id: extra
+      text: 多买一把给对门捎去
+      cost: 1
+      tags: [gentle]
+      effects: { other: { mood: 3 }, bond: { close: 1 } }

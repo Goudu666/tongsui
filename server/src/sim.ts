@@ -658,10 +658,14 @@ function lifeShadowChoose(s: LifeState, c: Content, role: Role, eventId: string)
       if (!lifeOptionLock(ev, ok, me, swing, lifePairBond(s, role)) && !lifeExpectMissed(ev, ok, me) && !lifeShadowSkips(ok, me)) { keepFace = true; break; }
     }
   }
+  // 影子不出门（outside.ts）：带 goto / tagAlong 的项，还有别的能选就不选
+  var gated = lifeGated(ev);
+  var open = ev.options.filter(function (x) { return !gated || !lifeOptionLock(ev, x, me, swing, lifePairBond(s, role)); });
   for (var i = 0; i < ev.options.length; i++) {
     var o = ev.options[i];
     // 关口：走不了的路影子也不能替他选。够得着的路里，影子偏向线最高的那条（人往高处走），再看性格
-    if (lifeGated(ev) && lifeOptionLock(ev, o, me, swing, lifePairBond(s, role))) continue;
+    if (gated && lifeOptionLock(ev, o, me, swing, lifePairBond(s, role))) continue;
+    if (outsideShadowStays(o, open)) continue;
     if (ev.kind === "milestone" && (lifeShadowSkips(o, me) || (keepFace && lifeExpectMissed(ev, o, me)))) continue;
     var score = ev.kind === "milestone" ? (o.min || 0) * 0.01 : 0;
     for (var j = 0; j < o.tags.length; j++) score += tags[o.tags[j]] || 0;

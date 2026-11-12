@@ -53,25 +53,25 @@
   group: primary
   requires: { minAge: 6, maxAge: 11, flags: [fam_poor, lead_study], notFlags: [aid] }
   duty: { label: 上学，放了学帮家里, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -22 }, stats: { mind: 0.34, body: 0.06, charm: 0.15 } }
-  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
+  restDuty: { label: 帮家里看摊, spot: veg_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
 - id: primary_help_sport
   label: 上小学 · 体育委员，放了学帮家里
   group: primary
   requires: { minAge: 6, maxAge: 11, flags: [fam_poor, lead_sport], notFlags: [aid] }
   duty: { label: 上学，放了学帮家里, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -24 }, stats: { mind: 0.29, body: 0.18, charm: 0.15 } }
-  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
+  restDuty: { label: 帮家里看摊, spot: veg_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
 - id: primary_help_art
   label: 上小学 · 文艺委员，放了学帮家里
   group: primary
   requires: { minAge: 6, maxAge: 11, flags: [fam_poor, lead_art], notFlags: [aid] }
   duty: { label: 上学，放了学帮家里, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -22 }, stats: { mind: 0.29, body: 0.06, charm: 0.25 } }
-  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
+  restDuty: { label: 帮家里看摊, spot: veg_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
 - id: primary_help
   label: 上小学 · 放了学帮家里
   group: primary
   requires: { minAge: 6, maxAge: 11, flags: [fam_poor], notFlags: [aid] }
   duty: { label: 上学，放了学帮家里, spot: school_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -22 }, stats: { mind: 0.29, body: 0.06, charm: 0.15 } }
-  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
+  restDuty: { label: 帮家里看摊, spot: veg_stall, arrive: [450, 540], until: 720, needs: { energy: -8 }, stats: { body: 0.05, charm: 0.08 } }
 - id: primary_study
   label: 上小学 · 学习委员
   group: primary
@@ -104,7 +104,7 @@
   group: junior_key
   requires: { minAge: 12, maxAge: 14, flags: [junior_key, fam_poor], notFlags: [aid] }
   duty: { label: 上学, spot: middle_gate, arrive: [420, 510], until: 1020, needs: { hunger: 30, energy: -22, mood: -3 }, stats: { mind: 0.48, charm: 0.05 } }
-  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
+  restDuty: { label: 帮家里看摊, spot: veg_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
 - id: junior_key
   label: 初中 · 重点班
   requires: { minAge: 12, maxAge: 14, flags: [junior_key] }
@@ -135,7 +135,7 @@
   group: junior
   requires: { minAge: 12, maxAge: 14, flags: [fam_poor], notFlags: [aid] }
   duty: { label: 上学，放了学帮家里, spot: middle_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -23 }, stats: { mind: 0.31, body: 0.08, charm: 0.18 }, money: 1 }
-  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
+  restDuty: { label: 帮家里看摊, spot: veg_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
 - id: junior
   label: 初中 · 普通班
   requires: { minAge: 12, maxAge: 14 }
@@ -145,7 +145,7 @@
   group: senior_key
   requires: { minAge: 15, maxAge: 17, flags: [school_far, fam_poor], notFlags: [aid] }
   duty: { label: 过桥上学, spot: key_gate, arrive: [390, 480], until: 1110, needs: { hunger: 30, energy: -25, mood: -4 }, stats: { mind: 0.58, charm: 0.05 } }
-  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
+  restDuty: { label: 帮家里看摊, spot: veg_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
 - id: senior_key
   label: 重点高中
   requires: { minAge: 15, maxAge: 17, flags: [school_far] }
@@ -156,7 +156,7 @@
   group: senior
   requires: { minAge: 15, maxAge: 17, flags: [school_near, fam_poor], notFlags: [aid] }
   duty: { label: 上学，回来帮家里收摊, spot: middle_gate, arrive: [420, 510], until: 1110, needs: { hunger: 30, energy: -23, mood: -2 }, stats: { mind: 0.38, body: 0.04, charm: 0.14 } }
-  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
+  restDuty: { label: 帮家里看摊, spot: veg_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
 - id: senior
   label: 高中
   requires: { minAge: 15, maxAge: 17, flags: [school_near] }
@@ -171,13 +171,13 @@
   group: zhongzhuan
   requires: { minAge: 15, maxAge: 17, flags: [zhongzhuan, fam_poor], notFlags: [aid] }
   duty: { label: 上学，放了学帮家里, spot: middle_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -23 }, stats: { mind: 0.22, body: 0.18, charm: 0.16 }, money: 1 }
-  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
+  restDuty: { label: 帮家里看摊, spot: veg_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
 - id: vocational_help
   label: 职专 · 放了学帮家里
   group: vocational
   requires: { minAge: 15, maxAge: 17, flags: [fam_poor], notFlags: [aid] }
   duty: { label: 上学，放了学帮家里, spot: middle_gate, arrive: [420, 540], until: 1110, needs: { hunger: 30, energy: -22 }, stats: { mind: 0.14, body: 0.27, charm: 0.2 }, money: 1 }
-  restDuty: { label: 帮家里看摊, spot: breakfast_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
+  restDuty: { label: 帮家里看摊, spot: veg_stall, arrive: [450, 540], until: 720, needs: { energy: -10 }, stats: { body: 0.06, charm: 0.1 }, money: 1 }
 - id: vocational
   label: 职专
   requires: { minAge: 15, maxAge: 17 }

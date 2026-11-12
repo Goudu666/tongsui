@@ -66,16 +66,21 @@ function story(seed, choose, rerolls = 0, near = 0.5, legacy = undefined) {
         for (const r of due) { seen.push(r + ":" + ev.id); assert.ok(entry.results[r].track, "关口之后每个人都要落在一条路上"); }
       }
     }
-    if (fate.mirror && alive.length === 2) {
+    // 出门（server/src/outside.ts）：这里不走 worldChoose，结算完照它的样子记一笔、再交给 outsideAfterEvent——选了 goto 的人真被送到海边、乡下、早市，
+    // 命运给他换上那张图上的事（下面各自的事接着就过）。海边、乡下的小事只有这样排得进来（早上排事的时候人还在床上，trip 的图去不了），
+    // 所以是真把人送过去，而不是在 sceneHeld 里把 trip 的图当成「等着」放过
+    const settle = (pe) => { lifeResolveEvent(s, C, pe); w.done.push(pe.eventId); G("outsideAfterEvent")(s, C, pe); };
+    // 两个人一块儿被送到海边、乡下：outsideAfterEvent 再给两个人排一件那儿的 mirror（招待所的夜里、露天电影），接着过
+    for (let k = 0; k < 2 && fate.mirror && alive.length === 2 && !w.done.includes(fate.mirror); k++) {
       const ev = byId.get(fate.mirror);
       const choices = { qing: choose(s, "qing", ev), mei: choose(s, "mei", ev) };
-      lifeResolveEvent(s, C, { eventId: ev.id, kind: "mirror", roles: ["qing", "mei"], choices, shadow: [] });
+      settle({ eventId: ev.id, kind: "mirror", roles: ["qing", "mei"], choices, shadow: [] });
       seen.push("pair:" + ev.id);
     }
     for (const r of alive) {
       if (!fate[r]) continue;
       const ev = byId.get(fate[r]);
-      lifeResolveEvent(s, C, { eventId: ev.id, kind: "solo", roles: [r], choices: { [r]: choose(s, r, ev) }, shadow: [] });
+      settle({ eventId: ev.id, kind: "solo", roles: [r], choices: { [r]: choose(s, r, ev) }, shadow: [] });
       seen.push(r + ":" + ev.id);
     }
     // 日子不只是事件：每人每天还会上学、写作业、玩、干活里挑两样（长属性，也让岁数大了不至于荒废）

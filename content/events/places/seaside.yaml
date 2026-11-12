@@ -1,0 +1,120 @@
+# 海边的支线（pl_sea_ 前缀）。where 用 content/maps/seaside.yaml 的 areas。写法见 places/building.yaml 文件头。
+# 只有夏天被送来的人在这儿（殷实人家的孩子，和被他们叫上的对门），所以都是童年的事，不写家境。
+# 招待所那件是 mirror：只有两个人都来了（叫上了、跟去了，或者两家都来了）才碰得上。
+
+- id: pl_sea_first
+  kind: solo
+  stage: childhood
+  where: sand
+  when: [540, 1020]
+  hint: 浪一下一下地往上扑。
+  weight: 4
+  requires: { minAge: 6, maxAge: 11 }
+  title: 头一回
+  text: 头一回看见海。它比你想的大，也比你想的响。你站在沙滩边上，鞋里灌满了沙子，半天没往前走。
+  options:
+    - id: run
+      text: 脱了鞋往水里跑
+      tags: [adventure]
+      effects: { self: { body: 1, energy: -6 } }
+    - id: stand
+      text: 站着看一会儿
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: shout
+      text: 冲着海喊一嗓子
+      tags: [competitive]
+      effects: { self: { charm: 1, mood: 4 } }
+
+- id: pl_sea_crab
+  kind: solo
+  stage: childhood
+  where: rocks
+  when: [390, 780]
+  hint: 礁石缝里有东西在动。
+  weight: 4
+  requires: { minAge: 6, maxAge: 11 }
+  title: 小螃蟹
+  text: 退了潮，礁石缝里一只小螃蟹，举着两只钳子冲你。你手里的小桶，已经装了半桶水。
+  options:
+    - id: catch
+      text: 伸手去捏
+      tags: [adventure]
+      effects: { self: { body: 1, energy: -4 } }
+    - id: watch
+      text: 蹲着看它往哪儿跑
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: let
+      text: 舀起来，又放回缝里
+      tags: [gentle]
+      effects: { self: { mood: 4 } }
+
+- id: pl_sea_angler
+  kind: solo
+  stage: childhood
+  where: pier
+  when: [390, 1080]
+  hint: 栈桥头有人甩竿。
+  weight: 4
+  requires: { minAge: 6, maxAge: 11 }
+  title: 小的那条
+  text: 栈桥头有人钓鱼，一早上就钓上来两条。他把小的那条摘下来，问你要不要。
+  options:
+    - id: take
+      text: 捧回去给家里看
+      tags: [adventure]
+      effects: { self: { mood: 5 } }
+    - id: free
+      text: 扔回海里
+      tags: [gentle]
+      effects: { self: { mood: 3, charm: 1 } }
+    - id: bait
+      text: 问他鱼饵怎么挂
+      tags: [patient]
+      effects: { self: { mind: 1, energy: -4 } }
+    - id: shell
+      text: 拿一串贝壳跟他换
+      cost: 1
+      tags: [competitive]
+      effects: { self: { charm: 1, mood: 4 } }
+
+- id: pl_sea_night
+  kind: mirror
+  stage: childhood
+  where: inn
+  when: [1140, 1320]
+  hint: 招待所的窗户开着一条缝。
+  weight: 4
+  requires: { minAge: 6, maxAge: 11 }
+  title: 夜里的浪
+  text: 招待所的屋里关了灯，还听得见浪，一下一下的。两张床中间隔着一个床头柜。
+  options:
+    - id: count
+      text: 数浪
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: talk
+      text: 小声说话
+      tags: [gentle]
+      effects: { self: { charm: 1 } }
+    - id: sleep
+      text: 翻个身睡了
+      tags: [solitude]
+      effects: { self: { energy: 6 } }
+  resonance:
+    count:
+      text: 两个人一块儿数，数到三十七，一个大浪把数冲没了。从头再数，又是三十七。
+      memory: 三十七下
+      bond: { sync: 3, close: 2 }
+    talk:
+      text: 说的是回去以后的事。说到楼顶，那边已经没声了，浪还在一下一下地来。
+      memory: 说到楼顶
+      bond: { sync: 3, close: 2 }
+    sleep:
+      text: 两个人一齐翻了个身，脸冲着同一扇窗户。浪声和楼道里的钟是一个拍子。
+      memory: 同一个拍子
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个睁着眼数浪，一个已经睡着了，手搭在床沿外头，离那个床头柜还差一点。
+    bond: { close: 0 }

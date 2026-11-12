@@ -1,5 +1,5 @@
 {
- "version": "144c9530dc78",
+ "version": "2c9c6c967128",
  "events": [
   {
    "id": "m_rise",
@@ -32135,6 +32135,2269 @@
    "catches": []
   },
   {
+   "id": "out_sea_1",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "summer"
+   ],
+   "weight": 3,
+   "where": "hallway",
+   "when": [
+    390,
+    600
+   ],
+   "hint": "楼道里搁着个旅行包。",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 8,
+    "either": {
+     "flags": [
+      "fam_rich"
+     ],
+     "notFlags": [
+      "fam_cut"
+     ]
+    }
+   },
+   "title": "旅行包",
+   "text": "楼道里搁着一个新旅行包，拉链上拴着个游泳圈。有一家今天去海边，住三天，车八点到楼下。",
+   "options": [
+    {
+     "id": "invite",
+     "text": "拉上对门一块儿去",
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
+      ]
+     },
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "saw_sea"
+      ],
+      "goto": "seaside"
+     }
+    },
+    {
+     "id": "go",
+     "text": "跟着家里上车",
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
+      ]
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "saw_sea"
+      ],
+      "goto": "seaside"
+     }
+    },
+    {
+     "id": "follow",
+     "text": "回家问能不能跟去",
+     "requires": {
+      "notFlags": [
+       "fam_rich"
+      ]
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "tagAlong": [
+       "invite"
+      ]
+     }
+    },
+    {
+     "id": "stay",
+     "text": "这回不去了",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "下楼看看那辆车",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "invite": {
+     "text": "两个人同时敲开对方的门，话都没说完。两家定的是同一片海，同一个招待所。",
+     "memory": "同一个招待所",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "go": {
+     "text": "到了招待所，隔壁的门一开，出来的是对门。两家谁也没提前说。",
+     "memory": "隔壁那间屋",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "stay": {
+     "text": "旅行包又拎回了屋里。那天两个人在楼下跳了一上午皮筋，谁也没提海。",
+     "memory": "没提的海",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "两个人一前一后下了楼，围着车转了一圈，在车窗上各按了一个手印。",
+     "memory": "车窗上的手印",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个坐在后座上回头，一个趴在楼道的窗台上。车拐过街口，两个人还看着那个方向。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": [
+    {
+     "pair": [
+      "invite",
+      "follow"
+     ],
+     "text": "一个刚喊「走」，一个已经跑回家问去了。车开出去，两个人挤在后座的一个窗口。",
+     "memory": "一个窗口",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": [
+      "p_took_sea"
+     ]
+    },
+    {
+     "pair": [
+      "go",
+      "wait"
+     ],
+     "text": "一个上了车，一个在楼下站着。三天后回来，兜里一把沙子，先敲的是对门。",
+     "memory": "一兜沙子",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   ]
+  },
+  {
+   "id": "out_sea_2",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "summer"
+   ],
+   "weight": 3,
+   "where": "hallway",
+   "when": [
+    390,
+    600
+   ],
+   "hint": "楼下的车按了一声喇叭。",
+   "requires": {
+    "minAge": 9,
+    "maxAge": 11,
+    "either": {
+     "flags": [
+      "fam_rich"
+     ],
+     "notFlags": [
+      "fam_cut"
+     ]
+    }
+   },
+   "title": "泳衣",
+   "text": "楼道的绳上晾着一条泳衣，还没干透就收走了。楼下的车按了一声喇叭，有一家又要去海边。",
+   "options": [
+    {
+     "id": "invite",
+     "text": "叫上对门，多带一套",
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
+      ]
+     },
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "saw_sea"
+      ],
+      "goto": "seaside"
+     }
+    },
+    {
+     "id": "go",
+     "text": "拎上包下楼",
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
+      ]
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "saw_sea"
+      ],
+      "goto": "seaside"
+     }
+    },
+    {
+     "id": "follow",
+     "text": "回家问能不能跟去",
+     "requires": {
+      "notFlags": [
+       "fam_rich"
+      ]
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "tagAlong": [
+       "invite"
+      ]
+     }
+    },
+    {
+     "id": "stay",
+     "text": "这回不想去了",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "下楼送一送",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "invite": {
+     "text": "两家的车前后脚到了楼下。司机说，你们俩坐一辆，大人坐另一辆。",
+     "memory": "坐一辆车",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "go": {
+     "text": "栈桥上，两个人隔着十几米认出了对方。谁也没往前走，先挥了挥手。",
+     "memory": "栈桥上的手",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "stay": {
+     "text": "车走了。两个人坐在楼道的台阶上，把一本小人书从头翻到尾，又翻回来。",
+     "memory": "翻回来的书",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "两个人都下了楼，在车边站着。喇叭又响了一声，两个人一齐往后退了一步。",
+     "memory": "退了一步",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "车上的那个数着路边的电线杆，楼道里的那个数着台阶，都数到了一百多。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": [
+    {
+     "pair": [
+      "invite",
+      "follow"
+     ],
+     "text": "一个来拍门，一个已经拎着书包站在门里了。书包里塞着一条旧泳裤，是借的。",
+     "memory": "借来的泳裤",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": [
+      "p_took_sea"
+     ]
+    },
+    {
+     "pair": [
+      "go",
+      "wait"
+     ],
+     "text": "一个上了车，一个在楼下挥手。回来那天，楼道里对门的门把上挂着一串贝壳。",
+     "memory": "门把上的贝壳",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   ]
+  },
+  {
+   "id": "out_village_1",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "summer"
+   ],
+   "weight": 3,
+   "where": "hallway",
+   "when": [
+    390,
+    600
+   ],
+   "hint": "楼道里堆着两兜子东西。",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 8,
+    "either": {
+     "notFlags": [
+      "fam_rich",
+      "fam_poor"
+     ]
+    }
+   },
+   "title": "两兜子东西",
+   "text": "楼道里堆着两兜子东西：点心匣子、一桶油、给姥姥扯的一块布。有一家要赶早班长途车，回乡下。",
+   "options": [
+    {
+     "id": "invite",
+     "text": "叫上对门去乡下",
+     "requires": {
+      "notFlags": [
+       "fam_rich",
+       "fam_poor"
+      ]
+     },
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "saw_village"
+      ],
+      "goto": "village"
+     }
+    },
+    {
+     "id": "go",
+     "text": "拎上一兜子上车",
+     "requires": {
+      "notFlags": [
+       "fam_rich",
+       "fam_poor"
+      ]
+     },
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "saw_village"
+      ],
+      "goto": "village"
+     }
+    },
+    {
+     "id": "follow",
+     "text": "回家问能不能跟去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "tagAlong": [
+       "invite"
+      ]
+     }
+    },
+    {
+     "id": "stay",
+     "text": "这回不去了",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "下楼送一送",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "invite": {
+     "text": "两家坐的是同一趟长途车。下了车才知道，两家的姥姥住一个村，隔着一条河沟。",
+     "memory": "隔一条河沟",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "go": {
+     "text": "早班长途车上，一前一后两排。两个人隔着椅背对看了一眼，都笑了。",
+     "memory": "隔着椅背",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "follow": {
+     "text": "两个人都回家问了一遍，都问到了同一句：「人家去走亲戚，你跟着算怎么回事。」",
+     "memory": "同一句话",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "stay": {
+     "text": "点心匣子留下了一盒。两个人坐在楼道台阶上分着吃了，渣掉了一台阶。",
+     "memory": "一台阶的渣",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "两个人一人拎着一兜子送下楼，拎到车边，胳膊上都勒出了一道红印。",
+     "memory": "勒红的胳膊",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在长途车上睡着了，脑袋磕着车窗；一个在楼下跳皮筋，跳一会儿往街口看一眼。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": [
+    {
+     "pair": [
+      "invite",
+      "follow"
+     ],
+     "text": "一个说「走」，一个回家拿了件长袖。到了玉米地才知道，长袖是拿对了。",
+     "memory": "一件长袖",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": [
+      "p_took_village"
+     ]
+    },
+    {
+     "pair": [
+      "go",
+      "wait"
+     ],
+     "text": "一个回了乡下，一个在楼下等。回来那天，半兜子新掰的玉米先给了对门。",
+     "memory": "半兜玉米",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   ]
+  },
+  {
+   "id": "out_village_2",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "summer"
+   ],
+   "weight": 3,
+   "where": "hallway",
+   "when": [
+    390,
+    600
+   ],
+   "hint": "有人在楼道里数车票。",
+   "requires": {
+    "minAge": 9,
+    "maxAge": 11,
+    "either": {
+     "notFlags": [
+      "fam_rich",
+      "fam_poor"
+     ]
+    }
+   },
+   "title": "早班车",
+   "text": "有一家在楼道里数车票：坐早班长途车，到镇上再搭一段拖拉机，到姥姥家正赶上午饭。",
+   "options": [
+    {
+     "id": "invite",
+     "text": "叫对门一块儿回去",
+     "requires": {
+      "notFlags": [
+       "fam_rich",
+       "fam_poor"
+      ]
+     },
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "saw_village"
+      ],
+      "goto": "village"
+     }
+    },
+    {
+     "id": "go",
+     "text": "拎上东西下楼",
+     "requires": {
+      "notFlags": [
+       "fam_rich",
+       "fam_poor"
+      ]
+     },
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "saw_village"
+      ],
+      "goto": "village"
+     }
+    },
+    {
+     "id": "follow",
+     "text": "回家问能不能跟去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "tagAlong": [
+       "invite"
+      ]
+     }
+    },
+    {
+     "id": "stay",
+     "text": "这回想留在家里",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "送到街口",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "invite": {
+     "text": "两家前后脚出的门，车票买在了一起。一路上两个人把一包瓜子嗑完了。",
+     "memory": "一包瓜子",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "go": {
+     "text": "拖拉机上颠得说不出话。两家的东西堆在一块儿，两个人坐在最上头。",
+     "memory": "坐在最上头",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "follow": {
+     "text": "两个人都跑回家问了。回来在楼道里一碰头，看对方的脸就知道了。",
+     "memory": "看脸就知道",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "stay": {
+     "text": "那天楼里静。两个人在楼顶上，看着往东去的车，一辆一辆地数。",
+     "memory": "往东去的车",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "两个人送到街口。车门一关，两个人一齐往后退了一步。",
+     "memory": "退那一步",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在拖拉机上颠着，一个在楼道里写暑假作业。作业写到第七页，拖拉机到了村口。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": [
+    {
+     "pair": [
+      "invite",
+      "follow"
+     ],
+     "text": "一个刚开口，一个就说「我去问」。那天晚上，姥姥家的饭桌上多摆了一双筷子。",
+     "memory": "多一双筷子",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": [
+      "p_took_village"
+     ]
+    },
+    {
+     "pair": [
+      "go",
+      "wait"
+     ],
+     "text": "一个回了乡下，一个在楼下等。回来的那个晒黑了一圈，拎着一兜鸡蛋，拿报纸裹着。",
+     "memory": "裹报纸的鸡蛋",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   ]
+  },
+  {
+   "id": "out_market_1",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "summer"
+   ],
+   "weight": 3,
+   "where": "hallway",
+   "when": [
+    390,
+    600
+   ],
+   "hint": "楼下的三轮车在响。",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 8,
+    "either": {
+     "flags": [
+      "fam_poor"
+     ]
+    }
+   },
+   "title": "三轮车",
+   "text": "楼下那辆三轮车早装好了，车斗里码着空筐，绳子勒了两道。有一家要去早市出摊。",
+   "options": [
+    {
+     "id": "invite",
+     "text": "叫上对门帮着看摊",
+     "requires": {
+      "flags": [
+       "fam_poor"
+      ]
+     },
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "saw_market"
+      ],
+      "goto": "market"
+     }
+    },
+    {
+     "id": "go",
+     "text": "爬上车斗跟着去",
+     "requires": {
+      "flags": [
+       "fam_poor"
+      ]
+     },
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "saw_market"
+      ],
+      "goto": "market"
+     }
+    },
+    {
+     "id": "follow",
+     "text": "回家问能不能跟去",
+     "requires": {
+      "notFlags": [
+       "fam_poor"
+      ]
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "tagAlong": [
+       "invite"
+      ]
+     }
+    },
+    {
+     "id": "stay",
+     "text": "回屋再睡一会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "在楼门口等车回来",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "invite": {
+     "text": "两家的三轮车一前一后出了胡同。到了早市，两个摊挨着，两个孩子背对背坐。",
+     "memory": "背对背",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "go": {
+     "text": "到了早市，隔壁摊上蹲着码西红柿的是对门。两个人谁也没出声，比着码。",
+     "memory": "比着码",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "stay": {
+     "text": "三轮车是大人蹬走的。两个孩子在楼道里，把昨天那盘没下完的跳棋下完了。",
+     "memory": "下完的跳棋",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "两个人坐在楼门口的台阶上等。中午车回来了，车斗空了，筐摞得老高。",
+     "memory": "摞高的空筐",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个坐在车斗里，抱着一摞空筐；一个站在楼门口，手里攥着买早点的钱。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": [
+    {
+     "pair": [
+      "invite",
+      "follow"
+     ],
+     "text": "一个说「来帮我看摊」，一个鞋都没提上就下了楼。车斗里挤着两个人，一摞筐。",
+     "memory": "车斗里俩人",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": [
+      "p_took_market"
+     ]
+    },
+    {
+     "pair": [
+      "go",
+      "wait"
+     ],
+     "text": "一个出了摊，一个在楼下等。中午车回来，车斗里滚下来两根卖剩的黄瓜，是给对门的。",
+     "memory": "两根黄瓜",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   ]
+  },
+  {
+   "id": "out_market_2",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [
+    "summer"
+   ],
+   "weight": 3,
+   "where": "hallway",
+   "when": [
+    390,
+    600
+   ],
+   "hint": "楼道里有人在捋毛票。",
+   "requires": {
+    "minAge": 9,
+    "maxAge": 11,
+    "either": {
+     "flags": [
+      "fam_poor"
+     ]
+    }
+   },
+   "title": "找零的毛票",
+   "text": "楼道里有人蹲着，把毛票一张一张捋平，用皮筋扎上，是早市上找零用的。三轮车在楼下等着。",
+   "options": [
+    {
+     "id": "invite",
+     "text": "叫对门来帮着吆喝",
+     "requires": {
+      "flags": [
+       "fam_poor"
+      ]
+     },
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "saw_market"
+      ],
+      "goto": "market"
+     }
+    },
+    {
+     "id": "go",
+     "text": "揣上零钱下楼",
+     "requires": {
+      "flags": [
+       "fam_poor"
+      ]
+     },
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "saw_market"
+      ],
+      "goto": "market"
+     }
+    },
+    {
+     "id": "follow",
+     "text": "回家问能不能跟去",
+     "requires": {
+      "notFlags": [
+       "fam_poor"
+      ]
+     },
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "tagAlong": [
+       "invite"
+      ]
+     }
+    },
+    {
+     "id": "stay",
+     "text": "回屋写暑假作业",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "下楼帮着推一段",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "invite": {
+     "text": "两个摊隔着一条过道。两个人吆喝的是同一句，一个高一个低，谁也没改。",
+     "memory": "同一句吆喝",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "go": {
+     "text": "找零的时候，两个人隔着过道互相借了一回毛票，过了一会儿，又还了一回。",
+     "memory": "借来的毛票",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "stay": {
+     "text": "两个人在一张桌上写作业，写到中午，楼下的三轮车回来了，车铃响了两声。",
+     "memory": "车铃响两声",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "wait": {
+     "text": "一个在后头推，一个在边上扶着筐，推到胡同口，车上的大人说：「回吧。」",
+     "memory": "推到胡同口",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个在早市上踮着脚报价钱，一个在楼道里写作业，写一会儿，往窗户外头看一眼。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": [
+    {
+     "pair": [
+      "invite",
+      "follow"
+     ],
+     "text": "一个把扎好的毛票分了一半塞过去：「你管找零。」那天一分钱也没找错。",
+     "memory": "一分没错",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": [
+      "p_took_market"
+     ]
+    },
+    {
+     "pair": [
+      "go",
+      "wait"
+     ],
+     "text": "一个出了摊，一个在楼下等。中午回来，兜里一把卖剩的小西红柿，红的都给了对门。",
+     "memory": "小西红柿",
+     "bond": {
+      "sync": 2,
+      "close": 1
+     },
+     "flags": []
+    }
+   ]
+  },
+  {
+   "id": "out_sick",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [
+    "winter"
+   ],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 7,
+    "maxAge": 11
+   },
+   "title": "夜里烧起来",
+   "text": "后半夜烧起来了，嗓子眼像塞了团棉花。天一亮，被子掀开一角，一只手搭上了你的脑门。",
+   "options": [
+    {
+     "id": "expert",
+     "text": "爸妈托人挂了专家号",
+     "requires": {
+      "flags": [
+       "fam_rich"
+      ],
+      "notFlags": [
+       "fam_cut"
+      ]
+     },
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "goto": "hospital"
+     }
+    },
+    {
+     "id": "queue",
+     "text": "一早去医院排队挂号",
+     "requires": {
+      "notFlags": [
+       "fam_rich",
+       "fam_poor"
+      ]
+     },
+     "cost": 2,
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "goto": "hospital"
+     }
+    },
+    {
+     "id": "clinic",
+     "text": "去街道卫生所打一针",
+     "requires": {
+      "flags": [
+       "fam_poor"
+      ]
+     },
+     "cost": 1,
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "energy": -10,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ginger",
+     "text": "喝碗姜汤捂一身汗",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": -20,
+       "mood": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "push",
+     "text": "硬撑着去上学",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "energy": -28,
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "out_kin_hurt",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 16,
+    "flags": [
+     "fam_poor"
+    ],
+    "notFlags": [
+     "kin_care",
+     "kin_cared"
+    ]
+   },
+   "title": "铝饭盒",
+   "text": "家里有人住了院，一时半会儿出不来。一只铝饭盒刷干净了，搁在你书包旁边。",
+   "options": [
+    {
+     "id": "after_school",
+     "text": "放了学就去送饭",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": -3
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kin_care"
+      ]
+     }
+    },
+    {
+     "id": "night",
+     "text": "夜里去陪床",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "energy": -10,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kin_care"
+      ]
+     }
+    },
+    {
+     "id": "brother",
+     "text": "跟家里轮着来",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kin_care"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "out_kin_home",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 8,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "flags": [
+     "kin_care"
+    ]
+   },
+   "title": "出院那天",
+   "text": "出院那天，你把床头柜里的东西一样一样装进网兜。护士说：「这孩子，天天来。」",
+   "options": [
+    {
+     "id": "carry",
+     "text": "背着铺盖卷走在前头",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8,
+       "energy": -6,
+       "body": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kin_cared"
+      ],
+      "drop": [
+       "kin_care"
+      ]
+     }
+    },
+    {
+     "id": "thank",
+     "text": "回头跟护士说声谢谢",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kin_cared"
+      ],
+      "drop": [
+       "kin_care"
+      ]
+     }
+    },
+    {
+     "id": "jar",
+     "text": "把空罐头瓶也拎回家",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 8,
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": [
+       "kin_cared"
+      ],
+      "drop": [
+       "kin_care"
+      ]
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "out_kin_mid",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 17,
+    "notFlags": [
+     "fam_rich",
+     "fam_poor"
+    ]
+   },
+   "title": "替半天",
+   "text": "奶奶住了院，爸妈两班倒着陪。礼拜天你妈说：「上午你去替我半天，我回来睡一觉。」",
+   "options": [
+    {
+     "id": "go",
+     "text": "带上作业去替班",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "early",
+     "text": "早去一个钟头",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "read",
+     "text": "给奶奶念报纸",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "out_kin_rich",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 17,
+    "flags": [
+     "fam_rich"
+    ],
+    "notFlags": [
+     "fam_cut"
+    ]
+   },
+   "title": "十分钟",
+   "text": "爷爷住了院，单间，家里请了护工。你去了一趟，在床边坐了十分钟，护工说他刚睡着。",
+   "options": [
+    {
+     "id": "leave",
+     "text": "把水果搁下就走",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "坐着等他醒",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": -8,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "note",
+     "text": "留张字条压在杯子底下",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "out_kin_visit",
+   "kind": "mirror",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 4,
+   "where": "hallway",
+   "when": [
+    1110,
+    1320
+   ],
+   "hint": "楼道里有人在刷饭盒。",
+   "requires": {
+    "minAge": 13,
+    "either": {
+     "flags": [
+      "kin_care"
+     ]
+    }
+   },
+   "title": "两份作业",
+   "text": "晚上楼道里，一个刚从医院回来，饭盒还没刷；一个手里拿着今天的作业，记了两份。",
+   "options": [
+    {
+     "id": "tell",
+     "text": "说说医院里的事",
+     "requires": {
+      "flags": [
+       "kin_care"
+      ]
+     },
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "copy",
+     "text": "把作业摊开讲一遍",
+     "requires": {
+      "notFlags": [
+       "kin_care"
+      ]
+     },
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {
+       "mind": 1
+      },
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wash",
+     "text": "一块儿把饭盒刷了",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sit",
+     "text": "在楼梯上坐一会儿",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "tell": {
+     "text": "两个人说着说着停住了：说的是同一家医院，同一层楼，开水房的同一个龙头。",
+     "memory": "同一个龙头",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "wash": {
+     "text": "水池边两个人挤着，一个刷，一个拿抹布擦干。饭盒盖上刻的字擦得发亮。",
+     "memory": "发亮的饭盒盖",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "sit": {
+     "text": "两个人在楼梯上坐着，谁也没提医院。楼道灯灭了，谁也没去跺那一脚。",
+     "memory": "没跺的那一脚",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个把作业搁在门口的凳子上，一个在水池边刷饭盒。刷完了回头，作业还在凳子上。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": [
+    {
+     "pair": [
+      "tell",
+      "copy"
+     ],
+     "text": "一个讲今天的题，一个说病房里的事。讲完了，说完了，两个人谁也没起身。",
+     "memory": "谁也没起身",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   ]
+  },
+  {
+   "id": "out_plane",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 17,
+    "flags": [
+     "fam_rich"
+    ],
+    "notFlags": [
+     "fam_cut"
+    ]
+   },
+   "title": "头一回坐飞机",
+   "text": "头一回坐飞机去南边。起飞的时候耳朵嗡的一声，往下看，河成了一根线。",
+   "options": [
+    {
+     "id": "window",
+     "text": "一路贴着窗户看",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sleep",
+     "text": "系上安全带睡一觉",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ticket",
+     "text": "把登机牌夹进书里",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "gift",
+     "text": "给对门捎点南边的糖",
+     "cost": 1,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {
+       "mood": 4
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "out_unit_trip",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 17,
+    "notFlags": [
+     "fam_rich",
+     "fam_poor"
+    ]
+   },
+   "title": "大轿车",
+   "text": "你爸单位组织进山玩一天，一家能带一个孩子。大轿车上一车人都认得你，叫你小名。",
+   "options": [
+    {
+     "id": "sing",
+     "text": "车上跟着大人唱歌",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "climb",
+     "text": "头一个爬上山顶",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stone",
+     "text": "给对门捡块花石头",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "sit",
+     "text": "跟你爸坐一块儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "out_summer_work",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 13,
+    "maxAge": 17,
+    "flags": [
+     "fam_poor"
+    ]
+   },
+   "title": "学费",
+   "text": "暑假去批发市场扛货，一天下来肩膀磨破了皮。老板说，干满一个月，学费就够了。",
+   "options": [
+    {
+     "id": "full",
+     "text": "干满一个月",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -20
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "money": 8
+     }
+    },
+    {
+     "id": "half",
+     "text": "干半个月，留半个月念书",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "money": 4
+     }
+    },
+    {
+     "id": "pair",
+     "text": "叫上对门一块儿干",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "energy": -12
+      },
+      "other": {},
+      "bond": {
+       "close": 1
+      },
+      "flags": [],
+      "money": 4
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "out_grad_trip",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 2,
+   "where": null,
+   "when": null,
+   "hint": null,
+   "requires": {
+    "minAge": 23,
+    "maxAge": 24,
+    "flags": [
+     "fam_rich"
+    ],
+    "notFlags": [
+     "fam_cut"
+    ]
+   },
+   "title": "头一个章",
+   "text": "家里说趁年轻，出钱让你出国转一圈。护照上头一个章，你在机场看了好几遍。",
+   "options": [
+    {
+     "id": "museum",
+     "text": "一天走三个博物馆",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "walk",
+     "text": "在街上随便走走",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "card",
+     "text": "给对门寄张明信片",
+     "cost": 1,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {
+       "mood": 4
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "home",
+     "text": "提前两天回来",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2,
+       "energy": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "out_standing",
+   "kind": "solo",
+   "stage": "young",
+   "seasons": [],
+   "weight": 3,
+   "where": "station",
+   "when": null,
+   "hint": "站台上有人蹲着歇脚。",
+   "requires": {
+    "minAge": 18,
+    "maxAge": 22,
+    "flags": [
+     "fam_poor"
+    ]
+   },
+   "title": "站票",
+   "text": "站了一宿到的。下了车腿是麻的，你在站台上蹲了一会儿，才把行李重新扛上肩。",
+   "options": [
+    {
+     "id": "walk",
+     "text": "扛着行李走过去",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -10
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "rest",
+     "text": "在台阶上歇够了再走",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "call",
+     "text": "找个电话给家里报平安",
+     "cost": 1,
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "noodle",
+     "text": "在站前吃碗面",
+     "cost": 1,
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "hunger": 40,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
    "id": "f_head_keys",
    "kind": "mirror",
    "stage": "childhood",
@@ -44437,6 +46700,402 @@
    "catches": []
   },
   {
+   "id": "pl_mk_bulb",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [
+    "winter"
+   ],
+   "weight": 3,
+   "where": "veg_row",
+   "when": [
+    390,
+    540
+   ],
+   "hint": "棚子底下亮着一串灯泡。",
+   "requires": {
+    "minAge": 7,
+    "maxAge": 11
+   },
+   "title": "一串灯泡",
+   "text": "冬天的早上，天还黑着。棚子底下一根电线挂着一串灯泡，你蹲在菜筐后头，借着光。",
+   "options": [
+    {
+     "id": "write",
+     "text": "把昨天的生字写一遍",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "shout",
+     "text": "跟着大人吆喝",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "doze",
+     "text": "揣着手打个盹",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "energy": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_mk_scale",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 3,
+   "where": "veg_row",
+   "when": [
+    420,
+    660
+   ],
+   "hint": "有人盯着秤星看。",
+   "requires": {
+    "minAge": 7,
+    "maxAge": 11
+   },
+   "title": "秤杆",
+   "text": "卖菜的教你看秤：秤杆往上翘才算够。来买菜的老太太盯着秤星，你也盯着。",
+   "options": [
+    {
+     "id": "read",
+     "text": "一颗一颗认秤星",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "lift",
+     "text": "让秤杆再翘高一点",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "onion",
+     "text": "自己掏钱搭两根葱",
+     "cost": 1,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "count",
+     "text": "在心里把账算一遍",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_mk_peach",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": "wholesale",
+   "when": [
+    390,
+    660
+   ],
+   "hint": "棚子底下卸了一车桃。",
+   "requires": {
+    "minAge": 13,
+    "maxAge": 14
+   },
+   "title": "半边桃",
+   "text": "卸完一车桃，批发棚子的老板挑了一个磕烂了半边的塞给你：「好的那半边能吃。」",
+   "options": [
+    {
+     "id": "eat",
+     "text": "蹲在纸箱上吃了",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "hunger": 10,
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "keep",
+     "text": "揣回去给对门",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 2
+      },
+      "other": {
+       "mood": 3
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    },
+    {
+     "id": "more",
+     "text": "再卸一车",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -12
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "money": 1
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_mk_bargain",
+   "kind": "solo",
+   "stage": "teen",
+   "seasons": [],
+   "weight": 3,
+   "where": "veg_row",
+   "when": [
+    420,
+    720
+   ],
+   "hint": "有人蹲在摊前挑了半天。",
+   "requires": {
+    "minAge": 16,
+    "maxAge": 17
+   },
+   "title": "五毛钱",
+   "text": "有人蹲下挑了半天，一斤西红柿非要便宜五毛。大人去进货了，摊上就你一个。",
+   "options": [
+    {
+     "id": "give",
+     "text": "让五毛，搭两根葱",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "hold",
+     "text": "一分不让，讲道理",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "mood": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "pay",
+     "text": "让了，五毛自己补上",
+     "cost": 1,
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "wait",
+     "text": "说等大人回来再定",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_mk_early",
+   "kind": "solo",
+   "stage": "old",
+   "seasons": [],
+   "weight": 3,
+   "where": "veg_row",
+   "when": [
+    390,
+    600
+   ],
+   "hint": "早市上人还不多。",
+   "requires": {
+    "minAge": 61,
+    "maxAge": 69
+   },
+   "title": "嫩的",
+   "text": "卖菜的不问，先给你挑了一把嫩的。",
+   "options": [
+    {
+     "id": "walk",
+     "text": "拎着菜绕远路走回去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "chat",
+     "text": "站着说会儿话",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "extra",
+     "text": "多买一把给对门捎去",
+     "cost": 1,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {},
+      "other": {
+       "mood": 3
+      },
+      "bond": {
+       "close": 1
+      },
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
    "id": "pl_md_tire",
    "kind": "mirror",
    "stage": "teen",
@@ -47830,6 +50489,338 @@
    "catches": []
   },
   {
+   "id": "pl_sea_first",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 4,
+   "where": "sand",
+   "when": [
+    540,
+    1020
+   ],
+   "hint": "浪一下一下地往上扑。",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11
+   },
+   "title": "头一回",
+   "text": "头一回看见海。它比你想的大，也比你想的响。你站在沙滩边上，鞋里灌满了沙子，半天没往前走。",
+   "options": [
+    {
+     "id": "run",
+     "text": "脱了鞋往水里跑",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stand",
+     "text": "站着看一会儿",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "shout",
+     "text": "冲着海喊一嗓子",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_sea_crab",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 4,
+   "where": "rocks",
+   "when": [
+    390,
+    780
+   ],
+   "hint": "礁石缝里有东西在动。",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11
+   },
+   "title": "小螃蟹",
+   "text": "退了潮，礁石缝里一只小螃蟹，举着两只钳子冲你。你手里的小桶，已经装了半桶水。",
+   "options": [
+    {
+     "id": "catch",
+     "text": "伸手去捏",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "watch",
+     "text": "蹲着看它往哪儿跑",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "let",
+     "text": "舀起来，又放回缝里",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_sea_angler",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 4,
+   "where": "pier",
+   "when": [
+    390,
+    1080
+   ],
+   "hint": "栈桥头有人甩竿。",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11
+   },
+   "title": "小的那条",
+   "text": "栈桥头有人钓鱼，一早上就钓上来两条。他把小的那条摘下来，问你要不要。",
+   "options": [
+    {
+     "id": "take",
+     "text": "捧回去给家里看",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 5
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "free",
+     "text": "扔回海里",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3,
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "bait",
+     "text": "问他鱼饵怎么挂",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "shell",
+     "text": "拿一串贝壳跟他换",
+     "cost": 1,
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_sea_night",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 4,
+   "where": "inn",
+   "when": [
+    1140,
+    1320
+   ],
+   "hint": "招待所的窗户开着一条缝。",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11
+   },
+   "title": "夜里的浪",
+   "text": "招待所的屋里关了灯，还听得见浪，一下一下的。两张床中间隔着一个床头柜。",
+   "options": [
+    {
+     "id": "count",
+     "text": "数浪",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "talk",
+     "text": "小声说话",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "sleep",
+     "text": "翻个身睡了",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "count": {
+     "text": "两个人一块儿数，数到三十七，一个大浪把数冲没了。从头再数，又是三十七。",
+     "memory": "三十七下",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "talk": {
+     "text": "说的是回去以后的事。说到楼顶，那边已经没声了，浪还在一下一下地来。",
+     "memory": "说到楼顶",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "sleep": {
+     "text": "两个人一齐翻了个身，脸冲着同一扇窗户。浪声和楼道里的钟是一个拍子。",
+     "memory": "同一个拍子",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个睁着眼数浪，一个已经睡着了，手搭在床沿外头，离那个床头柜还差一点。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
+   "catches": []
+  },
+  {
    "id": "pl_st_icebox",
    "kind": "mirror",
    "stage": "childhood",
@@ -48635,6 +51626,337 @@
    ],
    "resonance": null,
    "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_vil_pump",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 4,
+   "where": "grandma_yard",
+   "when": [
+    390,
+    780
+   ],
+   "hint": "院里的压水井吱呀吱呀响。",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11
+   },
+   "title": "压水井",
+   "text": "院里那口压水井，得先倒一瓢水进去引着。你压了二十多下，才压上来第一股凉水。",
+   "options": [
+    {
+     "id": "press",
+     "text": "接着压满一桶",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -8
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "splash",
+     "text": "把脑袋伸到底下冲",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mood": 6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "ask",
+     "text": "问姥姥为什么先倒水",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_vil_melon",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 4,
+   "where": "cornfield",
+   "when": [
+    780,
+    1080
+   ],
+   "hint": "地头有人猫着腰。",
+   "requires": {
+    "minAge": 7,
+    "maxAge": 11
+   },
+   "title": "地头的瓜",
+   "text": "表哥说地头那片瓜是他二大爷家的，摘一个不算偷。说完他已经猫着腰钻进去了。",
+   "options": [
+    {
+     "id": "follow",
+     "text": "跟着钻进去",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "body": 1,
+       "energy": -6
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "watch",
+     "text": "在地头放风",
+     "tags": [
+      "responsible"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "back",
+     "text": "不去，回院里",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": -1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "pay",
+     "text": "揣上一块钱去敲门",
+     "cost": 1,
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "mood": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_vil_mosquito",
+   "kind": "solo",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 4,
+   "where": "grandma_yard",
+   "when": [
+    1140,
+    1320
+   ],
+   "hint": "院里点着一盘蚊香。",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11
+   },
+   "title": "一盘蚊香",
+   "text": "乡下的蚊子比城里的狠。姥姥点了一盘蚊香，又拿蒲扇给你扇了半宿。",
+   "options": [
+    {
+     "id": "count",
+     "text": "数身上的包",
+     "tags": [
+      "patient"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "fan",
+     "text": "抢过扇子给姥姥扇",
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "charm": 1,
+       "energy": -4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "cover",
+     "text": "蒙上头睡",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "energy": 4
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": null,
+   "dissonance": null,
+   "catches": []
+  },
+  {
+   "id": "pl_vil_movie",
+   "kind": "mirror",
+   "stage": "childhood",
+   "seasons": [],
+   "weight": 4,
+   "where": "threshing",
+   "when": [
+    1140,
+    1320
+   ],
+   "hint": "晒场上支起了一块白布。",
+   "requires": {
+    "minAge": 6,
+    "maxAge": 11
+   },
+   "title": "白布",
+   "text": "晒场上支起一块白布，放的是一部老片子。全村人搬着板凳来，你俩没有板凳，坐在麦秸垛上。",
+   "options": [
+    {
+     "id": "front",
+     "text": "挤到最前头",
+     "tags": [
+      "competitive"
+     ],
+     "effects": {
+      "self": {
+       "mood": 4,
+       "energy": -2
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "behind",
+     "text": "绕到白布后头看反的",
+     "tags": [
+      "adventure"
+     ],
+     "effects": {
+      "self": {
+       "mind": 1
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    },
+    {
+     "id": "stars",
+     "text": "不看电影，看星星",
+     "tags": [
+      "solitude"
+     ],
+     "effects": {
+      "self": {
+       "mood": 3
+      },
+      "other": {},
+      "bond": {},
+      "flags": []
+     }
+    }
+   ],
+   "resonance": {
+    "front": {
+     "text": "两个人挤到最前头，脖子仰得发酸。片子断了一回，全场的人都在等，你俩在笑。",
+     "memory": "断了一回",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "behind": {
+     "text": "白布后头只有你们俩。人都是反着的，字也是反着的，你们俩看得比谁都认真。",
+     "memory": "反着的字",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    },
+    "stars": {
+     "text": "两个人在麦秸垛上躺平了。银幕上打着仗，天上一颗星也没动。",
+     "memory": "麦秸垛",
+     "bond": {
+      "sync": 3,
+      "close": 2
+     },
+     "flags": []
+    }
+   },
+   "dissonance": {
+    "text": "一个挤在最前头仰着脖子，一个躺在麦秸垛上。散场的时候，两个人在村口那棵槐树底下碰上了。",
+    "bond": {
+     "close": 0
+    },
+    "flags": []
+   },
    "catches": []
   }
  ],
@@ -51763,6 +55085,544 @@
     }
    },
    {
+    "id": "soy_milk",
+    "label": "喝碗豆浆",
+    "minutes": 20,
+    "quick": true,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "hours": [
+      390,
+      660
+     ]
+    },
+    "needs": {
+     "hunger": 30,
+     "mood": 3
+    },
+    "stats": {},
+    "money": -1,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "折叠桌上两只碗，一个吹着喝，一个等它凉了一口闷。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "stall_sell",
+    "label": "帮着卖菜",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 6,
+     "maxAge": 17,
+     "hours": [
+      390,
+      720
+     ]
+    },
+    "needs": {
+     "energy": -8
+    },
+    "stats": {
+     "charm": 0.25,
+     "mind": 0.1
+    },
+    "money": 2,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个看秤，一个装袋。找零的时候两个人同时伸手，把一张毛票撕成了两半。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "market_walk",
+    "label": "在早市上转转",
+    "minutes": 40,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "hours": [
+      390,
+      720
+     ]
+    },
+    "needs": {
+     "mood": 4,
+     "energy": -3
+    },
+    "stats": {
+     "charm": 0.12
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "从这头挤到那头，一人手里多了一根人家给尝的黄瓜。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "buy_veg",
+    "label": "买菜",
+    "minutes": 20,
+    "quick": true,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 22,
+     "hours": [
+      390,
+      720
+     ]
+    },
+    "needs": {
+     "mood": 3
+    },
+    "stats": {},
+    "money": -2,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个挑，一个跟人讲价，讲下来的五毛钱，买了一把香菜。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
+    "id": "haul_crate",
+    "label": "帮批发的卸菜",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 12,
+     "maxAge": 21,
+     "hours": [
+      390,
+      660
+     ]
+    },
+    "needs": {
+     "energy": -16,
+     "hunger": -8
+    },
+    "stats": {
+     "body": 0.35
+    },
+    "money": 3,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两个人抬一筐，一个喊一二，一个喊三，筐落地的时候谁也没喊。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "scrap_sell",
+    "label": "把攒的瓶子拿去卖",
+    "minutes": 30,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 6,
+     "maxAge": 13
+    },
+    "needs": {
+     "mood": 2
+    },
+    "stats": {
+     "mind": 0.08
+    },
+    "money": 1,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两个人蹲在秤边上数瓶子，数到第四十一个，收废品的说不用数了，按四十二算。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "shell_buy",
+    "label": "买一串贝壳",
+    "minutes": 15,
+    "quick": true,
+    "sleep": false,
+    "duty": false,
+    "requires": {},
+    "needs": {
+     "mood": 6
+    },
+    "stats": {},
+    "money": -1,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一串贝壳拆成两半，一人一半，回去各挂各家的门上。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "sea_swim",
+    "label": "下海",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 6,
+     "hours": [
+      540,
+      1080
+     ]
+    },
+    "needs": {
+     "energy": -14,
+     "hunger": -10,
+     "mood": 4
+    },
+    "stats": {
+     "body": 0.5
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "一个浪打过来，两个人手拉着手往上蹦，蹦晚了，一嘴咸水。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "sand_castle",
+    "label": "堆沙子",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {},
+    "needs": {
+     "mood": 8,
+     "energy": -4
+    },
+    "stats": {
+     "mind": 0.15
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个挖沟，一个垒墙。水上来了，两个人拿身子挡了一回。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "tide_dig",
+    "label": "去礁石上赶海",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "hours": [
+      390,
+      780
+     ]
+    },
+    "needs": {
+     "energy": -8,
+     "hunger": -6
+    },
+    "stats": {
+     "body": 0.2,
+     "mind": 0.25
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个翻石头，一个拿小桶接。螃蟹横着跑了，两个人横着追。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "ship_watch",
+    "label": "在栈桥头看船",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {},
+    "needs": {
+     "mood": 3
+    },
+    "stats": {
+     "mind": 0.3,
+     "charm": 0.1
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "远处一条货轮，两个人一个数烟囱，一个数窗户，数到它看不见了。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "feed_chicken",
+    "label": "喂鸡、捡鸡蛋",
+    "minutes": 40,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {},
+    "needs": {
+     "mood": 5,
+     "energy": -3
+    },
+    "stats": {
+     "charm": 0.1
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个撒米把鸡引开，一个钻进鸡窝摸蛋。出来的时候头上顶着一根鸡毛。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "farm_help",
+    "label": "跟着下地",
+    "minutes": 120,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 6,
+     "hours": [
+      390,
+      1080
+     ]
+    },
+    "needs": {
+     "energy": -16,
+     "hunger": -10
+    },
+    "stats": {
+     "body": 0.45
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 5
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "玉米叶子拉得胳膊一道一道的红。两个人在地头对着看，谁的道多。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "creek_fish",
+    "label": "在河沟里摸鱼",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {},
+    "needs": {
+     "mood": 6,
+     "energy": -8
+    },
+    "stats": {
+     "body": 0.25
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "一个在上游搅浑了水，一个在下游拿裤腿兜着，兜上来两条小鱼和一只鞋。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "star_night",
+    "label": "躺在晒场上看星星",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "hours": [
+      1110,
+      1320
+     ]
+    },
+    "needs": {
+     "mood": 6
+    },
+    "stats": {
+     "mind": 0.25
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 1,
+      "sync": 1
+     },
+     "text": "晒场上的星星比楼顶上多。两个人数到一百，数不下去了，就那么躺着。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "see_doctor",
+    "label": "排队看病",
+    "minutes": 90,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "hours": [
+      390,
+      1020
+     ]
+    },
+    "needs": {
+     "energy": 12,
+     "mood": -3
+    },
+    "stats": {},
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 4
+     },
+     "bond": {
+      "close": 1
+     },
+     "text": "两个人挨着坐在长椅上，一个攥着挂号条，一个替他数前头还有几个。"
+    },
+    "bring": false,
+    "menu": false
+   },
+   {
+    "id": "ward_meal",
+    "label": "给家里人送饭",
+    "minutes": 60,
+    "quick": false,
+    "sleep": false,
+    "duty": false,
+    "requires": {
+     "minAge": 10,
+     "maxAge": 17,
+     "flags": [
+      "kin_care"
+     ],
+     "hours": [
+      660,
+      1260
+     ]
+    },
+    "needs": {
+     "mood": -2,
+     "energy": -4
+    },
+    "stats": {
+     "charm": 0.1
+    },
+    "money": 0,
+    "together": {
+     "needs": {
+      "mood": 6
+     },
+     "bond": {
+      "close": 2
+     },
+     "text": "两只饭盒并排搁在床头柜上，两个人坐在一条长凳上，等着把空饭盒拿回去。"
+    },
+    "bring": false,
+    "menu": true
+   },
+   {
     "id": "hm_tv",
     "label": "看电视",
     "minutes": 60,
@@ -52532,9 +56392,71 @@
      20760
     ],
     "unlock": {
-     "minAge": 45
+     "any": [
+      {
+       "minAge": 45
+      },
+      {
+       "flags": [
+        "kin_care"
+       ]
+      }
+     ]
     },
     "far": false
+   },
+   {
+    "id": "market",
+    "name": "早市",
+    "index": 11,
+    "top": 22000,
+    "width": 3200,
+    "floors": [
+     22760
+    ],
+    "unlock": {
+     "any": [
+      {
+       "minAge": 6,
+       "flags": [
+        "fam_poor"
+       ]
+      },
+      {
+       "minAge": 18
+      }
+     ]
+    },
+    "far": false,
+    "seen": "saw_market"
+   },
+   {
+    "id": "seaside",
+    "name": "海边",
+    "index": 12,
+    "top": 24000,
+    "width": 3800,
+    "floors": [
+     24760
+    ],
+    "unlock": null,
+    "far": true,
+    "trip": true,
+    "seen": "saw_sea"
+   },
+   {
+    "id": "village",
+    "name": "乡下",
+    "index": 13,
+    "top": 26000,
+    "width": 3600,
+    "floors": [
+     26760
+    ],
+    "unlock": null,
+    "far": true,
+    "trip": true,
+    "seen": "saw_village"
    }
   ],
   "zones": [
@@ -52861,6 +56783,70 @@
     ]
    },
    {
+    "id": "market_mouth",
+    "name": "胡同口",
+    "scene": "market",
+    "floor": 0,
+    "span": [
+     0,
+     560
+    ],
+    "rect": [
+     0,
+     22360,
+     560,
+     420
+    ]
+   },
+   {
+    "id": "veg_row",
+    "name": "菜摊",
+    "scene": "market",
+    "floor": 0,
+    "span": [
+     560,
+     1500
+    ],
+    "rect": [
+     560,
+     22360,
+     940,
+     420
+    ]
+   },
+   {
+    "id": "wholesale",
+    "name": "批发的棚子",
+    "scene": "market",
+    "floor": 0,
+    "span": [
+     1500,
+     2300
+    ],
+    "rect": [
+     1500,
+     22360,
+     800,
+     420
+    ]
+   },
+   {
+    "id": "scrap",
+    "name": "收废品的",
+    "scene": "market",
+    "floor": 0,
+    "span": [
+     2300,
+     3200
+    ],
+    "rect": [
+     2300,
+     22360,
+     900,
+     420
+    ]
+   },
+   {
     "id": "middle_front",
     "name": "校门口",
     "scene": "middle",
@@ -53165,6 +57151,86 @@
     ]
    },
    {
+    "id": "sea_street",
+    "name": "海边的街",
+    "scene": "seaside",
+    "floor": 0,
+    "span": [
+     0,
+     700
+    ],
+    "rect": [
+     0,
+     24360,
+     700,
+     420
+    ]
+   },
+   {
+    "id": "sand",
+    "name": "沙滩",
+    "scene": "seaside",
+    "floor": 0,
+    "span": [
+     700,
+     1900
+    ],
+    "rect": [
+     700,
+     24360,
+     1200,
+     420
+    ]
+   },
+   {
+    "id": "rocks",
+    "name": "礁石",
+    "scene": "seaside",
+    "floor": 0,
+    "span": [
+     1900,
+     2600
+    ],
+    "rect": [
+     1900,
+     24360,
+     700,
+     420
+    ]
+   },
+   {
+    "id": "pier",
+    "name": "栈桥",
+    "scene": "seaside",
+    "floor": 0,
+    "span": [
+     2600,
+     3200
+    ],
+    "rect": [
+     2600,
+     24360,
+     600,
+     420
+    ]
+   },
+   {
+    "id": "inn",
+    "name": "招待所",
+    "scene": "seaside",
+    "floor": 0,
+    "span": [
+     3200,
+     3800
+    ],
+    "rect": [
+     3200,
+     24360,
+     600,
+     420
+    ]
+   },
+   {
     "id": "breakfast",
     "name": "早点铺",
     "scene": "street",
@@ -53241,6 +57307,86 @@
      3060,
      2360,
      760,
+     420
+    ]
+   },
+   {
+    "id": "village_gate",
+    "name": "村口",
+    "scene": "village",
+    "floor": 0,
+    "span": [
+     0,
+     600
+    ],
+    "rect": [
+     0,
+     26360,
+     600,
+     420
+    ]
+   },
+   {
+    "id": "grandma_yard",
+    "name": "姥姥家的院",
+    "scene": "village",
+    "floor": 0,
+    "span": [
+     600,
+     1500
+    ],
+    "rect": [
+     600,
+     26360,
+     900,
+     420
+    ]
+   },
+   {
+    "id": "cornfield",
+    "name": "玉米地",
+    "scene": "village",
+    "floor": 0,
+    "span": [
+     1500,
+     2400
+    ],
+    "rect": [
+     1500,
+     26360,
+     900,
+     420
+    ]
+   },
+   {
+    "id": "creek",
+    "name": "河沟",
+    "scene": "village",
+    "floor": 0,
+    "span": [
+     2400,
+     3000
+    ],
+    "rect": [
+     2400,
+     26360,
+     600,
+     420
+    ]
+   },
+   {
+    "id": "threshing",
+    "name": "晒场",
+    "scene": "village",
+    "floor": 0,
+    "span": [
+     3000,
+     3600
+    ],
+    "rect": [
+     3000,
+     26360,
+     600,
      420
     ]
    }
@@ -53766,6 +57912,19 @@
     "action": "play_roof"
    },
    {
+    "id": "hosp_queue",
+    "zone": "lobby",
+    "scene": "hospital",
+    "at": [
+     520,
+     20760
+    ],
+    "actions": [
+     "see_doctor"
+    ],
+    "action": "see_doctor"
+   },
+   {
     "id": "ward_chair",
     "zone": "ward",
     "scene": "hospital",
@@ -53774,9 +57933,78 @@
      20760
     ],
     "actions": [
-     "accompany"
+     "duty",
+     "accompany",
+     "ward_meal"
     ],
-    "action": "accompany"
+    "action": "duty"
+   },
+   {
+    "id": "market_soy",
+    "zone": "market_mouth",
+    "scene": "market",
+    "at": [
+     330,
+     22760
+    ],
+    "actions": [
+     "soy_milk"
+    ],
+    "action": "soy_milk"
+   },
+   {
+    "id": "veg_stall",
+    "zone": "veg_row",
+    "scene": "market",
+    "at": [
+     900,
+     22760
+    ],
+    "actions": [
+     "duty",
+     "stall_sell"
+    ],
+    "action": "duty"
+   },
+   {
+    "id": "market_walk",
+    "zone": "veg_row",
+    "scene": "market",
+    "at": [
+     1300,
+     22760
+    ],
+    "actions": [
+     "market_walk",
+     "buy_veg"
+    ],
+    "action": "market_walk"
+   },
+   {
+    "id": "haul_dock",
+    "zone": "wholesale",
+    "scene": "market",
+    "at": [
+     1900,
+     22760
+    ],
+    "actions": [
+     "haul_crate"
+    ],
+    "action": "haul_crate"
+   },
+   {
+    "id": "scrap_scale",
+    "zone": "scrap",
+    "scene": "market",
+    "at": [
+     2700,
+     22760
+    ],
+    "actions": [
+     "scrap_sell"
+    ],
+    "action": "scrap_sell"
    },
    {
     "id": "middle_gate",
@@ -54223,6 +58451,97 @@
     "action": "duty"
    },
    {
+    "id": "shell_stall",
+    "zone": "sea_street",
+    "scene": "seaside",
+    "at": [
+     420,
+     24760
+    ],
+    "actions": [
+     "shell_buy"
+    ],
+    "action": "shell_buy"
+   },
+   {
+    "id": "sea_swim",
+    "zone": "sand",
+    "scene": "seaside",
+    "at": [
+     1150,
+     24760
+    ],
+    "actions": [
+     "sea_swim"
+    ],
+    "action": "sea_swim"
+   },
+   {
+    "id": "sand_pile",
+    "zone": "sand",
+    "scene": "seaside",
+    "at": [
+     1650,
+     24760
+    ],
+    "actions": [
+     "sand_castle"
+    ],
+    "action": "sand_castle"
+   },
+   {
+    "id": "tide_pool",
+    "zone": "rocks",
+    "scene": "seaside",
+    "at": [
+     2250,
+     24760
+    ],
+    "actions": [
+     "tide_dig"
+    ],
+    "action": "tide_dig"
+   },
+   {
+    "id": "pier_end",
+    "zone": "pier",
+    "scene": "seaside",
+    "at": [
+     2950,
+     24760
+    ],
+    "actions": [
+     "ship_watch"
+    ],
+    "action": "ship_watch"
+   },
+   {
+    "id": "inn_table",
+    "zone": "inn",
+    "scene": "seaside",
+    "at": [
+     3400,
+     24760
+    ],
+    "actions": [
+     "eat"
+    ],
+    "action": "eat"
+   },
+   {
+    "id": "inn_bed",
+    "zone": "inn",
+    "scene": "seaside",
+    "at": [
+     3650,
+     24760
+    ],
+    "actions": [
+     "sleep"
+    ],
+    "action": "sleep"
+   },
+   {
     "id": "breakfast_stall",
     "zone": "breakfast",
     "scene": "street",
@@ -54390,6 +58709,84 @@
      "kid_listen"
     ],
     "action": "kid_listen"
+   },
+   {
+    "id": "yard_bed",
+    "zone": "grandma_yard",
+    "scene": "village",
+    "at": [
+     800,
+     26760
+    ],
+    "actions": [
+     "sleep"
+    ],
+    "action": "sleep"
+   },
+   {
+    "id": "yard_table",
+    "zone": "grandma_yard",
+    "scene": "village",
+    "at": [
+     1050,
+     26760
+    ],
+    "actions": [
+     "eat"
+    ],
+    "action": "eat"
+   },
+   {
+    "id": "yard_chicken",
+    "zone": "grandma_yard",
+    "scene": "village",
+    "at": [
+     1320,
+     26760
+    ],
+    "actions": [
+     "feed_chicken"
+    ],
+    "action": "feed_chicken"
+   },
+   {
+    "id": "corn_row",
+    "zone": "cornfield",
+    "scene": "village",
+    "at": [
+     1950,
+     26760
+    ],
+    "actions": [
+     "farm_help"
+    ],
+    "action": "farm_help"
+   },
+   {
+    "id": "creek_bank",
+    "zone": "creek",
+    "scene": "village",
+    "at": [
+     2700,
+     26760
+    ],
+    "actions": [
+     "creek_fish"
+    ],
+    "action": "creek_fish"
+   },
+   {
+    "id": "threshing_ground",
+    "zone": "threshing",
+    "scene": "village",
+    "at": [
+     3300,
+     26760
+    ],
+    "actions": [
+     "star_night"
+    ],
+    "action": "star_night"
    }
   ],
   "exits": [
@@ -54514,6 +58911,36 @@
     "ride": 0
    },
    {
+    "id": "hospital.to_street",
+    "scene": "hospital",
+    "at": [
+     320,
+     20760
+    ],
+    "to": "street",
+    "arrive": [
+     3150,
+     2760
+    ],
+    "label": "坐车回家",
+    "ride": 30
+   },
+   {
+    "id": "market.to_street",
+    "scene": "market",
+    "at": [
+     60,
+     22760
+    ],
+    "to": "street",
+    "arrive": [
+     1390,
+     2760
+    ],
+    "label": "回楼下",
+    "ride": 0
+   },
+   {
     "id": "middle.to_street",
     "scene": "middle",
     "at": [
@@ -54634,6 +59061,21 @@
     "ride": 60
    },
    {
+    "id": "seaside.to_home",
+    "scene": "seaside",
+    "at": [
+     120,
+     24760
+    ],
+    "to": "street",
+    "arrive": [
+     330,
+     2760
+    ],
+    "label": "坐车回家",
+    "ride": 240
+   },
+   {
     "id": "street.to_primary",
     "scene": "street",
     "at": [
@@ -54679,6 +59121,21 @@
     "ride": 0
    },
    {
+    "id": "street.to_market",
+    "scene": "street",
+    "at": [
+     1390,
+     2760
+    ],
+    "to": "market",
+    "arrive": [
+     120,
+     22760
+    ],
+    "label": "去早市",
+    "ride": 0
+   },
+   {
     "id": "street.upstairs",
     "scene": "street",
     "at": [
@@ -54709,6 +59166,21 @@
     "ride": 0
    },
    {
+    "id": "street.to_hospital",
+    "scene": "street",
+    "at": [
+     3150,
+     2760
+    ],
+    "to": "hospital",
+    "arrive": [
+     320,
+     20760
+    ],
+    "label": "坐车去医院",
+    "ride": 30
+   },
+   {
     "id": "street.to_river",
     "scene": "street",
     "at": [
@@ -54722,12 +59194,27 @@
     ],
     "label": "去海河边",
     "ride": 0
+   },
+   {
+    "id": "village.to_home",
+    "scene": "village",
+    "at": [
+     100,
+     26760
+    ],
+    "to": "street",
+    "arrive": [
+     330,
+     2760
+    ],
+    "label": "坐车回家",
+    "ride": 240
    }
   ],
   "stride": 2000,
   "size": [
    5600,
-   22000
+   28000
   ],
   "spawn": {
    "qing": [
@@ -54930,7 +59417,7 @@
    },
    "restDuty": {
     "label": "帮家里看摊",
-    "spot": "breakfast_stall",
+    "spot": "veg_stall",
     "arrive": [
      450,
      540
@@ -54982,7 +59469,7 @@
    },
    "restDuty": {
     "label": "帮家里看摊",
-    "spot": "breakfast_stall",
+    "spot": "veg_stall",
     "arrive": [
      450,
      540
@@ -55034,7 +59521,7 @@
    },
    "restDuty": {
     "label": "帮家里看摊",
-    "spot": "breakfast_stall",
+    "spot": "veg_stall",
     "arrive": [
      450,
      540
@@ -55085,7 +59572,7 @@
    },
    "restDuty": {
     "label": "帮家里看摊",
-    "spot": "breakfast_stall",
+    "spot": "veg_stall",
     "arrive": [
      450,
      540
@@ -55283,7 +59770,7 @@
    },
    "restDuty": {
     "label": "帮家里看摊",
-    "spot": "breakfast_stall",
+    "spot": "veg_stall",
     "arrive": [
      450,
      540
@@ -55509,7 +59996,7 @@
    },
    "restDuty": {
     "label": "帮家里看摊",
-    "spot": "breakfast_stall",
+    "spot": "veg_stall",
     "arrive": [
      450,
      540
@@ -55588,7 +60075,7 @@
    },
    "restDuty": {
     "label": "帮家里看摊",
-    "spot": "breakfast_stall",
+    "spot": "veg_stall",
     "arrive": [
      450,
      540
@@ -55672,7 +60159,7 @@
    },
    "restDuty": {
     "label": "帮家里看摊",
-    "spot": "breakfast_stall",
+    "spot": "veg_stall",
     "arrive": [
      450,
      540
@@ -55787,7 +60274,7 @@
    },
    "restDuty": {
     "label": "帮家里看摊",
-    "spot": "breakfast_stall",
+    "spot": "veg_stall",
     "arrive": [
      450,
      540
@@ -55838,7 +60325,7 @@
    },
    "restDuty": {
     "label": "帮家里看摊",
-    "spot": "breakfast_stall",
+    "spot": "veg_stall",
     "arrive": [
      450,
      540
@@ -57750,6 +62237,62 @@
     }
    },
    {
+    "id": "l_took_sea",
+    "title": "借来的泳裤",
+    "text": "{name} 头一回看见海，是跟着对门家去的，泳裤是借的。后来自己去过很多回海边，跟人说起海，说的还是那一回。",
+    "requires": {
+     "flags": [
+      "p_took_sea"
+     ],
+     "notFlags": [
+      "fam_rich"
+     ]
+    }
+   },
+   {
+    "id": "l_took_market",
+    "title": "看过一上午摊",
+    "text": "{name} 小时候跟着对门家去过一回早市，帮着看了一上午摊。后来不管住到哪儿，买菜从不跟人讲那五毛钱。",
+    "requires": {
+     "flags": [
+      "p_took_market"
+     ],
+     "notFlags": [
+      "fam_poor"
+     ]
+    }
+   },
+   {
+    "id": "l_sea_summer",
+    "title": "那年夏天的海",
+    "text": "{name} 小时候在海边住过几天招待所，关了灯还听得见浪。后来住的屋离海很远，睡不着的时候，还是数浪。",
+    "requires": {
+     "flags": [
+      "saw_sea"
+     ]
+    }
+   },
+   {
+    "id": "l_threshing",
+    "title": "姥姥家的晒场",
+    "text": "{name} 记得姥姥家的晒场，夜里躺上去，星星比楼顶上多。后来晒场上盖了房，{name} 回去过一趟，还指得出当年躺的是哪一块。",
+    "requires": {
+     "flags": [
+      "saw_village"
+     ]
+    }
+   },
+   {
+    "id": "l_dawn_market",
+    "title": "天不亮的早市",
+    "text": "{name} 是在早市上长大的：一串灯泡，一杆秤，一摞空筐。后来日子宽了，还是天不亮就醒，醒了就想出门。",
+    "requires": {
+     "flags": [
+      "saw_market"
+     ]
+    }
+   },
+   {
     "id": "l_stayer",
     "title": "守着河畔里",
     "text": "{name} 一辈子没离开过天津。楼拆了，人散了，{name} 还能闭着眼走到海河边。",
@@ -57868,6 +62411,30 @@
     "loan": 0.9,
     "fam_rich": 1.2,
     "fam_cut": 0.8333
+   },
+   "flagDuty": {
+    "kin_care": {
+     "maxAge": 17,
+     "until": 1110,
+     "label": "上学，放了学去医院送饭",
+     "rest": {
+      "label": "去医院陪床",
+      "spot": "ward_chair",
+      "arrive": [
+       450,
+       540
+      ],
+      "until": 1110,
+      "needs": {
+       "energy": -10,
+       "mood": -4
+      },
+      "stats": {
+       "charm": 0.06
+      },
+      "money": 0
+     }
+    }
    }
   },
   "check": {
@@ -59222,6 +63789,11 @@
    "l_first_desk": "家里头一个坐办公室的。",
    "l_own_door": "四口挤一间，后来有了自己的门。",
    "l_spent": "家里的买卖倒了。",
+   "l_took_sea": "头一回看海，是跟着对门家去的。",
+   "l_took_market": "跟着对门家，去过一回早市。",
+   "l_sea_summer": "小时候在海边住过几天。",
+   "l_threshing": "夏天回过乡下的姥姥家。",
+   "l_dawn_market": "在天不亮的早市上长大。",
    "l_early": "走得早了些。",
    "l_long": "活过九十五。",
    "l_swimmer": "身子骨硬朗，活过八十五。",

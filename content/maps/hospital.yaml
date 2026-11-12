@@ -4,7 +4,12 @@
 id: hospital
 name: 医院
 width: 2800
-unlock: { minAge: 45 }   # 只能从公园进，公园 45 岁开；医院的支线是中年照顾爸妈
+# 公园 45 岁开；医院的支线是中年照顾爸妈。家里有人住院的少年（kin_care，events/outside.yaml）放了学来送饭、歇着的日子来陪床。
+# 小孩夜里烧起来被送来看病（out_sick，goto）的，看完从挂号大厅门口坐车回家（to_street）
+unlock:
+  any:
+    - { minAge: 45 }
+    - { flags: [ kin_care ] }
 
 areas:
   - { id: lobby, name: 挂号大厅, span: [ 0, 950 ], floor: 0 }
@@ -13,9 +18,13 @@ areas:
 
 exits:
   - { id: to_park, at: 60, to: park, arrive: 500, label: 出门 }
+  - { id: to_street, at: 320, to: street, arrive: 3150, label: 坐车回家, ride: 30 }
 
 spots:
-  - { id: ward_chair, at: 2330, area: ward, actions: [ accompany ] }
+  # 排队看病：谁都能来，天不亮就排
+  - { id: hosp_queue, at: 520, area: lobby, actions: [ see_doctor ] }
+  # 陪床：中年是你，少年时是给住院的家里人送饭的孩子（ward_meal 是 menu，排在后头；kin_care 歇着的日子的日程块 duty 也落在这儿）
+  - { id: ward_chair, at: 2330, area: ward, actions: [ duty, accompany, ward_meal ] }
 
 npcs:
   - id: nurse

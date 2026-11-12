@@ -347,6 +347,20 @@ FOLKS = {
     "yam": (look(M, "middle", ("ink", 0.4), coat=("ink", 0.55), hat=CAP, apron=APRON), act_steam, False, ["talk", "steam"]),
     "photog": (look(M, "young", WHITE, coat=("qing", 0.45)), act_camera, False, ["spark"]),
     "runner": (look(F, "middle", ("mei", 0.4), pants=("ink", 0.7, "flat"), prop="mei"), A.act_exercise, False, ["sweat"]),
+    # 早市（清贫人家的世界）：天不亮就出摊，穿得厚、旧，围裙、套袖
+    "soy_seller": (look(F, "middle", ("ink", 0.3), cardigan=("ink", 0.4), apron=WHITE, prop="ink"), A.act_cook, False, ["steam", "talk"]),
+    "veg_seller": (look(M, "middle", ("ink", 0.35), coat=("ink", 0.5), hat=CAP, apron=APRON), act_call, False, ["talk"]),
+    "wholesale_boss": (look(M, "middle", ("ink", 0.3), coat=("ink", 0.62, "flat"), belly=0.3), A.act_talk, False, ["talk", "dots"]),
+    "scrap_buyer": (look(M, "middle", ("ink", 0.4), coat=("qing", 0.3), hat=CAP), A.act_carry, False, ["sweat"]),
+    # 海边（殷实人家的夏天）：短袖、凉帽，晒黑了的救生员
+    "shell_seller": (look(F, "middle", ("mei", 0.3), hat=("cap", ("paper",)), apron=("qing", 0.3), prop="mei"), A.act_talk, False, ["talk", "note"]),
+    "lifeguard": (look(M, "young", ("mei", 0.6), pants=("qing", 0.6, "flat"), hat=CAP_Q), A.act_gaze, False, ["bang", "dots"]),
+    "angler": (look(M, "old", WHITE, coat=("qing", 0.3), hat=("cap", ("paper",))), A.act_fish, False, ["dots", "zzz"]),
+    "inn_clerk": (look(F, "young", WHITE, cardigan=("qing", 0.4), prop="qing"), A.act_read, False, ["dots"]),
+    # 乡下（小康人家回姥姥家）：大襟褂子、蒲扇、晒黑的表哥
+    "grandma_v": (look(F, "old", ("ink", 0.3), cardigan=("ink", 0.45), hair="grey", prop="mei"), act_fan, True, ["heart", "dots"]),
+    "gate_old": (look(M, "old", WHITE, coat=("ink", 0.4), hat=CAP), act_fan, True, ["dots", "zzz"]),
+    "cousin": (look(M, "teen", ("paper",), pants=("ink", 0.6, "flat"), prop="qing"), A.act_talk, False, ["talk", "note"]),
 }
 
 ## 路人：一种一行，只会走。年纪、衣裳各不相同，引擎随机挑

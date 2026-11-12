@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>body{margin:0;background:#000}</style>
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+// bake.js 用：window.run(job) → { color, lit? }（PNG 的 dataURL），见 job.js
+import { run } from './job.js';
+window.run = run;
+window.READY = 1;
+</script></body></html>

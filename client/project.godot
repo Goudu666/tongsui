@@ -43,3 +43,18 @@ environment/defaults/default_clear_color=Color(0.956863, 0.933333, 0.882353, 1)
 [autoload]
 
 Nakama="*res://addons/com.heroiclabs.nakama/Nakama.gd"
+
+[shader_globals]
+
+g_wet={
+"type": "float",
+"value": 0.0
+}
+g_snow={
+"type": "float",
+"value": 0.0
+}
+g_night={
+"type": "float",
+"value": 0.0
+}

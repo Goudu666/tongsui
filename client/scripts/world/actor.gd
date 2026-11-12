@@ -138,6 +138,13 @@ var _act_tex: Texture2D
 var _on_act := false     ## 现在贴的是专属动作表
 var pass_with: Node2D = null  ## 对着踢球的那个人（不是 null 时，"kick" 换成 "pass"）
 var pass_lead := false        ## 球由我来画、钟由我来走（两人里只一个）
+## 这张图是实时 3D（world3d/stage3d.gd）：身子由 3D 小人演，这里不画精灵、影子和球，只留名字牌、在做什么、气泡
+var body_3d := false:
+	set(v):
+		body_3d = v
+		if _sprite != null:
+			_sprite.visible = _base_tex != null and not v
+		queue_redraw()
 static var pass_clock := 0.0  ## 对着踢的钟：游戏时间（不用墙上的钟：卡顿、录屏时两人和球都还对得上）
 var _loop := ""          ## 现在演的是哪一套（ACT_LOOP 里的名字，或 sit / wave / busy）
 var _loop_t := 0.0
@@ -185,7 +192,7 @@ func set_stage(p_stage: String) -> void:
 	_act_tex = load(act_path) if ResourceLoader.exists(act_path) else null
 	_on_act = true  # 让 _use_sheet 一定换一次
 	_use_sheet(false)
-	_sprite.visible = _base_tex != null
+	_sprite.visible = _base_tex != null and not body_3d
 
 
 func set_path(points: PackedVector2Array) -> void:
@@ -442,7 +449,7 @@ func _pass_phase() -> float:
 
 ## 两人中间那一个球：从出脚的人脚边滚到另一个人脚边，先弹两下再贴地滚，越滚越慢；转着
 func _draw_pass(cv: CanvasItem) -> void:
-	if not pass_lead or _loop != "pass" or _sprite == null or not _sprite.visible:
+	if body_3d or not pass_lead or _loop != "pass" or _sprite == null or not _sprite.visible:
 		return
 	if pass_with == null or not is_instance_valid(pass_with) or not pass_with.visible:
 		return
@@ -478,6 +485,8 @@ func _draw_pass(cv: CanvasItem) -> void:
 
 
 func _draw() -> void:
+	if body_3d:
+		return
 	var c := P.role_color(role)
 	# 脚下的影子（墨网点的感觉：半透明墨）
 	var w := 26.0 if stage == "childhood" else 32.0
@@ -490,7 +499,7 @@ func _draw() -> void:
 
 ## 名字牌、"正在做什么"、气泡：画在 overlay.gd 那层（z 71），不被夜色和光与空气压灰
 func _draw_over(cv: CanvasItem) -> void:
-	if _sprite == null or not _sprite.visible:
+	if _sprite == null or (not _sprite.visible and not body_3d):
 		return
 	var c := P.role_color(role)
 	var head := -_height() / maxf(scale.x, 0.01) - 14.0

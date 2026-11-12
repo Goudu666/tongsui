@@ -28,23 +28,24 @@ exits:
 
 spots:
   # 青家：床、书桌、饭桌、脸盆。屋角那架琴只有殷实人家才摆（piano 由「让出身体现资源差异」定）
+  # 家里的东西（content/home.yaml）：电视、收音机、游戏机挨着饭桌，书柜、复读机在书桌边，电脑在屋角。哪家有什么看家境和年代
   - { id: bed_qing, at: 180, area: home_qing, actions: [ sleep ], owner: qing }
-  - { id: corner_qing, at: 350, area: home_qing, actions: [ piano ], owner: qing }
-  - { id: desk_qing, at: 520, area: home_qing, actions: [ picture_book, study, read ], owner: qing }
+  - { id: corner_qing, at: 350, area: home_qing, actions: [ piano, hm_pc, hm_pc_game, buy_pc ], owner: qing }
+  - { id: desk_qing, at: 520, area: home_qing, actions: [ picture_book, study, read, hm_books, hm_tape, buy_tape ], owner: qing }
   - { id: kid_desk_qing, at: 660, area: home_qing, actions: [ kid_homework ], owner: qing }
-  - { id: table_qing, at: 800, area: home_qing, actions: [ eat ], owner: qing }
+  - { id: table_qing, at: 800, area: home_qing, actions: [ eat, hm_milk, hm_tv, hm_radio, hm_console, hm_piece, buy_console ], owner: qing }
   - { id: basin_qing, at: 1070, area: home_qing, actions: [ wash ], owner: qing }
   # 楼道：两扇对门，中间一只小板凳。哪家都不是，两个人都能坐，写作业也行
   - { id: door_qing, at: 1300, area: hallway, actions: [ knock ] }
   - { id: hall_stool, at: 1480, area: hallway, actions: [ study, read, coal ] }
-  - { id: hall_upstairs, at: 1620, area: hallway, actions: [ old_lessons, pair_cook, mind_kids ] }
+  - { id: hall_upstairs, at: 1620, area: hallway, actions: [ old_lessons, pair_cook, mind_kids, help_neighbor ] }
   - { id: door_mei, at: 1900, area: hallway, actions: [ knock ] }
   # 梅家：和青家左右对称
   - { id: basin_mei, at: 2130, area: home_mei, actions: [ wash ], owner: mei }
-  - { id: table_mei, at: 2400, area: home_mei, actions: [ eat ], owner: mei }
-  - { id: desk_mei, at: 2680, area: home_mei, actions: [ picture_book, study, read ], owner: mei }
+  - { id: table_mei, at: 2400, area: home_mei, actions: [ eat, hm_milk, hm_tv, hm_radio, hm_console, hm_piece, buy_console ], owner: mei }
+  - { id: desk_mei, at: 2680, area: home_mei, actions: [ picture_book, study, read, hm_books, hm_tape, buy_tape ], owner: mei }
   - { id: kid_desk_mei, at: 2540, area: home_mei, actions: [ kid_homework ], owner: mei }
-  - { id: corner_mei, at: 2850, area: home_mei, actions: [ piano ], owner: mei }
+  - { id: corner_mei, at: 2850, area: home_mei, actions: [ piano, hm_pc, hm_pc_game, buy_pc ], owner: mei }
   - { id: bed_mei, at: 3020, area: home_mei, actions: [ sleep ], owner: mei }
   # 楼顶
   - { id: roof_pigeon, at: 1250, area: roof, actions: [ play_roof ] }

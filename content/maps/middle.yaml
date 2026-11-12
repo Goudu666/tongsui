@@ -19,7 +19,7 @@ exits:
 
 spots:
   - { id: middle_gate, at: 310, area: middle_front, actions: [ duty ] }
-  - { id: middle_desk, at: 1090, area: middle_class, actions: [ study ] }
+  - { id: middle_desk, at: 1090, area: middle_class, actions: [ study, class_help ] }
   - { id: radio_mic, at: 1680, area: radio_room, actions: [ broadcast ] }
   - { id: middle_yard, at: 2080, area: middle_field, actions: [ ball, laps ] }
 

@@ -215,7 +215,9 @@ for (let seed = 1; seed <= LIVES; seed++) {
     // 十八岁的助学贷款：这里的机器人高考不怎么走清贫背贷款那条，还清了那两件事抽不到
     "loan",
     // 成家和下一代：孩子关口 kid_* 走地图那边（world.ts 按孩子岁数排的关口），这里不走地图，读它们的事件出不来
-    "kid_prim_key", "kid_prim_near", "kid_mid_key", "kid_mid_near", "kid_high_key", "kid_high", "kid_trade", "kid_uni_top", "kid_uni", "kid_away", "kid_work"];
+    "kid_prim_key", "kid_prim_near", "kid_mid_key", "kid_mid_near", "kid_high_key", "kid_high", "kid_trade", "kid_uni_top", "kid_uni", "kid_away", "kid_work",
+    // 人际圈子（docs/CIRCLE.md）：托亲戚、托人买房要的门路是地图上走动攒的（菜单上的事），这里不走地图，欠不下这两笔人情
+    "owe_kin", "kin_cold", "owe_house"];
   // 这里不走地图，也就不攒钱：三十岁买不起房（m_settle 的 buy 要 200 块），要 home_own 的事件在这儿出不来，由 paths.test 那种过日子的模拟兜着
   const NO_MONEY = ["home_own"];
   const held = (flags) => (flags ?? []).some((f) => PENDING.includes(f) || NO_MONEY.includes(f));

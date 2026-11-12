@@ -526,6 +526,9 @@ function worldView(s: LifelineMatch) {
     story: storyView(life, CONTENT),
     // 现在是哪个年代、街景用哪一套（era.ts）
     era: eraView(life, CONTENT).era,
+    // 两户人家这会儿各有什么、谁在自己家买得了什么（home.ts）：客户端照着摆屋里的东西，判 requires.home / buys
+    homes: homeView(life, CONTENT),
+    buys: { qing: homeBuyList(life, CONTENT, "qing"), mei: homeBuyList(life, CONTENT, "mei") },
   };
 }
 
@@ -749,6 +752,7 @@ var lifelineLoop: nkruntime.MatchLoopFunction<LifelineMatch> = function (ctx, lo
       var res = worldAct(life, CONTENT, role, String(body.spot), body.once === true, typeof body.action === "string" && body.action ? body.action : undefined);
       if (res.error) sendError(dispatcher, msg.sender, res.error);
       if (res.together) broadcastLog(dispatcher, [res.together]);
+      if (res.logs && res.logs.length) broadcastLog(dispatcher, res.logs); // 攒钱买回来的东西（home.ts）
     } else if (msg.opCode === OP.CHOOSE) {
       var ch = worldChoose(life, CONTENT, role, String(body.optionId), false);
       if (ch.error) sendError(dispatcher, msg.sender, ch.error);

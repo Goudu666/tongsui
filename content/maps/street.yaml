@@ -33,8 +33,8 @@ spots:
   # 早点铺后厨、车棚门口：退了休的人挣几块零花（后半生押时间）
   - { id: breakfast_back, at: 760, area: breakfast, actions: [ old_breakfast ] }
   - { id: shop_counter, at: 1080, area: shop, actions: [ help_out ] }
-  # 小卖部门口的邮筒：留在河畔里的人给外地写信
-  - { id: mailbox, at: 1250, area: shop, actions: [ letter ] }
+  # 小卖部门口的邮筒：留在河畔里的人给外地写信。走亲戚也从这儿拎两样东西走（docs/CIRCLE.md）
+  - { id: mailbox, at: 1250, area: shop, actions: [ letter, visit_kin ] }
   - { id: alley_rope, at: 1530, area: alley, actions: [ play_alley, chat, cards ] }
   - { id: chess_table, at: 2010, area: alley, actions: [ chess, teach_chess ] }
   - { id: alley_night, at: 2260, area: alley, actions: [ night_market ] }

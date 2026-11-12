@@ -244,6 +244,7 @@ function worldFamilyMirror(ev: LifeEvent): boolean {
 
 function worldStartDay(s: LifeState, c: Content) {
   eraSync(s, c); // 年代标记跟上今天的年份（正常过日子 eraTick 已经做了；跳着过的、修过的存档在这儿补上）
+  homeSync(s, c, null); // 家里的东西也一样（home.ts）
   var t = lifeTimeAt(s.turn);
   var persons = s.persons!;
   var actors: { [R in Role]: Actor | null } = { qing: null, mei: null };
@@ -563,6 +564,14 @@ function worldPickAction(s: LifeState, c: Content, role: Role, sp: Spot, want?: 
     // 关口上挣来的去处（少年宫、体校）、家里才有的（学琴、厂里的澡堂）：没有那个标记的人看不见它，轮到下一个行动。
     // 对门正在这儿做、而且这件事带得了人，就能跟着做（means.ts）
     if ((!lifeHasAll(p.flags, rq.flags) || !lifeHasNone(p.flags, rq.notFlags)) && !meansGuestOk(s, c, role, sp, act)) { if (want) why = "这件事轮不到你"; continue; }
+    // 家里的东西（home.ts）：看点位那一户有没有。去对门家就用对门家的；自己攒钱买的只在自己家、家里还没有的时候
+    if (rq.home) {
+      var hh = homeHolder(s, c, sp, role);
+      var miss = false;
+      for (var hi = 0; hi < rq.home.length; hi++) if (!homeHas(hh, rq.home[hi])) miss = true;
+      if (miss) { why = hh === p ? "家里没有这样东西" : "TA 家没有这样东西"; continue; }
+    }
+    if (act.buys) { var nb = homeCantBuy(s, c, role, sp, act); if (nb) { why = nb; continue; } }
     // 不在钟点上先轮到下一个：体校四点开练，四点以前操场照样能踢球。
     // 后面没有别的事可做，还是把它给出去：点位上有名字，点了回「现在不是时候」（worldCanAct），不会变成没反应
     if (rq.hours && !worldOverlaps(rq.hours, slot)) { if (!late) late = act; continue; }
@@ -839,6 +848,7 @@ function worldActOnce(s: LifeState, c: Content, role: Role, sp: Spot, act: Actio
   worldDecay(c, p, a, t, use); // 这一个半钟头里自己也饿了、困了
   p.money += Math.round(Math.max(0, act.money) * times * 10) / 10;
   if (act.id === "letter") postWrite(s, c, role); // 信第二天早上到对门（post.ts）
+  var walked = circleWalk(c, p, act, times); // 攒门路（circle.ts）
 
   a.x = sp.at[0];
   a.y = sp.at[1];
@@ -865,6 +875,8 @@ function worldActOnce(s: LifeState, c: Content, role: Role, sp: Spot, act: Actio
   if (together) a.did.b = Math.round(bmax * 100) / 100;
   if (times < 1) a.did.part = Math.round(times * 100) / 100;
   if (kgot) a.did.k = kgot;
+  if (walked && walked.tie) a.did.tie = walked.tie;
+  if (walked && walked.tp) a.did.tp = walked.tp;
   if (fee > 0 && guest) a.did.m = 0; // 被带的那份钱记在对门头上
   if (worldTimeLeft(c, w, a) < READY_LEFT) w.ready[role] = true; // 这一段的时间用完了：定了
   return { error: null, together: entry };
@@ -874,7 +886,7 @@ function worldActOnce(s: LifeState, c: Content, role: Role, sp: Spot, act: Actio
  * 在点位上做事。once：一件一件做，做一回当场结算（worldActOnce）；不带 once 是「做到点」，把这一段剩下的时间整段押上，段末结算。
  * 机器人、影子、旧安装包都走「做到点」。
  */
-function worldAct(s: LifeState, c: Content, role: Role, spotId: string, once?: boolean, want?: string): { error: string | null; together: LogEntry | null } {
+function worldAct(s: LifeState, c: Content, role: Role, spotId: string, once?: boolean, want?: string): { error: string | null; together: LogEntry | null; logs?: LogEntry[] } {
   var err = worldCanAct(s, c, role, spotId, false, want);
   if (err) return { error: err, together: null };
   var w = s.world!;
@@ -892,6 +904,7 @@ function worldAct(s: LifeState, c: Content, role: Role, spotId: string, once?: b
     p.money += act.money;
     if (act.id === "eat") worldMealMood(c, p);
     w.quick.push(role + ":" + act.id);
+    if (act.buys) { var bought = homeBuy(s, c, role, act); return { error: null, together: null, logs: bought ? [bought] : [] }; } // 攒钱买回来的（home.ts）
     // 顺手的事也能搭伴：这一段里对门在同一个点也做过这件事（两扇门同时开了）
     var partner = lifeOther(role);
     var pa = w.actors[partner];
@@ -1042,6 +1055,7 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   }
   if (act.id === "eat") worldMealMood(c, p); // 老存档里还在吃的那一顿
   if (act.id === "letter") postWrite(s, c, role); // 信第二天早上到对门（post.ts）
+  if (!duty && !act.duty) circleWalk(c, p, act, times); // 攒门路（circle.ts）：整段做的按遍数记
   p.money += Math.round(money * 10) / 10;
   if (a.until !== null && a.from !== undefined && a.from >= 0) {
     var segFrom = a.start !== undefined ? a.start : SLOTS[a.from][0];

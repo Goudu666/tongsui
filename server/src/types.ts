@@ -363,7 +363,7 @@ interface Action {
   sleep: boolean;
   /** 日程：上学、上班。做多久、涨什么、挣多少由这个人走的路（Track.duty）决定 */
   duty: boolean;
-  requires: { minAge?: number; maxAge?: number; owner?: boolean; hours?: [number, number]; flags?: string[]; notFlags?: string[]; kidAge?: [number, number] };
+  requires: { minAge?: number; maxAge?: number; owner?: boolean; hours?: [number, number]; flags?: string[]; notFlags?: string[]; kidAge?: [number, number]; home?: string[] };
   needs: Partial<Needs>;
   stats: Partial<Stats>;
   /** 带孩子：长的是孩子不是自己（docs/FAMILY.md）。只有 body / mind / charm */
@@ -374,6 +374,8 @@ interface Action {
   bring: boolean;
   /** 只在菜单上点到才做（ACT 带 action，协议 8）。不带 action 的永远轮不到它 */
   menu: boolean;
+  /** 人际圈子（circle.ts）：做够 times 回认下门路 flag（tie_*）。只有 menu 的事有 */
+  tie?: { flag: string; times: number };
 }
 
 interface GameMap {
@@ -613,7 +615,7 @@ interface LogEntry {
   turn: number;
   age: number;
   label: string;
-  kind: "mirror" | "solo" | "milestone" | "together" | "day" | "death" | "end" | "era";
+  kind: "mirror" | "solo" | "milestone" | "together" | "day" | "death" | "end" | "era" | "home";
   minute: number | null;
   events: { [R in Role]: string | null };
   choices: { [R in Role]: string | null };

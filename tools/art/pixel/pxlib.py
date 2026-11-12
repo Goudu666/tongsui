@@ -366,6 +366,16 @@ def compose(d, pa, br, k=PX, gx=0, gy=0, relief=True, vshade=None):
         glint = glass & ((dg == 0) | (dg == 1) | (dg == 4))
         col[glint] = col[glint] * 0.45 + 255 * 0.55
 
+    # 大片平涂（抹灰墙、水泥地、马路）上撒一点点麻点：按点的编号哈希，各片接得上
+    yy = (np.arange(H) + gy)[:, None]
+    xx = (np.arange(W) + gx)[None, :]
+    hs = ((xx * 374761393 + yy * 668265263) ^ ((xx * 2246822519) >> 7)) & 0xFFFF
+    flat = ~brk & ~gls & (q < 0.05) & (alpha > 0.5)
+    speck = flat & (hs < 0.03 * 65536)
+    col[speck] = col[speck] * 0.93
+    lite = flat & (hs > 0.985 * 65536)
+    col[lite] = col[lite] * 0.96 + 255 * 0.04
+
     # 墨的浅色 → 影子；细线、排线的平均 → 也压暗一点
     sh = np.clip(ink_tint * 1.1 + ink_avg * 0.45, 0, 0.92)[..., None]
     if vshade is not None:

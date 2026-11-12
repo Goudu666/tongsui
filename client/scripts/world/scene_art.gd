@@ -1,11 +1,12 @@
 extends Node2D
 ## 一张横图的画，从后往前五层（都在这张图自己的坐标里，x 0~width、y TOP~BOTTOM）：
-##   天   shaders/sky.gdshader：网点的天，太阳、晚霞、星星月亮、会走的云（不占贴图）
+##   天   shaders/sky.gdshader：模型后头那张手绘天幕——跟着钟点变色的渐变、太阳、晚霞、星星月亮、会走的云（不占贴图）
 ##   远景 res://art/layers/far_<年代>.png：远处的城，随人生阶段长高；视差 FAR_PARALLAX
 ##   中景 res://art/layers/mid_<年代>.png：隔一两条街的屋顶；视差 MID_PARALLAX
-##   底图 res://art/scenes/<图>_<k>.png：tools/art/scenes.py 印的切片，天的地方是透明的
+##   底图 res://art/scenes/<图>_<k>.png：微缩模型离线渲染的切片（tools/art/diorama/scene3d），天的地方是透明的
 ##   树   res://art/layers/tree_<种>_<季>.png：anchors.json 里每棵树的位置，按季节换、随风晃
 ## 远景、中景夜里自己点灯（far_layer.gdshader），所以夜版在天上只印一层薄的（scene_mask 告诉夜版哪儿是天）。
+## 移轴景深：焦点在人走的那条街（底图、树、人都清楚），远景、中景往后虚（far_layer 的 blur），前景虚得最厉害（fore_dof）。
 ## 没有切片的图（还没画的），按 content/maps/<图>.yaml 的地点和地面画一张墨线草图。
 ## 只画眼前这一张图（换图时 show_scene），别的图不占显存。
 
@@ -17,39 +18,39 @@ const FORE_SHADER := preload("res://shaders/fore_dof.gdshader")
 const SLICE := 1024.0   ## 每片多宽（世界像素）
 const TOP := -200.0     ## 切片从这张图的 y = TOP 画起（楼顶上头还有一截天）
 const BOTTOM := 1000.0
-const ART_SCALE := 1.0   ## 像素画：贴图 1 像素 = 1 世界像素（每个点 3×3，tools/art/pixel）
+const ART_SCALE := 1.25
 const MASK_STEP := 4.0  ## scene_mask 一格 = 4 世界像素
 const FAR_PARALLAX := 0.1
 const MID_PARALLAX := 0.32
-const FAR_SCALE := 1.0    ## 远景条按屏幕大小画好了（pxlayers.py，以前 0.62），一点 = 3 世界像素，不再缩放
-const MID_SCALE := 1.0
+const FAR_SCALE := 0.62   ## 远景条缩小了贴：远处的楼小
+const MID_SCALE := 0.9
 const FORE_PARALLAX := 1.55 ## 前景：比人走得快（贴着镜头）
-const FORE_SCALE := 1.0     ## 前景按屏幕大小画好了（以前 1.8），一点 = 6 世界像素：离镜头近的大颗粒（fore_dof.gdshader）
+const FORE_SCALE := 1.8     ## 前景放大贴：离镜头近，东西大、虚（fore_dof.gdshader）
 const FORE := {"street": "street", "river": "river", "park": "green", "newhome": "green", "primary": "school",
 	"middle": "school", "across": "street", "away": "street", "market": "market", "seaside": "sea", "village": "field"}
 const ERAS := {"childhood": "child", "teen": "teen", "young": "young", "middle": "middle", "old": "old"}
 ## 树：画布多大（世界像素）、画的是多高的树（anchors 里的 h 按它缩放），和 tools/art/layers.py 的 TREES 一致
-const TREES := {"huai": [624, 702, 620], "willow": [642, 681, 580], "young": [300, 381, 320]}
-const TREE_SCALE := 1.0
+const TREES := {"huai": [620, 700, 620], "willow": [640, 680, 580], "young": [300, 380, 320]}
+const TREE_SCALE := 1.25
 ## 每张图的远景、中景放在哪（楼脚的 y，这张图自己的坐标）；null = 这张图不要这一层
 ## 没写的图用 anchors 里记的地平线：远景楼脚在地平线，中景楼脚压在地面线上头一点（反正被近处的楼挡着）
 ## far_kind：远景不用城里那几条（按年代长高的楼），换成 far_<kind>.png（海边的岬角和货轮、乡下的杨树行和水塔），不随年代变；
 ## far_scale / far_haze：这一层贴多大、多淡
 const LAYOUT := {
-	"building": {"far": 301.0, "mid": 331.0},
-	"street": {"far": 421.0, "mid": 640.0},
-	"river": {"far": 559.0, "mid": 589.0, "mid_haze": 0.42},
-	"primary": {"far": 559.0, "mid": 679.0},
-	"middle": {"far": 520.0, "mid": 661.0},
-	"across": {"far": 481.0, "mid": 640.0},
-	"away": {"far": 520.0, "mid": 649.0},
-	"rental": {"far": 301.0, "mid": null},
-	"newhome": {"far": 499.0, "mid": 619.0},
-	"park": {"far": 559.0, "mid": 640.0, "mid_haze": 0.35},
-	"hospital": {"far": 301.0, "mid": null},
-	"market": {"far": 400.0, "mid": 469.0},
-	"seaside": {"far": 610.0, "mid": null, "far_kind": "sea", "far_scale": 1.0, "far_haze": 0.34},
-	"village": {"far": 571.0, "mid": null, "far_kind": "village", "far_scale": 1.0, "far_haze": 0.32},
+	"building": {"far": 300.0, "mid": 330.0},
+	"street": {"far": 420.0, "mid": 640.0},
+	"river": {"far": 560.0, "mid": 590.0, "mid_haze": 0.42},
+	"primary": {"far": 560.0, "mid": 680.0},
+	"middle": {"far": 520.0, "mid": 660.0},
+	"across": {"far": 480.0, "mid": 640.0},
+	"away": {"far": 520.0, "mid": 650.0},
+	"rental": {"far": 300.0, "mid": null},
+	"newhome": {"far": 500.0, "mid": 620.0},
+	"park": {"far": 560.0, "mid": 640.0, "mid_haze": 0.35},
+	"hospital": {"far": 300.0, "mid": null},
+	"market": {"far": 400.0, "mid": 470.0},
+	"seaside": {"far": 610.0, "mid": null, "far_kind": "sea", "far_scale": 0.8, "far_haze": 0.34},
+	"village": {"far": 570.0, "mid": null, "far_kind": "village", "far_scale": 0.8, "far_haze": 0.32},
 }
 
 var scene: Dictionary = {}
@@ -84,9 +85,9 @@ func _ready() -> void:
 	add_child(_sky)
 	_far_mat = _layer_mat(0.0)
 	_far = _strip(_far_mat, -2)
-	_far_mat.set_shader_parameter("blur", 0.0)
+	_far_mat.set_shader_parameter("blur", 6.0)   ## 景深：贴图像素半径，远的最虚
 	_mid_mat = _layer_mat(7.0)
-	_mid_mat.set_shader_parameter("blur", 0.0)
+	_mid_mat.set_shader_parameter("blur", 3.0)
 	_mid = _strip(_mid_mat, -1)
 	_fore_mat = ShaderMaterial.new()
 	_fore_mat.shader = FORE_SHADER
@@ -118,7 +119,7 @@ func _strip(mat: ShaderMaterial, z: int) -> Sprite2D:
 	s.centered = false
 	s.region_enabled = true
 	s.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
-	s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	s.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	s.material = mat
 	s.z_index = z
 	add_child(s)
@@ -144,7 +145,7 @@ func show_scene(sc: Dictionary, all_zones: Array, all_exits: Array) -> void:
 		spr.centered = false
 		spr.scale = Vector2.ONE / ART_SCALE
 		spr.position = Vector2(k * SLICE, TOP)
-		spr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST  ## 像素画不要 mipmap：缩小一点时点会糊成一片
+		spr.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		add_child(spr)
 		_slices.append(spr)
 		has_art = true
@@ -320,11 +321,10 @@ func _plant_trees() -> void:
 		var s := Sprite2D.new()
 		s.texture = load(path)
 		s.centered = false
-		# 像素画：树不缩放（缩了点就大小不一），一种树一个大小；位置落在 3 世界像素的格子上
-		s.scale = Vector2.ONE / TREE_SCALE
-		var tp := Vector2(float(a[0]) - float(spec[0]) * 0.5, float(a[1]) - float(spec[1]))
-		s.position = Vector2(snappedf(tp.x, 3.0), snappedf(tp.y - TOP, 3.0) + TOP)
-		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		var k := float(a[2]) / float(spec[2])
+		s.scale = Vector2.ONE * k / TREE_SCALE
+		s.position = Vector2(float(a[0]) - float(spec[0]) * k * 0.5, float(a[1]) - float(spec[1]) * k)
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		var m := ShaderMaterial.new()
 		m.shader = SWAY_SHADER
 		m.set_shader_parameter("phase", float(a[0]) * 0.013 + i * 1.7)
@@ -349,7 +349,7 @@ func _process(_delta: float) -> void:
 	_sky_mat.set_shader_parameter("cam", center - Vector2(-200, TOP))
 	_sky_mat.set_shader_parameter("view", view)
 	var left := center.x - view.x * 0.5
-	for pair in [[_far, FAR_PARALLAX, 3.0], [_mid, MID_PARALLAX, 3.0], [_fore, FORE_PARALLAX, 6.0]]:
+	for pair in [[_far, FAR_PARALLAX], [_mid, MID_PARALLAX], [_fore, FORE_PARALLAX]]:
 		var spr: Sprite2D = pair[0]
 		if not spr.visible or spr.texture == null:
 			continue
@@ -357,8 +357,7 @@ func _process(_delta: float) -> void:
 		var f: float = pair[1]
 		var tw := spr.texture.get_width() * spr.scale.x  ## 一张贴图在世界里多宽
 		var start := left * f
-		# 落在点的格子上（远景、中景 3、前景 6 世界像素一个点），不然一层层按半个点滑
-		spr.position.x = snappedf(left - start + floorf(start / tw) * tw - 64.0, pair[2])
+		spr.position.x = left - start + floorf(start / tw) * tw - 64.0
 		var need := (view.x + tw + 128.0) / spr.scale.x
 		spr.region_rect = Rect2(0, 0, need, float(spr.get_meta("h", spr.texture.get_height())))
 

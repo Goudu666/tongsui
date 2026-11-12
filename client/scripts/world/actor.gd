@@ -1,12 +1,13 @@
 extends Node2D
 ## 河畔里的一个孩子（会长大）。本地玩家沿寻路的路径走；对方按服务器广播插值。
-## 外观是孔版套色的侧视精灵表 res://art/actors/{role}_{stage}.png（tools/art/actors.py 用骨架摆出来）：
-##   8 列 × 5 行，每格 198×222 世界像素（像素画，每点 3×3，贴图 1 倍），脚底在格子里的 (99, 207)，人朝右（朝左翻转）
+## 外观是微缩模型小人的侧视精灵表 res://art/actors/{role}_{stage}.png（tools/art/diorama：three.js 离线渲染，
+## 姿势借 tools/art/actors.py 的骨架）：
+##   8 列 × 5 行，每格 200×220 世界像素（贴图 2 倍，渲染图平滑、带 mipmap 缩下来），脚底在格子里的 (100, 206)，人朝右（朝左翻转）
 ##   行 0：走一整步 8 帧
 ##   行 1：0~3 站着喘气（3 眨眼），4~7 在忙
 ##   行 2：0~1 坐着，2~3 睡觉，4~7 挥手
 ##   行 3：0~3 高兴（蹦一下），4~7 泄气；行 4：0~3 击掌，4~7 不好意思（挠头）
-## 每个行动还有一张专属动作表 {role}_{stage}_act.png（tools/art/pixel/pxactor.py，同样 1 倍）：
+## 每个行动还有一张专属动作表 {role}_{stage}_act.png（同一套渲染，动作借 tools/art/actor_acts.py，1.5 倍）：
 ##   11 行 × 两套 4 帧循环，顺序见 ACT_LOOP；行动 id 怎么对到哪一套见 ACTION_LOOP / DUTY_LOOP
 ##   两个人一起踢球时不颠球、换成 pass：面对面对着踢一个球（球由 pass_lead 那个人画，钟是 pass_clock）
 ## 头顶的情绪气泡（bubble.gd）：做事时按这套动作冒（FAMILY_BUBBLES），做完一回按 did 的需求变化反应（react），
@@ -18,16 +19,16 @@ const P := preload("res://scripts/ui/palette.gd")
 const Bubble := preload("res://scripts/world/bubble.gd")
 const Overlay := preload("res://scripts/world/overlay.gd")
 const WALK_SPEED := 330.0  ## 略低于服务器限速
-const CELL := Vector2(198, 222)   ## 像素画：66×74 个点，每点 3 世界像素（tools/art/pixel/pxactor.py）
-const FOOT := Vector2(99, 207)
+const CELL := Vector2(200, 220)
+const FOOT := Vector2(100, 206)
 const COLS := 8
 const ROWS := 5
 const ACT_ROWS := 11
-const ACT_ART_SCALE := 1.0
+const ACT_ART_SCALE := 1.5
 ## 每个年纪的身高（世界像素，梅比青矮 6）、走一整步前进多远
 const HEIGHT := {"childhood": 112.0, "teen": 152.0, "young": 172.0, "middle": 170.0, "old": 160.0}
 const STRIDE := {"childhood": 74.0, "teen": 104.0, "young": 120.0, "middle": 112.0, "old": 78.0}
-const ART_SCALE := 1.0  ## 贴图 1 像素 = 1 世界像素
+const ART_SCALE := 2.0
 const STAGES := ["childhood", "teen", "young", "middle", "old"]
 const STAGE_FILE := {"childhood": "child", "teen": "teen", "young": "young", "middle": "middle", "old": "old"}
 ## 专属动作表里的顺序（和 tools/art/actor_acts.py 的 ACTS 一致：第 i 套在第 i/2 行、第 (i%2)×4 列起）
@@ -161,7 +162,7 @@ func setup(p_role: String, p_name: String, p_local: bool, pos: Vector2) -> void:
 	_sprite.vframes = ROWS
 	_sprite.scale = Vector2.ONE / ART_SCALE
 	_sprite.offset = -FOOT * ART_SCALE
-	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	add_child(_sprite)
 	_over = Overlay.new(_draw_over)
 	add_child(_over)

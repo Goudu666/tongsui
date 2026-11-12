@@ -1,5 +1,6 @@
 extends Node2D
-## 夜版：昼夜不靠"整屏调色"，而是像孔版多套一块版那样印上去（shaders/night_plate.gdshader）。
+## 夜色：昼夜不靠"整屏调暗"，而是像把模型桌上的顶灯关掉、只留模型里的小灯（shaders/night_plate.gdshader 压蓝紫、
+## 灯下留出暖黄的光池；shaders/lamp_glow.gdshader 往上加灯晕）。
 ## 这里负责三件事：
 ##   1. 把 anchors.json 里的灯（路灯、楼道灯、窗、摊子、对岸）烘成一张低分辨率灯光图
 ##   2. 按时钟算出 晚霞 / 夜 / 清早 三块版各印多深

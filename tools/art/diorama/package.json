@@ -1,0 +1,6 @@
+{
+  "name": "tongsui-diorama",
+  "private": true,
+  "description": "微缩模型（C）画风的离线渲染",
+  "dependencies": { "three": "0.170.0", "@fontsource/noto-sans-sc": "5.2.6" }
+}

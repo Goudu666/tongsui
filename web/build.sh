@@ -17,7 +17,7 @@ npm run --silent content
 npm run --silent server:build >/dev/null
 
 echo "▶ 字体（裁成游戏里用得到的字；网页上没有系统字体可回退，裁掉的字会是方块）"
-if [[ ! -f client/fonts/LXGWWenKai-Regular.ttf ]]; then bash tools/fetch_addons.sh; fi
+if [[ ! -f client/fonts/LXGWWenKai-Regular.ttf || ! -f client/fonts/ChillRoundF.ttf ]]; then bash tools/fetch_addons.sh; fi
 python3 tools/subset_font.py
 
 echo "▶ Godot 导入 + 网页导出"

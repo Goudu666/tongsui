@@ -413,7 +413,7 @@ func _fill_info() -> void:
 
 # ---------------------------------------------------------------- 画 ----
 
-## 压暗：一层墨，上面一层很淡的网点（和转场「印出来」的网点一个意思）。网点在 shaders/menu_dim.gdshader 里算
+## 压暗：一层平滑的墨，四边更深、中间透一点暖光（像把桌上的灯调暗）。在 shaders/menu_dim.gdshader 里算
 class _Dim extends ColorRect:
 	const P := preload("res://scripts/ui/palette.gd")
 
@@ -427,7 +427,7 @@ class _Dim extends ColorRect:
 		material = mat
 		resized.connect(_fit_cell)
 
-	## 网点大小跟着真实分辨率走，手机和电脑上看起来一样大（同 fx.gd _start）
+	## 暗角的软硬跟着真实分辨率走，手机和电脑上看起来一样（同 fx.gd _start）
 	func _fit_cell() -> void:
 		if not is_inside_tree():
 			return

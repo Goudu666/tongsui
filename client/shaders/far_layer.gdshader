@@ -1,9 +1,11 @@
 shader_type canvas_item;
 render_mode unshaded;
-// 远景、中景（tools/art/layers.py）：离得越远越像天色（空气透视），
-// 傍晚整条印上一层暖色，夜里压成靛蓝，lit_tex 里记着的窗一扇扇亮起来，隔一会儿有一扇灭、一扇亮。
+// 远景、中景：模型桌后头的街区。离得越远越像天色（空气透视），
+// 傍晚整条染上一层暖色，夜里压成蓝紫，lit_tex 里记着的窗一扇扇亮起来，隔一会儿有一扇慢慢灭、一扇慢慢亮。
+// 移轴景深：镜头对焦在人走的那条街上，后面的街区柔柔地虚掉（blur，贴图像素半径），越远越虚——
+// 中心一下 + 一圈八下的盘状取样，再借一点 mipmap 把取样之间的缝抹平。一共九下，手机上也扛得住。
 
-uniform sampler2D lit_tex : filter_nearest, repeat_enable;
+uniform sampler2D lit_tex : filter_linear_mipmap, repeat_enable;
 uniform float night = 0.0;
 uniform float dusk = 0.0;
 uniform float dawn = 0.0;
@@ -11,11 +13,11 @@ uniform float haze = 0.3;        // 0 不透视 ~ 1 全是天色
 uniform vec3 haze_col : source_color = vec3(0.90, 0.92, 0.88);
 uniform float seed = 0.0;
 uniform vec2 tex_size = vec2(2048.0, 620.0);
-uniform float blur = 0.0;        // （孔版时的景深；像素画不虚，远近靠颜色分）
+uniform float blur = 0.0;        // 景深：虚多少（贴图像素半径，0 = 不虚）
 
-const vec3 NIGHT = vec3(0.17, 0.24, 0.50);
-const vec3 DUSK = vec3(0.98, 0.70, 0.52);
-const vec3 LAMP = vec3(1.0, 0.86, 0.50);
+const vec3 NIGHT = vec3(0.24, 0.27, 0.56);
+const vec3 DUSK = vec3(0.98, 0.72, 0.56);
+const vec3 LAMP = vec3(1.0, 0.84, 0.54);
 
 float hash(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
@@ -23,18 +25,45 @@ float hash(vec2 p) {
 	return fract(p.x * p.y);
 }
 
+// 一扇窗在第 n 个时段亮不亮
+float win_on(float h, float n) {
+	return step(0.22, fract(h * 7.3 + n * 0.618));
+}
+
 void fragment() {
-	vec4 c = texture(TEXTURE, UV);
+	vec4 c;
+	float l;
+	if (blur > 0.05) {
+		vec2 r = blur / tex_size;
+		float lod = log2(1.0 + blur) * 0.7;
+		// 盘状取样：一圈八个方向，半径一长一短交错，转一个不整齐的角度（没有十字形的痕）
+		vec2 ring[8] = vec2[8](
+			vec2(0.92, 0.38), vec2(0.27, 0.65), vec2(-0.38, 0.92), vec2(-0.65, 0.27),
+			vec2(-0.92, -0.38), vec2(-0.27, -0.65), vec2(0.38, -0.92), vec2(0.65, -0.27));
+		c = texture(TEXTURE, UV, lod) * 0.2;
+		l = texture(lit_tex, UV, lod).r * 0.2;
+		for (int i = 0; i < 8; i++) {
+			vec2 uv = UV + ring[i] * r;
+			c += texture(TEXTURE, uv, lod) * 0.1;
+			l += texture(lit_tex, uv, lod).r * 0.1;
+		}
+	} else {
+		c = texture(TEXTURE, UV);
+		l = texture(lit_tex, UV).r;
+	}
 	vec3 col = mix(c.rgb, haze_col, haze);
 	col *= mix(vec3(1.0), DUSK, dusk * 0.4 + dawn * 0.15);
 	col *= mix(vec3(1.0), NIGHT * 1.15, night * 0.8);
-	float l = texture(lit_tex, UV).r;
 	if (l > 0.01 && night > 0.01) {
-		// 一扇窗一个格子：每格自己决定亮不亮、什么时候换
-		vec2 cellp = floor(UV * tex_size / vec2(24.0, 24.0));
+		// 一扇窗一个格子：每格自己决定亮不亮、什么时候换；换的时候用两三秒慢慢淡过去，不是一下跳
+		vec2 cellp = floor(UV * tex_size / vec2(10.0, 12.0));
 		float h = hash(cellp + seed);
-		float on = step(0.22, fract(h * 7.3 + floor(TIME * 0.05 + h * 9.0) * 0.618));
-		col = mix(col, LAMP, l * night * on * 0.95);
+		float t = TIME * 0.05 + h * 9.0;
+		float n = floor(t);
+		float on = mix(win_on(h, n), win_on(h, n + 1.0), smoothstep(0.88, 1.0, fract(t)));
+		// 窗光往外微微晕开（虚掉的远景里像一颗颗柔和的光斑）
+		vec3 warm = mix(LAMP, vec3(1.0, 0.95, 0.82), smoothstep(0.6, 1.0, l));
+		col = mix(col, warm, clamp(l * 1.1, 0.0, 1.0) * night * on * 0.95);
 	}
 	COLOR = vec4(col, c.a);
 }

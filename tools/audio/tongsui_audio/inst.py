@@ -60,11 +60,6 @@ def music_box(m: float, dur: float, vel: float = 0.8) -> np.ndarray:
     return fade(y * vel, 0.0005, 0.05)
 
 
-def music_box_hit(m: float, vel: float = 0.6) -> np.ndarray:
-    """早上那一层用的八音盒（老年）：童年的那只，隔了几十年又响了。"""
-    return music_box(m, 0.6, vel) * 0.8
-
-
 @lru_cache(maxsize=4096)
 def kalimba(m: float, dur: float, vel: float = 0.8) -> np.ndarray:
     """拇指琴 / 木琴一类的软木头音，童年的伴奏。"""

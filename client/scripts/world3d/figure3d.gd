@@ -37,29 +37,29 @@ static var _face_spots := {}  ## 脸贴图 → 眼睛、嘴在哪（读一次）
 const HEIGHT := {"childhood": 1.12, "teen": 1.52, "young": 1.72, "middle": 1.70, "old": 1.60}
 ## 头多大（半径，米）：小孩头大、显得可爱；大人收一点
 const HEAD := {"childhood": 0.142, "teen": 0.138, "young": 0.134, "middle": 0.133, "old": 0.13}
-const SKIN := Color(1.0, 0.87, 0.79)
+const SKIN := Color(1.0, 0.86, 0.77)
 const HAIR_DARK := Color(0.2, 0.15, 0.14)
 const HAIR_GREY := Color(0.8, 0.79, 0.8)
 ## 主角的头发：青蓝黑，梅深栗红（剪影一眼分得开）
 const HAIR := {"qing": Color(0.16, 0.15, 0.21), "mei": Color(0.36, 0.17, 0.15)}
 ## 眼睛：[深色, 浅色]
-const IRIS := {"qing": [Color(0.13, 0.11, 0.1), Color(0.46, 0.34, 0.24)], "mei": [Color(0.22, 0.09, 0.09), Color(0.74, 0.38, 0.3)]}
+const IRIS := {"qing": [Color(0.07, 0.11, 0.17), Color(0.28, 0.58, 0.64)], "mei": [Color(0.24, 0.08, 0.06), Color(0.95, 0.52, 0.28)]}
 
 ## 衣服：每个人每个岁数段一套。top 上衣（stripe 横条纹颜色、band 领口袖口的颜色、sleeve 0 无袖 / 0.5 短袖 / 1 长袖）、
 ## bottom 下装（legs 0.35 短裤 / 1 长裤；dress 连衣裙长到哪：大腿的几分之几）、shoes、socks
 const LOOKS := {
 	"qing": {
 		"childhood": {"top": "#F3EFE6", "stripe": "#2E8B7A", "sleeve": 0.5, "bottom": "#2F3B57", "legs": 0.42, "socks": "#F5F2EA", "shoes": "#E9E6E0", "shoe2": "#2E8B7A", "hair": "boy"},
-		"teen": {"top": "#2E8B7A", "band": "#F3EFE6", "sleeve": 1.0, "bottom": "#26304A", "legs": 1.0, "shoes": "#ECE8E0", "shoe2": "#2B2A33", "hair": "boy_long"},
-		"young": {"top": "#3A8F80", "band": "#EDE8DD", "sleeve": 1.0, "bottom": "#3D5579", "legs": 1.0, "shoes": "#EFEBE4", "shoe2": "#8E3B33", "hair": "boy_side"},
-		"middle": {"top": "#4C7B73", "band": "#D9D2C2", "sleeve": 1.0, "bottom": "#7D6E55", "legs": 1.0, "shoes": "#4A3328", "shoe2": "#2E221C", "hair": "boy_short"},
-		"old": {"top": "#3F6B63", "band": "#CFC8B8", "sleeve": 1.0, "bottom": "#5E5A55", "legs": 1.0, "shoes": "#2B2724", "shoe2": "#1E1B19", "hair": "boy_old"},
+		"teen": {"top": "#24325C", "band": "#F3EFE6", "side": "#F3EFE6", "inner": "#F3EFE6", "inner_w": 0.05, "sleeve": 1.0, "bottom": "#24325C", "legs": 1.0, "shoes": "#ECE8E0", "shoe2": "#2B2A33", "hair": "boy_long"},
+		"young": {"top": "#3A8F80", "band": "#3A8F80", "inner": "#F3EFE6", "inner_w": 0.3, "sleeve": 1.0, "bottom": "#3D5579", "legs": 1.0, "shoes": "#EFEBE4", "shoe2": "#8E3B33", "hair": "boy_side"},
+		"middle": {"top": "#3E4A5A", "band": "#3E4A5A", "inner": "#DCD6C8", "inner_w": 0.24, "sleeve": 1.0, "bottom": "#7D6E55", "legs": 1.0, "shoes": "#4A3328", "shoe2": "#2E221C", "hair": "boy_short"},
+		"old": {"top": "#5B6E68", "band": "#5B6E68", "inner": "#DDD6C6", "inner_w": 0.22, "sleeve": 1.0, "bottom": "#5E5A55", "legs": 1.0, "shoes": "#2B2724", "shoe2": "#1E1B19", "hair": "boy_old"},
 	},
 	"mei": {
 		"childhood": {"top": "#F7F2E8", "dress": "#D9485F", "dress_len": 0.55, "sleeve": 0.5, "bottom": "#F7F2E8", "legs": 0.0, "socks": "#F8F5EE", "shoes": "#C23A4F", "shoe2": "#7A2030", "hair": "pigtails"},
-		"teen": {"top": "#F4F0E7", "band": "#D9485F", "sleeve": 1.0, "bottom": "#26304A", "legs": 1.0, "shoes": "#ECE8E0", "shoe2": "#D9485F", "hair": "ponytail"},
-		"young": {"top": "#EDE6D8", "dress": "#D24A5E", "dress_len": 0.66, "sleeve": 1.0, "bottom": "#3A3440", "legs": 1.0, "shoes": "#5B3A2E", "shoe2": "#3A251D", "hair": "long"},
-		"middle": {"top": "#C8475B", "band": "#EFE7D6", "sleeve": 1.0, "bottom": "#3B3A46", "legs": 1.0, "dress": "#3B3A46", "dress_len": 0.8, "shoes": "#4B3229", "shoe2": "#2E1F19", "hair": "bun"},
+		"teen": {"top": "#24325C", "band": "#F3EFE6", "side": "#F3EFE6", "inner": "#F3EFE6", "inner_w": 0.05, "sleeve": 1.0, "bottom": "#24325C", "legs": 1.0, "shoes": "#ECE8E0", "shoe2": "#D9485F", "hair": "ponytail"},
+		"young": {"top": "#EFE2C6", "inner": "#D24A5E", "inner_w": 0.3, "dress": "#D24A5E", "dress_len": 0.66, "sleeve": 1.0, "bottom": "#3A3440", "legs": 1.0, "shoes": "#5B3A2E", "shoe2": "#3A251D", "hair": "long"},
+		"middle": {"top": "#E4D6BC", "band": "#E4D6BC", "inner": "#C8475B", "inner_w": 0.26, "sleeve": 1.0, "bottom": "#3B3A46", "legs": 1.0, "dress": "#3B3A46", "dress_len": 0.8, "shoes": "#4B3229", "shoe2": "#2E1F19", "hair": "bun"},
 		"old": {"top": "#B5495A", "band": "#DDD6C6", "sleeve": 1.0, "bottom": "#4A4650", "legs": 1.0, "shoes": "#2B2724", "shoe2": "#1E1B19", "hair": "bun_grey"},
 	},
 }
@@ -137,7 +137,7 @@ func _make_spec() -> Dictionary:
 	var s := {}
 	s.hr = hr
 	s.head_c = hgt - hr * 1.08
-	s.neck = (0.04 if kid else 0.065) * (1.0 if not girl else 0.95)
+	s.neck = (0.035 if kid else 0.05) * (1.0 if not girl else 0.95)
 	s.shoulder_y = s.head_c - hr * 0.93 - s.neck
 	s.hip_y = hgt * (0.42 if kid else (0.47 if stage == "teen" else 0.49))
 	s.torso = s.shoulder_y - s.hip_y
@@ -145,7 +145,7 @@ func _make_spec() -> Dictionary:
 	s.thigh = (s.hip_y - s.ankle) * 0.52
 	s.shin = (s.hip_y - s.ankle) * 0.48
 	var broad := 0.0 if girl else 1.0
-	s.sh_half = hgt * (0.112 if kid else lerpf(0.104, 0.118, broad)) * float(look.get("build", 1.0))
+	s.sh_half = hgt * (0.106 if kid else lerpf(0.09, 0.11, broad)) * float(look.get("build", 1.0))
 	s.hip_half = hgt * (0.075 if kid else lerpf(0.083, 0.072, broad)) * float(look.get("build", 1.0))
 	s.waist = hgt * (0.078 if kid else lerpf(0.066, 0.076, broad)) * float(look.get("build", 1.0)) * (1.12 if stage == "middle" or stage == "old" else 1.0)
 	s.depth = 0.72 if kid else 0.6
@@ -153,7 +153,7 @@ func _make_spec() -> Dictionary:
 	s.fore = hgt * 0.15
 	s.arm_r = hgt * (0.028 if kid else 0.021) * (0.92 if girl else 1.0)
 	s.leg_r = hgt * (0.044 if kid else 0.035) * (0.92 if girl else 1.0)
-	s.hand = hgt * (0.034 if kid else 0.025)
+	s.hand = hgt * (0.029 if kid else 0.021)
 	s.foot = hgt * (0.11 if kid else 0.12)
 	return s
 
@@ -214,8 +214,8 @@ func _face_mat(lk: Dictionary) -> ShaderMaterial:
 	var sk := Color(str(lk.get("skin", SKIN.to_html())))
 	m.set_shader_parameter("skin", sk)
 	# 眼睛：小孩最大最圆，越大越细长；街坊比主角小一号（主角好认）
-	var ew: float = {"childhood": 0.19, "teen": 0.17, "young": 0.155, "middle": 0.145, "old": 0.135}.get(stage, 0.15)
-	var et: float = {"childhood": 0.235, "teen": 0.2, "young": 0.175, "middle": 0.155, "old": 0.13}.get(stage, 0.17)
+	var ew: float = {"childhood": 0.19, "teen": 0.18, "young": 0.168, "middle": 0.152, "old": 0.138}.get(stage, 0.16)
+	var et: float = {"childhood": 0.235, "teen": 0.215, "young": 0.19, "middle": 0.165, "old": 0.135}.get(stage, 0.18)
 	var eh: float = {"childhood": -0.24, "teen": -0.18, "young": -0.15, "middle": -0.14, "old": -0.13}.get(stage, -0.15)
 	if folk:
 		ew *= 0.86
@@ -288,6 +288,19 @@ func _build_body() -> void:
 	skin.set_shader_parameter("shade_tint", Color(0.96, 0.74, 0.72) * (STYLES.get(style, STYLES.qingtou).shade as Color).lightened(0.3))
 	var top := _cloth(lk.get("top", "#ffffff"), lk.get("stripe"))
 	var bottom := _cloth(lk.get("bottom", "#333344"))
+	if lk.has("side"):
+		# 运动校服：袖子、裤腿两侧白条
+		for m in [top, bottom]:
+			m.set_shader_parameter("side", 1.0)
+			m.set_shader_parameter("side_col", Color(str(lk.side)))
+	# 前襟：敞开的外套 / 开衫露出里面那件（只在前胸那块网格上，袖子用 top）
+	var front: ShaderMaterial = top
+	if lk.has("inner"):
+		front = top.duplicate()
+		front.set_shader_parameter("side", 0.0)
+		front.set_shader_parameter("panel", 1.0)
+		front.set_shader_parameter("panel_col", Color(str(lk.inner)))
+		front.set_shader_parameter("panel_w", _spec.sh_half * float(lk.get("inner_w", 0.25)))
 	var band: Variant = lk.get("band")
 	var band_m := _cloth(band) if band != null else top
 	var shoe_m := _toon(Color(str(lk.get("shoes", "#eeeeee"))))
@@ -334,12 +347,12 @@ func _build_body() -> void:
 		[-0.06 * T, s.waist * tuck, s.waist * 0.8 * tuck * d / 0.6],
 		[0.18 * T, s.waist * 1.05, s.waist * 0.85 * d / 0.6],
 		[0.42 * T, sh * 0.86, sh * 0.6 * d / 0.6],
-		[0.62 * T, sh * 0.95, sh * 0.6 * d / 0.6],
-		[0.7 * T, sh * 0.9, sh * 0.52 * d / 0.6],
-		[0.76 * T, sh * 0.55, sh * 0.42 * d / 0.6],
+		[0.6 * T, sh * 0.93, sh * 0.6 * d / 0.6],
+		[0.68 * T, sh * 0.8, sh * 0.52 * d / 0.6],
+		[0.74 * T, sh * 0.52, sh * 0.42 * d / 0.6],
 		[0.78 * T, s.hr * 0.4, s.hr * 0.36],
 	]
-	var chest_m: Material = top
+	var chest_m: Material = front
 	if dress != null and kid:
 		chest_m = _cloth(dress)  # 背带裙：前襟也是裙子的颜色，袖子是里头的白衬衣
 	_mesh(spine, Kit.loft(chest_rings, 18), chest_m)
@@ -352,7 +365,10 @@ func _build_body() -> void:
 		_mesh(spine, collar2, band_m)
 	# 脖子、头（日漫：脖子细、头大一点、下巴收尖）
 	var neck := _joint("neck", spine, Vector3(0, 0.76 * T, 0))
-	_mesh(neck, Kit.limb(s.neck + 0.03, s.hr * 0.24, s.hr * 0.26, 12), skin, Vector3(0, s.neck + 0.015, 0))
+	# 脖子比脸暗一档（下巴底下的影），日漫的头才「立」在脖子上
+	var neck_m: ShaderMaterial = skin.duplicate()
+	neck_m.set_shader_parameter("base", Color(str(lk.get("skin", SKIN.to_html()))) * Color(0.86, 0.74, 0.74))
+	_mesh(neck, Kit.limb(s.neck + 0.03, s.hr * 0.24, s.hr * 0.26, 12), neck_m, Vector3(0, s.neck + 0.015, 0))
 	var head := _joint("head", neck, Vector3(0, s.neck, 0))
 	var hr: float = s.hr
 	var hrv := Vector3(hr * 0.92, hr, hr * 0.95)
@@ -703,6 +719,14 @@ func _build_hair(head: Node3D, c: Vector3, r: Vector3, kind: String, lk: Diction
 			# 扫向一边：梢挪过去，扫过去那边长一点
 			tt += sweep * 0.25 * f
 		bangs.append([ph + sweep * (1.0 - absf(f) * 0.5), tt, f])
+	if face_mat != null and face_mat.shader == FACE:
+		face_mat.set_shader_parameter("bang_lat", PI * 0.5 - tip)
+		face_mat.set_shader_parameter("bang_shadow", 0.85 if tip > 1.3 else 0.5)
+	# 下面一层：短一点、宽一点，塞在两缕之间，刘海才厚
+	for i in n_b - 1:
+		var f := (float(i) + 0.5) / float(n_b - 1) * 2.0 - 1.0
+		var ph := f * 0.92
+		_lock(st, r, 0.3, ph * 0.3 - sweep * 0.3, tip - 0.1 - 0.04 * sin(float(i) * 1.9) + sweep * 0.25 * f, ph + sweep * (1.0 - absf(f) * 0.5), w * 1.25, 1.035, 1.015, 0.03, 0.0, 0.0, 8, blunt)
 	for b in bangs:
 		var ph: float = b[0]
 		var f: float = b[2]
@@ -759,7 +783,15 @@ func _build_hair(head: Node3D, c: Vector3, r: Vector3, kind: String, lk: Diction
 		var f := float(i) / float(n_k - 1)
 		var ph := lerpf(1.45, TAU - 1.45, f)    # 从左耳后绕到右耳后
 		var tt := back_tip - 0.05 * sin(float(i) * 1.7) - 0.12 * absf(f - 0.5)
-		_lock(st, r, 0.5, ph, tt, ph + 0.08 * sin(float(i) * 2.1), w * 1.15, 1.07, 1.055, 0.04, back_hang * (1.0 - 0.25 * absf(f - 0.5) * 2.0), flick)
+		_lock(st, r, 0.5, ph, tt, ph + 0.08 * sin(float(i) * 2.1), w * (1.5 if back_hang > 0.0 else 1.15), 1.07, 1.055, 0.04, back_hang * (1.0 - 0.25 * absf(f - 0.5) * 2.0), flick)
+	# ---- 头顶：从发旋往四周铺开的一圈发束（不然头顶是个光溜溜的壳） ----
+	var crown_n := 12 if kind != "boy_old" else 8
+	for i in crown_n:
+		var ph := TAU * float(i) / float(crown_n) + 0.2
+		var reach := 1.0 + 0.12 * sin(float(i) * 2.7)
+		if absf(wrapf(ph, -PI, PI)) < 1.0:
+			reach = 0.75  # 前面交给刘海
+		_lock(st, r, 0.06, PI, reach, ph + 0.15 * sin(float(i) * 1.3), w * 1.35, 1.07, 1.06, 0.035)
 	# ---- 头顶撑出轮廓的几根 ----
 	var spikes := 4 if kind == "boy" else (3 if kind.begins_with("boy") and kind != "boy_old" else 0)
 	for i in spikes:
@@ -852,7 +884,7 @@ func _lock(st: SurfaceTool, r: Vector3, th0: float, ph0: float, th1: float, ph1:
 			outs.append(oh)
 	elif flick != 0.0:
 		path[path.size() - 1] = last + o * flick
-	Kit.lock_into(st, path, outs, w, w * 0.32, 6, tip)
+	Kit.lock_into(st, path, outs, w, w * 0.42, 6, tip)
 
 
 func _build_props() -> void:

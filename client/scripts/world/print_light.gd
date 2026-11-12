@@ -150,5 +150,5 @@ func _process(delta: float) -> void:
 		var v := Vector4.ZERO
 		if i < actors.size() and is_instance_valid(actors[i]) and (actors[i] as Node2D).visible:
 			var a: Node2D = actors[i]
-			v = Vector4(a.position.x, a.position.y - 40.0, 150.0, 0.8)
+			v = Vector4(a.position.x - position.x, a.position.y - position.y - 40.0, 150.0, 0.8)
 		_mat.set_shader_parameter(keys[i], v)

@@ -72,7 +72,7 @@ def _server_up():
         return False
 
 
-def run_jobs(jobs, workers=None):
+def run_jobs(jobs, workers=None, page=None):
     """把格子分给几个 Chromium 一起渲（swiftshader 是 CPU 渲染，一个进程只吃满一个核）。"""
     tmp = tempfile.mkdtemp(prefix="pose3d_")
     out = os.path.join(tmp, "cells")
@@ -93,7 +93,7 @@ def run_jobs(jobs, workers=None):
             jp = os.path.join(tmp, f"jobs{w}.json")
             with open(jp, "w") as f:
                 json.dump(part, f, ensure_ascii=False)
-            procs.append(subprocess.Popen(["node", os.path.join(HERE, "render.js"), jp, out]))
+            procs.append(subprocess.Popen(["node", os.path.join(HERE, "render.js"), jp, out] + ([page] if page else [])))
         bad = [p.wait() for p in procs]
         if any(bad):
             raise SystemExit(f"渲染失败：{bad}")

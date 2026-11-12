@@ -106,7 +106,12 @@ def _foot_travel(b):
 
 def body(role, stage, design):
     """design：dict(head={stage: 倍数}, leg={stage: 倍数}, limb=倍数, …)。总身高不变（引擎按 HEIGHT 放气泡、名字）。"""
-    b = actors.build(role, stage)
+    return body_from(actors.build(role, stage), design)
+
+
+def body_from(b, design):
+    """同 body，从现成的体型改（街坊：tools/art/folks.py 的 look() 出来的）。"""
+    stage = b["stage"]
     base_travel = _foot_travel(b)
     hk = design.get("head", {}).get(stage, 1.0)
     lk = design.get("leg", {}).get(stage, 1.0)

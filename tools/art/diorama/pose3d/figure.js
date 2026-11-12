@@ -20,17 +20,21 @@ export const PAL = {
   ink: '#33283A', eye: '#2A1E26', mouth: '#B4434E', tie: '#F2C14E', glasses: '#3A2E36', gold: '#B98C4A',
 };
 const hexc = (h) => new THREE.Color(h);
-function mixHex(a, b, t) { const c = hexc(a).lerp(hexc(b), t); return '#' + c.getHexString(); }
+export function mixHex(a, b, t) { const c = hexc(a).lerp(hexc(b), t); return '#' + c.getHexString(); }
 
-// 道具上 actors.py 的 (版, 浓度) → 颜色
-function specColor(spec, role) {
+// 街坊（tools/art/diorama/folks3d）往这里挂自己的零件：头发、帽子、围裙、手里的家伙。主角用不到，不挂就和原来一模一样
+export const EXT = {};
+
+// 道具上 actors.py 的 (版, 浓度) → 颜色；pal：街坊把「青、梅」两版换成自己的颜色
+function specColor(spec, role, pal) {
   if (!spec) return PAL.cloth;
   const [c, d] = spec;
   if (c === 'paper') return PAL.cloth;
   if (c === 'skin') return PAL.skin;
   if (c === 'qing' || c === 'mei') {
-    if (d == null || d >= 0.7) return PAL[c];
-    return mixHex(PAL.cloth, PAL[c], Math.max(0.35, d));
+    const base = (pal && pal[c]) || PAL[c];
+    if (d == null || d >= 0.7) return base;
+    return mixHex(PAL.cloth, base, Math.max(0.35, d));
   }
   if (c === 'ink') {
     if (d == null) return PAL.ink;
@@ -59,7 +63,7 @@ function clayBump() {
   NOISE = t; return t;
 }
 
-class Mats {
+export class Mats {
   constructor(variant) { this.v = variant; this.cache = new Map(); }
   get(color, o = {}) {
     const key = color + JSON.stringify(o);
@@ -85,12 +89,12 @@ class Mats {
 function clayTone(h) { const c = hexc(h); const hsl = {}; c.getHSL(hsl); c.setHSL(hsl.h, hsl.s * 0.86, Math.min(0.92, hsl.l * 1.03 + 0.02)); return '#' + c.lerp(hexc('#FFDDB8'), 0.06).getHexString(); }
 
 // ---------------------------------------------------------------- 几何零件
-function segs(v, hi, lo) { return v === 'lowpoly' ? lo : hi; }
+export function segs(v, hi, lo) { return v === 'lowpoly' ? lo : hi; }
 
-function ball(r, sx = 1, sy = 1, sz = 1, F, fine = false) { const g = new THREE.SphereGeometry(r, segs(F.v, 28, fine ? 18 : 8), segs(F.v, 20, fine ? 12 : 6)); g.scale(sx, sy, sz); return g; }
+export function ball(r, sx = 1, sy = 1, sz = 1, F, fine = false) { const g = new THREE.SphereGeometry(r, segs(F.v, 28, fine ? 18 : 8), segs(F.v, 20, fine ? 12 : 6)); g.scale(sx, sy, sz); return g; }
 
 // 一截锥管：a→b，半径 ra→rb（两头不封口，关节上另放球）
-function cone(a, b, ra, rb, F) {
+export function cone(a, b, ra, rb, F) {
   const d = b.clone().sub(a); const len = Math.max(0.01, d.length());
   const g = new THREE.CylinderGeometry(rb, ra, len, segs(F.v, 20, 6), 1, true);
   const m = new THREE.Matrix4().compose(a.clone().add(b).multiplyScalar(0.5), new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()), new THREE.Vector3(1, 1, 1));
@@ -98,7 +102,7 @@ function cone(a, b, ra, rb, F) {
 }
 
 // 一根有粗细变化的管（马尾、翘毛、辫子）：沿 Catmull-Rom 曲线，每个截面一个半径
-function taper(points, radii, F, n = 16) {
+export function taper(points, radii, F, n = 16) {
   const curve = new THREE.CatmullRomCurve3(points);
   const rs = segs(F.v, 14, 5);
   const fr = curve.computeFrenetFrames(n, false);
@@ -125,7 +129,7 @@ function taper(points, radii, F, n = 16) {
 }
 
 // 绕竖轴的回转体（身子、裙子、外套下摆）：prof = [[半径, 高]]，xs/zs 是前后、左右的缩放
-function lathe(prof, F, xs = 1, zs = 1, seg) {
+export function lathe(prof, F, xs = 1, zs = 1, seg) {
   const g = new THREE.LatheGeometry(prof.map(([r, y]) => new THREE.Vector2(Math.max(0.001, r), y)), seg || segs(F.v, 32, 8));
   g.scale(xs, 1, zs); return g;
 }
@@ -240,13 +244,14 @@ function faceTexture(F, expr) {
     for (const s of [1, -1]) at(s * (EL + 9 * es), EE, () => { for (const a of [-0.45, 0, 0.45]) { x.beginPath(); x.moveTo(s * 0.5, a * 3); x.lineTo(s * 3.2, a * 5); stroke(0.6, 'rgba(160,100,90,0.7)'); } });
     for (const s of [1, -1]) at(ML + s * 9, ME + 4, () => { x.beginPath(); x.arc(-s * 3, 0, 4, s > 0 ? -0.6 : Math.PI - 0.6 + 1.2 - 1.2, s > 0 ? 0.6 : Math.PI + 0.6); stroke(0.6, 'rgba(170,110,100,0.6)'); });
   }
+  if (F.look && EXT.face) EXT.face(F, x, at, E, { EL, EE, ML, ME, es, stroke });
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
   return t;
 }
 
 // ---------------------------------------------------------------- 头发
 // 头上的局部坐标：x 朝前（脸）、y 朝上、z 朝人的右手（朝镜头那侧）。A = 方位角（0 前，±180 后，+90 朝镜头），E = 仰角。
-function hairShell(F, r, hl, opts = {}) {
+export function hairShell(F, r, hl, opts = {}) {
   const g = new THREE.SphereGeometry(1, segs(F.v, 192, 40), segs(F.v, 128, 26));
   const p = g.attributes.position;
   const tufts = opts.tufts || [];
@@ -275,9 +280,9 @@ function hairShell(F, r, hl, opts = {}) {
   g.computeVertexNormals();
   return g;
 }
-const dirAE = (A, E) => new THREE.Vector3(Math.cos(E * D2R) * Math.cos(A * D2R), Math.sin(E * D2R), Math.cos(E * D2R) * Math.sin(A * D2R));
-function rnd(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
-const mixA = (A, front, side, back) => { // 按方位角在 前 / 侧 / 后 三个值之间平滑地插
+export const dirAE = (A, E) => new THREE.Vector3(Math.cos(E * D2R) * Math.cos(A * D2R), Math.sin(E * D2R), Math.cos(E * D2R) * Math.sin(A * D2R));
+export function rnd(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+export const mixA = (A, front, side, back) => { // 按方位角在 前 / 侧 / 后 三个值之间平滑地插
   const a = Math.abs(A);
   if (a <= 90) { const t = a / 90; const u = t * t * (3 - 2 * t); return front + (side - front) * u; }
   const t = (a - 90) / 90; const u = t * t * (3 - 2 * t); return side + (back - side) * u;
@@ -395,10 +400,11 @@ function outfit(spec) {
 // ---------------------------------------------------------------- 搭一个人
 export function buildFigure(job, mats) {
   const { spec, frame: fr, design: D } = job;
-  const F = { spec, design: D, v: job.variant, mats, skin: spec.stage === 'old' ? PAL.skinOld : PAL.skin, browCol: spec.hair === 'grey' ? '#9A8E94' : PAL.hair };
+  const LOOK = spec.look || null;  // 街坊：整套衣服、发型、帽子、配色（见 folks3d）
+  const F = { spec, design: D, v: job.variant, mats, look: LOOK, skin: (LOOK && LOOK.skin) || (spec.stage === 'old' ? PAL.skinOld : PAL.skin), browCol: spec.hair === 'grey' ? '#9A8E94' : PAL.hair };
   const root = new THREE.Group();
   const add = (g, m, parent = root) => { const me = new THREE.Mesh(g, m); me.castShadow = true; me.receiveShadow = true; parent.add(me); return me; };
-  const O = outfit(spec);
+  const O = LOOK ? Object.assign({ skinLegs: false, socks: null, sole: null }, LOOK.outfit) : outfit(spec);
   const st = spec.stage;
   const LK = D.limbK || 1;
   const w = spec.waist, cw = spec.chest;
@@ -501,7 +507,7 @@ export function buildFigure(job, mats) {
     const hemY = fr.sit ? -spec.thigh * 0.2 : -spec.thigh * 0.95;
     const c = [[rad(0.32) + 0.5, 0.32 * T], [rad(0.1) + 0.7, 0.1 * T], [w * 0.56, -spec.thigh * 0.25], [w * 0.64, hemY + 2], [w * 0.62, hemY], [w * 0.5, hemY - 0.8]];
     add(lathe(c.slice().reverse(), F, 1, breadth * 0.95), mats.get(O.coat), tg);
-    add(lathe([[rad(0.3) + 0.9, 0.27 * T], [rad(0.3) + 1.1, 0.3 * T], [rad(0.3) + 0.9, 0.34 * T]], F, 1, breadth * 1.0), mats.get(O.belt), tg);
+    if (!O.noBelt) add(lathe([[rad(0.3) + 0.9, 0.27 * T], [rad(0.3) + 1.1, 0.3 * T], [rad(0.3) + 0.9, 0.34 * T]], F, 1, breadth * 1.0), mats.get(O.belt), tg);
     // 领口露出的白衬衫
     const v = add(ball(1, 1, 1, 1, F), mats.get(O.top), tg); v.scale.set(1.6, 4.5, 3.2); v.position.set(rad(0.9) - 0.9, 0.93 * T, 0);
   }
@@ -515,6 +521,8 @@ export function buildFigure(job, mats) {
     for (const s of [1, -1]) { const strap = add(new THREE.TorusGeometry(T * 0.3, 1.1, 6, 16, Math.PI * 0.9), mats.get(mixHex(O.bag, '#7A4A20', 0.3)), tg); strap.position.set(0, 0.55 * T, s * cw * 0.42 * breadth); strap.rotation.z = Math.PI * 0.55; }
   }
 
+  if (LOOK && EXT.torso) EXT.torso(F, { tg, root, add, rad, T, w, cw, breadth, fr, O });
+
   // ---- 脖子、头 ----
   const neckTop = V(fr.neck), shoulder = V(fr.shoulder);
   add(cone(shoulder, neckTop, 3.6, 3.4, F), mSkin);
@@ -526,11 +534,11 @@ export function buildFigure(job, mats) {
   const face = add(ball(r, hs[0], hs[1], hs[2], F, true), mats.get(F.skin, { map: faceTexture(F, fr.expr), rough: 0.5 }), head);
   face.rotation.y = 0; // 贴图的经度 0 = +x（脸朝前）
   // 耳朵
-  if (spec.role === 'qing' || st === 'old') for (const s of [1, -1]) { const e = add(ball(r * 0.17, 0.7, 1.1, 0.55, F), mSkin, head); e.position.copy(dirAE(s * 92, -8).multiplyScalar(r * hs[2] * 0.97)); }
+  if (LOOK ? LOOK.ears !== false : (spec.role === 'qing' || st === 'old')) for (const s of [1, -1]) { const e = add(ball(r * 0.17, 0.7, 1.1, 0.55, F), mSkin, head); e.position.copy(dirAE(s * 92, -8).multiplyScalar(r * hs[2] * 0.97)); }
   if (D.nose !== false) { const n = add(ball(r * (D.noseK || 0.085), 1, 0.9, 1, F), mSkin, head); n.position.copy(dirAE(D.noseLon ?? 8, D.noseLat ?? -16).multiplyScalar(r * 0.99)); }
-  buildHair(F, head, r);
-  if (st === 'middle' || st === 'old') { // 眼镜
-    const gm = mats.get(st === 'old' ? PAL.gold : PAL.glasses, { rough: 0.3 });
+  if (LOOK && EXT.hair) EXT.hair(F, head, r); else buildHair(F, head, r);
+  if (LOOK ? LOOK.glasses : (st === 'middle' || st === 'old')) { // 眼镜
+    const gm = mats.get((LOOK ? LOOK.glasses === 'gold' : st === 'old') ? PAL.gold : PAL.glasses, { rough: 0.3 });
     const EL = D.eyeLon ?? 25, EE = D.eyeLat ?? -4; const es = D.eyeScale || 1;
     const ctr = [];
     for (const s of [1, -1]) {
@@ -580,10 +588,11 @@ export function buildFigure(job, mats) {
     const bx = add(roundBox(14, 9, 12, 2.5, F), mats.get(mixHex(PAL.cloth, PAL[spec.role], 0.35))); bx.position.copy(h).add(new THREE.Vector3(5, 3, -2));
   }
   buildProps(job, F, root, add, { zA, zL, w, cw, breadth });
+  if (LOOK && EXT.extra) EXT.extra(F, { root, add, head, r, fr, zA, zL, w, cw, breadth, O });
   return root;
 }
 
-function roundBox(wx, hy, dz, r, F) {
+export function roundBox(wx, hy, dz, r, F) {
   // 简单的圆角盒：用拉伸的圆角矩形（侧面）
   const s = new THREE.Shape(); const x0 = -wx / 2, y0 = -hy / 2; r = Math.min(r, wx / 2 - 0.01, hy / 2 - 0.01);
   s.moveTo(x0 + r, y0); s.lineTo(x0 + wx - r, y0); s.quadraticCurveTo(x0 + wx, y0, x0 + wx, y0 + r); s.lineTo(x0 + wx, y0 + hy - r);
@@ -613,7 +622,7 @@ function buildProps(job, F, root, add, G) {
   for (const op of ops) {
     const layer = op.layer;
     const spec = op.spec || ['paper'];
-    let color = specColor(spec, role);
+    let color = specColor(spec, role, F.look && F.look.accent);
     const steam = spec[0] === 'ink' && spec[1] != null && Math.abs(spec[1] - 0.35) < 0.01 && op.t === 'line';
     const groundish = (pts) => pts.every(([, y]) => y > -7);
     if (op.t === 'blot') {
@@ -681,7 +690,7 @@ function buildProps(job, F, root, add, G) {
   }
 }
 
-function extrude(pts, depth, F) {
+export function extrude(pts, depth, F) {
   const s = new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, -y)));
   const bev = Math.min(1.2, depth / 3);
   const g = new THREE.ExtrudeGeometry(s, { depth: Math.max(0.1, depth - bev * 2), bevelEnabled: depth > 1.5, bevelThickness: bev, bevelSize: bev * 0.7, bevelSegments: segs(F.v, 2, 1), curveSegments: 4 });
@@ -697,7 +706,7 @@ function blobTex() {
   const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.45, 'rgba(0,0,0,0.6)'); g.addColorStop(1, 'rgba(0,0,0,0)');
   x.fillStyle = g; x.fillRect(0, 0, 128, 128); BLOB = new THREE.CanvasTexture(c); return BLOB;
 }
-function ground(F, rx, rz, a) {
+export function ground(F, rx, rz, a) {
   const m = new THREE.MeshBasicMaterial({ color: '#2A1C24', alphaMap: blobTex(), transparent: true, opacity: Math.max(0, Math.min(1, a)), depthWrite: false });
   const me = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), m); me.rotation.x = -Math.PI / 2; me.scale.set(rx, rz, 1); me.renderOrder = -1;
   return me;

@@ -20,7 +20,7 @@
 - **出图**：RGBA PNG，透明背景；贴图倍率沿用孔版时的常数（底图 1.25，主角 2.0，行动表 1.5，见各文件）。
 
 ## 文件
-- `scene3d/`（十四张底图，从 scenes.py 录下来搭成 3D）、`pose3d/`（主角和街坊的小人）、`layers3d/`（远景、中景、树、前景），各自的 README 写怎么跑。
-- 老的孔版生成器（scenes.py 等）直接跑出的是平面孔版图，会把 3D 贴图盖掉：改底图要跑 `scene3d/bake.py`。
+- `scene3d/`（十四张底图，从 scenes.py 录下来搭成 3D）、`pose3d/`（主角和街坊的小人）、`layers3d/`（远景、中景、树、前景）、`sprites3d/`（家里物件、街景）、`folks3d/`（街坊路人，借 pose3d 的小人），各自的 README 写怎么跑。
+- 老的孔版生成器（scenes.py、actors.py、folks.py、layers.py、home.py、street.py）直接跑出的是平面孔版图，会把 3D 贴图盖掉：要跑 diorama 下对应的管线。
 - `tools/art/pixel/` 是作废的像素版管线，留档不用。
 - `node_modules` 链到 ../style_lab/node_modules（three 0.170）。起一个 http 服务：`python3 -m http.server 8765`（在 tools/art 下）。

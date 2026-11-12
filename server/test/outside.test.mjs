@@ -215,6 +215,10 @@ function happen(s, id, choices, shadow = []) {
   assert.deepEqual(open(b, "qing"), ["clinic", "ginger", "push"], "清贫：卫生所打一针");
   b.persons.mei.money = 1;
   assert.ok(!open(b, "mei").includes("queue"), "兜里没两块钱的排不了号");
+  // 郑家（大夫家）：妈就在区医院，不用托人；托人挂号那一项不摆出来
+  const z = lifeAt(33, 8, "zheng", MID, { season: "winter" });
+  assert.deepEqual(open(z, "qing"), ["mom", "ginger", "push"], "大夫家：妈直接领去");
+  assert.ok(sick.options.find((o) => o.id === "mom").effects.goto === "hospital");
   assert.ok(G("lifeGated")(sick), "看病是挂了门槛的事件，影子不选锁着的");
   // 托人挂了专家号：八岁的孩子被送到医院（平常四十五岁才来），看完坐车回家
   const hosp = scene("hospital");

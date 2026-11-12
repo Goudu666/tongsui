@@ -378,9 +378,15 @@
   title: 夜里烧起来
   text: 后半夜烧起来了，嗓子眼像塞了团棉花。天一亮，被子掀开一角，一只手搭上了你的脑门。
   options:
+    # 郑家（大夫家，fam_doctor）：熟人就是自己妈，不用托人，也不欠人情（tie_hospital 不摘，docs/CIRCLE.md）
+    - id: mom
+      text: 妈在区医院，直接领你去
+      requires: { flags: [fam_doctor] }
+      tags: [gentle]
+      effects: { self: { energy: 14, mood: 2 }, goto: hospital }
     - id: expert
       text: 爸妈托人挂了专家号
-      requires: { flags: [fam_rich], notFlags: [fam_cut] }
+      requires: { flags: [fam_rich], notFlags: [fam_cut, fam_doctor] }
       tags: [patient]
       effects: { self: { energy: 10 }, goto: hospital }
     - id: queue

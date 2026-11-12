@@ -37,8 +37,8 @@ if ! command -v curl >/dev/null || ! python3 -c 'import fontTools' 2>/dev/null; 
   apt-get update -qq && apt-get install -y -qq --no-install-recommends curl ca-certificates python3-fonttools >/dev/null
 fi
 
-step "nakama-godot 插件 + 霞鹜文楷"
-if [[ ! -d client/addons/com.heroiclabs.nakama || ! -f client/fonts/LXGWWenKai-Regular.ttf ]]; then
+step "nakama-godot 插件 + 寒蝉全圆体、霞鹜文楷"
+if [[ ! -d client/addons/com.heroiclabs.nakama || ! -f client/fonts/LXGWWenKai-Regular.ttf || ! -f client/fonts/ChillRoundF.ttf ]]; then
   bash tools/fetch_addons.sh
 else
   echo "已存在，跳过下载"

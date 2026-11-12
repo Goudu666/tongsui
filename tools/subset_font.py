@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""把霞鹜文楷裁成「游戏里会出现的字」，APK 从 +25 MB 变成 +3 MB 左右。
+"""把界面字（寒蝉全圆体）和退路字（霞鹜文楷）裁成「游戏里会出现的字」，APK 从 +31 MB 变成 +5 MB 左右。
 
 收字范围：
   - GB2312 全部 6763 个汉字（玩家起名字、聊天够用）
@@ -7,7 +7,7 @@
   - 仓库里 content/、client/ 下所有文本里实际出现的字（剧情里的生僻字不会丢）
 裁不到的字，Godot 会回退到手机系统字体，不会变成方块。
 
-用法：python3 tools/subset_font.py [字体路径，默认 client/fonts/LXGWWenKai-Regular.ttf]
+用法：python3 tools/subset_font.py [字体路径，默认 client/fonts/ 下的 LXGWWenKai-Regular.ttf 和 ChillRoundF.ttf]
 依赖：pip install fonttools（Ubuntu: apt install python3-fonttools）
 """
 import pathlib
@@ -17,9 +17,8 @@ from fontTools import subset
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 FONT = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "client/fonts/LXGWWenKai-Regular.ttf"
-# 像素画的界面字：缝合像素 12px（OFL，原件在 tools/art/pixel/fonts/），同样裁一份进 client/fonts/
-PIXEL_SRC = ROOT / "tools/art/pixel/fonts/fusion-pixel-12px-proportional-zh_hans.ttf"
-PIXEL_DST = ROOT / "client/fonts/FusionPixel-12px.ttf"
+# 微缩模型的界面字：寒蝉全圆体（OFL，tools/fetch_addons.sh 拉下来），原地裁
+ROUND = ROOT / "client/fonts/ChillRoundF.ttf"
 
 
 def gb2312() -> str:
@@ -51,20 +50,20 @@ def main() -> None:
     chars = set(gb2312() + ascii_ + punct + repo_text())
     chars = {c for c in chars if c.isprintable() or c == " "}
     cut(FONT, FONT, chars)
-    if len(sys.argv) <= 1 and PIXEL_SRC.exists():
-        PIXEL_DST.parent.mkdir(parents=True, exist_ok=True)
-        cut(PIXEL_SRC, PIXEL_DST, chars)
+    if len(sys.argv) <= 1:
+        if not ROUND.exists():
+            sys.exit(f"找不到界面字 {ROUND}，先运行 tools/fetch_addons.sh")
+        cut(ROUND, ROUND, chars)
 
 
-def cut(src, dst, chars) -> None:
-    FONT = src
-    before = FONT.stat().st_size
+def cut(src: pathlib.Path, dst: pathlib.Path, chars: set) -> None:
+    before = src.stat().st_size
     opts = subset.Options()
     opts.layout_features = ["*"]
     opts.name_IDs = ["*"]
     opts.notdef_outline = True
     opts.glyph_names = False
-    font = subset.load_font(str(FONT), opts)
+    font = subset.load_font(str(src), opts)
     sub = subset.Subsetter(opts)
     sub.populate(text="".join(sorted(chars)))
     sub.subset(font)

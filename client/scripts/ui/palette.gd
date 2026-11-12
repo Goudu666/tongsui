@@ -46,8 +46,9 @@ const STAT_NAME := {"body": "体魄", "mind": "心智", "charm": "魅力", "luck
 const NEED_NAME := {"hunger": "饱腹", "energy": "精力", "mood": "心情", "clean": "清洁"}
 
 const FONT_PATH := "res://fonts/LXGWWenKai-Regular.ttf"
-## 像素画的界面字（缝合像素 12px，tools/subset_font.py 裁进来）；裁不到的字退回霞鹜文楷
-const PIXEL_FONT_PATH := "res://fonts/FusionPixel-12px.ttf"
+## 微缩模型的界面字：寒蝉全圆体（OFL，圆头圆角，像玩具上印的字）；tools/fetch_addons.sh 拉、tools/subset_font.py 裁。
+## 它缺的字退回霞鹜文楷，再缺退回系统字体
+const ROUND_FONT_PATH := "res://fonts/ChillRoundF.ttf"
 static var _font: Font = null
 
 
@@ -60,15 +61,13 @@ static func font() -> Font:
 		return _font
 	var base: Font = load(FONT_PATH) if ResourceLoader.exists(FONT_PATH) else ThemeDB.fallback_font
 	_font = base
-	if ResourceLoader.exists(PIXEL_FONT_PATH):
-		var px = load(PIXEL_FONT_PATH)
-		if px is FontFile:
-			# 点阵字放大：不要微调、不要亚像素挪位，笔画才是一格一格的
-			px.hinting = TextServer.HINTING_NONE
-			px.subpixel_positioning = TextServer.SUBPIXEL_POSITIONING_DISABLED
-			px.antialiasing = TextServer.FONT_ANTIALIASING_NONE  # 不抗锯齿：笔画边上不起毛
-			px.fallbacks = [base]
-			_font = px
+	if ResourceLoader.exists(ROUND_FONT_PATH):
+		var rf = load(ROUND_FONT_PATH)
+		if rf is FontFile:
+			# 平滑的灰度抗锯齿（默认），镜头缩放时字不起锯齿
+			rf.antialiasing = TextServer.FONT_ANTIALIASING_GRAY
+			rf.fallbacks = [base]
+			_font = rf
 	return _font
 
 

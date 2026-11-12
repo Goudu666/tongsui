@@ -1,6 +1,6 @@
 extends CanvasLayer
 ## 转场，盖在所有界面上面。
-##   print_in()   新画面像印刷一样从网点里显出来（每次换页、进出河畔里）
+##   print_in()   新画面从中间一个软边的圆洞里慢慢露出来，像镜头的光圈打开（每次换页、进出河畔里）
 ##   stage_card() 长大了：一整版墨盖下来，写上年纪，再揭开（这一天也进了新的一章，卡上再多章名和章首那一句）
 ##   chapter_card() 进了新的一章（没赶上长大的那几章：6 岁、45 岁，还有头一天）
 ##   era_cards()    年代大事：一整版墨，上面年代名、大字标题、一段话、落到我头上的那一句；点一下揭开（ui/era.gd 排字）
@@ -70,7 +70,7 @@ func _set_progress(v: float) -> void:
 func _start(color: Color, from: float) -> void:
 	if _tween:
 		_tween.kill()
-	# 网点大小跟着真实分辨率走，手机和电脑上看起来一样大
+	# 软边的宽度跟着真实分辨率走，手机和电脑上看起来一样
 	_mat.set_shader_parameter("cell", maxf(14.0, 30.0 * get_viewport().get_visible_rect().size.y / 1080.0 * _pixel_ratio()))
 	_mat.set_shader_parameter("ink", color)
 	_set_progress(from)

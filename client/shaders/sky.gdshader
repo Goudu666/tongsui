@@ -1,10 +1,13 @@
 shader_type canvas_item;
 render_mode unshaded;
-// 天：像素画的天。每 3 个世界像素一个点（和底图同一张格子），天顶到地平线分成一条条色带，
-// 带和带之间用 4×4 拜耳抖动过渡；白天青蓝、傍晚紫到柿子橙、夜里靛蓝。
-// 云是一团团平涂的点：顶上亮一档、肚子底下暗一档；太阳是个圆点，外面两圈抖动的光晕；
-// 夜里星星一个点一个点地眨，月牙边是硬的。
-// 铺在一张图的整条横带上（scene_art.gd），后面没有东西了。云按视差慢慢走。
+// 天：微缩模型后头立着的那张手绘天幕。
+//   · 渐变：天顶到地平线平滑过渡，跟着钟点换——白天晴蓝到米白，清早淡紫到杏色，傍晚蓝紫到柿子橙，夜里深蓝；
+//     太阳那一侧的地平线更亮、更暖（低太阳的天光）
+//   · 云：fbm 噪声画的一团团软云，边是虚的，顶上被太阳照亮、肚子底下发灰紫，横着慢慢飘、按视差走
+//   · 太阳：一个柔边的圆盘 + 一大圈晕；傍晚更大更红，被云挡住时变淡
+//   · 夜：零星几颗柔和的星星慢慢眨，一弯柔边的月牙带一圈淡淡的光
+// 铺在一张图的整条横带上（scene_art.gd），后面没有东西了。全是平滑的，不分档、不抖动
+// （只加一点肉眼看不见的噪声，免得 8 位颜色的渐变出现色带）。
 
 uniform vec2 size = vec2(4000.0, 1200.0);   // 这条横带多大（世界像素）
 uniform float horizon = 960.0;              // 地平线在横带里的 y
@@ -15,10 +18,6 @@ uniform float dusk = 0.0;
 uniform float dawn = 0.0;
 uniform float day_t = 0.3;                  // 白天走到哪儿了（0 早上 ~ 1 傍晚），太阳从左走到右
 uniform float overcast = 0.0;               // 阴天（下雨下雪）：太阳收起来，云连成片
-uniform float cell = 3.0;                   // 一个点多大（世界像素）
-uniform float x0 = -200.0;                  // 横带左边在这张图里的 x（格子和底图对齐）
-
-const float BANDS = 11.0;
 
 varying vec2 world;
 
@@ -40,124 +39,101 @@ float vnoise(vec2 p) {
 }
 
 float fbm(vec2 p) {
-	return vnoise(p) * 0.55 + vnoise(p * 2.03 + 7.1) * 0.3 + vnoise(p * 4.1 + 3.3) * 0.15;
+	return vnoise(p) * 0.5 + vnoise(p * 2.03 + 7.1) * 0.27 + vnoise(p * 4.07 + 3.3) * 0.15 + vnoise(p * 8.13 + 1.7) * 0.08;
 }
 
-// 4×4 拜耳阈值（0~1）
-float bayer(vec2 q) {
-	int x = int(mod(q.x, 4.0));
-	int y = int(mod(q.y, 4.0));
-	int i = y * 4 + x;
-	int m[16] = int[16](0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5);
-	return (float(m[i]) + 0.5) / 16.0;
-}
-
-// 抖动：v 在 0~1，落在 n 档里的哪一档（按点的拜耳阈值往上或往下取）
-float dstep(float v, float n, float b) {
-	float t = v * n;
-	return (floor(t) + step(b, fract(t))) / n;
+// 三段渐变：s = 0 天顶，m 处是中间色，1 地平线
+vec3 grad3(vec3 zen, vec3 mid, vec3 hor, float m, float s) {
+	return s < m ? mix(zen, mid, smoothstep(0.0, m, s)) : mix(mid, hor, smoothstep(m, 1.0, s));
 }
 
 // 天的颜色：s = 0 天顶 ~ 1 地平线
 vec3 sky_col(float s) {
-	vec3 dz = vec3(0.38, 0.58, 0.84);
-	vec3 dm = vec3(0.58, 0.76, 0.90);
-	vec3 dh = vec3(0.90, 0.92, 0.86);
-	vec3 day = s < 0.6 ? mix(dz, dm, s / 0.6) : mix(dm, dh, (s - 0.6) / 0.4);
-	vec3 uz = vec3(0.22, 0.20, 0.46);
-	vec3 um = vec3(0.70, 0.40, 0.56);
-	vec3 uh = vec3(1.00, 0.68, 0.42);
-	vec3 du = s < 0.55 ? mix(uz, um, s / 0.55) : mix(um, uh, (s - 0.55) / 0.45);
-	vec3 az = vec3(0.46, 0.56, 0.78);
-	vec3 am = vec3(0.80, 0.74, 0.84);
-	vec3 ah = vec3(1.00, 0.86, 0.68);
-	vec3 da = s < 0.55 ? mix(az, am, s / 0.55) : mix(am, ah, (s - 0.55) / 0.45);
-	vec3 nz = vec3(0.05, 0.06, 0.16);
-	vec3 nh = vec3(0.16, 0.20, 0.40);
-	vec3 ni = mix(nz, nh, s * s);
+	vec3 day = grad3(vec3(0.40, 0.60, 0.86), vec3(0.62, 0.78, 0.92), vec3(0.93, 0.93, 0.88), 0.55, s);
+	vec3 du = grad3(vec3(0.24, 0.24, 0.50), vec3(0.72, 0.46, 0.58), vec3(1.00, 0.70, 0.46), 0.5, s);
+	vec3 da = grad3(vec3(0.50, 0.58, 0.80), vec3(0.82, 0.76, 0.86), vec3(1.00, 0.87, 0.72), 0.5, s);
+	vec3 ni = mix(vec3(0.05, 0.07, 0.17), vec3(0.17, 0.21, 0.40), s * s);
 	vec3 c = mix(day, du, dusk);
 	c = mix(c, da, dawn * (1.0 - dusk));
 	c = mix(c, ni, night);
-	vec3 grey = mix(vec3(0.62, 0.66, 0.72), vec3(0.82, 0.83, 0.84), s);
+	vec3 grey = mix(vec3(0.62, 0.66, 0.72), vec3(0.84, 0.85, 0.86), s);
 	return mix(c, grey * mix(1.0, 0.35, night), overcast * 0.75);
 }
 
 void fragment() {
-	vec2 q = floor(vec2(world.x + x0, world.y) / cell);   // 这个点在格子里的编号
-	vec2 w = (q + 0.5) * cell - vec2(x0, 0.0);             // 点的中心（横带坐标）
-	float b = bayer(q);
+	// 0 = 看得见的最上头，1 = 地平线
 	float top = cam.y - view.y * 0.5;
-	float t = clamp((w.y - top) / max(horizon - top, 1.0), 0.0, 1.0);
+	float t = clamp((world.y - top) / max(horizon - top, 1.0), 0.0, 1.0);
+	vec3 col = sky_col(t);
 
-	// ---- 色带 + 抖动 ----
-	vec3 col = sky_col(dstep(t, BANDS, b));
-
-	// ---- 云：横着拉长的一团团，按视差慢慢走 ----
-	float px = w.x - cam.x * 0.93 + TIME * 6.0;
-	vec2 cp = vec2(floor(px / cell) * cell, w.y);
-	float band = smoothstep(top - 60.0, top + view.y * 0.22, w.y) * (1.0 - smoothstep(horizon - 160.0, horizon - 20.0, w.y));
-	float th = 0.6 - overcast * 0.24;
-	float n = fbm(vec2(cp.x * 0.0021, cp.y * 0.0105));
-	float n_up = fbm(vec2(cp.x * 0.0021, (cp.y - cell * 2.0) * 0.0105));
-	float n_dn = fbm(vec2(cp.x * 0.0021, (cp.y + cell * 2.0) * 0.0105));
-	float cloud = step(th, n) * step(0.5, band);
-	if (cloud > 0.5) {
-		vec3 lit = mix(vec3(1.0, 0.98, 0.94), vec3(1.0, 0.80, 0.62), dusk);
-		lit = mix(lit, vec3(1.0, 0.90, 0.82), dawn * (1.0 - dusk));
-		lit = mix(lit, vec3(0.30, 0.34, 0.52), night);
-		lit = mix(lit, vec3(0.80, 0.82, 0.85) * mix(1.0, 0.4, night), overcast);
-		vec3 shade = mix(lit, sky_col(0.25) * 0.8, 0.45);
-		shade = mix(shade, vec3(0.62, 0.42, 0.62), dusk * 0.5);
-		vec3 c = lit;
-		// 顶上那条边亮一档，肚子底下暗一档（中间一档抖动）
-		if (n_dn < th) {
-			c = shade;
-		} else if (n - th < 0.025) {
-			c = b < 0.5 ? shade : lit;
-		}
-		if (n_up < th) {
-			c = mix(lit, vec3(1.0), 0.35 * (1.0 - night));
-		}
-		col = c;
-	}
-
-	// ---- 太阳：圆点 + 两圈抖动的光晕 ----
+	// ---- 太阳在哪（和 scene_art.sun_world() 一样） ----
 	vec2 sun = vec2(cam.x + view.x * mix(-0.34, 0.34, day_t), mix(top + view.y * 0.12, horizon - 40.0, pow(abs(day_t - 0.5) * 2.0, 1.6)));
 	sun.y = mix(sun.y, horizon - 70.0, dusk);
-	float sr = 36.0 + dusk * 18.0;
-	float sd = distance(w, sun);
 	float sun_on = (1.0 - night) * (1.0 - overcast) * (1.0 - dawn * 0.4);
-	vec3 sun_c = mix(vec3(1.0, 0.97, 0.82), vec3(1.0, 0.56, 0.36), dusk);
-	if (sun_on > 0.01 && cloud < 0.5) {
-		float h1 = 1.0 - smoothstep(sr, sr * 2.2, sd);
-		float h2 = 1.0 - smoothstep(sr * 2.2, sr * 4.0, sd);
-		col = mix(col, mix(col, sun_c, 0.5), step(b, h2 * 0.5 * sun_on));
-		col = mix(col, mix(col, sun_c, 0.75), step(b, h1 * sun_on));
-		col = mix(col, sun_c, step(sd, sr) * sun_on);
+	vec3 sun_c = mix(vec3(1.0, 0.96, 0.84), vec3(1.0, 0.58, 0.36), dusk);
+	sun_c = mix(sun_c, vec3(1.0, 0.82, 0.62), dawn * (1.0 - dusk));
+
+	// 低太阳：太阳那一侧的地平线更亮更暖（横着按离太阳多远淡掉）
+	float side = exp(-abs(world.x - sun.x) / max(view.x * 0.45, 1.0));
+	float low = clamp(dusk + dawn * 0.7, 0.0, 1.0) * (1.0 - night) * (1.0 - overcast * 0.7);
+	col = mix(col, col * 0.6 + sun_c * 0.5, smoothstep(0.45, 1.0, t) * side * low * 0.55);
+
+	// ---- 云：远，跟着镜头走得很慢，自己也往右飘；横着拉长 ----
+	vec2 cp = vec2((world.x - cam.x * 0.93 + TIME * 6.0) * 0.0019, world.y * 0.0085);
+	float band = smoothstep(top - 60.0, top + view.y * 0.25, world.y) * (1.0 - smoothstep(horizon - 200.0, horizon - 10.0, world.y));
+	float th = 0.56 - overcast * 0.22;
+	float n = fbm(cp);
+	float cloud = smoothstep(th, th + 0.12, n) * band;
+	if (cloud > 0.001) {
+		// 往太阳那边（上方）错一点再取一次：上沿被照亮，肚子底下在阴里
+		float n_up = fbm(cp + vec2(0.0, -0.22));
+		float lit = clamp((n - n_up) * 4.0 + 0.55, 0.0, 1.0);
+		vec3 c_lit = mix(vec3(1.0, 0.99, 0.96), vec3(1.0, 0.82, 0.66), dusk);
+		c_lit = mix(c_lit, vec3(1.0, 0.92, 0.86), dawn * (1.0 - dusk));
+		c_lit = mix(c_lit, vec3(0.32, 0.36, 0.55), night);
+		c_lit = mix(c_lit, vec3(0.82, 0.84, 0.87) * mix(1.0, 0.4, night), overcast);
+		vec3 c_shade = mix(c_lit, sky_col(0.2) * 0.82, 0.48);
+		c_shade = mix(c_shade, vec3(0.62, 0.46, 0.64), dusk * 0.45);
+		vec3 cc = mix(c_shade, c_lit, lit);
+		// 靠太阳的云边透光（银边）
+		float sd0 = distance(world, sun);
+		cc += sun_c * (1.0 - smoothstep(0.0, 360.0, sd0)) * (1.0 - smoothstep(0.0, 0.5, cloud)) * sun_on * 0.35;
+		col = mix(col, cc, cloud * 0.92);
 	}
 
-	// ---- 夜：星星一个点一个点地眨，月牙 ----
-	if (night > 0.001) {
-		vec2 sq = floor((w - vec2(cam.x * 0.97, 0.0)) / cell);
-		float h = hash(sq);
-		float tw = step(0.35, sin(TIME * (0.8 + fract(h * 13.0) * 2.0) + h * 40.0));
-		float star = step(0.9965, h) * (1.0 - t * 0.7) * mix(0.55, 1.0, tw) * (1.0 - cloud);
-		// 亮的几颗打个十字
-		float big = 0.0;
-		for (int i = 0; i < 4; i++) {
-			vec2 o = vec2(i == 0 ? 1.0 : (i == 1 ? -1.0 : 0.0), i == 2 ? 1.0 : (i == 3 ? -1.0 : 0.0));
-			float hh = hash(sq + o);
-			big = max(big, step(0.9995, hh) * tw);
-		}
-		star = max(star, big * (1.0 - cloud) * 0.8);
-		vec3 sc = vec3(1.0, 0.96, 0.84);
-		col = mix(col, sc, clamp(star * night, 0.0, 1.0));
-		vec2 moon = vec2(cam.x + view.x * 0.28, top + view.y * 0.16);
-		float md = distance(w, moon);
-		float m = step(md, 30.0) * (1.0 - step(distance(w, moon + vec2(-13.0, -7.0)), 27.0));
-		float halo = 1.0 - smoothstep(32.0, 120.0, md);
-		col = mix(col, mix(col, vec3(0.42, 0.48, 0.72), 0.6), step(b, halo * 0.5 * night) * (1.0 - cloud));
-		col = mix(col, vec3(1.0, 0.95, 0.80), m * night);
+	// ---- 太阳：柔边圆盘 + 大晕 ----
+	if (sun_on > 0.001) {
+		float sr = 46.0 + dusk * 24.0;
+		float sd = distance(world, sun);
+		float veil = 1.0 - cloud * 0.75;
+		float halo = exp(-sd / (sr * 2.4)) * 0.45 + exp(-sd / (sr * 7.0)) * 0.18;
+		col = mix(col, sun_c, clamp(halo * sun_on * veil, 0.0, 1.0));
+		float disc = 1.0 - smoothstep(sr - 3.0, sr + 3.0, sd);
+		col = mix(col, mix(sun_c, vec3(1.0, 0.97, 0.88), 0.55 - dusk * 0.2), disc * sun_on * veil);
 	}
+
+	// ---- 夜：柔和的星星慢慢眨，月牙 ----
+	if (night > 0.001) {
+		vec2 sc = world - vec2(cam.x * 0.97, 0.0);
+		vec2 g = floor(sc / 38.0);
+		float h = hash(g);
+		vec2 sp = (g + vec2(0.2, 0.2) + vec2(hash(g + 3.1), hash(g + 7.7)) * 0.6) * 38.0;
+		float tw = 0.65 + 0.35 * sin(TIME * (0.6 + h * 1.6) + h * 40.0);
+		float rad = 0.9 + fract(h * 17.0) * 1.6;
+		float star = step(0.91, h) * (1.0 - smoothstep(0.0, rad, distance(sc, sp))) * tw;
+		star *= (1.0 - t * 0.75) * (1.0 - cloud);
+		col = mix(col, vec3(1.0, 0.97, 0.88), clamp(star * night, 0.0, 1.0));
+		vec2 moon = vec2(cam.x + view.x * 0.28, top + view.y * 0.16);
+		float md = distance(world, moon);
+		float m = 1.0 - smoothstep(29.0, 31.5, md);
+		float bite = 1.0 - smoothstep(26.0, 29.0, distance(world, moon + vec2(-13.0, -7.0)));
+		float halo = exp(-max(md - 30.0, 0.0) / 60.0) * 0.35;
+		float veil = 1.0 - cloud * 0.8;
+		col = mix(col, mix(col, vec3(0.46, 0.52, 0.78), 0.7), halo * night * veil);
+		col = mix(col, vec3(1.0, 0.96, 0.84), m * (1.0 - bite) * night * veil);
+	}
+
+	// 防色带：比 1/255 还小的一点噪声
+	col += (hash(floor(world)) - 0.5) / 255.0;
 	COLOR = vec4(col, 1.0);
 }

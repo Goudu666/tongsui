@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../node_modules/@fontsource/noto-sans-sc/900.css">
+<style>body{margin:0;background:#000}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+// run.js 用：window.renderJob(job) → PNG 的 dataURL（见 render_sprite.js）
+import { renderJob } from './render_sprite.js';
+await document.fonts.load('900 40px "Noto Sans SC"', '河畔黑板报欢迎新邻居迎奥运讲文明寻猫通知拆不搬喜报历史风貌建筑电梯里一百年水深危险出租电话');
+window.renderJob = renderJob;
+window.READY = 1;
+</script></body></html>

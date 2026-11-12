@@ -82,13 +82,15 @@ func _apply() -> void:
 	if kind == "":
 		return
 	_p.texture = _texture(kind)
+	_p.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	_p.color = Color.WHITE
+	_p.color_initial_ramp = null
 	_p.angle_min = 0.0
 	_p.angle_max = 0.0
 	_p.angular_velocity_min = 0.0
 	_p.angular_velocity_max = 0.0
-	_p.scale_amount_min = 1.0
-	_p.scale_amount_max = 1.0
+	_p.scale_amount_min = 1.0 / SS
+	_p.scale_amount_max = 1.0 / SS
 	_p.orbit_velocity_min = 0.0
 	_p.orbit_velocity_max = 0.0
 	_p.tangential_accel_min = 0.0
@@ -104,7 +106,9 @@ func _apply() -> void:
 			_p.initial_velocity_max = 1300.0
 			_p.angle_min = -12.4
 			_p.angle_max = -12.4
-			_p.color = Color(1, 1, 1, 0.55)
+			_p.color = Color(1, 1, 1, 0.6)
+			_p.scale_amount_min = 0.8 / SS   # 远近不一：细的、粗的雨丝
+			_p.scale_amount_max = 1.2 / SS
 		"snow":
 			_p.amount = 180
 			_p.lifetime = 9.0
@@ -113,8 +117,8 @@ func _apply() -> void:
 			_p.spread = 25.0
 			_p.initial_velocity_min = 50.0
 			_p.initial_velocity_max = 90.0
-			_p.scale_amount_min = 0.5
-			_p.scale_amount_max = 1.25
+			_p.scale_amount_min = 0.45 / SS
+			_p.scale_amount_max = 1.25 / SS
 			_p.tangential_accel_min = -8.0
 			_p.tangential_accel_max = 8.0
 		"catkin":
@@ -125,8 +129,8 @@ func _apply() -> void:
 			_p.spread = 60.0
 			_p.initial_velocity_min = 20.0
 			_p.initial_velocity_max = 45.0
-			_p.scale_amount_min = 0.6
-			_p.scale_amount_max = 1.1
+			_p.scale_amount_min = 0.6 / SS
+			_p.scale_amount_max = 1.1 / SS
 			_p.tangential_accel_min = -12.0
 			_p.tangential_accel_max = 12.0
 		"leaf":
@@ -141,10 +145,15 @@ func _apply() -> void:
 			_p.angular_velocity_max = 160.0
 			_p.angle_min = 0.0
 			_p.angle_max = 360.0
-			_p.scale_amount_min = 0.7
-			_p.scale_amount_max = 1.2
+			_p.scale_amount_min = 0.7 / SS
+			_p.scale_amount_max = 1.2 / SS
 			_p.tangential_accel_min = -20.0
 			_p.tangential_accel_max = 20.0
+			# 每片叶子颜色不一样：柿子橙、杏黄、梅红、一点点还没黄透的青
+			var ramp := Gradient.new()
+			ramp.offsets = PackedFloat32Array([0.0, 0.35, 0.7, 1.0])
+			ramp.colors = PackedColorArray([Color(0.93, 0.56, 0.24), Color(0.96, 0.76, 0.32), P.MEI.lightened(0.1), P.QING.lightened(0.15)])
+			_p.color_initial_ramp = ramp
 	# 先空跑一整轮再开始，第一次进图就是满屏的
 	_p.preprocess = _p.lifetime
 	_p.restart()
@@ -168,44 +177,102 @@ func _process(_delta: float) -> void:
 		_p.position.y = c.y - 60.0
 
 
-## 粒子的样子：现画一张小图（孔版的颜色）
+## 粒子的样子：现画一张小图。微缩模型里的雨雪是软的、有一点体积：
+##   雨：一道细细的、两头虚的水痕（中间一条亮线像被灯照着），落得快，拖成一条
+##   雪：一颗柔边的小棉球，左上被照亮、右下一层淡淡的蓝灰，边缘虚掉
+##   柳絮：一团更虚的绒毛，几乎不分明暗
+##   落叶：一片带叶脉的小叶子，一边亮一边暗（像微微卷起来），颜色每片不同（color_initial_ramp）
+## 图按 SS 倍画、粒子再按 1/SS 缩回去，带 mipmap，镜头怎么缩边都是平滑的
+const SS := 2.0
+
+
 func _texture(k: String) -> Texture2D:
 	if _tex.has(k):
 		return _tex[k]
 	var img: Image
 	match k:
 		"rain":
-			img = Image.create(3, 34, false, Image.FORMAT_RGBA8)
-			for y in 34:
-				var a := 0.25 + 0.75 * float(y) / 33.0
-				img.set_pixel(1, y, Color(P.QING.darkened(0.1), a))
-				img.set_pixel(0, y, Color(P.QING, a * 0.3))
+			img = _streak(4, 40)
 		"snow":
-			img = _disc(9, P.PAPER, Color(P.INK, 0.55))
+			img = _ball(8, Color(0.97, 0.98, 1.0), Color(0.74, 0.80, 0.92), 0.0)
 		"catkin":
-			img = _disc(7, Color(P.PAPER, 0.95), Color(P.INK_SOFT, 0.45), true)
+			img = _ball(7, Color(1.0, 0.99, 0.95), Color(0.90, 0.88, 0.82), 0.55)
 		"leaf":
-			img = Image.create(14, 9, false, Image.FORMAT_RGBA8)
-			for y in 9:
-				for x in 14:
-					var u := (float(x) - 6.5) / 6.5
-					var v := (float(y) - 4.0) / (4.0 * (1.0 - u * u) + 0.01)
-					if absf(v) <= 1.0:
-						img.set_pixel(x, y, P.MEI if (x + y) % 5 != 0 else P.QING)
+			img = _leaf(9, 6)
+	img.generate_mipmaps()
 	_tex[k] = ImageTexture.create_from_image(img)
 	return _tex[k]
 
 
-func _disc(r: int, fill: Color, rim: Color, fuzzy := false) -> Image:
-	var n := r * 2 + 1
+## 雨丝：宽 w、长 h（世界像素）。横着是高斯一样的软边，竖着上淡下浓、末端收尖
+func _streak(w: int, h: int) -> Image:
+	var W := int(w * SS)
+	var H := int(h * SS)
+	var img := Image.create(W, H, false, Image.FORMAT_RGBA8)
+	var body := Color(0.80, 0.88, 0.96)
+	var hi := Color(1.0, 1.0, 1.0)
+	for y in H:
+		var v := (float(y) + 0.5) / float(H)
+		var along := smoothstep(0.0, 0.75, v) * (1.0 - smoothstep(0.9, 1.0, v))
+		for x in W:
+			var u := ((float(x) + 0.5) / float(W) - 0.5) * 2.0
+			var across := exp(-u * u * 4.0)
+			var c := body.lerp(hi, exp(-u * u * 18.0) * 0.8)
+			img.set_pixel(x, y, Color(c, across * along))
+	return img
+
+
+## 小球：半径 r（世界像素）。lit 被照亮的一面，shade 背光的一面；fuzz > 0 边更虚、带一点绒毛的起伏
+func _ball(r: int, lit: Color, shade: Color, fuzz: float) -> Image:
+	var R := r * SS
+	var n := int(ceil(R)) * 2 + 2
 	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
+	img.fill(Color(lit, 0.0))  # 透明处也填上本色：线性过滤、mipmap 时边上不起黑圈
+	var c0 := Vector2(n, n) * 0.5
+	var sun := Vector3(-0.5, -0.6, 0.62).normalized()  # 光从左上前方来（和渲染底图的太阳同一边）
 	for y in n:
 		for x in n:
-			var d := Vector2(x - r, y - r).length() / float(r)
-			if fuzzy:
-				d += 0.25 * sin(atan2(y - r, x - r) * 7.0)
-			if d <= 0.72:
-				img.set_pixel(x, y, fill)
-			elif d <= 1.0:
-				img.set_pixel(x, y, rim)
+			var q := (Vector2(x + 0.5, y + 0.5) - c0) / R
+			var d := q.length()
+			if fuzz > 0.0:
+				d *= 1.0 + fuzz * 0.12 * sin(atan2(q.y, q.x) * 9.0 + d * 6.0)
+			var a := 1.0 - smoothstep(0.55 - fuzz * 0.25, 1.0, d)
+			if a <= 0.001:
+				continue
+			var dz := sqrt(maxf(0.0, 1.0 - minf(d, 1.0) * minf(d, 1.0)))
+			var nrm := Vector3(q.x, q.y, dz).normalized()
+			var k := clampf(nrm.dot(sun) * 0.5 + 0.5, 0.0, 1.0)
+			k = lerpf(k, 0.75, fuzz)
+			var col := shade.lerp(lit, k)
+			# 一小点高光（棉球、冰晶反光），绒毛没有
+			var spec := pow(maxf(0.0, nrm.dot(sun)), 12.0) * (1.0 - fuzz)
+			col = col.lerp(Color.WHITE, spec * 0.6)
+			img.set_pixel(x, y, Color(col, a * (1.0 - fuzz * 0.25)))
+	return img
+
+
+## 叶子：半长 hl、半宽 hw（世界像素），白色打底（颜色由 color_initial_ramp 染），一边亮一边暗、一条叶脉
+func _leaf(hl: int, hw: int) -> Image:
+	var L := hl * SS
+	var Wd := hw * SS
+	var nx := int(L * 2.0) + 2
+	var ny := int(Wd * 2.0) + 2
+	var img := Image.create(nx, ny, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.85, 0.85, 0.85, 0.0))
+	for y in ny:
+		for x in nx:
+			var u := (float(x) + 0.5 - nx * 0.5) / L            # -1 ~ 1，叶柄到叶尖
+			var v := (float(y) + 0.5 - ny * 0.5) / Wd
+			var half := (1.0 - u * u) * (1.0 - 0.25 * u)         # 叶子这一处有多宽（靠叶柄胖一点）
+			if half <= 0.0:
+				continue
+			var e := absf(v) / half
+			var a := 1.0 - smoothstep(0.82, 1.0, e)
+			if a <= 0.001:
+				continue
+			var lightk := 0.82 + 0.18 * (-v / maxf(half, 0.05))  # 上半片亮、下半片暗（卷起来）
+			lightk *= 1.0 - 0.18 * smoothstep(0.6, 1.0, e)       # 边上暗一点，有厚度
+			var vein := 1.0 - (1.0 - smoothstep(0.0, 0.09, absf(v))) * 0.22 * (1.0 - smoothstep(0.7, 1.0, u))
+			var g := clampf(lightk * vein, 0.0, 1.0)
+			img.set_pixel(x, y, Color(g, g, g, a))
 	return img

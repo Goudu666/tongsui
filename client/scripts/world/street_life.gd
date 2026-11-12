@@ -2,7 +2,7 @@ extends Node2D
 ## 河畔里的街景：街坊、街上过的车、对岸的天际线——都随年代更替。
 ##
 ## 数据：res://data/street.json（content/street.yaml 编译来的）：谁、站哪、哪个年代在、几点在、说什么
-## 美术：res://art/street/atlas.png + sprites.json（tools/art/pixel/pxstreet.py 生成，像素版：scale 1，foot 落在 3×3 的点格上）
+## 美术：res://art/street/atlas.png + sprites.json（tools/art/street.py 生成）
 ## 只是街景，不参与结算：能做的事还是 map.yaml 里的互动点，这里只负责"街上有人"。
 ##
 ## 层级：街坊和车挂在 world_view 下面，和主角一起按 y 排序（z 0）；对岸的东西贴地（z -60）；
@@ -26,7 +26,7 @@ var ready_ok := false
 
 var _atlas: Texture2D
 var _sprites: Dictionary = {}
-var _art_scale := 1.0
+var _art_scale := 2.0
 var _things: Array = []       ## 街坊 + 道具：{def, node, on, t, talk_i}
 var _traffic: Array = []      ## {def, wait}
 var _movers: Array = []       ## 正在街上的车：{def, node, state, ...}
@@ -76,7 +76,7 @@ func _load() -> bool:
 		return false
 	_atlas = load(ATLAS)
 	_sprites = meta.get("sprites", {})
-	_art_scale = float(meta.get("scale", 1.0))
+	_art_scale = float(meta.get("scale", 2.0))
 	eras = data.get("eras", {})
 	for kind in ["props", "npcs"]:
 		for d in data.get(kind, []):
@@ -106,9 +106,8 @@ func _make_sprite(sprite_name: String, at: Vector2) -> Sprite2D:
 	s.region_enabled = true
 	s.scale = Vector2.ONE / _art_scale
 	s.offset = -Vector2(m.foot[0], m.foot[1]) * _art_scale
-	s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	# 像素画：脚底落在点格上（格子原点是世界 (0, -200)，一格 3 像素），和底图的点对得上
-	s.position = Vector2(roundf(at.x / 3.0) * 3.0, roundf((at.y + 200.0) / 3.0) * 3.0 - 200.0)
+	s.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	s.position = at
 	s.set_meta("m", m)
 	_set_frame(s, 0)
 	return s

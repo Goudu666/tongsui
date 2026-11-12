@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>body{margin:0;background:#000}</style>
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+// 街坊：同主角的 figure.js，多挂上 folk_parts.js 的零件（发型、帽子、围裙、板凳…）。render.js 用 window.renderJob(job)
+import { renderJob } from '../pose3d/figure.js';
+import './folk_parts.js';
+window.renderJob = renderJob;
+window.READY = 1;
+</script></body></html>

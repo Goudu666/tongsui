@@ -72,7 +72,7 @@ def _q(stage: str, ck: Clock, line, shift: int = 0) -> np.ndarray:
 
 def _m(stage: str, ck: Clock, line, shift: int = 0) -> np.ndarray:
     m = voice_m(stage, ck, _abs(stage, "m", line, shift))
-    if STAGES[stage]["m"][0] in ("lead", "pulse"):
+    if STAGES[stage]["m"][0] == "lead":
         m = echo(m, 0.75 * ck.spb, 0.35, 0.16, 2400, 2).mean(axis=1)
     if STAGES[stage]["m"][0] == "erhu":  # 二胡 3 kHz 那个峰在高光里贴得太近，收一点
         m = peak(m, 3000, 0.9, -4.0)
@@ -210,8 +210,6 @@ def comp(stage: str, mx: Mix, t: float, dur: float, name: str, spb: float, vel: 
     if bass:
         if stage == "middle":
             mx.add(inst.piano(root, dur * 1.1, round(0.45 * vel, 2)), t, 1.0, pan=-0.15)
-        elif stage == "child":  # 童年的低音是芯片的三角波
-            mx.add(inst.tri_bass(root + 12, dur * 0.95, round(0.6 * vel, 2)), t, 0.6)
         else:
             mx.add(inst.bass(root, dur * 0.95, round(0.6 * vel, 2), stage != "young"), t, 0.55 if stage != "old" else 0.4)
 

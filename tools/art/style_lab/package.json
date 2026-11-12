@@ -1,0 +1,6 @@
+{
+  "name": "tongsui-style-lab",
+  "private": true,
+  "description": "同一份场景、四套渲染器的画风样张",
+  "dependencies": { "three": "0.170.0", "@fontsource/noto-sans-sc": "5.2.6" }
+}

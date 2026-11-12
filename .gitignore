@@ -12,3 +12,6 @@ deploy/backups/
 deploy/*.smoke-bak
 deploy/.env.*
 !deploy/.env.example
+tools/art/style_lab/node_modules/
+tools/art/style_lab/fonts/
+tools/art/style_lab/out/

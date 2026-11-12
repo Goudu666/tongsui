@@ -92,6 +92,10 @@ func _initialize() -> void:
 		var want := (p - center) / view.y
 		check(absf(sx - want.x) < 0.001 and absf(-sy - want.y) < 0.001, "3D 相机和 2D 镜头没对上：%s" % p)
 	st3.free()
+	# 移轴：对准人身上，不是对准墙头（地面在屏幕下半截，焦线在地面往上一点）
+	var fl := Stage3D.focus_line(760.0, 610.0, 680.0)
+	var ground_on_screen := (760.0 - 610.0) / 680.0 + 0.5
+	check(fl > 0.5 and fl < ground_on_screen and ground_on_screen - fl < 0.2, "移轴焦线 %.2f 没落在人身上（地面 %.2f）" % [fl, ground_on_screen])
 	if fails == 0:
 		print("✓ unit_world3d：两个人五个岁数、二十四套动作、街道 3D、年代季节、相机对齐")
 	quit(1 if fails > 0 else 0)

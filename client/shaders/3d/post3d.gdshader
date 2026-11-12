@@ -6,7 +6,7 @@ uniform sampler2D sharp : filter_linear;
 uniform sampler2D soft : filter_linear;
 uniform vec2 soft_px = vec2(0.0021, 0.0037);
 uniform float focus_y = 0.6;
-uniform float focus_band = 0.21;   // 清楚的那条有多宽（半宽）
+uniform float focus_band = 0.17;   // 清楚的那条有多宽（半宽）
 uniform float tilt = 0.9;          // 移轴强弱（0 关）
 uniform float bloom = 0.35;
 uniform float bloom_cut = 0.72;
@@ -34,7 +34,7 @@ void fragment() {
 	vec3 b = soft_at(uv);
 	// 离清楚那条越远越虚；上头（远处的楼顶）虚得慢一点，下头（贴着镜头的马路）虚得快
 	float d = uv.y - focus_y;
-	float k = smoothstep(focus_band, focus_band + (d < 0.0 ? 0.55 : 0.36), abs(d)) * tilt;
+	float k = smoothstep(focus_band, focus_band + (d < 0.0 ? 0.4 : 0.3), abs(d)) * tilt;
 	vec3 c = mix(s, b, k);
 	// 灯晕
 	vec3 hi = max(b - vec3(bloom_cut), vec3(0.0));

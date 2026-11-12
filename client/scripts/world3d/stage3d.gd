@@ -141,7 +141,7 @@ func _build_world() -> void:
 	env.adjustment_contrast = 1.1
 	env.adjustment_saturation = 1.12
 	env.glow_enabled = true
-	env.glow_intensity = 0.6
+	env.glow_intensity = 0.35
 	env.glow_bloom = 0.05
 	env.glow_hdr_threshold = 1.1
 	var we := WorldEnvironment.new()
@@ -280,10 +280,10 @@ func _apply_time() -> void:
 	_apply_lamps()
 	if post != null:
 		post.set_shader_parameter("gain", Color(1.0, 0.98, 0.95).lerp(Color(1.05, 0.95, 0.85), warm * (1.0 - night)).lerp(Color(0.9, 0.95, 1.08), night))
-		post.set_shader_parameter("lift", Color(0.02, 0.015, 0.03).lerp(Color(0.0, 0.02, 0.05), night))
+		post.set_shader_parameter("lift", Color(0.006, 0.004, 0.01).lerp(Color(0.0, 0.01, 0.03), night))
 		post.set_shader_parameter("saturation", lerpf(1.06, 0.92, night) * (1.0 - overcast * 0.2))
-		post.set_shader_parameter("bloom", lerpf(0.22, 0.55, night))
-		post.set_shader_parameter("bloom_cut", lerpf(0.82, 0.55, night))
+		post.set_shader_parameter("bloom", lerpf(0.1, 0.45, night))
+		post.set_shader_parameter("bloom_cut", lerpf(0.92, 0.6, night))
 
 
 func _process(delta: float) -> void:
@@ -319,9 +319,14 @@ func _sync_camera() -> void:
 	cam.rotation = Vector3.ZERO
 	cam.size = h * NEAR / DIST
 	cam.frustum_offset = Vector2(0.0, -LIFT * NEAR / DIST)
-	# 移轴：人站的那条线（地面往上半个人）在屏幕上的高度
-	var feet := (center.y - ground_y) / view.y + 0.5
-	post.set_shader_parameter("focus_y", clampf(feet - 0.07, 0.2, 0.9))
+	post.set_shader_parameter("focus_y", focus_line(ground_y, center.y, view.y))
+
+
+## 移轴对准的那条线在屏幕上的高度（0 顶 1 底）：人身子的正中（地面往上半个大人），人比身后的墙清楚
+static func focus_line(ground: float, center_y: float, view_y: float) -> float:
+	var feet := (ground - center_y) / view_y + 0.5
+	var body := 75.0 * FIG_SCALE / view_y
+	return clampf(feet - body, 0.2, 0.9)
 
 
 ## 世界坐标（2D 像素）→ 3D

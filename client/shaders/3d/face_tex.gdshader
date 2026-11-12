@@ -16,6 +16,15 @@ uniform float blink = 0.0;
 uniform float open = 0.0;
 uniform float smile = 0.5;  // 贴图的嘴是画死的，这个只为和 face.gdshader 同名参数（不用）
 uniform float roughness = 0.58;
+uniform float tone = 0.83;   // 贴图的皮肤偏亮，压一点
+uniform vec4 sphere = vec4(0.0, 0.24, 0.0, 0.24);  // 头那个球（物体空间的中心、半径）：下巴底下往脖子那儿暗下去
+uniform vec3 shade_col : source_color = vec3(0.8, 0.55, 0.5);
+
+varying vec3 obj;
+
+void vertex() {
+	obj = VERTEX;
+}
 
 float closed_eye(vec2 uv, vec4 e, out float lid) {
 	vec2 d = (uv - e.xy) / (e.zw * vec2(1.35, 1.25));
@@ -45,6 +54,11 @@ void fragment() {
 		float m = 1.0 - smoothstep(0.8, 1.0, length(d));
 		c = mix(c, mouth_col, m);
 	}
+	c *= tone;
+	// 下巴、脸的下半圈往脖子那儿暗下去、偏暖（皮下透红），脸才不是平的一张纸
+	float yy = (obj.y - sphere.y) / sphere.w;
+	float under = smoothstep(-0.4, -1.0, yy);
+	c = mix(c, c * shade_col, under * 0.7);
 	ALBEDO = c;
 	ROUGHNESS = roughness;
 	SPECULAR = 0.35;

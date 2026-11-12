@@ -337,6 +337,9 @@ func _build_glb() -> bool:
 	_part(head, parts.hair, mats)
 	var hbox := hd.mesh.get_aabb()
 	s.hr = hbox.size.y * 0.5
+	if face_mat != null:
+		var hc := hbox.get_center()
+		face_mat.set_shader_parameter("sphere", Vector4(hc.x, hc.y, hc.z, s.hr))
 	for side in [["l", "L"], ["r", "R"]]:
 		var n: String = side[0]
 		var S: String = side[1]
@@ -350,7 +353,7 @@ func _build_glb() -> bool:
 		var el := _joint("el_" + n, shj, R * lo.position)
 		_part(el, lo, mats, R)
 		var hand := _joint("hand_" + n, el, R * ha.position)
-		_part(hand, ha, mats, R)
+		_part(hand, ha, mats, R).scale = Vector3.ONE * 0.85  # 圆手套垂下来显大，收一点
 		s.upper = lo.position.length()
 		s.fore = ha.position.length()
 		s.hand = ha.mesh.get_aabb().size.y * 0.5
@@ -406,10 +409,10 @@ func _game_mat(m: Material) -> Material:
 	if nm.begins_with("fabric"):
 		return _cloth(c.to_html(false), null, null, 0.9)
 	if nm == "skin":
-		return Kit.mat(c, 0.6, 0.0, 0.25)
+		return Kit.mat(c * Color(0.86, 0.84, 0.84), 0.6, 0.0, 0.2)
 	if nm == "hair":
-		var hm := Kit.mat(c, 0.55, 0.0, 0.12)
-		hm.metallic_specular = 0.35
+		var hm := Kit.mat(c, 0.6, 0.0, 0.0)
+		hm.metallic_specular = 0.22
 		return hm
 	var other := bm.duplicate() as BaseMaterial3D
 	other.normal_enabled = false

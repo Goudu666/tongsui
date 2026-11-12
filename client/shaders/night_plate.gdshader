@@ -57,8 +57,21 @@ float bayer(vec2 q) {
 	return (float(m[y * 4 + x]) + 0.5) / 16.0;
 }
 
-float screen_dots(vec2 p, float angle, float size, float cov) {
-	return step(bayer(floor(p / PX)), cov) * step(0.002, cov);
+// 人身上不抖：抖动的格子落在脸上像棋盘，人又不一定站在点格上，格子和人的点会错开。
+// 人那一块换成抖动的平均值（同样深浅的平涂），边上一圈按拜耳次序过渡，不留硬边。
+float screen_dots(vec2 p, float angle, float size, float cov, float person) {
+	float dots = step(bayer(floor(p / PX)), cov) * step(0.002, cov);
+	return mix(dots, cov, person);
+}
+
+// 一个人占的那一块：xy 是脚往上 40（和 glow 同一个点），身子从脚往上约 210 世界像素
+float body(vec2 p, vec4 a) {
+	if (a.w <= 0.0) {
+		return 0.0;
+	}
+	vec2 c = a.xy + vec2(0.0, 40.0 - 104.0);
+	float d = length((p - c) / vec2(62.0, 112.0));
+	return 1.0 - smoothstep(0.82, 1.12, d);
 }
 
 float glow(vec2 p, vec4 a) {
@@ -77,6 +90,8 @@ void fragment() {
 	float dw = dawn * k;
 	// 网点边缘带一点手抖，不然太像电脑算的
 	float jitter = (vnoise(pw * 0.035) - 0.5) * 0.04;
+	float on_body = max(body(pw, actor_a), body(pw, actor_b));
+	float person = step(bayer(floor(pw / PX) + vec2(2.0, 1.0)), on_body);
 
 	vec3 col = vec3(1.0);
 
@@ -84,12 +99,12 @@ void fragment() {
 	float slope = clamp((pw.x * 0.8 + (map_size.y - pw.y) * 0.6) / (map_size.x * 0.8 + map_size.y * 0.6), 0.0, 1.0);
 	if (dk > 0.001) {
 		float dusk_cov = dk * (0.03 + 0.13 * slope + jitter * 0.5);
-		col *= mix(vec3(1.0), dusk_ink, screen_dots(pw, 1.309, cell * 2.0, clamp(dusk_cov, 0.0, 1.0)) * 0.55);
+		col *= mix(vec3(1.0), dusk_ink, screen_dots(pw, 1.309, cell * 2.0, clamp(dusk_cov, 0.0, 1.0), person) * 0.55);
 		col *= mix(vec3(1.0), dusk_ink, dk * (0.12 + 0.20 * slope));
 	}
 	if (dw > 0.001) {
 		float dawn_cov = dw * (0.12 - 0.09 * slope + jitter * 0.5);
-		col *= mix(vec3(1.0), dawn_ink, screen_dots(pw, 1.309, cell * 2.0, clamp(dawn_cov, 0.0, 1.0)) * 0.5);
+		col *= mix(vec3(1.0), dawn_ink, screen_dots(pw, 1.309, cell * 2.0, clamp(dawn_cov, 0.0, 1.0), person) * 0.5);
 		col *= mix(vec3(1.0), dawn_ink, dw * (0.20 - 0.12 * slope));
 	}
 
@@ -101,11 +116,11 @@ void fragment() {
 		// 只有靠近灯的那一圈才看得出网点一点点变小、露出纸来
 		float dark = nt * (1.0 - lit);
 		float night_cov = clamp(smoothstep(0.0, 0.78, dark) + jitter * nt * (1.0 - dark), 0.0, 1.0);
-		col *= mix(vec3(1.0), night_ink, screen_dots(pw, 0.785, cell, night_cov) * 0.30);
+		col *= mix(vec3(1.0), night_ink, screen_dots(pw, 0.785, cell, night_cov, person) * 0.30);
 		col *= mix(vec3(1.0), night_ink, dark * 0.70);
 		// 灯黄版：只在灯下，网角和靛蓝版错开
 		float lamp_cov = nt * smoothstep(0.25, 1.0, lit) * 0.55;
-		col *= mix(vec3(1.0), lamp_ink, screen_dots(pw, 0.262, cell, lamp_cov) * 0.85);
+		col *= mix(vec3(1.0), lamp_ink, screen_dots(pw, 0.262, cell, lamp_cov, person) * 0.85);
 		col *= mix(vec3(1.0), lamp_ink, nt * smoothstep(0.05, 0.9, lit) * 0.25);
 	}
 

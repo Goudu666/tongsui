@@ -106,7 +106,7 @@ func _make_sprite(sprite_name: String, at: Vector2) -> Sprite2D:
 	s.region_enabled = true
 	s.scale = Vector2.ONE / _art_scale
 	s.offset = -Vector2(m.foot[0], m.foot[1]) * _art_scale
-	s.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	# 像素画：脚底落在点格上（格子原点是世界 (0, -200)，一格 3 像素），和底图的点对得上
 	s.position = Vector2(roundf(at.x / 3.0) * 3.0, roundf((at.y + 200.0) / 3.0) * 3.0 - 200.0)
 	s.set_meta("m", m)

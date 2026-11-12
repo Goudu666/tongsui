@@ -66,6 +66,7 @@ static func font() -> Font:
 			# 点阵字放大：不要微调、不要亚像素挪位，笔画才是一格一格的
 			px.hinting = TextServer.HINTING_NONE
 			px.subpixel_positioning = TextServer.SUBPIXEL_POSITIONING_DISABLED
+			px.antialiasing = TextServer.FONT_ANTIALIASING_NONE  # 不抗锯齿：笔画边上不起毛
 			px.fallbacks = [base]
 			_font = px
 	return _font

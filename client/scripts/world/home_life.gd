@@ -35,7 +35,7 @@ var _seen := false             ## 头一回拿到 homes 之前别放动画（进
 
 
 func _init() -> void:
-	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	set_process(false)
 	if not (FileAccess.file_exists(META) and ResourceLoader.exists(ATLAS)):
 		return

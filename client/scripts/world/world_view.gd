@@ -153,7 +153,9 @@ func _enter_scene(sc: Dictionary) -> void:
 	var top := minf(float(floors[0]) - HEAD_ROOM, bottom - VIEW_MIN)
 	var view := get_viewport_rect().size
 	# 竖着正好装下这一截；横着比这张图还宽的长屏，再放大一点，别露出图外面
-	camera.zoom = Vector2.ONE * maxf(view.y / (bottom - top), view.x / float(sc.width))
+	# 像素画：一个点（3 世界像素）要正好是整数个屏幕像素，不然点的边会糊。缩放取 1/3 的整数倍，往大取，宁可裁一点也别露出图外面
+	var fit := maxf(view.y / (bottom - top), view.x / float(sc.width))
+	camera.zoom = Vector2.ONE * maxf(1.0 / 3.0, ceilf(fit * 3.0 - 0.01) / 3.0)
 	camera.offset = Vector2(0, 0)
 	camera.limit_left = 0
 	camera.limit_right = int(sc.width)

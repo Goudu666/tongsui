@@ -161,7 +161,7 @@ func setup(p_role: String, p_name: String, p_local: bool, pos: Vector2) -> void:
 	_sprite.vframes = ROWS
 	_sprite.scale = Vector2.ONE / ART_SCALE
 	_sprite.offset = -FOOT * ART_SCALE
-	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	add_child(_sprite)
 	_over = Overlay.new(_draw_over)
 	add_child(_over)

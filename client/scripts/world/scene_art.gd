@@ -118,7 +118,7 @@ func _strip(mat: ShaderMaterial, z: int) -> Sprite2D:
 	s.centered = false
 	s.region_enabled = true
 	s.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
-	s.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	s.material = mat
 	s.z_index = z
 	add_child(s)
@@ -144,7 +144,7 @@ func show_scene(sc: Dictionary, all_zones: Array, all_exits: Array) -> void:
 		spr.centered = false
 		spr.scale = Vector2.ONE / ART_SCALE
 		spr.position = Vector2(k * SLICE, TOP)
-		spr.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR  ## 像素画不要 mipmap：缩小一点时点会糊成一片
+		spr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST  ## 像素画不要 mipmap：缩小一点时点会糊成一片
 		add_child(spr)
 		_slices.append(spr)
 		has_art = true
@@ -324,7 +324,7 @@ func _plant_trees() -> void:
 		s.scale = Vector2.ONE / TREE_SCALE
 		var tp := Vector2(float(a[0]) - float(spec[0]) * 0.5, float(a[1]) - float(spec[1]))
 		s.position = Vector2(snappedf(tp.x, 3.0), snappedf(tp.y - TOP, 3.0) + TOP)
-		s.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		var m := ShaderMaterial.new()
 		m.shader = SWAY_SHADER
 		m.set_shader_parameter("phase", float(a[0]) * 0.013 + i * 1.7)

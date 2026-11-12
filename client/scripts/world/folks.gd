@@ -224,7 +224,7 @@ class Folk extends Node2D:
 		_sprite.vframes = maxi(rows, 1)
 		_sprite.scale = Vector2.ONE / art_scale
 		_sprite.offset = -foot * art_scale
-		_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		add_child(_sprite)
 		_over = Overlay.new(_draw_over)
 		add_child(_over)
@@ -370,7 +370,7 @@ class Walker extends Node2D:
 		_sprite.scale = Vector2.ONE / art_scale
 		_sprite.offset = -foot * art_scale
 		_sprite.flip_h = speed < 0.0
-		_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		add_child(_sprite)
 		_next_pause = randf_range(8.0, 20.0)
 

@@ -503,9 +503,12 @@ func _sync_folks() -> void:
 					st = "childhood"
 					lk["height"] = 1.15
 					lk["head"] = 0.15
-				elif kind.contains("old"):
+				elif kind.contains("old") or bool(lk.get("old", false)):
 					st = "old"
 					lk["hair"] = "boy_old" if not lk.girl else "bun_grey"
+					lk.erase("hair_col")
+			if st == "young" and bool(lk.get("old", false)):
+				st = "old"  # 摆摊、坐着的老街坊：脸也是老人的（眼睛细、眼尾有纹）
 			f.build("folk", st, lk)
 			f.set_meta("work", "busy")
 			folk_figs[n] = f
@@ -554,12 +557,17 @@ func _folk_look(n: Node) -> Dictionary:
 		"sleeve": 1.0 if rng.randf() < 0.7 else 0.5, "legs": 1.0,
 		"shoes": ["#2B2724", "#4A3328", "#5B5E63"][rng.randi() % 3], "shoe2": "#1E1B19",
 		"height": rng.randf_range(1.55, 1.78) - (0.08 if girl else 0.0) - (0.05 if old else 0.0),
-		"head": 0.128, "build": rng.randf_range(0.95, 1.15), "girl": girl,
+		"head": 0.132, "build": rng.randf_range(0.95, 1.12), "girl": girl, "old": old,
 		"hair": (["bun_grey", "bob"] if old else ["bob", "bun", "ponytail"])[rng.randi() % 2] if girl else (["boy_old", "boy_short"][0 if old else 1]),
-		"skin": Color(0.93, 0.77, 0.64).lerp(Color(0.82, 0.62, 0.48), rng.randf()).to_html(),
+		# 日漫的肤色：浅、偏暖，人和人之间差一点
+		"skin": Color(1.0, 0.88, 0.8).lerp(Color(0.93, 0.76, 0.64), rng.randf()).to_html(),
 	}
 	if old and not girl:
 		lk["hair"] = "boy_old"
+	if not old:
+		# 头发：黑、深棕、栗色几种
+		var hairs := ["#2A2328", "#3B2A26", "#4A3428", "#24232E", "#5A3B2C"]
+		lk["hair_col"] = hairs[rng.randi() % hairs.size()]
 	return lk
 
 

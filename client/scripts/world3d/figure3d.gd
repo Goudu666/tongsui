@@ -8,7 +8,21 @@ extends Node3D
 ## 不带任何模型文件：长相、衣服、身高都在 LOOKS / _spec 里，改数就变。
 
 const Kit := preload("res://scripts/world3d/kit3d.gd")
-const FACE := preload("res://shaders/3d/face.gdshader")
+const FACE := preload("res://shaders/3d/face_anime.gdshader")
+const TOON := preload("res://shaders/3d/toon.gdshader")
+const OUTLINE := preload("res://shaders/3d/outline.gdshader")
+
+## 日漫风的三种画法（菜单 / 出图挑一种，所有人一起换）：
+##   清透：明暗交界软一点、细细的暖色勾线、颜色略淡（日常番的感觉）
+##   青春：交界硬、勾线粗、颜色饱和、轮廓光亮（热闹一点）
+##   绘本：没有勾线、明暗晕开、带一点纸纹（水彩绘本）
+const STYLES := {
+	"qingtou": {"name": "清透", "soft": 0.12, "band": 0.0, "outline": 0.0034, "line_k": 0.5, "rim": 0.45, "sat": 0.86, "shade": Color(0.86, 0.76, 0.86), "floor": 1.35, "paper": 0.0},
+	"qingchun": {"name": "青春", "soft": 0.008, "band": 0.18, "outline": 0.0075, "line_k": 0.18, "rim": 0.75, "sat": 1.18, "shade": Color(0.6, 0.5, 0.72), "floor": 0.95, "paper": 0.0},
+	"huiben": {"name": "绘本", "soft": 0.45, "band": -0.1, "outline": 0.0, "line_k": 0.5, "rim": 0.1, "sat": 0.78, "shade": Color(0.86, 0.74, 0.7), "floor": 1.2, "paper": 0.45},
+}
+static var style := "qingtou"
+const USE_GLB := false  ## 造型甲的 glb（#82）；换成日漫风以后不用了，留着接口
 const CLOTH := preload("res://shaders/3d/cloth.gdshader")
 const P := preload("res://scripts/ui/palette.gd")
 const FACE_TEX := preload("res://shaders/3d/face_tex.gdshader")
@@ -22,10 +36,14 @@ static var _face_spots := {}  ## 脸贴图 → 眼睛、嘴在哪（读一次）
 ## 身高（米）：和 actor.gd 的 HEIGHT 一样（世界像素 ÷ 100）
 const HEIGHT := {"childhood": 1.12, "teen": 1.52, "young": 1.72, "middle": 1.70, "old": 1.60}
 ## 头多大（半径，米）：小孩头大、显得可爱；大人收一点
-const HEAD := {"childhood": 0.15, "teen": 0.142, "young": 0.137, "middle": 0.137, "old": 0.133}
-const SKIN := Color(0.96, 0.79, 0.67)
-const HAIR_DARK := Color(0.13, 0.095, 0.08)
-const HAIR_GREY := Color(0.72, 0.7, 0.68)
+const HEAD := {"childhood": 0.142, "teen": 0.138, "young": 0.134, "middle": 0.133, "old": 0.13}
+const SKIN := Color(1.0, 0.87, 0.79)
+const HAIR_DARK := Color(0.2, 0.15, 0.14)
+const HAIR_GREY := Color(0.8, 0.79, 0.8)
+## 主角的头发：青蓝黑，梅深栗红（剪影一眼分得开）
+const HAIR := {"qing": Color(0.16, 0.15, 0.21), "mei": Color(0.36, 0.17, 0.15)}
+## 眼睛：[深色, 浅色]
+const IRIS := {"qing": [Color(0.13, 0.11, 0.1), Color(0.46, 0.34, 0.24)], "mei": [Color(0.22, 0.09, 0.09), Color(0.74, 0.38, 0.3)]}
 
 ## 衣服：每个人每个岁数段一套。top 上衣（stripe 横条纹颜色、band 领口袖口的颜色、sleeve 0 无袖 / 0.5 短袖 / 1 长袖）、
 ## bottom 下装（legs 0.35 短裤 / 1 长裤；dress 连衣裙长到哪：大腿的几分之几）、shoes、socks
@@ -40,7 +58,7 @@ const LOOKS := {
 	"mei": {
 		"childhood": {"top": "#F7F2E8", "dress": "#D9485F", "dress_len": 0.55, "sleeve": 0.5, "bottom": "#F7F2E8", "legs": 0.0, "socks": "#F8F5EE", "shoes": "#C23A4F", "shoe2": "#7A2030", "hair": "pigtails"},
 		"teen": {"top": "#F4F0E7", "band": "#D9485F", "sleeve": 1.0, "bottom": "#26304A", "legs": 1.0, "shoes": "#ECE8E0", "shoe2": "#D9485F", "hair": "ponytail"},
-		"young": {"top": "#EDE6D8", "dress": "#D24A5E", "dress_len": 0.66, "sleeve": 1.0, "bottom": "#3A3440", "legs": 1.0, "shoes": "#5B3A2E", "shoe2": "#3A251D", "hair": "bob"},
+		"young": {"top": "#EDE6D8", "dress": "#D24A5E", "dress_len": 0.66, "sleeve": 1.0, "bottom": "#3A3440", "legs": 1.0, "shoes": "#5B3A2E", "shoe2": "#3A251D", "hair": "long"},
 		"middle": {"top": "#C8475B", "band": "#EFE7D6", "sleeve": 1.0, "bottom": "#3B3A46", "legs": 1.0, "dress": "#3B3A46", "dress_len": 0.8, "shoes": "#4B3229", "shoe2": "#2E1F19", "hair": "bun"},
 		"old": {"top": "#B5495A", "band": "#DDD6C6", "sleeve": 1.0, "bottom": "#4A4650", "legs": 1.0, "shoes": "#2B2724", "shoe2": "#1E1B19", "hair": "bun_grey"},
 	},
@@ -64,6 +82,7 @@ var _bob := 0.0
 var _tail: Node3D = null   ## 马尾 / 辫子：跟着走路甩
 var _tail_v := 0.0
 var _tail_a := 0.0
+var _tail_py := 0.0
 var _shadow: MeshInstance3D
 var from_glb := false      ## 用的是造型甲的模型（不是程序搭的）
 
@@ -95,7 +114,7 @@ func build(p_role: String, p_stage: String, p_look: Dictionary = {}) -> void:
 	if role == "mei" and p_look.is_empty():
 		height -= 0.06  # 梅比青矮一点（actor.gd：同岁数矮 6 像素）
 	_spec = _make_spec()
-	from_glb = p_look.is_empty() and _build_glb()
+	from_glb = USE_GLB and p_look.is_empty() and _build_glb()
 	if not from_glb:
 		_build_body()
 	_layers(self)
@@ -118,9 +137,9 @@ func _make_spec() -> Dictionary:
 	var s := {}
 	s.hr = hr
 	s.head_c = hgt - hr * 1.08
-	s.neck = (0.035 if kid else 0.06) * (1.0 if not girl else 0.95)
+	s.neck = (0.04 if kid else 0.065) * (1.0 if not girl else 0.95)
 	s.shoulder_y = s.head_c - hr * 0.93 - s.neck
-	s.hip_y = hgt * (0.415 if kid else (0.45 if stage == "teen" else 0.47))
+	s.hip_y = hgt * (0.42 if kid else (0.47 if stage == "teen" else 0.49))
 	s.torso = s.shoulder_y - s.hip_y
 	s.ankle = hgt * 0.045
 	s.thigh = (s.hip_y - s.ankle) * 0.52
@@ -132,21 +151,113 @@ func _make_spec() -> Dictionary:
 	s.depth = 0.72 if kid else 0.6
 	s.upper = hgt * 0.17
 	s.fore = hgt * 0.15
-	s.arm_r = hgt * (0.033 if kid else 0.026)
-	s.leg_r = hgt * (0.05 if kid else 0.042)
-	s.hand = hgt * (0.04 if kid else 0.03)
-	s.foot = hgt * (0.12 if kid else 0.135)
+	s.arm_r = hgt * (0.028 if kid else 0.021) * (0.92 if girl else 1.0)
+	s.leg_r = hgt * (0.044 if kid else 0.035) * (0.92 if girl else 1.0)
+	s.hand = hgt * (0.034 if kid else 0.025)
+	s.foot = hgt * (0.11 if kid else 0.12)
 	return s
 
 
-func _cloth(c: Variant, stripe: Variant = null, band: Variant = null, rough := 0.85) -> ShaderMaterial:
-	var m := ShaderMaterial.new()
-	m.shader = CLOTH
-	m.set_shader_parameter("base", Color(str(c)))
-	m.set_shader_parameter("stripe_col", Color(str(stripe)) if stripe != null else Color(str(c)))
-	m.set_shader_parameter("stripes", 1.0 if stripe != null else 0.0)
-	m.set_shader_parameter("roughness", rough)
+func _cloth(c: Variant, stripe: Variant = null, _band: Variant = null, _rough := 0.85) -> ShaderMaterial:
+	var m := _toon(Color(str(c)))
+	if stripe != null:
+		m.set_shader_parameter("stripe_col", Color(str(stripe)))
+		m.set_shader_parameter("stripes", 1.0)
 	return m
+
+
+## 日漫的材质：赛璐璐两块明暗 + 描边（按选的那一版风格）
+func _toon(c: Color, hair_mat := false) -> ShaderMaterial:
+	var st: Dictionary = STYLES.get(style, STYLES.qingtou)
+	var m := ShaderMaterial.new()
+	m.shader = TOON
+	m.set_shader_parameter("base", c)
+	_style_params(m, st)
+	m.set_shader_parameter("weave", 0.0 if hair_mat else 0.018)
+	if hair_mat:
+		m.set_shader_parameter("hair", 1.0)
+		m.set_shader_parameter("rim", float(st.rim) * 0.6)
+	_outline(m, c, st)
+	return m
+
+
+func _style_params(m: ShaderMaterial, st: Dictionary) -> void:
+	m.set_shader_parameter("soft", float(st.soft))
+	m.set_shader_parameter("band", float(st.band))
+	m.set_shader_parameter("shade_tint", st.shade)
+	m.set_shader_parameter("shade_floor", float(st.floor))
+	m.set_shader_parameter("rim", float(st.rim))
+	m.set_shader_parameter("sat", float(st.sat))
+	m.set_shader_parameter("paper", float(st.paper))
+
+
+func _outline(m: ShaderMaterial, c: Color, st: Dictionary, scale := 1.0) -> void:
+	var w := float(st.outline) * scale * (height / 1.6 if height < 1.6 else 1.0)
+	if w <= 0.0:
+		return
+	var o := ShaderMaterial.new()
+	o.shader = OUTLINE
+	var k := float(st.line_k)
+	o.set_shader_parameter("col", Color(c.r * k + 0.05, c.g * k * 0.92 + 0.03, c.b * k * 0.9 + 0.03))
+	o.set_shader_parameter("width", w)
+	m.next_pass = o
+
+
+## 脸：日漫的眼睛（大小、眼尾、睫毛按谁、几岁），腮红，眉毛跟头发的颜色
+func _face_mat(lk: Dictionary) -> ShaderMaterial:
+	var st: Dictionary = STYLES.get(style, STYLES.qingtou)
+	var m := ShaderMaterial.new()
+	m.shader = FACE
+	var kid := stage == "childhood"
+	var girl := role == "mei" or bool(lk.get("girl", false))
+	var folk := role != "qing" and role != "mei"
+	var sk := Color(str(lk.get("skin", SKIN.to_html())))
+	m.set_shader_parameter("skin", sk)
+	# 眼睛：小孩最大最圆，越大越细长；街坊比主角小一号（主角好认）
+	var ew: float = {"childhood": 0.19, "teen": 0.17, "young": 0.155, "middle": 0.145, "old": 0.135}.get(stage, 0.15)
+	var et: float = {"childhood": 0.235, "teen": 0.2, "young": 0.175, "middle": 0.155, "old": 0.13}.get(stage, 0.17)
+	var eh: float = {"childhood": -0.24, "teen": -0.18, "young": -0.15, "middle": -0.14, "old": -0.13}.get(stage, -0.15)
+	if folk:
+		ew *= 0.86
+		et *= 0.74
+	if girl:
+		et *= 1.06
+	m.set_shader_parameter("eye_w", ew)
+	m.set_shader_parameter("eye_t", et)
+	m.set_shader_parameter("eye_h", eh)
+	m.set_shader_parameter("eye_gap", (0.4 if kid else 0.37) * (1.0 if not folk else 0.96))
+	m.set_shader_parameter("tilt", -0.15 if girl else 0.12)
+	m.set_shader_parameter("lash", 1.0 if girl else 0.0)
+	m.set_shader_parameter("iris_size", 1.0 if not folk else 0.9)
+	var iris: Array = IRIS.get(role, [Color(0.15, 0.1, 0.08), Color(0.5, 0.36, 0.24)])
+	m.set_shader_parameter("iris_dark", iris[0])
+	m.set_shader_parameter("iris_light", iris[1])
+	var age: float = {"childhood": 0.0, "teen": 0.1, "young": 0.2, "middle": 0.45, "old": 0.85}.get(stage, 0.2)
+	m.set_shader_parameter("age", age)
+	m.set_shader_parameter("blush", (0.75 if kid else (0.55 if girl else 0.3)) * (0.7 if folk else 1.0))
+	var hc := _hair_col(lk)
+	m.set_shader_parameter("brow_col", hc.darkened(0.25))
+	m.set_shader_parameter("line_col", Color(0.2, 0.11, 0.1).lerp(hc.darkened(0.5), 0.35))
+	m.set_shader_parameter("smile", 0.6)
+	# 脸上的影子少一点、边软一点：一道硬影横在脸中间不好看
+	m.set_shader_parameter("soft", maxf(float(st.soft), 0.06))
+	m.set_shader_parameter("band", minf(float(st.band), 0.0) - 0.15)
+	m.set_shader_parameter("shade_tint", Color(0.96, 0.74, 0.72) * (st.shade as Color).lightened(0.3))
+	m.set_shader_parameter("shade_floor", float(st.floor))
+	m.set_shader_parameter("rim", float(st.rim))
+	m.set_shader_parameter("sat", float(st.sat))
+	m.set_shader_parameter("paper", float(st.paper))
+	_outline(m, sk.darkened(0.15), st, 0.8)
+	return m
+
+
+func _hair_col(lk: Dictionary) -> Color:
+	if lk.has("hair_col"):
+		return Color(str(lk.hair_col))
+	var kind := str(lk.get("hair", "boy"))
+	if kind.ends_with("_grey") or kind == "boy_old":
+		return HAIR_GREY
+	return HAIR.get(role, HAIR_DARK)
 
 
 func _joint(name: String, parent: Node3D, pos: Vector3) -> Node3D:
@@ -172,13 +283,15 @@ func _build_body() -> void:
 	var s := _spec
 	var lk := look
 	var kid := stage == "childhood"
-	var skin := Kit.mat(Color(str(lk.get("skin", SKIN.to_html()))), 0.6, 0.0, 0.25)
+	var skin := _toon(Color(str(lk.get("skin", SKIN.to_html()))))
+	skin.set_shader_parameter("weave", 0.0)
+	skin.set_shader_parameter("shade_tint", Color(0.96, 0.74, 0.72) * (STYLES.get(style, STYLES.qingtou).shade as Color).lightened(0.3))
 	var top := _cloth(lk.get("top", "#ffffff"), lk.get("stripe"))
 	var bottom := _cloth(lk.get("bottom", "#333344"))
 	var band: Variant = lk.get("band")
 	var band_m := _cloth(band) if band != null else top
-	var shoe_m := Kit.mat(Color(str(lk.get("shoes", "#eeeeee"))), 0.45, 0.0)
-	var sole_m := Kit.mat(Color(str(lk.get("shoe2", "#333333"))), 0.6)
+	var shoe_m := _toon(Color(str(lk.get("shoes", "#eeeeee"))))
+	var sole_m := _toon(Color(str(lk.get("shoe2", "#333333"))))
 	var sock_m := _cloth(lk.get("socks", lk.get("bottom", "#333344")))
 	var root := _joint("root", self, Vector3.ZERO)
 	_shadow = Kit.blob_shadow(s.sh_half * 4.2, s.sh_half * 2.6, 0.5)
@@ -237,28 +350,18 @@ func _build_body() -> void:
 	elif band != null:
 		var collar2 := Kit.loft([[0.72 * T, sh * 0.6, sh * 0.47], [0.79 * T, s.hr * 0.46, s.hr * 0.42]], 16, false, false)
 		_mesh(spine, collar2, band_m)
-	# 脖子、头
+	# 脖子、头（日漫：脖子细、头大一点、下巴收尖）
 	var neck := _joint("neck", spine, Vector3(0, 0.76 * T, 0))
-	_mesh(neck, Kit.limb(s.neck + 0.02, s.hr * 0.3, s.hr * 0.3, 10), skin, Vector3(0, s.neck + 0.01, 0))
+	_mesh(neck, Kit.limb(s.neck + 0.03, s.hr * 0.24, s.hr * 0.26, 12), skin, Vector3(0, s.neck + 0.015, 0))
 	var head := _joint("head", neck, Vector3(0, s.neck, 0))
 	var hr: float = s.hr
-	var hrv := Vector3(hr * 0.94, hr, hr * 0.96)
-	face_mat = ShaderMaterial.new()
-	face_mat.shader = FACE
-	face_mat.set_shader_parameter("skin", Color(str(lk.get("skin", SKIN.to_html()))))
-	var girl := role == "mei" or bool(lk.get("girl", false))
-	face_mat.set_shader_parameter("lash", 1.0 if girl else 0.0)
-	face_mat.set_shader_parameter("age", {"childhood": 0.0, "teen": 0.15, "young": 0.3, "middle": 0.55, "old": 0.9}.get(stage, 0.3))
-	face_mat.set_shader_parameter("blush", 0.7 if kid else (0.45 if girl else 0.25))
-	face_mat.set_shader_parameter("eye_tall", 0.17 if kid else (0.15 if stage == "teen" else 0.13))
-	face_mat.set_shader_parameter("eye_w", 0.115 if kid else (0.1 if stage == "teen" else 0.088))
-	face_mat.set_shader_parameter("eye_gap", 0.36 if kid else 0.33)
-	face_mat.set_shader_parameter("eye_h", -0.16 if kid else -0.1)
+	var hrv := Vector3(hr * 0.92, hr, hr * 0.95)
 	var head_c := Vector3(0, hr * 0.92, 0)
-	_mesh(head, Kit.ellipsoid(hrv, 28, 18), face_mat, head_c)
-	# 耳朵
+	face_mat = _face_mat(lk)
+	_mesh(head, Kit.anime_head(hrv, 0.45 if kid else (0.8 if stage == "teen" else 1.0), 40, 28), face_mat, head_c)
+	# 耳朵：小小的，大半藏在头发里
 	for sgn in [-1.0, 1.0]:
-		_mesh(head, Kit.ellipsoid(Vector3(hr * 0.12, hr * 0.2, hr * 0.14), 10, 8), skin, head_c + Vector3(sgn * hr * 0.92, -hr * 0.08, -hr * 0.05))
+		_mesh(head, Kit.ellipsoid(Vector3(hr * 0.09, hr * 0.17, hr * 0.11), 10, 8), skin, head_c + Vector3(sgn * hr * 0.86, -hr * 0.12, -hr * 0.04))
 	_build_hair(head, head_c, hrv, str(lk.get("hair", "boy")), lk)
 	# 胳膊
 	var sleeve := float(lk.get("sleeve", 1.0))
@@ -509,69 +612,194 @@ static func _find_face(tex: Texture2D) -> Dictionary:
 	return out
 
 
-## 头发：发壳 + 各人的样子（翘起的一撮、两个小辫、马尾、发髻）
+## 头发（日漫）：贴头皮一层发壳打底，上面是一缕一缕扁扁的、尖梢的发束——
+## 刘海（盖到眉毛）、两边鬓角（挡在耳朵前面框住脸）、后脑一圈、头顶几根撑出轮廓、男孩头顶一根呆毛。
+## 发束全并进一张网格（少 draw call），各自带描边；头发材质多一圈天使环。
 func _build_hair(head: Node3D, c: Vector3, r: Vector3, kind: String, lk: Dictionary) -> void:
-	var grey := kind.ends_with("_grey") or kind == "boy_old"
-	var hc: Color = Color(str(lk.get("hair_col"))) if lk.has("hair_col") else (HAIR_GREY if grey else HAIR_DARK)
-	var hm := Kit.mat(hc, 0.58, 0.0, 0.2)
-	hm.cull_mode = BaseMaterial3D.CULL_DISABLED
-	hm.metallic_specular = 0.6
-	var line: Callable
-	var lift := 0.09
-	var clump := 0.04
-	var strands := 10.0
+	var hm := _toon(_hair_col(lk), true)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(kind + role + stage + str(lk.get("top", "")))
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var w := r.x * 0.17   # 一缕的半宽
+	# 发壳：前面只到刘海根（额头让刘海去盖），两边到耳朵上，后面到后颈
+	var front := 1.12
+	var side := 1.62
+	var back := 2.08
 	match kind:
-		"boy", "boy_long", "boy_side", "boy_short":
-			var front := 1.3 if kind == "boy" else (1.38 if kind == "boy_long" else 1.2)
-			var side_drop := 1.72 if kind != "boy_short" else 1.6
-			line = func(phi: float) -> float:
-				var a := absf(phi)
-				var saw := 0.12 * absf(fmod(phi * 4.5 + 10.0, 1.0) - 0.5) * 2.0 * (1.0 - smoothstep(0.6, 1.2, a))
-				var side_part := 0.0
-				if kind == "boy_side":
-					side_part = -0.1 * smoothstep(0.0, 0.5, phi) * (1.0 - smoothstep(0.5, 1.0, phi))
-				return lerpf(front, side_drop, smoothstep(0.35, 1.5, a)) + (2.15 - side_drop) * smoothstep(1.9, 3.0, a) + saw + side_part
-			lift = 0.075 if kind == "boy" else 0.065
-			clump = 0.05 if kind == "boy" else 0.035
-			strands = 11.0
 		"boy_old":
-			line = func(phi: float) -> float:
-				var a := absf(phi)
-				return lerpf(0.78, 1.55, smoothstep(0.3, 1.5, a)) + 0.5 * smoothstep(1.9, 3.0, a)
-			lift = 0.05
-			clump = 0.02
-			strands = 14.0
-		"pigtails", "ponytail", "bob", "bun", "bun_grey":
-			var bangs := 1.42 if kind != "bun" and kind != "bun_grey" else 1.0
-			var side_drop := 2.3 if kind == "bob" else 1.95
-			var back := 2.3 if kind == "bob" else 2.05
-			line = func(phi: float) -> float:
-				var a := absf(phi)
-				# 齐刘海：正面平的，两边往下
-				var fringe := 0.035 * absf(fmod(phi * 6.0 + 10.0, 1.0) - 0.5) * (1.0 - smoothstep(0.6, 1.1, a))
-				return lerpf(bangs, side_drop, smoothstep(0.55, 1.45, a)) + (back - side_drop) * smoothstep(1.8, 3.0, a) + fringe
-			lift = 0.08 if kind == "bob" else 0.06
-			clump = 0.03
-			strands = 13.0
-		_:
-			line = func(_p: float) -> float: return 1.6
-	var shell := _mesh(head, Kit.hair_shell(r, line, lift, clump, strands, 44, 16), hm, c)
+			front = 0.78
+			side = 1.5
+			back = 1.98
+		"boy_short":
+			front = 1.0
+			side = 1.56
+		"ponytail", "bun", "bun_grey":
+			back = 1.95
+		"bob", "long":
+			side = 1.7
+			back = 2.2
+	var line := func(phi: float) -> float:
+		var a := absf(phi)
+		return lerpf(front, side, smoothstep(0.5, 1.4, a)) + (back - side) * smoothstep(1.8, 3.0, a)
+	var shell := _mesh(head, Kit.hair_shell(r, line, 0.045, 0.012, 12.0, 44, 16), hm, c)
 	shell.name = "hair"
-	if kind == "boy":
-		# 头顶翘起的一撮
-		var pts := PackedVector3Array([Vector3(0, r.y * 1.06, -r.z * 0.1), Vector3(0.0, r.y * 1.22, r.z * 0.02), Vector3(0.0, r.y * 1.3, r.z * 0.2), Vector3(0.0, r.y * 1.24, r.z * 0.32)])
-		_mesh(head, Kit.tube(pts, r.x * 0.07, 6, r.x * 0.015), hm, c)
+	# ---- 刘海 ----
+	# [梢的方位, 梢到哪（从头顶量的弧度；眉毛约 1.44、上眼皮约 1.58）]
+	var bangs: Array = []
+	var n_b := 7
+	var sweep := 0.0        # 梢往一边扫
+	var tip := 1.46
+	var jag := 0.06         # 长短参差
+	var blunt := 0.0        # 齐刘海：发梢不收尖
+	match kind:
+		"boy":
+			tip = 1.42
+			jag = 0.09
+		"boy_long":
+			tip = 1.54
+			n_b = 8
+			sweep = 0.12
+		"boy_side":
+			tip = 1.45
+			n_b = 8
+			sweep = 0.32
+			jag = 0.04
+		"boy_short":
+			tip = 1.2
+			n_b = 6
+			jag = 0.05
+		"boy_old":
+			tip = 0.92
+			n_b = 5
+			jag = 0.03
+		"pigtails":
+			tip = 1.47
+			n_b = 9
+			jag = 0.015    # 齐刘海
+			blunt = 0.55
+		"ponytail":
+			tip = 1.5
+			n_b = 8
+			sweep = -0.18
+		"long":
+			tip = 1.52
+			n_b = 8
+			sweep = -0.08
+		"bob":
+			tip = 1.45
+			n_b = 9
+			jag = 0.025
+			blunt = 0.45
+		"bun", "bun_grey":
+			tip = 1.3
+			n_b = 6
+			sweep = 0.28
+	for i in n_b:
+		var f := float(i) / float(n_b - 1) * 2.0 - 1.0     # -1 … 1
+		var ph := f * 0.92
+		var tt := tip - jag * (0.5 + 0.5 * sin(float(i) * 2.3 + 0.7)) - 0.06 * f * f
+		if sweep != 0.0:
+			# 扫向一边：梢挪过去，扫过去那边长一点
+			tt += sweep * 0.25 * f
+		bangs.append([ph + sweep * (1.0 - absf(f) * 0.5), tt, f])
+	for b in bangs:
+		var ph: float = b[0]
+		var f: float = b[2]
+		_lock(st, r, 0.22, ph * 0.25 - sweep * 0.3, b[1], ph, w * (1.0 + 0.15 * (1.0 - absf(f))), 1.05, 1.025, 0.045, 0.0, 0.0, 8, blunt)
+	# ---- 鬓角：两边各一两缕，挡在耳朵前面 ----
+	var side_tip := 1.85
+	var side_hang := 0.0
+	match kind:
+		"boy":
+			side_tip = 1.78
+		"boy_long":
+			side_tip = 2.0
+		"boy_short", "boy_old":
+			side_tip = 1.58
+		"pigtails", "bob":
+			side_tip = 2.15
+		"ponytail":
+			side_tip = 2.2
+			side_hang = r.y * 0.35
+		"long":
+			side_tip = 2.25
+			side_hang = r.y * 1.6
+		"bun", "bun_grey":
+			side_tip = 1.95
+	for sg in [-1.0, 1.0]:
+		_lock(st, r, 0.45, sg * 0.75, side_tip, sg * 1.18, w * 1.05, 1.06, 1.05, 0.03, side_hang, 0.0)
+		if kind != "boy_old" and kind != "boy_short":
+			_lock(st, r, 0.55, sg * 1.0, side_tip - 0.22, sg * 1.42, w * 0.95, 1.07, 1.05, 0.03, side_hang * 0.6, 0.0)
+	# ---- 后脑一圈 ----
+	var back_tip := 2.2
+	var back_hang := 0.0
+	var flick := 0.0
+	var n_k := 9
+	match kind:
+		"boy":
+			back_tip = 2.15
+			flick = r.x * 0.12   # 小男孩：后脑发梢往外翘
+		"boy_long":
+			back_tip = 2.4
+		"boy_short", "boy_old":
+			back_tip = 2.02
+			n_k = 7
+		"pigtails", "ponytail", "bun", "bun_grey":
+			back_tip = 1.98   # 扎起来了：后面是贴着的
+			n_k = 7
+		"bob":
+			back_tip = 2.4
+			flick = -r.x * 0.06  # 往里扣
+		"long":
+			back_tip = 2.3
+			back_hang = r.y * 2.7
+			n_k = 11
+	for i in n_k:
+		var f := float(i) / float(n_k - 1)
+		var ph := lerpf(1.45, TAU - 1.45, f)    # 从左耳后绕到右耳后
+		var tt := back_tip - 0.05 * sin(float(i) * 1.7) - 0.12 * absf(f - 0.5)
+		_lock(st, r, 0.5, ph, tt, ph + 0.08 * sin(float(i) * 2.1), w * 1.15, 1.07, 1.055, 0.04, back_hang * (1.0 - 0.25 * absf(f - 0.5) * 2.0), flick)
+	# ---- 头顶撑出轮廓的几根 ----
+	var spikes := 4 if kind == "boy" else (3 if kind.begins_with("boy") and kind != "boy_old" else 0)
+	for i in spikes:
+		var ph := PI + (float(i) - float(spikes - 1) * 0.5) * 0.55
+		_lock(st, r, 0.05, ph * 0.2, 1.05 + 0.1 * float(i % 2), ph, w * 1.1, 1.08, 1.1, 0.08 if kind == "boy" else 0.05)
+	# ---- 呆毛 ----
+	if kind == "boy" or kind == "boy_long":
+		var a0 := Kit._sph(0.32, 0.15, r * 1.04)
+		var ah := PackedVector3Array([a0, a0 + Vector3(0.0, r.y * 0.16, -r.z * 0.02), a0 + Vector3(r.x * 0.06, r.y * 0.3, r.z * 0.1), a0 + Vector3(r.x * 0.1, r.y * 0.33, r.z * 0.26), a0 + Vector3(r.x * 0.12, r.y * 0.27, r.z * 0.36)])
+		var ao := PackedVector3Array()
+		for k in ah.size():
+			ao.append(Vector3(1, 0, 0))
+		Kit.lock_into(st, ah, ao, w * 0.55, w * 0.2, 6)
+	st.index()
+	st.generate_normals()
+	var locks := _mesh(head, st.commit(), hm, c)
+	locks.name = "hair_locks"
+	# ---- 扎起来的：小辫、马尾、发髻 ----
+	var tie := _toon(Color("#D9485F") if role == "mei" else Color("#B04B55"))
 	if kind == "pigtails":
-		# 两个小辫：耳朵后面扎起来、往下垂，红头绳
-		var tie := Kit.mat(P.MEI.darkened(0.05), 0.5)
 		for sgn in [-1.0, 1.0]:
 			var tail := Node3D.new()
-			tail.position = c + Vector3(sgn * r.x * 0.88, r.y * 0.02, -r.z * 0.4)
-			tail.rotation.z = sgn * 0.55
-			tail.set_meta("base_z", sgn * 0.55)
+			tail.position = c + Vector3(sgn * r.x * 0.82, r.y * 0.08, -r.z * 0.42)
+			tail.rotation.z = sgn * 0.5
+			tail.set_meta("base_z", sgn * 0.5)
 			head.add_child(tail)
-			_mesh(tail, Kit.loft([[-r.y * 0.85, r.x * 0.04, r.x * 0.04], [-r.y * 0.62, r.x * 0.2, r.x * 0.17], [-r.y * 0.3, r.x * 0.25, r.x * 0.21], [-r.y * 0.05, r.x * 0.13, r.x * 0.12]], 12), hm, Vector3(sgn * r.x * 0.08, 0, 0))
-			_mesh(tail, Kit.ellipsoid(Vector3(r.x * 0.13, r.x * 0.08, r.x * 0.13), 12, 6), tie, Vector3(sgn * r.x * 0.03, -r.y * 0.02, 0))
+			var ts := SurfaceTool.new()
+			ts.begin(Mesh.PRIMITIVE_TRIANGLES)
+			for k in 3:
+				var dx := (float(k) - 1.0) * r.x * 0.07
+				var L := r.y * (0.95 + 0.12 * float(k % 2))
+				var pts := PackedVector3Array([Vector3(dx * 0.3, 0, 0), Vector3(sgn * r.x * 0.1 + dx, -L * 0.25, -r.z * 0.02), Vector3(sgn * r.x * 0.13 + dx * 1.3, -L * 0.55, -r.z * 0.03), Vector3(sgn * r.x * 0.08 + dx * 1.2, -L * 0.85, 0.0), Vector3(sgn * r.x * 0.02 + dx, -L, r.z * 0.04)])
+				var os := PackedVector3Array()
+				for q in pts.size():
+					os.append(Vector3(sgn, 0, 0))
+				Kit.lock_into(ts, pts, os, r.x * 0.12, r.x * 0.08, 6)
+			ts.index()
+			ts.generate_normals()
+			_mesh(tail, ts.commit(), hm)
+			_mesh(tail, Kit.ellipsoid(Vector3(r.x * 0.11, r.x * 0.07, r.x * 0.11), 12, 6), tie, Vector3(0, -r.y * 0.02, 0))
 			if _tail == null:
 				_tail = tail
 			else:
@@ -579,13 +807,52 @@ func _build_hair(head: Node3D, c: Vector3, r: Vector3, kind: String, lk: Diction
 				_tail.set_meta("twin_node", tail)
 	elif kind == "ponytail":
 		var tail := Node3D.new()
-		tail.position = c + Vector3(0, r.y * 0.1, -r.z * 1.0)
+		tail.position = c + Vector3(0, r.y * 0.25, -r.z * 0.98)
 		head.add_child(tail)
-		_mesh(tail, Kit.loft([[-r.y * 1.25, r.x * 0.05, r.x * 0.05], [-r.y * 0.9, r.x * 0.2, r.x * 0.15], [-r.y * 0.4, r.x * 0.24, r.x * 0.2], [-r.y * 0.05, r.x * 0.15, r.x * 0.13]], 12), hm, Vector3(0, 0, -r.z * 0.12))
-		_mesh(tail, Kit.ellipsoid(Vector3(r.x * 0.14, r.x * 0.08, r.x * 0.14), 12, 6), Kit.mat(P.MEI, 0.5), Vector3(0, -r.y * 0.04, -r.z * 0.05))
+		var ts := SurfaceTool.new()
+		ts.begin(Mesh.PRIMITIVE_TRIANGLES)
+		for k in 4:
+			var dx := (float(k) - 1.5) * r.x * 0.08
+			var L := r.y * (1.5 + 0.15 * float((k * 2) % 3))
+			var pts := PackedVector3Array([Vector3(dx * 0.2, 0, 0), Vector3(dx, -L * 0.12, -r.z * 0.22), Vector3(dx * 1.4, -L * 0.42, -r.z * 0.3), Vector3(dx * 1.2, -L * 0.75, -r.z * 0.2), Vector3(dx * 0.6 + r.x * 0.04, -L, -r.z * 0.02)])
+			var os := PackedVector3Array()
+			for q in pts.size():
+				os.append(Vector3(0, 0.3, -1).normalized())
+			Kit.lock_into(ts, pts, os, r.x * 0.13, r.x * 0.08, 6)
+		ts.index()
+		ts.generate_normals()
+		_mesh(tail, ts.commit(), hm)
+		_mesh(tail, Kit.ellipsoid(Vector3(r.x * 0.12, r.x * 0.08, r.x * 0.12), 12, 6), tie, Vector3(0, -r.y * 0.02, -r.z * 0.06), Vector3(1.1, 0, 0))
 		_tail = tail
 	elif kind == "bun" or kind == "bun_grey":
-		_mesh(head, Kit.ellipsoid(Vector3(r.x * 0.36, r.x * 0.32, r.x * 0.3), 16, 10), hm, c + Vector3(0, r.y * 0.45, -r.z * 0.95))
+		_mesh(head, Kit.ellipsoid(Vector3(r.x * 0.38, r.x * 0.34, r.x * 0.32), 18, 12), hm, c + Vector3(0, r.y * 0.5, -r.z * 0.92))
+
+
+## 一缕：从 (θ0, φ0) 贴着头皮走到 (θ1, φ1)。k0/k1 离头心几倍半径，bulge 中段鼓出来多少；
+## hang 走到头以后再往下垂多长（米，长发）；flick 发梢往外（+）或往里（-）翘多少（米）。
+func _lock(st: SurfaceTool, r: Vector3, th0: float, ph0: float, th1: float, ph1: float, w: float, k0 := 1.06, k1 := 1.04, bulge := 0.03, hang := 0.0, flick := 0.0, n := 8, tip := 0.0) -> void:
+	var path := PackedVector3Array()
+	var outs := PackedVector3Array()
+	var m := n if hang <= 0.0 else n - 2
+	for i in m:
+		var t := float(i) / float(m - 1)
+		var k := lerpf(k0, k1, t) + bulge * sin(PI * t)
+		var p := Kit._sph(lerpf(th0, th1, t), lerpf(ph0, ph1, t), r * k)
+		path.append(p)
+		outs.append(Vector3(p.x / (r.x * r.x), p.y / (r.y * r.y), p.z / (r.z * r.z)).normalized())
+	var last := path[path.size() - 1]
+	var o := outs[outs.size() - 1]
+	if hang > 0.0:
+		# 垂下来：一路往下，略往外散开
+		var oh := Vector3(o.x, 0.0, o.z).normalized()
+		var steps := 5
+		for i in range(1, steps + 1):
+			var t := float(i) / float(steps)
+			path.append(last + Vector3(0, -hang * t, 0) + oh * (r.x * 0.08 * t + flick * t * t))
+			outs.append(oh)
+	elif flick != 0.0:
+		path[path.size() - 1] = last + o * flick
+	Kit.lock_into(st, path, outs, w, w * 0.32, 6, tip)
 
 
 func _build_props() -> void:
@@ -594,30 +861,30 @@ func _build_props() -> void:
 	var hl: Node3D = j.hand_l
 	var book := Node3D.new()
 	hl.add_child(book)
-	var cover := Kit.mat(Color("#C9563F"), 0.6)
-	var paper := Kit.mat(Color("#F2EBDC"), 0.9)
+	var cover := _toon(Color("#C9563F"))
+	var paper := _toon(Color("#F2EBDC"))
 	_mesh(book, Kit.box(Vector3(0.12, 0.16, 0.022) * (s.hr / 0.13)), cover, Vector3(-0.04, -s.hand * 1.4, 0.03))
 	_mesh(book, Kit.box(Vector3(0.11, 0.15, 0.024) * (s.hr / 0.13)), paper, Vector3(-0.035, -s.hand * 1.4, 0.03))
 	props.book = book
 	var bowl := Node3D.new()
 	hl.add_child(bowl)
-	_mesh(bowl, Kit.loft([[0.0, 0.035, 0.035], [0.02, 0.055, 0.055], [0.05, 0.068, 0.068]], 16, true, false), Kit.mat(Color("#EDEBE4"), 0.25), Vector3(0, -s.hand * 1.6, 0.02))
-	_mesh(bowl, Kit.loft([[0.04, 0.062, 0.062], [0.042, 0.0, 0.0]], 16, false, false), Kit.mat(Color("#E3C68E"), 0.8), Vector3(0, -s.hand * 1.6, 0.02))
+	_mesh(bowl, Kit.loft([[0.0, 0.035, 0.035], [0.02, 0.055, 0.055], [0.05, 0.068, 0.068]], 16, true, false), _toon(Color("#EDEBE4")), Vector3(0, -s.hand * 1.6, 0.02))
+	_mesh(bowl, Kit.loft([[0.04, 0.062, 0.062], [0.042, 0.0, 0.0]], 16, false, false), _toon(Color("#E3C68E")), Vector3(0, -s.hand * 1.6, 0.02))
 	props.bowl = bowl
 	var box := Node3D.new()
 	add_child(box)
-	_mesh(box, Kit.box(Vector3(0.36, 0.24, 0.26) * (height / 1.6)), Kit.mat(Color("#B48A5A"), 0.9))
+	_mesh(box, Kit.box(Vector3(0.36, 0.24, 0.26) * (height / 1.6)), _toon(Color("#B48A5A")))
 	props.box = box
 	var rod := Node3D.new()
 	hand.add_child(rod)
 	var rp := PackedVector3Array([Vector3(0, -s.hand, 0), Vector3(0, -s.hand + 0.4, 0.5), Vector3(0, -s.hand + 0.75, 1.1)])
-	_mesh(rod, Kit.tube(rp, 0.012, 5, 0.004), Kit.mat(Color("#6B4A2B"), 0.5))
+	_mesh(rod, Kit.tube(rp, 0.012, 5, 0.004), _toon(Color("#6B4A2B")))
 	props.rod = rod
 	var ball := Node3D.new()
 	add_child(ball)
 	var br := 0.11 * height / 1.6 + 0.02
-	_mesh(ball, Kit.ellipsoid(Vector3.ONE * br, 16, 10), Kit.mat(Color("#F6F3EC"), 0.35), Vector3(0, br, 0))
-	_mesh(ball, Kit.ellipsoid(Vector3.ONE * br * 1.01, 6, 4), Kit.mat(Color("#2B2A33"), 0.4), Vector3(0, br, 0)).scale = Vector3(0.45, 0.45, 1.0)
+	_mesh(ball, Kit.ellipsoid(Vector3.ONE * br, 16, 10), _toon(Color("#F6F3EC")), Vector3(0, br, 0))
+	_mesh(ball, Kit.ellipsoid(Vector3.ONE * br * 1.01, 6, 4), _toon(Color("#2B2A33")), Vector3(0, br, 0)).scale = Vector3(0.45, 0.45, 1.0)
 	ball.set_meta("r", br)
 	props.ball = ball
 	for k in props:
@@ -688,20 +955,28 @@ func _face(delta: float, target: Dictionary) -> void:
 	face_mat.set_shader_parameter("blink", b)
 	face_mat.set_shader_parameter("smile", float(target.get("smile", 0.55)))
 	face_mat.set_shader_parameter("open", float(target.get("open", 0.0)))
+	face_mat.set_shader_parameter("happy", float(target.get("happy", 0.0)))
 
 
 func _swing_tail(delta: float) -> void:
 	if _tail == null:
 		return
 	# 辫子：一个阻尼弹簧，跟着身子的晃动甩
-	var drive := float(_pose.get("y", 0.0)) * 30.0 + (sin(phase * TAU * 2.0) * 0.25 if walking else 0.0)
+	# 推它的是身子上下动的「快慢」（不是高低：坐下来胯低了不该把辫子甩上天）
+	var y := float(_pose.get("y", 0.0))
+	var vy := (y - _tail_py) / maxf(delta, 1e-3)
+	_tail_py = y
+	var drive := clampf(vy * 0.8, -1.2, 1.2) + (sin(phase * TAU * 2.0) * 0.25 if walking else 0.0)
 	_tail_v += (drive - _tail_a) * 60.0 * delta - _tail_v * 6.0 * delta
 	_tail_a += _tail_v * delta
 	var rot := Vector3(-0.15 + _tail_a * 0.5, 0, 0)
-	_tail.rotation = rot + Vector3(0, 0, float(_tail.get_meta("base_z", 0.0)))
+	# 头低下、仰起来时辫子还是往下垂：把头相对身子的俯仰抵掉（只抵前后，左右摆照旧）
+	var head_b: Basis = (j.root as Node3D).global_transform.basis.orthonormalized().inverse() * (_tail.get_parent() as Node3D).global_transform.basis.orthonormalized()
+	var pitch := head_b.get_euler().x
+	_tail.rotation = rot + Vector3(-pitch, 0, float(_tail.get_meta("base_z", 0.0)))
 	if _tail.has_meta("twin_node"):
 		var tw: Node3D = _tail.get_meta("twin_node")
-		tw.rotation = rot + Vector3(0, 0, float(tw.get_meta("base_z", 0.0)))
+		tw.rotation = rot + Vector3(-pitch, 0, float(tw.get_meta("base_z", 0.0)))
 
 
 func _place_props(target: Dictionary) -> void:
@@ -868,6 +1143,7 @@ func _pose_emote(p: Dictionary, e: String) -> void:
 			p.th_r = Vector3(-hop * 0.4, 0, 0)
 			p.smile = 1.0
 			p.open = 0.6
+			p.happy = 1.0
 			p.blink = 1.0
 		"sad":
 			p.neck = Vector3(0.45, 0, 0)

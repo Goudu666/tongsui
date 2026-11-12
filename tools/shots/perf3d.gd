@@ -17,6 +17,7 @@ func _wait(sec: float) -> void:
 	await create_timer(sec).timeout
 
 func _run() -> void:
+	Stage3D.set_mode("on", false)  # 量的是 3D 本身，别让自动模式中途退回 2D
 	change_scene_to_file("res://scenes/main.tscn")
 	await _wait(1.4)
 	main = current_scene

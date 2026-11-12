@@ -1669,6 +1669,7 @@ func _enter_world() -> void:
 	world.set_home_look(_home_wealth(), Era.decade(_era_now()))
 	world.net = null if offline_preview else net
 	world.move_report.connect(_on_move_report)
+	world.note.connect(_toast)
 	_layout_hud()
 	_refresh_hud()
 	if not offline_preview:

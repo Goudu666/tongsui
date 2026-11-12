@@ -12,6 +12,9 @@ extends CanvasLayer
 const P := preload("res://scripts/ui/palette.gd")
 const Kit := preload("res://scripts/ui/kit.gd")
 const Icons := preload("res://scripts/ui/icons.gd")
+const Stage3D := preload("res://scripts/world3d/stage3d.gd")
+## 画面：[设置里的值, 按钮上的字]
+const VIDEO := [["auto", "自动"], ["on", "实时 3D"], ["off", "2D"]]
 
 const LAYER := 8                 ## 界面（1）、开局纸条（4）、搭伴小游戏（5）上面，转场（50）下面
 const BUTTON_SIZE := Vector2(88, 60)
@@ -308,6 +311,24 @@ func _build() -> void:
 				_cue_at(bus))
 		_body.add_child(s)
 
+	Kit.gap(_body, P.SP_XS)
+	_section("画面")
+	Stage3D.want_3d()  # 读一下设置
+	var vrow := HBoxContainer.new()
+	vrow.add_theme_constant_override("separation", P.SP_M)
+	_body.add_child(vrow)
+	for v in VIDEO:
+		var m: String = v[0]
+		var on := Stage3D.mode == m
+		var vb := Kit.button(vrow, ("● " if on else "") + str(v[1]), func(): _set_video(m))
+		Kit.make_option(vb)
+		vb.alignment = HORIZONTAL_ALIGNMENT_CENTER
+		vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var vnote := "楼下这条街是实时 3D 的；手机吃力会自动换回 2D"
+	if Stage3D.mode == "auto" and Stage3D.auto_off:
+		vnote = "测出来这台手机跑 3D 有点卡，现在是 2D；再点「自动」或「实时 3D」重试"
+	Kit.label(_body, vnote, P.FS_CAPTION, P.INK_MID)
+
 	if mode == "online" or mode == "solo":
 		Kit.gap(_body, P.SP_XS)
 		_section("这一世")
@@ -354,6 +375,14 @@ func _build() -> void:
 		Kit.label(_body, "离开以后，影子替你照常过；回大厅点这条人生线就接上", P.FS_CAPTION, P.INK_MID, HORIZONTAL_ALIGNMENT_CENTER)
 	elif mode == "solo":
 		Kit.label(_body, "存档在这个浏览器里；回大厅点这条人生线就接上", P.FS_CAPTION, P.INK_MID, HORIZONTAL_ALIGNMENT_CENTER)
+
+
+func _set_video(m: String) -> void:
+	Stage3D.set_mode(m)
+	var w: Variant = main.get("world")
+	if w != null and is_instance_valid(w) and w.has_method("reapply_3d"):
+		w.reapply_3d()
+	_build()
 
 
 func _section(text: String) -> void:

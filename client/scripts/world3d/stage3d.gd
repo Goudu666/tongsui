@@ -23,8 +23,23 @@ const DIST := 15.0    ## 相机离人走的那条线多远（米）
 const LIFT := 2.6     ## 相机比取景框中心高多少（米）：看得见地面的进深
 const NEAR := 0.5
 const FIG_SCALE := 1.2  ## 人比房子放大一点（微缩模型里人偶总是偏大，脸才看得清；2D 精灵放大 1.5）
-## 关掉就全走 2D（设置里能关；性能探针、对比截图也用）
+## 总开关：关掉就全走 2D（单测、性能探针、对比截图用）
 static var enabled := true
+## 玩家在菜单里选的画面：auto 自动（开头几秒测帧时间，太卡就退回 2D）/ on 实时 3D / off 2D；"" 还没读设置
+static var mode := ""
+## 自动模式下测出来太卡、退回了 2D；记在设置里，下次打开也是 2D，菜单里再选一次「自动」或「实时 3D」就重试
+static var auto_off := false
+const VIDEO_CFG := "user://video.cfg"
+const SLOW_MS := 45.0       ## 平均一帧超过这么久（不到 22 帧）算太卡
+const WATCH_SKIP := 1.5     ## 刚搭好的头一秒半不算（编译 shader、建阴影图会卡一下）
+const WATCH_LEN := 4.0      ## 量多久
+
+signal fell_back            ## 自动模式测出太卡，刚退回 2D（world_view 换回 2D、提示一句）
+
+var _watch_t := 0.0
+var _watch_sum := 0.0
+var _watch_n := 0
+var _watched := false
 
 var world: Node = null          ## world_view
 var vp: SubViewport             ## 实时 3D
@@ -34,6 +49,8 @@ var post: ShaderMaterial
 var root3d: Node3D
 var cam: Camera3D
 var sun: DirectionalLight3D
+var fill: DirectionalLight3D    ## 只照人的补光（从镜头这边来，不投影）：夜里、逆光时脸不黑
+const FIG_LAYER := 2            ## 人身上多一层渲染层，补光只照这一层
 var env: Environment
 var sky: ProceduralSkyMaterial
 var set3d: Node3D = null        ## 眼前这张图的 3D（builder 搭出来的）
@@ -155,6 +172,12 @@ func _build_world() -> void:
 	sun.shadow_bias = 0.03
 	sun.shadow_normal_bias = 1.2
 	root3d.add_child(sun)
+	fill = DirectionalLight3D.new()
+	fill.shadow_enabled = false
+	fill.light_cull_mask = FIG_LAYER
+	fill.light_specular = 0.2
+	fill.rotation = Vector3(-0.35, 0.25, 0.0)  # 从镜头左上方一点照过来
+	root3d.add_child(fill)
 	cam = Camera3D.new()
 	cam.projection = Camera3D.PROJECTION_FRUSTUM
 	cam.near = NEAR
@@ -172,7 +195,61 @@ func _build_world() -> void:
 
 ## 这张图有没有 3D
 static func supports(id: String) -> bool:
-	return enabled and BUILDERS.has(id)
+	return want_3d() and BUILDERS.has(id)
+
+
+## 照设置该不该开 3D
+static func want_3d() -> bool:
+	_load_mode()
+	return enabled and (mode == "on" or (mode == "auto" and not auto_off))
+
+
+static func _load_mode() -> void:
+	if mode != "":
+		return
+	mode = "auto"
+	var cf := ConfigFile.new()
+	if cf.load(VIDEO_CFG) == OK:
+		mode = str(cf.get_value("video", "mode", "auto"))
+		auto_off = bool(cf.get_value("video", "auto_off", false))
+	if not mode in ["auto", "on", "off"]:
+		mode = "auto"
+
+
+## 菜单里换画面（重新选一次就清掉「测出太卡」的记录，再给 3D 一次机会）；save = false 出图工具用，不写设置
+static func set_mode(m: String, save := true) -> void:
+	_load_mode()
+	mode = m if m in ["auto", "on", "off"] else "auto"
+	auto_off = false
+	if save:
+		_save_mode()
+
+
+static func _save_mode() -> void:
+	var cf := ConfigFile.new()
+	cf.set_value("video", "mode", mode)
+	cf.set_value("video", "auto_off", auto_off)
+	cf.save(VIDEO_CFG)
+
+
+## 自动模式：3D 开着的头几秒量平均帧时间，太卡就记下来、退回 2D（一次运行只量一回）
+func _watch(delta: float) -> void:
+	if _watched or mode != "auto" or auto_off:
+		return
+	_watch_t += delta
+	if _watch_t < WATCH_SKIP:
+		return
+	_watch_sum += delta
+	_watch_n += 1
+	if _watch_t < WATCH_SKIP + WATCH_LEN:
+		return
+	_watched = true
+	var avg := _watch_sum / maxf(1.0, float(_watch_n)) * 1000.0
+	print("[3d] 开头 %.1f 秒平均一帧 %.1f ms" % [WATCH_LEN, avg])
+	if avg > SLOW_MS:
+		auto_off = true
+		_save_mode()
+		fell_back.emit()
 
 
 ## 换图：有 3D 的搭起来（同一张图不重搭），没有的整层藏起来、2D 接手
@@ -259,6 +336,8 @@ func _apply_time() -> void:
 	sun.light_color = day_col.lerp(Color(0.55, 0.65, 0.95), night)
 	sun.light_energy = lerpf(lerpf(2.3, 1.3, warm) * (1.0 - overcast * 0.7), 0.18, night)
 	sun.shadow_opacity = lerpf(1.0, 0.55, maxf(overcast, night))
+	fill.light_color = Color(1.0, 0.93, 0.85).lerp(Color(1.0, 0.8, 0.62), night)  # 夜里像路灯、窗里透出来的暖光
+	fill.light_energy = lerpf(0.18, 0.55, maxf(night, overcast * 0.6))
 	# 天：白天蓝、傍晚橙紫、夜里深蓝；阴雨天灰
 	var top := Color(0.32, 0.52, 0.82).lerp(Color(0.36, 0.38, 0.62), warm).lerp(Color(0.04, 0.06, 0.14), night)
 	var hor := Color(0.78, 0.84, 0.9).lerp(Color(0.98, 0.62, 0.42), warm).lerp(Color(0.12, 0.13, 0.24), night)
@@ -289,6 +368,7 @@ func _apply_time() -> void:
 func _process(delta: float) -> void:
 	if world == null or set3d == null:
 		return
+	_watch(delta)
 	_sync_camera()
 	_sync_actors(delta)
 	_sync_folks()

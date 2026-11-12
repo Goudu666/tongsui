@@ -201,7 +201,7 @@ export class Builder {
       }
       if (o.k === 'hatch') { // 排线压着的一大块：胡同口、门洞，往暗里压
         const hb = bbox(o.p);
-        if (cur && cur.mesh && cur.col && same(hb, cur.b, 8) && (o.c === 'ink')) {
+        if (cur && cur.mesh && cur.col && !cur.flat && same(hb, cur.b, 8) && (o.c === 'ink')) {   // 平地上的排线（礁石滩）不压暗：俯着看是地面，不是洞
           // 门洞、胡同口（暗的方块）压成黑洞；石头、草垛这些只压暗一点，留着体积
           cur.col = cur.dark && isRect(cur.p) ? [0x34, 0x2B, 0x31] : cur.col.map(v => v * 0.74);
           cur.mesh.material = this.mat(cur.col, cur.kind);

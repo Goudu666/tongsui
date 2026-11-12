@@ -34,19 +34,10 @@ void fragment() {
 	vec4 c;
 	float l;
 	if (blur > 0.05) {
-		vec2 r = blur / tex_size;
-		float lod = log2(1.0 + blur) * 0.7;
-		// 盘状取样：一圈八个方向，半径一长一短交错，转一个不整齐的角度（没有十字形的痕）
-		vec2 ring[8] = vec2[8](
-			vec2(0.92, 0.38), vec2(0.27, 0.65), vec2(-0.38, 0.92), vec2(-0.65, 0.27),
-			vec2(-0.92, -0.38), vec2(-0.27, -0.65), vec2(0.38, -0.92), vec2(0.65, -0.27));
-		c = texture(TEXTURE, UV, lod) * 0.2;
-		l = texture(lit_tex, UV, lod).r * 0.2;
-		for (int i = 0; i < 8; i++) {
-			vec2 uv = UV + ring[i] * r;
-			c += texture(TEXTURE, uv, lod) * 0.1;
-			l += texture(lit_tex, uv, lod).r * 0.1;
-		}
+		// 景深只借 mipmap：一下取样（三线性把相邻两级 mip 混开），和九下盘状取样看不出差别，手机上省八成的填充
+		float lod = log2(1.0 + blur) * 0.9;
+		c = texture(TEXTURE, UV, lod);
+		l = texture(lit_tex, UV, lod).r;
 	} else {
 		c = texture(TEXTURE, UV);
 		l = texture(lit_tex, UV).r;

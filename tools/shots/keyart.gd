@@ -56,6 +56,11 @@ func _run() -> void:
 	main._start_preview()
 	main.names = {"qing": "", "mei": ""}
 	var w: Node = main.world
+	# 脚下的名牌是 actor 自己的 overlay 画的（z 71，不在界面层里），只改 main.names 收不掉
+	for r in ["qing", "mei"]:
+		var ov = w.actors[r].get("_over")
+		if ov is CanvasItem:
+			ov.visible = false
 	await _wait(2.2)
 	main.hud.visible = false
 	for n in ["toast", "action_btn", "slot_btn", "goal_panel", "banner", "guide", "juice", "stat_strip"]:

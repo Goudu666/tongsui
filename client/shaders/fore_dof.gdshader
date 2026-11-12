@@ -11,14 +11,8 @@ uniform float darken = 0.32;         // 往暗色压多少（不压成剪影：�
 uniform float night = 0.0;
 
 void fragment() {
-	vec2 o = spread / tex_px;
-	vec4 c = texture(TEXTURE, UV, blur) * 0.16;
-	// 内圈：半径 0.5，六个方向；外圈：半径 1，转半格的六个方向
-	for (int i = 0; i < 6; i++) {
-		float a = float(i) * 1.0471976;
-		c += texture(TEXTURE, UV + vec2(cos(a), sin(a)) * o * 0.5, blur) * 0.08;
-		c += texture(TEXTURE, UV + vec2(cos(a + 0.5235988), sin(a + 0.5235988)) * o, blur) * 0.06;
-	}
+	// 前景只借 mipmap 虚：一下取样，偏移比原来多一级，补上原来盘状取样的那点散开
+	vec4 c = texture(TEXTURE, UV, blur + 1.0);
 	vec3 col = mix(c.rgb, shade * (c.rgb + 0.25), darken);
 	col = mix(col, col * vec3(0.34, 0.38, 0.66), night * 0.85);
 	COLOR = vec4(col, c.a * 0.96) * COLOR;

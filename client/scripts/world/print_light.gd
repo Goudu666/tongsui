@@ -151,5 +151,6 @@ func _process(delta: float) -> void:
 		var v := Vector4.ZERO
 		if i < actors.size() and is_instance_valid(actors[i]) and (actors[i] as Node2D).visible:
 			var a: Node2D = actors[i]
-			v = Vector4(a.position.x - position.x, a.position.y - position.y - 40.0, 150.0, 0.8)
+			# 光圈中心提到胸口、放大一点：夜里不在灯下时脸也看得清（小人头大，脸在脚上方一百多像素）
+			v = Vector4(a.position.x - position.x, a.position.y - position.y - 80.0, 175.0, 0.9)
 		_mat.set_shader_parameter(keys[i], v)

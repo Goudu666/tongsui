@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "2c9c6c967128",
+ "version": "5fe919672d92",
  "events": [
   {
    "id": "m_rise",
@@ -33399,6 +33399,28 @@ var CONTENT: Content = {
    "text": "后半夜烧起来了，嗓子眼像塞了团棉花。天一亮，被子掀开一角，一只手搭上了你的脑门。",
    "options": [
     {
+     "id": "mom",
+     "text": "妈在区医院，直接领你去",
+     "requires": {
+      "flags": [
+       "fam_doctor"
+      ]
+     },
+     "tags": [
+      "gentle"
+     ],
+     "effects": {
+      "self": {
+       "energy": 14,
+       "mood": 2
+      },
+      "other": {},
+      "bond": {},
+      "flags": [],
+      "goto": "hospital"
+     }
+    },
+    {
      "id": "expert",
      "text": "爸妈托人挂了专家号",
      "requires": {
@@ -33406,7 +33428,8 @@ var CONTENT: Content = {
        "fam_rich"
       ],
       "notFlags": [
-       "fam_cut"
+       "fam_cut",
+       "fam_doctor"
       ]
      },
      "tags": [

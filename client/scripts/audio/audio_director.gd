@@ -17,8 +17,6 @@ extends Node
 const MusicPlayer := preload("res://scripts/audio/music_player.gd")
 const Soundscape := preload("res://scripts/audio/soundscape.gd")
 const Observer := preload("res://scripts/audio/main_observer.gd")
-const P := preload("res://scripts/ui/palette.gd")
-const Kit := preload("res://scripts/ui/kit.gd")
 ## 三条总线和每个音效的音量（BUS_DB / CUE_DB）：改音量只改那一个文件
 const Mix := preload("res://scripts/audio/mix_table.gd")
 
@@ -50,6 +48,11 @@ const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "pla
 	# 带孩子（docs/FAMILY.md）
 	"kid_homework": "study", "kid_run": "play_river", "kid_listen": "listen", "kid_class": "study",
 	"square_dance": "perform", "pair_cook": "eat", "gk_pickup": "play_alley",
+	# 门外的世界（content/maps/{market,seaside,village}.yaml）：早市借早点铺的吆喝、海边和河沟借河边的水声、地里的活借干活
+	"soy_milk": "eat_out", "stall_sell": "eat_out", "market_walk": "eat_out", "buy_veg": "eat_out", "haul_crate": "work", "scrap_sell": "work",
+	"shell_buy": "eat_out", "sea_swim": "play_river", "sand_castle": "play_alley", "tide_dig": "fish", "ship_watch": "play_river",
+	"feed_chicken": "play_alley", "farm_help": "work", "creek_fish": "fish", "star_night": "play_roof",
+	"see_doctor": "listen", "ward_meal": "eat",
 	# 家里的东西（content/home.yaml）
 	"hm_tv": "listen", "hm_radio": "listen", "hm_console": "play_alley", "hm_books": "study", "hm_tape": "study",
 	"hm_pc": "study", "hm_pc_game": "play_alley", "hm_milk": "eat", "hm_piece": "work",
@@ -60,16 +63,12 @@ const ACT_ALIAS := {"read": "study", "picture_book": "study", "walk_river": "pla
 const TOP_PITCH := 1.12
 ## 揭晓的声音隔这么久没来，下一颗算盘珠就算新的一回揭晓
 const REVEAL_GAP := 4.0
-## 设置按钮的三档：全开 → 只关音乐 → 静音
-const LEVELS := ["乐", "响", "静"]
-## 横屏：菜单页在右上角；河畔里排在右上「对门的牌」下面（ui/hud.gd：横带 y 40~196，再空 16）
-const BUTTON_SIZE := Vector2(88, 60)
-const BUTTON_TOP_MENU := 28.0
-const BUTTON_TOP_WORLD := 204.0  ## hud.gd right_slot_top()：对门那张牌底下
+## 三条总线的音量（0~1），玩家在菜单（ui/system_menu.gd）里拖。乘在混音表的总线音量上，存在 SETTINGS 里
+const VOLUME_BUSES := ["Music", "Ambience", "Sfx"]
 
 var music: MusicPlayer
 var scape: Soundscape
-var level := 0
+var volume := {"Music": 1.0, "Ambience": 1.0, "Sfx": 1.0}
 
 var _pool: Array[AudioStreamPlayer] = []
 var _pool_i := 0
@@ -79,8 +78,6 @@ var _cache: Dictionary = {}
 var _walked := {}
 var _stage := "child"
 var _look := "child"  ## 声景按哪个年代（STAGE_FILE 的值）：era.look，没有就是 _stage
-var _button: Button
-var _boxes: Array[StyleBox] = []
 var _map: Dictionary = {}
 var _focus := 0.0
 var _reveal_at := -100.0  ## 上一下揭晓的声音是什么时候（秒）
@@ -101,8 +98,7 @@ func _ready() -> void:
 	for i in 4:
 		_steps.append(_player("Steps"))
 	_load_settings()
-	_make_button()
-	_apply_level()
+	_apply_volume()
 	var host := get_parent()
 	if host != null and host.get_script() != null and "modal_body" in host:
 		var ob := Observer.new()
@@ -151,77 +147,43 @@ func _bus(bus_name: String, send: String) -> int:
 
 func _load_settings() -> void:
 	var cfg := ConfigFile.new()
-	if cfg.load(SETTINGS) == OK:
-		level = clampi(int(cfg.get_value("audio", "level", 0)), 0, LEVELS.size() - 1)
+	if cfg.load(SETTINGS) != OK:
+		return
+	# 以前右上角是一颗三档的按钮（乐 → 响 → 静）：老存档换算成三条音量
+	var old := int(cfg.get_value("audio", "level", 0))
+	for bus in VOLUME_BUSES:
+		var muted: bool = old >= 2 or (old >= 1 and bus == "Music")
+		volume[bus] = clampf(float(cfg.get_value("audio", bus.to_lower(), 0.0 if muted else 1.0)), 0.0, 1.0)
 
 
-func _apply_level() -> void:
-	AudioServer.set_bus_mute(AudioServer.get_bus_index("Music"), level >= 1)
-	AudioServer.set_bus_mute(AudioServer.get_bus_index("Ambience"), level >= 2)
-	AudioServer.set_bus_mute(AudioServer.get_bus_index("Sfx"), level >= 2)
-	if _button != null:
-		_button.text = LEVELS[level]
-		for c in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
-			_button.add_theme_color_override(c, P.INK if level == 0 else P.INK_SOFT)
-
-
-## 音量按钮。自己占一层：在主界面（第 1 层）上面，在搭伴小游戏（第 5 层）和转场（第 50 层）下面。
-## 放哪儿、什么时候藏由观察者说了算（place_button）；样式跟主界面的主题走（adopt_theme）。
-func _make_button() -> void:
-	var layer := CanvasLayer.new()
-	layer.layer = 2
-	add_child(layer)
-	_button = Button.new()
-	_button.focus_mode = Control.FOCUS_NONE
-	_button.set_meta("sfx", "none")  # 自己出声，不用观察者再配一遍
-	_button.anchor_left = 1.0
-	_button.anchor_right = 1.0
-	_button.add_theme_font_override("font", P.font())
-	_button.add_theme_font_size_override("font_size", 28)
-	_button.pressed.connect(func():
-		level = (level + 1) % LEVELS.size()
-		_apply_level()
-		cue("tap", 0.0, 1.12)
+## 菜单里拖音量：v 是 0~1。save = 松手了才写盘（拖的时候每帧都写太勤）
+func set_volume(bus: String, v: float, save := true) -> void:
+	if not volume.has(bus):
+		return
+	volume[bus] = clampf(v, 0.0, 1.0)
+	_apply_volume()
+	if save:
 		var cfg := ConfigFile.new()
-		cfg.set_value("audio", "level", level)
-		cfg.save(SETTINGS))
-	layer.add_child(_button)
-	place_button(false, false)
+		cfg.load(SETTINGS)
+		for b in VOLUME_BUSES:
+			cfg.set_value("audio", b.to_lower(), volume[b])
+		if cfg.has_section_key("audio", "level"):
+			cfg.erase_section_key("audio", "level")
+		cfg.save(SETTINGS)
 
 
-## 用主界面的主题（ui/kit.gd 的孔版框）。框的留白收小一点，按钮才塞得进卡片的宽度
-func adopt_theme(theme: Theme) -> void:
-	_button.theme = theme
-	_boxes.clear()
-	for st in ["normal", "hover", "pressed"]:
-		if not theme.has_stylebox(st, "Button"):
+## 拖到底就是关掉（静音），不然按耳朵的感觉换成分贝：上半截变化细，下半截一下子小下去
+func _user_db(bus: String) -> float:
+	return linear_to_db(maxf(float(volume[bus]), 0.001))
+
+
+func _apply_volume() -> void:
+	for bus in VOLUME_BUSES:
+		var i := AudioServer.get_bus_index(bus)
+		if i < 0:
 			continue
-		var sb: StyleBox = theme.get_stylebox(st, "Button").duplicate()
-		sb.content_margin_left = 12
-		sb.content_margin_right = 12
-		sb.content_margin_top = 8
-		sb.content_margin_bottom = 8
-		_button.add_theme_stylebox_override(st, sb)
-		_boxes.append(sb)
-
-
-## 框后面那块错开的颜色：玩家自己的颜色
-func tint_button(color: Color) -> void:
-	for sb in _boxes:
-		if "block" in sb:
-			sb.block = color
-			sb.emit_changed()
-
-
-## in_world：在河畔里（上面有 HUD）还是在菜单页；hidden：弹窗、小游戏出来了
-func place_button(in_world: bool, hidden: bool) -> void:
-	_button.visible = not hidden
-	var top := BUTTON_TOP_WORLD if in_world else BUTTON_TOP_MENU
-	var edge := -32.0 - Kit.safe_sides(_button).y  # 刘海在右边时让开（和 HUD 的 SIDE 对齐）
-	_button.offset_left = edge - BUTTON_SIZE.x
-	_button.offset_right = edge
-	_button.offset_top = top
-	_button.offset_bottom = top + BUTTON_SIZE.y
+		AudioServer.set_bus_mute(i, float(volume[bus]) <= 0.01)
+		AudioServer.set_bus_volume_db(i, float(Mix.BUS_DB[bus]) + _user_db(bus) - (6.0 * _focus if bus == "Ambience" else 0.0))
 
 
 # ---------------------------------------------------------------- 接口 ----
@@ -249,7 +211,7 @@ func set_life(map: Dictionary, my_role: String, me_pos: Vector2, other_pos: Vari
 	scape.update(get_process_delta_time(), me_pos, minute, _look, season, school_day, weather)
 	# 弹窗（事件、一天结束）出来的时候，把环境音让一让
 	_focus = move_toward(_focus, 1.0 if focus else 0.0, get_process_delta_time() * 2.0)
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambience"), Mix.BUS_DB.Ambience - 6.0 * _focus)
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambience"), Mix.BUS_DB.Ambience + _user_db("Ambience") - 6.0 * _focus)
 	AudioServer.set_bus_effect_enabled(AudioServer.get_bus_index("Steps"), 0, scape.zone_at(me_pos) == "hallway")
 
 
@@ -257,7 +219,7 @@ func set_life(map: Dictionary, my_role: String, me_pos: Vector2, other_pos: Vari
 func idle() -> void:
 	if scape.is_setup:
 		scape.update(get_process_delta_time(), Vector2.ZERO, 720.0, _look, "spring", false)
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambience"), Mix.BUS_DB.Ambience)
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Ambience"), Mix.BUS_DB.Ambience + _user_db("Ambience"))
 
 
 func cue(cue_name: String, db := 0.0, pitch := 1.0) -> void:

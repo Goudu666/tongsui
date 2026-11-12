@@ -15,11 +15,12 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p) => parse(readFileSync(join(root, p), "utf8"));
 const yamls = (d) => (existsSync(join(root, d)) ? readdirSync(join(root, d)).filter((f) => f.endsWith(".yaml")).sort() : []);
 
-const SCENES = ["building", "street", "river", "primary", "middle", "across", "away", "newhome", "rental", "park", "hospital"];
+const SCENES = ["building", "street", "river", "primary", "middle", "across", "away", "newhome", "rental", "park", "hospital", "market", "seaside", "village"];
 const ERAS = ["childhood", "teen", "young", "middle", "old"];
 const SLOTS = ["morning", "am", "pm", "evening", "night"];
 const TAGS = ["gentle", "adventure", "solitude", "responsible", "competitive", "patient"];
-const MAP_KEYS = ["id", "name", "width", "floors", "unlock", "far", "areas", "exits", "spots", "npcs", "props", "art"];
+// trip / seen：门外的世界（server/src/outside.ts）。trip 的图只有事件的 goto 送得来，seen 是来过的人打上的标记
+const MAP_KEYS = ["id", "name", "width", "floors", "unlock", "far", "trip", "seen", "areas", "exits", "spots", "npcs", "props", "art"];
 const AREA_KEYS = ["id", "name", "span", "floor", "owner"];
 const EXIT_KEYS = ["id", "at", "floor", "to", "arrive", "arriveFloor", "label", "ride"];
 const SPOT_KEYS = ["id", "at", "area", "actions", "owner"];
@@ -102,11 +103,16 @@ for (const f of yamls("content/maps")) {
       for (const l of ls) { text(`${at}.npcs#${n.id}.lines.${era}`, l, MAX.line); for (const w of DIALECT_NO) if (l.includes(w)) errors.push(`${at}.npcs#${n.id}: 不用「${w}」（${l}）`); }
     }
   }
-  maps.set(m.id, { areas, owners: new Set((m.areas ?? []).filter((a) => a.owner).map((a) => a.id)), exits: m.exits ?? [] });
+  if (m.seen) produced.add(m.seen); // 引擎打（outside.ts → outsideSeen）
+  maps.set(m.id, { areas, owners: new Set((m.areas ?? []).filter((a) => a.owner).map((a) => a.id)), exits: m.exits ?? [], trip: !!m.trip });
 }
 for (const s of SCENES) if (!maps.has(s)) warns.push(`maps: 还没有 ${s}.yaml`);
 // 每个出口都要有回来的那一个：从 A 的 (at, floor) 去 B 的 (arrive, arriveFloor)，B 里得有一个出口去 A，落脚点就在 A 那个出口附近
+// 坐车回来、在车站下车的（海边、乡下、医院坐车回家）：落脚点 200 以内有一个坐车的出口（车站）就不用回去的那一个（同 build-content）
+const atStation = (e) => e.ride > 0 && (maps.get(e.to)?.exits ?? []).some((b) => b.ride > 0 && Math.abs(b.at - e.arrive) <= 200 && (b.floor ?? 0) === (e.arriveFloor ?? 0));
+for (const [id, m] of maps) for (const e of m.exits) if (maps.get(e.to)?.trip) errors.push(`maps/${id}.exits#${e.id}: ${e.to} 是出门才到得了的图（trip），出口不许指进去`);
 for (const [id, m] of maps) for (const e of m.exits) {
+  if (atStation(e)) continue;
   const back = maps.get(e.to)?.exits.find((b) => b.to === id && Math.abs(b.arrive - e.at) <= 120 && (b.arriveFloor ?? 0) === (e.floor ?? 0));
   if (maps.has(e.to) && !back) errors.push(`maps/${id}.exits#${e.id}: ${e.to} 里没有回来的出口`);
 }

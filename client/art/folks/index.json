@@ -34,6 +34,12 @@
    "porter",
    "queue_old"
   ],
+  "market": [
+   "soy_seller",
+   "veg_seller",
+   "wholesale_boss",
+   "scrap_buyer"
+  ],
   "middle": [
    "shed_ayi",
    "stationery",
@@ -64,11 +70,22 @@
    "photog",
    "runner"
   ],
+  "seaside": [
+   "shell_seller",
+   "lifeguard",
+   "angler",
+   "inn_clerk"
+  ],
   "street": [
    "shop_ayi",
    "shop_clerk",
    "grinder",
    "barber"
+  ],
+  "village": [
+   "grandma_v",
+   "gate_old",
+   "cousin"
   ]
  },
  "folks": {
@@ -212,6 +229,40 @@
    "bubbles": [
     "dots",
     "zzz"
+   ]
+  },
+  "soy_seller": {
+   "scene": "market",
+   "row": 0,
+   "sit": false,
+   "bubbles": [
+    "steam",
+    "talk"
+   ]
+  },
+  "veg_seller": {
+   "scene": "market",
+   "row": 1,
+   "sit": false,
+   "bubbles": [
+    "talk"
+   ]
+  },
+  "wholesale_boss": {
+   "scene": "market",
+   "row": 2,
+   "sit": false,
+   "bubbles": [
+    "talk",
+    "dots"
+   ]
+  },
+  "scrap_buyer": {
+   "scene": "market",
+   "row": 3,
+   "sit": false,
+   "bubbles": [
+    "sweat"
    ]
   },
   "shed_ayi": {
@@ -363,6 +414,41 @@
     "sweat"
    ]
   },
+  "shell_seller": {
+   "scene": "seaside",
+   "row": 0,
+   "sit": false,
+   "bubbles": [
+    "talk",
+    "note"
+   ]
+  },
+  "lifeguard": {
+   "scene": "seaside",
+   "row": 1,
+   "sit": false,
+   "bubbles": [
+    "bang",
+    "dots"
+   ]
+  },
+  "angler": {
+   "scene": "seaside",
+   "row": 2,
+   "sit": false,
+   "bubbles": [
+    "dots",
+    "zzz"
+   ]
+  },
+  "inn_clerk": {
+   "scene": "seaside",
+   "row": 3,
+   "sit": false,
+   "bubbles": [
+    "dots"
+   ]
+  },
   "shop_ayi": {
    "scene": "street",
    "row": 0,
@@ -395,6 +481,33 @@
    "sit": false,
    "bubbles": [
     "dots",
+    "note"
+   ]
+  },
+  "grandma_v": {
+   "scene": "village",
+   "row": 0,
+   "sit": true,
+   "bubbles": [
+    "heart",
+    "dots"
+   ]
+  },
+  "gate_old": {
+   "scene": "village",
+   "row": 1,
+   "sit": true,
+   "bubbles": [
+    "dots",
+    "zzz"
+   ]
+  },
+  "cousin": {
+   "scene": "village",
+   "row": 2,
+   "sit": false,
+   "bubbles": [
+    "talk",
     "note"
    ]
   }

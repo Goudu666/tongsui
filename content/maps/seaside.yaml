@@ -1,0 +1,91 @@
+# 海边：殷实人家夏天出门住几天的地方。不点名是哪片海。写法见 building.yaml 文件头。
+# 接口稿见「门外的世界」线程（outside/SPEC.md 第一节）。
+#
+# 没有出口能走进来（trip）：只有夏天那件事（events/outside.yaml 的 out_sea_*）选了「一块儿去」「跟着家里走」才送来，
+# 对门选了「回家问问，跟着去」、这边又叫了他的，也一起送来。这里的行动不写家境：人到得了这儿就做得了，被带来的对门也一样。
+# 招待所那一间屋当晚就是睡觉的地方（sleep 在没有 owner 的区里放行，引擎管）。第二天早上照常在自己家床上醒。
+
+id: seaside
+name: 海边
+width: 3800
+far: true
+trip: true              # 引擎：只有 goto 能来（锁上那句是「得跟着家里出门才来得了」）
+seen: saw_sea           # 引擎：被送来时打上（一生小结读）
+
+areas:
+  - { id: sea_street, name: 海边的街, span: [ 0, 700 ], floor: 0 }
+  - { id: sand, name: 沙滩, span: [ 700, 1900 ], floor: 0 }
+  - { id: rocks, name: 礁石, span: [ 1900, 2600 ], floor: 0 }
+  - { id: pier, name: 栈桥, span: [ 2600, 3200 ], floor: 0 }
+  - { id: inn, name: 招待所, span: [ 3200, 3800 ], floor: 0 }
+
+exits:
+  - { id: to_home, at: 120, to: street, arrive: 330, label: 坐车回家, ride: 240 }
+
+spots:
+  - { id: shell_stall, at: 420, area: sea_street, actions: [ shell_buy ] }
+  - { id: sea_swim, at: 1150, area: sand, actions: [ sea_swim ] }
+  - { id: sand_pile, at: 1650, area: sand, actions: [ sand_castle ] }
+  - { id: tide_pool, at: 2250, area: rocks, actions: [ tide_dig ] }
+  - { id: pier_end, at: 2950, area: pier, actions: [ ship_watch ] }
+  - { id: inn_table, at: 3400, area: inn, actions: [ eat ] }
+  - { id: inn_bed, at: 3650, area: inn, actions: [ sleep ] }
+
+npcs:
+  - id: shell_seller
+    name: 卖贝壳的
+    at: 360
+    eras: [ childhood, teen ]
+    lines:
+      default:
+        - 一串一块，挂门上，风一吹就响。
+        - 这个大的是海螺，搁耳朵上听听。
+        - 回去给同学带一串？
+  - id: lifeguard
+    name: 救生员
+    at: 1300
+    eras: [ childhood, teen ]
+    slots: [ am, pm, evening ]
+    lines:
+      default:
+        - 别过那面红旗。
+        - 小孩儿套上圈再下去。
+        - 起浪了，往回游。
+  - id: angler
+    name: 栈桥上钓鱼的
+    at: 3050
+    eras: [ childhood, teen ]
+    lines:
+      default:
+        - 别跺脚，鱼听得见。
+        - 钓了一早上，就这两条，小的那条放了。
+  - id: inn_clerk
+    name: 招待所的服务员
+    at: 3300
+    eras: [ childhood, teen ]
+    slots: [ evening, night ]
+    lines:
+      default:
+        - 热水十点就停，要洗赶紧。
+        - 沙子在门口跺干净再进屋。
+        - 明天退潮早，五点多就退了。
+
+props:
+  - id: umbrellas
+    name: 一排遮阳伞
+    at: 900
+    lines:
+      default:
+        - 一排遮阳伞，红白条的，底下是租来的躺椅。
+  - id: swim_ring
+    name: 晒着的救生圈
+    at: 3500
+    lines:
+      default:
+        - 招待所的阳台上晒着两个救生圈，一个漏了气。
+
+art: |
+  海平线压得很低，天占一大半。沙滩上一排遮阳伞、救生圈、晾着的泳衣，地上一串脚印被水抹平；
+  礁石上退潮的水洼，石头上一层小螺蛳；一道长栈桥伸进海里，桥头有人钓鱼，远处一艘货轮。
+  招待所是带阳台的两层楼，窗口晾着毛巾；左边海边的街上一个卖贝壳、海螺的摊子，门口挂着一串串贝壳风铃。
+  青版为主（海），梅版点在遮阳伞和救生圈上。

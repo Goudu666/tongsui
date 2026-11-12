@@ -27,6 +27,10 @@ interface OptionEffects {
   /** 看人打的标记（docs/MEANS.md 第八节）：这个人带着 flags、不带 notFlags，才再打上 add。条件都按选之前的标记算。
    *  同一条路，清贫人家没拿助学金的上大学要背助学贷款（loan），别人不用 */
   flagsIf?: { flags?: string[]; notFlags?: string[]; add: string[] }[];
+  /** 出门（server/src/outside.ts）：结算后这个人被送到这张图上，手上的事撤掉，这一天剩下的日程免了 */
+  goto?: string;
+  /** 跟着去（mirror 用）：对门选的是这里列的某一项、那一项带 goto，这个人也被送到同一张图 */
+  tagAlong?: string[];
 }
 
 interface EventOption {
@@ -122,6 +126,8 @@ interface EventRequires {
   alone?: boolean;
   /** 孩子在这个岁数段才发生（没孩子不发生） */
   kidAge?: [number, number];
+  /** 两个人里至少有一个人自己满足（不是两人合起来的标记；mirror 靠它按家境分开，server/src/outside.ts） */
+  either?: { flags?: string[]; notFlags?: string[] };
 }
 
 /** 抽事件时除了年龄和标记以外还要看的东西 */
@@ -239,7 +245,7 @@ interface Rules {
   };
   /** [从几岁起, 每年掉多少] */
   aging: { body: number[][]; mind: number[][]; activeFactor: number };
-  daily: { bodyEnergy: number; charmTogether: number; luckFate: number; slotUse: number; needsUse?: number; wageFlags?: { [flag: string]: number }; wageFlagsFrom?: number };
+  daily: { bodyEnergy: number; charmTogether: number; luckFate: number; slotUse: number; needsUse?: number; wageFlags?: { [flag: string]: number }; wageFlagsFrom?: number; flagDuty?: { [flag: string]: FlagDuty } };
   check: { base: number; perPoint: number; luck: number; min: number; max: number; help: number };
   lifespan: {
     base: number; spread: number; body: number;
@@ -294,6 +300,22 @@ interface Scene {
   unlock: (SceneUnlock & { any?: SceneUnlock[] }) | null;
   /** 外地：另一个人在别的图上，互相看不见 */
   far: boolean;
+  /** 出门才到得了的图（海边、乡下）：没有出口进来，只有事件的 goto 送得来（server/src/outside.ts） */
+  trip?: boolean;
+  /** 来过这张图的人打上这个标记（一生小结、结局读） */
+  seen?: string;
+}
+
+/**
+ * 带着某个标记的人，日程跟着变（rules.yaml → daily.flagDuty，server/src/outside.ts）：
+ * 上学的日子拖到 until（只往后拖），label 换掉；歇着的日子换成 rest（盖过 restDuty）。maxAge 以后不再管
+ */
+interface FlagDuty {
+  minAge?: number;
+  maxAge?: number;
+  until?: number;
+  label?: string;
+  rest?: Duty;
 }
 
 interface SceneUnlock { minAge?: number; maxAge?: number; flags?: string[]; notFlags?: string[] }
@@ -569,6 +591,8 @@ interface WorldState {
   rest: boolean;
   /** 只给这一个人放的一天（回来了、主线落在上班的钟点上）。可选：旧存档没有 */
   off?: { [R in Role]?: boolean };
+  /** 今天事件的 goto 把这个人送到了哪张图（server/src/outside.ts）：这张图今天对他开着。可选：旧存档没有，新的一天清掉 */
+  trip?: { [R in Role]?: string };
   /** 有人从另一片回来一趟（主线在这边）：这一天挡不住亲近淡下去（growth.ts）。可选：旧存档没有 */
   back?: boolean;
   /** 今天的日程去过了没有 */

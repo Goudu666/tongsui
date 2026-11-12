@@ -58,6 +58,14 @@ daily:
     loan: 0.9           # 十八岁背的助学贷款：再扣一成，三十岁前后还清（hardship_money.yaml 的「还清了」摘掉）
     fam_rich: 1.2       # 殷实人家：家里每个月贴补一截（成年以后才有工钱，所以是成年以后的事）。家道中落摘掉 fam_rich 就没了
     fam_cut: 0.8333     # 家里不管了：把上面那 1.2 除回去（1.2 × 0.8333 ≈ 1）。只有殷实人家会走到 fam_cut
+  # 带着这个标记的人，日程跟着变（server/src/outside.ts → outsideFlagDuty，接在 worldDuty 里）：
+  #   上学的日子拖到 until（只往后拖，原来就上到更晚的不动；拖了才换 label），歇着的日子换成 rest（盖过 restDuty）。maxAge 以后不管
+  flagDuty:
+    kin_care:           # 清贫人家的少年，家里有人住了院（events/outside.yaml 的 out_kin_hurt 打，out_kin_home 出院摘掉）
+      maxAge: 17
+      until: 1110
+      label: 上学，放了学去医院送饭
+      rest: { label: 去医院陪床, spot: ward_chair, arrive: [ 450, 540 ], until: 1110, needs: { energy: -10, mood: -4 }, stats: { charm: 0.06 } }
 
 # ---------- 检定 ----------
 # 成功率 = base + (属性 − 难度) × perPoint + (运气 − 5) × luck，夹在 [min, max] 里。

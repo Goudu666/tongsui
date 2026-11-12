@@ -1,0 +1,673 @@
+# 门外的世界（out_ 前缀）：三档人家见到的地方不一样（接口稿 outside/SPEC.md 第四节）。
+#
+# 一、夏天（mirror，童年，楼道，早上）：殷实人家去海边，小康人家回乡下姥姥家，清贫人家跟着去早市出摊。
+#     requires.either：两个人里至少一个人自己是这一档（引擎，outside.ts）。选项的 requires 只看选的人：
+#       这一档的孩子看得见 invite（叫上对门）/ go（跟着家里走），都带 goto 把人送到那张图上；
+#       别人家的孩子看得见 follow（回家问问，跟着去），tagAlong: [invite]——对门叫了他才跟去，没叫就什么也不发生；
+#       stay / wait 谁都看得见。
+#     invite × follow 是「搭上了」（content/duet.yaml），打 p_took_*，一生小结读。go × wait 也是：一个去，一个等，带回来一样东西。
+#     invite、go 自己也打 saw_*（和图上的 seen 是同一个标记，引擎没走地图的时候也打得上）。
+#     两个人读的是同一段字，所以正文只写楼道里看得见的东西（旅行包、两兜子东西、装好的三轮车），不写「你家」「你爸」。
+# 二、看病（solo，童年冬天）：同一场烧，三档人家去的地方不一样。
+# 三、家里有人住院（少年）：清贫人家的孩子放了学、歇着的日子都在医院（kin_care，rules.yaml 的 flagDuty）；
+#     小康人家替半天班，殷实人家请了护工、坐十分钟。对门在楼道里接一下。
+# 四、出远门（solo，少年、青年，纯文字）。
+#
+# 岁数：没写 where 的事别从关口那岁起（6、9、12、15、18、22……），会在关口当天早上触发。所以看病从 7 岁、住院从 13 岁起。
+# 写法守 docs/tianjin_style.md：不评价谁家好谁家差，不哭穷也不炫富，不点真实地名和招牌。
+
+# ---------- 一、夏天：殷实 · 海边 ----------
+
+- id: out_sea_1
+  kind: mirror
+  stage: childhood
+  where: hallway
+  when: [390, 600]
+  seasons: [summer]
+  hint: 楼道里搁着个旅行包。
+  weight: 3
+  requires: { minAge: 6, maxAge: 8, either: { flags: [fam_rich], notFlags: [fam_cut] } }
+  title: 旅行包
+  text: 楼道里搁着一个新旅行包，拉链上拴着个游泳圈。有一家今天去海边，住三天，车八点到楼下。
+  options:
+    - id: invite
+      text: 拉上对门一块儿去
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
+      tags: [gentle]
+      effects: { self: { mood: 6 }, flags: [saw_sea], goto: seaside }
+    - id: go
+      text: 跟着家里上车
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
+      tags: [adventure]
+      effects: { self: { mood: 4 }, flags: [saw_sea], goto: seaside }
+    - id: follow
+      text: 回家问能不能跟去
+      requires: { notFlags: [fam_rich] }
+      tags: [adventure]
+      effects: { self: { mood: 2 }, tagAlong: [invite] }
+    - id: stay
+      text: 这回不去了
+      tags: [patient]
+      effects: { self: { energy: 4 } }
+    - id: wait
+      text: 下楼看看那辆车
+      tags: [solitude]
+      effects: { self: { mood: 2 } }
+  resonance:
+    invite:
+      text: 两个人同时敲开对方的门，话都没说完。两家定的是同一片海，同一个招待所。
+      memory: 同一个招待所
+      bond: { sync: 3, close: 2 }
+    go:
+      text: 到了招待所，隔壁的门一开，出来的是对门。两家谁也没提前说。
+      memory: 隔壁那间屋
+      bond: { sync: 3, close: 2 }
+    stay:
+      text: 旅行包又拎回了屋里。那天两个人在楼下跳了一上午皮筋，谁也没提海。
+      memory: 没提的海
+      bond: { sync: 3, close: 2 }
+    wait:
+      text: 两个人一前一后下了楼，围着车转了一圈，在车窗上各按了一个手印。
+      memory: 车窗上的手印
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个坐在后座上回头，一个趴在楼道的窗台上。车拐过街口，两个人还看着那个方向。
+    bond: { close: 0 }
+
+- id: out_sea_2
+  kind: mirror
+  stage: childhood
+  where: hallway
+  when: [390, 600]
+  seasons: [summer]
+  hint: 楼下的车按了一声喇叭。
+  weight: 3
+  requires: { minAge: 9, maxAge: 11, either: { flags: [fam_rich], notFlags: [fam_cut] } }
+  title: 泳衣
+  text: 楼道的绳上晾着一条泳衣，还没干透就收走了。楼下的车按了一声喇叭，有一家又要去海边。
+  options:
+    - id: invite
+      text: 叫上对门，多带一套
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
+      tags: [gentle]
+      effects: { self: { mood: 6 }, flags: [saw_sea], goto: seaside }
+    - id: go
+      text: 拎上包下楼
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
+      tags: [adventure]
+      effects: { self: { mood: 4 }, flags: [saw_sea], goto: seaside }
+    - id: follow
+      text: 回家问能不能跟去
+      requires: { notFlags: [fam_rich] }
+      tags: [adventure]
+      effects: { self: { mood: 2 }, tagAlong: [invite] }
+    - id: stay
+      text: 这回不想去了
+      tags: [solitude]
+      effects: { self: { mind: 1 } }
+    - id: wait
+      text: 下楼送一送
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+  resonance:
+    invite:
+      text: 两家的车前后脚到了楼下。司机说，你们俩坐一辆，大人坐另一辆。
+      memory: 坐一辆车
+      bond: { sync: 3, close: 2 }
+    go:
+      text: 栈桥上，两个人隔着十几米认出了对方。谁也没往前走，先挥了挥手。
+      memory: 栈桥上的手
+      bond: { sync: 3, close: 2 }
+    stay:
+      text: 车走了。两个人坐在楼道的台阶上，把一本小人书从头翻到尾，又翻回来。
+      memory: 翻回来的书
+      bond: { sync: 3, close: 2 }
+    wait:
+      text: 两个人都下了楼，在车边站着。喇叭又响了一声，两个人一齐往后退了一步。
+      memory: 退了一步
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 车上的那个数着路边的电线杆，楼道里的那个数着台阶，都数到了一百多。
+    bond: { close: 0 }
+
+# ---------- 一、夏天：小康 · 回乡下 ----------
+# follow 不写 requires：殷实、清贫的孩子都能跟着去；两家都是小康、一个叫一个跟，也是跟着去了别人家的姥姥家
+
+- id: out_village_1
+  kind: mirror
+  stage: childhood
+  where: hallway
+  when: [390, 600]
+  seasons: [summer]
+  hint: 楼道里堆着两兜子东西。
+  weight: 3
+  requires: { minAge: 6, maxAge: 8, either: { notFlags: [fam_rich, fam_poor] } }
+  title: 两兜子东西
+  text: 楼道里堆着两兜子东西：点心匣子、一桶油、给姥姥扯的一块布。有一家要赶早班长途车，回乡下。
+  options:
+    - id: invite
+      text: 叫上对门去乡下
+      requires: { notFlags: [fam_rich, fam_poor] }
+      tags: [gentle]
+      effects: { self: { mood: 6 }, flags: [saw_village], goto: village }
+    - id: go
+      text: 拎上一兜子上车
+      requires: { notFlags: [fam_rich, fam_poor] }
+      tags: [responsible]
+      effects: { self: { mood: 4 }, flags: [saw_village], goto: village }
+    - id: follow
+      text: 回家问能不能跟去
+      tags: [adventure]
+      effects: { self: { mood: 2 }, tagAlong: [invite] }
+    - id: stay
+      text: 这回不去了
+      tags: [patient]
+      effects: { self: { energy: 4 } }
+    - id: wait
+      text: 下楼送一送
+      tags: [solitude]
+      effects: { self: { mood: 2 } }
+  resonance:
+    invite:
+      text: 两家坐的是同一趟长途车。下了车才知道，两家的姥姥住一个村，隔着一条河沟。
+      memory: 隔一条河沟
+      bond: { sync: 3, close: 2 }
+    go:
+      text: 早班长途车上，一前一后两排。两个人隔着椅背对看了一眼，都笑了。
+      memory: 隔着椅背
+      bond: { sync: 3, close: 2 }
+    follow:
+      text: 两个人都回家问了一遍，都问到了同一句：「人家去走亲戚，你跟着算怎么回事。」
+      memory: 同一句话
+      bond: { sync: 3, close: 2 }
+    stay:
+      text: 点心匣子留下了一盒。两个人坐在楼道台阶上分着吃了，渣掉了一台阶。
+      memory: 一台阶的渣
+      bond: { sync: 3, close: 2 }
+    wait:
+      text: 两个人一人拎着一兜子送下楼，拎到车边，胳膊上都勒出了一道红印。
+      memory: 勒红的胳膊
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个在长途车上睡着了，脑袋磕着车窗；一个在楼下跳皮筋，跳一会儿往街口看一眼。
+    bond: { close: 0 }
+
+- id: out_village_2
+  kind: mirror
+  stage: childhood
+  where: hallway
+  when: [390, 600]
+  seasons: [summer]
+  hint: 有人在楼道里数车票。
+  weight: 3
+  requires: { minAge: 9, maxAge: 11, either: { notFlags: [fam_rich, fam_poor] } }
+  title: 早班车
+  text: 有一家在楼道里数车票：坐早班长途车，到镇上再搭一段拖拉机，到姥姥家正赶上午饭。
+  options:
+    - id: invite
+      text: 叫对门一块儿回去
+      requires: { notFlags: [fam_rich, fam_poor] }
+      tags: [gentle]
+      effects: { self: { mood: 6 }, flags: [saw_village], goto: village }
+    - id: go
+      text: 拎上东西下楼
+      requires: { notFlags: [fam_rich, fam_poor] }
+      tags: [responsible]
+      effects: { self: { mood: 4 }, flags: [saw_village], goto: village }
+    - id: follow
+      text: 回家问能不能跟去
+      tags: [adventure]
+      effects: { self: { mood: 2 }, tagAlong: [invite] }
+    - id: stay
+      text: 这回想留在家里
+      tags: [solitude]
+      effects: { self: { mind: 1 } }
+    - id: wait
+      text: 送到街口
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+  resonance:
+    invite:
+      text: 两家前后脚出的门，车票买在了一起。一路上两个人把一包瓜子嗑完了。
+      memory: 一包瓜子
+      bond: { sync: 3, close: 2 }
+    go:
+      text: 拖拉机上颠得说不出话。两家的东西堆在一块儿，两个人坐在最上头。
+      memory: 坐在最上头
+      bond: { sync: 3, close: 2 }
+    follow:
+      text: 两个人都跑回家问了。回来在楼道里一碰头，看对方的脸就知道了。
+      memory: 看脸就知道
+      bond: { sync: 3, close: 2 }
+    stay:
+      text: 那天楼里静。两个人在楼顶上，看着往东去的车，一辆一辆地数。
+      memory: 往东去的车
+      bond: { sync: 3, close: 2 }
+    wait:
+      text: 两个人送到街口。车门一关，两个人一齐往后退了一步。
+      memory: 退那一步
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个在拖拉机上颠着，一个在楼道里写暑假作业。作业写到第七页，拖拉机到了村口。
+    bond: { close: 0 }
+
+# ---------- 一、夏天：清贫 · 早市 ----------
+
+- id: out_market_1
+  kind: mirror
+  stage: childhood
+  where: hallway
+  when: [390, 600]
+  seasons: [summer]
+  hint: 楼下的三轮车在响。
+  weight: 3
+  requires: { minAge: 6, maxAge: 8, either: { flags: [fam_poor] } }
+  title: 三轮车
+  text: 楼下那辆三轮车早装好了，车斗里码着空筐，绳子勒了两道。有一家要去早市出摊。
+  options:
+    - id: invite
+      text: 叫上对门帮着看摊
+      requires: { flags: [fam_poor] }
+      tags: [gentle]
+      effects: { self: { mood: 4 }, flags: [saw_market], goto: market }
+    - id: go
+      text: 爬上车斗跟着去
+      requires: { flags: [fam_poor] }
+      tags: [responsible]
+      effects: { self: { mood: 2 }, flags: [saw_market], goto: market }
+    - id: follow
+      text: 回家问能不能跟去
+      requires: { notFlags: [fam_poor] }
+      tags: [adventure]
+      effects: { self: { mood: 2 }, tagAlong: [invite] }
+    - id: stay
+      text: 回屋再睡一会儿
+      tags: [patient]
+      effects: { self: { energy: 6 } }
+    - id: wait
+      text: 在楼门口等车回来
+      tags: [solitude]
+      effects: { self: { mood: 1 } }
+  resonance:
+    invite:
+      text: 两家的三轮车一前一后出了胡同。到了早市，两个摊挨着，两个孩子背对背坐。
+      memory: 背对背
+      bond: { sync: 3, close: 2 }
+    go:
+      text: 到了早市，隔壁摊上蹲着码西红柿的是对门。两个人谁也没出声，比着码。
+      memory: 比着码
+      bond: { sync: 3, close: 2 }
+    stay:
+      text: 三轮车是大人蹬走的。两个孩子在楼道里，把昨天那盘没下完的跳棋下完了。
+      memory: 下完的跳棋
+      bond: { sync: 3, close: 2 }
+    wait:
+      text: 两个人坐在楼门口的台阶上等。中午车回来了，车斗空了，筐摞得老高。
+      memory: 摞高的空筐
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个坐在车斗里，抱着一摞空筐；一个站在楼门口，手里攥着买早点的钱。
+    bond: { close: 0 }
+
+- id: out_market_2
+  kind: mirror
+  stage: childhood
+  where: hallway
+  when: [390, 600]
+  seasons: [summer]
+  hint: 楼道里有人在捋毛票。
+  weight: 3
+  requires: { minAge: 9, maxAge: 11, either: { flags: [fam_poor] } }
+  title: 找零的毛票
+  text: 楼道里有人蹲着，把毛票一张一张捋平，用皮筋扎上，是早市上找零用的。三轮车在楼下等着。
+  options:
+    - id: invite
+      text: 叫对门来帮着吆喝
+      requires: { flags: [fam_poor] }
+      tags: [gentle]
+      effects: { self: { mood: 4 }, flags: [saw_market], goto: market }
+    - id: go
+      text: 揣上零钱下楼
+      requires: { flags: [fam_poor] }
+      tags: [responsible]
+      effects: { self: { charm: 1 }, flags: [saw_market], goto: market }
+    - id: follow
+      text: 回家问能不能跟去
+      requires: { notFlags: [fam_poor] }
+      tags: [adventure]
+      effects: { self: { mood: 2 }, tagAlong: [invite] }
+    - id: stay
+      text: 回屋写暑假作业
+      tags: [patient]
+      effects: { self: { mind: 1 } }
+    - id: wait
+      text: 下楼帮着推一段
+      tags: [responsible]
+      effects: { self: { body: 1, energy: -4 } }
+  resonance:
+    invite:
+      text: 两个摊隔着一条过道。两个人吆喝的是同一句，一个高一个低，谁也没改。
+      memory: 同一句吆喝
+      bond: { sync: 3, close: 2 }
+    go:
+      text: 找零的时候，两个人隔着过道互相借了一回毛票，过了一会儿，又还了一回。
+      memory: 借来的毛票
+      bond: { sync: 3, close: 2 }
+    stay:
+      text: 两个人在一张桌上写作业，写到中午，楼下的三轮车回来了，车铃响了两声。
+      memory: 车铃响两声
+      bond: { sync: 3, close: 2 }
+    wait:
+      text: 一个在后头推，一个在边上扶着筐，推到胡同口，车上的大人说：「回吧。」
+      memory: 推到胡同口
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个在早市上踮着脚报价钱，一个在楼道里写作业，写一会儿，往窗户外头看一眼。
+    bond: { close: 0 }
+
+# ---------- 二、看病：同一场烧 ----------
+# lifeGated：殷实（没断供）托人挂专家号、小康排队挂号要两块钱、清贫去街道卫生所一块钱；姜汤和硬撑谁都有。
+# 去医院的两样把人送到医院（goto），看完从挂号大厅门口坐车回家
+
+- id: out_sick
+  kind: solo
+  stage: childhood
+  seasons: [winter]
+  weight: 3
+  requires: { minAge: 7, maxAge: 11 }
+  title: 夜里烧起来
+  text: 后半夜烧起来了，嗓子眼像塞了团棉花。天一亮，被子掀开一角，一只手搭上了你的脑门。
+  options:
+    - id: expert
+      text: 爸妈托人挂了专家号
+      requires: { flags: [fam_rich], notFlags: [fam_cut] }
+      tags: [patient]
+      effects: { self: { energy: 10 }, goto: hospital }
+    - id: queue
+      text: 一早去医院排队挂号
+      requires: { notFlags: [fam_rich, fam_poor] }
+      cost: 2
+      tags: [patient]
+      effects: { self: { energy: 4 }, goto: hospital }
+    - id: clinic
+      text: 去街道卫生所打一针
+      requires: { flags: [fam_poor] }
+      cost: 1
+      tags: [responsible]
+      effects: { self: { energy: -10, mood: -2 } }
+    - id: ginger
+      text: 喝碗姜汤捂一身汗
+      tags: [solitude]
+      effects: { self: { energy: -20, mood: -4 } }
+    - id: push
+      text: 硬撑着去上学
+      tags: [competitive]
+      effects: { self: { energy: -28, mind: 1 } }
+
+# ---------- 三、家里有人住院 ----------
+# 清贫：kin_care 让上学的日子拖到傍晚（放了学去医院送饭），歇着的日子在病房陪床（rules.yaml 的 flagDuty）。
+# 出院那件（out_kin_home）权重给 8 不给 30：一年就两三个日子，给 30 第二天早上就出院了，医院那几天只剩一天
+
+- id: out_kin_hurt
+  kind: solo
+  stage: teen
+  weight: 3
+  requires: { minAge: 13, maxAge: 16, flags: [fam_poor], notFlags: [kin_care, kin_cared] }
+  title: 铝饭盒
+  text: 家里有人住了院，一时半会儿出不来。一只铝饭盒刷干净了，搁在你书包旁边。
+  options:
+    - id: after_school
+      text: 放了学就去送饭
+      tags: [responsible]
+      effects: { self: { mood: -3 }, flags: [kin_care] }
+    - id: night
+      text: 夜里去陪床
+      tags: [gentle]
+      effects: { self: { energy: -10, charm: 1 }, flags: [kin_care] }
+    - id: brother
+      text: 跟家里轮着来
+      tags: [patient]
+      effects: { self: { mood: -2 }, flags: [kin_care] }
+
+- id: out_kin_home
+  kind: solo
+  stage: teen
+  weight: 8
+  requires: { minAge: 13, flags: [kin_care] }
+  title: 出院那天
+  text: 出院那天，你把床头柜里的东西一样一样装进网兜。护士说：「这孩子，天天来。」
+  options:
+    - id: carry
+      text: 背着铺盖卷走在前头
+      tags: [responsible]
+      effects: { self: { mood: 8, energy: -6, body: 1 }, drop: [kin_care], flags: [kin_cared] }
+    - id: thank
+      text: 回头跟护士说声谢谢
+      tags: [gentle]
+      effects: { self: { mood: 8, charm: 1 }, drop: [kin_care], flags: [kin_cared] }
+    - id: jar
+      text: 把空罐头瓶也拎回家
+      tags: [patient]
+      effects: { self: { mood: 8, mind: 1 }, drop: [kin_care], flags: [kin_cared] }
+
+# 同一件事，别的人家：小康爸妈两班倒、叫你替半天；殷实请了护工，你去坐了十分钟。一回，不打标记
+- id: out_kin_mid
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 13, maxAge: 17, notFlags: [fam_rich, fam_poor] }
+  title: 替半天
+  text: 奶奶住了院，爸妈两班倒着陪。礼拜天你妈说：「上午你去替我半天，我回来睡一觉。」
+  options:
+    - id: go
+      text: 带上作业去替班
+      tags: [responsible]
+      effects: { self: { mind: 1, energy: -6 } }
+    - id: early
+      text: 早去一个钟头
+      tags: [gentle]
+      effects: { self: { charm: 1, energy: -10 } }
+    - id: read
+      text: 给奶奶念报纸
+      tags: [patient]
+      effects: { self: { mood: 3 } }
+
+- id: out_kin_rich
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 13, maxAge: 17, flags: [fam_rich], notFlags: [fam_cut] }
+  title: 十分钟
+  text: 爷爷住了院，单间，家里请了护工。你去了一趟，在床边坐了十分钟，护工说他刚睡着。
+  options:
+    - id: leave
+      text: 把水果搁下就走
+      tags: [solitude]
+      effects: { self: { mood: -1 } }
+    - id: wait
+      text: 坐着等他醒
+      tags: [patient]
+      effects: { self: { energy: -8, charm: 1 } }
+    - id: note
+      text: 留张字条压在杯子底下
+      tags: [gentle]
+      effects: { self: { mind: 1 } }
+
+# 对门在楼道里接一下：一个刚从医院回来，一个记了两份作业。either 看带 kin_care 的那一个
+- id: out_kin_visit
+  kind: mirror
+  stage: teen
+  where: hallway
+  when: [1110, 1320]
+  hint: 楼道里有人在刷饭盒。
+  weight: 4
+  requires: { minAge: 13, either: { flags: [kin_care] } }
+  title: 两份作业
+  text: 晚上楼道里，一个刚从医院回来，饭盒还没刷；一个手里拿着今天的作业，记了两份。
+  options:
+    - id: tell
+      text: 说说医院里的事
+      requires: { flags: [kin_care] }
+      tags: [gentle]
+      effects: { self: { mood: 3 } }
+    - id: copy
+      text: 把作业摊开讲一遍
+      requires: { notFlags: [kin_care] }
+      tags: [responsible]
+      effects: { self: { mind: 1 }, other: { mind: 1 } }
+    - id: wash
+      text: 一块儿把饭盒刷了
+      tags: [patient]
+      effects: { self: { mood: 2 } }
+    - id: sit
+      text: 在楼梯上坐一会儿
+      tags: [solitude]
+      effects: { self: { energy: 3 } }
+  resonance:
+    tell:
+      text: 两个人说着说着停住了：说的是同一家医院，同一层楼，开水房的同一个龙头。
+      memory: 同一个龙头
+      bond: { sync: 3, close: 2 }
+    wash:
+      text: 水池边两个人挤着，一个刷，一个拿抹布擦干。饭盒盖上刻的字擦得发亮。
+      memory: 发亮的饭盒盖
+      bond: { sync: 3, close: 2 }
+    sit:
+      text: 两个人在楼梯上坐着，谁也没提医院。楼道灯灭了，谁也没去跺那一脚。
+      memory: 没跺的那一脚
+      bond: { sync: 3, close: 2 }
+  dissonance:
+    text: 一个把作业搁在门口的凳子上，一个在水池边刷饭盒。刷完了回头，作业还在凳子上。
+    bond: { close: 0 }
+
+# ---------- 四、出远门 ----------
+# 殷实：头一回坐飞机、毕业以后家里出钱出国转一圈；小康：单位的大轿车进山；清贫：暑假扛货挣学费、头一回出远门买的站票
+
+- id: out_plane
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 13, maxAge: 17, flags: [fam_rich], notFlags: [fam_cut] }
+  title: 头一回坐飞机
+  text: 头一回坐飞机去南边。起飞的时候耳朵嗡的一声，往下看，河成了一根线。
+  options:
+    - id: window
+      text: 一路贴着窗户看
+      tags: [adventure]
+      effects: { self: { mind: 1 } }
+    - id: sleep
+      text: 系上安全带睡一觉
+      tags: [patient]
+      effects: { self: { energy: 6 } }
+    - id: ticket
+      text: 把登机牌夹进书里
+      tags: [solitude]
+      effects: { self: { mood: 4 } }
+    - id: gift
+      text: 给对门捎点南边的糖
+      cost: 1
+      tags: [gentle]
+      effects: { other: { mood: 4 }, bond: { close: 1 } }
+
+- id: out_unit_trip
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 13, maxAge: 17, notFlags: [fam_rich, fam_poor] }
+  title: 大轿车
+  text: 你爸单位组织进山玩一天，一家能带一个孩子。大轿车上一车人都认得你，叫你小名。
+  options:
+    - id: sing
+      text: 车上跟着大人唱歌
+      tags: [competitive]
+      effects: { self: { charm: 1 } }
+    - id: climb
+      text: 头一个爬上山顶
+      tags: [adventure]
+      effects: { self: { body: 1, energy: -10 } }
+    - id: stone
+      text: 给对门捡块花石头
+      tags: [gentle]
+      effects: { self: { mood: 3 }, bond: { close: 1 } }
+    - id: sit
+      text: 跟你爸坐一块儿
+      tags: [patient]
+      effects: { self: { mood: 4 } }
+
+- id: out_summer_work
+  kind: solo
+  stage: teen
+  weight: 2
+  requires: { minAge: 13, maxAge: 17, flags: [fam_poor] }
+  title: 学费
+  text: 暑假去批发市场扛货，一天下来肩膀磨破了皮。老板说，干满一个月，学费就够了。
+  options:
+    - id: full
+      text: 干满一个月
+      tags: [responsible]
+      effects: { self: { body: 1, energy: -20 }, money: 8 }
+    - id: half
+      text: 干半个月，留半个月念书
+      tags: [patient]
+      effects: { self: { mind: 1, energy: -10 }, money: 4 }
+    - id: pair
+      text: 叫上对门一块儿干
+      tags: [gentle]
+      effects: { self: { energy: -12 }, bond: { close: 1 }, money: 4 }
+
+# 毕业以后，家里出钱出去转一圈（二十二岁是关口，从二十三起）
+- id: out_grad_trip
+  kind: solo
+  stage: young
+  weight: 2
+  requires: { minAge: 23, maxAge: 24, flags: [fam_rich], notFlags: [fam_cut] }
+  title: 头一个章
+  text: 家里说趁年轻，出钱让你出国转一圈。护照上头一个章，你在机场看了好几遍。
+  options:
+    - id: museum
+      text: 一天走三个博物馆
+      tags: [competitive]
+      effects: { self: { mind: 1, energy: -10 } }
+    - id: walk
+      text: 在街上随便走走
+      tags: [adventure]
+      effects: { self: { charm: 1 } }
+    - id: card
+      text: 给对门寄张明信片
+      cost: 1
+      tags: [gentle]
+      effects: { other: { mood: 4 }, bond: { close: 1 } }
+    - id: home
+      text: 提前两天回来
+      tags: [patient]
+      effects: { self: { mood: 2, energy: 6 } }
+
+# 清贫人家头一回出远门：外地车站（away.yaml 的 station）。去得了外地的才在这儿（念大学、出国、当兵、在外地工作），所以不再写那几个标记
+- id: out_standing
+  kind: solo
+  stage: young
+  where: station
+  weight: 3
+  requires: { minAge: 18, maxAge: 22, flags: [fam_poor] }
+  hint: 站台上有人蹲着歇脚。
+  title: 站票
+  text: 站了一宿到的。下了车腿是麻的，你在站台上蹲了一会儿，才把行李重新扛上肩。
+  options:
+    - id: walk
+      text: 扛着行李走过去
+      tags: [competitive]
+      effects: { self: { body: 1, energy: -10 } }
+    - id: rest
+      text: 在台阶上歇够了再走
+      tags: [patient]
+      effects: { self: { energy: 6 } }
+    - id: call
+      text: 找个电话给家里报平安
+      cost: 1
+      tags: [responsible]
+      effects: { self: { mood: 5 } }
+    - id: noodle
+      text: 在站前吃碗面
+      cost: 1
+      tags: [adventure]
+      effects: { self: { hunger: 40, mood: 3 } }

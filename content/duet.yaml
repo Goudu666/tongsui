@@ -53,6 +53,73 @@ catches:
       text: 一个说，一个听。说的那个说岔了年头，听的那个没给纠正。
       memory: 说岔的年头
       bond: { sync: 3, close: 1 }
+  # 门外的世界（content/events/outside.yaml）：一家叫、一家跟着去，是把对门带进自己家的世界那一下；
+  # 一个去了、一个在家等着，带回来一样东西。p_took_* 一生小结读（被带去的那一个）
+  out_sea_1:
+    - pair: [invite, follow]
+      text: 一个刚喊「走」，一个已经跑回家问去了。车开出去，两个人挤在后座的一个窗口。
+      memory: 一个窗口
+      bond: { sync: 3, close: 2 }
+      flags: [p_took_sea]
+    - pair: [go, wait]
+      text: 一个上了车，一个在楼下站着。三天后回来，兜里一把沙子，先敲的是对门。
+      memory: 一兜沙子
+      bond: { sync: 2, close: 1 }
+  out_sea_2:
+    - pair: [invite, follow]
+      text: 一个来拍门，一个已经拎着书包站在门里了。书包里塞着一条旧泳裤，是借的。
+      memory: 借来的泳裤
+      bond: { sync: 3, close: 2 }
+      flags: [p_took_sea]
+    - pair: [go, wait]
+      text: 一个上了车，一个在楼下挥手。回来那天，楼道里对门的门把上挂着一串贝壳。
+      memory: 门把上的贝壳
+      bond: { sync: 2, close: 1 }
+  out_village_1:
+    - pair: [invite, follow]
+      text: 一个说「走」，一个回家拿了件长袖。到了玉米地才知道，长袖是拿对了。
+      memory: 一件长袖
+      bond: { sync: 3, close: 2 }
+      flags: [p_took_village]
+    - pair: [go, wait]
+      text: 一个回了乡下，一个在楼下等。回来那天，半兜子新掰的玉米先给了对门。
+      memory: 半兜玉米
+      bond: { sync: 2, close: 1 }
+  out_village_2:
+    - pair: [invite, follow]
+      text: 一个刚开口，一个就说「我去问」。那天晚上，姥姥家的饭桌上多摆了一双筷子。
+      memory: 多一双筷子
+      bond: { sync: 3, close: 2 }
+      flags: [p_took_village]
+    - pair: [go, wait]
+      text: 一个回了乡下，一个在楼下等。回来的那个晒黑了一圈，拎着一兜鸡蛋，拿报纸裹着。
+      memory: 裹报纸的鸡蛋
+      bond: { sync: 2, close: 1 }
+  out_market_1:
+    - pair: [invite, follow]
+      text: 一个说「来帮我看摊」，一个鞋都没提上就下了楼。车斗里挤着两个人，一摞筐。
+      memory: 车斗里俩人
+      bond: { sync: 3, close: 2 }
+      flags: [p_took_market]
+    - pair: [go, wait]
+      text: 一个出了摊，一个在楼下等。中午车回来，车斗里滚下来两根卖剩的黄瓜，是给对门的。
+      memory: 两根黄瓜
+      bond: { sync: 2, close: 1 }
+  out_market_2:
+    - pair: [invite, follow]
+      text: 一个把扎好的毛票分了一半塞过去：「你管找零。」那天一分钱也没找错。
+      memory: 一分没错
+      bond: { sync: 3, close: 2 }
+      flags: [p_took_market]
+    - pair: [go, wait]
+      text: 一个出了摊，一个在楼下等。中午回来，兜里一把卖剩的小西红柿，红的都给了对门。
+      memory: 小西红柿
+      bond: { sync: 2, close: 1 }
+  out_kin_visit:
+    - pair: [tell, copy]
+      text: 一个讲今天的题，一个说病房里的事。讲完了，说完了，两个人谁也没起身。
+      memory: 谁也没起身
+      bond: { sync: 3, close: 2 }
 
 # ---------------------------------------------------------------------------
 # 二、回话：一方不在时影子替他选过的默契事件，本人回来后补答

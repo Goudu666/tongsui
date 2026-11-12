@@ -17,6 +17,9 @@ from fontTools import subset
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 FONT = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "client/fonts/LXGWWenKai-Regular.ttf"
+# 像素画的界面字：缝合像素 12px（OFL，原件在 tools/art/pixel/fonts/），同样裁一份进 client/fonts/
+PIXEL_SRC = ROOT / "tools/art/pixel/fonts/fusion-pixel-12px-proportional-zh_hans.ttf"
+PIXEL_DST = ROOT / "client/fonts/FusionPixel-12px.ttf"
 
 
 def gb2312() -> str:
@@ -47,6 +50,14 @@ def main() -> None:
     punct = "，。、；：？！…—·「」『』（）《》〈〉【】“”‘’～￥％＋－×÷＝０１２３４５６７８９✓✗←→↑↓★☆♥○●△□◇"
     chars = set(gb2312() + ascii_ + punct + repo_text())
     chars = {c for c in chars if c.isprintable() or c == " "}
+    cut(FONT, FONT, chars)
+    if len(sys.argv) <= 1 and PIXEL_SRC.exists():
+        PIXEL_DST.parent.mkdir(parents=True, exist_ok=True)
+        cut(PIXEL_SRC, PIXEL_DST, chars)
+
+
+def cut(src, dst, chars) -> None:
+    FONT = src
     before = FONT.stat().st_size
     opts = subset.Options()
     opts.layout_features = ["*"]
@@ -57,9 +68,9 @@ def main() -> None:
     sub = subset.Subsetter(opts)
     sub.populate(text="".join(sorted(chars)))
     sub.subset(font)
-    subset.save_font(font, str(FONT), opts)
-    after = FONT.stat().st_size
-    print(f"✓ 字体裁剪：{len(chars)} 个字符，{before / 1e6:.1f} MB → {after / 1e6:.1f} MB")
+    subset.save_font(font, str(dst), opts)
+    after = dst.stat().st_size
+    print(f"✓ 字体裁剪 {dst.name}：{len(chars)} 个字符，{before / 1e6:.1f} MB → {after / 1e6:.1f} MB")
 
 
 if __name__ == "__main__":

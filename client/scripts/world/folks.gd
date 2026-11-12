@@ -173,7 +173,7 @@ func _spawn_walker() -> void:
 	add_child(w)
 	w.setup(_walk_tex, row, names.size(), float(_index.scale), Vector2(_index.foot[0], _index.foot[1]))
 	if back:
-		w.scale = Vector2.ONE * 0.9
+		w.scale = Vector2.ONE  # 像素画不缩放（缩 0.9 点会糊、大小不匀）：远近只靠站位和淡一点
 		w.modulate = Color(1.0, 1.0, 1.0, 0.82)
 	_walkers.append(w)
 
@@ -224,7 +224,7 @@ class Folk extends Node2D:
 		_sprite.vframes = maxi(rows, 1)
 		_sprite.scale = Vector2.ONE / art_scale
 		_sprite.offset = -foot * art_scale
-		_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		add_child(_sprite)
 		_over = Overlay.new(_draw_over)
 		add_child(_over)
@@ -370,7 +370,7 @@ class Walker extends Node2D:
 		_sprite.scale = Vector2.ONE / art_scale
 		_sprite.offset = -foot * art_scale
 		_sprite.flip_h = speed < 0.0
-		_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		add_child(_sprite)
 		_next_pause = randf_range(8.0, 20.0)
 

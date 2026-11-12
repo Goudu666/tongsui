@@ -10,12 +10,8 @@ uniform float darken = 0.62;         // 往剪影色压多少
 uniform float night = 0.0;
 
 void fragment() {
-	vec2 o = spread / tex_px;
-	vec4 c = texture(TEXTURE, UV, blur) * 0.36;
-	c += texture(TEXTURE, UV + vec2(o.x, 0.0), blur) * 0.16;
-	c += texture(TEXTURE, UV - vec2(o.x, 0.0), blur) * 0.16;
-	c += texture(TEXTURE, UV + vec2(0.0, o.y), blur) * 0.16;
-	c += texture(TEXTURE, UV - vec2(0.0, o.y), blur) * 0.16;
+	// 像素画：不虚，前景用大一号的点（6 世界像素）+ 压成剪影，靠这个显得近
+	vec4 c = texture(TEXTURE, UV);
 	vec3 col = mix(c.rgb, shade * (c.rgb + 0.25), darken);
 	col = mix(col, col * vec3(0.30, 0.36, 0.62), night * 0.85);
 	COLOR = vec4(col, c.a * 0.94) * COLOR;

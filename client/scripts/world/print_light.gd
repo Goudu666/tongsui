@@ -60,6 +60,7 @@ func setup(size: Vector2, anchors: Dictionary) -> void:
 	_glow.material = _glow_mat
 	add_child(_glow)
 	_glow_mat.set_shader_parameter("light_map", _mat.get_shader_parameter("light_map"))
+	_glow_mat.set_shader_parameter("map_size", map_size)
 	set_minute(minute)
 
 
@@ -70,6 +71,7 @@ func relight(size: Vector2, anchors: Dictionary, mask: Texture2D = null) -> void
 	var lm := _bake(anchors)
 	_mat.set_shader_parameter("light_map", lm)
 	_glow_mat.set_shader_parameter("light_map", lm)
+	_glow_mat.set_shader_parameter("map_size", map_size)
 	_glow.scale = map_size
 	_mat.set_shader_parameter("scene_mask", mask)
 	_mat.set_shader_parameter("use_mask", mask != null)
@@ -148,5 +150,5 @@ func _process(delta: float) -> void:
 		var v := Vector4.ZERO
 		if i < actors.size() and is_instance_valid(actors[i]) and (actors[i] as Node2D).visible:
 			var a: Node2D = actors[i]
-			v = Vector4(a.position.x, a.position.y - 40.0, 150.0, 0.8)
+			v = Vector4(a.position.x - position.x, a.position.y - position.y - 40.0, 150.0, 0.8)
 		_mat.set_shader_parameter(keys[i], v)

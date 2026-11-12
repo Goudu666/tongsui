@@ -8,12 +8,16 @@ uniform float phase = 0.0;
 uniform float strands = 0.0;      // 柳树 1：一绺一绺地飘
 uniform vec2 tex_px = vec2(800.0, 880.0);
 
+const float PX = 3.0;   // 像素画：整点整点地挪
+
 void fragment() {
-	float h = 1.0 - UV.y;                 // 0 树根 ~ 1 树梢
+	vec2 pu = (floor(UV * tex_px / PX) + 0.5) * PX / tex_px;   // 这个点的中心
+	float h = 1.0 - pu.y;                 // 0 树根 ~ 1 树梢
 	float k = h * h;
 	float t = TIME * speed + phase;
 	float dx = (sin(t) * 0.7 + sin(t * 2.3 + 1.7) * 0.3) * amp * k;
-	dx += strands * sin(t * 1.7 + UV.x * 18.0 + UV.y * 9.0) * amp * 0.6 * smoothstep(0.1, 0.7, UV.y) * h;
+	dx += strands * sin(t * 1.7 + pu.x * 18.0 + pu.y * 9.0) * amp * 0.6 * smoothstep(0.1, 0.7, pu.y) * h;
+	dx = floor(dx / PX + 0.5) * PX;
 	vec2 uv = UV - vec2(dx / tex_px.x, 0.0);
 	COLOR = texture(TEXTURE, uv) * COLOR;
 }

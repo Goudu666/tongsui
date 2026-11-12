@@ -98,6 +98,15 @@ func build(p_role: String, p_stage: String, p_look: Dictionary = {}) -> void:
 	from_glb = p_look.is_empty() and _build_glb()
 	if not from_glb:
 		_build_body()
+	_layers(self)
+
+
+## 人身上的网格都多挂一层（stage3d 的补光只照这一层）
+func _layers(n: Node) -> void:
+	for c in n.get_children():
+		if c is VisualInstance3D:
+			(c as VisualInstance3D).layers = 1 | 2
+		_layers(c)
 
 
 ## 按身高和头的大小推出各段的长度（米）
@@ -964,8 +973,9 @@ func _pose_loop(p: Dictionary, lp: String, face_dir: int) -> void:
 			p.kn_r = Vector3(0.3 + 0.3 * kick2, 0, 0)
 			p.sh_l = Vector3(-0.3, 0, 0.45)
 			p.sh_r = Vector3(0.2, 0, -0.4)
-			p.neck = Vector3(0.25, 0, 0)
-			p.yaw = face_dir * deg_to_rad(75.0)
+			# 侧过去一半、头往镜头这边转，从高处的镜头看得见脸（不然只看见头顶）
+			p.neck = Vector3(0.1, -face_dir * 0.35, 0)
+			p.yaw = face_dir * deg_to_rad(55.0)
 		"hop":
 			var u2 := fmod(t, 0.62) / 0.62
 			var up := sin(u2 * PI)

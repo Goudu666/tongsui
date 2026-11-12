@@ -4,7 +4,10 @@
 - 去掉法线贴图（布纹、发丝、皮肤刷痕；侧视镜头隔着两三米看不出来，占了一半多体积），只留脸的贴图；
 - 去掉 KHR_materials_sheen（Godot 不认），绒面感由客户端换上的材质补；
 - 除了脸，别的部件不要 UV；
+- 头发（一个人五万多三角面，占全身三分之二）用二次误差减面到 HAIR_TRIS 以内，法线重算；
 - 重新打包 buffer，只留还用得着的数据。
+
+减面要 fast-simplification（pip install fast-simplification numpy），没有就报错退出。
 
 用法：python3 tools/art/realtime3d/slim_glb.py 源目录 [目标目录]
 源目录默认 /mnt/project-files/tongsui/art/diorama/real/glb（tools/art/diorama/real/make.py glb figures 的输出）。
@@ -13,6 +16,12 @@ import json
 import os
 import struct
 import sys
+
+import numpy as np
+import fast_simplification
+
+HAIR_TRIS = 7000      # 头发减到多少三角面以内
+BIG_TRIS = 6000       # 别的部件超过这么多面也减（现在都不到）
 
 SRC = sys.argv[1] if len(sys.argv) > 1 else "/mnt/project-files/tongsui/art/diorama/real/glb"
 DST = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(__file__), "../../../client/art3d/figures")
@@ -37,6 +46,94 @@ def write_glb(path, j, binary):
         f.write(b"glTF" + struct.pack("<II", 2, total))
         f.write(struct.pack("<I", len(js)) + b"JSON" + js)
         f.write(struct.pack("<I", len(binary)) + b"BIN\0" + binary)
+
+
+def _acc_array(j, binary, ai):
+    a = j["accessors"][ai]
+    v = j["bufferViews"][a["bufferView"]]
+    comps = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4}[a["type"]]
+    dt = {5126: np.float32, 5123: np.uint16, 5125: np.uint32, 5121: np.uint8}[a["componentType"]]
+    start = v.get("byteOffset", 0) + a.get("byteOffset", 0)
+    stride = v.get("byteStride", 0)
+    item = np.dtype(dt).itemsize * comps
+    if stride and stride != item:
+        raw = np.frombuffer(binary, np.uint8, count=stride * a["count"], offset=start).reshape(a["count"], stride)[:, :item]
+        return np.frombuffer(raw.tobytes(), dt).reshape(a["count"], comps)
+    return np.frombuffer(binary, dt, count=a["count"] * comps, offset=start).reshape(a["count"], comps)
+
+
+def _append(j, blob, data, target, acc):
+    blob.extend(b"\0" * (-len(blob) % 4))
+    j["bufferViews"].append({"buffer": 0, "byteOffset": len(blob), "byteLength": len(data), "target": target})
+    blob.extend(data)
+    acc["bufferView"] = len(j["bufferViews"]) - 1
+    j["accessors"].append(acc)
+    return len(j["accessors"]) - 1
+
+
+def decimate(j, binary):
+    """面太多的部件（头发）减面：每个 primitive 单独焊点、减面、重算平滑法线，写成新的 accessor。"""
+    blob = bytearray(binary)
+    hair_mats = {i for i, m in enumerate(j.get("materials", [])) if m.get("name") == "hair"}
+    for mesh in j["meshes"]:
+        for pr in mesh["primitives"]:
+            if "indices" not in pr:
+                continue
+            idx = _acc_array(j, binary, pr["indices"]).reshape(-1, 3).astype(np.int64)
+            limit = HAIR_TRIS if pr.get("material") in hair_mats else BIG_TRIS
+            if len(idx) <= limit:
+                # 小部件却挂在一大块共用的顶点上（头绳挂在头发的顶点里）：只留自己用到的顶点
+                count = j["accessors"][pr["attributes"]["POSITION"]]["count"]
+                used = np.unique(idx)
+                if len(used) * 2 < count:
+                    remap = np.zeros(count, np.int64)
+                    remap[used] = np.arange(len(used))
+                    attrs = {}
+                    for k, ai in pr["attributes"].items():
+                        arr = np.ascontiguousarray(_acc_array(j, binary, ai)[used])
+                        acc = {kk: vv for kk, vv in j["accessors"][ai].items() if kk not in ("bufferView", "byteOffset", "min", "max")}
+                        acc["count"] = len(used)
+                        if k == "POSITION":
+                            acc["min"] = arr.min(0).tolist()
+                            acc["max"] = arr.max(0).tolist()
+                        attrs[k] = _append(j, blob, arr.tobytes(), 34962, acc)
+                    pr["attributes"] = attrs
+                    pr["indices"] = _append(j, blob, remap[idx].astype(np.uint16).reshape(-1).tobytes(), 34963,
+                                            {"componentType": 5123, "count": int(idx.size), "type": "SCALAR"})
+                continue
+            pos = _acc_array(j, binary, pr["attributes"]["POSITION"]).astype(np.float64)
+            used = np.unique(idx)
+            # 焊点：同一位置的顶点（硬边拆开的）并成一个，减面时不撕开
+            key = np.round(pos[used] * 1e5).astype(np.int64)
+            _, first, inv = np.unique(key, axis=0, return_index=True, return_inverse=True)
+            remap = np.zeros(pos.shape[0], np.int64)
+            remap[used] = inv.reshape(-1)
+            pts = pos[used][first]
+            faces = remap[idx]
+            faces = faces[(faces[:, 0] != faces[:, 1]) & (faces[:, 1] != faces[:, 2]) & (faces[:, 0] != faces[:, 2])]
+            red = 1.0 - limit / len(faces)
+            p2, f2 = fast_simplification.simplify(pts.astype(np.float32), faces.astype(np.int32), target_reduction=red, agg=5)
+            p2 = np.asarray(p2, np.float64)
+            f2 = np.asarray(f2, np.int64)
+            # 平滑法线（按面积加权）；glTF 正面逆时针
+            fn = np.cross(p2[f2[:, 1]] - p2[f2[:, 0]], p2[f2[:, 2]] - p2[f2[:, 0]])
+            vn = np.zeros_like(p2)
+            for k in range(3):
+                np.add.at(vn, f2[:, k], fn)
+            vn /= np.maximum(np.linalg.norm(vn, axis=1, keepdims=True), 1e-12)
+            p32 = p2.astype(np.float32)
+            n32 = vn.astype(np.float32)
+            pa = _append(j, blob, p32.tobytes(), 34962, {"componentType": 5126, "count": len(p32), "type": "VEC3",
+                                                         "min": p32.min(0).tolist(), "max": p32.max(0).tolist()})
+            na = _append(j, blob, n32.tobytes(), 34962, {"componentType": 5126, "count": len(n32), "type": "VEC3"})
+            it = np.uint16 if len(p32) < 65535 else np.uint32
+            ia = _append(j, blob, f2.astype(it).reshape(-1).tobytes(), 34963,
+                         {"componentType": 5123 if it == np.uint16 else 5125, "count": int(f2.size), "type": "SCALAR"})
+            pr["attributes"] = {"POSITION": pa, "NORMAL": na}
+            pr["indices"] = ia
+            print(f"    减面 {mesh.get('name', '?')}：{len(idx)} → {len(f2)} 三角")
+    j["buffers"][0]["byteLength"] = len(blob)
+    return j, bytes(blob)
 
 
 def slim(j, binary):
@@ -143,7 +240,7 @@ def main():
     for role in ("qing", "mei"):
         for st in ("child", "teen", "young", "middle", "old"):
             src = os.path.join(SRC, f"{role}_{st}.glb")
-            j, b = slim(*read_glb(src))
+            j, b = slim(*decimate(*read_glb(src)))
             dst = os.path.join(DST, f"{role}_{st}.glb")
             write_glb(dst, j, b)
             sz = os.path.getsize(dst)

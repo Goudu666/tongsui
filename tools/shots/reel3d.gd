@@ -3,6 +3,7 @@ extends SceneTree
 ##   xvfb-run -a godot --path client --rendering-driver opengl3 --resolution 1280x720 --fixed-fps 24 \
 ##     --write-movie /tmp/reel/f.png -s ../tools/shots/reel3d.gd
 ##   ffmpeg -framerate 24 -i /tmp/reel/f%08d.png -c:v libx264 -pix_fmt yuv420p -crf 20 reel.mp4
+const Stage3D := preload("res://scripts/world3d/stage3d.gd")
 var main: Node
 var w: Node
 
@@ -24,6 +25,7 @@ func _frames(n: int) -> void:
 		await process_frame
 
 func _run() -> void:
+	Stage3D.set_mode("on", false)  # 出图：软件渲染很慢，别让自动模式退回 2D
 	change_scene_to_file("res://scenes/main.tscn")
 	await _frames(3)
 	main = current_scene

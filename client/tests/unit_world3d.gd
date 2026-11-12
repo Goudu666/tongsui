@@ -66,7 +66,8 @@ func _initialize() -> void:
 			bare = false
 	check(bare, "冬天树冠该藏起来只剩枝子")
 	s.queue_free()
-	# 只有有 3D 的图走 3D
+	# 只有有 3D 的图走 3D（不看这台机器上存的画面设置）
+	Stage3D.set_mode("auto", false)
 	check(Stage3D.supports("street"), "楼下这条街该有 3D")
 	check(not Stage3D.supports("building"), "楼里还没有 3D，该走 2D")
 	Stage3D.enabled = false
@@ -96,6 +97,33 @@ func _initialize() -> void:
 	var fl := Stage3D.focus_line(760.0, 610.0, 680.0)
 	var ground_on_screen := (760.0 - 610.0) / 680.0 + 0.5
 	check(fl > 0.5 and fl < ground_on_screen and ground_on_screen - fl < 0.2, "移轴焦线 %.2f 没落在人身上（地面 %.2f）" % [fl, ground_on_screen])
+	# 画面设置：自动模式量开头几秒，太卡就退回 2D、记下来；菜单里再选一次就重试；选 2D 就不开
+	Stage3D.set_mode("auto", false)
+	check(Stage3D.supports("street"), "自动模式默认开 3D")
+	var st4 := Stage3D.new()
+	var fell := [false]
+	st4.fell_back.connect(func(): fell[0] = true)
+	for i in 120:
+		st4._watch(0.016)
+	check(not fell[0] and not Stage3D.auto_off, "60 帧不该退回 2D")
+	var st5 := Stage3D.new()
+	st5.fell_back.connect(func(): fell[0] = true)
+	for i in 120:
+		st5._watch(0.08)
+	check(fell[0] and Stage3D.auto_off and not Stage3D.supports("street"), "12 帧该退回 2D")
+	Stage3D.set_mode("auto", false)
+	check(Stage3D.supports("street") and not Stage3D.auto_off, "再选一次自动该重试 3D")
+	Stage3D.set_mode("off", false)
+	check(not Stage3D.supports("street"), "选了 2D 就不开 3D")
+	Stage3D.set_mode("on", false)
+	var st6 := Stage3D.new()
+	for i in 120:
+		st6._watch(0.2)
+	check(Stage3D.supports("street"), "选了实时 3D 再卡也不退")
+	Stage3D.set_mode("auto")  # 退回 2D 时写进了设置，这里写回默认
+	st4.free()
+	st5.free()
+	st6.free()
 	if fails == 0:
-		print("✓ unit_world3d：两个人五个岁数、二十四套动作、街道 3D、年代季节、相机对齐")
+		print("✓ unit_world3d：两个人五个岁数、二十四套动作、街道 3D、年代季节、相机对齐、画面设置和太卡退回 2D")
 	quit(1 if fails > 0 else 0)

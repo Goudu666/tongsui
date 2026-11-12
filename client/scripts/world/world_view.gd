@@ -4,6 +4,7 @@ extends Node2D
 ## 世界坐标里每张图占一条（第 i 张图 y 从 i × map.stride 起），服务器的距离判定照旧是二维的，不同的图自然够不着。
 
 signal move_report(pos: Vector2)
+signal note(text: String)  ## 想在屏幕上提一句（自动模式退回 2D 时）
 
 const P := preload("res://scripts/ui/palette.gd")
 const Actor := preload("res://scripts/world/actor.gd")
@@ -117,6 +118,9 @@ func setup(content: Dictionary, role: String, names: Dictionary) -> void:
 	street.world = self
 	add_child(street)
 	stage3d = Stage3D.new()
+	stage3d.fell_back.connect(func():
+		reapply_3d()
+		note.emit("这台手机跑实时 3D 有点吃力，画面先换回 2D 了（菜单里可以改）"))
 	stage3d.world = self
 	add_child(stage3d)
 	_marks = _Marks.new(self)
@@ -158,6 +162,23 @@ func _enter_scene(sc: Dictionary) -> void:
 		return
 	scene = sc
 	art.show_scene(sc, map.zones, map.get("exits", []))
+	_frame_camera(sc)
+	light.position = Vector2(0, float(sc.top) + SceneArt.TOP)
+	light.relight(Vector2(float(sc.width), SceneArt.BOTTOM - SceneArt.TOP), SceneArt.anchors_for(str(sc.id)), SceneArt.scene_mask(str(sc.id)))
+	if weather != null:
+		weather.set_scene(str(sc.id))
+	if street != null:
+		street.show_scene(sc)
+	if atmos != null:
+		atmos.set_scene(sc)
+	if home != null:
+		home.show_scene(sc)
+	_apply_3d(sc)
+	_refresh_visible()
+
+
+## 镜头框住这张图：竖着正好装下这一截（3D 的图推近一点）
+func _frame_camera(sc: Dictionary) -> void:
 	var floors: Array = sc.floors
 	var three := stage3d != null and Stage3D.supports(str(sc.get("id", ""))) and floors.size() == 1
 	var bottom := float(floors[-1]) + (FOOT_ROOM_3D if three else FOOT_ROOM)
@@ -172,18 +193,14 @@ func _enter_scene(sc: Dictionary) -> void:
 	camera.limit_bottom = int(bottom)
 	camera.position = Vector2(me().position.x if me() != null else 0.0, (top + bottom) / 2.0)
 	camera.reset_smoothing()
-	light.position = Vector2(0, float(sc.top) + SceneArt.TOP)
-	light.relight(Vector2(float(sc.width), SceneArt.BOTTOM - SceneArt.TOP), SceneArt.anchors_for(str(sc.id)), SceneArt.scene_mask(str(sc.id)))
-	if weather != null:
-		weather.set_scene(str(sc.id))
-	if street != null:
-		street.show_scene(sc)
-	if atmos != null:
-		atmos.set_scene(sc)
-	if home != null:
-		home.show_scene(sc)
-	_apply_3d(sc)
-	_refresh_visible()
+
+
+## 菜单里换了画面（实时 3D / 2D），或者自动模式测出太卡：当前这张图按新设置重摆
+func reapply_3d() -> void:
+	if scene.is_empty():
+		return
+	_frame_camera(scene)
+	_apply_3d(scene)
 
 
 ## 这张图有 3D 就换上，2D 的画（底图、屋里陈设、夜版、光与空气、人和街坊的身子）收起来

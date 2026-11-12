@@ -5,6 +5,7 @@ extends SceneTree
 var out := "/tmp/s3d"
 var only: Array = []
 var hud := false
+const Stage3D := preload("res://scripts/world3d/stage3d.gd")
 var main: Node
 
 ## [名字, 青站的 x, 几点（分钟）, 人生阶段, 季节, 回合（挑雨雪天）, 梅离青多远, 青在做的事, 梅在做的事]
@@ -16,7 +17,7 @@ const SHOTS := [
 	["s05_dusk_tea", 3500, 1100, "young", "autumn", 0, 160, "", "chat"],
 	["s06_night_alley", 1750, 1290, "middle", "winter", 0, 140, "", ""],
 	["s07_rain_night", 2300, 1240, "teen", "summer", 2, 130, "", ""],
-	["s08_kick", 2100, 980, "childhood", "summer", 0, 170, "ball", "ball"],
+	["s08_kick", 2200, 980, "childhood", "summer", 0, 170, "ball", "ball"],
 	["s09_old_morning", 1500, 450, "old", "spring", 0, 130, "", "morning_walk"],
 ]
 
@@ -33,6 +34,7 @@ func _frames(n: int) -> void:
 		await process_frame
 
 func _run() -> void:
+	Stage3D.set_mode("on", false)  # 出图：软件渲染很慢，别让自动模式退回 2D
 	change_scene_to_file("res://scenes/main.tscn")
 	await _frames(3)
 	main = current_scene

@@ -11,7 +11,6 @@ extends Node
 ## tests/unit_audio.gd 会对着源码查：表里的名字不在了，CI 就红。
 
 const LifeTime := preload("res://scripts/ui/life_time.gd")
-const P := preload("res://scripts/ui/palette.gd")
 const Era := preload("res://scripts/ui/era.gd")
 
 ## 从主场景（scripts/main.gd）读的属性
@@ -39,8 +38,6 @@ var audio: Node
 var _net: Object = null
 var _scene := ""
 var _page := ""
-var _themed := false
-var _accent := Color.TRANSPARENT
 var _toast_alpha := 0.0
 var _acts := {}
 var _dids := {}  ## role -> 看过的最后一条 did 的序号（一回一回做的事）
@@ -266,7 +263,6 @@ func _process(delta: float) -> void:
 
 	_watch_pages(delta, page, in_world)
 	_watch_toast()
-	_place_button(in_world, modal)
 
 	if not in_world:
 		audio.idle()
@@ -350,22 +346,6 @@ func _watch_pages(delta: float, page: String, in_world: bool) -> void:
 		audio.cue("page")
 		_page_cool = 0.35
 	_page = page
-
-
-## 音量按钮：用主界面的主题和玩家自己的颜色；在河畔里挪到「亲近 / 默契」卡片下面；
-## 弹窗出来的时候藏起来；人生长卷那一页整屏都是那张纸，也藏
-func _place_button(in_world: bool, modal: Control) -> void:
-	if not _themed:
-		var ui := _ctl("ui")
-		if ui != null and ui.theme != null:
-			audio.adopt_theme(ui.theme)
-			_themed = true
-	var accent := P.role_color(_role())
-	if _themed and accent != _accent:
-		_accent = accent
-		audio.tint_button(accent)
-	# 离线逛逛时右上角没有对门的牌，按钮回到角上
-	audio.place_button(in_world and main.get("offline_preview") != true, (modal != null and modal.visible) or _page == "scroll")
 
 
 func _watch_toast() -> void:

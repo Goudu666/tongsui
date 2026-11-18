@@ -66,6 +66,8 @@ var day_card: Control = null  ## 一天收工的小结卡正开着（爽感层 j
 ## 小结卡开着时到的事件：等卡合上再弹。服务器收完一天、下一跳（0.1 秒后）就发第二天一早的关口 / 主线，
 ## 原来直接把小结卡盖掉，一天的账一闪就没了
 var _held_event: Dictionary = {}
+var _online_gen := 0            ## 第几回进联机页：慢网下来回点，旧的那回连上了就别再动页面
+var _roll_sig := ""             ## 投胎页上我这张出生证上回画成什么样：只有它变了才把页脚滚进来
 var _held_logs: Array = []      ## 日结卡开着时到的结果（关口揭晓、自己那件事的结果），关了卡一条条补上
 var _replaying := false
 var _did_seen := {}        ## 每个人看过的最后一条 did（服务器当场结算的那一件）的序号
@@ -1167,6 +1169,8 @@ func _on_move_report(pos: Vector2) -> void:
 # ======================================================================
 
 func _show_online() -> void:
+	_online_gen += 1
+	var gen := _online_gen
 	_show_screen("online", true, COLUMN_WIDTH)
 	_label(body, "联机", 96)
 	if not NetClient.addon_available():
@@ -1178,8 +1182,9 @@ func _show_online() -> void:
 	_make_net()
 	_status(body)
 	var ok: bool = await net.connect_server()
-	# 连的那几秒里人已经走了（返回键 → 菜单回标题）：别再把人拽进大厅，标题页也没有 body 可往里加
-	if _page_id != "online" or body == null:
+	# 连的那几秒里人已经走了（返回键 → 菜单回标题），或者又点了一回「联机」（那一回自己接着连）：
+	# 别再把人拽进大厅，也别往新的那页上再加一套按钮
+	if gen != _online_gen or _page_id != "online" or body == null:
 		return
 	if not ok:
 		_server_row(body)
@@ -1476,6 +1481,8 @@ func _on_snapshot(data: Dictionary) -> void:
 				last_world["minute"] = w.get("minute", 390)
 				last_world["rest"] = w.get("rest", false)
 				last_world["event"] = w.get("event")
+				if w.has("slot"):
+					last_world["slot"] = w.get("slot")  # 街上的钟夹在这一段里（_world_minute），别等第一条 WORLD
 				_resume_event(w.get("event"))
 			_refresh_hud()
 			duet.on_snapshot()  # 我不在的时候影子替我选过的，现在问我
@@ -1521,6 +1528,12 @@ func _on_roll_state(data: Dictionary) -> void:
 
 
 func _show_roll() -> void:
+	# TA 重抽、TA 定下来也会整页重画：那时候别把正在看上面出生证的人拽到底，滚回原处
+	var keep := -1
+	if _page_id == "roll" and body != null:
+		var was := _scroll_of(body)
+		if was != null:
+			keep = was.scroll_vertical
 	_show_screen("roll")
 	var mine: Dictionary = life.rolls[my_role]
 	var theirs: Dictionary = life.rolls[_other()]
@@ -1556,19 +1569,39 @@ func _show_roll() -> void:
 		_primary(row, "就这样，出生吧", func(): net.confirm_roll())
 		last = row
 	# 横屏界面高 1080（几乎所有手机），这页装不下：「就这样，出生吧」掉在折叠线下面，
-	# 每重抽一次、点完出生整页重画又滚回顶上。画完把最底下这一行滚进来
-	_scroll_into_view(last)
+	# 每重抽一次、点完出生整页重画又滚回顶上。我这张变了（头一回画、我重抽、我定下来）就把最底下这一行滚进来
+	var sig := var_to_str(mine)
+	if keep < 0 or sig != _roll_sig:
+		_roll_sig = sig
+		_scroll_into_view(last)
+	else:
+		_scroll_back(body, keep)
 
 ## 滚动页上把某一行（通常是页脚的按钮）滚进画面；等容器排好版再滚
 func _scroll_into_view(c: Control) -> void:
 	await get_tree().process_frame
 	if not is_instance_valid(c) or not c.is_inside_tree():
 		return
+	var sc := _scroll_of(c)
+	if sc != null:
+		sc.ensure_control_visible(c)
+
+
+## 重画以后滚回原来的位置（等排好版、内容撑开了再滚，不然会被夹到顶上）
+func _scroll_back(c: Control, v: int) -> void:
+	await get_tree().process_frame
+	if not is_instance_valid(c) or not c.is_inside_tree():
+		return
+	var sc := _scroll_of(c)
+	if sc != null:
+		sc.scroll_vertical = v
+
+
+func _scroll_of(c: Node) -> ScrollContainer:
 	var p := c.get_parent()
 	while p != null and not (p is ScrollContainer):
 		p = p.get_parent()
-	if p != null:
-		(p as ScrollContainer).ensure_control_visible(c)
+	return p as ScrollContainer
 
 
 ## 这一世两个人生在哪个年代（服务器 life.cohort）：同一年生，一个名字、一句小字。老服务器不发就不写

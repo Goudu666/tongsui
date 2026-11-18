@@ -367,7 +367,8 @@ func _build_body() -> void:
 		[0.31 * T, wa * 0.94, wa * 0.72 * d / 0.6, 0.0, 0.0, 0.8],
 	]
 	var pants_on_hips: Material = bottom
-	if dress != null and float(lk.get("legs", 1.0)) <= 0.0:
+	if dress != null:
+		# 穿裙子：胯整个藏在裙子里，用裙子的布（走路胯一拧，深色裤腰会从裙腰边上露出一小块）
 		pants_on_hips = _cloth(dress)
 	if dress != null:
 		# 裙子里头的胯收小一圈，免得从裙腰鼓出来
@@ -1560,7 +1561,8 @@ func _skirt_scale() -> Vector3:
 			var ux := ax / kx
 			sx = maxf(sx, kx)
 			sz = maxf(sz, az / sqrt(1.0 - ux * ux))
-	return Vector3(minf(sx, 1.6), 1.0 - minf(lift, 1.0) * 0.06, minf(sz, 2.2))
+	# 撑得太开像灯笼裙：横着最多 1.12、前后最多 1.4（迈到最大那一下膝盖顶一点裙摆，比整条裙子鼓成钟好看）
+	return Vector3(minf(sx, 1.15), 1.0 - minf(lift, 1.0) * 0.06, minf(sz, 1.65))
 
 
 func _pose_sleep(p: Dictionary) -> void:

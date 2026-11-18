@@ -10,15 +10,19 @@ extends CanvasLayer
 ## 最后 post3d.gdshader 合成：移轴虚化（只有人站的那一条清楚）、灯晕、调色、暗角、颗粒。
 ## 兼容渲染器（手机上最稳的那个）没有景深，所以虚化是自己做的；这也是为什么装在 CanvasLayer -1：在世界 2D 层底下。
 ##
-## 哪张图有 3D：BUILDERS（现在只有楼下这条街，street3d.gd）。别的图照旧走 2D（scene_art.gd），一张一张往这里加。
+## 哪张图有 3D：BUILDERS（楼下这条街、楼里、海河边、小学、中学；每张一个 *3d.gd，都从 set3d.gd 派生）。别的图照旧走 2D（scene_art.gd），一张一张往这里加。
 
 const Figure := preload("res://scripts/world3d/figure3d.gd")
 const Street3D := preload("res://scripts/world3d/street3d.gd")
+const Building3D := preload("res://scripts/world3d/building3d.gd")
+const River3D := preload("res://scripts/world3d/river3d.gd")
+const Primary3D := preload("res://scripts/world3d/primary3d.gd")
+const Middle3D := preload("res://scripts/world3d/middle3d.gd")
 const Kit := preload("res://scripts/world3d/kit3d.gd")
 const BLUR := preload("res://shaders/3d/blur_down.gdshader")
 const POST := preload("res://shaders/3d/post3d.gdshader")
 
-const BUILDERS := {"street": Street3D}
+const BUILDERS := {"street": Street3D, "building": Building3D, "river": River3D, "primary": Primary3D, "middle": Middle3D}
 const DIST := 15.0    ## 相机离人走的那条线多远（米）
 const LIFT := 2.6     ## 相机比取景框中心高多少（米）：看得见地面的进深
 const NEAR := 0.5
@@ -273,6 +277,7 @@ func show_scene(sc: Dictionary) -> void:
 	_clear()
 	scene_id = id
 	set3d = BUILDERS[id].new()
+	set3d.stage = self
 	root3d.add_child(set3d)
 	set3d.build(sc, look, season)
 	_lamps = set3d.lamps if "lamps" in set3d else []
@@ -401,7 +406,10 @@ func _sync_camera() -> void:
 	cam.rotation = Vector3.ZERO
 	cam.size = h * NEAR / DIST
 	cam.frustum_offset = Vector2(0.0, -LIFT * NEAR / DIST)
-	post.set_shader_parameter("focus_y", focus_line(ground_y, center.y, view.y))
+	# 移轴对准自己站的那一层（楼里两层：在楼顶就对楼顶）
+	var me = world.me() if world.has_method("me") else null
+	var feet_y: float = me.position.y if me != null else ground_y
+	post.set_shader_parameter("focus_y", focus_line(feet_y, center.y, view.y))
 
 
 ## 移轴对准的那条线在屏幕上的高度（0 顶 1 底）：人身子的正中（地面往上半个大人），人比身后的墙清楚

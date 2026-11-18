@@ -63,6 +63,13 @@ var menu_always := false     ## 截图、单测用：不联网也摆菜单（too
 var fill_title: Label
 var fill_sub: Label
 var day_card: Control = null  ## 一天收工的小结卡正开着（爽感层 juice.gd 看它：开着的时候不飘字）
+## 小结卡开着时到的事件：等卡合上再弹。服务器收完一天、下一跳（0.1 秒后）就发第二天一早的关口 / 主线，
+## 原来直接把小结卡盖掉，一天的账一闪就没了
+var _held_event: Dictionary = {}
+var _online_gen := 0            ## 第几回进联机页：慢网下来回点，旧的那回连上了就别再动页面
+var _roll_sig := ""             ## 投胎页上我这张出生证上回画成什么样：只有它变了才把页脚滚进来
+var _held_logs: Array = []      ## 日结卡开着时到的结果（关口揭晓、自己那件事的结果），关了卡一条条补上
+var _replaying := false
 var _did_seen := {}        ## 每个人看过的最后一条 did（服务器当场结算的那一件）的序号
 var _clock_from := -1.0    ## 钟正在从几点拨到几点（做完一回，钟在眼前走过去）
 var _clock_to := -1.0
@@ -247,6 +254,8 @@ func _build_layers() -> void:
 	for l in [action_title, action_sub]:
 		l.autowrap_mode = TextServer.AUTOWRAP_OFF
 		l.clip_text = true
+		# 小字一长（「一个钟头 · 精力 -6 · 长体魄、魅力 · 冲关口」）右头会被圆钮切掉半个字：收成省略号
+		l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	# 「就这么过」：纸色的次要按钮，贴在行动按钮左边
 	slot_btn = Button.new()
 	slot_btn.anchor_left = 1.0
@@ -480,7 +489,7 @@ func _layout_hud() -> void:
 	fill_btn.offset_top = action_btn.offset_top
 	_place_slot_btn()
 	banner.offset_left = 40 + inset.x
-	banner.offset_right = banner.offset_left + 740
+	_place_banner()
 
 
 ## 弹窗卡片的高：跟着内容走，但不超过屏幕
@@ -594,10 +603,13 @@ func _set_role(role: String) -> void:
 
 
 func _show_screen(id: String, scroll := true, width := PAGE_WIDTH) -> void:
+	if id != _page_id and legacy != null:
+		legacy.close_ledger()
 	_page(id)
 	screen.visible = true
 	hud.visible = false
 	modal.visible = false
+	day_card = null
 	for c in screen.get_children():
 		screen.remove_child(c)
 		c.queue_free()
@@ -903,6 +915,14 @@ func _place_slot_btn() -> void:
 		slot_btn.offset_left = right - SLOT_SIZE.x
 		slot_btn.offset_bottom = action_btn.offset_bottom
 		slot_btn.offset_top = action_btn.offset_top
+		_place_banner()
+
+
+## 断线提示条最宽 740，但别压到底下那排按钮：16:9 的屏上会盖住「就这么过」左头的暂停记号
+func _place_banner() -> void:
+	if banner == null or slot_btn == null:
+		return
+	banner.offset_right = minf(banner.offset_left + 740.0, ui.size.x + slot_btn.offset_left - DOCK_GAP)
 
 
 ## 菜单只在服务器认得 ACT 的 action 时摆（协议 8）；网页单机版跑的是同一份规则
@@ -993,13 +1013,21 @@ func _shown_minute() -> float:
 	return maxf(m, float(me.get("pm", m)))
 
 
+## 街上按几点摆人、亮灯：跟着我的钟走，但别走出服务器还在的这一段。
+## 一段正好做满时我的钟停在段尾（比如 8:00），8:00 已经算下一段：街坊会按下一段整批重搭，
+## 而下一个 WORLD 又把钟拨回这一段，一秒来回五趟；底下的按钮也会按下一段的空当说「还能改主意」
+func _world_minute(m: float) -> float:
+	var s := clampi(int(last_world.get("slot", world.slot if world != null else 0)), 0, WorldView.SLOTS.size() - 1)
+	return minf(m, float(WorldView.SLOTS[s][1]) - 0.5)
+
+
 func _sweep_clock(delta: float) -> void:
 	if _clock_to < 0.0 or hud == null:
 		return
 	_clock_t += delta
 	hud.minute = _shown_minute()
 	if world != null:
-		world.set_minute(hud.minute)
+		world.set_minute(_world_minute(hud.minute))
 	if _clock_t >= CLOCK_SWEEP:
 		_clock_to = -1.0
 
@@ -1010,6 +1038,10 @@ func _check_did(data: Dictionary) -> void:
 	for r in ["qing", "mei"]:
 		var did: Dictionary = _dict(_dict(acts.get(r)).get("did"))
 		if did.is_empty():
+			# 新的一天服务器把 did 清了、序号从 1 重数：记成 0，不然昨天正好只做了一件（n = 1）的话，
+			# 今天头一件也是 1，会被当成看过的，钟不拨、纸条不出。刚进来（再来一世、从大厅回来）也一样：
+			# 还什么都没做，记成 0，头一件照常拨钟
+			_did_seen[r] = 0
 			continue
 		var n := int(did.get("n", 0))
 		var first := not _did_seen.has(r)
@@ -1050,8 +1082,10 @@ static func slot_left(actor: Dictionary, slot: int, slot_use: float) -> float:
 ## 出口按钮底下那行：去哪张图；过桥、坐车的写路上花多久（服务器从这一段里扣，见 world.ts 的 worldExit）
 static func exit_cost(ex: Dictionary, to: Dictionary, here: String) -> String:
 	var parts: Array = []
-	if str(ex.get("to", "")) != here:
-		parts.append("去" + str(to.get("name", "")))
+	var dest := str(to.get("name", ""))
+	# 牌子上已经写了去哪（「去公园」）就不在底下再写一遍「去公园」
+	if str(ex.get("to", "")) != here and (dest == "" or not str(ex.get("label", "")).contains(dest)):
+		parts.append("去" + dest)
 	var ride := int(ex.get("ride", 0))
 	if ride >= 180:
 		parts.append("路上一整段")
@@ -1135,6 +1169,8 @@ func _on_move_report(pos: Vector2) -> void:
 # ======================================================================
 
 func _show_online() -> void:
+	_online_gen += 1
+	var gen := _online_gen
 	_show_screen("online", true, COLUMN_WIDTH)
 	_label(body, "联机", 96)
 	if not NetClient.addon_available():
@@ -1146,6 +1182,10 @@ func _show_online() -> void:
 	_make_net()
 	_status(body)
 	var ok: bool = await net.connect_server()
+	# 连的那几秒里人已经走了（返回键 → 菜单回标题），或者又点了一回「联机」（那一回自己接着连）：
+	# 别再把人拽进大厅，也别往新的那页上再加一套按钮
+	if gen != _online_gen or _page_id != "online" or body == null:
+		return
 	if not ok:
 		_server_row(body)
 		_primary(body, "重试", _show_online)
@@ -1440,6 +1480,9 @@ func _on_snapshot(data: Dictionary) -> void:
 				world.apply_snapshot_actors(w.get("actors"))
 				last_world["minute"] = w.get("minute", 390)
 				last_world["rest"] = w.get("rest", false)
+				last_world["event"] = w.get("event")
+				if w.has("slot"):
+					last_world["slot"] = w.get("slot")  # 街上的钟夹在这一段里（_world_minute），别等第一条 WORLD
 				_resume_event(w.get("event"))
 			_refresh_hud()
 			duet.on_snapshot()  # 我不在的时候影子替我选过的，现在问我
@@ -1450,6 +1493,7 @@ func _on_snapshot(data: Dictionary) -> void:
 ## 重连时如果正卡在一件事里：把选择框弹回来（选过了就显示「等 TA」）
 func _resume_event(pe: Variant) -> void:
 	if not pe is Dictionary or not pe.roles.has(my_role):
+		_held_event = {}  # 我不在的时候影子替我选完了：压着的那件已经结了
 		if modal.has_meta("waiting_event"):
 			_close_modal()
 		return
@@ -1484,6 +1528,12 @@ func _on_roll_state(data: Dictionary) -> void:
 
 
 func _show_roll() -> void:
+	# TA 重抽、TA 定下来也会整页重画：那时候别把正在看上面出生证的人拽到底，滚回原处
+	var keep := -1
+	if _page_id == "roll" and body != null:
+		var was := _scroll_of(body)
+		if was != null:
+			keep = was.scroll_vertical
 	_show_screen("roll")
 	var mine: Dictionary = life.rolls[my_role]
 	var theirs: Dictionary = life.rolls[_other()]
@@ -1506,8 +1556,9 @@ func _show_roll() -> void:
 	var foot: Container = left
 	if legacy.has_offer():
 		foot = _columns(body, 1.25, 1.0)[0]  # 和出生证一样宽，对齐在我这一边
+	var last: Control
 	if bool(mine.confirmed):
-		_label(foot, "就这样了。等 TA 也定下来……", 36, P.INK_SOFT)
+		last = _label(foot, "就这样了。等 TA 也定下来……", 36, P.INK_SOFT)
 	else:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 30)
@@ -1516,6 +1567,42 @@ func _show_roll() -> void:
 		b.disabled = int(mine.rerollsLeft) <= 0
 		b.autowrap_mode = TextServer.AUTOWRAP_OFF
 		_primary(row, "就这样，出生吧", func(): net.confirm_roll())
+		last = row
+	# 横屏界面高 1080（几乎所有手机），这页装不下：「就这样，出生吧」掉在折叠线下面，
+	# 每重抽一次、点完出生整页重画又滚回顶上。我这张变了（头一回画、我重抽、我定下来）就把最底下这一行滚进来
+	var sig := var_to_str(mine)
+	if keep < 0 or sig != _roll_sig:
+		_roll_sig = sig
+		_scroll_into_view(last)
+	else:
+		_scroll_back(body, keep)
+
+## 滚动页上把某一行（通常是页脚的按钮）滚进画面；等容器排好版再滚
+func _scroll_into_view(c: Control) -> void:
+	await get_tree().process_frame
+	if not is_instance_valid(c) or not c.is_inside_tree():
+		return
+	var sc := _scroll_of(c)
+	if sc != null:
+		sc.ensure_control_visible(c)
+
+
+## 重画以后滚回原来的位置（等排好版、内容撑开了再滚，不然会被夹到顶上）
+func _scroll_back(c: Control, v: int) -> void:
+	await get_tree().process_frame
+	if not is_instance_valid(c) or not c.is_inside_tree():
+		return
+	var sc := _scroll_of(c)
+	if sc != null:
+		sc.scroll_vertical = v
+
+
+func _scroll_of(c: Node) -> ScrollContainer:
+	var p := c.get_parent()
+	while p != null and not (p is ScrollContainer):
+		p = p.get_parent()
+	return p as ScrollContainer
+
 
 ## 这一世两个人生在哪个年代（服务器 life.cohort）：同一年生，一个名字、一句小字。老服务器不发就不写
 func _cohort_head(parent: Container) -> void:
@@ -1654,9 +1741,11 @@ func _roll_card(parent: Container, role: String, r: Dictionary, full: bool) -> C
 # ======================================================================
 
 func _enter_world() -> void:
+	legacy.close_ledger()
 	_page("world")
 	screen.visible = false
 	modal.visible = false
+	day_card = null
 	hud.visible = true
 	world = WorldView.new()
 	add_child(world)
@@ -1678,6 +1767,11 @@ func _enter_world() -> void:
 
 func _leave_world() -> void:
 	offline_preview = false
+	_held_event = {}
+	_held_logs.clear()
+	day_card = null  # 卡还挂着就走了：不清的话回来以后飘字、搭伴印一直以为有卡开着，全哑了
+	last_world = {}  # 换一条人生线进来别先用上一条的 HUD、年代
+	_did_seen.clear()  # 换一条人生线进来，那边的序号和这边不相干
 	if world != null:
 		world.queue_free()
 		world = null
@@ -1783,7 +1877,7 @@ func _refresh_hud() -> void:
 		return
 	hud.minute = _shown_minute()
 	if world != null and not offline_preview:
-		world.set_minute(hud.minute)
+		world.set_minute(_world_minute(hud.minute))
 	hud.slot_name = str(WorldView.SLOTS[world.slot][2]) if world != null else ""
 	hud.playing = bool(last_world.get("playing", false))
 	# 日历牌色条上的那个词：今天要去哪（上学 / 上班 / 出摊），不用去就是休息
@@ -1961,6 +2055,11 @@ func _show_goal_detail() -> void:
 
 func _on_world_state(data: Dictionary) -> void:
 	last_world = data
+	# 压着的那件事：EVENT 之后到的 WORLD 里没有它了（TA 先选完、影子替我选了），就是结了，关卡时别再弹
+	if not _held_event.is_empty():
+		var live: Variant = data.get("event")
+		if not (live is Dictionary and str(live.get("eventId", "")) == str(_dict(_held_event.get("event")).get("eventId", "-"))):
+			_held_event = {}
 	juice.on_world(data)
 	if world != null:
 		world.apply_world(data)
@@ -1981,6 +2080,9 @@ func _on_event_started(data: Dictionary) -> void:
 	var pe: Dictionary = data.event
 	if not pe.roles.has(my_role):
 		_toast("TA 那边好像遇到了一件事……")
+		return
+	if day_card != null and modal.visible:
+		_held_event = data
 		return
 	var ev: Dictionary = events_by_id.get(pe.eventId, {})
 	var mirror: bool = pe.kind == "mirror"
@@ -2241,7 +2343,25 @@ func _close_modal() -> void:
 	day_card = null
 	if modal.has_meta("waiting_event"):
 		modal.remove_meta("waiting_event")
+	if _replaying:
+		return
+	if _replay_held():
+		return
 	duet.check_owed()  # 还有欠着的话就接着问
+
+
+## 日结卡开着时压下来的：先补结果（关口揭晓、自己那件事），再弹那件事。
+## 那件事要是在压着的时候已经结了（TA 先选完、我掉线影子替我选了），就不弹了，不然弹出来的「等 TA」永远关不掉
+func _replay_held() -> bool:
+	_replaying = true
+	while not _held_logs.is_empty() and not modal.visible:
+		_show_result(_held_logs.pop_front())
+	if not modal.visible and not _held_event.is_empty():
+		var held := _held_event
+		_held_event = {}
+		_on_event_started(held)  # 还压着就是还没结（结了的话 LOG / WORLD / 重连快照已经把它清掉了）
+	_replaying = false
+	return modal.visible
 
 
 func _option_text(event_id: Variant, option_id: Variant) -> String:
@@ -2254,19 +2374,14 @@ func _option_text(event_id: Variant, option_id: Variant) -> String:
 	return str(option_id)
 
 
-func _on_log_entries(data: Dictionary) -> void:
-	juice.on_log(data.entries)
-	for e in data.entries:
-		var kind := str(e.kind)
-		if kind == "together":
-			_toast("同框 · " + str(e.text))
-		elif kind == "mirror":
+## 一件事结了：镜像揭晓 / 关口揭晓 / 自己那件的检定结果，TA 的就一行字带过
+func _show_result(e: Dictionary) -> void:
+	match str(e.kind):
+		"mirror":
 			_show_mirror_result(e)
-		elif kind == "milestone":
+		"milestone":
 			_show_milestone_result(e)
-		elif kind == "solo" and e.get("duet") is Dictionary and e.duet.get("echo") == true:
-			duet.show_echo(e)
-		elif kind == "solo":
+		"solo":
 			if e.events[my_role] != null:
 				_close_modal()
 				var mine: Variant = e.get("checks", {}).get(my_role)
@@ -2276,6 +2391,25 @@ func _on_log_entries(data: Dictionary) -> void:
 				var other := _other()
 				var ev: Dictionary = events_by_id.get(e.events[other], {})
 				_toast("TA 遇到了「%s」，选了：%s" % [str(ev.get("title", "")), _option_text(e.events[other], e.choices[other])])
+
+
+func _on_log_entries(data: Dictionary) -> void:
+	juice.on_log(data.entries)
+	for e in data.entries:
+		var kind := str(e.kind)
+		var echo: bool = kind == "solo" and e.get("duet") is Dictionary and e.duet.get("echo") == true
+		if kind in ["mirror", "milestone", "solo"] and not echo:
+			if not _held_event.is_empty() and str(_dict(_held_event.get("event")).get("eventId", "")) in _dict(e.get("events")).values():
+				_held_event = {}  # 压着的那件结了
+			if day_card != null and modal.visible:
+				_held_logs.append(e)  # 一天的小结还在看：揭晓排在后面，别把这张卡盖掉
+				continue
+		if kind == "together":
+			_toast("同框 · " + str(e.text))
+		elif kind in ["mirror", "milestone", "solo"] and not echo:
+			_show_result(e)
+		elif echo:
+			duet.show_echo(e)
 		elif kind == "day":
 			# 一天过完：撕下来的一页日历。分在外地和河畔里的时候，底下压着 TA 的信（post.ts）
 			var letters := LetterCard.mine(e, my_role)

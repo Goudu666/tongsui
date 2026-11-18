@@ -74,7 +74,8 @@ function worldSceneLock(s: LifeState, c: Content, sc: Scene, role: Role, today?:
   var age = lifeTimeAt(s.turn).age;
   var p = s.persons![role];
   var why = function (q: SceneUnlock): string | null {
-    if (q.minAge !== undefined && age < q.minAge) return "还太小了，一个人去不了" + sc.name;
+    // 公园 45 岁才常去、新家 30 岁：二三十岁的人被拦下来，不能说「还太小了」
+    if (q.minAge !== undefined && age < q.minAge) return age >= 18 ? "还不到常去" + sc.name + "的时候" : "还太小了，一个人去不了" + sc.name;
     if (q.maxAge !== undefined && age > q.maxAge) return "已经不去" + sc.name + "了";
     if (!lifeHasAll(p.flags, q.flags) || !lifeHasNone(p.flags, q.notFlags)) return "没有去" + sc.name + "的由头";
     return null;
@@ -666,7 +667,7 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
   if (broke) return broke;
   if (act.quick) {
     // 顺手的事不花时间，可也不能一直做：一段里同一件只做一回，吃饱了就不用了
-    if (w.quick.indexOf(role + ":" + act.id) >= 0) return "刚" + act.label + "过";
+    if (w.quick.indexOf(role + ":" + act.id) >= 0) return "「" + act.label + "」这一段刚做过，等下一段吧";
     if ((act.needs.hunger || 0) > 0 && p.needs.hunger >= 90) return "还不饿";
   }
   return null;

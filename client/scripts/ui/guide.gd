@@ -28,7 +28,7 @@ const TIPS := {
 	"wait": ["定下了。两个人都定了，这一段才过去。右上角是对门的牌：TA 在哪儿、定没定。", "partner"],
 	"together": ["和 TA 在一块儿做同一件事就是搭伴：长得快一半，两个人也更近。", "act"],
 	"gate": ["这是一道关口。选的路管接下来几年。和 TA 选了同一条，两条线就并在一起。", "modal"],
-	"need": ["圆表红了：饿了回家吃饭，脏了去洗，累了就早点睡。不管它，做什么都事倍功半。", "top"],
+	"need": ["圆表红了：饿了回家吃饭，累了就早点睡，闷了出门走走。不管它，做什么都事倍功半。", "top"],
 	"night": ["晚上了。回家上床睡下，这一天就到头了。", "act"],
 	"day": ["这一天过去了。这辈子只过被记住的日子：小时候一年四天，上了中学一年两天，长大了一年一天，再往后三年一天。", "top"],
 	"goal": ["最上面那条是下一道关口：还有几个日子、分数线在哪。平时做的事都在往上攒。", "goal"],
@@ -179,6 +179,8 @@ func _process(delta: float) -> void:
 	if _tip.visible:
 		# 弹窗（事件、关口）压上来时纸条先让开、计时停住，弹窗关了再接着显示：不然纸条正好盖在事件的字上
 		var covered: bool = main != null and main.modal.visible and str(TIPS[_tip_id][1]) != "modal"
+		# 让开的时候也别挡手：纸条这层（4）在弹窗（1）上面，透明了还接着吃点击，正好吞掉底下选项的第一下
+		_tip.mouse_filter = Control.MOUSE_FILTER_IGNORE if covered else Control.MOUSE_FILTER_STOP
 		if covered:
 			_tip.modulate.a = 0.0
 		else:
@@ -315,8 +317,8 @@ func _first_times(world, w: Dictionary) -> void:
 		if int(w.get("slot", 0)) == 4:
 			want("night")
 		var needs: Dictionary = (w.get("needs", {}) as Dictionary).get(main.my_role, {}) if w.get("needs") is Dictionary else {}
-		for k in needs:
-			if float(needs[k]) < 30.0:
+		for k in ["hunger", "energy", "mood"]:  # 老存档里还带着冻住的 clean，表上已经没有它了
+			if float(needs.get(k, 100.0)) < 30.0:
 				want("need")
 		var sp: Dictionary = world.nearest_spot()
 		if not sp.is_empty() and world.partner_doing(sp, world.action_of(sp)):
@@ -403,7 +405,11 @@ func _place_tip() -> void:
 	match str(TIPS[_tip_id][1]):
 		"act":
 			var b: Control = main.action_btn
-			at = Vector2(view.x - sz.x - 40.0 - main.hud.inset.y, b.global_position.y - sz.y - 30.0)
+			var top := b.global_position.y
+			var chips: Control = main.menu_box
+			if chips != null and chips.visible:  # 点位的那排小按钮在大按钮上面：提示让到它们上头，别挡着点
+				top = minf(top, chips.global_position.y)
+			at = Vector2(view.x - sz.x - 40.0 - main.hud.inset.y, top - sz.y - 30.0)
 		"story":
 			var r: Rect2 = main.hud.story_rect
 			at = Vector2(clampf(r.position.x, 40.0, view.x - sz.x - 40.0), r.end.y + 26.0)

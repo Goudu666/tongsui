@@ -1,6 +1,6 @@
 // 由 tools/build-content.mjs 生成，请修改 content/*.yaml 后运行 npm run content
 var CONTENT: Content = {
- "version": "6aacbe79d903",
+ "version": "683dd49f106c",
  "events": [
   {
    "id": "m_rise",
@@ -1514,7 +1514,7 @@ var CONTENT: Content = {
      "flags": []
     },
     "home": {
-     "text": "你们一前一后下了楼，在楼道里说了声\"明儿见\"。",
+     "text": "你们一前一后下了楼，在楼道里说了声「明儿见」。",
      "memory": "明儿见",
      "bond": {
       "sync": 2,
@@ -1612,7 +1612,7 @@ var CONTENT: Content = {
    ],
    "resonance": {
     "hide": {
-     "text": "从那天起，你们有了第一个只属于两个人的秘密。猫叫\"暖暖\"。",
+     "text": "从那天起，你们有了第一个只属于两个人的秘密。猫叫「暖暖」。",
      "memory": "暖暖",
      "bond": {
       "sync": 3,
@@ -1727,7 +1727,7 @@ var CONTENT: Content = {
    "weight": 2,
    "where": "river",
    "when": null,
-   "hint": "海河边有人在喊\"冻实了！\"",
+   "hint": "海河边有人在喊「冻实了！」",
    "requires": {},
    "title": "冻上的海河",
    "text": "海河冻结实了。冰面上抽冰嘎的、推冰车的、凿窟窿钓鱼的，各占一块地方。岸上的大人就会喊一句：「别往中间去！」",
@@ -1785,7 +1785,7 @@ var CONTENT: Content = {
     }
    },
    "dissonance": {
-    "text": "一个在冰上喊\"快下来\"，一个在岸上喊\"快上来\"。",
+    "text": "一个在冰上喊「快下来」，一个在岸上喊「快上来」。",
     "bond": {
      "close": 1
     },
@@ -20485,7 +20485,8 @@ var CONTENT: Content = {
     "minAge": 65,
     "flags": [
      "p_confidant"
-    ]
+    ],
+    "alone": false
    },
    "title": "一份报纸",
    "text": "对门的每天傍晚来坐一会儿，带一份报纸。看完了就走。",
@@ -45333,7 +45334,7 @@ var CONTENT: Content = {
     }
    },
    "dissonance": {
-    "text": "一个站起来说话，一个在桌底下踢了踢他的鞋。说完坐下，鞋带开了。",
+    "text": "一个站起来说话，一个在桌底下踢了踢TA的鞋。说完坐下，鞋带开了。",
     "bond": {
      "close": 0
     },
@@ -48114,7 +48115,7 @@ var CONTENT: Content = {
     }
    },
    "dissonance": {
-    "text": "一个往长椅走，一个已经迈开步子绕圈。绕回来，长椅上那个正给他留着座。",
+    "text": "一个往长椅走，一个已经迈开步子绕圈。绕回来，长椅上那个正给TA留着座。",
     "bond": {
      "close": 0
     },
@@ -51042,7 +51043,7 @@ var CONTENT: Content = {
     }
    },
    "dissonance": {
-    "text": "一个张嘴要说，一个在底下踩了他一脚。大爷全看见了，假装没看见。",
+    "text": "一个张嘴要说，一个在底下踩了TA一脚。大爷全看见了，假装没看见。",
     "bond": {
      "close": 0
     },
@@ -51266,7 +51267,7 @@ var CONTENT: Content = {
     }
    },
    "dissonance": {
-    "text": "一个进去买汽水，出来时另一个靠着长凳打起了盹。汽水就搁在他手边。",
+    "text": "一个进去买汽水，出来时另一个靠着长凳打起了盹。汽水就搁在TA手边。",
     "bond": {
      "close": 0
     },
@@ -55603,7 +55604,7 @@ var CONTENT: Content = {
      "bond": {
       "close": 1
      },
-     "text": "两个人挨着坐在长椅上，一个攥着挂号条，一个替他数前头还有几个。"
+     "text": "两个人挨着坐在长椅上，一个攥着挂号条，一个替TA数前头还有几个。"
     },
     "bring": false,
     "menu": false
@@ -62041,7 +62042,7 @@ var CONTENT: Content = {
    {
     "id": "l_restart",
     "title": "又支起来了",
-    "text": "{name} 四十多岁丢了饭碗，在楼下支了个摊。天不亮就起，起了十几年，摊子上的灯总是楼里第一盏亮的。",
+    "text": "{name} 人到中年丢了饭碗，在楼下支了个摊。天不亮就起，起了十几年，摊子上的灯总是楼里第一盏亮的。",
     "requires": {
      "flags": [
       "laid_off",
@@ -62086,7 +62087,7 @@ var CONTENT: Content = {
    {
     "id": "l_long",
     "title": "长寿",
-    "text": "{name} 活到了九十五岁。最后几年记不清很多事，却记得楼顶那年夏天的星星。",
+    "text": "{name} 活过了九十五岁。最后几年记不清很多事，却记得楼顶那年夏天的星星。",
     "requires": {
      "minDiedAge": 95
     }
@@ -62184,7 +62185,7 @@ var CONTENT: Content = {
    {
     "id": "l_spent",
     "title": "家底",
-    "text": "{name} 家的买卖倒在 {name} 四十几岁那年。后来的日子跟楼里别家一样过，早点铺排队，菜市场还价。",
+    "text": "{name} 家的买卖是在 {name} 人到中年那几年倒的。后来的日子跟楼里别家一样过，早点铺排队，菜市场还价。",
     "requires": {
      "flags": [
       "fam_fallen"

@@ -53,6 +53,14 @@ func _ready() -> void:
 	add_child(_card)
 
 
+## 返回键 / Esc 盖在全屏卡上：当成点了一下（年代卡翻过去、成绩单快放），菜单在卡底下，开了也看不见
+func dismiss() -> void:
+	if _era_up:
+		_close_era()
+	elif _report_up and _tween != null and _tween.is_valid():
+		_tween.set_speed_scale(6.0)
+
+
 ## 成绩单那张卡：点一下就揭开（剩下的动画快放）
 func _on_sheet_input(event: InputEvent) -> void:
 	var tap: bool = (event is InputEventMouseButton and event.pressed) or (event is InputEventScreenTouch and event.pressed)

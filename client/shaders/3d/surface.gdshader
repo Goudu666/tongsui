@@ -187,7 +187,8 @@ void fragment() {
 	spec = mix(spec, 0.7, wet * up);
 	// 积雪：朝上的面盖白，沿着噪声有薄有厚
 	float snow = g_snow * smoothstep(0.55, 0.85, wnrm.y) * smoothstep(0.3, 0.6, noise(wpos.xz * 3.0) * 0.6 + g_snow * 0.6);
-	col = mix(col, vec3(0.8, 0.83, 0.87), snow);
+	// 夜里的雪别比白天的墙还亮：反照率跟着 g_night 压成月光下的灰蓝（不然冬夜整条街白得像大白天）
+	col = mix(col, mix(vec3(0.8, 0.83, 0.87), vec3(0.34, 0.38, 0.48), g_night * 0.85), snow);
 	r = mix(r, 0.8, snow);
 	ALBEDO = col;
 	ROUGHNESS = r;

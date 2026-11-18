@@ -306,7 +306,7 @@
       memory: 同一串人
       bond: { sync: 3, close: 2 }
   dissonance:
-    text: 一个站起来说话，一个在桌底下踢了踢他的鞋。说完坐下，鞋带开了。
+    text: 一个站起来说话，一个在桌底下踢了踢TA的鞋。说完坐下，鞋带开了。
     bond: { close: 0 }
 
 - id: pl_ac_oldclass

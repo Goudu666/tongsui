@@ -10,15 +10,19 @@ extends CanvasLayer
 ## 最后 post3d.gdshader 合成：移轴虚化（只有人站的那一条清楚）、灯晕、调色、暗角、颗粒。
 ## 兼容渲染器（手机上最稳的那个）没有景深，所以虚化是自己做的；这也是为什么装在 CanvasLayer -1：在世界 2D 层底下。
 ##
-## 哪张图有 3D：BUILDERS（现在只有楼下这条街，street3d.gd）。别的图照旧走 2D（scene_art.gd），一张一张往这里加。
+## 哪张图有 3D：BUILDERS（楼下这条街、楼里、海河边、小学、中学；每张一个 *3d.gd，都从 set3d.gd 派生）。别的图照旧走 2D（scene_art.gd），一张一张往这里加。
 
 const Figure := preload("res://scripts/world3d/figure3d.gd")
 const Street3D := preload("res://scripts/world3d/street3d.gd")
+const Building3D := preload("res://scripts/world3d/building3d.gd")
+const River3D := preload("res://scripts/world3d/river3d.gd")
+const Primary3D := preload("res://scripts/world3d/primary3d.gd")
+const Middle3D := preload("res://scripts/world3d/middle3d.gd")
 const Kit := preload("res://scripts/world3d/kit3d.gd")
 const BLUR := preload("res://shaders/3d/blur_down.gdshader")
 const POST := preload("res://shaders/3d/post3d.gdshader")
 
-const BUILDERS := {"street": Street3D}
+const BUILDERS := {"street": Street3D, "building": Building3D, "river": River3D, "primary": Primary3D, "middle": Middle3D}
 const DIST := 15.0    ## 相机离人走的那条线多远（米）
 const LIFT := 2.6     ## 相机比取景框中心高多少（米）：看得见地面的进深
 const NEAR := 0.5
@@ -55,6 +59,9 @@ const FIG_LAYER := 2            ## 人身上多一层渲染层，补光只照这
 var env: Environment
 var sky: ProceduralSkyMaterial
 var set3d: Node3D = null        ## 眼前这张图的 3D（builder 搭出来的）
+var _sets: Dictionary = {}      ## 图 id -> 搭好的 3D（不在眼前的藏着）
+var _recent: Array = []         ## 最近去过的有 3D 的图，最后一个是眼前这张
+const KEEP_SETS := 3            ## 最多留几张搭好的图（楼下、楼里，再加一张）
 var scene_id := ""
 var ground_y := 760.0           ## 这张图最下一层地面（世界 y）
 var figures: Dictionary = {}    ## role -> Figure
@@ -72,6 +79,9 @@ var _lamp_on := 0.0             ## 路灯这会儿亮几成（天黑、阴雨）
 
 func _init() -> void:
 	layer = -1
+	# 等相机、人（Camera2D、Actor）这一帧都挪完了再对 3D：不然 3D 拖一帧，走路时出口牌、名字、点位圈
+	# 跟 3D 里的东西错开十几像素，一停下又弹回去
+	process_priority = 100
 	_render_scale = 0.8 if OS.has_feature("mobile") else 1.0
 	_build_viewports()
 	_build_world()
@@ -258,39 +268,87 @@ func _watch(delta: float) -> void:
 		fell_back.emit()
 
 
-## 换图：有 3D 的搭起来（同一张图不重搭），没有的整层藏起来、2D 接手
+## 换图：有 3D 的搭起来，没有的整层藏起来、2D 接手。
+## 搭好的图按 id 留着（最多 KEEP_SETS 张，最久没去的先拆）：楼下 ↔ 楼里是一天来回好几趟的路，
+## 每回都在主线程上整张重搭（几千个方块、一棵树十几团叶子）要卡一下。走到没有 3D 的图上也只是藏起来；
+## 换成 2D、自动模式测出太卡，才真拆掉腾内存
 func show_scene(sc: Dictionary) -> void:
 	var id := str(sc.get("id", ""))
 	if not supports(id):
-		_clear()
+		if want_3d():
+			_hide_set()
+		else:
+			_clear()
 		visible = false
 		set_process(false)
+		root3d.process_mode = Node.PROCESS_MODE_DISABLED  # 看不见的时候人偶也别每帧摆姿势
 		vp.render_target_update_mode = SubViewport.UPDATE_DISABLED
 		soft_vp.render_target_update_mode = SubViewport.UPDATE_DISABLED
 		return
 	visible = true
 	set_process(true)
+	root3d.process_mode = Node.PROCESS_MODE_INHERIT
 	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	soft_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	var floors: Array = sc.get("floors", [760])
 	ground_y = float(floors[-1])
-	if id == scene_id and set3d != null:
-		return
-	_clear()
-	scene_id = id
-	set3d = BUILDERS[id].new()
-	root3d.add_child(set3d)
-	set3d.build(sc, look, season)
-	_lamps = set3d.lamps if "lamps" in set3d else []
+	if id != scene_id or set3d == null:
+		_hide_set()
+		scene_id = id
+		set3d = _sets.get(id)
+		if set3d == null or not is_instance_valid(set3d):
+			set3d = BUILDERS[id].new()
+			set3d.stage = self
+			root3d.add_child(set3d)
+			set3d.build(sc, look, season)
+			_sets[id] = set3d
+		_recent.erase(id)
+		_recent.append(id)
+		while _recent.size() > KEEP_SETS:
+			var old: String = _recent.pop_front()
+			if _sets.has(old) and is_instance_valid(_sets[old]):
+				(_sets[old] as Node).queue_free()
+			_sets.erase(old)
+		_lamps = set3d.lamps if "lamps" in set3d else []
+		# 藏着的时候年代、季节可能变过：拿出来先对一遍
+		if set3d.has_method("set_look"):
+			set3d.set_look(look)
+		if set3d.has_method("set_season"):
+			set3d.set_season(season)
+	set3d.visible = true
 	_apply_time()
 	_apply_season()
+	# 当场就把镜头、人摆到位：不然头一帧（头一回还要编译 shader，卡好一会儿）用的是上一张图/原点的镜头，
+	# 满屏灰地、看不见人，出口牌悬在半空
+	if world != null:
+		_sync_camera()
+		_sync_actors(0.0)
 
 
-func _clear() -> void:
-	if set3d != null:
-		set3d.queue_free()
-		set3d = null
+## 眼前这张图收起来（留着下回用），街坊路人拆掉（下张图的人不一样）
+func _hide_set() -> void:
+	if set3d != null and is_instance_valid(set3d):
+		set3d.visible = false
+	set3d = null
 	scene_id = ""
+	_lamps = []
+	_free_folks()
+
+
+## 全拆：换成 2D、自动模式退回 2D
+func _clear() -> void:
+	for s in _sets.values():
+		if is_instance_valid(s):
+			(s as Node).queue_free()
+	_sets.clear()
+	_recent.clear()
+	set3d = null
+	scene_id = ""
+	_lamps = []  # 路灯跟着 set3d 一起拆了；留着的话换图/退回 2D 以后 _apply_lamps 每帧碰已释放的灯
+	_free_folks()
+
+
+func _free_folks() -> void:
 	for f in folk_figs.values():
 		f.queue_free()
 	folk_figs.clear()
@@ -394,6 +452,8 @@ func _process(delta: float) -> void:
 
 func _apply_lamps() -> void:
 	for l in _lamps:
+		if not is_instance_valid(l[0]):
+			continue
 		var light: Light3D = l[0]
 		var on := maxf(_lamp_on, float(light.get_meta("day", 0.0))) * float(l[1])
 		light.visible = on > 0.02
@@ -414,7 +474,10 @@ func _sync_camera() -> void:
 	cam.rotation = Vector3.ZERO
 	cam.size = h * NEAR / DIST
 	cam.frustum_offset = Vector2(0.0, -LIFT * NEAR / DIST)
-	post.set_shader_parameter("focus_y", focus_line(ground_y, center.y, view.y))
+	# 移轴对准自己站的那一层（楼里两层：在楼顶就对楼顶）
+	var me = world.me() if world.has_method("me") else null
+	var feet_y: float = me.position.y if me != null else ground_y
+	post.set_shader_parameter("focus_y", focus_line(feet_y, center.y, view.y))
 
 
 ## 移轴对准的那条线在屏幕上的高度（0 顶 1 底）：人身子的正中（地面往上半个大人），人比身后的墙清楚
@@ -536,8 +599,11 @@ func _sync_folks() -> void:
 			walking = float(n._pause) <= 0.0
 			dir = 1 if float(n.speed) > 0.0 else -1
 			f.phase = fmod(float(n._phase) / 8.0, 1.0)
-			# 后道的从人身后过，前道的从人跟前过
-			z = -0.75 if n.position.y < ground_y else 0.75
+			# 后道、前道都走在人跟前那一溜空地上（z 0.4~1.1）：人身后 -1.15~-0.23 摆满了摊子、桌凳、冰柜、
+			# 邮筒、树，原来后道放在 -0.75 正好从这些东西里头穿过去；再往前是路灯杆（1.14 起）
+			z = 0.6 if n.position.y < ground_y else 0.92
+			# 两道只隔三十来厘米：后道的人偶小一号（和 2D 里一样），迎面对穿时肩膀不打架，也读得出前后
+			f.scale = Vector3.ONE * FIG_SCALE * (0.9 if n.position.y < ground_y else 1.0)
 		elif "_flip" in n:
 			dir = -1 if n._flip else 1
 		f.position = to3d(Vector2(x, ground_y), z)

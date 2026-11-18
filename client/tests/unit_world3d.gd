@@ -66,10 +66,27 @@ func _initialize() -> void:
 			bare = false
 	check(bare, "冬天树冠该藏起来只剩枝子")
 	s.queue_free()
+	# 别的几张图：搭得起来、有灯，五个年代、四季都换得动；没有 stage（不在游戏里）tick 也不出错
+	for id in ["building", "river", "primary", "middle"]:
+		var b: Node3D = Stage3D.BUILDERS[id].new()
+		root.add_child(b)
+		var floors: Array = [260, 720] if id == "building" else [760]
+		b.build({"id": id, "width": 3200 if id == "building" else 2800, "floors": floors}, "childhood", "spring")
+		check(b.get_child_count() > 10, "%s 东西太少：%d" % [id, b.get_child_count()])
+		check(not b.lamps.is_empty(), "%s 没有灯" % id)
+		for lk in Actor.STAGES:
+			b.set_look(lk)
+		for se in ["summer", "autumn", "winter", "spring"]:
+			b.set_season(se)
+		for i in 3:
+			b.tick(0.4, 10.0)
+		b.queue_free()
 	# 只有有 3D 的图走 3D（不看这台机器上存的画面设置）
 	Stage3D.set_mode("auto", false)
 	check(Stage3D.supports("street"), "楼下这条街该有 3D")
-	check(not Stage3D.supports("building"), "楼里还没有 3D，该走 2D")
+	for id in ["building", "river", "primary", "middle"]:
+		check(Stage3D.supports(id), "%s 该有 3D" % id)
+	check(not Stage3D.supports("hospital"), "医院还没有 3D，该走 2D")
 	Stage3D.enabled = false
 	check(not Stage3D.supports("street"), "关掉 3D 后都走 2D")
 	Stage3D.enabled = true
@@ -99,6 +116,25 @@ func _initialize() -> void:
 	var fl := Stage3D.focus_line(760.0, 610.0, 680.0)
 	var ground_on_screen := (760.0 - 610.0) / 680.0 + 0.5
 	check(fl > 0.5 and fl < ground_on_screen and ground_on_screen - fl < 0.2, "移轴焦线 %.2f 没落在人身上（地面 %.2f）" % [fl, ground_on_screen])
+	# 搭好的图留着：楼下 → 楼里 → 楼下不重搭；走到没 3D 的图只藏不拆；最多留三张；换 2D 全拆
+	Stage3D.set_mode("on", false)
+	var stc := Stage3D.new()
+	root.add_child(stc)
+	stc.show_scene({"id": "street", "width": 4000, "floors": [760]})
+	var street_set: Node3D = stc.set3d
+	stc.show_scene({"id": "building", "width": 3200, "floors": [260, 720]})
+	check(stc.set3d != street_set and not street_set.visible, "进楼里该换一张、街藏起来")
+	stc.show_scene({"id": "hospital", "width": 2800, "floors": [760]})
+	check(stc.set3d == null and not stc.visible and is_instance_valid(street_set), "没 3D 的图：只藏不拆")
+	stc.show_scene({"id": "street", "width": 4000, "floors": [760]})
+	check(stc.set3d == street_set and street_set.visible, "回到楼下该用原来那张，不重搭")
+	stc.show_scene({"id": "river", "width": 3600, "floors": [760]})
+	stc.show_scene({"id": "primary", "width": 2800, "floors": [760]})
+	check(stc._sets.size() == Stage3D.KEEP_SETS and not stc._sets.has("building"), "最多留三张，最久没去的先拆：%s" % [stc._sets.keys()])
+	Stage3D.set_mode("off", false)
+	stc.show_scene({"id": "street", "width": 4000, "floors": [760]})
+	check(stc._sets.is_empty() and stc.set3d == null, "换成 2D 该全拆")
+	stc.queue_free()
 	# 画面设置：自动模式量开头几秒，太卡就退回 2D、记下来；菜单里再选一次就重试；选 2D 就不开
 	Stage3D.set_mode("auto", false)
 	check(Stage3D.supports("street"), "自动模式默认开 3D")
@@ -127,5 +163,5 @@ func _initialize() -> void:
 	st5.free()
 	st6.free()
 	if fails == 0:
-		print("✓ unit_world3d：两个人五个岁数、二十四套动作、街道 3D、年代季节、相机对齐、画面设置和太卡退回 2D")
+		print("✓ unit_world3d：两个人五个岁数、二十四套动作、街道/楼里/海河边/小学/中学 3D、年代季节、相机对齐、画面设置和太卡退回 2D")
 	quit(1 if fails > 0 else 0)

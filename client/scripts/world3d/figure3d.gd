@@ -17,7 +17,7 @@ const OUTLINE := preload("res://shaders/3d/outline.gdshader")
 ##   青春：交界硬、勾线粗、颜色饱和、轮廓光亮（热闹一点）
 ##   绘本：没有勾线、明暗晕开、带一点纸纹（水彩绘本）
 const STYLES := {
-	"qingtou": {"name": "清透", "soft": 0.2, "band": -0.06, "outline": 0.0026, "line_k": 0.42, "rim": 0.32, "sat": 0.9, "shade": Color(0.9, 0.77, 0.83), "floor": 1.2, "paper": 0.0},
+	"qingtou": {"name": "清透", "soft": 0.2, "band": -0.06, "outline": 0.0026, "line_k": 0.42, "rim": 0.32, "sat": 1.0, "shade": Color(0.88, 0.75, 0.82), "floor": 1.12, "paper": 0.0},
 	"qingchun": {"name": "青春", "soft": 0.008, "band": 0.18, "outline": 0.0075, "line_k": 0.18, "rim": 0.75, "sat": 1.18, "shade": Color(0.6, 0.5, 0.72), "floor": 0.95, "paper": 0.0},
 	"huiben": {"name": "绘本", "soft": 0.45, "band": -0.1, "outline": 0.0, "line_k": 0.5, "rim": 0.1, "sat": 0.78, "shade": Color(0.86, 0.74, 0.7), "floor": 1.2, "paper": 0.45},
 }
@@ -59,8 +59,8 @@ const LOOKS := {
 	"mei": {
 		"childhood": {"top": "#F7F2E8", "dress": "#D9485F", "dress_len": 0.55, "sleeve": 0.5, "bottom": "#F7F2E8", "legs": 0.0, "socks": "#F8F5EE", "shoes": "#C23A4F", "shoe2": "#7A2030", "hair": "pigtails"},
 		"teen": {"top": "#38445F", "band": "#F3EFE6", "side": "#F3EFE6", "inner": "#F3EFE6", "inner_w": 0.05, "sleeve": 1.0, "bottom": "#38445F", "legs": 1.0, "shoes": "#ECE8E0", "shoe2": "#D9485F", "hair": "ponytail"},
-		"young": {"top": "#DFCCAA", "inner": "#D24A5E", "inner_w": 0.3, "dress": "#D24A5E", "dress_len": 0.66, "sleeve": 1.0, "bottom": "#3A3440", "legs": 1.0, "shoes": "#5B3A2E", "shoe2": "#3A251D", "hair": "long"},
-		"middle": {"top": "#D5C2A2", "band": "#D5C2A2", "inner": "#C8475B", "inner_w": 0.26, "sleeve": 1.0, "bottom": "#3B3A46", "legs": 1.0, "dress": "#3B3A46", "dress_len": 0.8, "shoes": "#4B3229", "shoe2": "#2E1F19", "hair": "bun"},
+		"young": {"top": "#AEB7C4", "inner": "#D24A5E", "inner_w": 0.3, "dress": "#D24A5E", "dress_len": 0.66, "sleeve": 1.0, "bottom": "#3A3440", "legs": 1.0, "shoes": "#5B3A2E", "shoe2": "#3A251D", "hair": "long"},
+		"middle": {"top": "#A98762", "band": "#A98762", "inner": "#C8475B", "inner_w": 0.26, "sleeve": 1.0, "bottom": "#3B3A46", "legs": 1.0, "dress": "#3B3A46", "dress_len": 0.8, "shoes": "#4B3229", "shoe2": "#2E1F19", "hair": "bun"},
 		"old": {"top": "#B5495A", "band": "#DDD6C6", "sleeve": 1.0, "bottom": "#4A4650", "legs": 1.0, "shoes": "#2B2724", "shoe2": "#1E1B19", "hair": "bun_grey"},
 	},
 }

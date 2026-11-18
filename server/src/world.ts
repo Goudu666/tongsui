@@ -520,6 +520,40 @@ function worldWage(c: Content, p: Person, duty: Duty, age: number): number {
 }
 
 /** 日程现在还去不去得了：今天有、还没去过、没迟到（日程的第一段过去了就是迟到，那一段拿去干别的了） */
+/**
+ * 这件事算不算自己挑的（rules.yaml → growth.chosenWeight，growth.ts → growthCtx 的 chosen）：日程本身不算；
+ * 今天该上学上班（歇着的日子是看摊这类 restDuty）的那几段逃了去做别的也不算。上学前、放了学、没有日程的日子才算
+ */
+function worldChosen(s: LifeState, c: Content, role: Role, act: Action, slot: number): boolean {
+  if (act.duty) return false;
+  var d = worldDuty(s, c, role);
+  if (!d) return true;
+  var ds = worldDutySlots(d);
+  return slot < ds[0] || slot > ds[1];
+}
+
+/**
+ * 日程里放了学那一截（殷实人家爸妈报的班、清贫人家帮家里）：比同组本来那条（id 等于 group、下学早的那条）多长的那部分。
+ * growth.chosenWeight 那几岁里这一截也按放了学的时间算重，不然爸妈报的班反倒不如回家写作业，跟爸妈摊牌倒成了划算的事。
+ * 歇着的日子（restDuty）、不在那几岁、没有同组本来那条的，返回 null
+ */
+function worldDutyAfter(s: LifeState, c: Content, role: Role, duty: Duty): Partial<Stats> | null {
+  var age = lifeTimeAt(s.turn).age;
+  if (s.world!.rest || !duty.stats || growthChosenWeight(c, age) <= 1) return null;
+  var tr = lifeTrack(c, s.persons![role], age);
+  if (!tr.group || tr.id === tr.group) return null;
+  var base: Track | null = null;
+  for (var i = 0; i < c.tracks.length; i++) if (c.tracks[i].id === tr.group) base = c.tracks[i];
+  if (!base || !base.duty || base.duty.until >= duty.until) return null;
+  var out: Partial<Stats> = {};
+  var any = false;
+  for (var k in duty.stats) {
+    var v = ((duty.stats as any)[k] as number) - (((base.duty.stats || {}) as any)[k] || 0);
+    if (v > 0) { (out as any)[k] = v; any = true; }
+  }
+  return any ? out : null;
+}
+
 function worldDutyOpen(s: LifeState, c: Content, role: Role): Duty | null {
   var d = worldDuty(s, c, role);
   if (!d || s.world!.dutyDone[role] || s.world!.slot > worldDutySlots(d)[0]) return null;
@@ -746,7 +780,7 @@ function worldJoinLate(s: LifeState, c: Content, role: Role, run: Run) {
     (extra as any)[k] = ((run.raw as any)[k] as number) * (m - 1);
   }
   var before = worldStatsCopy(p);
-  lifeApplySelf(p, extra, growthCtx(s, c, "action"));
+  lifeApplySelf(p, extra, growthCtx(s, c, "action", worldChosen(s, c, role, worldFindAction(c, run.a), s.world!.slot)));
   // 带孩子的那一份也补上搭伴（长在这个人自己的孩子身上）
   var kd: Partial<Stats> | null = null;
   var kid = run.kr ? kidOf(s, role) : null;
@@ -843,7 +877,7 @@ function worldActOnce(s: LifeState, c: Content, role: Role, sp: Spot, act: Actio
   var nf = times * worldNeedsFactor(c, w.slot, act);
   var needs: SelfDelta = {};
   for (var nk in act.needs) (needs as any)[nk] = ((act.needs as any)[nk] as number) * nf;
-  lifeApplySelf(p, boosted, growthCtx(s, c, "action"));
+  lifeApplySelf(p, boosted, growthCtx(s, c, "action", worldChosen(s, c, role, act, w.slot)));
   lifeApplySelf(p, needs);
   worldDecay(c, p, a, t, use); // 这一个半钟头里自己也饿了、困了
   p.money += Math.round(Math.max(0, act.money) * times * 10) / 10;
@@ -1039,7 +1073,19 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   var scaled: SelfDelta = {};
   for (var nk in needs) (scaled as any)[nk] = ((needs as any)[nk] as number) * ntimes;
   // 状态、搭伴、天赋先乘好，再交给成长规则按年纪和底子折算（growth.ts → growthApply）
-  lifeApplySelf(p, stats, growthCtx(s, c, "action"));
+  var after = duty ? worldDutyAfter(s, c, role, duty) : null;
+  if (after) {
+    // 放了学那一截按自己的时间算（乘 chosenWeight），上学那一份照旧
+    var sBase: SelfDelta = {}, sAfter: SelfDelta = {};
+    for (var sk in stats) {
+      var g0 = (gains as any)[sk] as number;
+      var fr = g0 > 0 && (after as any)[sk] ? Math.min(1, ((after as any)[sk] as number) / g0) : 0;
+      (sBase as any)[sk] = ((stats as any)[sk] as number) * (1 - fr);
+      (sAfter as any)[sk] = ((stats as any)[sk] as number) * fr;
+    }
+    lifeApplySelf(p, sBase, growthCtx(s, c, "action", false));
+    lifeApplySelf(p, sAfter, growthCtx(s, c, "action", true));
+  } else lifeApplySelf(p, stats, growthCtx(s, c, "action", !duty && worldChosen(s, c, role, act, a.from !== undefined && a.from >= 0 ? a.from : s.world!.slot)));
   lifeApplySelf(p, scaled);
   // 带孩子（family.ts）：孩子那份按同样的状态、遍数、搭伴倍率长。两口子一起带同一个孩子，两份都长在这一个身上
   var kid = act.kid && !act.duty ? kidOf(s, role) : null;

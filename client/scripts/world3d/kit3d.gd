@@ -6,59 +6,94 @@ extends RefCounted
 const TAU_ := TAU
 
 
-## 放样：沿 Y 轴一圈一圈的椭圆连起来。rings = [[y, 半宽 rx, 半厚 rz, 中心 x 偏, 中心 z 偏], ...]（后两个可省）
-## 两头可以封口（顶上、底下各收成一个点）。seg = 一圈几段
-static func loft(rings: Array, seg := 16, cap_bottom := true, cap_top := true) -> ArrayMesh:
+## 放样：沿 Y 轴一圈一圈的椭圆连起来。rings = [[y, 半宽 rx, 半厚 rz, 中心 x 偏, 中心 z 偏, 明暗, 褶], ...]（后面的可省）
+## 明暗：1 不变、小于 1 往暗压（顶点色，关节、领口底下、裙褶里的「窝」，toon 用 COLOR.r 压暗）；
+## 褶：这一圈按 pleats 个褶往外鼓多少（半径的几分之几：裙摆的百褶）。两头可以封口（收成一个点）。seg = 一圈几段
+static func loft(rings: Array, seg := 16, cap_bottom := true, cap_top := true, pleats := 0) -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var n := rings.size()
-	var pts: Array = []
-	for r in rings:
-		var row := PackedVector3Array()
-		var cx: float = r[3] if r.size() > 3 else 0.0
-		var cz: float = r[4] if r.size() > 4 else 0.0
-		for i in seg:
-			var a := TAU_ * float(i) / float(seg)
-			row.append(Vector3(cx + sin(a) * float(r[1]), float(r[0]), cz + cos(a) * float(r[2])))
-		pts.append(row)
-	for k in n - 1:
-		var v0: float = float(k) / float(n - 1)
-		var v1: float = float(k + 1) / float(n - 1)
-		for i in seg:
-			var j := (i + 1) % seg
-			var u0 := float(i) / float(seg)
-			var u1 := float(i + 1) / float(seg)
-			_quad(st, pts[k][i], pts[k][j], pts[k + 1][j], pts[k + 1][i], Vector2(u0, v0), Vector2(u1, v0), Vector2(u1, v1), Vector2(u0, v1))
-	if cap_bottom:
-		var c := Vector3(rings[0][3] if rings[0].size() > 3 else 0.0, float(rings[0][0]), rings[0][4] if rings[0].size() > 4 else 0.0)
-		for i in seg:
-			_tri(st, c, pts[0][i], pts[0][(i + 1) % seg])
-	if cap_top:
-		var r: Array = rings[n - 1]
-		var c := Vector3(r[3] if r.size() > 3 else 0.0, float(r[0]), r[4] if r.size() > 4 else 0.0)
-		for i in seg:
-			_tri(st, c, pts[n - 1][(i + 1) % seg], pts[n - 1][i])
+	loft_into(st, rings, seg, cap_bottom, cap_top, Transform3D.IDENTITY, pleats)
 	st.generate_normals()
 	return st.commit()
 
 
-## 两头圆的一截（胳膊、腿）：从 0 往 -Y 长 len，上粗 r0、下细 r1，两头半个球收口
-static func limb(length: float, r0: float, r1: float, seg := 12, flat := 1.0) -> ArrayMesh:
+## 放样加进一个批次（几段并成一张网格：手掌 + 大拇指、鞋），xf 把整段挪 / 转过去
+static func loft_into(st: SurfaceTool, rings: Array, seg := 16, cap_bottom := true, cap_top := true, xf := Transform3D.IDENTITY, pleats := 0) -> void:
+	var n := rings.size()
+	var pts: Array = []
+	var shd: Array = []
+	for r in rings:
+		var row := PackedVector3Array()
+		var cx: float = r[3] if r.size() > 3 else 0.0
+		var cz: float = r[4] if r.size() > 4 else 0.0
+		var pl: float = r[6] if r.size() > 6 else 0.0
+		for i in seg:
+			var a := TAU_ * float(i) / float(seg)
+			var k := 1.0
+			if pleats > 0 and pl != 0.0:
+				# 褶：圆的一半是鼓出来的面，一半是折进去的窝（不是正弦波，像压过的褶）
+				var w := absf(sin(a * float(pleats) * 0.5))
+				k += pl * (pow(w, 0.6) - 0.6)
+			row.append(xf * Vector3(cx + sin(a) * float(r[1]) * k, float(r[0]), cz + cos(a) * float(r[2]) * k))
+		pts.append(row)
+		shd.append(float(r[5]) if r.size() > 5 else 1.0)
+	for k in n - 1:
+		var v0: float = float(k) / float(n - 1)
+		var v1: float = float(k + 1) / float(n - 1)
+		var c0 := Color(shd[k], shd[k], shd[k])
+		var c1 := Color(shd[k + 1], shd[k + 1], shd[k + 1])
+		for i in seg:
+			var j := (i + 1) % seg
+			var u0 := float(i) / float(seg)
+			var u1 := float(i + 1) / float(seg)
+			var a: Vector3 = pts[k][i]
+			var b: Vector3 = pts[k][j]
+			var c: Vector3 = pts[k + 1][j]
+			var d: Vector3 = pts[k + 1][i]
+			for v in [[a, c0, Vector2(u0, v0)], [c, c1, Vector2(u1, v1)], [b, c0, Vector2(u1, v0)], [a, c0, Vector2(u0, v0)], [d, c1, Vector2(u0, v1)], [c, c1, Vector2(u1, v1)]]:
+				st.set_color(v[1])
+				st.set_uv(v[2])
+				st.add_vertex(v[0])
+	if cap_bottom:
+		var r0: Array = rings[0]
+		var c := xf * Vector3(r0[3] if r0.size() > 3 else 0.0, float(r0[0]), r0[4] if r0.size() > 4 else 0.0)
+		var cc := Color(shd[0], shd[0], shd[0])
+		for i in seg:
+			for v in [c, pts[0][i], pts[0][(i + 1) % seg]]:
+				st.set_color(cc)
+				st.set_uv(Vector2.ZERO)
+				st.add_vertex(v)
+	if cap_top:
+		var r: Array = rings[n - 1]
+		var c := xf * Vector3(r[3] if r.size() > 3 else 0.0, float(r[0]), r[4] if r.size() > 4 else 0.0)
+		var cc := Color(shd[n - 1], shd[n - 1], shd[n - 1])
+		for i in seg:
+			for v in [c, pts[n - 1][(i + 1) % seg], pts[n - 1][i]]:
+				st.set_color(cc)
+				st.set_uv(Vector2.ZERO)
+				st.add_vertex(v)
+
+
+## 两头圆的一截（胳膊、腿）：从 0 往 -Y 长 len，上粗 r0、下细 r1，两头半个球收口。
+## bulge 肌肉鼓多少、peak 鼓在哪（0 上头 … 1 下头）：大腿、上臂鼓在上三分之一，小腿肚鼓在上头，往手腕 / 脚踝收细。
+## 两头的半球压暗一点（关节的窝）
+static func limb(length: float, r0: float, r1: float, seg := 12, flat := 1.0, bulge := 0.06, peak := 0.5, end_shade := 0.86) -> ArrayMesh:
 	var rings: Array = []
 	var k := 4
 	for i in range(k, 0, -1):  # 上头半球
 		var a := PI / 2.0 * float(i) / float(k)
-		rings.append([sin(a) * r0, cos(a) * r0, cos(a) * r0 * flat])
-	var steps := 5
+		rings.append([sin(a) * r0, cos(a) * r0, cos(a) * r0 * flat, 0.0, 0.0, lerpf(1.0, end_shade, float(i) / float(k))])
+	var steps := 8
 	for i in steps + 1:
 		var t := float(i) / float(steps)
 		var r := lerpf(r0, r1, t)
-		# 中间略鼓一点（肌肉），不是直筒
-		r *= 1.0 + 0.06 * sin(t * PI)
+		# 中间鼓一点（肌肉），鼓的地方靠上，往下收得快：胳膊腿有个形，不是直筒
+		var u := t / peak if t < peak else 1.0 - (t - peak) / (1.0 - peak)
+		r *= 1.0 + bulge * sin(clampf(u, 0.0, 1.0) * PI * 0.5)
 		rings.append([-t * length, r, r * flat])
 	for i in range(1, k + 1):  # 下头半球
 		var a := PI / 2.0 * float(i) / float(k)
-		rings.append([-length - sin(a) * r1, cos(a) * r1, cos(a) * r1 * flat])
+		rings.append([-length - sin(a) * r1, cos(a) * r1, cos(a) * r1 * flat, 0.0, 0.0, lerpf(1.0, end_shade, float(i) / float(k))])
 	rings.reverse()
 	return loft(rings, seg, false, false)
 
@@ -338,3 +373,71 @@ static func lock_into(st: SurfaceTool, path: PackedVector3Array, outs: PackedVec
 		for i in seg:
 			var i2 := (i + 1) % seg
 			_quad(st, rings[k][i2], rings[k][i], rings[k + 1][i], rings[k + 1][i2], Vector2.ZERO, Vector2.ZERO, Vector2.ZERO, Vector2.ZERO)
+
+
+## 手：手掌是扁的（掌心朝里贴着腿、手背朝外），往指尖收；大拇指在前面斜着下来。sz = 手的半长
+static func hand(sz: float, slim := 1.0) -> ArrayMesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var w := slim
+	loft_into(st, [
+		[-sz * 1.72, sz * 0.12 * w, sz * 0.2, 0.0, sz * 0.06],
+		[-sz * 1.6, sz * 0.2 * w, sz * 0.4, 0.0, sz * 0.05],
+		[-sz * 1.3, sz * 0.24 * w, sz * 0.52, 0.0, sz * 0.02],
+		[-sz * 0.95, sz * 0.27 * w, sz * 0.58, 0.0, 0.0, 0.96],
+		[-sz * 0.55, sz * 0.3 * w, sz * 0.56],
+		[-sz * 0.2, sz * 0.3 * w, sz * 0.44],
+		[sz * 0.05, sz * 0.32 * w, sz * 0.38, 0.0, 0.0, 0.9],
+		[sz * 0.2, sz * 0.2 * w, sz * 0.24, 0.0, 0.0, 0.85],
+	], 12)
+	# 大拇指：从掌根前面斜着往前下
+	loft_into(st, [
+		[-sz * 1.05, sz * 0.07, sz * 0.08, sz * 0.02, sz * 0.66],
+		[-sz * 0.95, sz * 0.12, sz * 0.12, sz * 0.03, sz * 0.62],
+		[-sz * 0.6, sz * 0.15, sz * 0.15, sz * 0.03, sz * 0.5],
+		[-sz * 0.3, sz * 0.15, sz * 0.15, sz * 0.02, sz * 0.32, 0.92],
+	], 8)
+	st.generate_normals()
+	return st.commit()
+
+
+## 鞋：顺着脚往前放样（后跟圆、脚背斜下去、鞋头圆而微翘），底是平的贴地。原点 = 鞋底后跟正下方的地面往前 0.28 鞋长。
+## fl 鞋长、fw 半宽、fh 后跟多高；sole 只要一片鞋底（另一个颜色）：薄、宽一点
+static func shoe(fl: float, fw: float, fh: float, sole := false) -> ArrayMesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	# 放样沿 Y 走，转一下让它沿 +Z（往前）；圈的「z」就成了往下（所以中心高度取负）
+	var xf := Transform3D(Basis(Vector3.RIGHT, PI * 0.5), Vector3.ZERO)
+	# [往前多远, 半宽, 半高, 中心高]
+	var prof := [
+		[-0.3, 0.45, 0.4, 0.5], [-0.27, 0.78, 0.86, 0.5], [-0.18, 0.9, 0.98, 0.5], [0.0, 0.94, 0.88, 0.44],
+		[0.18, 1.0, 0.62, 0.31], [0.38, 1.04, 0.42, 0.21], [0.55, 0.96, 0.36, 0.19], [0.66, 0.78, 0.3, 0.17],
+		[0.72, 0.5, 0.22, 0.15], [0.745, 0.2, 0.1, 0.12]]
+	var rings: Array = []
+	for p in prof:
+		if sole:
+			var hs := 0.075 * fh / fl
+			rings.append([float(p[0]) * fl * 1.02 + 0.004, float(p[1]) * fw * 1.06, hs * fl, 0.0, -hs * fl, 1.0])
+		else:
+			var hh := float(p[2]) * fh * 0.5
+			var yc := float(p[3]) * fh
+			rings.append([float(p[0]) * fl, float(p[1]) * fw, hh, 0.0, -maxf(yc, hh), lerpf(0.9, 1.0, clampf(float(p[0]) + 0.3, 0.0, 1.0))])
+	loft_into(st, rings, 14, true, true, xf)
+	st.generate_normals()
+	return st.commit()
+
+
+## 裙子：腰往下撑开，裙摆按 pleats 个褶起伏（越往下褶越深），裙摆里面一圈压暗（裙子里的影）
+static func skirt(waist_y: float, length: float, waist: Vector2, hem: Vector2, pleats := 14, depth := 0.12, seg := 56) -> ArrayMesh:
+	var rings: Array = []
+	var steps := 6
+	for i in steps + 1:
+		var t := float(i) / float(steps)
+		var e := 1.0 - pow(1.0 - t, 2.2)  # 上头贴腰、过了胯往下撑开
+		var r := waist.lerp(hem, e)
+		rings.append([waist_y - t * length, r.x, r.y, 0.0, 0.0, lerpf(1.0, 0.94, t), depth * smoothstep(0.0, 0.6, t)])
+	# 裙摆往里折一点（布有厚度）
+	rings.append([waist_y - length - 0.004, hem.x * 0.97, hem.y * 0.97, 0.0, 0.0, 0.75, depth])
+	rings.reverse()
+	return loft(rings, seg, false, false, pleats)
+

@@ -12,7 +12,7 @@ uniform float root_k = 0.72;      // 发根压暗
 uniform vec3 spec_col : source_color = vec3(0.9, 0.8, 0.75);   // 天使环的颜色（青偏冷蓝，梅偏暖）
 uniform float ring_amt = 0.75;    // 天使环多亮（混进底色的比例）
 uniform float ring_shift = 0.12;  // 环往上 / 往下挪（沿法线偏发丝方向）
-uniform float ring_jit = 0.22;    // 每缕错开多少（环断开的程度）
+uniform float ring_jit = 0.13;    // 每缕错开多少（环断开的程度）
 uniform float ring_pow = 110.0;    // 环多窄
 uniform float sheen = 0.18;       // 第二道宽的、带颜色的光泽
 uniform float inner_k = 0.5;      // 发束里头那面 / 背面
@@ -87,7 +87,7 @@ void fragment() {
 	float sh = ring_shift + (strand - 0.5) * ring_jit + (strand2 - 0.5) * 0.06;
 	float k1 = kk(tang, N, H, sh, ring_pow);
 	float aa = fwidth(k1) * 1.5 + 0.02;
-	float ring = smoothstep(0.7 - aa, 0.7 + aa, k1) * 0.85 + smoothstep(0.3, 0.7, k1) * 0.15;
+	float ring = smoothstep(0.66 - aa, 0.78 + aa, k1) * 0.8 + smoothstep(0.3, 0.7, k1) * 0.2;
 	ring *= smoothstep(0.04, 0.2, along) * (1.0 - smoothstep(0.5, 0.75, along));
 	ring *= smoothstep(0.0, 0.35, dot(N, V));
 	if (!FRONT_FACING) {

@@ -350,7 +350,7 @@ func _apply_time() -> void:
 	var rim_dir := Vector3(rim_x * 0.55, -0.42, 0.72).normalized()
 	rim.look_at_from_position(Vector3.ZERO, rim_dir, Vector3.UP)
 	rim.light_color = Color(1.0, 0.95, 0.88).lerp(Color(1.0, 0.7, 0.45), warm).lerp(Color(0.62, 0.74, 1.0), night)
-	rim.light_energy = lerpf(lerpf(0.55, 0.75, warm), 0.6, night) * (1.0 - overcast * 0.45)
+	rim.light_energy = lerpf(lerpf(0.55, 0.75, warm), 0.45, night) * (1.0 - overcast * 0.45)
 	# 天：白天蓝、傍晚橙紫、夜里深蓝；阴雨天灰
 	var top := Color(0.32, 0.52, 0.82).lerp(Color(0.36, 0.38, 0.62), warm).lerp(Color(0.04, 0.06, 0.14), night)
 	var hor := Color(0.78, 0.84, 0.9).lerp(Color(0.98, 0.62, 0.42), warm).lerp(Color(0.12, 0.13, 0.24), night)

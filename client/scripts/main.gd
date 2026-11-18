@@ -1037,9 +1037,9 @@ func _check_did(data: Dictionary) -> void:
 		var did: Dictionary = _dict(_dict(acts.get(r)).get("did"))
 		if did.is_empty():
 			# 新的一天服务器把 did 清了、序号从 1 重数：记成 0，不然昨天正好只做了一件（n = 1）的话，
-			# 今天头一件也是 1，会被当成看过的，钟不拨、纸条不出
-			if _did_seen.has(r):
-				_did_seen[r] = 0
+			# 今天头一件也是 1，会被当成看过的，钟不拨、纸条不出。刚进来（再来一世、从大厅回来）也一样：
+			# 还什么都没做，记成 0，头一件照常拨钟
+			_did_seen[r] = 0
 			continue
 		var n := int(did.get("n", 0))
 		var first := not _did_seen.has(r)
@@ -2022,6 +2022,11 @@ func _show_goal_detail() -> void:
 
 func _on_world_state(data: Dictionary) -> void:
 	last_world = data
+	# 压着的那件事：EVENT 之后到的 WORLD 里没有它了（TA 先选完、影子替我选了），就是结了，关卡时别再弹
+	if not _held_event.is_empty():
+		var live: Variant = data.get("event")
+		if not (live is Dictionary and str(live.get("eventId", "")) == str(_dict(_held_event.get("event")).get("eventId", "-"))):
+			_held_event = {}
 	juice.on_world(data)
 	if world != null:
 		world.apply_world(data)
@@ -2321,9 +2326,7 @@ func _replay_held() -> bool:
 	if not modal.visible and not _held_event.is_empty():
 		var held := _held_event
 		_held_event = {}
-		var live: Variant = last_world.get("event")
-		if live is Dictionary and str(live.get("eventId", "")) == str(_dict(held.get("event")).get("eventId", "-")):
-			_on_event_started(held)
+		_on_event_started(held)  # 还压着就是还没结（结了的话 LOG / WORLD / 重连快照已经把它清掉了）
 	_replaying = false
 	return modal.visible
 

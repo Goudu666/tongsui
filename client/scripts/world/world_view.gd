@@ -193,6 +193,7 @@ func _frame_camera(sc: Dictionary) -> void:
 	camera.limit_bottom = int(bottom)
 	camera.position = Vector2(me().position.x if me() != null else 0.0, (top + bottom) / 2.0)
 	camera.reset_smoothing()
+	camera.force_update_scroll()  # reset_smoothing 留下的屏幕中心是平滑过一步的旧值；再算一遍，进街那一帧 3D 镜头才对得上
 
 
 ## 菜单里换了画面（实时 3D / 2D），或者自动模式测出太卡：当前这张图按新设置重摆

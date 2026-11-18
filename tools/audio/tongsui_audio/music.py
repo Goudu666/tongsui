@@ -686,7 +686,7 @@ def rb_bass(stage: str, ck: Clock, mx: Mix, ch, gain: float) -> None:
             mx.add(inst.rbass(m, d * ck.spb, 0.7 if off == 0 else 0.55, sl), ck.t(_sw(stage, b + off)), gain * _arc(b))
 
 
-def duck(x: np.ndarray, hits, length: float, depth_db: float, release: float) -> np.ndarray:
+def duck(x: np.ndarray, hits, length: float, depth_db: float, release: float, wrap: bool = True) -> np.ndarray:
     """现代流行那种「呼吸」：每下底鼓把伴奏压下去一点，再慢慢松开（sidechain）。
     hits 是 [(秒, 力度), ...]；循环开头那几下也在 length 处再算一遍，折回来的余音跟着一起呼吸，接缝不跳。"""
     n = len(x)
@@ -695,7 +695,7 @@ def duck(x: np.ndarray, hits, length: float, depth_db: float, release: float) ->
     k = sec(release * 5)
     shape = np.exp(-np.arange(k) / (SR * release))
     shape[:a] = np.linspace(0.0, 1.0, a)
-    for t, v in list(hits) + [(t + length, v) for t, v in hits if t < 1.0]:
+    for t, v in list(hits) + ([(t + length, v) for t, v in hits if t < 1.0] if wrap else []):
         i = sec(t)
         if i >= n:
             continue
@@ -781,8 +781,9 @@ def bed(stage: str, ck: Clock) -> Mix:
                          1.0 * ag, pan=-0.12)
         rb_bass(stage, ck, low, ch, 0.75)
         groove(stage, ck, mx, rng, quiet_bars=(8, 9), kicks=kicks)
-        mx.add(duck(harm.buf, kicks, ck.length, 2.0, 0.5 * spb), 0.0)  # 原声的，呼吸浅一点
-        mx.add(duck(low.buf, kicks, ck.length, 1.5, 0.35 * spb), 0.0)
+        whole = ck.lo == 0 and ck.hi == BEATS  # 一生那段只截了几小节，不用回绕
+        mx.add(duck(harm.buf, kicks, ck.length, 2.0, 0.5 * spb, whole), 0.0)  # 原声的，呼吸浅一点
+        mx.add(duck(low.buf, kicks, ck.length, 1.5, 0.35 * spb, whole), 0.0)
         swell(ck, mx, 0.5)
         hiss = lp(colored(sec(ck.length), rng, -1.0), 7000) * db(-58)  # 随身听的底噪
         mx.add(fade(hiss, 0.3, 0.3), 0.0)
@@ -810,12 +811,13 @@ def bed(stage: str, ck: Clock) -> Mix:
                 slide = [m + 1 for m in voicing(name2, b2, b2 + n2, stage) if not _rubs(m + 1, he_pcs)]
                 if len(slide) >= 3:
                     for j, m in enumerate(slide):
-                        rh.add(inst.epiano(m, 0.22 * spb, 0.4), ck.t(_sw(stage, nb - 0.25)) + j * 0.004, 0.45 * ag)
+                        rh.add(inst.epiano(m, 0.15 * spb, 0.4), ck.t(_sw(stage, nb - 0.25)) + j * 0.004, 0.45 * ag)
         rb_bass(stage, ck, low, ch, 0.8)
         groove(stage, ck, mx, rng, quiet_bars=(8, 9, 10, 11), kicks=kicks)
         # 左右颤，一拍一个来回；跟着底鼓呼吸
-        mx.add(duck(inst.rhodes_trem(rh.mono(), 1.0 / spb, 0.3), kicks, ck.length, 3.0, 0.55 * spb), 0.0)
-        mx.add(duck(low.buf, kicks, ck.length, 1.5, 0.35 * spb), 0.0)
+        whole = ck.lo == 0 and ck.hi == BEATS
+        mx.add(duck(inst.rhodes_trem(rh.mono(), 1.0 / spb, 0.3), kicks, ck.length, 3.0, 0.55 * spb, whole), 0.0)
+        mx.add(duck(low.buf, kicks, ck.length, 1.5, 0.35 * spb, whole), 0.0)
         swell(ck, mx, 0.5)
 
     elif stage == "middle":
@@ -887,6 +889,11 @@ def morn(stage: str, ck: Clock) -> Mix:
         for off in offs:
             beat = bar * 4 + off
             pcs = safe_pcs(chord_at(beat)) - bed_rubs(stage, beat)  # 伴奏按着大七（C#）的时候不点 D
+            b1, n1, _ = chord_span(beat)
+            if stage not in BED_PENTA and b1 + n1 - beat < 2.0:  # 铃声会拖进下一个和弦：那边按着 C# 也躲开
+                pcs2 = pcs - bed_rubs(stage, (b1 + n1) % BEATS)
+                if pcs2:
+                    pcs = pcs2
             cand = [m for m in range(cfg["lo"], cfg["hi"] + 1) if (m - KEY) % 12 in pcs]
             if prev is None or prev not in cand:
                 i = int(rng.integers(len(cand)))

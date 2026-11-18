@@ -37,7 +37,7 @@ static var _face_spots := {}  ## 脸贴图 → 眼睛、嘴在哪（读一次）
 const HEIGHT := {"childhood": 1.12, "teen": 1.52, "young": 1.72, "middle": 1.70, "old": 1.60}
 ## 头多大（半径，米）：小孩头大、显得可爱；大人收一点
 ## 手办的比例：小孩四头半（可爱）、少年六头、青年近七头（腿长）、中年六头半、老人六头
-const HEAD := {"childhood": 0.124, "teen": 0.122, "young": 0.119, "middle": 0.12, "old": 0.119}
+const HEAD := {"childhood": 0.132, "teen": 0.129, "young": 0.126, "middle": 0.127, "old": 0.126}  ## 比手办略大一号：游戏镜头远，脸要看得清
 const SKIN := Color(1.0, 0.86, 0.77)
 const HAIR_DARK := Color(0.22, 0.17, 0.15)
 const HAIR_GREY := Color(0.88, 0.89, 0.93)  ## 银白，带一点冷

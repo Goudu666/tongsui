@@ -29,7 +29,7 @@ const ACT_ART_SCALE := 1.5
 const HEIGHT := {"childhood": 112.0, "teen": 152.0, "young": 172.0, "middle": 170.0, "old": 160.0}
 const STRIDE := {"childhood": 74.0, "teen": 104.0, "young": 120.0, "middle": 112.0, "old": 78.0}
 const ART_SCALE := 2.0
-const BODY_3D_K := 1.2  ## 3D 人偶的个子 ÷ 2D 精灵的个子（= stage3d.FIG_SCALE）
+const BODY_3D_K := 1.3  ## 3D 人偶的个子 ÷ 2D 精灵的个子（= stage3d.FIG_SCALE）
 const STAGES := ["childhood", "teen", "young", "middle", "old"]
 const STAGE_FILE := {"childhood": "child", "teen": "teen", "young": "young", "middle": "middle", "old": "old"}
 ## 专属动作表里的顺序（和 tools/art/actor_acts.py 的 ACTS 一致：第 i 套在第 i/2 行、第 (i%2)×4 列起）

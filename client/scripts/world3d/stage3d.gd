@@ -22,7 +22,7 @@ const BUILDERS := {"street": Street3D}
 const DIST := 15.0    ## 相机离人走的那条线多远（米）
 const LIFT := 2.6     ## 相机比取景框中心高多少（米）：看得见地面的进深
 const NEAR := 0.5
-const FIG_SCALE := 1.2  ## 人比房子放大一点（微缩模型里人偶总是偏大，脸才看得清；2D 精灵放大 1.5）  改了要同步 actor.gd 的 BODY_3D_K（头顶的字）
+const FIG_SCALE := 1.3  ## 人比房子放大一点（微缩模型里人偶总是偏大，脸才看得清；2D 精灵放大 1.5）  改了要同步 actor.gd 的 BODY_3D_K（头顶的字）
 ## 总开关：关掉就全走 2D（单测、性能探针、对比截图用）
 static var enabled := true
 ## 玩家在菜单里选的画面：auto 自动（开头几秒测帧时间，太卡就退回 2D）/ on 实时 3D / off 2D；"" 还没读设置

@@ -226,8 +226,8 @@ func _face_mat(lk: Dictionary) -> ShaderMaterial:
 	# 脸：暖的桃色（比手上略暖一点，脸是画的重点；脖子本来就暗一档）
 	m.set_shader_parameter("skin", sk * Color(0.95, 0.83, 0.78))
 	# 眼睛：小孩最大最圆，越大越细长；街坊比主角小一号（主角好认）
-	var ew: float = {"childhood": 0.215, "teen": 0.205, "young": 0.195, "middle": 0.185, "old": 0.178}.get(stage, 0.19)
-	var et: float = {"childhood": 0.27, "teen": 0.25, "young": 0.235, "middle": 0.22, "old": 0.235}.get(stage, 0.22)
+	var ew: float = {"childhood": 0.215, "teen": 0.205, "young": 0.195, "middle": 0.18, "old": 0.176}.get(stage, 0.19)
+	var et: float = {"childhood": 0.27, "teen": 0.25, "young": 0.235, "middle": 0.205, "old": 0.225}.get(stage, 0.22)
 	var eh: float = {"childhood": -0.22, "teen": -0.19, "young": -0.18, "middle": -0.17, "old": -0.17}.get(stage, -0.18)
 	if folk:
 		ew *= 0.88
@@ -240,7 +240,8 @@ func _face_mat(lk: Dictionary) -> ShaderMaterial:
 	m.set_shader_parameter("eye_gap", (0.39 if kid else 0.365) * (1.0 if not folk else 0.96))
 	m.set_shader_parameter("tilt", -0.04 if girl else 0.14)
 	m.set_shader_parameter("lash", (1.0 if girl else 0.15) * (0.7 if folk else 1.0))
-	m.set_shader_parameter("iris_size", 1.0 if not folk else 0.9)
+	# 大人眼珠占眼眶小一点（眼白多一点才显得成熟），中年、老了更明显
+	m.set_shader_parameter("iris_size", (1.0 if not folk else 0.9) * {"middle": 0.92, "old": 0.88}.get(stage, 1.0))
 	m.set_shader_parameter("brow_arch", 0.22 if girl else 0.08)
 	m.set_shader_parameter("brow_w", 0.9 if girl else 1.25)
 	# 下半张脸：小孩鼻子嘴巴离眼睛近（脸短），大人往下一点
@@ -257,11 +258,13 @@ func _face_mat(lk: Dictionary) -> ShaderMaterial:
 		iris[1] = (iris[1] as Color).darkened(0.15)  # 老了眼珠的颜色沉一点、柔一点
 	m.set_shader_parameter("iris_dark", iris[0])
 	m.set_shader_parameter("iris_light", iris[1])
-	var age: float = {"childhood": 0.0, "teen": 0.1, "young": 0.2, "middle": 0.45, "old": 0.85}.get(stage, 0.2)
+	var age: float = {"childhood": 0.0, "teen": 0.1, "young": 0.2, "middle": 0.56, "old": 0.9}.get(stage, 0.2)
 	m.set_shader_parameter("age", age)
 	var bl: float = 0.75 if kid else (0.55 if girl else 0.32)
 	if stage == "old":
 		bl *= 0.7
+	elif stage == "middle":
+		bl *= 0.8
 	m.set_shader_parameter("blush", bl * (0.7 if folk else 1.0))
 	var hc := _hair_col(lk)
 	var grey := hc.get_luminance() > 0.5
@@ -507,7 +510,11 @@ func _build_body() -> void:
 		var th := _joint("th_" + n, hips, Vector3(sg * hh * 0.52, 0, 0))
 		var lr: float = s.leg_r
 		if legs >= 0.5:
-			_mesh(th, Kit.limb(s.thigh, lr * 1.08, lr * 0.84, 14, 1.0, 0.05, 0.25), bottom)
+			# 长裙底下的大腿用裙子的布：走路迈到最大、站着胯一拧，大腿根顶出裙面时看着像裙子被膝盖顶起，不是一块深色裤子戳出来
+			var thigh_m: Material = pants_on_hips if dress != null and float(lk.get("dress_len", 0.0)) >= 0.6 else bottom
+			# 换成裙子布时膝盖那头收细一点，整个缩进小腿顶上的半球里：不然坐下、蹲下膝盖一弯，红的大腿头和深色膝盖抢同一块像素，膝盖上一闪一闪的红点
+			var knee_r: float = lr * (0.76 if thigh_m != bottom else 0.84)
+			_mesh(th, Kit.limb(s.thigh, lr * 1.08, knee_r, 14, 1.0, 0.05, 0.25), thigh_m)
 		else:
 			_mesh(th, Kit.limb(s.thigh, lr * 1.0, lr * 0.74, 14, 1.0, 0.07, 0.25), skin)
 		if legs > 0.0 and legs < 0.5:

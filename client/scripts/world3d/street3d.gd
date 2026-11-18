@@ -417,4 +417,4 @@ func set_look(p_look: String) -> void:
 	super.set_look(p_look)
 	var i := maxi(0, LOOKS.find(look))
 	if _labels.has("shop"):
-		(_labels.shop as Label3D).text = "便利店" if i >= 3 else ("超  市" if i == 2 else "小卖部")
+		(_labels.shop as Label3D).text = "便利店" if i >= 3 else "小卖部"  # 和内容、2D 一致：一直是小卖部，到中年才换便利店

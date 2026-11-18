@@ -574,7 +574,7 @@ const rules = load("rules.yaml");
   };
   // 可以不写的：bond.pullMoneyBy（塞钱的上限按塞的那个人的家境，docs/MEANS.md 第九节）、locks（锁上那句按标记换）
   // daily.flagDuty：带着某个标记的人日程跟着变（server/src/outside.ts），点位等地图读完再查
-  const optional = { bond: ["pullMoneyBy"], daily: ["flagDuty"] };
+  const optional = { bond: ["pullMoneyBy"], daily: ["flagDuty"], growth: ["chosenWeight"] };
   checkKeys("rules", rules, [...Object.keys(need), "locks"]);
   for (const [sec, keys] of Object.entries(need)) {
     if (!rules?.[sec]) { errors.push(`rules.yaml: 缺少 ${sec}`); continue; }
@@ -588,6 +588,15 @@ const rules = load("rules.yaml");
       const v = rules?.growth?.[k];
       if (v === undefined || typeof v === "number") continue;
       if (typeof v !== "object" || STAGES.some((st) => typeof v[st] !== "number" || !(v[st] > 0))) errors.push(`rules.yaml: growth.${k} 要么写一个数，要么五个阶段（${STAGES.join(" / ")}）都写正数`);
+    }
+  }
+  // growth.chosenWeight：自己挑的事在这几岁再乘 x（server/src/growth.ts → growthChosenWeight）。几段不能叠，x 在 1~3 之间（太大关口就只看谁肯熬）
+  {
+    const cw = rules?.growth?.chosenWeight;
+    if (cw !== undefined) {
+      if (!Array.isArray(cw) || cw.some((b) => !b || typeof b.from !== "number" || typeof b.to !== "number" || b.from > b.to || typeof b.x !== "number" || !(b.x >= 1 && b.x <= 3)))
+        errors.push("rules.yaml: growth.chosenWeight 是一串 { from, to, x }：from ≤ to 是岁数，x 在 1 到 3 之间");
+      else for (let i = 0; i < cw.length; i++) for (let j = i + 1; j < cw.length; j++) if (cw[i].from <= cw[j].to && cw[j].from <= cw[i].to) errors.push(`rules.yaml: growth.chosenWeight 第 ${i + 1} 段和第 ${j + 1} 段的岁数叠上了`);
     }
   }
   if (rules?.daily && rules.daily.needsUse !== undefined && !(typeof rules.daily.needsUse === "number" && rules.daily.needsUse >= 0 && rules.daily.needsUse <= 1)) errors.push("rules.yaml: daily.needsUse 是一段里多做的那几遍按几成算需求，要在 0 到 1 之间");

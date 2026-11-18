@@ -746,7 +746,7 @@ function worldJoinLate(s: LifeState, c: Content, role: Role, run: Run) {
     (extra as any)[k] = ((run.raw as any)[k] as number) * (m - 1);
   }
   var before = worldStatsCopy(p);
-  lifeApplySelf(p, extra, growthCtx(s, c, "action"));
+  lifeApplySelf(p, extra, growthCtx(s, c, "action", !worldFindAction(c, run.a).duty));
   // 带孩子的那一份也补上搭伴（长在这个人自己的孩子身上）
   var kd: Partial<Stats> | null = null;
   var kid = run.kr ? kidOf(s, role) : null;
@@ -843,7 +843,7 @@ function worldActOnce(s: LifeState, c: Content, role: Role, sp: Spot, act: Actio
   var nf = times * worldNeedsFactor(c, w.slot, act);
   var needs: SelfDelta = {};
   for (var nk in act.needs) (needs as any)[nk] = ((act.needs as any)[nk] as number) * nf;
-  lifeApplySelf(p, boosted, growthCtx(s, c, "action"));
+  lifeApplySelf(p, boosted, growthCtx(s, c, "action", !act.duty));
   lifeApplySelf(p, needs);
   worldDecay(c, p, a, t, use); // 这一个半钟头里自己也饿了、困了
   p.money += Math.round(Math.max(0, act.money) * times * 10) / 10;
@@ -1039,7 +1039,7 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   var scaled: SelfDelta = {};
   for (var nk in needs) (scaled as any)[nk] = ((needs as any)[nk] as number) * ntimes;
   // 状态、搭伴、天赋先乘好，再交给成长规则按年纪和底子折算（growth.ts → growthApply）
-  lifeApplySelf(p, stats, growthCtx(s, c, "action"));
+  lifeApplySelf(p, stats, growthCtx(s, c, "action", !duty && !act.duty));
   lifeApplySelf(p, scaled);
   // 带孩子（family.ts）：孩子那份按同样的状态、遍数、搭伴倍率长。两口子一起带同一个孩子，两份都长在这一个身上
   var kid = act.kid && !act.duty ? kidOf(s, role) : null;

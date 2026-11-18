@@ -1,5 +1,5 @@
 {
- "version": "5fe919672d92",
+ "version": "6aacbe79d903",
  "events": [
   {
    "id": "m_rise",
@@ -62396,7 +62396,14 @@
     "young": 2.5,
     "middle": 2,
     "old": 1.5
-   }
+   },
+   "chosenWeight": [
+    {
+     "from": 9,
+     "to": 11,
+     "x": 1.8
+    }
+   ]
   },
   "aging": {
    "body": [

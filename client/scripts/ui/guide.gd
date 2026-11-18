@@ -32,6 +32,8 @@ const TIPS := {
 	"night": ["晚上了。回家上床睡下，这一天就到头了。", "act"],
 	"day": ["这一天过去了。这辈子只过被记住的日子：小时候一年四天，上了中学一年两天，长大了一年一天，再往后三年一天。", "top"],
 	"goal": ["最上面那条是下一道关口：还有几个日子、分数线在哪。平时做的事都在往上攒。", "goal"],
+	## 字按规则表现算（free_text，rules.yaml 的 growth.chosenWeight），这里只是没有那几岁时的兜底
+	"free": ["放了学的时间是你自己的。", "goal"],
 }
 
 var main  ## main.gd（单测里是个只带 content 的假的）
@@ -321,8 +323,39 @@ func _first_times(world, w: Dictionary) -> void:
 			want("together")
 		if int(main.life.get("turn", 0)) >= 1 and main.goal_panel.visible:
 			want("goal")
+		# 九到十一岁（rules.yaml 的 growth.chosenWeight）头一回放了学：自己挑的事长得快，小升初看的就是这几年
+		if _done.has("goal") and int(w.get("slot", 0)) >= 3 and main.goal_panel.visible:
+			var band := chosen_band(main.content, LifeTimeAge.age(int(main.life.get("turn", 0))))
+			if not band.is_empty():
+				want("free")
 	elif state == "decided" and not main._ready_of(main._other()):
 		want("wait")
+
+
+## 这个岁数落在 growth.chosenWeight 的哪一段（自己挑的事算得更重）；不在就是空的
+static func chosen_band(content: Dictionary, age: int) -> Dictionary:
+	var g: Dictionary = (content.get("rules", {}) as Dictionary).get("growth", {})
+	for b in g.get("chosenWeight", []):
+		if b is Dictionary and age >= int(b.get("from", 0)) and age <= int(b.get("to", -1)):
+			return b
+	return {}
+
+
+## 「放了学」那张纸条的字：几岁到几岁、快几成，都从规则表里读，调了数字跟着变
+static func free_text(content: Dictionary) -> String:
+	var g: Dictionary = (content.get("rules", {}) as Dictionary).get("growth", {})
+	var bands: Array = g.get("chosenWeight", [])
+	if bands.is_empty() or not bands[0] is Dictionary:
+		return str(TIPS["free"][0])
+	var b: Dictionary = bands[0]
+	var more := float(b.get("x", 1.0)) - 1.0
+	var fast := "快一倍" if absf(more - 1.0) < 0.05 else ("快%s成" % _cn_digit(roundi(more * 10.0)) if more < 0.95 else "快%.1f倍" % more)
+	return "%d 到 %d 岁，放了学的时间归你：写作业、练球、去小组、陪 TA 做的事都比平时%s，上学那份照旧。下一道关就看这几年怎么花。" % [int(b.get("from", 0)), int(b.get("to", 0)), fast]
+
+
+static func _cn_digit(n: int) -> String:
+	var d := ["零", "一", "两", "三", "四", "五", "六", "七", "八", "九"]
+	return d[clampi(n, 0, 9)]
 
 
 ## 想出这张纸条：没出过、眼下没有别的纸条、离上一张够久
@@ -337,7 +370,7 @@ func want(id: String) -> void:
 	cfg.set_value("tips", id, true)
 	cfg.save(SAVE)
 	_tip_id = id
-	_tip_label.text = str(TIPS[id][0])
+	_tip_label.text = free_text(main.content) if id == "free" else str(TIPS[id][0])
 	_tip.visible = true
 	_tip_t = 0.0
 	_tip.modulate.a = 0.0  # _process 里淡入（被弹窗压着时不显示）

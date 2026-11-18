@@ -196,7 +196,8 @@ class GoalBar extends Control:
 		draw_line(Vector2(lx, top - 8.0), Vector2(lx, top + h + 8.0), P.INK, 3.0)
 		var moved := int(have) - int(have0)
 		var head := "%s　%d%s%s" % [label, int(have), unit, ("（今天 +%d）" % moved) if moved > 0 else ""]
-		draw_string(f, Vector2(0, 28.0), head, HORIZONTAL_ALIGNMENT_LEFT, size.x * 0.75, P.FS_LABEL, P.INK)
+		# 这一行右边没别的东西：给满整宽（原来只给四分之三，「一口气背完一首长诗　21分（今天 +1）」的右括号被切掉）
+		draw_string(f, Vector2(0, 28.0), head, HORIZONTAL_ALIGNMENT_LEFT, size.x, P.FS_LABEL, P.INK)
 		var need_s := "线 %d" % int(need)
 		var nw := f.get_string_size(need_s, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION).x
 		draw_string(f, Vector2(clampf(lx - nw / 2.0, 0.0, size.x - nw), top + h + 30.0), need_s, HORIZONTAL_ALIGNMENT_LEFT, -1, P.FS_CAPTION, P.INK_MID)

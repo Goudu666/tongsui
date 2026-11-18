@@ -21,8 +21,8 @@ const BUTTON_SIZE := Vector2(88, 60)
 const BUTTON_TOP_MENU := 28.0
 const BUTTON_TOP_WORLD := 204.0  ## hud.gd right_slot_top()：对门那张牌底下
 const SHEET_W := 720.0
-const SHEET_MARGIN := 32.0       ## 那张纸离屏幕上下、右边
-const ROW_H := 80.0              ## 一条音量的高：手指按得住
+const SHEET_MARGIN := 24.0       ## 那张纸离屏幕上下、右边
+const ROW_H := 68.0              ## 一条音量的高：手指按得住（再高，1080 高的屏放不下底下「回大厅 / 退出」那一行）
 ## 三条音量：总线、名字、底下一行小字
 const VOLUMES := [
 	["Music", "音乐", "配乐"],
@@ -59,7 +59,7 @@ func _ready() -> void:
 	_info = _Info.new()
 	_info.visible = false
 	add_child(_info)
-	_sheet = Kit.card(Kit.accent, 44.0, true, 12.0)
+	_sheet = Kit.card(Kit.accent, 36.0, true, 12.0)
 	_sheet.anchor_left = 1.0
 	_sheet.anchor_right = 1.0
 	_sheet.anchor_bottom = 1.0
@@ -311,7 +311,6 @@ func _build() -> void:
 				_cue_at(bus))
 		_body.add_child(s)
 
-	Kit.gap(_body, P.SP_XS)
 	_section("画面")
 	Stage3D.want_3d()  # 读一下设置
 	var vrow := HBoxContainer.new()
@@ -320,18 +319,23 @@ func _build() -> void:
 	for v in VIDEO:
 		var m: String = v[0]
 		var on := Stage3D.mode == m
-		var vb := Kit.button(vrow, ("● " if on else "") + str(v[1]), func(): _set_video(m))
-		Kit.make_option(vb)
+		# 选中的那个涂成墨色块（原来前头加「● 」，「● 实时 3D」挤成两行，整张纸被撑出屏幕）
+		var vb := Kit.button(vrow, str(v[1]), func(): _set_video(m))
+		vb.autowrap_mode = TextServer.AUTOWRAP_OFF
+		if on:
+			Kit.make_primary(vb)
+		else:
+			Kit.make_option(vb)
+		vb.add_theme_font_size_override("font_size", P.FS_BODY)
 		vb.alignment = HORIZONTAL_ALIGNMENT_CENTER
 		vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var vnote := "楼下这条街是实时 3D 的；手机吃力会自动换回 2D"
 	if Stage3D.mode == "auto" and Stage3D.auto_off:
-		vnote = "测出来这台手机跑 3D 有点卡，现在是 2D；再点「自动」或「实时 3D」重试"
+		vnote = "这台手机跑 3D 有点卡，先换成了 2D；点「实时 3D」硬开"
 	Kit.label(_body, vnote, P.FS_CAPTION, P.INK_MID)
 
 	if mode == "online" or mode == "solo":
-		Kit.gap(_body, P.SP_XS)
-		_section("这一世")
+		# 不另起「这一世」小标题：两个按钮自己说得清，省下的高度让底下「回大厅 / 退出」那行露出来
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", P.SP_M)
 		_body.add_child(row)

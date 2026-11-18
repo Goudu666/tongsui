@@ -74,7 +74,8 @@ function worldSceneLock(s: LifeState, c: Content, sc: Scene, role: Role, today?:
   var age = lifeTimeAt(s.turn).age;
   var p = s.persons![role];
   var why = function (q: SceneUnlock): string | null {
-    if (q.minAge !== undefined && age < q.minAge) return "还太小了，一个人去不了" + sc.name;
+    // 公园 45 岁才常去、新家 30 岁：二三十岁的人被拦下来，不能说「还太小了」
+    if (q.minAge !== undefined && age < q.minAge) return age >= 18 ? "还不到常去" + sc.name + "的时候" : "还太小了，一个人去不了" + sc.name;
     if (q.maxAge !== undefined && age > q.maxAge) return "已经不去" + sc.name + "了";
     if (!lifeHasAll(p.flags, q.flags) || !lifeHasNone(p.flags, q.notFlags)) return "没有去" + sc.name + "的由头";
     return null;

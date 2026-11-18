@@ -517,6 +517,14 @@ func ledger_button(box: Container) -> void:
 	b.name = "OpenLedger"
 
 
+## 换页、进河畔里时把还开着的住户本收掉：它盖在页面和弹窗上面（MOUSE_FILTER_STOP），
+## 投胎页上翻着本子等 TA、TA 一定下来就进了世界，人看不见 HUD 也走不动
+func close_ledger() -> void:
+	if _ledger != null and is_instance_valid(_ledger):
+		_ledger.queue_free()
+	_ledger = null
+
+
 func open_ledger() -> void:
 	if _ledger != null and is_instance_valid(_ledger):
 		return

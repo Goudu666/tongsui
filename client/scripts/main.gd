@@ -63,6 +63,9 @@ var menu_always := false     ## 截图、单测用：不联网也摆菜单（too
 var fill_title: Label
 var fill_sub: Label
 var day_card: Control = null  ## 一天收工的小结卡正开着（爽感层 juice.gd 看它：开着的时候不飘字）
+## 小结卡开着时到的事件：等卡合上再弹。服务器收完一天、下一跳（0.1 秒后）就发第二天一早的关口 / 主线，
+## 原来直接把小结卡盖掉，一天的账一闪就没了
+var _held_event: Dictionary = {}
 var _did_seen := {}        ## 每个人看过的最后一条 did（服务器当场结算的那一件）的序号
 var _clock_from := -1.0    ## 钟正在从几点拨到几点（做完一回，钟在眼前走过去）
 var _clock_to := -1.0
@@ -247,6 +250,8 @@ func _build_layers() -> void:
 	for l in [action_title, action_sub]:
 		l.autowrap_mode = TextServer.AUTOWRAP_OFF
 		l.clip_text = true
+		# 小字一长（「一个钟头 · 精力 -6 · 长体魄、魅力 · 冲关口」）右头会被圆钮切掉半个字：收成省略号
+		l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	# 「就这么过」：纸色的次要按钮，贴在行动按钮左边
 	slot_btn = Button.new()
 	slot_btn.anchor_left = 1.0
@@ -594,6 +599,8 @@ func _set_role(role: String) -> void:
 
 
 func _show_screen(id: String, scroll := true, width := PAGE_WIDTH) -> void:
+	if id != _page_id and legacy != null:
+		legacy.close_ledger()
 	_page(id)
 	screen.visible = true
 	hud.visible = false
@@ -1010,6 +1017,10 @@ func _check_did(data: Dictionary) -> void:
 	for r in ["qing", "mei"]:
 		var did: Dictionary = _dict(_dict(acts.get(r)).get("did"))
 		if did.is_empty():
+			# 新的一天服务器把 did 清了、序号从 1 重数：记成 0，不然昨天正好只做了一件（n = 1）的话，
+			# 今天头一件也是 1，会被当成看过的，钟不拨、纸条不出
+			if _did_seen.has(r):
+				_did_seen[r] = 0
 			continue
 		var n := int(did.get("n", 0))
 		var first := not _did_seen.has(r)
@@ -1050,8 +1061,10 @@ static func slot_left(actor: Dictionary, slot: int, slot_use: float) -> float:
 ## 出口按钮底下那行：去哪张图；过桥、坐车的写路上花多久（服务器从这一段里扣，见 world.ts 的 worldExit）
 static func exit_cost(ex: Dictionary, to: Dictionary, here: String) -> String:
 	var parts: Array = []
-	if str(ex.get("to", "")) != here:
-		parts.append("去" + str(to.get("name", "")))
+	var dest := str(to.get("name", ""))
+	# 牌子上已经写了去哪（「去公园」）就不在底下再写一遍「去公园」
+	if str(ex.get("to", "")) != here and (dest == "" or not str(ex.get("label", "")).contains(dest)):
+		parts.append("去" + dest)
 	var ride := int(ex.get("ride", 0))
 	if ride >= 180:
 		parts.append("路上一整段")
@@ -1146,6 +1159,9 @@ func _show_online() -> void:
 	_make_net()
 	_status(body)
 	var ok: bool = await net.connect_server()
+	# 连的那几秒里人已经走了（返回键 → 菜单回标题）：别再把人拽进大厅，标题页也没有 body 可往里加
+	if _page_id != "online" or body == null:
+		return
 	if not ok:
 		_server_row(body)
 		_primary(body, "重试", _show_online)
@@ -1506,8 +1522,9 @@ func _show_roll() -> void:
 	var foot: Container = left
 	if legacy.has_offer():
 		foot = _columns(body, 1.25, 1.0)[0]  # 和出生证一样宽，对齐在我这一边
+	var last: Control
 	if bool(mine.confirmed):
-		_label(foot, "就这样了。等 TA 也定下来……", 36, P.INK_SOFT)
+		last = _label(foot, "就这样了。等 TA 也定下来……", 36, P.INK_SOFT)
 	else:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 30)
@@ -1516,6 +1533,22 @@ func _show_roll() -> void:
 		b.disabled = int(mine.rerollsLeft) <= 0
 		b.autowrap_mode = TextServer.AUTOWRAP_OFF
 		_primary(row, "就这样，出生吧", func(): net.confirm_roll())
+		last = row
+	# 横屏界面高 1080（几乎所有手机），这页装不下：「就这样，出生吧」掉在折叠线下面，
+	# 每重抽一次、点完出生整页重画又滚回顶上。画完把最底下这一行滚进来
+	_scroll_into_view(last)
+
+## 滚动页上把某一行（通常是页脚的按钮）滚进画面；等容器排好版再滚
+func _scroll_into_view(c: Control) -> void:
+	await get_tree().process_frame
+	if not is_instance_valid(c) or not c.is_inside_tree():
+		return
+	var p := c.get_parent()
+	while p != null and not (p is ScrollContainer):
+		p = p.get_parent()
+	if p != null:
+		(p as ScrollContainer).ensure_control_visible(c)
+
 
 ## 这一世两个人生在哪个年代（服务器 life.cohort）：同一年生，一个名字、一句小字。老服务器不发就不写
 func _cohort_head(parent: Container) -> void:
@@ -1654,6 +1687,7 @@ func _roll_card(parent: Container, role: String, r: Dictionary, full: bool) -> C
 # ======================================================================
 
 func _enter_world() -> void:
+	legacy.close_ledger()
 	_page("world")
 	screen.visible = false
 	modal.visible = false
@@ -1678,6 +1712,8 @@ func _enter_world() -> void:
 
 func _leave_world() -> void:
 	offline_preview = false
+	_held_event = {}
+	_did_seen.clear()  # 换一条人生线进来，那边的序号和这边不相干
 	if world != null:
 		world.queue_free()
 		world = null
@@ -1982,6 +2018,9 @@ func _on_event_started(data: Dictionary) -> void:
 	if not pe.roles.has(my_role):
 		_toast("TA 那边好像遇到了一件事……")
 		return
+	if day_card != null and modal.visible:
+		_held_event = data
+		return
 	var ev: Dictionary = events_by_id.get(pe.eventId, {})
 	var mirror: bool = pe.kind == "mirror"
 	if pe.kind == "milestone":
@@ -2241,6 +2280,11 @@ func _close_modal() -> void:
 	day_card = null
 	if modal.has_meta("waiting_event"):
 		modal.remove_meta("waiting_event")
+	if not _held_event.is_empty():
+		var held := _held_event
+		_held_event = {}
+		_on_event_started(held)
+		return
 	duet.check_owed()  # 还有欠着的话就接着问
 
 

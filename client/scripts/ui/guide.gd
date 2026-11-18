@@ -177,6 +177,8 @@ func _process(delta: float) -> void:
 	if _tip.visible:
 		# 弹窗（事件、关口）压上来时纸条先让开、计时停住，弹窗关了再接着显示：不然纸条正好盖在事件的字上
 		var covered: bool = main != null and main.modal.visible and str(TIPS[_tip_id][1]) != "modal"
+		# 让开的时候也别挡手：纸条这层（4）在弹窗（1）上面，透明了还接着吃点击，正好吞掉底下选项的第一下
+		_tip.mouse_filter = Control.MOUSE_FILTER_IGNORE if covered else Control.MOUSE_FILTER_STOP
 		if covered:
 			_tip.modulate.a = 0.0
 		else:

@@ -130,6 +130,8 @@ func on_world(data: Dictionary) -> void:
 	var fresh_did := not did.is_empty() and int(did.get("n", -1)) != int(_did.get(me, -1))
 	if not did.is_empty():
 		_did[me] = int(did.get("n", -1))
+	elif _did.has(me):
+		_did[me] = 0  # 新的一天 did 清空、序号从 1 重数（同 main._check_did）
 	var money := float(_dict(data.get("money")).get(me, -1))
 	var bond: Dictionary = _dict(data.get("bond"))
 	var quiet := _quiet()

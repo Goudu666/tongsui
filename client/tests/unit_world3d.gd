@@ -66,10 +66,27 @@ func _initialize() -> void:
 			bare = false
 	check(bare, "冬天树冠该藏起来只剩枝子")
 	s.queue_free()
+	# 别的几张图：搭得起来、有灯，五个年代、四季都换得动；没有 stage（不在游戏里）tick 也不出错
+	for id in ["building", "river", "primary", "middle"]:
+		var b: Node3D = Stage3D.BUILDERS[id].new()
+		root.add_child(b)
+		var floors: Array = [260, 720] if id == "building" else [760]
+		b.build({"id": id, "width": 3200 if id == "building" else 2800, "floors": floors}, "childhood", "spring")
+		check(b.get_child_count() > 10, "%s 东西太少：%d" % [id, b.get_child_count()])
+		check(not b.lamps.is_empty(), "%s 没有灯" % id)
+		for lk in Actor.STAGES:
+			b.set_look(lk)
+		for se in ["summer", "autumn", "winter", "spring"]:
+			b.set_season(se)
+		for i in 3:
+			b.tick(0.4, 10.0)
+		b.queue_free()
 	# 只有有 3D 的图走 3D（不看这台机器上存的画面设置）
 	Stage3D.set_mode("auto", false)
 	check(Stage3D.supports("street"), "楼下这条街该有 3D")
-	check(not Stage3D.supports("building"), "楼里还没有 3D，该走 2D")
+	for id in ["building", "river", "primary", "middle"]:
+		check(Stage3D.supports(id), "%s 该有 3D" % id)
+	check(not Stage3D.supports("hospital"), "医院还没有 3D，该走 2D")
 	Stage3D.enabled = false
 	check(not Stage3D.supports("street"), "关掉 3D 后都走 2D")
 	Stage3D.enabled = true
@@ -125,5 +142,5 @@ func _initialize() -> void:
 	st5.free()
 	st6.free()
 	if fails == 0:
-		print("✓ unit_world3d：两个人五个岁数、二十四套动作、街道 3D、年代季节、相机对齐、画面设置和太卡退回 2D")
+		print("✓ unit_world3d：两个人五个岁数、二十四套动作、街道/楼里/海河边/小学/中学 3D、年代季节、相机对齐、画面设置和太卡退回 2D")
 	quit(1 if fails > 0 else 0)

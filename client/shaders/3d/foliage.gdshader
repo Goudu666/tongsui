@@ -4,6 +4,7 @@ shader_type spatial;
 render_mode diffuse_burley;
 
 global uniform float g_snow;
+global uniform float g_night;
 uniform vec3 leaf : source_color = vec3(0.32, 0.45, 0.2);
 uniform vec3 leaf2 : source_color = vec3(0.5, 0.58, 0.25);
 uniform float sway = 1.0;
@@ -38,7 +39,8 @@ void fragment() {
 	// 朝上的面亮一点（叶子顶上受光多）
 	c *= 0.85 + 0.25 * clamp(wnrm.y, 0.0, 1.0);
 	float snow = g_snow * smoothstep(0.3, 0.8, wnrm.y) * step(0.4, n);
-	c = mix(c, vec3(0.92, 0.94, 0.97), snow);
+	// 夜里树上的雪跟地上的一样压成月光下的灰蓝（不然冬夜一树白得发亮）
+	c = mix(c, mix(vec3(0.92, 0.94, 0.97), vec3(0.34, 0.38, 0.48), g_night * 0.85), snow);
 	ALBEDO = c;
 	ROUGHNESS = 0.9;
 	SPECULAR = 0.15;

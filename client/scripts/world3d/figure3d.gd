@@ -939,7 +939,7 @@ func animate(delta: float) -> void:
 	if emote != "":
 		emote_t += delta
 	var target := _target_pose()
-	var k := 1.0 - exp(-delta * (18.0 if walking else 10.0))
+	var k := 1.0 - exp(-delta * (30.0 if walking else 10.0))  # 走路跟得紧：慢半拍脚就会在地上打滑
 	for name in target:
 		var v: Variant = target[name]
 		if v is Vector3:
@@ -969,10 +969,13 @@ func animate(delta: float) -> void:
 	if _shadow != null:
 		_shadow.position.x = float(_pose.get("x", 0.0))
 	if j.has("skirt"):
-		# 裙摆跟着腿撑开：两条腿前后分得越开，裙子前后越鼓
-		var spread := absf(((j.th_l as Node3D).rotation.x - (j.th_r as Node3D).rotation.x))
-		var lift := maxf(0.0, -minf((j.th_l as Node3D).rotation.x, (j.th_r as Node3D).rotation.x))
-		(j.skirt as Node3D).scale = Vector3(1.0 + lift * 0.25, 1.0 - lift * 0.08, 1.0 + spread * 0.55 + lift * 0.5)
+		# 裙摆跟着腿撑开：走路、站着时膝盖、小腿顶到哪，裙子就鼓到哪（腿别从裙子里戳出来）；坐、蹲、做事照旧
+		if walking or (loop == "" and emote == "" and not asleep):
+			(j.skirt as Node3D).scale = _skirt_scale()
+		else:
+			var spread := absf(((j.th_l as Node3D).rotation.x - (j.th_r as Node3D).rotation.x))
+			var lift := maxf(0.0, -minf((j.th_l as Node3D).rotation.x, (j.th_r as Node3D).rotation.x))
+			(j.skirt as Node3D).scale = Vector3(1.0 + lift * 0.25, 1.0 - lift * 0.08, 1.0 + spread * 0.55 + lift * 0.5)
 
 
 func _face(delta: float, target: Dictionary) -> void:
@@ -1003,7 +1006,13 @@ func _swing_tail(delta: float) -> void:
 	_tail_a += _tail_v * delta
 	var rot := Vector3(-0.15 + _tail_a * 0.5, 0, 0)
 	# 头低下、仰起来时辫子还是往下垂：把头相对身子的俯仰抵掉（只抵前后，左右摆照旧）
-	var head_b: Basis = (j.root as Node3D).global_transform.basis.orthonormalized().inverse() * (_tail.get_parent() as Node3D).global_transform.basis.orthonormalized()
+	# （一级级乘到 root：不在场景树里也算得出，不报错）
+	var head_b := Basis.IDENTITY
+	var cur: Node = _tail.get_parent()
+	while cur != null and cur != j.root and cur != self:
+		head_b = (cur as Node3D).transform.basis * head_b
+		cur = cur.get_parent()
+	head_b = head_b.orthonormalized()
 	var pitch := head_b.get_euler().x
 	_tail.rotation = rot + Vector3(-pitch, 0, float(_tail.get_meta("base_z", 0.0)))
 	if _tail.has_meta("twin_node"):
@@ -1043,7 +1052,6 @@ func _target_pose() -> Dictionary:
 	var s := _spec
 	var p := {}
 	var face_dir := face_to if face_to != 0 and not walking else dir
-	var kid := stage == "childhood"
 	var old := stage == "old"
 	# 站着的底子：胳膊微微张开，手肘略弯；老人背有点驼
 	p.sh_l = Vector3(0.05, 0, 0.09)
@@ -1071,49 +1079,266 @@ func _target_pose() -> Dictionary:
 		p.yaw = face_dir * deg_to_rad(40.0)
 		_pose_emote(p, emote)
 		return p
-	# 站着：重心慢慢左右换，头偶尔转一下
-	var sway := sin(_t * 0.6 + float(role.length()))
-	p.z = 0.0
-	p.x = sway * 0.008
-	p.hips = Vector3(0, 0, sway * 0.025)
-	p.spine = (p.spine as Vector3) + Vector3(0, 0, -sway * 0.03)
-	p.neck = (p.neck as Vector3) + Vector3(0.0, sin(_t * 0.37) * 0.25 - face_dir * 0.2, sway * 0.04)
-	p.th_l = Vector3(0, 0, sway * 0.03 + 0.02)
-	p.th_r = Vector3(0, 0, sway * 0.03 - 0.02)
-	if kid:
-		# 小孩站不住：脚尖点一点
-		p.an_r = Vector3(-0.2 * maxf(0.0, sin(_t * 1.3)), 0, 0)
+	_pose_idle(p, face_dir)
 	return p
 
 
 func _pose_walk(p: Dictionary, face_dir: int) -> void:
+	# 走路：脚按一整步走过的距离踩在地上（不打滑），腿用两节的 IK 够到脚；
+	# 胯在两脚撑开时最低、过渡步最高，左右晃、前后拧；肩膀反着拧，胳膊和腿反着甩，手肘慢半拍
+	var s := _spec
+	var g := _gait()
+	var old := stage == "old"
+	var L: float = s.thigh + s.shin
+	var C := _stride_len()
 	var a := phase * TAU
-	var sn := sin(a)
-	var cs := cos(a)
+	p.yaw = face_dir * deg_to_rad(60.0)
+	var sway := sin(a - TAU * 0.05)
+	p.x = float(g.sway) * height * sway
+	p.z = 0.0
+	var roll := float(g.roll) * sway
+	var yw := -float(g.pyaw) * cos(a)
+	p.hips = Vector3(0.0, yw, roll)
+	# 两只脚这一刻在哪（左脚 phase=0 落地，右脚差半步）
+	var hb := Basis.from_euler(p.hips)
+	var feet := []
+	var reach := L * float(g.reach)
+	var h := L
+	var dip := 0.0
+	for i in 2:
+		var sg := 1.0 if i == 0 else -1.0
+		var u := fmod(phase + 0.5 * float(i), 1.0)
+		var f := _foot_track(u, C, g)
+		var fx: float = sg * s.hip_half * 0.52 * float(g.width)
+		var jt := hb * Vector3(sg * s.hip_half * 0.52, 0, 0) + Vector3(float(p.x), 0, 0)
+		var dx: float = fx - jt.x
+		# 胯最高只能到这条腿够得着的地方
+		h = minf(h, sqrt(maxf(reach * reach - f.x * f.x - dx * dx, 0.01)) + f.y - jt.y)
+		# 落地以后膝盖接一下力（down）
+		var t := u / float(g.duty)
+		if t < 0.4:
+			dip = maxf(dip, sin(PI * t / 0.4))
+		feet.append(Vector4(fx, f.x, f.y, f.z))
+	h -= dip * float(g.dip) * L
+	p.y = h - L
+	for i in 2:
+		var f: Vector4 = feet[i]
+		var sg := 1.0 if i == 0 else -1.0
+		_leg_ik(p, "l" if i == 0 else "r", sg, Vector3(f.x, s.ankle + f.z, f.y), f.w, float(g.toe_out))
+	# 上身：往前倾一点；肩膀和胯反着拧、反着歪
+	var lean := float(g.lean)
+	var sy := (float(g.shoulder) + float(g.pyaw)) * cos(a)
+	var sz := -roll * 1.25
+	p.spine = Vector3(lean + 0.02 * cos(2.0 * a), sy, sz)
+	# 头稳住（抵掉身子的拧和歪），再往镜头这边转一点：侧着走也看得见脸
+	p.neck = Vector3(-lean * 0.5 + (0.08 if old else 0.0) + 0.015 * cos(2.0 * a), -(sy + yw) * 0.85 - face_dir * 0.45, -(roll + sz) * 0.8)
+	# 胳膊：和对侧的腿一起往前；往前甩时手肘弯得多，而且慢半拍；肩歪了胳膊照样往下垂
+	var arm := float(g.arm)
+	var tilt := roll + sz
+	for i in 2:
+		var n := "l" if i == 0 else "r"
+		var sg := 1.0 if i == 0 else -1.0
+		var ai := a + PI * float(i)
+		var sw := cos(ai - TAU * 0.04)
+		var fwd := maxf(0.0, -sw)
+		p["sh_" + n] = Vector3(arm * sw - float(g.arm_fwd), -sg * 0.12 * fwd * arm, sg * (float(g.arm_out) - 0.03 * fwd) - tilt)
+		p["el_" + n] = Vector3(-(float(g.el0) + float(g.el1) * (0.5 - 0.5 * cos(ai - TAU * 0.1))), 0, 0)
+		p["hand_" + n] = Vector3(-0.12 - 0.14 * sin(ai - TAU * 0.16), 0, sg * 0.1)
+
+
+## 站着：重心在两条腿之间慢慢换，换过去就在那条腿上站一会儿；胯往撑着的那边顶、另一边落下，肩膀反着歪（对立平衡）；
+## 不吃劲的那条腿膝盖松着、脚跟虚点地；脚一直踩在原地。头偶尔往旁边瞟一眼；小孩站不住，踮脚晃
+func _pose_idle(p: Dictionary, face_dir: int) -> void:
+	var s := _spec
 	var kid := stage == "childhood"
 	var old := stage == "old"
-	var amp := 0.5 if not old else 0.32
-	p.yaw = face_dir * deg_to_rad(60.0)
-	p.th_l = Vector3(-amp * sn, 0, 0.02)
-	p.th_r = Vector3(amp * sn, 0, -0.02)
-	p.kn_l = Vector3(0.1 + 0.85 * maxf(0.0, cs) * amp, 0, 0)
-	p.kn_r = Vector3(0.1 + 0.85 * maxf(0.0, -cs) * amp, 0, 0)
-	p.an_l = Vector3(-0.25 * maxf(0.0, -sn) + 0.2 * maxf(0.0, cs) * 0.5, 0, 0)
-	p.an_r = Vector3(-0.25 * maxf(0.0, sn) + 0.2 * maxf(0.0, -cs) * 0.5, 0, 0)
-	var arm := (0.55 if kid else 0.42) * (0.6 if old else 1.0)
-	p.sh_l = Vector3(arm * sn, 0, 0.1)
-	p.sh_r = Vector3(-arm * sn, 0, -0.1)
-	p.el_l = Vector3(-0.35 - 0.25 * maxf(0.0, -sn), 0, 0)
-	p.el_r = Vector3(-0.35 - 0.25 * maxf(0.0, sn), 0, 0)
-	p.y = -absf(sn) * 0.028 * height / 1.4 + (0.012 if kid else 0.0) * absf(cs)
-	p.hips = Vector3(0, 0.1 * sn, 0)
-	p.spine = Vector3(0.06 + (0.14 if old else 0.0), -0.16 * sn, 0)
-	# 头往镜头这边转一点：侧着走也看得见脸
-	p.neck = Vector3(-0.02 + (0.1 if old else 0.0), -face_dir * 0.45, 0)
-	if j.has("skirt") or (from_glb and look.has("dress")):
-		# 裙子里的腿别迈出来：步子小一点
-		for k2 in ["th_l", "th_r"]:
-			p[k2] = (p[k2] as Vector3) * Vector3(0.6, 1, 1)
+	var girl := role == "mei" or bool(look.get("girl", false))
+	var seed := float(role.length()) * 1.3 + float(stage.length()) * 0.7 + float(get_instance_id() % 97) * 0.05
+	var w := clampf(sin(_t * (0.5 if kid else 0.36) + seed) * 2.0, -1.0, 1.0)
+	w = w * (1.5 - 0.5 * w * w)  # +1：重心在左腿
+	var amt := 0.5 if old else 1.0
+	var L: float = s.thigh + s.shin
+	var hh: float = s.hip_half
+	p.x = w * hh * 0.32 * amt
+	p.z = 0.0
+	var roll := w * (0.065 if girl else 0.045) * amt
+	p.hips = Vector3(0.0, w * 0.05 * amt, roll)
+	var sz := -roll * 1.45
+	p.spine = (p.spine as Vector3) + Vector3(0.0, -w * 0.06 * amt, sz)
+	# 两只脚踩在原地：左脚稍前，女孩站得窄一点
+	var fw := hh * (0.38 if girl else 0.62)
+	var tip := 0.0
+	if kid:
+		tip = 0.3 * pow(maxf(0.0, sin(_t * 1.7 + seed)), 2.0)
+	var hb := Basis.from_euler(p.hips)
+	var hgt := L
+	var legs := []
+	for i in 2:
+		var sg := 1.0 if i == 0 else -1.0
+		var wt := 0.5 + 0.5 * w * sg  # 这条腿吃多少劲
+		var free := 1.0 - wt
+		var pr := 0.16 * free * free + tip
+		var pv := _pivot(pr, s.foot * 0.45, s.ankle, false)
+		var fz := (0.035 if i == 0 else -0.012) * height + pv.x
+		var fx := sg * fw
+		var jt := hb * Vector3(sg * hh * 0.52, 0, 0) + Vector3(float(p.x), 0, 0)
+		var reach := L * lerpf(0.955, 0.997, wt)
+		hgt = minf(hgt, sqrt(maxf(reach * reach - fz * fz - (fx - jt.x) * (fx - jt.x), 0.01)) + pv.y - jt.y)
+		legs.append([fx, fz, pv.y, pr])
+	p.y = hgt - L
+	for i in 2:
+		var lg: Array = legs[i]
+		_leg_ik(p, "l" if i == 0 else "r", 1.0 if i == 0 else -1.0, Vector3(lg[0], s.ankle + float(lg[2]), lg[1]), lg[3], 0.16 if not girl else 0.04)
+	# 胳膊顺着往下垂（肩歪了也垂直），手松松地弯着；小孩手前后晃
+	var tilt := roll + sz
+	var breath := sin(_t * 2.1)
+	var fidget := sin(_t * 1.7 + seed) * 0.12 if kid else 0.0
+	p.sh_l = Vector3(0.04 + fidget, 0, (0.07 if girl else 0.09) - tilt + breath * 0.008)
+	p.sh_r = Vector3(0.04 - fidget, 0, -(0.07 if girl else 0.09) - tilt - breath * 0.008)
+	p.el_l = Vector3(-0.2 - (0.12 if girl else 0.0), 0, 0)
+	p.el_r = Vector3(-0.2 - (0.12 if girl else 0.0), 0, 0)
+	p.hand_l = Vector3(-0.15, 0, 0.12)
+	p.hand_r = Vector3(-0.15, 0, -0.12)
+	# 头：放平（抵掉身子的歪），偶尔往旁边瞟一眼再转回来
+	var gl := smoothstep(0.6, 0.9, sin(_t * 0.29 + seed * 1.7)) - smoothstep(0.6, 0.9, sin(_t * 0.21 + seed * 0.6))
+	p.neck = (p.neck as Vector3) + Vector3(-0.03 * absf(gl) + breath * 0.006, sin(_t * 0.37) * 0.05 - face_dir * 0.2 + gl * 0.42, -tilt * 0.7 + w * 0.035 + gl * 0.04)
+
+
+## 每个岁数、男女走路的样子（幅度都是弧度 / 身高、腿长的几分之几）
+func _gait() -> Dictionary:
+	var girl := role == "mei" or bool(look.get("girl", false))
+	var g := {"duty": 0.6, "reach": 0.995, "clr": 0.075, "heel": 0.3, "toe": 0.62, "dip": 0.022, "sway": 0.007, "roll": 0.04, "pyaw": 0.1, "shoulder": 0.08,
+		"lean": 0.05, "arm": 0.42, "arm_fwd": 0.03, "arm_out": 0.11, "el0": 0.22, "el1": 0.38, "width": 1.15, "toe_out": 0.12}
+	match stage:
+		"childhood":
+			g.merge({"duty": 0.56, "reach": 0.985, "clr": 0.11, "heel": 0.34, "toe": 0.72, "dip": 0.04, "arm": 0.62, "el1": 0.55, "lean": 0.03, "sway": 0.01, "roll": 0.045}, true)
+		"teen":
+			g.merge({"duty": 0.58, "reach": 0.993, "clr": 0.09, "toe": 0.7, "dip": 0.03, "arm": 0.5, "el1": 0.45, "lean": 0.07}, true)
+		"middle":
+			g.merge({"duty": 0.61, "clr": 0.06, "heel": 0.24, "toe": 0.5, "dip": 0.016, "arm": 0.3, "el1": 0.26, "pyaw": 0.08, "lean": 0.04}, true)
+		"old":
+			g.merge({"duty": 0.66, "reach": 0.988, "clr": 0.04, "heel": 0.1, "toe": 0.28, "dip": 0.008, "arm": 0.14, "el0": 0.42, "el1": 0.1,
+				"pyaw": 0.05, "shoulder": 0.03, "roll": 0.025, "sway": 0.009, "lean": 0.15, "toe_out": 0.2}, true)
+	if girl:
+		# 女孩：脚落在一条线上（稍微交叉），胯摆得多一点，胳膊贴着身子、甩得小
+		g.width = 0.25
+		g.roll = float(g.roll) * 1.7
+		g.sway = float(g.sway) * 1.25
+		g.pyaw = float(g.pyaw) * 1.25
+		g.arm = float(g.arm) * 0.78
+		g.arm_out = 0.06
+		g.el0 = float(g.el0) + 0.08
+		g.toe_out = float(g.toe_out) * 0.3
+		g.clr = float(g.clr) * 0.85
+		g.dip = float(g.dip) * 0.8
+	return g
+
+
+## 一整步（两步）在小人自己的坐标里走多远：2D 那边 STRIDE 像素走完一整步，1 像素 = 1 厘米，再抵掉小人的放大
+func _stride_len() -> float:
+	const ACT := {"childhood": 74.0, "teen": 104.0, "young": 120.0, "middle": 112.0, "old": 78.0}
+	var px: float = ACT.get(stage, 110.0)
+	if role == "folk":
+		px = 74.0 if stage == "childhood" else (94.0 if stage == "old" else 108.0)
+	if has_meta("stride"):
+		px = float(get_meta("stride"))
+	var sc: float = global_transform.basis.get_scale().x if is_inside_tree() else scale.x
+	return px / 100.0 / maxf(sc, 0.01)
+
+
+## 一只脚在一整步里的轨迹。u：这只脚自己的进度（0 = 脚跟着地）。
+## 返回 (前后 z, 脚踝抬高, 脚的俯仰：正 = 脚尖朝下)：着地时脚尖翘、绕脚跟放平；蹬地时绕前脚掌抬脚跟；腾空时抬起来往前送
+func _foot_track(u: float, C: float, g: Dictionary) -> Vector3:
+	var s := _spec
+	var duty := float(g.duty)
+	var fa: float = s.ankle
+	var heel_b: float = s.foot * 0.3  # 脚跟在脚踝后面多远
+	var ball_f: float = s.foot * 0.45  # 前脚掌在脚踝前面多远
+	if u < duty:
+		var t := u / duty
+		var z := C * duty * (0.5 - t)
+		var hs := float(g.heel) * (1.0 - smoothstep(0.0, 0.18, t))
+		var r := clampf((t - 0.5) / 0.5, 0.0, 1.0)
+		var tp := float(g.toe) * r * r
+		var hz := _pivot(-hs, heel_b, fa, true)
+		var tz := _pivot(tp, ball_f, fa, false)
+		return Vector3(z + hz.x + tz.x, hz.y + tz.y, tp - hs)
+	var t2 := (u - duty) / (1.0 - duty)
+	var z0 := -C * duty * 0.5
+	var z1 := C * duty * 0.5
+	var p0 := _pivot(float(g.toe), ball_f, fa, false)
+	var p1 := _pivot(-float(g.heel), heel_b, fa, true)
+	var e := t2 * t2 * (3.0 - 2.0 * t2)
+	var z := lerpf(z0 + p0.x, z1 + p1.x, e)
+	var lift: float = lerpf(p0.y, p1.y, e) + float(g.clr) * (s.thigh + s.shin) * sin(PI * pow(t2, 0.8))
+	var pitch := lerpf(float(g.toe), -float(g.heel), smoothstep(0.0, 0.9, t2))
+	return Vector3(z, lift, pitch)
+
+
+## 脚绕脚跟（脚尖翘起，ang < 0）或绕前脚掌（脚跟抬起，ang > 0）转 ang 时，脚踝跟着挪多少：(前后, 上下)
+func _pivot(ang: float, arm: float, fa: float, heel: bool) -> Vector2:
+	var c := cos(ang)
+	var sn := sin(absf(ang))
+	if heel:
+		return Vector2(arm * (c - 1.0) - fa * sn, fa * (c - 1.0) + arm * sn)
+	return Vector2(arm * (1.0 - c) + fa * sn, fa * (c - 1.0) + arm * sn)
+
+
+## 两节腿的 IK：胯（p.x/p.y/p.z、p.hips 已经定了）→ 脚踝落到 foot（小人自己的坐标）；脚底按 pitch 俯仰，左右放平
+func _leg_ik(p: Dictionary, n: String, sg: float, foot: Vector3, pitch: float, toe_out: float) -> void:
+	var s := _spec
+	var hp: Vector3 = p.get("hips", Vector3.ZERO)
+	var hb := Basis.from_euler(hp)
+	var hip := Vector3(float(p.get("x", 0.0)), _hip_y + float(p.get("y", 0.0)), float(p.get("z", 0.0)))
+	var jt := hip + hb * Vector3(sg * s.hip_half * 0.52, 0, 0)
+	var ty := -hp.y + sg * toe_out
+	var d := Basis(Vector3.UP, ty).inverse() * (hb.inverse() * (foot - jt))
+	var T: float = s.thigh
+	var S: float = s.shin
+	var D := clampf(d.length(), absf(T - S) + 0.01, (T + S) * 0.9995)
+	var k := PI - acos(clampf((T * T + S * S - D * D) / (2.0 * T * S), -1.0, 1.0))
+	var ey := -T - S * cos(k)
+	var ez := -S * sin(k)
+	var tz := asin(clampf(d.x / maxf(-ey, 1e-4), -1.0, 1.0))
+	var tx := wrapf(atan2(d.z, d.y) - atan2(ez, ey * cos(tz)), -PI, PI)
+	p["th_" + n] = Vector3(tx, ty, tz)
+	p["kn_" + n] = Vector3(k, 0, 0)
+	p["an_" + n] = Vector3(pitch - tx - k, 0, -tz - hp.z)
+
+
+## 裙子该撑多大：量两条腿（膝盖、小腿到裙摆那一截）在胯的坐标里离中线多远，比裙子那一圈的半径大就把裙子撑开
+func _skirt_scale() -> Vector3:
+	var s := _spec
+	var hh: float = s.hip_half
+	var flare: float = hh * (1.9 if stage == "childhood" else 1.55)
+	var Ld: float = (s.thigh + s.shin) * float(look.get("dress_len", 0.6))
+	var lr: float = s.leg_r * 1.15
+	var sx := 1.0
+	var sz := 1.0
+	var lift := 0.0
+	for n in ["l", "r"]:
+		var th: Node3D = j["th_" + n]
+		var kn: Node3D = j["kn_" + n]
+		var kp: Vector3 = th.position + th.basis * kn.position
+		var ap: Vector3 = kp + th.basis * kn.basis * Vector3(0, -s.shin, 0)
+		lift = maxf(lift, -th.rotation.x)
+		var pts := [kp, (kp + ap) * 0.5]
+		if ap.y < -Ld and kp.y > -Ld:
+			pts.append(kp.lerp(ap, (kp.y + Ld) / (kp.y - ap.y)))
+		for q: Vector3 in pts:
+			if q.y < -Ld * 1.02:
+				continue
+			var t := smoothstep(0.15, 1.0, clampf(-q.y / Ld, 0.0, 1.0))
+			var rx := lerpf(hh * 1.18, flare, t)
+			var rz := lerpf(hh * 1.0, flare * 0.92, t)
+			# 裙子一圈是椭圆：横着先撑到 0.9，剩下的前后补
+			var ax := (absf(q.x) + lr) / rx
+			var az := (absf(q.z) + lr) / rz
+			var kx := maxf(1.0, ax / 0.9)
+			var ux := ax / kx
+			sx = maxf(sx, kx)
+			sz = maxf(sz, az / sqrt(1.0 - ux * ux))
+	return Vector3(minf(sx, 1.6), 1.0 - minf(lift, 1.0) * 0.06, minf(sz, 2.2))
 
 
 func _pose_sleep(p: Dictionary) -> void:

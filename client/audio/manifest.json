@@ -379,9 +379,9 @@
   "music/child_bed.ogg": {
    "seconds": 40.0,
    "lufs": -24.9,
-   "peak": -10.9,
+   "peak": -11.0,
    "loop": true,
-   "bytes": 352810
+   "bytes": 352406
   },
   "music/child_call_mei.ogg": {
    "seconds": 3.919,
@@ -400,28 +400,28 @@
    "lufs": -26.4,
    "peak": -14.8,
    "loop": true,
-   "bytes": 183163
+   "bytes": 183133
   },
   "music/child_he.ogg": {
    "seconds": 40.0,
    "lufs": -36.1,
    "peak": -22.0,
    "loop": true,
-   "bytes": 125386
+   "bytes": 125348
   },
   "music/child_mei.ogg": {
    "seconds": 40.0,
    "lufs": -22.9,
    "peak": -9.8,
    "loop": true,
-   "bytes": 177027
+   "bytes": 176939
   },
   "music/child_mei_b.ogg": {
    "seconds": 40.0,
    "lufs": -22.9,
-   "peak": -12.0,
+   "peak": -12.1,
    "loop": true,
-   "bytes": 177864
+   "bytes": 177878
   },
   "music/child_mismatch.ogg": {
    "seconds": 6.307,
@@ -440,7 +440,7 @@
    "lufs": -30.9,
    "peak": -22.0,
    "loop": true,
-   "bytes": 132115
+   "bytes": 132120
   },
   "music/child_pass.ogg": {
    "seconds": 4.083,
@@ -453,14 +453,14 @@
    "lufs": -21.9,
    "peak": -8.6,
    "loop": true,
-   "bytes": 167414
+   "bytes": 167452
   },
   "music/child_qing_b.ogg": {
    "seconds": 40.0,
    "lufs": -21.9,
    "peak": -10.3,
    "loop": true,
-   "bytes": 179191
+   "bytes": 179160
   },
   "music/child_resonance.ogg": {
    "seconds": 7.499,
@@ -481,11 +481,11 @@
    "bytes": 44252
   },
   "music/ending.ogg": {
-   "seconds": 61.359,
+   "seconds": 61.367,
    "lufs": -20.0,
-   "peak": -5.0,
+   "peak": -5.5,
    "loop": false,
-   "bytes": 547572
+   "bytes": 547708
   },
   "music/grow_middle.ogg": {
    "seconds": 6.634,
@@ -513,10 +513,10 @@
   },
   "music/middle_bed.ogg": {
    "seconds": 53.333,
-   "lufs": -25.7,
-   "peak": -10.9,
+   "lufs": -25.8,
+   "peak": -11.9,
    "loop": true,
-   "bytes": 411903
+   "bytes": 414500
   },
   "music/middle_call_mei.ogg": {
    "seconds": 5.933,
@@ -532,31 +532,31 @@
   },
   "music/middle_eve.ogg": {
    "seconds": 53.333,
-   "lufs": -26.7,
-   "peak": -15.3,
+   "lufs": -26.8,
+   "peak": -15.4,
    "loop": true,
-   "bytes": 290642
+   "bytes": 290622
   },
   "music/middle_he.ogg": {
    "seconds": 53.333,
-   "lufs": -35.4,
-   "peak": -22.5,
+   "lufs": -35.5,
+   "peak": -20.3,
    "loop": true,
-   "bytes": 256012
+   "bytes": 257687
   },
   "music/middle_mei.ogg": {
    "seconds": 53.333,
-   "lufs": -22.2,
-   "peak": -9.6,
+   "lufs": -22.3,
+   "peak": -9.7,
    "loop": true,
-   "bytes": 280819
+   "bytes": 280683
   },
   "music/middle_mei_b.ogg": {
    "seconds": 53.333,
    "lufs": -22.2,
    "peak": -10.5,
    "loop": true,
-   "bytes": 302976
+   "bytes": 302957
   },
   "music/middle_mismatch.ogg": {
    "seconds": 8.318,
@@ -572,10 +572,10 @@
   },
   "music/middle_morn.ogg": {
    "seconds": 53.333,
-   "lufs": -30.2,
-   "peak": -19.8,
+   "lufs": -30.3,
+   "peak": -19.7,
    "loop": true,
-   "bytes": 184904
+   "bytes": 182752
   },
   "music/middle_pass.ogg": {
    "seconds": 4.259,
@@ -585,17 +585,17 @@
   },
   "music/middle_qing.ogg": {
    "seconds": 53.333,
-   "lufs": -21.2,
-   "peak": -6.8,
+   "lufs": -21.3,
+   "peak": -6.9,
    "loop": true,
-   "bytes": 253413
+   "bytes": 253476
   },
   "music/middle_qing_b.ogg": {
    "seconds": 53.333,
-   "lufs": -21.2,
+   "lufs": -21.3,
    "peak": -6.0,
    "loop": true,
-   "bytes": 261432
+   "bytes": 261528
   },
   "music/middle_resonance.ogg": {
    "seconds": 9.76,
@@ -617,10 +617,10 @@
   },
   "music/old_bed.ogg": {
    "seconds": 60.952,
-   "lufs": -27.6,
-   "peak": -15.6,
+   "lufs": -27.5,
+   "peak": -15.2,
    "loop": true,
-   "bytes": 532710
+   "bytes": 532106
   },
   "music/old_call_mei.ogg": {
    "seconds": 6.137,
@@ -637,30 +637,30 @@
   "music/old_eve.ogg": {
    "seconds": 60.952,
    "lufs": -28.5,
-   "peak": -17.2,
+   "peak": -17.1,
    "loop": true,
-   "bytes": 262489
+   "bytes": 262585
   },
   "music/old_he.ogg": {
    "seconds": 60.952,
    "lufs": -38.7,
    "peak": -23.8,
    "loop": true,
-   "bytes": 187106
+   "bytes": 187223
   },
   "music/old_mei.ogg": {
    "seconds": 60.952,
    "lufs": -22.6,
    "peak": -10.0,
    "loop": true,
-   "bytes": 277689
+   "bytes": 277668
   },
   "music/old_mei_b.ogg": {
    "seconds": 60.952,
    "lufs": -22.5,
    "peak": -13.1,
    "loop": true,
-   "bytes": 293089
+   "bytes": 293125
   },
   "music/old_mismatch.ogg": {
    "seconds": 9.917,
@@ -677,9 +677,9 @@
   "music/old_morn.ogg": {
    "seconds": 60.952,
    "lufs": -33.5,
-   "peak": -24.9,
+   "peak": -25.1,
    "loop": true,
-   "bytes": 190129
+   "bytes": 187037
   },
   "music/old_pass.ogg": {
    "seconds": 4.472,
@@ -690,16 +690,16 @@
   "music/old_qing.ogg": {
    "seconds": 60.952,
    "lufs": -21.5,
-   "peak": -10.1,
+   "peak": -10.0,
    "loop": true,
-   "bytes": 172820
+   "bytes": 172880
   },
   "music/old_qing_b.ogg": {
    "seconds": 60.952,
    "lufs": -21.5,
    "peak": -9.7,
    "loop": true,
-   "bytes": 173763
+   "bytes": 173564
   },
   "music/old_resonance.ogg": {
    "seconds": 11.206,
@@ -722,16 +722,16 @@
   "music/roll.ogg": {
    "seconds": 20.87,
    "lufs": -22.0,
-   "peak": -11.2,
+   "peak": -11.1,
    "loop": true,
-   "bytes": 173378
+   "bytes": 174927
   },
   "music/teen_bed.ogg": {
    "seconds": 45.714,
-   "lufs": -24.9,
-   "peak": -10.4,
+   "lufs": -24.8,
+   "peak": -11.6,
    "loop": true,
-   "bytes": 460631
+   "bytes": 462340
   },
   "music/teen_call_mei.ogg": {
    "seconds": 4.336,
@@ -747,31 +747,31 @@
   },
   "music/teen_eve.ogg": {
    "seconds": 45.714,
-   "lufs": -26.4,
-   "peak": -14.9,
+   "lufs": -26.3,
+   "peak": -14.8,
    "loop": true,
-   "bytes": 204728
+   "bytes": 204811
   },
   "music/teen_he.ogg": {
    "seconds": 45.714,
    "lufs": -36.0,
-   "peak": -22.5,
+   "peak": -20.0,
    "loop": true,
-   "bytes": 212310
+   "bytes": 213731
   },
   "music/teen_mei.ogg": {
    "seconds": 45.714,
-   "lufs": -22.9,
+   "lufs": -22.8,
    "peak": -11.8,
    "loop": true,
-   "bytes": 217444
+   "bytes": 217474
   },
   "music/teen_mei_b.ogg": {
    "seconds": 45.714,
-   "lufs": -22.9,
-   "peak": -12.7,
+   "lufs": -22.8,
+   "peak": -12.6,
    "loop": true,
-   "bytes": 241821
+   "bytes": 241864
   },
   "music/teen_mismatch.ogg": {
    "seconds": 6.313,
@@ -787,10 +787,10 @@
   },
   "music/teen_morn.ogg": {
    "seconds": 45.714,
-   "lufs": -30.9,
-   "peak": -20.9,
+   "lufs": -30.8,
+   "peak": -19.5,
    "loop": true,
-   "bytes": 152651
+   "bytes": 151568
   },
   "music/teen_pass.ogg": {
    "seconds": 4.25,
@@ -800,17 +800,17 @@
   },
   "music/teen_qing.ogg": {
    "seconds": 45.714,
-   "lufs": -21.9,
+   "lufs": -21.8,
    "peak": -8.2,
    "loop": true,
-   "bytes": 230620
+   "bytes": 230789
   },
   "music/teen_qing_b.ogg": {
    "seconds": 45.714,
-   "lufs": -21.9,
+   "lufs": -21.8,
    "peak": -9.9,
    "loop": true,
-   "bytes": 239609
+   "bytes": 239756
   },
   "music/teen_resonance.ogg": {
    "seconds": 7.142,
@@ -833,16 +833,16 @@
   "music/title.ogg": {
    "seconds": 50.526,
    "lufs": -23.0,
-   "peak": -10.9,
+   "peak": -10.7,
    "loop": true,
-   "bytes": 391266
+   "bytes": 487207
   },
   "music/young_bed.ogg": {
    "seconds": 38.4,
    "lufs": -24.7,
-   "peak": -11.4,
+   "peak": -12.0,
    "loop": true,
-   "bytes": 395509
+   "bytes": 398211
   },
   "music/young_call_mei.ogg": {
    "seconds": 4.518,
@@ -861,28 +861,28 @@
    "lufs": -26.2,
    "peak": -15.1,
    "loop": true,
-   "bytes": 180028
+   "bytes": 179982
   },
   "music/young_he.ogg": {
    "seconds": 38.4,
    "lufs": -35.9,
-   "peak": -23.1,
+   "peak": -20.7,
    "loop": true,
-   "bytes": 184155
+   "bytes": 185420
   },
   "music/young_mei.ogg": {
    "seconds": 38.4,
    "lufs": -22.7,
    "peak": -9.2,
    "loop": true,
-   "bytes": 206969
+   "bytes": 206881
   },
   "music/young_mei_b.ogg": {
    "seconds": 38.4,
    "lufs": -22.7,
    "peak": -10.3,
    "loop": true,
-   "bytes": 219385
+   "bytes": 219365
   },
   "music/young_mismatch.ogg": {
    "seconds": 6.594,
@@ -899,9 +899,9 @@
   "music/young_morn.ogg": {
    "seconds": 38.4,
    "lufs": -30.7,
-   "peak": -20.9,
+   "peak": -20.3,
    "loop": true,
-   "bytes": 138912
+   "bytes": 138275
   },
   "music/young_pass.ogg": {
    "seconds": 4.052,
@@ -914,14 +914,14 @@
    "lufs": -21.7,
    "peak": -6.8,
    "loop": true,
-   "bytes": 203640
+   "bytes": 203616
   },
   "music/young_qing_b.ogg": {
    "seconds": 38.4,
    "lufs": -21.7,
    "peak": -7.6,
    "loop": true,
-   "bytes": 201524
+   "bytes": 201578
   },
   "music/young_resonance.ogg": {
    "seconds": 7.562,

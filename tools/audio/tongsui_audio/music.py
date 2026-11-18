@@ -26,8 +26,8 @@ from __future__ import annotations
 import numpy as np
 
 from . import inst
-from .dsp import (Mix, colored, db, echo, fade, hp, level, loop_wrap, lp, lufs, peak, peak_db, reverb, sec, to_stereo,
-                  trim, warp)
+from .dsp import (SR, Mix, colored, db, echo, fade, hp, level, loop_wrap, lp, lufs, peak, peak_db, reverb, sec,
+                  to_stereo, trim, warp)
 
 KEY = 62  # D4
 _DEG = {1: 0, 2: 2, 3: 4, 4: 5, 5: 7, 6: 9, 7: 11}
@@ -272,6 +272,87 @@ def chord_at(beat: float) -> str:
     return "D"
 
 
+def chord_span(beat: float):
+    """这一拍所在的和弦：(起拍, 拍数, 名字)。"""
+    for b, beats, name in chords():
+        if b <= beat % BEATS < b + beats:
+            return b, beats, name
+    return 0.0, 4.0, "D"
+
+
+# ---- 和弦色彩（11-18 加的：R&B / neo-soul 的七、九、十一、十三） ----
+# 伴奏乐器（电钢、吉他、拇指琴、弦垫）手上按的排法，不带根音：根音交给贝斯，手上只按三音、七音、九音这些有颜色的音。
+# 和「合」那一层的两个音逐个对过，没有挨着半音的（比如 A7sus4 不按 F#，因为「合」里有 G）。
+# 元组 (想要的, 备胎)：不在五声里的色彩音（只有 C#）。这个和弦里两条旋律（A、B 曲）和傍晚的副旋律
+# 只要有一个音跟它差半音（旋律唱 D），就换成备胎。penta=True（童年）一律用备胎。
+COLOR = {
+    "D": [54, 57, 64, (73, 71)],    # Dmaj9：F# A E C#，开放排法（C# 在「合」的 D4 上面一个大七度）；旋律在 D 上就是 D6/9
+    "Bm7": [62, 66, 69, (73, 71)],  # Bm9：D F# A C#
+    "Gmaj7": [59, 62, 66, 69],      # Gmaj9：B D F# A（全在五声里）
+    "F#m7": [57, 61, 64, 71],       # F#m11：A C# E B
+    "A7sus4": [55, 59, 62, 64],     # A9sus4：G B D E（Gmaj7/A 那个 F# 会和「合」的 G 磨，不按）
+    "G": [59, 62, 64, 69],          # G6/9：B D E A
+    "D/F#": [57, 62, 64, 66],       # Dadd9/F#：A D E F#
+    "Em7": [55, 59, 62, 69],        # Em11：G B D A
+    "Dadd9": [54, 59, 64, 69],      # D6/9 的四度排法：F# B E A，R&B 收尾的那个和弦
+}
+# 「合」在人声那几个阶段多一个声部：九音、十一音、六音，两个人合上了，后面的和声就更厚
+HE_COLOR = {"D": 76, "Bm7": (73, 71), "Gmaj7": 69, "F#m7": 71, "A7sus4": 71, "G": 69, "D/F#": 64, "Em7": 69,
+            "Dadd9": 71}
+
+
+def _lines_for(stage: str | None, eve_line: bool = True):
+    """会跟伴奏同时响的旋律：这个阶段的 A 曲、B 曲两对，再加傍晚的副旋律。stage=None 时只看 A 曲。"""
+    if stage is None:
+        return [Q_FULL, M_FULL]
+    sparse = STAGES[stage]["sparse"]
+    a = [Q_SPARSE, M_SPARSE] if sparse else [Q_FULL, M_FULL]
+    return a + list(B_LINES[stage]) + ([EVE_LINE] if eve_line else [])
+
+
+def _sounding(lines, b0: float, b1: float) -> set:
+    """b0~b1 拍之间旋律里响着的音（相对 D 的半音数）。"""
+    pcs = set()
+    for line in lines:
+        for beat, dur, deg, o in line:
+            if min(beat + dur, b1) - max(beat, b0) > 0.05:
+                pcs.add(_DEG[deg] % 12)
+    return pcs
+
+
+def _rubs(m: int, pcs) -> bool:
+    pc = (m - KEY) % 12
+    return any((pc - p) % 12 in (1, 11) for p in pcs)
+
+
+def _pick(v, pcs, penta: bool):
+    if not isinstance(v, tuple):
+        return v
+    want, alt = v
+    return alt if penta or _rubs(want, pcs) else want
+
+
+def voicing(name: str, b0: float, b1: float, stage: str | None = None, penta: bool = False) -> list:
+    """b0~b1 拍这个和弦手上按哪几个音（低→高）。"""
+    pcs = _sounding(_lines_for(stage), b0, b1)
+    return [m for m in (_pick(v, pcs, penta) for v in COLOR[name]) if m is not None]
+
+
+def he_color(name: str, b0: float, b1: float, stage: str | None = None):
+    return _pick(HE_COLOR[name], _sounding(_lines_for(stage), b0, b1), False)
+
+
+def bed_rubs(stage: str, beat: float) -> set:
+    """这一拍伴奏按着的不在五声里的音会跟哪些音磨（相对 D 的半音数）。早上那层点高音时躲开它们。"""
+    b, beats, name = chord_span(beat)
+    out = set()
+    for m in voicing(name, b, b + beats, stage, penta=stage == "child"):
+        pc = (m - KEY) % 12
+        if pc not in PENTA:
+            out |= {(pc + 1) % 12, (pc - 1) % 12}
+    return out
+
+
 # ---- 哪些音不打架 ----
 PENTA = {0, 2, 4, 7, 9}  # D 宫五声，相对 D 的半音数
 
@@ -485,17 +566,21 @@ def voice_m(stage: str, ck: Clock, line=None, seed: int = 0) -> np.ndarray:
 
 # ---- 合 ----
 
-def voice_he(ck: Clock, model: str = "pad") -> np.ndarray:
+def voice_he(ck: Clock, model: str = "pad", stage: str | None = None) -> np.ndarray:
+    """「合」：五声旋律里没有的 4 和 7。人声那几个阶段（model == "vox"）再多一个九音 / 十一音的声部，轻一点。"""
     total = ck.length + 2.0
-    lines = [[], []]
+    third = model == "vox"
+    lines = [[], [], []] if third else [[], []]
     for b, beats, name in chords():
         if not ck.has(b):
             continue
         for i, m in enumerate(CHORD[name][2]):
             lines[i].append((ck.t(b), beats * ck.spb, m, 0.7))
+        if third:
+            lines[2].append((ck.t(b), beats * ck.spb, he_color(name, b, b + beats, stage), 0.55))
     out = np.zeros(sec(total))
     for i, ln in enumerate(lines):
-        out += inst.ensemble_line(ln, total, model, seed=40 + i, level=0.5, voices=3, spread=8.0)
+        out += inst.ensemble_line(ln, total, model, seed=40 + i, level=0.5, voices=3, spread=8.0) * (0.8 if i == 2 else 1.0)
     return out
 
 
@@ -510,7 +595,8 @@ def _sw(stage: str, beat: float) -> float:
     return beat + (SWING[stage] if abs(frac - 0.25) < 1e-6 else 0.0)
 
 
-def groove(stage: str, ck: Clock, mx: Mix, rng, quiet_bars=()) -> None:
+def groove(stage: str, ck: Clock, mx: Mix, rng, quiet_bars=(), kicks=None) -> None:
+    """鼓。kicks 给一个列表时，把每下底鼓的 (秒, 力度) 记进去，伴奏拿它做「呼吸」（见 duck）。"""
     for bar in range(int(ck.lo / 4), int(ck.hi / 4)):
         b0 = bar * 4
         ag = _arc(b0)
@@ -518,21 +604,28 @@ def groove(stage: str, ck: Clock, mx: Mix, rng, quiet_bars=()) -> None:
         quiet = bar in quiet_bars
 
         def hit(x, beat, g, pan=0.0, late=0.0, j=0.003):
-            mx.add(x, max(0.0, ck.t(_sw(stage, b0 + beat) + late) + _jit(rng, j)), g * ag, pan=pan)
+            t = max(0.0, ck.t(_sw(stage, b0 + beat) + late) + _jit(rng, j))
+            mx.add(x, t, g * ag, pan=pan)
+            return t
+
+        def kick(vel, beat, g, long=False):
+            t = hit(inst.rnb_kick(vel, long=long), beat, g)
+            if kicks is not None:
+                kicks.append((t, vel))
 
         if stage == "child":  # 楼下跳皮筋的拍手：二、四拍拍手，一、三拍一个很轻的软底鼓
             if not quiet:
                 for beat in (0, 2):
-                    hit(inst.rnb_kick(0.55), beat, 0.45)
+                    kick(0.55, beat, 0.45)
             for beat in (1, 3):
                 hit(inst.rnb_snare(0.55 + float(rng.uniform(-0.05, 0.05)), bar * 2 + beat), beat, 0.5, 0.15, 0.0, 0.006)
             if turn:
                 hit(inst.rnb_snare(0.35, bar + 70), 3.5, 0.35, 0.15)
         elif stage == "teen":  # 90 年代原声 R&B：底鼓切分，军鼓靠后，十六分踩镲有轻有重
-            kicks = [0, 1.75, 2.5] if not turn else [0, 1.75, 2.25, 3.5]
+            kp = [0, 1.75, 2.5] if not turn else [0, 1.75, 2.25, 3.5]
             if not quiet:
-                for beat in kicks:
-                    hit(inst.rnb_kick(0.75 if beat == 0 else 0.6), beat, 0.55)
+                for beat in kp:
+                    kick(0.75 if beat == 0 else 0.6, beat, 0.55)
                 for beat in (1, 3):
                     hit(inst.rnb_snare(0.7, bar * 2 + beat), beat, 0.55, -0.05, 0.03)
                 if rng.uniform() < 0.5:  # 鬼音
@@ -541,10 +634,10 @@ def groove(stage: str, ck: Clock, mx: Mix, rng, quiet_bars=()) -> None:
                 v = (0.55 if i % 4 == 0 else 0.42 if i % 2 == 0 else 0.26) * float(rng.uniform(0.85, 1.1))
                 hit(inst.rnb_hat(v, bar * 16 + i), i * 0.25, 0.8 if not quiet else 0.5, 0.3)
         elif stage == "young":  # neo-soul：底鼓懒，军鼓叠拍手很靠后，踩镲八分为主偶尔带十六分
-            kicks = [0, 0.75, 2.25] if not turn else [0, 0.75, 2.25, 3.25, 3.75]
+            kp = [0, 0.75, 2.25] if not turn else [0, 0.75, 2.25, 3.25, 3.75]
             if not quiet:
-                for beat in kicks:
-                    hit(inst.rnb_kick(0.8 if beat == 0 else 0.62, long=beat == 0), beat, 0.55)
+                for beat in kp:
+                    kick(0.8 if beat == 0 else 0.62, beat, 0.55, long=beat == 0)
                 for beat in (1, 3):
                     hit(inst.rnb_snare(0.75, bar * 2 + beat), beat, 0.55, -0.08, 0.04)
             for i in range(8):
@@ -554,7 +647,7 @@ def groove(stage: str, ck: Clock, mx: Mix, rng, quiet_bars=()) -> None:
                     hit(inst.rnb_hat(0.22, bar * 8 + i + 400), i * 0.5 + 0.25, 0.7, 0.3)
         elif stage == "middle":  # 中年不上鼓：二、四拍打响指，每小节第一拍一个很轻很长的低音鼓
             if not quiet:
-                hit(inst.rnb_kick(0.45, long=True), 0, 0.35)
+                kick(0.45, 0, 0.35, long=True)
             for beat in (1, 3):
                 hit(inst.snap(0.55 + float(rng.uniform(-0.06, 0.06)), bar * 2 + beat), beat, 0.5, 0.2, 0.03, 0.005)
 
@@ -576,6 +669,50 @@ def rb_bass(stage: str, ck: Clock, mx: Mix, ch, gain: float) -> None:
             mx.add(inst.rbass(m, d * ck.spb, 0.7 if off == 0 else 0.55, sl), ck.t(_sw(stage, b + off)), gain * _arc(b))
 
 
+def duck(x: np.ndarray, hits, length: float, depth_db: float, release: float) -> np.ndarray:
+    """现代流行那种「呼吸」：每下底鼓把伴奏压下去一点，再慢慢松开（sidechain）。
+    hits 是 [(秒, 力度), ...]；循环开头那几下也在 length 处再算一遍，折回来的余音跟着一起呼吸，接缝不跳。"""
+    n = len(x)
+    env = np.zeros(n + sec(1.0))
+    a = sec(0.006)
+    k = sec(release * 5)
+    shape = np.exp(-np.arange(k) / (SR * release))
+    shape[:a] = np.linspace(0.0, 1.0, a)
+    for t, v in list(hits) + [(t + length, v) for t, v in hits if t < 1.0]:
+        i = sec(t)
+        if i >= n:
+            continue
+        j = min(len(env), i + k)
+        env[i:j] = np.maximum(env[i:j], shape[:j - i] * min(1.0, v / 0.75))
+    g = db(-depth_db * env[:n])
+    return x * (g[:, None] if x.ndim == 2 else g)
+
+
+# 倒放的人声：每四小节一句的开头，前面先「吸」一口气，像现代流行歌里段落之间的那一下。音是下一句和弦里稳的那个
+SWELL_NOTE = {"D": 69, "G": 71}
+
+
+def swell(ck: Clock, mx: Mix, gain: float, bars=(0, 4, 8, 12)) -> None:
+    for bar in bars:
+        b = bar * 4
+        if bar == 0 and ck.lo == 0 and ck.hi == BEATS:
+            end = ck.length  # 第一句的那一口气放在一遍的最后，循环回来正好接上
+        elif ck.lo < b < ck.hi:
+            end = ck.t(b)
+        else:
+            continue
+        name = chord_at(b)
+        m = SWELL_NOTE.get(name, 69)
+        d = 1.5 * ck.spb
+        y = inst.sustained_line([(0.0, d, m, 0.62)], d + 0.4, "vox", seed=700 + bar, level=0.5)
+        y = reverb(y, rt60=2.2, wet=0.8, dry=0.45, bright=3800, seed=710 + bar, low_cut=220.0)
+        y = y[::-1]  # 倒过来：混响的尾巴先慢慢鼓起来，最后停在字头上
+        keep = sec(2.0 * ck.spb)
+        y = y[-keep:]
+        y = fade(y * np.linspace(0.0, 1.0, len(y))[:, None] ** 1.5, 0.002, 0.004)
+        mx.add(y, max(0.0, end - len(y) / SR), gain)
+
+
 # ---- 伴奏 ----
 
 def bed(stage: str, ck: Clock) -> Mix:
@@ -589,11 +726,12 @@ def bed(stage: str, ck: Clock) -> Mix:
 
     if stage == "child":
         for b, beats, name in ch:
-            root, tones, _ = CHORD[name]
+            root = CHORD[name][0]
+            v = voicing(name, b, b + beats, stage, penta=True)  # 童年只用五声里的色彩音：加九、加六，甜不磨
             ag = _arc(b)
-            pat = [tones[0], tones[2], tones[1], tones[2]]
+            pat = [v[0], v[2], v[1], v[3]]
             if int(b // 4) % 4 == 3:  # 每句最后一小节倒着拨，不让耳朵记住一个死循环
-                pat = [tones[2], tones[1], tones[0], tones[1]]
+                pat = [v[3], v[2], v[1], v[2]]
             n8 = int(beats * 2)
             for i in range(n8):
                 if i % 2 == 1 and i < n8 - 1 and rng.uniform() < 0.1:
@@ -611,64 +749,80 @@ def bed(stage: str, ck: Clock) -> Mix:
         groove(stage, ck, mx, rng, quiet_bars=(8, 9, 10, 11))
 
     elif stage == "teen":
+        harm, low, kicks = Mix(ck.length + 1.0), Mix(ck.length + 1.0), []
         for b, beats, name in ch:
-            root, tones, _ = CHORD[name]
+            root = CHORD[name][0]
+            c = voicing(name, b, b + beats, stage)  # 七、九、十一：吉他分解和弦拨到有颜色的那几个音
             ag = _arc(b)
-            pat = [root + 12, tones[1], tones[2], tones[1], tones[0], tones[1], tones[2], tones[1]]
+            pat = [root + 12, c[1], c[2], c[3], c[0], c[2], c[3], c[1]]
             if int(b // 4) % 4 == 3:
-                pat = [root + 12, tones[2], tones[1], tones[0], tones[1], tones[2], tones[1], tones[0]]
+                pat = [root + 12, c[3], c[2], c[1], c[0], c[1], c[2], c[3]]
             for i in range(int(beats * 2)):
                 v = 0.62 if i == 0 else 0.46 + float(rng.uniform(-0.06, 0.06))
-                mx.add(inst.guitar(pat[i % 8], 1.4 * spb, round(v, 2), True), at(_sw(stage, b + i * 0.5), 0.008),
-                       1.0 * ag, pan=-0.12)
-        rb_bass(stage, ck, mx, ch, 0.75)
-        groove(stage, ck, mx, rng, quiet_bars=(8, 9))
+                harm.add(inst.guitar(pat[i % 8], 1.4 * spb, round(v, 2), True), at(_sw(stage, b + i * 0.5), 0.008),
+                         1.0 * ag, pan=-0.12)
+        rb_bass(stage, ck, low, ch, 0.75)
+        groove(stage, ck, mx, rng, quiet_bars=(8, 9), kicks=kicks)
+        mx.add(duck(harm.buf, kicks, ck.length, 2.0, 0.5 * spb), 0.0)  # 原声的，呼吸浅一点
+        mx.add(duck(low.buf, kicks, ck.length, 1.5, 0.35 * spb), 0.0)
+        swell(ck, mx, 0.3)
         hiss = lp(colored(sec(ck.length), rng, -1.0), 7000) * db(-58)  # 随身听的底噪
         mx.add(fade(hiss, 0.3, 0.3), 0.0)
 
     elif stage == "young":
-        rh = Mix(ck.length + 1.0)
+        rh, low, kicks = Mix(ck.length + 1.0), Mix(ck.length + 1.0), []
+        mel = _lines_for(stage, eve_line=False)
         for b, beats, name in ch:
-            root, tones, he = CHORD[name]
             ag = _arc(b)
-            voicing = tones + [he[1] if he[1] not in tones else tones[0] + 12]
+            c = voicing(name, b, b + beats, stage)  # neo-soul 的大九、小九、十一
             # 电钢的节奏型每四小节换一种（第 9~12 小节鼓撤了，就按住不动），不让一句话说四遍一模一样
             hits = YOUNG_COMP[int(b // 4) // 4 % 4] if beats >= 4 else [(0.0, 1.6)]
             for off, d in hits:
                 spread = float(rng.uniform(0.004, 0.011))  # 手指按下去有先有后
                 v = round(0.55 + float(rng.uniform(-0.05, 0.04)), 2)
-                for j, m in enumerate(voicing):
+                for j, m in enumerate(c):
                     rh.add(inst.epiano(m, d * spb, v), ck.t(_sw(stage, b + off)) + j * spread, 0.6 * ag)
-        mx.add(inst.rhodes_trem(rh.mono(), 1.0 / spb, 0.3), 0.0, 1.0)  # 左右颤，一拍一个来回
-        rb_bass(stage, ck, mx, ch, 0.8)
-        groove(stage, ck, mx, rng, quiet_bars=(8, 9, 10, 11))
+            # neo-soul 的「滑进去」：换和弦前一个十六分，先按高半音的下一个和弦，再落下去。
+            # 只在电钢已经松手、而且两条旋律（A、B 曲）那一下都没在唱的时候
+            nb = b + beats
+            if beats >= 4 and max(o + d for o, d in hits) <= 3.75 and nb < ck.hi and not _sounding(mel, nb - 0.25, nb):
+                b2, n2, name2 = chord_span(nb)
+                for j, m in enumerate(voicing(name2, b2, b2 + n2, stage)):
+                    rh.add(inst.epiano(m + 1, 0.22 * spb, 0.4), ck.t(_sw(stage, nb - 0.25)) + j * 0.004, 0.45 * ag)
+        rb_bass(stage, ck, low, ch, 0.8)
+        groove(stage, ck, mx, rng, quiet_bars=(8, 9, 10, 11), kicks=kicks)
+        # 左右颤，一拍一个来回；跟着底鼓呼吸
+        mx.add(duck(inst.rhodes_trem(rh.mono(), 1.0 / spb, 0.3), kicks, ck.length, 3.0, 0.55 * spb), 0.0)
+        mx.add(duck(low.buf, kicks, ck.length, 1.5, 0.35 * spb), 0.0)
+        swell(ck, mx, 0.3)
 
     elif stage == "middle":
         total = ck.length + 2.0
-        lines = [[], [], []]
+        lines = [[], [], [], []]
         for b, beats, name in ch:
-            root, tones, _ = CHORD[name]
+            root = CHORD[name][0]
             ag = _arc(b)
-            for i, m in enumerate(tones):
-                lines[i].append((ck.t(b), beats * spb, m, 0.65 * ag))
+            for i, m in enumerate(voicing(name, b, b + beats, stage)):  # 弦垫按大九、小九、十一，像老电影里的弦乐
+                lines[i].append((ck.t(b), beats * spb, m, 0.6 * ag))
             mx.add(inst.piano(root, 2.2 * spb, 0.5), ck.t(b), 1.2 * ag, pan=-0.15)
             if beats >= 4:
                 mx.add(inst.piano(root + 7, 1.6 * spb, 0.4), at(b + 1, 0.006), 1.0 * ag, pan=-0.1)
                 mx.add(inst.piano(root + 12, 2.0 * spb, 0.42), at(b + 2, 0.006), 1.0 * ag, pan=-0.05)
         for i, ln in enumerate(lines):
             y = inst.ensemble_line(ln, total, "pad", seed=60 + i, level=0.5, voices=3, spread=10.0)
-            mx.add(y, 0.0, 0.4, pan=(-0.4, 0.0, 0.4)[i])
+            mx.add(y, 0.0, 0.36, pan=(-0.45, -0.15, 0.15, 0.45)[i])
         groove(stage, ck, mx, rng, quiet_bars=(8, 9, 10, 11, 15))
 
     elif stage == "old":
         # 暖垫按真的和弦走，尼龙吉他一小节拨四下（少年那把吉他，慢下来了），底下一点唱片的沙沙声
         total = ck.length + 2.0
-        lines = [[], [], []]
+        lines = [[], [], [], []]
         for b, beats, name in ch:
             root, tones, _ = CHORD[name]
             ag = _arc(b)
-            for i, m in enumerate(tones):
-                lines[i].append((ck.t(b), beats * spb, m, 0.6 * ag))
+            # 暖垫多一个加六 / 加九（只用五声里的，和尼龙吉他按的三和弦不磨），像老唱片里的爵士抒情
+            for i, m in enumerate(voicing(name, b, b + beats, stage, penta=True)):
+                lines[i].append((ck.t(b), beats * spb, m, 0.55 * ag))
             pat = [root, tones[0], tones[1], tones[2]]
             for i in range(int(beats)):
                 if i == 3 and rng.uniform() < 0.3:
@@ -678,7 +832,7 @@ def bed(stage: str, ck: Clock) -> Mix:
                        0.9 * ag, pan=-0.15)
         for i, ln in enumerate(lines):
             y = inst.ensemble_line(ln, total, "warm", seed=70 + i, level=0.5, voices=2, spread=7.0)
-            mx.add(y, 0.0, 0.4, pan=(-0.35, 0.0, 0.35)[i])
+            mx.add(y, 0.0, 0.36, pan=(-0.4, -0.12, 0.12, 0.4)[i])
         crackle = np.zeros(sec(ck.length))
         pops = rng.integers(0, len(crackle), int(ck.length * 9))
         crackle[pops] = rng.uniform(-1, 1, len(pops)) * rng.uniform(0.2, 1.0, len(pops)) ** 3
@@ -710,7 +864,7 @@ def morn(stage: str, ck: Clock) -> Mix:
             offs = [0]  # 最后一小节两条旋律落在一起，上面只留一个点
         for off in offs:
             beat = bar * 4 + off
-            pcs = safe_pcs(chord_at(beat))
+            pcs = safe_pcs(chord_at(beat)) - bed_rubs(stage, beat)  # 伴奏按着大七（C#）的时候不点 D
             cand = [m for m in range(cfg["lo"], cfg["hi"] + 1) if (m - KEY) % 12 in pcs]
             if prev is None or prev not in cand:
                 i = int(rng.integers(len(cand)))
@@ -731,7 +885,7 @@ def morn(stage: str, ck: Clock) -> Mix:
     for b, beats, name in chords():
         if not ck.has(b):
             continue
-        top = sorted(m for m in range(86, 99) if (m - KEY) % 12 in safe_pcs(name))[:2]
+        top = sorted(m for m in range(86, 99) if (m - KEY) % 12 in safe_pcs(name) - bed_rubs(stage, b))[:2]
         for i, m in enumerate(top):
             lines[i].append((ck.t(b), beats * ck.spb, m, 0.6))
     for i, ln in enumerate(lines):
@@ -835,7 +989,7 @@ def arrange(stage: str, bpm: float | None = None, bars=(0, BARS), lines=None, ex
         "bed": _space(b, stage, 3),
         "qing": qa,
         "mei": ma,
-        "he": _space(voice_he(ck, HE_MODEL.get(stage, "pad")) * 0.55, stage, 13, 0.08),
+        "he": _space(voice_he(ck, HE_MODEL.get(stage, "pad"), stage) * 0.55, stage, 13, 0.08),
     }
     if extra:
         qb, mb = melody(*B_LINES[stage], 100)
@@ -932,25 +1086,88 @@ def stinger(stage: str, kind: str) -> np.ndarray:
 
 # ---- 标题、投胎、一生 ----
 
+# 标题底下那层慢 lo-fi R&B 各件相对八音盒多响（LU，按各自出声的部分量）
+TITLE_MIX = {"he": -9.0, "keys": -5.0, "drums": -10.0, "bass": -11.0, "vinyl": -26.0}
+
+
+def _at_lufs(x: np.ndarray, rel: float, ref: float) -> np.ndarray:
+    return x * db(ref + rel - lufs(np.concatenate([x, x])))
+
+
 def title_loop() -> dict:
-    """标题：八音盒一个人把两个人的话都说了。慢，像回忆。"""
+    """标题：八音盒一个人把两个人的话都说了。慢，像回忆。
+    11-18 起底下垫了一层慢的 lo-fi R&B：电钢按大九、小九（慢慢地左右颤），软底鼓、靠后的军鼓、很轻的踩镲、
+    暖贝斯、唱片的沙沙声。头四小节只有八音盒和电钢，第 5 小节鼓和贝斯进来，最后四小节鼓撤掉，
+    循环回去又只剩八音盒一个人。"""
     ck = Clock(76)
+    spb = ck.spb
     mx = Mix(ck.length + 2)
     rng = np.random.default_rng(5)
     for beat, dur, deg, o in Q_FULL:
-        mx.add(inst.music_box(P(deg, o + 1), dur * ck.spb, 0.8), ck.t(beat) + abs(_jit(rng, 0.012)), 0.5, pan=-0.2)
+        mx.add(inst.music_box(P(deg, o + 1), dur * spb, 0.8), ck.t(beat) + abs(_jit(rng, 0.012)), 0.5, pan=-0.2)
     for beat, dur, deg, o in M_FULL:
         if beat >= 60:
             continue
-        mx.add(inst.music_box(P(deg, o), dur * ck.spb, 0.6), ck.t(beat) + abs(_jit(rng, 0.012)), 0.42, pan=0.2)
+        mx.add(inst.music_box(P(deg, o), dur * spb, 0.6), ck.t(beat) + abs(_jit(rng, 0.012)), 0.42, pan=0.2)
     for b, beats, name in chords():
         root, tones, _ = CHORD[name]
-        mx.add(inst.music_box(root + 24, beats * ck.spb, 0.5), ck.t(b), 0.3)
-    he = voice_he(ck) * 0.45
-    y = reverb(mx.buf, 2.2, 0.3, 4200, 3) + 0.0
-    hw = reverb(he, 2.2, 0.35, 4200, 13)
+        mx.add(inst.music_box(root + 24, beats * spb, 0.5), ck.t(b), 0.22)
+    he = voice_he(ck)
+    # 电钢：一个和弦按两下，长的那下压在拍上，短的那下在第三拍后半拍
+    rh = Mix(ck.length + 1.0)
+    for b, beats, name in chords():
+        c = voicing(name, b, b + beats)
+        hits = [(0.0, beats - 0.35)] if beats < 4 else [(0.0, 2.3), (2.5, 1.3)]
+        for off, d in hits:
+            v = round(0.42 + float(rng.uniform(-0.04, 0.04)), 2)
+            for j, m in enumerate(c):
+                rh.add(inst.epiano(m, d * spb, v), ck.t(b + off) + j * 0.01 + abs(_jit(rng, 0.006)), 0.5)
+    keys = inst.rhodes_trem(rh.mono(), 0.5 / spb, 0.22)  # 两拍一个来回，比青年那把慢
+    # 鼓：第 5~12 小节。八分音符的后半拍晚一点（lo-fi 的懒），军鼓再往后靠
+    dr, kicks = Mix(ck.length + 1.0), []
+
+    def sw8(beat):
+        return beat + (0.07 if abs(beat % 1.0 - 0.5) < 1e-6 else 0.0)
+
+    for bar in range(4, 12):
+        b0 = bar * 4
+        for beat in ((0, 2.5) if bar % 2 == 0 else (0, 1.5, 2.5)):
+            t = max(0.0, ck.t(sw8(b0 + beat)) + _jit(rng, 0.004))
+            dr.add(inst.rnb_kick(0.7 if beat == 0 else 0.55), t, 1.0)
+            kicks.append((t, 0.7))
+        for beat in (1, 3):
+            dr.add(inst.rnb_snare(0.6, bar * 2 + beat + 300), ck.t(b0 + beat + 0.04) + _jit(rng, 0.004), 0.9, pan=-0.05)
+        for i in range(8):
+            v = (0.45 if i % 2 == 0 else 0.3) * float(rng.uniform(0.85, 1.1))
+            dr.add(inst.rnb_hat(v, bar * 8 + i + 300), ck.t(sw8(b0 + i * 0.5)) + _jit(rng, 0.003), 1.0, pan=0.25)
+    drums = lp(dr.buf, 6500, 2)  # 像从唱片里放出来的，顶上收一点
+    # 贝斯：第 5~16 小节，根音落地，第三拍后半拍带一下五度
+    bs = Mix(ck.length + 1.0)
+    for b, beats, name in chords():
+        if b < 16:
+            continue
+        root = CHORD[name][0]
+        bs.add(inst.rbass(root, min(1.6, beats - 0.2) * spb, 0.7), ck.t(b), 1.0)
+        if beats >= 4:
+            bs.add(inst.rbass(root + 7, 0.9 * spb, 0.5, -2), ck.t(sw8(b + 2.5)), 1.0)
+    vinyl = np.zeros(sec(ck.length))
+    pops = rng.integers(0, len(vinyl), int(ck.length * 7))
+    vinyl[pops] = rng.uniform(-1, 1, len(pops)) * rng.uniform(0.2, 1.0, len(pops)) ** 3
+    vinyl = lp(hp(vinyl, 900), 6000) + lp(colored(len(vinyl), rng, -1.0), 3500) * db(-30)
+
+    box = reverb(mx.buf, 2.2, 0.3, 4200, 3)
     n = sec(ck.length)
-    out = loop_wrap(y, n) + loop_wrap(hw, n)
+    ref = lufs(np.concatenate([loop_wrap(box, n)] * 2))
+    parts = {
+        "he": reverb(he, 2.2, 0.35, 4200, 13),
+        "keys": reverb(duck(keys, kicks, ck.length, 2.0, 0.5 * spb), 2.0, 0.22, 4200, 15, low_cut=160.0),
+        "drums": reverb(drums, 1.2, 0.12, 4000, 17, low_cut=200.0),
+        "bass": to_stereo(duck(bs.mono(), kicks, ck.length, 1.5, 0.35 * spb)),
+        "vinyl": to_stereo(fade(vinyl, 0.3, 0.3)),
+    }
+    out = loop_wrap(box, n)
+    for k, x in parts.items():
+        out = out + _at_lufs(loop_wrap(x, n), TITLE_MIX[k], ref)
     return dict(audio=level(out, -23.0, -3), length=ck.length)
 
 
@@ -962,7 +1179,8 @@ def roll_loop() -> dict:
     prog = ["Dadd9", "Dadd9", "Gmaj7", "Gmaj7", "Bm7", "Bm7", "A7sus4", "A7sus4"]
     for bar, name in enumerate(prog):
         root, tones, he = CHORD[name]
-        pat = [tones[0], tones[2], he[1], tones[2], tones[1], tones[2], he[1], tones[1]]
+        c = [_pick(v, set(), False) for v in COLOR[name]]  # 没有旋律，色彩音全按：D6/9、Gmaj9、Bm9、A9sus4
+        pat = [c[0], c[2], c[3], c[2], c[1], c[2], c[3], c[1]]
         for i in range(8):
             if rng.uniform() < 0.12 and i % 2 == 1:
                 continue

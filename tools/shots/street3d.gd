@@ -6,6 +6,7 @@ var out := "/tmp/s3d"
 var only: Array = []
 var hud := false
 const Stage3D := preload("res://scripts/world3d/stage3d.gd")
+const Figure := preload("res://scripts/world3d/figure3d.gd")
 var main: Node
 
 ## [名字, 青站的 x, 几点（分钟）, 人生阶段, 季节, 回合（挑雨雪天）, 梅离青多远, 青在做的事, 梅在做的事]
@@ -26,6 +27,7 @@ func _initialize() -> void:
 		if a.begins_with("--out="): out = a.trim_prefix("--out=")
 		elif a.begins_with("--only="): only = a.trim_prefix("--only=").split(",")
 		elif a == "--hud": hud = true
+		elif a.begins_with("--style="): Figure.style = a.trim_prefix("--style=")
 	DirAccess.make_dir_recursive_absolute(out)
 	_run()
 

@@ -116,6 +116,25 @@ func _initialize() -> void:
 	var fl := Stage3D.focus_line(760.0, 610.0, 680.0)
 	var ground_on_screen := (760.0 - 610.0) / 680.0 + 0.5
 	check(fl > 0.5 and fl < ground_on_screen and ground_on_screen - fl < 0.2, "移轴焦线 %.2f 没落在人身上（地面 %.2f）" % [fl, ground_on_screen])
+	# 搭好的图留着：楼下 → 楼里 → 楼下不重搭；走到没 3D 的图只藏不拆；最多留三张；换 2D 全拆
+	Stage3D.set_mode("on", false)
+	var stc := Stage3D.new()
+	root.add_child(stc)
+	stc.show_scene({"id": "street", "width": 4000, "floors": [760]})
+	var street_set: Node3D = stc.set3d
+	stc.show_scene({"id": "building", "width": 3200, "floors": [260, 720]})
+	check(stc.set3d != street_set and not street_set.visible, "进楼里该换一张、街藏起来")
+	stc.show_scene({"id": "hospital", "width": 2800, "floors": [760]})
+	check(stc.set3d == null and not stc.visible and is_instance_valid(street_set), "没 3D 的图：只藏不拆")
+	stc.show_scene({"id": "street", "width": 4000, "floors": [760]})
+	check(stc.set3d == street_set and street_set.visible, "回到楼下该用原来那张，不重搭")
+	stc.show_scene({"id": "river", "width": 3600, "floors": [760]})
+	stc.show_scene({"id": "primary", "width": 2800, "floors": [760]})
+	check(stc._sets.size() == Stage3D.KEEP_SETS and not stc._sets.has("building"), "最多留三张，最久没去的先拆：%s" % [stc._sets.keys()])
+	Stage3D.set_mode("off", false)
+	stc.show_scene({"id": "street", "width": 4000, "floors": [760]})
+	check(stc._sets.is_empty() and stc.set3d == null, "换成 2D 该全拆")
+	stc.queue_free()
 	# 画面设置：自动模式量开头几秒，太卡就退回 2D、记下来；菜单里再选一次就重试；选 2D 就不开
 	Stage3D.set_mode("auto", false)
 	check(Stage3D.supports("street"), "自动模式默认开 3D")

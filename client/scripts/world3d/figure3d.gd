@@ -1311,9 +1311,10 @@ func _pose_walk(p: Dictionary, face_dir: int) -> void:
 	var g := _gait()
 	var old := stage == "old"
 	var L: float = s.thigh + s.shin
-	var C := _stride_len()
-	var a := phase * TAU
 	p.yaw = face_dir * deg_to_rad(60.0)
+	# 人侧着六十度走，脚在自己的前后方向上只有 sin60 落在街的方向上：步子放大到 1/sin60，镜头里看脚才是踩住的
+	var C := _stride_len() / sin(absf(float(p.yaw)))
+	var a := phase * TAU
 	var sway := sin(a - TAU * 0.05)
 	p.x = float(g.sway) * height * sway
 	p.z = 0.0

@@ -10,6 +10,8 @@ var cy := 0.75
 var fov := 22.0
 var tag := ""
 var portrait := ""  ## qing:young —— 只拍一个人的近景（头和肩），正脸偏一点、背后一道逆光
+var fix_phase := -1.0  ## --phase=0.25：走路定在一步里的这一刻（不往前走）
+var sheet := ""        ## --sheet=qing:young：同一个人走一整步的 8 个瞬间排一排（按街上的 1.2 倍大小）
 
 func _initialize() -> void:
 	for a in OS.get_cmdline_user_args():
@@ -22,6 +24,8 @@ func _initialize() -> void:
 		elif a.begins_with("--fov="): fov = float(a.trim_prefix("--fov="))
 		elif a.begins_with("--tag="): tag = a.trim_prefix("--tag=")
 		elif a.begins_with("--portrait="): portrait = a.trim_prefix("--portrait=")
+		elif a.begins_with("--phase="): fix_phase = float(a.trim_prefix("--phase="))
+		elif a.begins_with("--sheet="): sheet = a.trim_prefix("--sheet="); pose = "walk"
 	DirAccess.make_dir_recursive_absolute(out)
 	_run()
 
@@ -55,6 +59,11 @@ func _run() -> void:
 	if portrait != "":
 		who = [portrait.split(":")]
 		var back := DirectionalLight3D.new(); back.rotation_degrees = Vector3(-25, 160, 0); back.light_color = Color(1.0, 0.86, 0.7); back.light_energy = 0.6; vp.add_child(back)
+	if sheet != "":
+		who = []
+		for i in 8:
+			who.append(sheet.split(":"))
+		x = -3.6
 	for pair in who:
 		if true:
 			var r: String = pair[0]
@@ -64,6 +73,11 @@ func _run() -> void:
 			f.build(r, st)
 			f.position = Vector3(x, 0, 0)
 			x += 1.0
+			if sheet != "":
+				f.scale = Vector3.ONE * 1.2
+				f.phase = float(figs.size()) / 8.0
+			elif fix_phase >= 0.0:
+				f.phase = fix_phase
 			f.dir = 1 if r == "qing" else -1
 			match pose:
 				"walk": f.walking = true
@@ -82,9 +96,13 @@ func _run() -> void:
 		cam.fov = 30
 		cam.look_at_from_position(Vector3(0, 1.4, 10.5), Vector3(0, 0.8, 0))
 	cam.make_current()
+	if sheet != "":
+		cam.fov = 30
+		cam.look_at_from_position(Vector3(-0.1, 1.3, 9.0), Vector3(-0.1, 1.0, 0))
 	for i in 40:
-		for f in figs:
-			f.phase = fmod(f.phase + 0.03, 1.0)
+		if sheet == "" and fix_phase < 0.0:
+			for f in figs:
+				f.phase = fmod(f.phase + 0.03, 1.0)
 		await process_frame
 	if portrait != "":
 		var f: Node3D = figs[0]
@@ -99,6 +117,8 @@ func _run() -> void:
 			await process_frame
 	await RenderingServer.frame_post_draw
 	var name := "%s%s%s%s" % [pose, "_close" if close else "", ("_" + portrait.replace(":", "_")) if portrait != "" else "", tag]
+	if sheet != "":
+		name = "sheet_%s%s" % [sheet.replace(":", "_"), tag]
 	vp.get_texture().get_image().save_png("%s/%s.png" % [out, name])
 	print("saved ", name)
 	quit()

@@ -389,5 +389,23 @@ const sum = (st) => st.body + st.mind + st.charm + st.luck;
     assert.ok(Math.abs(on10 / off10 - band.x) < 0.02, `十岁${whole ? "整段" : "一回"}写作业 ${on10.toFixed(3)}，不乘是 ${off10.toFixed(3)}`);
     assert.ok(Math.abs(on8 - off8) < 1e-9, `八岁${whole ? "整段" : "一回"}写作业不乘`);
   }
-  console.log(`✓ 自己挑的事：${band.from}~${band.to} 岁乘 ${band.x}，前后一岁不乘 / 上学上班的日程、事件、老的调用都不乘 / 房间里一回回按、整段押上的写作业都乘上了`);
+  // 该上学的那几段逃了学去写作业不乘（world.ts → worldChosen）：上学前、放了学、歇着的日子才算自己的时间
+  const skipOnce = (age) => {
+    const t = room(age, false);
+    const ds = G("worldDutySlots")(G("worldDuty")(t, C, "qing"));
+    t.world.slot = ds[0];
+    t.world.minute = SLOTS[ds[0]][0];
+    t.world.dutyDone.qing = true; // 不去报到了
+    const a = t.world.actors.qing;
+    [a.x, a.y] = spotAt("desk_qing");
+    const m0 = t.persons.qing.stats.mind;
+    assert.equal(G("worldAct")(t, C, "qing", "desk_qing", true).error, null);
+    return t.persons.qing.stats.mind - m0;
+  };
+  {
+    const on = skipOnce(10);
+    const back = off(); const offv = skipOnce(10); back();
+    assert.ok(on > 0 && Math.abs(on - offv) < 1e-9, `十岁逃了学写作业不乘：${on.toFixed(3)} / ${offv.toFixed(3)}`);
+  }
+  console.log(`✓ 自己挑的事：${band.from}~${band.to} 岁乘 ${band.x}，前后一岁不乘 / 上学上班的日程、事件、老的调用都不乘 / 房间里一回回按、整段押上的写作业都乘上了，逃了学去写的不乘`);
 }

@@ -520,6 +520,18 @@ function worldWage(c: Content, p: Person, duty: Duty, age: number): number {
 }
 
 /** 日程现在还去不去得了：今天有、还没去过、没迟到（日程的第一段过去了就是迟到，那一段拿去干别的了） */
+/**
+ * 这件事算不算自己挑的（rules.yaml → growth.chosenWeight，growth.ts → growthCtx 的 chosen）：日程本身不算；
+ * 今天该上学上班（歇着的日子是看摊这类 restDuty）的那几段逃了去做别的也不算。上学前、放了学、没有日程的日子才算
+ */
+function worldChosen(s: LifeState, c: Content, role: Role, act: Action, slot: number): boolean {
+  if (act.duty) return false;
+  var d = worldDuty(s, c, role);
+  if (!d) return true;
+  var ds = worldDutySlots(d);
+  return slot < ds[0] || slot > ds[1];
+}
+
 function worldDutyOpen(s: LifeState, c: Content, role: Role): Duty | null {
   var d = worldDuty(s, c, role);
   if (!d || s.world!.dutyDone[role] || s.world!.slot > worldDutySlots(d)[0]) return null;
@@ -746,7 +758,7 @@ function worldJoinLate(s: LifeState, c: Content, role: Role, run: Run) {
     (extra as any)[k] = ((run.raw as any)[k] as number) * (m - 1);
   }
   var before = worldStatsCopy(p);
-  lifeApplySelf(p, extra, growthCtx(s, c, "action", !worldFindAction(c, run.a).duty));
+  lifeApplySelf(p, extra, growthCtx(s, c, "action", worldChosen(s, c, role, worldFindAction(c, run.a), s.world!.slot)));
   // 带孩子的那一份也补上搭伴（长在这个人自己的孩子身上）
   var kd: Partial<Stats> | null = null;
   var kid = run.kr ? kidOf(s, role) : null;
@@ -843,7 +855,7 @@ function worldActOnce(s: LifeState, c: Content, role: Role, sp: Spot, act: Actio
   var nf = times * worldNeedsFactor(c, w.slot, act);
   var needs: SelfDelta = {};
   for (var nk in act.needs) (needs as any)[nk] = ((act.needs as any)[nk] as number) * nf;
-  lifeApplySelf(p, boosted, growthCtx(s, c, "action", !act.duty));
+  lifeApplySelf(p, boosted, growthCtx(s, c, "action", worldChosen(s, c, role, act, w.slot)));
   lifeApplySelf(p, needs);
   worldDecay(c, p, a, t, use); // 这一个半钟头里自己也饿了、困了
   p.money += Math.round(Math.max(0, act.money) * times * 10) / 10;
@@ -1039,7 +1051,7 @@ function worldFinish(s: LifeState, c: Content, role: Role) {
   var scaled: SelfDelta = {};
   for (var nk in needs) (scaled as any)[nk] = ((needs as any)[nk] as number) * ntimes;
   // 状态、搭伴、天赋先乘好，再交给成长规则按年纪和底子折算（growth.ts → growthApply）
-  lifeApplySelf(p, stats, growthCtx(s, c, "action", !duty && !act.duty));
+  lifeApplySelf(p, stats, growthCtx(s, c, "action", !duty && worldChosen(s, c, role, act, a.from !== undefined && a.from >= 0 ? a.from : s.world!.slot)));
   lifeApplySelf(p, scaled);
   // 带孩子（family.ts）：孩子那份按同样的状态、遍数、搭伴倍率长。两口子一起带同一个孩子，两份都长在这一个身上
   var kid = act.kid && !act.duty ? kidOf(s, role) : null;

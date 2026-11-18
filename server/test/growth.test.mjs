@@ -407,5 +407,23 @@ const sum = (st) => st.body + st.mind + st.charm + st.luck;
     const back = off(); const offv = skipOnce(10); back();
     assert.ok(on > 0 && Math.abs(on - offv) < 1e-9, `十岁逃了学写作业不乘：${on.toFixed(3)} / ${offv.toFixed(3)}`);
   }
-  console.log(`✓ 自己挑的事：${band.from}~${band.to} 岁乘 ${band.x}，前后一岁不乘 / 上学上班的日程、事件、老的调用都不乘 / 房间里一回回按、整段押上的写作业都乘上了，逃了学去写的不乘`);
+  // 爸妈报的班（primary_class_* 上到 1110，比 primary 多占了傍晚那段）：多出来的那份是放了学的时间，照样乘（world.ts → worldDutyAfter），
+  // 不然报了班反倒不如回家写作业；就上到 930 的普通上学、歇着的日子、那几岁以外都不拆
+  {
+    const STRIP = /^(fam_|exp_|class_quit|lead_|club_|aid|send_home)/;
+    const kid = (age, rest, flags) => {
+      const t = room(age, rest);
+      for (const r of ["qing", "mei"]) t.persons[r].flags = t.persons[r].flags.filter((f) => !STRIP.test(f)).concat(flags);
+      return [t, G("worldDuty")(t, C, "qing")];
+    };
+    const [t10, d10] = kid(10, false, ["fam_rich", "exp_book"]);
+    const after = G("worldDutyAfter")(t10, C, "qing", d10);
+    assert.ok(after && after.mind > 0.5 && !after.charm, `十岁上奥数班，放了学那份算自己挑的：${JSON.stringify(after)}`);
+    const back = off(); assert.equal(G("worldDutyAfter")(t10, C, "qing", d10), null, "不乘的时候不拆"); back();
+    const [t8, d8] = kid(8, false, ["fam_rich", "exp_book"]);
+    assert.equal(G("worldDutyAfter")(t8, C, "qing", d8), null, "八岁不在那几岁里，不拆");
+    const [tp, dp] = kid(10, false, []);
+    assert.equal(G("worldDutyAfter")(tp, C, "qing", dp), null, "普通上学上到 930，没有放了学那份");
+  }
+  console.log(`✓ 自己挑的事：${band.from}~${band.to} 岁乘 ${band.x}，前后一岁不乘 / 上学上班的日程、事件、老的调用都不乘 / 房间里一回回按、整段押上的写作业都乘上了，逃了学去写的不乘 / 爸妈报的班放了学那份照样乘`);
 }

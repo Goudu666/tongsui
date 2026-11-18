@@ -115,4 +115,8 @@ func _free(c: Dictionary) -> void:
 	fake.rules.growth.chosenWeight[0].x = 1.5
 	_check(Guide.free_text(fake).contains("快五成"), "乘 1.5 写快五成：" + Guide.free_text(fake))
 	_check(Guide.free_text({}) == str(Guide.TIPS["free"][0]), "没写规则用兜底那句")
+	var two := {"rules": {"growth": {"chosenWeight": [{"from": 15, "to": 17, "x": 1.5}, {"from": 9, "to": 11, "x": 1.8}]}}}
+	_check(Guide.free_text(two, 10).begins_with("9 到 11 岁") and Guide.free_text(two, 10).contains("快八成"), "两段时按岁数挑那一段：" + Guide.free_text(two, 10))
+	var one := {"rules": {"growth": {"chosenWeight": [{"from": 9, "to": 11, "x": 1.0}]}}}
+	_check(Guide.chosen_band(one, 10).is_empty(), "乘 1 等于没开，不贴纸条")
 	print("  放了学那张纸条：", t)

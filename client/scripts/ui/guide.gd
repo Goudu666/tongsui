@@ -324,7 +324,8 @@ func _first_times(world, w: Dictionary) -> void:
 		if int(main.life.get("turn", 0)) >= 1 and main.goal_panel.visible:
 			want("goal")
 		# 九到十一岁（rules.yaml 的 growth.chosenWeight）头一回放了学：自己挑的事长得快，小升初看的就是这几年
-		if _done.has("goal") and int(w.get("slot", 0)) >= 3 and main.goal_panel.visible:
+		# 等到晚上那段：傍晚有的孩子还在上班、帮家里（日程到 18:30），那会儿逃了学写的不算
+		if _done.has("goal") and int(w.get("slot", 0)) == 4 and main.goal_panel.visible:
 			var band := chosen_band(main.content, LifeTimeAge.age(int(main.life.get("turn", 0))))
 			if not band.is_empty():
 				want("free")
@@ -336,18 +337,24 @@ func _first_times(world, w: Dictionary) -> void:
 static func chosen_band(content: Dictionary, age: int) -> Dictionary:
 	var g: Dictionary = (content.get("rules", {}) as Dictionary).get("growth", {})
 	for b in g.get("chosenWeight", []):
-		if b is Dictionary and age >= int(b.get("from", 0)) and age <= int(b.get("to", -1)):
+		if b is Dictionary and float(b.get("x", 1.0)) > 1.04 and age >= int(b.get("from", 0)) and age <= int(b.get("to", -1)):
 			return b
 	return {}
 
 
-## 「放了学」那张纸条的字：几岁到几岁、快几成，都从规则表里读，调了数字跟着变
-static func free_text(content: Dictionary) -> String:
-	var g: Dictionary = (content.get("rules", {}) as Dictionary).get("growth", {})
-	var bands: Array = g.get("chosenWeight", [])
-	if bands.is_empty() or not bands[0] is Dictionary:
+## 「放了学」那张纸条的字：几岁到几岁、快几成，都从规则表里读（age 落在的那一段），调了数字跟着变
+static func free_text(content: Dictionary, age: int = -1) -> String:
+	var b := {}
+	if age >= 0:
+		b = chosen_band(content, age)
+	else:
+		var g: Dictionary = (content.get("rules", {}) as Dictionary).get("growth", {})
+		for x in g.get("chosenWeight", []):
+			if x is Dictionary and float(x.get("x", 1.0)) > 1.04:
+				b = x
+				break
+	if b.is_empty():
 		return str(TIPS["free"][0])
-	var b: Dictionary = bands[0]
 	var more := float(b.get("x", 1.0)) - 1.0
 	var fast := "快一倍" if absf(more - 1.0) < 0.05 else ("快%s成" % _cn_digit(roundi(more * 10.0)) if more < 0.95 else "快%.1f倍" % more)
 	return "%d 到 %d 岁，放了学的时间归你：写作业、练球、去小组、陪 TA 做的事都比平时%s，上学那份照旧。下一道关就看这几年怎么花。" % [int(b.get("from", 0)), int(b.get("to", 0)), fast]
@@ -370,7 +377,7 @@ func want(id: String) -> void:
 	cfg.set_value("tips", id, true)
 	cfg.save(SAVE)
 	_tip_id = id
-	_tip_label.text = free_text(main.content) if id == "free" else str(TIPS[id][0])
+	_tip_label.text = free_text(main.content, LifeTimeAge.age(int(main.life.get("turn", 0)))) if id == "free" else str(TIPS[id][0])
 	_tip.visible = true
 	_tip_t = 0.0
 	_tip.modulate.a = 0.0  # _process 里淡入（被弹窗压着时不显示）

@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // 九到十二岁「小升初」冲刺量表（11-18 反思玩法，docs/GROWTH.md 5.6 节）：三年级那道关刚弹出来的九岁孩子，换几种过法过完十二个季节，
 // 按 tools/sprint.mjs 的口径数小升初 无可冲 / 跨过 / 失手、一个阶段涨了几分（第 25 个日子早上 → 第 36 个日子早上）。
-// 直接调 worldAct / worldAdvance，不走路、不算手速，一次二十秒上下，比整局 sprint 稳（sprint 十四世这道关能抖十几个点）。
+// 直接调 worldAct / worldAdvance，不走路、不算手速，一次二十秒上下；投胎按种子走，同样的参数重跑是同一个数（sprint 十四世这道关能抖十几个点）。
 //
 // 用法：npm run build && node tools/primary.mjs [--reps=4] [--x=1.8]
 //   --x 临时换 growth.chosenWeight 那一段的倍数（1 = 不乘，看改之前的样子），不写就用 rules.yaml 里的
 //   九岁的三项取自 main 0433914 上 sprint 14 --seed=5 认真 / 随便机器人九岁那天的纸带（KIDS9，心智 / 体魄 / 魅力的百分制）
-//   认真 = 盯纸带上差得最少的线（worldShadowNeed）、能搭伴就搭伴、上学的日子早上和放学后押上、精力不到 15 才睡；
-//   拼满 = 晚上也念；随便 = 交给影子（人不在线时的过法）
+//   认真 = 盯纸带上差得最少的线（worldShadowNeed）、能搭伴就搭伴、上学的日子早上和放学后押上、晚上睡、精力不到 15 也睡；
+//   拼满 = 每一段都押上、晚上也念，精力不到 5 才睡；随便 = 交给影子（人不在线时的过法）
 import { G, C, fakeNakama, room } from "../server/test/harness.mjs";
 
 const KIDS9 = {"careful":[[67,64,72],[50,69,92],[86,65,62],[73,64,78],[63,88,52],[42,64,63],[64,64,47],[65,64,58],[75,87,58],[41,96,71],[65,86,62],[66,80,91],[69,66,61],[35,82,83],[74,76,58],[74,61,72],[77,66,66],[67,58,88],[100,66,77],[52,91,87],[44,64,63],[62,78,62],[67,75,35],[76,37,88],[75,64,81],[52,71,64],[83,67,73],[62,72,68]],"casual":[[94,63,40],[44,63,90],[57,39,73],[68,52,69],[77,34,62],[45,49,69],[47,73,55],[62,48,43],[44,94,38],[50,88,50],[55,58,39],[59,70,85],[59,62,73],[47,58,70],[69,68,27],[77,32,65],[58,83,58],[60,46,78],[77,43,79],[45,64,88],[80,61,65],[61,61,53],[59,66,71],[73,31,86],[43,62,70],[58,57,52],[63,89,54],[57,63,65]]};
@@ -23,7 +23,12 @@ const J = (x) => JSON.parse(JSON.stringify(x));
 const spot = (id) => C.map.spots.find((s) => s.id === id);
 const ALL = [0, 1, 2, 3, 4];
 
+// 投胎（年代、人家、天赋、属性）在 rpcLifelineJoin 里用 Math.random 抽，换成按种子走的，同样的参数每回量出同一个数，--x 之间才比得了
+let rnd = 1;
+Math.random = () => { rnd = (Math.imul(rnd, 1664525) + 1013904223) >>> 0; return rnd / 4294967296; };
+
 function newLife(seed) {
+  rnd = (seed * 2654435761) >>> 0 || 1;
   const env = fakeNakama();
   const qa = { userId: "u-qing", sessionId: "s-qing", username: "qing" };
   const ma = { userId: "u-mei", sessionId: "s-mei", username: "mei" };
@@ -96,7 +101,8 @@ function careful(o) {
       const duty = G("worldDutyOpen")(s, C, r);
       if (duty && w.slot >= G("worldDutySlots")(duty)[0]) { if (!tryAct(s, r, duty.spot)) return; }
       if (p.needs.hunger < 45 && !w.quick.includes(r + ":eat")) tryAct(s, r, "table_" + r);
-      if (w.slot === 4 || (o.e15 && p.needs.energy < 15)) { if (!tryAct(s, r, "bed_" + r)) return; }
+      // 认真：晚上那段睡，精力不到 15 也睡；拼满：晚上也念，精力不到 5 才睡
+      if ((w.slot === 4 && !o.night) || (o.e15 && p.needs.energy < 15) || p.needs.energy < 5) { if (!tryAct(s, r, "bed_" + r)) return; }
       const on = w.rest ? ALL : o.school;
       if (!on.includes(w.slot)) { G("worldPass")(s, C, r); return; }
       const k = G("worldShadowNeed")(s, C, r) || "mind";
@@ -142,5 +148,5 @@ function runSet(kids, pol) {
 const cw = C.rules.growth.chosenWeight;
 console.log(`小升初（九到十二岁，每人 ${REPS} 遍）  自己挑的事：${cw ? cw.map((b) => `${b.from}~${b.to} 岁 ×${b.x}`).join("、") : "不乘"}`);
 console.log("  认真  " + runSet(KIDS9.careful, careful({ e15: true, school: [0, 3] })));
-console.log("  拼满  " + runSet(KIDS9.careful, careful({ school: ALL })));
+console.log("  拼满  " + runSet(KIDS9.careful, careful({ school: ALL, night: true })));
 console.log("  随便  " + runSet(KIDS9.casual, shadow));

@@ -39,10 +39,11 @@ const HEIGHT := {"childhood": 1.12, "teen": 1.52, "young": 1.72, "middle": 1.70,
 ## 手办的比例：小孩四头半（可爱）、少年六头、青年近七头（腿长）、中年六头半、老人六头
 const HEAD := {"childhood": 0.124, "teen": 0.122, "young": 0.119, "middle": 0.12, "old": 0.119}
 const SKIN := Color(1.0, 0.86, 0.77)
-const HAIR_DARK := Color(0.2, 0.15, 0.14)
-const HAIR_GREY := Color(0.8, 0.79, 0.8)
-## 主角的头发：青蓝黑，梅深栗红（剪影一眼分得开）
-const HAIR := {"qing": Color(0.16, 0.15, 0.21), "mei": Color(0.36, 0.17, 0.15)}
+const HAIR_DARK := Color(0.22, 0.17, 0.15)
+const HAIR_GREY := Color(0.88, 0.89, 0.93)  ## 银白，带一点冷
+## 主角的头发：青蓝黑（冷蓝的光泽），梅栗红（暖的光泽）——剪影一眼分得开
+const HAIR := {"qing": Color(0.085, 0.095, 0.15), "mei": Color(0.34, 0.175, 0.135)}
+const HAIR_SHADER := preload("res://shaders/3d/hair_anime.gdshader")
 ## 眼睛：[深色, 浅色]
 const IRIS := {"qing": [Color(0.07, 0.11, 0.17), Color(0.28, 0.58, 0.64)], "mei": [Color(0.24, 0.08, 0.06), Color(0.95, 0.52, 0.28)]}
 
@@ -705,210 +706,268 @@ static func _find_face(tex: Texture2D) -> Dictionary:
 	return out
 
 
-## 头发（日漫）：贴头皮一层发壳打底，上面是一缕一缕扁扁的、尖梢的发束——
-## 刘海（盖到眉毛）、两边鬓角（挡在耳朵前面框住脸）、后脑一圈、头顶几根撑出轮廓、男孩头顶一根呆毛。
-## 发束全并进一张网格（少 draw call），各自带描边；头发材质多一圈天使环。
+## 头发（日漫手办）：贴头皮一层光滑的发壳打底（不起棱），上面是一缕一缕上面鼓、底下平、尖梢的发束，
+## 都从头顶发旋往下铺：刘海（盖到眉毛、不挡眼睛）、两边鬓角（框住脸颊）、后脑一圈盖到后颈、男孩头顶一根呆毛。
+## 扎起来的（马尾、发髻）后面的发束往扎的地方收。发束全并进一张网格（少 draw call），各自带描边；
+## 材质是 hair_anime：根深梢浅、发束缝里暗、顺着发丝断开的天使环。
 func _build_hair(head: Node3D, c: Vector3, r: Vector3, kind: String, lk: Dictionary) -> void:
-	var hm := _toon(_hair_col(lk), true)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = hash(kind + role + stage + str(lk.get("top", "")))
+	var hm := _hair_mat(_hair_col(lk), kind)
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var w := r.x * 0.17   # 一缕的半宽
-	# 发壳：前面只到刘海根（额头让刘海去盖），两边到耳朵上，后面到后颈
+	var w := r.x * 0.19   # 一缕的半宽
+	var s := _spec
+	# 身子在头心坐标里的大概位置（长发垂下来要从肩膀、后背外面过）：[左右半宽, 前后半深, 肩顶多高]
+	var clr := Vector3.ZERO
+	if not s.is_empty():
+		var T: float = s.torso
+		clr = Vector3(float(s.sh_half) * 0.86 + float(s.arm_r) * 1.25, float(s.sh_half) * float(s.depth) + 0.012, -(float(s.hr) * 0.92 + float(s.neck) + 0.1 * T) + float(s.arm_r) * 1.2)
+	var tied := kind in ["ponytail", "bun", "bun_grey"]
+	# 扎的地方（马尾 / 发髻）的纬度
+	var tie_th := 1.3
+	match kind:
+		"bun":
+			tie_th = 2.08   # 低低的髻，在后颈上面
+		"bun_grey":
+			tie_th = 1.7
+	# ---- 发壳：前面只到刘海根（额头让刘海去盖），两边到耳朵上，后面盖到后颈 ----
 	var front := 1.12
 	var side := 1.62
-	var back := 2.08
+	var back := 2.62
 	match kind:
 		"boy_old":
-			front = 0.78
-			side = 1.5
-			back = 1.98
+			front = 0.86
+			side = 1.52
+			back = 2.5
 		"boy_short":
 			front = 1.0
 			side = 1.56
+			back = 2.55
+		"boy":
+			back = 2.56
 		"ponytail", "bun", "bun_grey":
-			back = 1.95
-		"bob", "long":
+			back = 2.5
+		"bob":
 			side = 1.7
-			back = 2.2
+			back = 2.6
+		"long":
+			side = 1.72
+			back = 2.66
 	var line := func(phi: float) -> float:
 		var a := absf(phi)
-		return lerpf(front, side, smoothstep(0.5, 1.4, a)) + (back - side) * smoothstep(1.8, 3.0, a)
-	var shell := _mesh(head, Kit.hair_shell(r, line, 0.045, 0.012, 12.0, 44, 16), hm, c)
+		return lerpf(front, side, smoothstep(0.5, 1.4, a)) + (back - side) * smoothstep(1.7, 2.9, a)
+	var shell := _mesh(head, Kit.hair_shell(r, line, 0.05, 0.0, 12.0, 44, 16), hm, c)
 	shell.name = "hair"
 	# ---- 刘海 ----
-	# [梢的方位, 梢到哪（从头顶量的弧度；眉毛约 1.44、上眼皮约 1.58）]
-	var bangs: Array = []
 	var n_b := 7
 	var sweep := 0.0        # 梢往一边扫
-	var tip := 1.46
+	var tip := 1.44
 	var jag := 0.06         # 长短参差
 	var blunt := 0.0        # 齐刘海：发梢不收尖
+	var part := 0.0         # 中分：两边往外分开
 	match kind:
 		"boy":
-			tip = 1.42
-			jag = 0.09
+			tip = 1.4
+			jag = 0.1
 		"boy_long":
-			tip = 1.54
+			tip = 1.47
 			n_b = 8
-			sweep = 0.12
+			sweep = 0.14
+			jag = 0.07
 		"boy_side":
-			tip = 1.45
+			tip = 1.43
 			n_b = 8
-			sweep = 0.32
+			sweep = 0.36
 			jag = 0.04
 		"boy_short":
 			tip = 1.2
 			n_b = 6
 			jag = 0.05
+			sweep = 0.12
 		"boy_old":
-			tip = 0.92
-			n_b = 5
+			tip = 0.98
+			n_b = 6
 			jag = 0.03
+			sweep = 0.2
 		"pigtails":
-			tip = 1.47
+			tip = 1.44
 			n_b = 9
-			jag = 0.015    # 齐刘海
-			blunt = 0.55
+			jag = 0.02    # 齐刘海
+			blunt = 0.5
 		"ponytail":
-			tip = 1.5
-			n_b = 8
-			sweep = -0.18
+			tip = 1.46
+			n_b = 9
+			sweep = -0.16
+			jag = 0.035
+			blunt = 0.07   # 女孩的刘海梢圆一点，不是一排锯齿
 		"long":
-			tip = 1.52
-			n_b = 8
-			sweep = -0.08
+			tip = 1.48
+			n_b = 9
+			part = 0.2
+			jag = 0.03
+			blunt = 0.12
 		"bob":
-			tip = 1.45
+			tip = 1.44
 			n_b = 9
 			jag = 0.025
 			blunt = 0.45
 		"bun", "bun_grey":
-			tip = 1.3
-			n_b = 6
-			sweep = 0.28
-	for i in n_b:
-		var f := float(i) / float(n_b - 1) * 2.0 - 1.0     # -1 … 1
-		var ph := f * 0.92
-		var tt := tip - jag * (0.5 + 0.5 * sin(float(i) * 2.3 + 0.7)) - 0.06 * f * f
-		if sweep != 0.0:
-			# 扫向一边：梢挪过去，扫过去那边长一点
-			tt += sweep * 0.25 * f
-		bangs.append([ph + sweep * (1.0 - absf(f) * 0.5), tt, f])
+			tip = 1.32
+			n_b = 7
+			sweep = 0.3
+			jag = 0.03
+			blunt = 0.07
 	if face_mat != null and face_mat.shader == FACE:
 		face_mat.set_shader_parameter("bang_lat", PI * 0.5 - tip)
 		face_mat.set_shader_parameter("bang_shadow", 0.85 if tip > 1.3 else 0.5)
+	var bangs: Array = []
+	for i in n_b:
+		var f := float(i) / float(n_b - 1) * 2.0 - 1.0     # -1 … 1
+		var ph := f * 0.95
+		# 中间短、两边长一点（框住脸），长短参差
+		var tt := tip - jag * (0.5 + 0.5 * sin(float(i) * 2.3 + 0.7)) + 0.05 * f * f
+		if sweep != 0.0:
+			tt += sweep * 0.25 * f
+		var ph1 := ph + sweep * (1.0 - absf(f) * 0.5) + part * signf(f) * (1.0 - absf(f))
+		if part > 0.0 and absf(f) < 0.2:
+			tt -= 0.12
+		bangs.append([ph1, tt, f, ph])
 	# 下面一层：短一点、宽一点，塞在两缕之间，刘海才厚
 	for i in n_b - 1:
 		var f := (float(i) + 0.5) / float(n_b - 1) * 2.0 - 1.0
-		var ph := f * 0.92
-		_lock(st, r, 0.3, ph * 0.3 - sweep * 0.3, tip - 0.1 - 0.04 * sin(float(i) * 1.9) + sweep * 0.25 * f, ph + sweep * (1.0 - absf(f) * 0.5), w * 1.25, 1.035, 1.015, 0.03, 0.0, 0.0, 8, blunt)
+		var ph := f * 0.95
+		var tt := tip - 0.09 - 0.04 * sin(float(i) * 1.9) + sweep * 0.25 * f + 0.05 * f * f
+		_lock(st, r, 0.3, ph * 0.3 - sweep * 0.3, tt, ph + sweep * (1.0 - absf(f) * 0.5) + part * signf(f) * (1.0 - absf(f)) * 0.8, w * 1.25, 1.04, 1.02, 0.03, 0.0, 0.0, 9, blunt)
 	for b in bangs:
-		var ph: float = b[0]
 		var f: float = b[2]
-		_lock(st, r, 0.22, ph * 0.25 - sweep * 0.3, b[1], ph, w * (1.0 + 0.15 * (1.0 - absf(f))), 1.05, 1.025, 0.045, 0.0, 0.0, 8, blunt)
-	# ---- 鬓角：两边各一两缕，挡在耳朵前面 ----
+		_lock(st, r, 0.2, float(b[3]) * 0.25 - sweep * 0.3, b[1], b[0], w * (1.0 + 0.18 * (1.0 - absf(f))), 1.055, 1.03, 0.05, 0.0, 0.0, 10, blunt)
+	# ---- 鬓角：两边各两缕，挡在耳朵前面框住脸颊 ----
 	var side_tip := 1.85
 	var side_hang := 0.0
 	match kind:
 		"boy":
-			side_tip = 1.78
+			side_tip = 1.76
 		"boy_long":
-			side_tip = 2.0
+			side_tip = 1.98
+		"boy_side":
+			side_tip = 1.82
 		"boy_short", "boy_old":
-			side_tip = 1.58
+			side_tip = 1.6
 		"pigtails", "bob":
-			side_tip = 2.15
+			side_tip = 2.12
 		"ponytail":
-			side_tip = 2.2
-			side_hang = r.y * 0.35
+			side_tip = 1.95   # 脸边垂两缕（贴着脸颊直直垂下来，不在下巴那儿拐弯）
+			side_hang = r.y * 0.42
 		"long":
-			side_tip = 2.25
-			side_hang = r.y * 1.6
+			side_tip = 2.05
+			side_hang = r.y * 1.65
 		"bun", "bun_grey":
-			side_tip = 1.95
+			side_tip = 1.98
 	for sg in [-1.0, 1.0]:
-		_lock(st, r, 0.45, sg * 0.75, side_tip, sg * 1.18, w * 1.05, 1.06, 1.05, 0.03, side_hang, 0.0)
+		_lock(st, r, 0.42, sg * 0.72, side_tip, sg * 1.12, w * 1.05, 1.06, 1.05, 0.035, side_hang, -r.x * 0.05 if side_hang > 0.0 else 0.0, 10, 0.0, clr)
 		if kind != "boy_old" and kind != "boy_short":
-			_lock(st, r, 0.55, sg * 1.0, side_tip - 0.22, sg * 1.42, w * 0.95, 1.07, 1.05, 0.03, side_hang * 0.6, 0.0)
-	# ---- 后脑一圈 ----
-	var back_tip := 2.2
+			_lock(st, r, 0.5, sg * 0.98, side_tip - 0.2, sg * 1.38, w * 0.95, 1.07, 1.05, 0.03, side_hang * 0.65, 0.0, 10, 0.0, clr)
+	# ---- 后脑：从发旋往下一圈，盖到后颈（扎起来的往扎的地方收） ----
+	var back_tip := 2.6
 	var back_hang := 0.0
 	var flick := 0.0
-	var n_k := 9
+	var n_k := 12
 	match kind:
 		"boy":
-			back_tip = 2.15
-			flick = r.x * 0.12   # 小男孩：后脑发梢往外翘
+			back_tip = 2.5
+			flick = r.x * 0.1   # 小男孩：后脑发梢往外翘
 		"boy_long":
-			back_tip = 2.4
+			back_tip = 2.66
+			flick = r.x * 0.05
+		"boy_side":
+			back_tip = 2.58
 		"boy_short", "boy_old":
-			back_tip = 2.02
-			n_k = 7
-		"pigtails", "ponytail", "bun", "bun_grey":
-			back_tip = 1.98   # 扎起来了：后面是贴着的
-			n_k = 7
+			back_tip = 2.48
+			n_k = 10
 		"bob":
-			back_tip = 2.4
-			flick = -r.x * 0.06  # 往里扣
+			back_tip = 2.62
+			flick = -r.x * 0.07  # 往里扣
 		"long":
-			back_tip = 2.3
-			back_hang = r.y * 2.7
-			n_k = 11
-	for i in n_k:
-		var f := float(i) / float(n_k - 1)
-		var ph := lerpf(1.45, TAU - 1.45, f)    # 从左耳后绕到右耳后
-		var tt := back_tip - 0.05 * sin(float(i) * 1.7) - 0.12 * absf(f - 0.5)
-		_lock(st, r, 0.5, ph, tt, ph + 0.08 * sin(float(i) * 2.1), w * (1.5 if back_hang > 0.0 else 1.15), 1.07, 1.055, 0.04, back_hang * (1.0 - 0.25 * absf(f - 0.5) * 2.0), flick)
-	# ---- 头顶：从发旋往四周铺开的一圈发束（不然头顶是个光溜溜的壳） ----
-	var crown_n := 12 if kind != "boy_old" else 8
-	for i in crown_n:
-		var ph := TAU * float(i) / float(crown_n) + 0.2
-		var reach := 1.0 + 0.12 * sin(float(i) * 2.7)
-		if absf(wrapf(ph, -PI, PI)) < 1.0:
-			reach = 0.75  # 前面交给刘海
-		_lock(st, r, 0.06, PI, reach, ph + 0.15 * sin(float(i) * 1.3), w * 1.35, 1.07, 1.06, 0.035)
-	# ---- 头顶撑出轮廓的几根 ----
-	var spikes := 4 if kind == "boy" else (3 if kind.begins_with("boy") and kind != "boy_old" else 0)
-	for i in spikes:
-		var ph := PI + (float(i) - float(spikes - 1) * 0.5) * 0.55
-		_lock(st, r, 0.05, ph * 0.2, 1.05 + 0.1 * float(i % 2), ph, w * 1.1, 1.08, 1.1, 0.08 if kind == "boy" else 0.05)
+			back_tip = 2.4
+			back_hang = r.y * 2.6
+			n_k = 13
+			flick = -r.x * 0.12
+		"pigtails":
+			back_tip = 2.5
+			n_k = 10
+	if tied:
+		# 上半圈：从头顶往扎的地方收；下半圈：从后颈往上收
+		for i in n_k:
+			var f := float(i) / float(n_k - 1)
+			var ph := lerpf(1.3, TAU - 1.3, f)
+			var ph_t := lerpf(ph, PI, 0.82)
+			_lock(st, r, 0.16, ph, tie_th - 0.06, ph_t, w * 1.3, 1.06, 1.05, 0.035, 0.0, 0.0, 11)
+		for i in 7:
+			var f := float(i) / 6.0
+			var ph := lerpf(2.1, TAU - 2.1, f)
+			_lock(st, r, 2.46, ph, tie_th + 0.08, lerpf(ph, PI, 0.78), w * 1.05, 1.02, 1.04, 0.01, 0.0, 0.0, 9)
+		# 两边往后梳到扎的地方（耳朵上面）
+		for sg in [-1.0, 1.0]:
+			_lock(st, r, 0.4, sg * 1.02, tie_th + 0.05, sg * 2.55, w * 1.2, 1.06, 1.05, 0.03, 0.0, 0.0, 11)
+	else:
+		for i in n_k:
+			var f := float(i) / float(n_k - 1)
+			var ph := lerpf(1.28, TAU - 1.28, f)    # 从左耳后绕到右耳后
+			var tt := back_tip - 0.05 * sin(float(i) * 1.7) - 0.1 * absf(f - 0.5)
+			if kind.begins_with("boy"):
+				# 男孩的短发：耳朵后面那几缕短，后颈那几缕长、收尖（不然从正面看像个蘑菇头）
+				tt = lerpf(tt, minf(side_tip + 0.12, tt), pow(absf(f - 0.5) * 2.0, 1.6))
+			var hang := back_hang * (1.0 - 0.3 * absf(f - 0.5) * 2.0)
+			_lock(st, r, 0.14, ph, tt, ph + 0.06 * sin(float(i) * 2.1), w * (1.75 if back_hang > 0.0 else 1.3), 1.06, 1.05, 0.045, hang, flick, 12, 0.0, clr)
+	# ---- 小男孩头顶翘起来的几根（俏皮） ----
+	if kind == "boy":
+		for i in 3:
+			var ph := PI + (float(i) - 1.0) * 0.6
+			_lock(st, r, 0.05, ph * 0.3, 1.0 + 0.12 * float(i % 2), ph, w * 1.15, 1.06, 1.16, 0.06, 0.0, r.x * 0.08, 9)
 	# ---- 呆毛 ----
 	if kind == "boy" or kind == "boy_long":
-		var a0 := Kit._sph(0.32, 0.15, r * 1.04)
+		var a0 := Kit._sph(0.32, 0.15, r * 1.05)
 		var ah := PackedVector3Array([a0, a0 + Vector3(0.0, r.y * 0.16, -r.z * 0.02), a0 + Vector3(r.x * 0.06, r.y * 0.3, r.z * 0.1), a0 + Vector3(r.x * 0.1, r.y * 0.33, r.z * 0.26), a0 + Vector3(r.x * 0.12, r.y * 0.27, r.z * 0.36)])
 		var ao := PackedVector3Array()
 		for k in ah.size():
 			ao.append(Vector3(1, 0, 0))
-		Kit.lock_into(st, ah, ao, w * 0.55, w * 0.2, 6)
+		Kit.lock_into(st, ah, ao, w * 0.5, w * 0.2, 6)
+	# ---- 发髻（贴着头的，一起并进来） ----
+	if kind == "bun" or kind == "bun_grey":
+		var dirb := Kit._sph(tie_th, PI, r).normalized()
+		var rb := r.x * (0.4 if kind == "bun" else 0.36)
+		Kit.bun_into(st, Kit._sph(tie_th, PI, r * 1.06) + dirb * rb * 0.62, dirb, Vector3(rb, rb * 0.86, rb * 0.8))
 	st.index()
 	st.generate_normals()
 	var locks := _mesh(head, st.commit(), hm, c)
 	locks.name = "hair_locks"
-	# ---- 扎起来的：小辫、马尾、发髻 ----
+	# ---- 扎起来的：小辫、马尾 ----
 	var tie := _toon(Color("#D9485F") if role == "mei" else Color("#B04B55"))
 	if kind == "pigtails":
 		for sgn in [-1.0, 1.0]:
 			var tail := Node3D.new()
-			tail.position = c + Vector3(sgn * r.x * 0.82, r.y * 0.08, -r.z * 0.42)
-			tail.rotation.z = sgn * 0.5
-			tail.set_meta("base_z", sgn * 0.5)
+			tail.position = c + Vector3(sgn * r.x * 0.84, r.y * 0.02, -r.z * 0.4)
+			tail.rotation.z = sgn * 0.45
+			tail.set_meta("base_z", sgn * 0.45)
 			head.add_child(tail)
 			var ts := SurfaceTool.new()
 			ts.begin(Mesh.PRIMITIVE_TRIANGLES)
-			for k in 3:
-				var dx := (float(k) - 1.0) * r.x * 0.07
-				var L := r.y * (0.95 + 0.12 * float(k % 2))
-				var pts := PackedVector3Array([Vector3(dx * 0.3, 0, 0), Vector3(sgn * r.x * 0.1 + dx, -L * 0.25, -r.z * 0.02), Vector3(sgn * r.x * 0.13 + dx * 1.3, -L * 0.55, -r.z * 0.03), Vector3(sgn * r.x * 0.08 + dx * 1.2, -L * 0.85, 0.0), Vector3(sgn * r.x * 0.02 + dx, -L, r.z * 0.04)])
+			for k in 5:
+				var a := TAU * float(k) / 5.0
+				var off := Vector3(cos(a) * r.x * 0.06, 0.0, sin(a) * r.x * 0.06)
+				var L := r.y * (1.05 + 0.14 * float(k % 2))
+				var pts := PackedVector3Array()
 				var os := PackedVector3Array()
-				for q in pts.size():
-					os.append(Vector3(sgn, 0, 0))
-				Kit.lock_into(ts, pts, os, r.x * 0.12, r.x * 0.08, 6)
+				for q in 8:
+					var t := float(q) / 7.0
+					# 先往外鼓（一小把），再往下、梢往外卷一点
+					var fan := 0.6 + 1.2 * sin(PI * minf(t * 1.3, 1.0))
+					pts.append(off * fan + Vector3(sgn * (r.x * 0.12 * t + r.x * 0.06 * t * t), -L * t, -r.z * 0.04 * t))
+					os.append((off.normalized() + Vector3(sgn * 0.5, 0, 0)).normalized())
+				Kit.lock_into(ts, pts, os, r.x * 0.15, r.x * 0.08, 7, 0.0, -1.0, 0.4)
 			ts.index()
 			ts.generate_normals()
 			_mesh(tail, ts.commit(), hm)
-			_mesh(tail, Kit.ellipsoid(Vector3(r.x * 0.11, r.x * 0.07, r.x * 0.11), 12, 6), tie, Vector3(0, -r.y * 0.02, 0))
+			_mesh(tail, Kit.ellipsoid(Vector3(r.x * 0.12, r.x * 0.07, r.x * 0.12), 12, 6), tie, Vector3(0, -r.y * 0.02, 0))
 			if _tail == null:
 				_tail = tail
 			else:
@@ -916,52 +975,115 @@ func _build_hair(head: Node3D, c: Vector3, r: Vector3, kind: String, lk: Diction
 				_tail.set_meta("twin_node", tail)
 	elif kind == "ponytail":
 		var tail := Node3D.new()
-		tail.position = c + Vector3(0, r.y * 0.25, -r.z * 0.98)
+		tail.position = c + Kit._sph(tie_th, PI, r * 1.04)
 		head.add_child(tail)
 		var ts := SurfaceTool.new()
 		ts.begin(Mesh.PRIMITIVE_TRIANGLES)
-		for k in 4:
-			var dx := (float(k) - 1.5) * r.x * 0.08
-			var L := r.y * (1.5 + 0.15 * float((k * 2) % 3))
-			var pts := PackedVector3Array([Vector3(dx * 0.2, 0, 0), Vector3(dx, -L * 0.12, -r.z * 0.22), Vector3(dx * 1.4, -L * 0.42, -r.z * 0.3), Vector3(dx * 1.2, -L * 0.75, -r.z * 0.2), Vector3(dx * 0.6 + r.x * 0.04, -L, -r.z * 0.02)])
+		for k in 7:
+			var a := TAU * float(k) / 7.0 + 0.3
+			var off := Vector3(cos(a) * r.x * 0.08, sin(a) * r.x * 0.06, sin(a) * r.x * 0.06)
+			var L := r.y * (2.05 + 0.25 * float((k * 2) % 3) / 2.0)
+			var pts := PackedVector3Array()
 			var os := PackedVector3Array()
-			for q in pts.size():
-				os.append(Vector3(0, 0.3, -1).normalized())
-			Kit.lock_into(ts, pts, os, r.x * 0.13, r.x * 0.08, 6)
+			var cl := PackedVector3Array()
+			for q in 11:
+				var t := float(q) / 10.0
+				# 从扎的地方先往后上翘一点、蓬起来，再垂下去，梢往里收一点（S 形）
+				cl.append(Vector3(0.0, L * (0.1 * sin(PI * minf(t * 2.0, 1.0)) - t * t * 0.95), -r.z * (0.45 * sin(PI * minf(t * 1.1, 1.0)) + 0.1 * t)))
+			for q in 10:
+				var t := float(q) / 9.0
+				var p: Vector3 = cl[q]
+				var tg: Vector3 = (cl[q + 1] - p).normalized()
+				# 一把圆的：每缕在垂直发丝方向的那一圈上（不然垂下来就压扁成一条带子）
+				var o3 := off - tg * off.dot(tg)
+				o3 = o3.normalized() * off.length() if o3.length() > 1e-5 else off
+				var fan := 1.0 + 1.4 * sin(PI * minf(t * 1.2, 1.0))
+				pts.append(p + o3 * fan * (1.0 - 0.45 * t * t))
+				os.append(o3.normalized())
+			Kit.lock_into(ts, pts, os, r.x * 0.19, r.x * 0.09, 7, 0.0, -1.0, 0.45)
 		ts.index()
 		ts.generate_normals()
 		_mesh(tail, ts.commit(), hm)
-		_mesh(tail, Kit.ellipsoid(Vector3(r.x * 0.12, r.x * 0.08, r.x * 0.12), 12, 6), tie, Vector3(0, -r.y * 0.02, -r.z * 0.06), Vector3(1.1, 0, 0))
+		_mesh(tail, Kit.ellipsoid(Vector3(r.x * 0.13, r.x * 0.09, r.x * 0.1), 12, 6), tie, Vector3(0, 0, -r.z * 0.02), Vector3(1.2, 0, 0))
 		_tail = tail
-	elif kind == "bun" or kind == "bun_grey":
-		_mesh(head, Kit.ellipsoid(Vector3(r.x * 0.38, r.x * 0.34, r.x * 0.32), 18, 12), hm, c + Vector3(0, r.y * 0.5, -r.z * 0.92))
+
+
+## 头发的材质：按发色配梢色、天使环的颜色（黑发偏冷蓝、栗色偏暖、白发银白带一点冷）
+func _hair_mat(col: Color, kind := "") -> ShaderMaterial:
+	var st: Dictionary = STYLES.get(style, STYLES.qingtou)
+	var m := ShaderMaterial.new()
+	m.shader = HAIR_SHADER
+	_style_params(m, st)
+	var lum := col.get_luminance()
+	var grey := lum > 0.55 or kind.ends_with("_grey") or kind == "boy_old"
+	var cool := col.b > col.r * 1.02
+	var base := col
+	if grey:
+		# 银白：底子压一点、环是白的，才看得出光泽（不然一片平灰）
+		base = col * 0.86
+		m.set_shader_parameter("tip_col", col.lerp(Color(0.98, 0.97, 1.0), 0.5))
+		m.set_shader_parameter("spec_col", Color(1.0, 1.0, 1.0))
+		m.set_shader_parameter("shade_tint", Color(0.74, 0.76, 0.9))
+		m.set_shader_parameter("ring_amt", 0.8)
+		m.set_shader_parameter("root_k", 0.84)
+		m.set_shader_parameter("tip_amt", 0.4)
+		m.set_shader_parameter("sheen", 0.1)
+	elif cool:
+		m.set_shader_parameter("tip_col", col.lerp(Color(0.3, 0.36, 0.5), 0.45))
+		m.set_shader_parameter("spec_col", col.lerp(Color(0.6, 0.72, 0.92), 0.72))
+		m.set_shader_parameter("shade_tint", Color(0.72, 0.74, 0.98))
+		m.set_shader_parameter("ring_amt", 0.78)
+		m.set_shader_parameter("sheen", 0.3)
+	else:
+		m.set_shader_parameter("tip_col", col.lerp(Color(0.72, 0.47, 0.36), 0.36))
+		m.set_shader_parameter("spec_col", col.lerp(Color(1.0, 0.84, 0.7), 0.68))
+		m.set_shader_parameter("shade_tint", Color(0.8, 0.62, 0.7))
+		m.set_shader_parameter("ring_amt", 0.72)
+		m.set_shader_parameter("sheen", 0.24)
+	m.set_shader_parameter("base", base)
+	m.set_shader_parameter("rim", float(st.rim) * 0.7)
+	_outline(m, base, st)
+	return m
 
 
 ## 一缕：从 (θ0, φ0) 贴着头皮走到 (θ1, φ1)。k0/k1 离头心几倍半径，bulge 中段鼓出来多少；
 ## hang 走到头以后再往下垂多长（米，长发）；flick 发梢往外（+）或往里（-）翘多少（米）。
-func _lock(st: SurfaceTool, r: Vector3, th0: float, ph0: float, th1: float, ph1: float, w: float, k0 := 1.06, k1 := 1.04, bulge := 0.03, hang := 0.0, flick := 0.0, n := 8, tip := 0.0) -> void:
+## clr：[身子左右半宽, 前后半深, 肩顶高]（头心坐标），垂下来的长发从肩膀、后背外面过
+func _lock(st: SurfaceTool, r: Vector3, th0: float, ph0: float, th1: float, ph1: float, w: float, k0 := 1.06, k1 := 1.04, bulge := 0.03, hang := 0.0, flick := 0.0, n := 8, tip := 0.0, clr := Vector3.ZERO) -> void:
 	var path := PackedVector3Array()
 	var outs := PackedVector3Array()
-	var m := n if hang <= 0.0 else n - 2
-	for i in m:
-		var t := float(i) / float(m - 1)
+	for i in n:
+		var t := float(i) / float(n - 1)
 		var k := lerpf(k0, k1, t) + bulge * sin(PI * t)
+		if th0 < 0.4:
+			k -= 0.07 * maxf(0.0, 1.0 - t / 0.18)  # 根埋进发壳里（发旋那儿不露出一堆根和描边）
 		var p := Kit._sph(lerpf(th0, th1, t), lerpf(ph0, ph1, t), r * k)
 		path.append(p)
 		outs.append(Vector3(p.x / (r.x * r.x), p.y / (r.y * r.y), p.z / (r.z * r.z)).normalized())
 	var last := path[path.size() - 1]
 	var o := outs[outs.size() - 1]
+	var wide := 0.3
 	if hang > 0.0:
-		# 垂下来：一路往下，略往外散开
+		# 垂下来：一路往下，略往外散开；过肩膀、后背时从外面绕；梢往里收（flick < 0）
 		var oh := Vector3(o.x, 0.0, o.z).normalized()
-		var steps := 5
+		var steps := 7
 		for i in range(1, steps + 1):
 			var t := float(i) / float(steps)
-			path.append(last + Vector3(0, -hang * t, 0) + oh * (r.x * 0.08 * t + flick * t * t))
+			var p := last + Vector3(0, -hang * t, 0) + oh * (r.x * 0.05 * sin(PI * 0.5 * t) + flick * t * t)
+			if clr != Vector3.ZERO:
+				# 顺着肩膀慢慢披出去（一下子推出去会在肩上鼓一个台阶）
+				var e := sqrt(pow(p.x / clr.x, 2.0) + pow(p.z / clr.y, 2.0))
+				var bl := smoothstep(clr.z + 0.14, clr.z - 0.03, p.y)
+				if e < 1.03 and e > 1e-4:
+					var sc := lerpf(1.0, 1.03 / e, bl)
+					p.x *= sc
+					p.z *= sc
+			path.append(p)
 			outs.append(oh)
+		wide = 0.62
 	elif flick != 0.0:
 		path[path.size() - 1] = last + o * flick
-	Kit.lock_into(st, path, outs, w, w * 0.42, 6, tip)
+	Kit.lock_into(st, path, outs, w, w * 0.45, 8, tip, -1.0, wide)
 
 
 func _build_props() -> void:

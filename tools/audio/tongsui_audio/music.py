@@ -314,8 +314,11 @@ def _lines_for(stage: str | None, eve_line: bool = True):
 
 
 def _sounding(lines, b0: float, b1: float) -> set:
-    """b0~b1 拍之间旋律里响着的音（相对 D 的半音数）。"""
+    """b0~b1 拍之间旋律里响着的音（相对 D 的半音数）。b0 是负的就从上一遍的末尾接着算（循环）。"""
     pcs = set()
+    if b0 < 0:
+        pcs |= _sounding(lines, b0 + BEATS, BEATS)
+        b0 = 0.0
     for line in lines:
         for beat, dur, deg, o in line:
             if min(beat + dur, b1) - max(beat, b0) > 0.05:
@@ -335,24 +338,34 @@ def _pick(v, pcs, penta: bool):
     return alt if penta or _rubs(want, pcs) else want
 
 
+# 旋律谱面上的时值比真响的短：拨的乐器会拖 1.25~1.6 倍，青年还带回声，八音盒更长。往前多看一拍，前一小节拖过来的 D 也算
+LOOKBACK = 1.0
+
+
 def voicing(name: str, b0: float, b1: float, stage: str | None = None, penta: bool = False) -> list:
     """b0~b1 拍这个和弦手上按哪几个音（低→高）。"""
-    pcs = _sounding(_lines_for(stage), b0, b1)
+    pcs = _sounding(_lines_for(stage), b0 - LOOKBACK, b1)
     return [m for m in (_pick(v, pcs, penta) for v in COLOR[name]) if m is not None]
 
 
 def he_color(name: str, b0: float, b1: float, stage: str | None = None):
-    return _pick(HE_COLOR[name], _sounding(_lines_for(stage), b0, b1), False)
+    return _pick(HE_COLOR[name], _sounding(_lines_for(stage), b0 - LOOKBACK, b1), False)
 
 
 def bed_rubs(stage: str, beat: float) -> set:
     """这一拍伴奏按着的不在五声里的音会跟哪些音磨（相对 D 的半音数）。早上那层点高音时躲开它们。"""
     b, beats, name = chord_span(beat)
+    spans = [(b, beats, name)]
+    if stage not in BED_PENTA and beat - b < 1.5:  # 吉他、电钢换和弦以后还拖着上一个和弦的音
+        spans.append(chord_span((b - 0.01) % BEATS))
     out = set()
-    for m in voicing(name, b, b + beats, stage, penta=stage in BED_PENTA):
-        pc = (m - KEY) % 12
-        if pc not in PENTA:
-            out |= {(pc + 1) % 12, (pc - 1) % 12}
+    for k, (sb, sn, nm) in enumerate(spans):
+        for m in voicing(nm, sb, sb + sn, stage, penta=stage in BED_PENTA):
+            pc = (m - KEY) % 12
+            if k and m in CHORD[nm][1]:  # 上一个和弦里原来就有的音（A7sus4 的 G 之类）早就躲过了，只看新加的 C#
+                continue
+            if pc not in PENTA:
+                out |= {(pc + 1) % 12, (pc - 1) % 12}
     return out
 
 
@@ -668,9 +681,8 @@ def rb_bass(stage: str, ck: Clock, mx: Mix, ch, gain: float) -> None:
         for off, d, iv, sl in pat:
             if off >= beats:
                 continue
-            m = root + (iv if iv != 10 or name in ("A7sus4", "Em7", "Bm7", "F#m7") else 9)  # 小七度只在属 / 小和弦上
-            if name == "D/F#" and iv == 7:
-                m = 45  # D/F# 的五度是 A；F# 上面的 C# 会和手上按的 D 差小九度
+            base = 38 if name == "D/F#" and iv not in (0, 12) else root  # D/F#：五度、六度按真根音 D 算（A、B），不是 F# 上面的 C#、D#
+            m = base + (iv if iv != 10 or name in ("A7sus4", "Em7", "Bm7", "F#m7") else 9)  # 小七度只在属 / 小和弦上
             mx.add(inst.rbass(m, d * ck.spb, 0.7 if off == 0 else 0.55, sl), ck.t(_sw(stage, b + off)), gain * _arc(b))
 
 
@@ -790,11 +802,15 @@ def bed(stage: str, ck: Clock) -> Mix:
                     rh.add(inst.epiano(m, d * spb, v), ck.t(_sw(stage, b + off)) + j * spread, 0.6 * ag)
             # neo-soul 的「滑进去」：换和弦前一个十六分，先按高半音的下一个和弦，再落下去。
             # 只在电钢已经松手、而且两条旋律（A、B 曲）那一下都没在唱的时候
+            # 旋律按真响的长度算（电吉他拖 1.25 倍还带回声），往前看一拍；滑音里跟「合」的音差半音的不按，剩不到三个就不滑
             nb = b + beats
-            if beats >= 4 and max(o + d for o, d in hits) <= 3.75 and nb < ck.hi and not _sounding(mel, nb - 0.25, nb):
+            if beats >= 4 and max(o + d for o, d in hits) <= 3.75 and nb < ck.hi and not _sounding(mel, nb - 1.0, nb):
                 b2, n2, name2 = chord_span(nb)
-                for j, m in enumerate(voicing(name2, b2, b2 + n2, stage)):
-                    rh.add(inst.epiano(m + 1, 0.22 * spb, 0.4), ck.t(_sw(stage, nb - 0.25)) + j * 0.004, 0.45 * ag)
+                he_pcs = {(m - KEY) % 12 for m in CHORD[name][2] + [he_color(name, b, nb, stage)]}
+                slide = [m + 1 for m in voicing(name2, b2, b2 + n2, stage) if not _rubs(m + 1, he_pcs)]
+                if len(slide) >= 3:
+                    for j, m in enumerate(slide):
+                        rh.add(inst.epiano(m, 0.22 * spb, 0.4), ck.t(_sw(stage, nb - 0.25)) + j * 0.004, 0.45 * ag)
         rb_bass(stage, ck, low, ch, 0.8)
         groove(stage, ck, mx, rng, quiet_bars=(8, 9, 10, 11), kicks=kicks)
         # 左右颤，一拍一个来回；跟着底鼓呼吸
@@ -878,7 +894,7 @@ def morn(stage: str, ck: Clock) -> Mix:
                 j = cand.index(prev)
                 step = int(rng.choice([-2, -1, -1, 1, 2]))
                 i = int(np.clip(j + step, 0, len(cand) - 1))
-                if i == j:
+                if i == j and len(cand) > 1:
                     i = j - 1 if j > 0 else j + 1
             m = cand[i]
             prev = m
@@ -1157,10 +1173,13 @@ def title_loop() -> dict:
         if beats >= 4:
             fifth = 45 if name == "D/F#" else root + 7  # D/F# 的五度是 A，不是 F# 上面的 C#
             bs.add(inst.rbass(fifth, 0.9 * spb, 0.5, -2), ck.t(sw8(b + 2.5)), 1.0)
-    vinyl = np.zeros(sec(ck.length))
-    pops = rng.integers(0, len(vinyl), int(ck.length * 7))
+    nv, xf = sec(ck.length), sec(1.0)  # 多生成一秒，首尾交叉淡化，接缝处沙沙声不断
+    vinyl = np.zeros(nv + xf)
+    pops = rng.integers(0, len(vinyl), int((ck.length + 1.0) * 7))
     vinyl[pops] = rng.uniform(-1, 1, len(pops)) * rng.uniform(0.2, 1.0, len(pops)) ** 3
     vinyl = lp(hp(vinyl, 900), 6000) + lp(colored(len(vinyl), rng, -1.0), 3500) * db(-30)
+    ramp = np.sin(np.linspace(0.0, np.pi / 2, xf))
+    vinyl = np.concatenate([vinyl[:xf] * ramp + vinyl[nv:] * ramp[::-1], vinyl[xf:nv]])
 
     box = reverb(mx.buf, 2.2, 0.3, 4200, 3)
     n = sec(ck.length)
@@ -1170,7 +1189,7 @@ def title_loop() -> dict:
         "keys": reverb(duck(keys, kicks, ck.length, 2.0, 0.5 * spb), 2.0, 0.22, 4200, 15, low_cut=160.0),
         "drums": reverb(drums, 1.2, 0.12, 4000, 17, low_cut=200.0),
         "bass": to_stereo(duck(bs.mono(), kicks, ck.length, 1.5, 0.35 * spb)),
-        "vinyl": to_stereo(fade(vinyl, 0.3, 0.3)),
+        "vinyl": to_stereo(vinyl),
     }
     out = loop_wrap(box, n)
     for k, x in parts.items():

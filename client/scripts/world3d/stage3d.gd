@@ -342,8 +342,8 @@ func _apply_time() -> void:
 	sun.light_color = day_col.lerp(Color(0.55, 0.65, 0.95), night)
 	sun.light_energy = lerpf(lerpf(2.3, 1.3, warm) * (1.0 - overcast * 0.7), 0.18, night)
 	sun.shadow_opacity = lerpf(1.0, 0.55, maxf(overcast, night))
-	fill.light_color = Color(1.0, 0.93, 0.85).lerp(Color(1.0, 0.8, 0.62), night)  # 夜里像路灯、窗里透出来的暖光
-	fill.light_energy = lerpf(0.18, 0.55, maxf(night, overcast * 0.6))
+	fill.light_color = Color(1.0, 0.93, 0.85).lerp(Color(0.95, 0.88, 0.82), night)  # 夜里像路灯、窗里透出来的光（别太橙：脸会发红发烫）
+	fill.light_energy = lerpf(lerpf(0.18, 0.55, overcast * 0.6), 0.38, night)  # 阴雨白天照旧；夜里 0.38，脸融进夜景、五官还看得清
 	# 轮廓光：从人背后、和太阳相反的那一侧斜上方打过来（太阳在左，亮边就在右，两边都有光不发平）；
 	# 白天偏暖白、傍晚跟着太阳发橙、夜里换成冷一点的月光蓝（暖的补光 + 冷的轮廓光，夜里人最好看）
 	var rim_x := -signf(day_dir.x) if absf(day_dir.x) > 0.05 else 1.0

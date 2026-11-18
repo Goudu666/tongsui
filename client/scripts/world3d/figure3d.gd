@@ -512,7 +512,9 @@ func _build_body() -> void:
 		if legs >= 0.5:
 			# 长裙底下的大腿用裙子的布：走路迈到最大、站着胯一拧，大腿根顶出裙面时看着像裙子被膝盖顶起，不是一块深色裤子戳出来
 			var thigh_m: Material = pants_on_hips if dress != null and float(lk.get("dress_len", 0.0)) >= 0.6 else bottom
-			_mesh(th, Kit.limb(s.thigh, lr * 1.08, lr * 0.84, 14, 1.0, 0.05, 0.25), thigh_m)
+			# 换成裙子布时膝盖那头收细一点，整个缩进小腿顶上的半球里：不然坐下、蹲下膝盖一弯，红的大腿头和深色膝盖抢同一块像素，膝盖上一闪一闪的红点
+			var knee_r: float = lr * (0.76 if thigh_m != bottom else 0.84)
+			_mesh(th, Kit.limb(s.thigh, lr * 1.08, knee_r, 14, 1.0, 0.05, 0.25), thigh_m)
 		else:
 			_mesh(th, Kit.limb(s.thigh, lr * 1.0, lr * 0.74, 14, 1.0, 0.07, 0.25), skin)
 		if legs > 0.0 and legs < 0.5:

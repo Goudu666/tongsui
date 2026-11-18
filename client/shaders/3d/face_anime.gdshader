@@ -172,9 +172,10 @@ void fragment() {
 		// 上眼线：粗，往外越来越粗，眼尾拖出去一小笔（翘）
 		float lw = (0.1 + lash * 0.035) * (0.45 + 0.75 * smoothstep(-0.9, 0.9, q.x));
 		lw = max(lw, qaa * 0.9);  // 离得远（街上脸只有三四十像素）：眼线至少一个多像素粗，眼睛才不糊成一片
-		float top_line = band_line(q.y - top - lw * 0.55, lw, qaa) * step(-1.04, q.x) * step(q.x, 1.06);
+		float top_line = band_line(q.y - top - lw * 0.55, lw, qaa) * step(-1.04, q.x) * step(q.x, 1.0);
 		float wx = q.x - 1.0;
-		float wing_y = top_o + 0.02 - wx * (0.35 - lash * 0.15);
+		float top1 = top_peak - (0.66 - 0.12 * ti) + (0.08 + 0.13 * ti);  // 外眼角那一点（翘的那一笔从这儿往外拖，不跟着曲线往下栽）
+		float wing_y = mix(bot, top1, open_k) + 0.03 - wx * (0.45 - lash * 0.32);
 		float wing = band_line(q.y - wing_y - lw * 0.3, lw * (1.0 - smoothstep(0.0, 0.32 + lash * 0.1, wx)), qaa) * step(0.0, wx) * step(wx, 0.32 + lash * 0.1);
 		// 下眼线：淡、细，只画外半截，眼尾和上眼线接上
 		float bot_line = band_line(q.y - bot + 0.03, 0.032 + 0.015 * smoothstep(0.4, 1.0, q.x), qaa) * smoothstep(-0.1, 0.45, q.x) * step(q.x, 1.0);
@@ -199,7 +200,7 @@ void fragment() {
 			float len = 0.24 + fk * 0.04;
 			float ly = q.y - (base_y + lx * (0.9 + fk * 0.45) * 1.0 + lx * lx * 0.0);
 			float tuft = band_line(ly, 0.045 * (1.0 - clamp(lx / len, 0.0, 1.0)), qaa) * step(0.0, lx) * step(lx, len);
-			col = mix(col, line_col, tuft * lash * open_k);
+			col = mix(col, line_col, tuft * smoothstep(0.3, 0.9, lash) * open_k);
 		}
 		// 眉毛：细，内头略粗、往外收尖；跟头发一个颜色
 		float bx = q.x;
@@ -221,23 +222,25 @@ void fragment() {
 	}
 	// 鼻子：鼻尖下一小块影（偏一边）+ 鼻尖一点高光（日漫只点一下）
 	vec2 nc = vec2(0.0, nose_h);
+	// 离得远（街上一张脸三四十像素）：鼻影、唇下影都淡掉，嘴只留一道淡淡的粉线，不然糊成一个「o」像在吃惊
+	float far = smoothstep(0.006, 0.03, aa);
 	float nd = blob((p - nc - vec2(0.014, -0.006)) / vec2(0.02, 0.011), 0.2);
-	col = mix(col, col * shade_tint * 0.92, nd * 0.7);
+	col = mix(col, col * shade_tint * 0.92, nd * 0.7 * (1.0 - far));
 	float nh = blob((p - nc - vec2(-0.006, 0.012)) / vec2(0.01, 0.012), 0.3);
 	col = mix(col, col * 1.06 + vec3(0.03), nh * 0.5);
 	// 嘴：小小一道弧，嘴角按 smile 往上；下唇一点淡红、下面一点影
 	float mx = p.x / mouth_w;
 	float my = mouth_h + smile * 0.02 * (mx * mx - 0.4);
 	float lip_area = blob((p - vec2(0.0, mouth_h - 0.02)) / vec2(mouth_w * 0.75, 0.022), 0.0);
-	col = mix(col, col * lip * 1.12, lip_area * 0.35);
+	col = mix(col, col * lip * 1.12, lip_area * 0.35 * (1.0 - 0.5 * far));
 	float under = blob((p - vec2(0.0, mouth_h - 0.05)) / vec2(mouth_w * 0.45, 0.012), 0.2);
-	col = mix(col, col * shade_tint, under * 0.4 * (1.0 - step(0.05, open)));
+	col = mix(col, col * shade_tint, under * 0.4 * (1.0 - step(0.05, open)) * (1.0 - far));
 	float mline = band_line(p.y - my, max(0.0065 * (1.0 - 0.55 * mx * mx), aa * 0.5), aa) * step(abs(mx), 1.0);
 	vec3 mcol = mix(line_col, lip * 0.55, 0.45);
-	col = mix(col, mcol, mline * (1.0 - step(0.05, open)));
+	col = mix(col, mix(mcol, col * lip * 0.85, far), mline * (1.0 - step(0.05, open)) * (1.0 - 0.45 * far));
 	// 张嘴：上沿就是带笑的嘴线（宽、平），下沿圆（D 字形，笑着张嘴）；里面深红，下面一点舌头，大张时上面一道牙
-	float oh = 0.05 * open + 0.002;
-	float xo = p.x / (mouth_w * (0.78 + 0.3 * smile));
+	float oh = 0.058 * open + 0.002;
+	float xo = p.x / (mouth_w * (0.9 + 0.35 * smile));
 	float dep = oh * pow(max(1.0 - pow(abs(xo), 2.4), 0.0), 0.55);
 	float yy = my - p.y;
 	float on = step(0.05, open) * step(abs(xo), 1.0);
@@ -279,4 +282,7 @@ void light() {
 	}
 	float fres = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
 	SPECULAR_LIGHT += lc * vec3(1.0, 0.92, 0.86) * smoothstep(0.62, 0.85, fres) * lit * sh * rim * 0.45;
+	// 手办漆面那一点点柔光（脸颊、鼻梁上一层很淡的亮，不是油光）
+	vec3 hv = normalize(LIGHT + VIEW);
+	SPECULAR_LIGHT += lc * vec3(1.0, 0.95, 0.9) * pow(max(dot(NORMAL, hv), 0.0), 18.0) * 0.035 * lit * sh * lit_k / 0.36;
 }

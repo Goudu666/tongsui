@@ -242,6 +242,8 @@ interface Rules {
     plainBonus: number;
     /** 日常行动的成长按阶段再乘这个数：一个日子代表的时间越长算得越重。老内容没写按 1 */
     turnWeight?: { [S in Stage]: number };
+    /** 自己挑的事（不是日程、不是事件）在 from~to 岁再乘 x。老内容没写按 1 */
+    chosenWeight?: { from: number; to: number; x: number }[];
   };
   /** [从几岁起, 每年掉多少] */
   aging: { body: number[][]; mind: number[][]; activeFactor: number };

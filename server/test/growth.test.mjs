@@ -329,3 +329,101 @@ const sum = (st) => st.body + st.mind + st.charm + st.luck;
   assert.equal(s.persons.qing.moodDays, 1);
   console.log("✓ 老存档：v3 升 v4 补上底子、心气、当天活动、见没见过面、普通的孩子的标记，升完接着过");
 }
+
+// ---------- 自己挑的事在九到十一岁算得更重（growth.chosenWeight，11-18 反思玩法） ----------
+// 上学那份日程、事件都不乘，所以不上心的人长得和原来一样；只有放了学自己挑的事（写作业、练球、小组、陪对门做的那件）多长
+{
+  const s = newLife(11);
+  const cw = R.growth.chosenWeight || [];
+  assert.ok(cw.length > 0, "rules.yaml 里写了 growth.chosenWeight");
+  const band = cw[0];
+  const at = (age) => { s.turn = turnAtAge(age); return { duty: growthCtx(s, C, "action", false).scale, chosen: growthCtx(s, C, "action", true).scale, old: growthCtx(s, C, "action").scale, event: growthCtx(s, C, "event").scale }; };
+  for (const age of [band.from - 1, band.to + 1]) {
+    const g = at(age);
+    assert.equal(g.chosen, g.duty, `${age} 岁不在那几岁里，自己挑的事和日程一样算`);
+  }
+  for (let age = band.from; age <= band.to; age++) {
+    const g = at(age);
+    assert.ok(Math.abs(g.chosen - g.duty * band.x) < 1e-9, `${age} 岁自己挑的事乘 ${band.x}`);
+    assert.equal(g.old, g.duty, `${age} 岁不说是不是自己挑的，按日程算（老的调用不变）`);
+    assert.equal(g.event, R.growth.eventScale, `${age} 岁事件不乘`);
+  }
+  // 真房间里（world.ts）：歇着的一天傍晚坐到书桌前写一回作业（一回一回按的，和整段押上的），十岁比八岁多乘 x；
+  // 同一天两个人都在上学的那一份日程不乘
+  const SLOTS = G("SLOTS"), ON = { qing: true, mei: true };
+  const spotAt = (id) => C.map.spots.find((sp) => sp.id === id).at;
+  const room = (age, rest) => {
+    const t = G("lifeCreate")(5, C);
+    for (const r of ["qing", "mei"]) G("lifeConfirm")(t, C, r, NAMES);
+    t.turn = turnAtAge(age);
+    G("worldStartDay")(t, C);
+    const w = t.world;
+    w.fate = { mirror: null, qing: null, mei: null };
+    w.rest = rest;
+    for (const r of ["qing", "mei"]) {
+      const p = t.persons[r];
+      p.stats = { body: 5, mind: 5, charm: 5, luck: 5 };
+      p.born = { body: 5, mind: 5, charm: 5, luck: 5 };
+      p.needs = { hunger: 80, energy: 80, mood: 80, clean: 80 };
+      p.flags = p.flags.filter((f) => !f.startsWith("tal_"));
+    }
+    return t;
+  };
+  const deskOnce = (age, whole) => {
+    const t = room(age, true);
+    t.world.slot = 3;
+    t.world.minute = SLOTS[3][0];
+    const a = t.world.actors.qing;
+    [a.x, a.y] = spotAt("desk_qing");
+    const m0 = t.persons.qing.stats.mind;
+    assert.equal(G("worldAct")(t, C, "qing", "desk_qing", !whole).error, null);
+    if (whole) { G("worldPass")(t, C, "mei"); for (let i = 0; i < 4000 && t.world.slot === 3; i++) G("worldAdvance")(t, C, 0.5, ON); }
+    return t.persons.qing.stats.mind - m0;
+  };
+  const off = () => { const keep = R.growth.chosenWeight; R.growth.chosenWeight = undefined; return () => { R.growth.chosenWeight = keep; }; };
+  for (const whole of [false, true]) {
+    const on10 = deskOnce(10, whole);
+    const back = off(); const off10 = deskOnce(10, whole); back();
+    const on8 = deskOnce(8, whole);
+    const back2 = off(); const off8 = deskOnce(8, whole); back2();
+    assert.ok(Math.abs(on10 / off10 - band.x) < 0.02, `十岁${whole ? "整段" : "一回"}写作业 ${on10.toFixed(3)}，不乘是 ${off10.toFixed(3)}`);
+    assert.ok(Math.abs(on8 - off8) < 1e-9, `八岁${whole ? "整段" : "一回"}写作业不乘`);
+  }
+  // 该上学的那几段逃了学去写作业不乘（world.ts → worldChosen）：上学前、放了学、歇着的日子才算自己的时间
+  const skipOnce = (age) => {
+    const t = room(age, false);
+    const ds = G("worldDutySlots")(G("worldDuty")(t, C, "qing"));
+    t.world.slot = ds[0];
+    t.world.minute = SLOTS[ds[0]][0];
+    t.world.dutyDone.qing = true; // 不去报到了
+    const a = t.world.actors.qing;
+    [a.x, a.y] = spotAt("desk_qing");
+    const m0 = t.persons.qing.stats.mind;
+    assert.equal(G("worldAct")(t, C, "qing", "desk_qing", true).error, null);
+    return t.persons.qing.stats.mind - m0;
+  };
+  {
+    const on = skipOnce(10);
+    const back = off(); const offv = skipOnce(10); back();
+    assert.ok(on > 0 && Math.abs(on - offv) < 1e-9, `十岁逃了学写作业不乘：${on.toFixed(3)} / ${offv.toFixed(3)}`);
+  }
+  // 爸妈报的班（primary_class_* 上到 1110，比 primary 多占了傍晚那段）：多出来的那份是放了学的时间，照样乘（world.ts → worldDutyAfter），
+  // 不然报了班反倒不如回家写作业；就上到 930 的普通上学、歇着的日子、那几岁以外都不拆
+  {
+    const STRIP = /^(fam_|exp_|class_quit|lead_|club_|aid|send_home)/;
+    const kid = (age, rest, flags) => {
+      const t = room(age, rest);
+      for (const r of ["qing", "mei"]) t.persons[r].flags = t.persons[r].flags.filter((f) => !STRIP.test(f)).concat(flags);
+      return [t, G("worldDuty")(t, C, "qing")];
+    };
+    const [t10, d10] = kid(10, false, ["fam_rich", "exp_book"]);
+    const after = G("worldDutyAfter")(t10, C, "qing", d10);
+    assert.ok(after && after.mind > 0.5 && !after.charm, `十岁上奥数班，放了学那份算自己挑的：${JSON.stringify(after)}`);
+    const back = off(); assert.equal(G("worldDutyAfter")(t10, C, "qing", d10), null, "不乘的时候不拆"); back();
+    const [t8, d8] = kid(8, false, ["fam_rich", "exp_book"]);
+    assert.equal(G("worldDutyAfter")(t8, C, "qing", d8), null, "八岁不在那几岁里，不拆");
+    const [tp, dp] = kid(10, false, []);
+    assert.equal(G("worldDutyAfter")(tp, C, "qing", dp), null, "普通上学上到 930，没有放了学那份");
+  }
+  console.log(`✓ 自己挑的事：${band.from}~${band.to} 岁乘 ${band.x}，前后一岁不乘 / 上学上班的日程、事件、老的调用都不乘 / 房间里一回回按、整段押上的写作业都乘上了，逃了学去写的不乘 / 爸妈报的班放了学那份照样乘`);
+}

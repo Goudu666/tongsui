@@ -673,15 +673,15 @@ func _hall_doors() -> void:
 		bx("metal_white", dx - 0.14, dx + 0.14, 2.42, 2.56, ZB, ZB + 0.012)
 		_commit(keep)
 		var plate := _label(str(spec[2]), Vector3(dx, 2.49, ZB + 0.014), 0.0026, acc.darkened(0.2))
-		plate.reparent(keep)
+		plate.reparent(keep, false)
 		var lines := ["一帆风顺年年好", "万事如意步步高"] if role == "qing" else ["春回大地千山秀", "福满人间万户欢"]
 		for k in 2:
 			var cx := dx - 0.56 if k == 0 else dx + 0.56
 			var l := _label(_vert(str(lines[k])), Vector3(cx, 1.28, ZB + 0.008), 0.0026, Color("#1d1a18"))
 			l.line_spacing = 0.0
-			l.reparent(keep)
+			l.reparent(keep, false)
 		var hp := _label("吉祥如意" if role == "qing" else "四季平安", Vector3(dx, 2.29, ZB + 0.008), 0.0025, Color("#1d1a18"))
-		hp.reparent(keep)
+		hp.reparent(keep, false)
 		# 木门：刷漆、上下两块门芯板、把手；门上倒贴一个福
 		var old := Node3D.new()
 		add_child(old)
@@ -696,7 +696,7 @@ func _hall_doors() -> void:
 		_commit(old)
 		var fu := _label("福", Vector3(dx, 1.55, ZB + 0.005), 0.0052, Color("#1d1a18"))
 		fu.rotation = Vector3(0, 0, PI)
-		fu.reparent(old)
+		fu.reparent(old, false)
 		_era_nodes.append([old, 0, 1])
 		# 防盗门：铁的、压出来的花、猫眼、不锈钢把手
 		var steel := Node3D.new()
@@ -713,7 +713,7 @@ func _hall_doors() -> void:
 		_commit(steel)
 		var fu2 := _label("福", Vector3(dx, 1.62, ZB + 0.0), 0.0052, Color("#1d1a18"))
 		fu2.rotation = Vector3(0, 0, PI)
-		fu2.reparent(steel)
+		fu2.reparent(steel, false)
 		_era_nodes.append([steel, 2, 4])
 
 
@@ -745,7 +745,7 @@ func _hall_era() -> void:
 		var by := k * 0.3
 		bx("tint", 14.0 + k * 0.04, 14.0 + k * 0.04 + bw, by, by + 0.3, ZB + 0.05, ZB + 0.45, Color("#b08a5c").darkened(k * 0.05))
 	var l := _label("别扔", Vector3(14.21, 0.15, ZB + 0.452), 0.003, Color("#2b2a33"))
-	l.reparent(n)
+	l.reparent(n, false)
 	_commit(n)
 	_era_nodes.append([n, 1, 1])
 	# 青年：电动车，充电线从门缝里拉出来
@@ -818,12 +818,12 @@ func _hall_era() -> void:
 		_commit(n)
 		if e == 2 or e == 3:
 			var t1 := _label("开锁", Vector3(18.0, 1.9, ZB + 0.006), 0.003, Color("#c03a2e"))
-			t1.reparent(n)
+			t1.reparent(n, false)
 			var t2 := _label("通下水", Vector3(15.7, 1.35, ZB + 0.006), 0.0034, Color("#2b2a33"))
-			t2.reparent(n)
+			t2.reparent(n, false)
 		if e == 0:
 			var t0 := _label("通  知", Vector3(16.0, 2.1, ZB + 0.008), 0.0034, Color("#2b2a33"))
-			t0.reparent(n)
+			t0.reparent(n, false)
 			bx("paper", 15.75, 16.25, 1.75, 2.2, ZB, ZB + 0.005, Color("#f3eedf"))
 			var nn := Node3D.new()
 			n.add_child(nn)

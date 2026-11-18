@@ -49,8 +49,10 @@ interface DuetContent {
 function pullYears(n: number): string {
   if (n <= 10) return duetCount(n);
   if (n >= 100) return String(n);
+  // 合起来的数用「二」：十二、二十、三十二（「两」只用在单说几年：两年）
+  var D = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
   var t = Math.floor(n / 10), u = n % 10;
-  return (t === 1 ? "" : DUET_NUM[t]) + "十" + (u ? DUET_NUM[u] : "");
+  return (t === 1 ? "" : D[t]) + "十" + (u ? D[u] : "");
 }
 
 /** 默契在 syncSteadyFrom 到 syncSteadyFull 之间：0~1（和考场托底同一把尺子） */

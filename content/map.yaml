@@ -767,7 +767,7 @@ actions:
     minutes: 90
     requires: { hours: [390, 1020] }
     needs: { energy: 12, mood: -3 }
-    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 两个人挨着坐在长椅上，一个攥着挂号条，一个替他数前头还有几个。 }
+    together: { needs: { mood: 4 }, bond: { close: 1 }, text: 两个人挨着坐在长椅上，一个攥着挂号条，一个替TA数前头还有几个。 }
   - id: ward_meal
     label: 给家里人送饭
     menu: true

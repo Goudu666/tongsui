@@ -215,7 +215,7 @@ lives:
     requires: { flags: [own_shop, shop_two], notFlags: [shop_closed] }
   - id: l_restart
     title: 又支起来了
-    text: "{name} 四十多岁丢了饭碗，在楼下支了个摊。天不亮就起，起了十几年，摊子上的灯总是楼里第一盏亮的。"
+    text: "{name} 人到中年丢了饭碗，在楼下支了个摊。天不亮就起，起了十几年，摊子上的灯总是楼里第一盏亮的。"
     requires: { flags: [laid_off, own_stall] }
 
   # ---- 三扇门：出身和走到哪儿（docs/MEANS.md 第九节）。出身那一半这辈子改不了，所以图鉴上不拿来说「差一点」 ----
@@ -236,7 +236,7 @@ lives:
     requires: { maxDiedAge: 70 }
   - id: l_long
     title: 长寿
-    text: "{name} 活到了九十五岁。最后几年记不清很多事，却记得楼顶那年夏天的星星。"
+    text: "{name} 活过了九十五岁。最后几年记不清很多事，却记得楼顶那年夏天的星星。"
     requires: { minDiedAge: 95 }
   - id: l_swimmer
     title: 冬泳的老人
@@ -275,7 +275,7 @@ lives:
     requires: { flags: [fam_siblings, home_own] }
   - id: l_spent
     title: 家底
-    text: "{name} 家的买卖倒在 {name} 四十几岁那年。后来的日子跟楼里别家一样过，早点铺排队，菜市场还价。"
+    text: "{name} 家的买卖是在 {name} 人到中年那几年倒的。后来的日子跟楼里别家一样过，早点铺排队，菜市场还价。"
     requires: { flags: [fam_fallen] }
 
   # ---- 成家和下一代（docs/FAMILY.md）：孩子的关口走到了哪儿。比「当了爹妈」具体，排在它前面 ----

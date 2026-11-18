@@ -79,7 +79,7 @@
       memory: 一个眼色
       bond: { sync: 3, close: 2 }
   dissonance:
-    text: 一个张嘴要说，一个在底下踩了他一脚。大爷全看见了，假装没看见。
+    text: 一个张嘴要说，一个在底下踩了TA一脚。大爷全看见了，假装没看见。
     bond: { close: 0 }
 
 - id: pl_st_cloth
@@ -157,7 +157,7 @@
       memory: 一下午
       bond: { sync: 2, close: 1 }
   dissonance:
-    text: 一个进去买汽水，出来时另一个靠着长凳打起了盹。汽水就搁在他手边。
+    text: 一个进去买汽水，出来时另一个靠着长凳打起了盹。汽水就搁在TA手边。
     bond: { close: 0 }
 
 # ---------- 补空档（11-11）：青年、中年 ----------

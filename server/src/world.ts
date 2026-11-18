@@ -633,7 +633,7 @@ function worldCanAct(s: LifeState, c: Content, role: Role, spotId: string, anywh
   if (broke) return broke;
   if (act.quick) {
     // 顺手的事不花时间，可也不能一直做：一段里同一件只做一回，吃饱了就不用了
-    if (w.quick.indexOf(role + ":" + act.id) >= 0) return "刚" + act.label + "过";
+    if (w.quick.indexOf(role + ":" + act.id) >= 0) return "「" + act.label + "」这一段刚做过，等下一段吧";
     if ((act.needs.hunger || 0) > 0 && p.needs.hunger >= 90) return "还不饿";
   }
   return null;

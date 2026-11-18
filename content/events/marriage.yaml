@@ -118,7 +118,7 @@
   kind: solo
   stage: old
   weight: 2
-  requires: { minAge: 65, flags: [p_confidant] }
+  requires: { minAge: 65, flags: [p_confidant], alone: false }  # 对门的走了以后，不会再有人傍晚来坐
   title: 一份报纸
   text: 对门的每天傍晚来坐一会儿，带一份报纸。看完了就走。
   options:

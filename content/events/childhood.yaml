@@ -42,7 +42,7 @@
       memory: 四根冰棍
       bond: { sync: 3, close: 2 }
     home:
-      text: 你们一前一后下了楼，在楼道里说了声"明儿见"。
+      text: 你们一前一后下了楼，在楼道里说了声「明儿见」。
       memory: 明儿见
       bond: { sync: 2, close: 1 }
   dissonance:
@@ -73,7 +73,7 @@
       effects: { self: { mood: -5 } }
   resonance:
     hide:
-      text: 从那天起，你们有了第一个只属于两个人的秘密。猫叫"暖暖"。
+      text: 从那天起，你们有了第一个只属于两个人的秘密。猫叫「暖暖」。
       memory: 暖暖
       bond: { sync: 3, close: 4 }
     tell:
@@ -120,7 +120,7 @@
   kind: mirror
   stage: childhood
   where: river
-  hint: 海河边有人在喊"冻实了！"
+  hint: 海河边有人在喊「冻实了！」
   seasons: [winter]
   weight: 2
   title: 冻上的海河
@@ -144,7 +144,7 @@
       memory: 栏杆上的白气
       bond: { sync: 3, close: 2 }
   dissonance:
-    text: 一个在冰上喊"快下来"，一个在岸上喊"快上来"。
+    text: 一个在冰上喊「快下来」，一个在岸上喊「快上来」。
     bond: { close: 1 }
 
 - id: c_first_fight

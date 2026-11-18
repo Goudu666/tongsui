@@ -487,7 +487,7 @@ func _layout_hud() -> void:
 	fill_btn.offset_top = action_btn.offset_top
 	_place_slot_btn()
 	banner.offset_left = 40 + inset.x
-	banner.offset_right = banner.offset_left + 740
+	_place_banner()
 
 
 ## 弹窗卡片的高：跟着内容走，但不超过屏幕
@@ -913,6 +913,14 @@ func _place_slot_btn() -> void:
 		slot_btn.offset_left = right - SLOT_SIZE.x
 		slot_btn.offset_bottom = action_btn.offset_bottom
 		slot_btn.offset_top = action_btn.offset_top
+		_place_banner()
+
+
+## 断线提示条最宽 740，但别压到底下那排按钮：16:9 的屏上会盖住「就这么过」左头的暂停记号
+func _place_banner() -> void:
+	if banner == null or slot_btn == null:
+		return
+	banner.offset_right = minf(banner.offset_left + 740.0, ui.size.x + slot_btn.offset_left - DOCK_GAP)
 
 
 ## 菜单只在服务器认得 ACT 的 action 时摆（协议 8）；网页单机版跑的是同一份规则

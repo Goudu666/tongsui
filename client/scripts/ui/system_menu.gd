@@ -172,12 +172,21 @@ func _input(event: InputEvent) -> void:
 		if focus is LineEdit and not _open:
 			return
 		get_viewport().set_input_as_handled()
-		toggle()
+		_back()
 
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
-		toggle()
+		_back()
+
+
+## 全屏的卡（年代卡、长大的成绩单）盖着的时候，返回键是「看完了」，不是开菜单
+func _back() -> void:
+	var fx: Variant = main.get("fx") if main != null else null
+	if not _open and fx != null and fx.is_busy():
+		fx.dismiss()
+		return
+	toggle()
 
 
 # ---------------------------------------------------------------- 开 / 关 ----

@@ -439,7 +439,8 @@ func _build_body() -> void:
 	for sgn in [-1.0, 1.0]:
 		_mesh(head, Kit.ellipsoid(Vector3(hr * 0.09, hr * 0.17, hr * 0.11), 10, 8), skin, head_c + Vector3(sgn * hr * 0.86, -hr * 0.12, -hr * 0.04))
 	_build_hair(head, head_c, hrv, str(lk.get("hair", "boy")), lk)
-	# 胳膊：上臂鼓在上头、往手肘收；小臂往手腕收细（手腕要「细」才秀气）；袖口一道边
+	# 胳膊
+	# 上臂鼓在上头、往手肘收；小臂往手腕收细（手腕要「细」才秀气）；袖口一道边
 	var sleeve := float(lk.get("sleeve", 1.0))
 	var sleeve_m: ShaderMaterial = top if not (kid and dress != null) else _cloth(lk.get("top"))
 	var cuff_m: ShaderMaterial = sleeve_m.duplicate()

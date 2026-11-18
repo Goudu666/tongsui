@@ -26,7 +26,7 @@ const BUILDERS := {"street": Street3D, "building": Building3D, "river": River3D,
 const DIST := 15.0    ## 相机离人走的那条线多远（米）
 const LIFT := 2.6     ## 相机比取景框中心高多少（米）：看得见地面的进深
 const NEAR := 0.5
-const FIG_SCALE := 1.2  ## 人比房子放大一点（微缩模型里人偶总是偏大，脸才看得清；2D 精灵放大 1.5）
+const FIG_SCALE := 1.3  ## 人比房子放大一点（微缩模型里人偶总是偏大，脸才看得清；2D 精灵放大 1.5）  改了要同步 actor.gd 的 BODY_3D_K（头顶的字）
 ## 总开关：关掉就全走 2D（单测、性能探针、对比截图用）
 static var enabled := true
 ## 玩家在菜单里选的画面：auto 自动（开头几秒测帧时间，太卡就退回 2D）/ on 实时 3D / off 2D；"" 还没读设置
@@ -54,6 +54,7 @@ var root3d: Node3D
 var cam: Camera3D
 var sun: DirectionalLight3D
 var fill: DirectionalLight3D    ## 只照人的补光（从镜头这边来，不投影）：夜里、逆光时脸不黑
+var rim: DirectionalLight3D     ## 只照人的轮廓光（从人背后斜上方来，不投影）：头发、肩膀描一道亮边，手办一样从背景里「跳」出来
 const FIG_LAYER := 2            ## 人身上多一层渲染层，补光只照这一层
 var env: Environment
 var sky: ProceduralSkyMaterial
@@ -182,6 +183,11 @@ func _build_world() -> void:
 	fill.light_specular = 0.2
 	fill.rotation = Vector3(-0.35, 0.25, 0.0)  # 从镜头左上方一点照过来
 	root3d.add_child(fill)
+	rim = DirectionalLight3D.new()
+	rim.shadow_enabled = false
+	rim.light_cull_mask = FIG_LAYER
+	rim.light_specular = 0.35
+	root3d.add_child(rim)
 	cam = Camera3D.new()
 	cam.projection = Camera3D.PROJECTION_FRUSTUM
 	cam.near = NEAR
@@ -343,6 +349,13 @@ func _apply_time() -> void:
 	sun.shadow_opacity = lerpf(1.0, 0.55, maxf(overcast, night))
 	fill.light_color = Color(1.0, 0.93, 0.85).lerp(Color(1.0, 0.8, 0.62), night)  # 夜里像路灯、窗里透出来的暖光
 	fill.light_energy = lerpf(0.18, 0.55, maxf(night, overcast * 0.6))
+	# 轮廓光：从人背后、和太阳相反的那一侧斜上方打过来（太阳在左，亮边就在右，两边都有光不发平）；
+	# 白天偏暖白、傍晚跟着太阳发橙、夜里换成冷一点的月光蓝（暖的补光 + 冷的轮廓光，夜里人最好看）
+	var rim_x := -signf(day_dir.x) if absf(day_dir.x) > 0.05 else 1.0
+	var rim_dir := Vector3(rim_x * 0.55, -0.42, 0.72).normalized()
+	rim.look_at_from_position(Vector3.ZERO, rim_dir, Vector3.UP)
+	rim.light_color = Color(1.0, 0.95, 0.88).lerp(Color(1.0, 0.7, 0.45), warm).lerp(Color(0.62, 0.74, 1.0), night)
+	rim.light_energy = lerpf(lerpf(0.55, 0.75, warm), 0.6, night) * (1.0 - overcast * 0.45)
 	# 天：白天蓝、傍晚橙紫、夜里深蓝；阴雨天灰
 	var top := Color(0.32, 0.52, 0.82).lerp(Color(0.36, 0.38, 0.62), warm).lerp(Color(0.04, 0.06, 0.14), night)
 	var hor := Color(0.78, 0.84, 0.9).lerp(Color(0.98, 0.62, 0.42), warm).lerp(Color(0.12, 0.13, 0.24), night)
@@ -511,9 +524,12 @@ func _sync_folks() -> void:
 					st = "childhood"
 					lk["height"] = 1.15
 					lk["head"] = 0.15
-				elif kind.contains("old"):
+				elif kind.contains("old") or bool(lk.get("old", false)):
 					st = "old"
 					lk["hair"] = "boy_old" if not lk.girl else "bun_grey"
+					lk.erase("hair_col")
+			if st == "young" and bool(lk.get("old", false)):
+				st = "old"  # 摆摊、坐着的老街坊：脸也是老人的（眼睛细、眼尾有纹）
 			f.build("folk", st, lk)
 			f.set_meta("work", "busy")
 			folk_figs[n] = f
@@ -562,12 +578,17 @@ func _folk_look(n: Node) -> Dictionary:
 		"sleeve": 1.0 if rng.randf() < 0.7 else 0.5, "legs": 1.0,
 		"shoes": ["#2B2724", "#4A3328", "#5B5E63"][rng.randi() % 3], "shoe2": "#1E1B19",
 		"height": rng.randf_range(1.55, 1.78) - (0.08 if girl else 0.0) - (0.05 if old else 0.0),
-		"head": 0.128, "build": rng.randf_range(0.95, 1.15), "girl": girl,
+		"head": 0.132, "build": rng.randf_range(0.95, 1.12), "girl": girl, "old": old,
 		"hair": (["bun_grey", "bob"] if old else ["bob", "bun", "ponytail"])[rng.randi() % 2] if girl else (["boy_old", "boy_short"][0 if old else 1]),
-		"skin": Color(0.93, 0.77, 0.64).lerp(Color(0.82, 0.62, 0.48), rng.randf()).to_html(),
+		# 日漫的肤色：浅、偏暖，人和人之间差一点
+		"skin": Color(1.0, 0.88, 0.8).lerp(Color(0.93, 0.76, 0.64), rng.randf()).to_html(),
 	}
 	if old and not girl:
 		lk["hair"] = "boy_old"
+	if not old:
+		# 头发：黑、深棕、栗色几种
+		var hairs := ["#2A2328", "#3B2A26", "#4A3428", "#24232E", "#5A3B2C"]
+		lk["hair_col"] = hairs[rng.randi() % hairs.size()]
 	return lk
 
 

@@ -29,6 +29,7 @@ const ACT_ART_SCALE := 1.5
 const HEIGHT := {"childhood": 112.0, "teen": 152.0, "young": 172.0, "middle": 170.0, "old": 160.0}
 const STRIDE := {"childhood": 74.0, "teen": 104.0, "young": 120.0, "middle": 112.0, "old": 78.0}
 const ART_SCALE := 2.0
+const BODY_3D_K := 1.3  ## 3D 人偶的个子 ÷ 2D 精灵的个子（= stage3d.FIG_SCALE）
 const STAGES := ["childhood", "teen", "young", "middle", "old"]
 const STAGE_FILE := {"childhood": "child", "teen": "teen", "young": "young", "middle": "middle", "old": "old"}
 ## 专属动作表里的顺序（和 tools/art/actor_acts.py 的 ACTS 一致：第 i 套在第 i/2 行、第 (i%2)×4 列起）
@@ -502,7 +503,8 @@ func _draw_over(cv: CanvasItem) -> void:
 	if _sprite == null or (not _sprite.visible and not body_3d):
 		return
 	var c := P.role_color(role)
-	var head := -_height() / maxf(scale.x, 0.01) - 14.0
+	# 实时 3D 的人偶比 2D 精灵高两成（stage3d.FIG_SCALE），头发还蓬出去一截：字和气泡跟着抬，别盖在脸上
+	var head := -_height() * (BODY_3D_K if body_3d else 1.0) / maxf(scale.x, 0.01) - (24.0 if body_3d else 14.0)
 	_name_tag(cv, c)
 	if asleep:
 		_text(cv, "z z", Vector2(34, head + 30 + sin(_t * 2.0) * 6.0), 28, P.INK_SOFT)

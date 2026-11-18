@@ -90,6 +90,8 @@ func _initialize() -> void:
 	Stage3D.enabled = false
 	check(not Stage3D.supports("street"), "关掉 3D 后都走 2D")
 	Stage3D.enabled = true
+	# 人偶放大多少，头顶的字就跟着抬多少：两边的倍数得是同一个
+	check(is_equal_approx(Stage3D.FIG_SCALE, Actor.BODY_3D_K), "stage3d.FIG_SCALE %.2f ≠ actor.BODY_3D_K %.2f，头顶的字会压在脸上" % [Stage3D.FIG_SCALE, Actor.BODY_3D_K])
 	# 相机：Z = 0 面上的点投到屏幕上，和 2D 镜头算的一样（取景框 1920×1080、地面 760、镜头中心 (1500, 600)、竖着看 900 像素）
 	var st3 := Stage3D.new()
 	st3.ground_y = 760.0

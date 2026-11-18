@@ -283,21 +283,47 @@ static func mat(c: Color, rough := 0.75, metal := 0.0, rim := 0.0) -> StandardMa
 
 ## 日漫的头：上半个球，下半往下巴收（腮帮子收窄、下巴略往前、略尖），jaw 0 就是椭球
 static func anime_head(r: Vector3, jaw := 1.0, seg := 32, rings := 22) -> ArrayMesh:
+	# 日漫的头（手办那种）：上半是圆圆的后脑勺和额头（就是 r 这个椭球，发壳贴着它，不动）；
+	# 下半：脸颊鼓一点，从颧骨往下顺顺地收到一个小而圆的下巴，下巴略往前、往下；后面下颌往脖子收。
+	# 脸的正面稍平一点（眼睛画在一个面上，侧过去也不显小）。jaw：0 小孩（圆、下巴宽、脸颊肉）… 1 大人（脸长一点、下颌清楚）。
+	# 网格比参数给的细一点：轮廓是曲线不是折线（手办的脸边要圆润）。
+	seg = maxi(seg, 56)
+	rings = maxi(rings, 40)
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var grid: Array = []
+	var kid := 1.0 - clampf(jaw, 0.0, 1.0)
 	for j in rings + 1:
 		var theta := PI * float(j) / float(rings)
 		var row := PackedVector3Array()
 		for i in seg + 1:
 			var phi := TAU_ * float(i) / float(seg)
-			var p := _sph(theta, phi, r)
-			var low := clampf(-cos(theta), 0.0, 1.0)      # 0 赤道 … 1 下巴尖
-			var front := clampf(cos(phi), 0.0, 1.0)        # 脸这一面
-			p.x *= 1.0 - jaw * 0.36 * pow(low, 1.5)
-			p.z *= 1.0 - jaw * 0.3 * pow(low, 1.6) * (1.0 - front)
-			p.z += jaw * r.z * 0.08 * pow(low, 2.0) * front
-			p.y *= 1.0 + jaw * 0.03 * pow(low, 2.0)
+			var d := Vector3(sin(theta) * sin(phi), cos(theta), sin(theta) * cos(phi))
+			var c := cos(phi)                                # 1 正脸 … 0 两侧 … -1 后脑
+			var front := clampf(c, 0.0, 1.0)
+			var back := clampf(-c, 0.0, 1.0)
+			var t := clampf(-d.y, 0.0, 1.0)                  # 0 眼睛那一圈 … 1 下巴底下
+			var up := clampf(d.y, 0.0, 1.0)
+			var p := Vector3(d.x * r.x, d.y * r.y, d.z * r.z)
+			# 脸正面略平：额头到嘴这一块往里收一点点（只收正中，两侧不动）
+			var mid := (1.0 - smoothstep(0.35, 0.85, up)) * (1.0 - smoothstep(0.55, 0.95, t))
+			p.z -= r.z * 0.045 * pow(front, 3.0) * mid
+			# 下半张脸往里收：颧骨下面才开始，越往下越窄，到下巴是一个小圆
+			var taper := pow(smoothstep(0.12, 1.0, t), 1.25)
+			var narrow := lerpf(0.12, 0.29, jaw) * taper
+			# 正面比两侧略多收一点：下颌线从耳朵下面斜着走向下巴；但到下巴尖又放回来一点（圆下巴，不是尖锥）
+			narrow += lerpf(0.0, 0.06, jaw) * taper * front * (1.0 - smoothstep(0.75, 1.0, t))
+			p.x *= 1.0 - narrow
+			# 脸颊：眼睛下面、偏外的那一块鼓一点（小孩更肉）
+			var cheek := exp(-pow((t - 0.32) / 0.2, 2.0)) * exp(-pow((absf(sin(phi)) - 0.62) / 0.3, 2.0)) * front
+			p += Vector3(d.x * r.x, 0.0, d.z * r.z * 0.6) * cheek * lerpf(0.022, 0.065, kid)
+			# 下巴往前、往下一点（大人多一点，脸显得长、下巴尖而不锐）
+			var fw := smoothstep(-0.1, 0.75, c)                # 前半边一大片一起动（不只正中一条），下巴才是圆的
+			p.z += r.z * lerpf(0.08, 0.16, jaw) * pow(t, 2.2) * fw
+			p.y -= r.y * lerpf(0.0, 0.035, jaw) * pow(t, 3.0) * fw
+			# 后面、下面往脖子收：下颌底下斜着往后上走
+			p.z *= 1.0 - 0.32 * pow(t, 1.4) * back
+			p.y *= 1.0 - 0.1 * pow(t, 2.0) * back
 			row.append(p)
 		grid.append(row)
 	for j in rings:

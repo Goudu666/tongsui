@@ -212,42 +212,63 @@ func _face_mat(lk: Dictionary) -> ShaderMaterial:
 	var girl := role == "mei" or bool(lk.get("girl", false))
 	var folk := role != "qing" and role != "mei"
 	var sk := Color(str(lk.get("skin", SKIN.to_html())))
-	m.set_shader_parameter("skin", sk)
+	# 脸：暖的桃色（比手上略暖一点，脸是画的重点；脖子本来就暗一档）
+	m.set_shader_parameter("skin", sk * Color(0.95, 0.83, 0.78))
 	# 眼睛：小孩最大最圆，越大越细长；街坊比主角小一号（主角好认）
-	var ew: float = {"childhood": 0.19, "teen": 0.18, "young": 0.168, "middle": 0.152, "old": 0.138}.get(stage, 0.16)
-	var et: float = {"childhood": 0.235, "teen": 0.215, "young": 0.19, "middle": 0.165, "old": 0.135}.get(stage, 0.18)
-	var eh: float = {"childhood": -0.24, "teen": -0.18, "young": -0.15, "middle": -0.14, "old": -0.13}.get(stage, -0.15)
+	var ew: float = {"childhood": 0.215, "teen": 0.205, "young": 0.195, "middle": 0.185, "old": 0.178}.get(stage, 0.19)
+	var et: float = {"childhood": 0.27, "teen": 0.25, "young": 0.235, "middle": 0.22, "old": 0.235}.get(stage, 0.22)
+	var eh: float = {"childhood": -0.22, "teen": -0.19, "young": -0.18, "middle": -0.17, "old": -0.17}.get(stage, -0.18)
 	if folk:
-		ew *= 0.86
-		et *= 0.74
-	if girl:
-		et *= 1.06
+		ew *= 0.88
+		et *= 0.78
+	# 青：眼睛略细、眼尾微微上挑（安静、利落）；梅：圆一点、眼尾平（活泼、暖）
+	et *= 1.04 if girl else 0.93
 	m.set_shader_parameter("eye_w", ew)
 	m.set_shader_parameter("eye_t", et)
 	m.set_shader_parameter("eye_h", eh)
-	m.set_shader_parameter("eye_gap", (0.4 if kid else 0.37) * (1.0 if not folk else 0.96))
-	m.set_shader_parameter("tilt", -0.15 if girl else 0.12)
-	m.set_shader_parameter("lash", 1.0 if girl else 0.0)
+	m.set_shader_parameter("eye_gap", (0.39 if kid else 0.365) * (1.0 if not folk else 0.96))
+	m.set_shader_parameter("tilt", -0.04 if girl else 0.14)
+	m.set_shader_parameter("lash", (1.0 if girl else 0.15) * (0.7 if folk else 1.0))
 	m.set_shader_parameter("iris_size", 1.0 if not folk else 0.9)
-	var iris: Array = IRIS.get(role, [Color(0.15, 0.1, 0.08), Color(0.5, 0.36, 0.24)])
+	m.set_shader_parameter("brow_arch", 0.22 if girl else 0.08)
+	m.set_shader_parameter("brow_w", 0.9 if girl else 1.25)
+	# 下半张脸：小孩鼻子嘴巴离眼睛近（脸短），大人往下一点
+	m.set_shader_parameter("nose_h", {"childhood": -0.53, "teen": -0.54, "young": -0.55, "middle": -0.55, "old": -0.54}.get(stage, -0.55))
+	m.set_shader_parameter("mouth_h", {"childhood": -0.72, "teen": -0.75, "young": -0.76, "middle": -0.76, "old": -0.75}.get(stage, -0.76))
+	m.set_shader_parameter("mouth_w", 0.06 if kid else (0.065 if girl else 0.072))
+	# 眼珠：青是青绿（上深下透亮），梅是琥珀；街坊是普通的褐色
+	var iris: Array = [Color(0.15, 0.1, 0.08), Color(0.5, 0.36, 0.24)]
+	if role == "qing":
+		iris = [Color(0.02, 0.07, 0.1), Color(0.15, 0.55, 0.52)]
+	elif role == "mei":
+		iris = [Color(0.27, 0.08, 0.04), Color(1.0, 0.66, 0.26)]
+	if stage == "old":
+		iris[1] = (iris[1] as Color).darkened(0.15)  # 老了眼珠的颜色沉一点、柔一点
 	m.set_shader_parameter("iris_dark", iris[0])
 	m.set_shader_parameter("iris_light", iris[1])
 	var age: float = {"childhood": 0.0, "teen": 0.1, "young": 0.2, "middle": 0.45, "old": 0.85}.get(stage, 0.2)
 	m.set_shader_parameter("age", age)
-	m.set_shader_parameter("blush", (0.75 if kid else (0.55 if girl else 0.3)) * (0.7 if folk else 1.0))
+	var bl: float = 0.75 if kid else (0.55 if girl else 0.32)
+	if stage == "old":
+		bl *= 0.7
+	m.set_shader_parameter("blush", bl * (0.7 if folk else 1.0))
 	var hc := _hair_col(lk)
-	m.set_shader_parameter("brow_col", hc.darkened(0.25))
-	m.set_shader_parameter("line_col", Color(0.2, 0.11, 0.1).lerp(hc.darkened(0.5), 0.35))
+	var grey := hc.get_luminance() > 0.5
+	m.set_shader_parameter("brow_col", hc.darkened(0.3 if grey else 0.12))
+	m.set_shader_parameter("line_col", Color(0.12, 0.06, 0.06).lerp(hc.darkened(0.6), 0.3))
+	m.set_shader_parameter("lip", Color(0.92, 0.44, 0.45) if girl else Color(0.84, 0.5, 0.46))
+	m.set_shader_parameter("blush_col", Color(1.0, 0.52, 0.5))
 	m.set_shader_parameter("smile", 0.6)
-	# 脸上的影子少一点、边软一点：一道硬影横在脸中间不好看
-	m.set_shader_parameter("soft", maxf(float(st.soft), 0.06))
-	m.set_shader_parameter("band", minf(float(st.band), 0.0) - 0.15)
-	m.set_shader_parameter("shade_tint", Color(0.96, 0.74, 0.72) * (st.shade as Color).lightened(0.3))
+	# 脸上的明暗：一大片柔的渐变，交界往后挪（脸大半在亮面），交界上一道暖红透光
+	m.set_shader_parameter("soft", clampf(float(st.soft) * 2.5, 0.14, 0.6))
+	m.set_shader_parameter("band", minf(float(st.band), 0.0) - 0.12)
+	m.set_shader_parameter("sss", 0.32 if style != "qingchun" else 0.2)
+	m.set_shader_parameter("shade_tint", Color(0.97, 0.7, 0.68) * (st.shade as Color).lightened(0.35))
 	m.set_shader_parameter("shade_floor", float(st.floor))
 	m.set_shader_parameter("rim", float(st.rim))
 	m.set_shader_parameter("sat", float(st.sat))
 	m.set_shader_parameter("paper", float(st.paper))
-	_outline(m, sk.darkened(0.15), st, 0.8)
+	_outline(m, sk * Color(0.86, 0.6, 0.52), st, 0.8)
 	return m
 
 
@@ -981,7 +1002,8 @@ func _face(delta: float, target: Dictionary) -> void:
 		_blink_t = randf_range(2.2, 5.0)
 		_blink = 1.0
 	_blink = maxf(0.0, _blink - delta * 7.0)
-	var b := 1.0 if _blink > 0.5 else 0.0
+	# 眨眼：先闭上、停一下、再慢慢睁开（中间有半睁的一两帧，不是一下开一下关）
+	var b := clampf(_blink * 2.2 - 0.2, 0.0, 1.0)
 	if target.has("blink"):
 		b = float(target.blink)
 	face_mat.set_shader_parameter("blink", b)

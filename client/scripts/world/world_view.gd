@@ -210,7 +210,7 @@ func _apply_3d(sc: Dictionary) -> void:
 	stage3d.show_scene(sc)
 	var three := stage3d.active()
 	art.visible = not three
-	home.visible = not three
+	home.visible = not three and str(sc.get("id", "")) == home.scene_id  # 屋里陈设只在楼里那张图上摆
 	light.visible = not three
 	atmos.visible = not three
 	street.body_3d = three

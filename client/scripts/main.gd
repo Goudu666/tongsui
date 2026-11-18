@@ -66,6 +66,8 @@ var day_card: Control = null  ## 一天收工的小结卡正开着（爽感层 j
 ## 小结卡开着时到的事件：等卡合上再弹。服务器收完一天、下一跳（0.1 秒后）就发第二天一早的关口 / 主线，
 ## 原来直接把小结卡盖掉，一天的账一闪就没了
 var _held_event: Dictionary = {}
+var _held_logs: Array = []      ## 日结卡开着时到的结果（关口揭晓、自己那件事的结果），关了卡一条条补上
+var _replaying := false
 var _did_seen := {}        ## 每个人看过的最后一条 did（服务器当场结算的那一件）的序号
 var _clock_from := -1.0    ## 钟正在从几点拨到几点（做完一回，钟在眼前走过去）
 var _clock_to := -1.0
@@ -605,6 +607,7 @@ func _show_screen(id: String, scroll := true, width := PAGE_WIDTH) -> void:
 	screen.visible = true
 	hud.visible = false
 	modal.visible = false
+	day_card = null
 	for c in screen.get_children():
 		screen.remove_child(c)
 		c.queue_free()
@@ -1000,13 +1003,21 @@ func _shown_minute() -> float:
 	return maxf(m, float(me.get("pm", m)))
 
 
+## 街上按几点摆人、亮灯：跟着我的钟走，但别走出服务器还在的这一段。
+## 一段正好做满时我的钟停在段尾（比如 8:00），8:00 已经算下一段：街坊会按下一段整批重搭，
+## 而下一个 WORLD 又把钟拨回这一段，一秒来回五趟；底下的按钮也会按下一段的空当说「还能改主意」
+func _world_minute(m: float) -> float:
+	var s := clampi(int(last_world.get("slot", world.slot if world != null else 0)), 0, WorldView.SLOTS.size() - 1)
+	return minf(m, float(WorldView.SLOTS[s][1]) - 0.5)
+
+
 func _sweep_clock(delta: float) -> void:
 	if _clock_to < 0.0 or hud == null:
 		return
 	_clock_t += delta
 	hud.minute = _shown_minute()
 	if world != null:
-		world.set_minute(hud.minute)
+		world.set_minute(_world_minute(hud.minute))
 	if _clock_t >= CLOCK_SWEEP:
 		_clock_to = -1.0
 
@@ -1456,6 +1467,7 @@ func _on_snapshot(data: Dictionary) -> void:
 				world.apply_snapshot_actors(w.get("actors"))
 				last_world["minute"] = w.get("minute", 390)
 				last_world["rest"] = w.get("rest", false)
+				last_world["event"] = w.get("event")
 				_resume_event(w.get("event"))
 			_refresh_hud()
 			duet.on_snapshot()  # 我不在的时候影子替我选过的，现在问我
@@ -1466,6 +1478,7 @@ func _on_snapshot(data: Dictionary) -> void:
 ## 重连时如果正卡在一件事里：把选择框弹回来（选过了就显示「等 TA」）
 func _resume_event(pe: Variant) -> void:
 	if not pe is Dictionary or not pe.roles.has(my_role):
+		_held_event = {}  # 我不在的时候影子替我选完了：压着的那件已经结了
 		if modal.has_meta("waiting_event"):
 			_close_modal()
 		return
@@ -1691,6 +1704,7 @@ func _enter_world() -> void:
 	_page("world")
 	screen.visible = false
 	modal.visible = false
+	day_card = null
 	hud.visible = true
 	world = WorldView.new()
 	add_child(world)
@@ -1713,6 +1727,9 @@ func _enter_world() -> void:
 func _leave_world() -> void:
 	offline_preview = false
 	_held_event = {}
+	_held_logs.clear()
+	day_card = null  # 卡还挂着就走了：不清的话回来以后飘字、搭伴印一直以为有卡开着，全哑了
+	last_world = {}  # 换一条人生线进来别先用上一条的 HUD、年代
 	_did_seen.clear()  # 换一条人生线进来，那边的序号和这边不相干
 	if world != null:
 		world.queue_free()
@@ -1819,7 +1836,7 @@ func _refresh_hud() -> void:
 		return
 	hud.minute = _shown_minute()
 	if world != null and not offline_preview:
-		world.set_minute(hud.minute)
+		world.set_minute(_world_minute(hud.minute))
 	hud.slot_name = str(WorldView.SLOTS[world.slot][2]) if world != null else ""
 	hud.playing = bool(last_world.get("playing", false))
 	# 日历牌色条上的那个词：今天要去哪（上学 / 上班 / 出摊），不用去就是休息
@@ -2280,12 +2297,27 @@ func _close_modal() -> void:
 	day_card = null
 	if modal.has_meta("waiting_event"):
 		modal.remove_meta("waiting_event")
-	if not _held_event.is_empty():
-		var held := _held_event
-		_held_event = {}
-		_on_event_started(held)
+	if _replaying:
+		return
+	if _replay_held():
 		return
 	duet.check_owed()  # 还有欠着的话就接着问
+
+
+## 日结卡开着时压下来的：先补结果（关口揭晓、自己那件事），再弹那件事。
+## 那件事要是在压着的时候已经结了（TA 先选完、我掉线影子替我选了），就不弹了，不然弹出来的「等 TA」永远关不掉
+func _replay_held() -> bool:
+	_replaying = true
+	while not _held_logs.is_empty() and not modal.visible:
+		_show_result(_held_logs.pop_front())
+	if not modal.visible and not _held_event.is_empty():
+		var held := _held_event
+		_held_event = {}
+		var live: Variant = last_world.get("event")
+		if live is Dictionary and str(live.get("eventId", "")) == str(_dict(held.get("event")).get("eventId", "-")):
+			_on_event_started(held)
+	_replaying = false
+	return modal.visible
 
 
 func _option_text(event_id: Variant, option_id: Variant) -> String:
@@ -2298,19 +2330,14 @@ func _option_text(event_id: Variant, option_id: Variant) -> String:
 	return str(option_id)
 
 
-func _on_log_entries(data: Dictionary) -> void:
-	juice.on_log(data.entries)
-	for e in data.entries:
-		var kind := str(e.kind)
-		if kind == "together":
-			_toast("同框 · " + str(e.text))
-		elif kind == "mirror":
+## 一件事结了：镜像揭晓 / 关口揭晓 / 自己那件的检定结果，TA 的就一行字带过
+func _show_result(e: Dictionary) -> void:
+	match str(e.kind):
+		"mirror":
 			_show_mirror_result(e)
-		elif kind == "milestone":
+		"milestone":
 			_show_milestone_result(e)
-		elif kind == "solo" and e.get("duet") is Dictionary and e.duet.get("echo") == true:
-			duet.show_echo(e)
-		elif kind == "solo":
+		"solo":
 			if e.events[my_role] != null:
 				_close_modal()
 				var mine: Variant = e.get("checks", {}).get(my_role)
@@ -2320,6 +2347,25 @@ func _on_log_entries(data: Dictionary) -> void:
 				var other := _other()
 				var ev: Dictionary = events_by_id.get(e.events[other], {})
 				_toast("TA 遇到了「%s」，选了：%s" % [str(ev.get("title", "")), _option_text(e.events[other], e.choices[other])])
+
+
+func _on_log_entries(data: Dictionary) -> void:
+	juice.on_log(data.entries)
+	for e in data.entries:
+		var kind := str(e.kind)
+		var echo: bool = kind == "solo" and e.get("duet") is Dictionary and e.duet.get("echo") == true
+		if kind in ["mirror", "milestone", "solo"] and not echo:
+			if not _held_event.is_empty() and str(_dict(_held_event.get("event")).get("eventId", "")) in _dict(e.get("events")).values():
+				_held_event = {}  # 压着的那件结了
+			if day_card != null and modal.visible:
+				_held_logs.append(e)  # 一天的小结还在看：揭晓排在后面，别把这张卡盖掉
+				continue
+		if kind == "together":
+			_toast("同框 · " + str(e.text))
+		elif kind in ["mirror", "milestone", "solo"] and not echo:
+			_show_result(e)
+		elif echo:
+			duet.show_echo(e)
 		elif kind == "day":
 			# 一天过完：撕下来的一页日历。分在外地和河畔里的时候，底下压着 TA 的信（post.ts）
 			var letters := LetterCard.mine(e, my_role)

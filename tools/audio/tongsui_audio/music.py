@@ -301,6 +301,9 @@ HE_COLOR = {"D": 76, "Bm7": (73, 71), "Gmaj7": 69, "F#m7": 71, "A7sus4": 71, "G"
             "Dadd9": 71}
 
 
+BED_PENTA = {"child", "old"}  # 这两个阶段的伴奏只用五声里的色彩音
+
+
 def _lines_for(stage: str | None, eve_line: bool = True):
     """会跟伴奏同时响的旋律：这个阶段的 A 曲、B 曲两对，再加傍晚的副旋律。stage=None 时只看 A 曲。"""
     if stage is None:
@@ -346,7 +349,7 @@ def bed_rubs(stage: str, beat: float) -> set:
     """这一拍伴奏按着的不在五声里的音会跟哪些音磨（相对 D 的半音数）。早上那层点高音时躲开它们。"""
     b, beats, name = chord_span(beat)
     out = set()
-    for m in voicing(name, b, b + beats, stage, penta=stage == "child"):
+    for m in voicing(name, b, b + beats, stage, penta=stage in BED_PENTA):
         pc = (m - KEY) % 12
         if pc not in PENTA:
             out |= {(pc + 1) % 12, (pc - 1) % 12}
@@ -666,6 +669,8 @@ def rb_bass(stage: str, ck: Clock, mx: Mix, ch, gain: float) -> None:
             if off >= beats:
                 continue
             m = root + (iv if iv != 10 or name in ("A7sus4", "Em7", "Bm7", "F#m7") else 9)  # 小七度只在属 / 小和弦上
+            if name == "D/F#" and iv == 7:
+                m = 45  # D/F# 的五度是 A；F# 上面的 C# 会和手上按的 D 差小九度
             mx.add(inst.rbass(m, d * ck.spb, 0.7 if off == 0 else 0.55, sl), ck.t(_sw(stage, b + off)), gain * _arc(b))
 
 
@@ -707,6 +712,7 @@ def swell(ck: Clock, mx: Mix, gain: float, bars=(0, 4, 8, 12)) -> None:
         y = inst.sustained_line([(0.0, d, m, 0.62)], d + 0.4, "vox", seed=700 + bar, level=0.5)
         y = reverb(y, rt60=2.2, wet=0.8, dry=0.45, bright=3800, seed=710 + bar, low_cut=220.0)
         y = y[::-1]  # 倒过来：混响的尾巴先慢慢鼓起来，最后停在字头上
+        y = y[:-sec(0.16)]  # 去掉倒过来的起音（会先鼓起来再弱下去），让它在最响的地方戛然而止，正好落在下一拍
         keep = sec(2.0 * ck.spb)
         y = y[-keep:]
         y = fade(y * np.linspace(0.0, 1.0, len(y))[:, None] ** 1.5, 0.002, 0.004)
@@ -727,7 +733,7 @@ def bed(stage: str, ck: Clock) -> Mix:
     if stage == "child":
         for b, beats, name in ch:
             root = CHORD[name][0]
-            v = voicing(name, b, b + beats, stage, penta=True)  # 童年只用五声里的色彩音：加九、加六，甜不磨
+            v = voicing(name, b, b + beats, stage, penta=stage in BED_PENTA)  # 童年只用五声里的色彩音：加九、加六，甜不磨
             ag = _arc(b)
             pat = [v[0], v[2], v[1], v[3]]
             if int(b // 4) % 4 == 3:  # 每句最后一小节倒着拨，不让耳朵记住一个死循环
@@ -756,7 +762,7 @@ def bed(stage: str, ck: Clock) -> Mix:
             ag = _arc(b)
             pat = [root + 12, c[1], c[2], c[3], c[0], c[2], c[3], c[1]]
             if int(b // 4) % 4 == 3:
-                pat = [root + 12, c[3], c[2], c[1], c[0], c[1], c[2], c[3]]
+                pat = [root + 12, c[3], c[1], c[2], c[0], c[1], c[2], c[3]]  # 两拍的和弦落在 c[2]，别让 C# 拖进下一个和弦
             for i in range(int(beats * 2)):
                 v = 0.62 if i == 0 else 0.46 + float(rng.uniform(-0.06, 0.06))
                 harm.add(inst.guitar(pat[i % 8], 1.4 * spb, round(v, 2), True), at(_sw(stage, b + i * 0.5), 0.008),
@@ -765,7 +771,7 @@ def bed(stage: str, ck: Clock) -> Mix:
         groove(stage, ck, mx, rng, quiet_bars=(8, 9), kicks=kicks)
         mx.add(duck(harm.buf, kicks, ck.length, 2.0, 0.5 * spb), 0.0)  # 原声的，呼吸浅一点
         mx.add(duck(low.buf, kicks, ck.length, 1.5, 0.35 * spb), 0.0)
-        swell(ck, mx, 0.3)
+        swell(ck, mx, 0.5)
         hiss = lp(colored(sec(ck.length), rng, -1.0), 7000) * db(-58)  # 随身听的底噪
         mx.add(fade(hiss, 0.3, 0.3), 0.0)
 
@@ -794,7 +800,7 @@ def bed(stage: str, ck: Clock) -> Mix:
         # 左右颤，一拍一个来回；跟着底鼓呼吸
         mx.add(duck(inst.rhodes_trem(rh.mono(), 1.0 / spb, 0.3), kicks, ck.length, 3.0, 0.55 * spb), 0.0)
         mx.add(duck(low.buf, kicks, ck.length, 1.5, 0.35 * spb), 0.0)
-        swell(ck, mx, 0.3)
+        swell(ck, mx, 0.5)
 
     elif stage == "middle":
         total = ck.length + 2.0
@@ -821,7 +827,7 @@ def bed(stage: str, ck: Clock) -> Mix:
             root, tones, _ = CHORD[name]
             ag = _arc(b)
             # 暖垫多一个加六 / 加九（只用五声里的，和尼龙吉他按的三和弦不磨），像老唱片里的爵士抒情
-            for i, m in enumerate(voicing(name, b, b + beats, stage, penta=True)):
+            for i, m in enumerate(voicing(name, b, b + beats, stage, penta=stage in BED_PENTA)):
                 lines[i].append((ck.t(b), beats * spb, m, 0.55 * ag))
             pat = [root, tones[0], tones[1], tones[2]]
             for i in range(int(beats)):
@@ -1149,7 +1155,8 @@ def title_loop() -> dict:
         root = CHORD[name][0]
         bs.add(inst.rbass(root, min(1.6, beats - 0.2) * spb, 0.7), ck.t(b), 1.0)
         if beats >= 4:
-            bs.add(inst.rbass(root + 7, 0.9 * spb, 0.5, -2), ck.t(sw8(b + 2.5)), 1.0)
+            fifth = 45 if name == "D/F#" else root + 7  # D/F# 的五度是 A，不是 F# 上面的 C#
+            bs.add(inst.rbass(fifth, 0.9 * spb, 0.5, -2), ck.t(sw8(b + 2.5)), 1.0)
     vinyl = np.zeros(sec(ck.length))
     pops = rng.integers(0, len(vinyl), int(ck.length * 7))
     vinyl[pops] = rng.uniform(-1, 1, len(pops)) * rng.uniform(0.2, 1.0, len(pops)) ** 3

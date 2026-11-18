@@ -50,6 +50,7 @@ var root3d: Node3D
 var cam: Camera3D
 var sun: DirectionalLight3D
 var fill: DirectionalLight3D    ## 只照人的补光（从镜头这边来，不投影）：夜里、逆光时脸不黑
+var rim: DirectionalLight3D     ## 只照人的轮廓光（从人背后斜上方来，不投影）：头发、肩膀描一道亮边，手办一样从背景里「跳」出来
 const FIG_LAYER := 2            ## 人身上多一层渲染层，补光只照这一层
 var env: Environment
 var sky: ProceduralSkyMaterial
@@ -178,6 +179,11 @@ func _build_world() -> void:
 	fill.light_specular = 0.2
 	fill.rotation = Vector3(-0.35, 0.25, 0.0)  # 从镜头左上方一点照过来
 	root3d.add_child(fill)
+	rim = DirectionalLight3D.new()
+	rim.shadow_enabled = false
+	rim.light_cull_mask = FIG_LAYER
+	rim.light_specular = 0.35
+	root3d.add_child(rim)
 	cam = Camera3D.new()
 	cam.projection = Camera3D.PROJECTION_FRUSTUM
 	cam.near = NEAR
@@ -338,6 +344,13 @@ func _apply_time() -> void:
 	sun.shadow_opacity = lerpf(1.0, 0.55, maxf(overcast, night))
 	fill.light_color = Color(1.0, 0.93, 0.85).lerp(Color(1.0, 0.8, 0.62), night)  # 夜里像路灯、窗里透出来的暖光
 	fill.light_energy = lerpf(0.18, 0.55, maxf(night, overcast * 0.6))
+	# 轮廓光：从人背后、和太阳相反的那一侧斜上方打过来（太阳在左，亮边就在右，两边都有光不发平）；
+	# 白天偏暖白、傍晚跟着太阳发橙、夜里换成冷一点的月光蓝（暖的补光 + 冷的轮廓光，夜里人最好看）
+	var rim_x := -signf(day_dir.x) if absf(day_dir.x) > 0.05 else 1.0
+	var rim_dir := Vector3(rim_x * 0.55, -0.42, 0.72).normalized()
+	rim.look_at_from_position(Vector3.ZERO, rim_dir, Vector3.UP)
+	rim.light_color = Color(1.0, 0.95, 0.88).lerp(Color(1.0, 0.7, 0.45), warm).lerp(Color(0.62, 0.74, 1.0), night)
+	rim.light_energy = lerpf(lerpf(0.55, 0.75, warm), 0.6, night) * (1.0 - overcast * 0.45)
 	# 天：白天蓝、傍晚橙紫、夜里深蓝；阴雨天灰
 	var top := Color(0.32, 0.52, 0.82).lerp(Color(0.36, 0.38, 0.62), warm).lerp(Color(0.04, 0.06, 0.14), night)
 	var hor := Color(0.78, 0.84, 0.9).lerp(Color(0.98, 0.62, 0.42), warm).lerp(Color(0.12, 0.13, 0.24), night)

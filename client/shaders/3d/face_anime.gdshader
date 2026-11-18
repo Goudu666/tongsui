@@ -269,7 +269,9 @@ void light() {
 	vec3 lc = LIGHT_COLOR / PI;
 	if (LIGHT_IS_DIRECTIONAL) {
 		// 暗面：玫瑰色的一层（不是灰）；亮面：本身也有一点由暗到亮的渐变（像手涂的）
-		vec3 dark = shade_tint * shade_floor * 0.55 * lit_k;
+		// 从背后打来的光（只照人的轮廓光）不给暗面垫底：不然夜里月光弱，脸被它垫得又红又亮
+		float front = smoothstep(-0.6, -0.2, dot(LIGHT, VIEW));
+		vec3 dark = shade_tint * shade_floor * 0.55 * lit_k * front;
 		vec3 bright = vec3(lit_k) * mix(0.8, 1.03, smoothstep(0.05, 0.95, ndl));
 		vec3 d = mix(dark, bright, lit * sh);
 		// 明暗交界那一道透出来的暖红（皮肤的 subsurface）

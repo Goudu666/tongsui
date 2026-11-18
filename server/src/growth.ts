@@ -14,11 +14,26 @@ interface GrowCtx {
   scale: number;
 }
 
-function growthCtx(s: LifeState, c: Content, source: "event" | "action"): GrowCtx {
-  var stage = lifeTimeAt(s.turn).stage;
+/**
+ * chosen：这是自己挑的事（写作业、练球、小组、陪对门做的那件），不是上学上班那一份日程。
+ * 不传按日程算（不乘 chosenWeight），老的调用和影子、机器人走的整段日程都不变。
+ */
+function growthCtx(s: LifeState, c: Content, source: "event" | "action", chosen?: boolean): GrowCtx {
+  var t = lifeTimeAt(s.turn);
+  var stage = t.stage;
   // 一个被记住的日子代表的时间越长（少年半年、成年一年），那天怎么过算得越重：每道关都有得拼（rules.yaml → growth.turnWeight）
   var tw = c.rules.growth.turnWeight ? c.rules.growth.turnWeight[stage] : 1;
-  return { c: c, stage: stage, scale: source === "event" ? c.rules.growth.eventScale : c.rules.growth.actionScale * (typeof tw === "number" ? tw : 1) };
+  var scale = source === "event" ? c.rules.growth.eventScale : c.rules.growth.actionScale * (typeof tw === "number" ? tw : 1);
+  if (source === "action" && chosen) scale *= growthChosenWeight(c, t.age);
+  return { c: c, stage: stage, scale: scale };
+}
+
+/** 自己挑的事在这个岁数再乘多少（rules.yaml → growth.chosenWeight；九到十一岁放了学的时间才改得了小升初）。没写按 1 */
+function growthChosenWeight(c: Content, age: number): number {
+  var cw = c.rules.growth.chosenWeight;
+  if (!cw) return 1;
+  for (var i = 0; i < cw.length; i++) if (age >= cw[i].from && age <= cw[i].to) return cw[i].x;
+  return 1;
 }
 
 /** 年纪：这个人在这个阶段，这项属性长得多快 */

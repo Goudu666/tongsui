@@ -18,6 +18,7 @@ func _init() -> void:
 	_story_targets(c)
 	_chapters(c)
 	_tips()
+	_free(c)
 	if _failed == 0:
 		print("✓ 开局引导：路标找路 / 每句「下一件事」找得回图和那一段 / 岁数落在第几章 / 小纸条")
 	quit(1 if _failed > 0 else 0)
@@ -95,3 +96,27 @@ class _FakeMain extends RefCounted:
 
 	func _init(c: Dictionary) -> void:
 		content = c
+
+
+## 九到十一岁「放了学」那张纸条：岁数段和快几成从规则表读（rules.yaml 的 growth.chosenWeight）
+func _free(c: Dictionary) -> void:
+	var bands: Array = c.rules.growth.get("chosenWeight", [])
+	_check(not bands.is_empty(), "规则表里有 growth.chosenWeight")
+	if bands.is_empty():
+		return
+	var b: Dictionary = bands[0]
+	_check(not Guide.chosen_band(c, int(b.from)).is_empty() and not Guide.chosen_band(c, int(b.to)).is_empty(), "%d、%d 岁在那一段里" % [int(b.from), int(b.to)])
+	_check(Guide.chosen_band(c, int(b.from) - 1).is_empty() and Guide.chosen_band(c, int(b.to) + 1).is_empty(), "前后一岁不在")
+	var t := Guide.free_text(c)
+	_check(t.begins_with("%d 到 %d 岁" % [int(b.from), int(b.to)]) and t.contains("快") and t.contains("上学那份照旧"), "纸条的字：" + t)
+	_check(t.length() >= 8 and t.length() <= 70, "纸条的字数（8~70）：%d" % t.length())
+	var fake := {"rules": {"growth": {"chosenWeight": [{"from": 9, "to": 11, "x": 2.0}]}}}
+	_check(Guide.free_text(fake).contains("快一倍"), "乘 2 写快一倍：" + Guide.free_text(fake))
+	fake.rules.growth.chosenWeight[0].x = 1.5
+	_check(Guide.free_text(fake).contains("快五成"), "乘 1.5 写快五成：" + Guide.free_text(fake))
+	_check(Guide.free_text({}) == str(Guide.TIPS["free"][0]), "没写规则用兜底那句")
+	var two := {"rules": {"growth": {"chosenWeight": [{"from": 15, "to": 17, "x": 1.5}, {"from": 9, "to": 11, "x": 1.8}]}}}
+	_check(Guide.free_text(two, 10).begins_with("9 到 11 岁") and Guide.free_text(two, 10).contains("快八成"), "两段时按岁数挑那一段：" + Guide.free_text(two, 10))
+	var one := {"rules": {"growth": {"chosenWeight": [{"from": 9, "to": 11, "x": 1.0}]}}}
+	_check(Guide.chosen_band(one, 10).is_empty(), "乘 1 等于没开，不贴纸条")
+	print("  放了学那张纸条：", t)

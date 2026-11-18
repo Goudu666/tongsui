@@ -85,38 +85,47 @@ static func _sph(theta: float, phi: float, r: Vector3) -> Vector3:
 	return Vector3(sin(theta) * sin(phi) * r.x, cos(theta) * r.y, sin(theta) * cos(phi) * r.z)
 
 
-## 头发壳：贴着头的一层，按发际线收边，表面一缕一缕起伏。
+## 头发壳：贴着头的一层，按发际线收边，表面是光滑的（手办上漆那样），一缕一缕的起伏交给上面的发束。
 ## r 头的半径（椭球），hairline(phi) 给出每个方位（phi=0 正脸，±PI 后脑）头发往下盖到多远（弧度，从头顶量起）。
-## lift 头发离头皮多厚，clump 一缕缕的起伏多大，strands 一圈多少缕
-static func hair_shell(r: Vector3, hairline: Callable, lift := 0.08, clump := 0.035, strands := 9.0, seg := 40, rows := 14) -> ArrayMesh:
+## lift 头发离头皮多厚；clump、strands 留着兼容（clump 0 就是光的）。
+## 顶点色 = 发丝方向（从头顶往下）+ 从根到梢，UV.x = 方位（头发材质靠它画天使环、根深梢浅）
+static func hair_shell(r: Vector3, hairline: Callable, lift := 0.08, clump := 0.0, strands := 9.0, seg := 40, rows := 14) -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var grid: Array = []
+	var tans: Array = []
 	for i in seg + 1:
 		var phi := -PI + TAU_ * float(i) / float(seg)
 		var tmax: float = hairline.call(phi)
 		var col := PackedVector3Array()
+		var tcol := PackedVector3Array()
 		for j in rows + 1:
 			var t := float(j) / float(rows)
 			var theta := t * tmax
-			# 一缕一缕：沿方位起伏，越往发梢越明显；发梢往里收一点（贴回头皮）
 			var bump := clump * sin(phi * strands + sin(theta * 3.0) * 0.8) * smoothstep(0.1, 0.7, t)
-			var tuck := 0.55 * smoothstep(0.82, 1.0, t)
+			# 发际线那一圈往里收（贴回头皮），头顶蓬一点、后脑勺鼓一点
+			var tuck := 0.6 * smoothstep(0.8, 1.0, t)
 			var k := 1.0 + lift * (1.0 - tuck) + bump * (1.0 - tuck)
-			# 头顶蓬一点
-			k += 0.03 * (1.0 - t)
+			k += 0.035 * (1.0 - t) * (1.0 - t)
+			k += 0.02 * smoothstep(0.6, -0.9, cos(phi)) * sin(theta) * (1.0 - tuck)
 			col.append(_sph(theta, phi, r * k))
+			tcol.append(Vector3(cos(theta) * sin(phi) * r.x, -sin(theta) * r.y, cos(theta) * cos(phi) * r.z).normalized())
 		grid.append(col)
+		tans.append(tcol)
 	for i in seg:
 		for j in rows:
-			var a: Vector3 = grid[i][j]
-			var b: Vector3 = grid[i + 1][j]
-			var c: Vector3 = grid[i + 1][j + 1]
-			var d: Vector3 = grid[i][j + 1]
-			var uv := Vector2(float(i) / seg, float(j) / rows)
-			var uv2 := Vector2(float(i + 1) / seg, float(j + 1) / rows)
-			_quad(st, a, d, c, b, uv, Vector2(uv.x, uv2.y), uv2, Vector2(uv2.x, uv.y))
-	st.generate_normals()
+			var u0 := float(i) / seg
+			var u1 := float(i + 1) / seg
+			var v0 := float(j) / rows
+			var v1 := float(j + 1) / rows
+			var q := [[grid[i][j], tans[i][j], u0, v0], [grid[i + 1][j + 1], tans[i + 1][j + 1], u1, v1], [grid[i][j + 1], tans[i][j + 1], u0, v1],
+				[grid[i][j], tans[i][j], u0, v0], [grid[i + 1][j], tans[i + 1][j], u1, v0], [grid[i + 1][j + 1], tans[i + 1][j + 1], u1, v1]]
+			for e in q:
+				# 法线按椭球解析算：头顶那个点（所有方位挤在一起）也不会出黑点
+				var pv: Vector3 = e[0]
+				st.set_normal(Vector3(pv.x / (r.x * r.x), pv.y / (r.y * r.y), pv.z / (r.z * r.z)).normalized())
+				_hair_v(st, pv, e[1], e[3], e[2])
+	st.index()
 	return st.commit()
 
 
@@ -314,11 +323,15 @@ static func anime_head(r: Vector3, jaw := 1.0, seg := 32, rings := 22) -> ArrayM
 	return st.commit()
 
 
-## 一缕头发：沿 path 走的扁管子。截面是椭圆，宽的一边横着贴头皮，薄的一边朝 outs（往外）；
+## 一缕头发：沿 path 走的扁管子。截面上面鼓、底下平（像手办雕出来的一片），宽的一边横着贴头皮，鼓的一边朝 outs（往外）；
 ## 根上略窄、三分之一处最宽、到发梢收成尖。几缕可以加进同一个 SurfaceTool 并成一张网格。
-static func lock_into(st: SurfaceTool, path: PackedVector3Array, outs: PackedVector3Array, w0: float, t0: float, seg := 8, tip := 0.0) -> void:
+## 顶点色带发丝方向和根→梢（头发材质画天使环用），UV.x 是这一缕的编号（sid < 0 就按位置随机一个）
+static func lock_into(st: SurfaceTool, path: PackedVector3Array, outs: PackedVector3Array, w0: float, t0: float, seg := 8, tip := 0.0, sid := -1.0, wide := 0.3) -> void:
 	var n := path.size()
+	if sid < 0.0:
+		sid = fposmod(sin(path[0].dot(Vector3(12.9898, 78.233, 37.719)) * 91.7) * 43758.5453, 1.0)
 	var rings: Array = []
+	var tans: Array = []
 	for k in n:
 		var tg: Vector3 = (path[mini(k + 1, n - 1)] - path[maxi(k - 1, 0)]).normalized()
 		var o: Vector3 = outs[k] - tg * outs[k].dot(tg)
@@ -327,14 +340,71 @@ static func lock_into(st: SurfaceTool, path: PackedVector3Array, outs: PackedVec
 		o = o.normalized()
 		var side := tg.cross(o).normalized()
 		var t := float(k) / float(n - 1)
-		var f := lerpf(0.72, 1.0, t / 0.3) if t < 0.3 else pow(maxf(0.0, 1.0 - (t - 0.3) / 0.7), 0.85)
+		# wide：最宽的地方在哪（0.3 = 三分之一处；长发往后挪，宽着垂下来再收尖）
+		var f := lerpf(0.72, 1.0, t / wide) if t < wide else pow(maxf(0.0, 1.0 - (t - wide) / (1.0 - wide)), 0.85)
 		f = maxf(f, tip * (1.0 - pow(t, 6.0) * 0.3))  # tip > 0：齐的发梢（剪平的刘海）
 		var row := PackedVector3Array()
 		for i in seg:
 			var a := TAU_ * float(i) / float(seg)
-			row.append(path[k] + side * cos(a) * w0 * f + o * sin(a) * t0 * maxf(f, 0.0))
+			var sa := sin(a)
+			var th := sa if sa > 0.0 else sa * 0.45
+			row.append(path[k] + side * cos(a) * w0 * f + o * th * t0 * maxf(f, 0.0))
 		rings.append(row)
+		tans.append(tg)
 	for k in n - 1:
+		var t0k := float(k) / float(n - 1)
+		var t1k := float(k + 1) / float(n - 1)
 		for i in seg:
 			var i2 := (i + 1) % seg
-			_quad(st, rings[k][i2], rings[k][i], rings[k + 1][i], rings[k + 1][i2], Vector2.ZERO, Vector2.ZERO, Vector2.ZERO, Vector2.ZERO)
+			_hair_v(st, rings[k][i2], tans[k], t0k, sid)
+			_hair_v(st, rings[k + 1][i], tans[k + 1], t1k, sid)
+			_hair_v(st, rings[k][i], tans[k], t0k, sid)
+			_hair_v(st, rings[k][i2], tans[k], t0k, sid)
+			_hair_v(st, rings[k + 1][i2], tans[k + 1], t1k, sid)
+			_hair_v(st, rings[k + 1][i], tans[k + 1], t1k, sid)
+
+
+## 头发的一个顶点：顶点色 = 发丝方向（×0.5+0.5）+ 根→梢，UV.x = 哪一缕
+static func _hair_v(st: SurfaceTool, p: Vector3, tg: Vector3, t: float, sid: float) -> void:
+	st.set_color(Color(tg.x * 0.5 + 0.5, tg.y * 0.5 + 0.5, tg.z * 0.5 + 0.5, clampf(t, 0.0, 0.995)))
+	st.set_uv(Vector2(sid, t))
+	st.add_vertex(p)
+
+
+## 发髻：一团（椭球芯）外面绕几缕，从贴头那圈往外拧到顶上，像盘起来的。
+## at 发髻中心，out 往外的方向，rad 半径；加进 st（和别的发束并成一张网格）
+static func bun_into(st: SurfaceTool, at: Vector3, out: Vector3, rad: Vector3, n := 7) -> void:
+	var d := out.normalized()
+	var u := d.cross(Vector3.UP)
+	if u.length() < 1e-4:
+		u = Vector3.RIGHT
+	u = u.normalized()
+	var v := d.cross(u).normalized()
+	# 芯：一个椭球（方向顺着绕的那圈）
+	var R := 10
+	var S := 14
+	for jj in R:
+		for ii in S:
+			var q := []
+			for e in [[jj, ii], [jj + 1, ii + 1], [jj + 1, ii], [jj, ii], [jj, ii + 1], [jj + 1, ii + 1]]:
+				var th := PI * float(e[0]) / float(R)
+				var ph := TAU_ * float(e[1]) / float(S)
+				var p := at + (u * cos(ph) * sin(th) * rad.x + v * sin(ph) * sin(th) * rad.y + d * cos(th) * rad.z) * 0.92
+				var tg := (-u * sin(ph) + v * cos(ph)).normalized()
+				q.append([p, tg])
+			for e in q:
+				_hair_v(st, e[0], e[1], 0.55, 0.37)
+	# 外面拧着的几缕
+	for k in n:
+		var a0 := TAU_ * float(k) / float(n)
+		var path := PackedVector3Array()
+		var outs := PackedVector3Array()
+		for i in 9:
+			var t := float(i) / 8.0
+			var th := lerpf(PI * 0.62, 0.12, t)
+			var ph := a0 + t * 1.6
+			var dir := u * cos(ph) * sin(th) + v * sin(ph) * sin(th) + d * cos(th)
+			var p := at + Vector3(dir.x * rad.x, dir.y * rad.y, dir.z * rad.z).length() * dir * 1.02
+			path.append(p)
+			outs.append(dir)
+		lock_into(st, path, outs, rad.x * 0.42, rad.x * 0.2, 6, 0.0, fposmod(float(k) * 0.137 + 0.21, 1.0))
